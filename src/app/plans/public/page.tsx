@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import PublicPlansClient from './PublicPlansClient'
 
+export const dynamic = 'force-dynamic'
+
 export default async function PublicPlansPage() {
   const plans = await prisma.plan.findMany({
     where: {
