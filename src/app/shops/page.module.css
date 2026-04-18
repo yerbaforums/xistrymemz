@@ -1,0 +1,93 @@
+.page {
+  min-height: 100vh;
+  padding: 80px 24px 80px;
+  background: var(--bg-primary);
+}
+
+.header {
+  max-width: 1200px;
+  margin: 0 auto 2rem;
+}
+
+.header h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.header p {
+  color: var(--text-secondary);
+}
+
+.loading, .empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-secondary);
+}
+
+.empty a {
+  display: inline-block;
+  margin-top: 1rem;
+  background: var(--accent-primary);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.shopCard {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.shopCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.shopImage {
+  height: 160px;
+  background: var(--bg-primary);
+}
+
+.shopImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.shopInfo {
+  padding: 1rem;
+}
+
+.shopInfo h3 {
+  font-size: 1.125rem;
+  margin-bottom: 0.5rem;
+}
+
+.shopInfo p {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.shopOwner {
+  font-size: 0.8125rem;
+  color: var(--accent-primary);
+}

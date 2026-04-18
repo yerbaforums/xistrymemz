@@ -1,0 +1,324 @@
+.page {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.backLink {
+  display: inline-block;
+  margin-bottom: 24px;
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.backLink:hover {
+  color: var(--accent-primary);
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 32px;
+}
+
+.main {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.category {
+  margin-left: 12px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.ownerActions {
+  display: flex;
+  gap: 8px;
+}
+
+.editBtn {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.editBtn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.deleteBtn {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid var(--accent-secondary);
+  border-radius: var(--radius-md);
+  color: var(--accent-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.deleteBtn:hover {
+  background: var(--accent-secondary);
+  color: var(--text-primary);
+}
+
+.main h1 {
+  margin-bottom: 16px;
+}
+
+.price {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  margin-bottom: 24px;
+}
+
+.description,
+.details {
+  margin-bottom: 24px;
+}
+
+.description h3,
+.details h3 {
+  font-size: 1rem;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+}
+
+.description p {
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+.imageContainer {
+  margin-bottom: 24px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.image {
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sellerCard,
+.locationCard,
+.metaCard {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.sellerCard h3,
+.locationCard h3 {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.sellerName {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+
+.sellerName:hover {
+  text-decoration: underline;
+}
+
+.shopLink {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.shopLink:hover {
+  opacity: 0.9;
+}
+
+.priceCard {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+
+.priceCard .price {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+}
+
+.addToCartBtn {
+  width: 100%;
+  padding: 12px;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.addToCartBtn:hover {
+  opacity: 0.9;
+}
+
+.addToPlanBtn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.addToPlanBtn:hover {
+  border-color: var(--accent-primary);
+}
+
+.escrowBtn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.escrowBtn:hover {
+  opacity: 0.9;
+}
+
+.escrowSummary {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.escrowRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.escrowRow:last-child {
+  border-bottom: none;
+}
+
+.planModalDesc {
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.noPlans {
+  color: var(--text-muted);
+  text-align: center;
+  padding: 16px;
+}
+
+.planSelect {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.locationDetails {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  margin-top: 8px;
+}
+
+.metaCard p {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.editActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.checkboxLabel input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-primary);
+}
+
+.loading,
+.error {
+  text-align: center;
+  padding: 64px 24px;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+  .content {
+    grid-template-columns: 1fr;
+  }
+}

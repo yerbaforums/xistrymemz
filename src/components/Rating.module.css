@@ -1,0 +1,138 @@
+.ratingDisplay {
+  margin: 16px 0;
+}
+
+.ratingHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.ratingStars {
+  font-size: 1.2rem;
+}
+
+.ratingStars .star {
+  margin-right: 2px;
+}
+
+.ratingCount {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.rateBtn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  cursor: pointer;
+  margin-bottom: 12px;
+  transition: var(--transition);
+}
+
+.rateBtn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.ratingForm {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.ratingForm h4 {
+  margin: 0 0 12px;
+  font-size: 1rem;
+}
+
+.ratingInput {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.starBtn {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.1s;
+}
+
+.starBtn:hover {
+  transform: scale(1.2);
+}
+
+.ratingForm textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  resize: vertical;
+  margin-bottom: 12px;
+}
+
+.ratingFormActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.ratingList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ratingItem {
+  border-top: 1px solid var(--border-color);
+  padding-top: 12px;
+}
+
+.ratingItemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.ratingUser {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.ratingStarsInline {
+  font-size: 0.875rem;
+}
+
+.ratingComment {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 4px 0;
+}
+
+.ratingDate {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.loading {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.ratingLoading {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  padding: 8px 0;
+}

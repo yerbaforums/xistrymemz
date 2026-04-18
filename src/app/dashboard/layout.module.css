@@ -1,0 +1,27 @@
+.layout {
+  min-height: 100vh;
+  background: var(--bg-primary);
+}
+
+.container {
+  display: flex;
+  gap: 24px;
+  padding-top: var(--header-height);
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.main {
+  flex: 1;
+  padding: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding: 20px;
+  }
+}

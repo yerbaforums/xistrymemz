@@ -1,0 +1,500 @@
+.page {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.backLink {
+  display: inline-block;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  font-size: 0.875rem;
+}
+
+.backLink:hover {
+  color: var(--accent-primary);
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 24px;
+}
+
+.mainSection {
+  min-width: 0;
+}
+
+.card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+}
+
+.cardHeader {
+  min-height: 200px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.titleRow h1 {
+  word-break: break-word;
+}
+
+.description {
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+.editBtn {
+  background: transparent;
+  color: var(--accent-primary);
+  padding: 8px 0;
+  font-size: 0.875rem;
+}
+
+.editBtn:hover {
+  text-decoration: underline;
+}
+
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.titleInput {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.descInput {
+  resize: vertical;
+}
+
+.selectInput {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.selectInput:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.dateLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.dateInput {
+  padding: 12px 16px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.dateInput:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.formSection {
+  padding: 16px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+}
+
+.formSection h3 {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.eventDetails {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: 16px;
+  background: rgba(0, 217, 255, 0.05);
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+}
+
+.locationDetails {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: 16px;
+  background: rgba(147, 51, 234, 0.05);
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+}
+
+.detailItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detailLabel {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detailValue {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.joinerCount {
+  padding: 12px 16px;
+  background: rgba(0, 255, 136, 0.1);
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+  color: var(--accent-success);
+}
+
+.joinersList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+  align-items: center;
+}
+
+.joinerName {
+  padding: 4px 12px;
+  background: var(--bg-secondary);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  color: var(--text-primary);
+}
+
+.joinSection {
+  margin-bottom: 16px;
+}
+
+.ownerActions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.historyBtn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  border-radius: var(--radius-md);
+}
+
+.historyBtn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.editActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.requestsSection {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  height: fit-content;
+}
+
+.requestsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.requestsHeader h2 {
+  font-size: 1.1rem;
+}
+
+.createBtn {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.empty {
+  text-align: center;
+  padding: 32px;
+  color: var(--text-secondary);
+}
+
+.requestList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.requestItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.requestItem:hover {
+  background: var(--bg-primary);
+  transform: translateX(4px);
+}
+
+.requestInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.requestTitle {
+  color: var(--text-primary);
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.requestDesc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.modalActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+@media (max-width: 900px) {
+  .content {
+    grid-template-columns: 1fr;
+  }
+}
+
+.eventsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.eventsHeader h2 {
+  font-size: 1.1rem;
+}
+
+.eventActions {
+  display: flex;
+  gap: 8px;
+}
+
+.calendarBtn {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  border-radius: var(--radius-md);
+}
+
+.calendarBtn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.eventsList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.eventCard {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+}
+
+.eventInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.eventInfo h3 {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.eventInfo p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.eventDate,
+.eventLocation {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.eventLocationDetails {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  padding-left: 20px;
+}
+
+.eventJoinSection {
+  display: flex;
+  align-items: flex-start;
+}
+
+.eventActions {
+  display: flex;
+  gap: 8px;
+}
+
+.eventActions .editBtn,
+.eventActions .deleteBtn {
+  background: transparent;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  border-radius: var(--radius-sm);
+}
+
+.eventActions .editBtn {
+  color: var(--accent-primary);
+  border: 1px solid var(--accent-primary);
+}
+
+.eventActions .deleteBtn {
+  color: #ef4444;
+  border: 1px solid #ef4444;
+}
+
+.eventActions .editBtn:hover,
+.eventActions .deleteBtn:hover {
+  opacity: 0.8;
+}
+
+.calendarView {
+  padding: 16px;
+}
+
+.calendarMonth {
+  margin-bottom: 24px;
+}
+
+.calendarMonth h4 {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.calendarEvents {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.calendarEvent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+}
+
+.calendarDate {
+  min-width: 80px;
+  font-size: 0.85rem;
+  color: var(--accent-primary);
+  font-weight: 500;
+}
+
+.calendarTitle {
+  flex: 1;
+  font-weight: 500;
+}
+
+.calendarLocation {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.badges {
+  display: flex;
+  gap: 8px;
+}
+
+.statusRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.editActions {
+  display: flex;
+  gap: 8px;
+}
+
+.statusBtn.active {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border-color: var(--accent-primary);
+}

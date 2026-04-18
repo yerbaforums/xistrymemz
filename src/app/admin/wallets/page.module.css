@@ -1,0 +1,922 @@
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  color: var(--text, #e5e5e5);
+  background: var(--bg, #0a0a0a);
+  min-height: 100vh;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: var(--text-secondary, #a3a3a3);
+  margin-bottom: 2rem;
+}
+
+.section {
+  background: var(--bg-secondary, #161616);
+  border: 1px solid var(--border, #262626);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.description {
+  color: var(--text-secondary, #a3a3a3);
+  font-size: 0.875rem;
+  margin-bottom: 1.25rem;
+}
+
+.walletGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.walletCard {
+  border: 1px solid var(--border, #262626);
+  border-radius: 8px;
+  padding: 1rem;
+  background: var(--bg-tertiary, #1f1f1f);
+}
+
+.walletHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.walletTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cryptoLogoWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cryptoLogoWrapper img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #fff;
+  object-fit: contain;
+  padding: 2px;
+  border: 1px solid #e5e7eb;
+}
+
+.cryptoFallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: #6b7280;
+  border: 2px solid #9ca3af;
+}
+
+.cryptoEmoji {
+  display: none;
+}
+
+.walletName {
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+.walletStatus {
+  font-size: 0.75rem;
+  background: #dcfce7;
+  color: #166534;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+}
+
+.walletStatusInactive {
+  font-size: 0.75rem;
+  background: #fef3c7;
+  color: #92400e;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+}
+
+.walletAddress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.walletAddress code {
+  font-size: 0.75rem;
+  background: #f3f4f6;
+  padding: 0.5rem;
+  border-radius: 4px;
+  word-break: break-all;
+  color: #374151;
+}
+
+.walletActions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.generateBtn, .enterBtn, .editBtn, .copyBtn, .saveBtn, .cancelBtn {
+  font-size: 0.8125rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.generateBtn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+}
+
+.generateBtn:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.enterBtn {
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.enterBtn:hover {
+  background: #f9fafb;
+}
+
+.editBtn {
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.copyBtn {
+  background: #10b981;
+  color: white;
+  border: none;
+}
+
+.copyBtn:hover {
+  background: #059669;
+}
+
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.addressInput {
+  font-size: 0.8125rem;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  width: 100%;
+  font-family: monospace;
+}
+
+.editActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.saveBtn {
+  background: #10b981;
+  color: white;
+  border: none;
+}
+
+.saveBtn:hover:not(:disabled) {
+  background: #059669;
+}
+
+.cancelBtn {
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.generateBtn:disabled, .saveBtn:disabled, .saveFeeBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.settingRow {
+  padding: 1rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.settingRow:last-child {
+  border-bottom: none;
+}
+
+.settingLabel {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.settingHint {
+  display: block;
+  font-weight: 400;
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+.settingInput {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.feeInput {
+  width: 80px;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.feePercent {
+  font-weight: 600;
+  color: #374151;
+}
+
+.walletInput {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-family: monospace;
+}
+
+.saveFeeBtn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.saveFeeBtn:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.infoBox {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.infoBox ol {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.infoBox li {
+  color: #0369a1;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.infoBox li:last-child {
+  margin-bottom: 0;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  color: #6b7280;
+}
+
+/* Generate Form Styles */
+.generateForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cryptoSelector {
+  margin-bottom: 0.5rem;
+}
+
+.selectorLabel {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #374151;
+}
+
+.cryptoGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cryptoOption {
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.cryptoOption:hover {
+  border-color: #3b82f6;
+}
+
+.cryptoActive {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.generateBtn {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  align-self: flex-start;
+}
+
+.generateBtn:hover:not(:disabled) {
+  background: #059669;
+}
+
+.generateBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Wallet List Styles */
+.emptyState {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.walletList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.cryptoSection {
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.cryptoSectionTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.walletHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.walletAddress {
+  font-family: monospace;
+  font-size: 0.75rem;
+  word-break: break-all;
+  flex: 1;
+  min-width: 200px;
+}
+
+.walletActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.copyBtn {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.copyBtn:hover {
+  background: #f3f4f6;
+}
+
+.viewKeyBtn {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid #f59e0b;
+  border-radius: 4px;
+  background: #fef3c7;
+  color: #92400e;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.viewKeyBtn:hover {
+  background: #fde68a;
+}
+
+.deleteBtn {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid #ef4444;
+  border-radius: 4px;
+  background: #fef2f2;
+  color: #dc2626;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.deleteBtn:hover {
+  background: #fee2e2;
+}
+
+.walletMeta {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary, #a3a3a3);
+}
+
+.primaryBadge {
+  background: var(--accent, #00d9ff);
+  color: #000;
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 0.625rem;
+  text-transform: uppercase;
+}
+
+/* Modal Styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modalContent {
+  background: var(--bg-secondary, #161616);
+  border: 1px solid var(--border, #262626);
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 550px;
+  width: 90%;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+}
+
+.modalContent h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--text, #e5e5e5);
+}
+
+.warningBox {
+  background: rgba(234, 179, 8, 0.15);
+  border: 1px solid #eab308;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.warningBox p {
+  margin: 0.5rem 0;
+  font-size: 0.875rem;
+  color: var(--text, #e5e5e5);
+}
+
+.keyDisplay {
+  background: var(--bg-tertiary, #1f1f1f);
+  border: 1px solid var(--border, #262626);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.keyDisplay code {
+  color: var(--accent, #00d9ff);
+  font-family: monospace;
+  font-size: 0.75rem;
+  word-break: break-all;
+  flex: 1;
+}
+
+.modalActions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.confirmBtn {
+  background: var(--accent, #00d9ff);
+  color: #000;
+  border: none;
+  padding: 0.625rem 1.25rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.confirmBtn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.cancelBtn {
+  background: transparent;
+  color: var(--text-secondary, #a3a3a3);
+  border: 1px solid var(--border, #262626);
+  padding: 0.625rem 1.25rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.cancelBtn:hover {
+  border-color: var(--text, #e5e5e5);
+  color: var(--text, #e5e5e5);
+}
+
+.closeBtn {
+  width: 100%;
+  background: var(--accent, #00d9ff);
+  color: #000;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+.closeBtn:hover {
+  opacity: 0.9;
+}
+
+/* Table View Styles */
+.listHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0.5rem 0;
+}
+
+.viewToggle {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.viewBtn {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border, #262626);
+  background: transparent;
+  color: var(--text-secondary, #a3a3a3);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.viewBtn:hover {
+  border-color: var(--text, #e5e5e5);
+  color: var(--text, #e5e5e5);
+}
+
+.viewBtnActive {
+  background: var(--accent, #00d9ff);
+  color: #000;
+  border-color: var(--accent, #00d9ff);
+}
+
+.bulkActions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.selectedCount {
+  color: var(--accent, #00d9ff);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.deleteSelectedBtn {
+  padding: 0.5rem 1rem;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.deleteSelectedBtn:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.tableContainer {
+  overflow-x: auto;
+}
+
+.walletTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+  table-layout: fixed;
+}
+
+.walletTable th,
+.walletTable td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border, #262626);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.walletTable th {
+  color: var(--text-secondary, #a3a3a3);
+  font-weight: 500;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.walletTable thead tr th:nth-child(1) { width: 40px; }
+.walletTable thead tr th:nth-child(2) { width: 80px; }
+.walletTable thead tr th:nth-child(3) { width: 180px; }
+.walletTable thead tr th:nth-child(4) { width: 70px; }
+.walletTable thead tr th:nth-child(5) { width: 100px; }
+.walletTable thead tr th:nth-child(6) { width: 90px; }
+.walletTable thead tr th:nth-child(7) { width: 120px; }
+
+.walletTable tr:hover {
+  background: var(--bg-tertiary, #1f1f1f);
+}
+
+.selectedRow {
+  background: rgba(0, 217, 255, 0.1) !important;
+}
+
+.checkboxCell {
+  width: 40px;
+}
+
+.checkboxCell input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.cryptoCell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cryptoIcon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: contain;
+}
+
+.cryptoIconSmall {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: contain;
+  margin-right: 0.5rem;
+}
+
+.cryptoLabel {
+  font-weight: 500;
+}
+
+.addressCell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.addressText {
+  font-family: monospace;
+  font-size: 0.8125rem;
+  color: var(--text-secondary, #a3a3a3);
+}
+
+.userCell {
+  color: var(--text, #e5e5e5);
+}
+
+.typeCell {
+  text-align: center;
+}
+
+.copyBtnSmall {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  background: transparent;
+  border: 1px solid var(--border, #262626);
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-secondary, #a3a3a3);
+}
+
+.copyBtnSmall:hover {
+  border-color: var(--accent, #00d9ff);
+  color: var(--accent, #00d9ff);
+}
+
+.dateCell {
+  color: var(--text-secondary, #a3a3a3);
+  font-size: 0.8125rem;
+}
+
+.adminCell {
+  color: var(--text-secondary, #a3a3a3);
+  font-size: 0.8125rem;
+}
+
+.primaryBadge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  background: var(--accent, #00d9ff);
+  color: #000;
+  border-radius: 9999px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.userBadge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  background: var(--border, #262626);
+  color: var(--text-secondary, #a3a3a3);
+  border-radius: 9999px;
+  font-size: 0.625rem;
+  font-weight: 500;
+  margin-left: 0.25rem;
+}
+
+.actionsCell {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.sortableHeader {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.sortableHeader:hover {
+  color: var(--accent, #00d9ff);
+}
+
+.sortIcon {
+  font-size: 0.625rem;
+  margin-left: 0.25rem;
+}
+
+.actionBtn {
+  padding: 0.375rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--border, #262626);
+  color: var(--text-secondary, #a3a3a3);
+}
+
+.actionBtn:hover {
+  border-color: var(--accent, #00d9ff);
+  color: var(--accent, #00d9ff);
+}
+
+.viewKeyBtn, .deleteBtn {
+  padding: 0.375rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.viewKeyBtn {
+  background: transparent;
+  border: 1px solid var(--border, #262626);
+  color: var(--text-secondary, #a3a3a3);
+}
+
+.viewKeyBtn:hover {
+  border-color: var(--accent, #00d9ff);
+  color: var(--accent, #00d9ff);
+}
+
+.deleteBtn {
+  background: transparent;
+  border: 1px solid #dc2626;
+  color: #dc2626;
+}
+
+.deleteBtn:hover:not(:disabled) {
+  background: #dc2626;
+  color: white;
+}
+
+.cardsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Seed Phrase Grid */
+.seedPhraseGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.seedWord {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: var(--bg-tertiary, #1f1f1f);
+  border-radius: 4px;
+  border: 1px solid var(--border, #262626);
+}
+
+.wordNumber {
+  color: var(--text-secondary, #a3a3a3);
+  font-size: 0.75rem;
+  min-width: 20px;
+}
+
+.wordText {
+  font-weight: 500;
+  font-size: 0.875rem;
+}

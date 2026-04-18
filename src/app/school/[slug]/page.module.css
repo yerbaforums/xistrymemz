@@ -1,0 +1,230 @@
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.loading,
+.error,
+.empty {
+  text-align: center;
+  padding: 64px;
+  color: var(--text-secondary);
+}
+
+.header {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 24px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+}
+
+.schoolImage {
+  width: 100px;
+  height: 100px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+}
+
+.schoolInfo h1 {
+  margin-bottom: 8px;
+}
+
+.about {
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.owner {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.actions {
+  margin-bottom: 16px;
+}
+
+.createBtn, .browseBtn {
+  padding: 10px 20px;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 8px;
+}
+
+.browseBtn {
+  background: var(--accent-secondary, #6b7280);
+}
+
+.createBtn:hover, .browseBtn:hover {
+  opacity: 0.9;
+}
+
+.filters {
+  margin-bottom: 16px;
+}
+
+.filters select {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.repostBadge {
+  font-size: 0.75rem;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  margin-right: 8px;
+}
+
+.originalContent {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.originalContent a {
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+
+.browseList {
+  max-height: 500px;
+  overflow-y: auto;
+  margin: 16px 0;
+}
+
+.browseCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+}
+
+.browseInfo {
+  flex: 1;
+}
+
+.browseInfo h3 {
+  margin: 8px 0 4px;
+}
+
+.contentPreview {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 8px;
+}
+
+.modal-wide {
+  max-width: 800px;
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 24px;
+}
+
+.contentList {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+.contentList h2 {
+  font-size: 1.1rem;
+  margin-bottom: 16px;
+}
+
+.contentCard {
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.contentCard:hover,
+.contentCard.selected {
+  border-color: var(--accent-primary);
+}
+
+.contentCard h3 {
+  font-size: 0.95rem;
+  margin: 8px 0 4px;
+}
+
+.meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.contentView {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  min-height: 400px;
+}
+
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+}
+
+.contentDetail h2 {
+  margin: 12px 0 8px;
+}
+
+.contentDetail .meta {
+  margin-bottom: 16px;
+}
+
+.contentBody {
+  line-height: 1.7;
+}
+
+.contentBody p {
+  margin-bottom: 12px;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+@media (max-width: 768px) {
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .header {
+    flex-direction: column;
+    text-align: center;
+  }
+}

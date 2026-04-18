@@ -1,0 +1,151 @@
+.authPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: 
+    radial-gradient(ellipse at 50% 0%, rgba(0, 217, 255, 0.08) 0%, transparent 50%),
+    var(--bg-primary);
+}
+
+.authContainer {
+  width: 100%;
+  max-width: 400px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 40px;
+}
+
+.logoIcon {
+  color: var(--accent-primary);
+  font-size: 1.75rem;
+}
+
+.title {
+  font-size: 1.75rem;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  text-align: center;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+}
+
+.form {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+}
+
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.formGroup input {
+  width: 100%;
+}
+
+.error {
+  background: rgba(255, 51, 102, 0.1);
+  border: 1px solid var(--accent-secondary);
+  color: var(--accent-secondary);
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+  font-size: 0.875rem;
+}
+
+.submitBtn {
+  width: 100%;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  padding: 14px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.submitBtn:hover:not(:disabled) {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-glow);
+}
+
+.switchAuth {
+  text-align: center;
+  margin-top: 24px;
+  color: var(--text-secondary);
+}
+
+.switchAuth a {
+  color: var(--accent-primary);
+  font-weight: 500;
+}
+
+.switchAuth a:hover {
+  text-decoration: underline;
+}
+
+.checkboxGroup {
+  margin-bottom: 8px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.checkboxLabel input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-primary);
+  cursor: pointer;
+}
+
+.inputValid {
+  border-color: #10b981 !important;
+}
+
+.inputError {
+  border-color: #ef4444 !important;
+}
+
+.fieldHint {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+.fieldSuccess {
+  font-size: 0.75rem;
+  color: #10b981;
+  margin-top: 0.25rem;
+}
+
+.fieldError {
+  font-size: 0.75rem;
+  color: #ef4444;
+  margin-top: 0.25rem;
+}

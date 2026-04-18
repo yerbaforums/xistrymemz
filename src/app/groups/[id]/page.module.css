@@ -1,0 +1,272 @@
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.backLink {
+  display: inline-block;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  font-size: 0.9rem;
+}
+
+.backLink:hover {
+  color: var(--accent-primary);
+}
+
+.header {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.headerImage {
+  height: 200px;
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.headerImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.placeholderIcon {
+  font-size: 5rem;
+  opacity: 0.5;
+}
+
+.headerContent {
+  padding: 24px;
+}
+
+.headerContent h1 {
+  font-size: 1.75rem;
+  margin-bottom: 8px;
+}
+
+.headerContent > p {
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.headerMeta {
+  display: flex;
+  gap: 16px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.headerActions {
+  display: flex;
+  gap: 12px;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+}
+
+.mainSection {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.postForm {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+
+.postForm form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.postForm textarea {
+  width: 100%;
+  padding: 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  resize: none;
+}
+
+.postForm textarea:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.postForm button {
+  align-self: flex-end;
+}
+
+.postsList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.emptyPosts {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+}
+
+.postCard {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+
+.postHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.postAuthor {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.postAuthor img, .authorPlaceholder {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+
+.authorPlaceholder {
+  background: var(--bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.postDate {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.postContent {
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+.postImage {
+  margin-top: 12px;
+  max-width: 100%;
+  border-radius: var(--radius-md);
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.membersCard {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+
+.membersCard h3 {
+  font-size: 1rem;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.membersList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.memberItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+  text-decoration: none;
+  color: inherit;
+}
+
+.memberItem:hover {
+  background: var(--bg-tertiary);
+}
+
+.memberItem img, .memberPlaceholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.memberPlaceholder {
+  background: var(--bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.memberInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.memberInfo span:first-child {
+  font-size: 0.9rem;
+}
+
+.adminBadge {
+  font-size: 0.7rem;
+  color: var(--accent-primary);
+  background: rgba(0, 217, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 60px;
+  color: var(--text-secondary);
+}
+
+.error {
+  color: var(--accent-danger);
+}
+
+@media (max-width: 900px) {
+  .content {
+    grid-template-columns: 1fr;
+  }
+}

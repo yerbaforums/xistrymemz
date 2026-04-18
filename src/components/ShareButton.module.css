@@ -1,0 +1,116 @@
+.shareBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid var(--border, #2a2a2a);
+  border-radius: 8px;
+  color: var(--text-secondary, #888);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.shareBtn:hover {
+  border-color: var(--accent, #00d9ff);
+  color: var(--accent, #00d9ff);
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal {
+  background: var(--bg-secondary, #161616);
+  border: 1px solid var(--border, #2a2a2a);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+}
+
+.modal h3 {
+  margin: 0 0 20px;
+  color: var(--text, #fff);
+  text-align: center;
+}
+
+.shareLinks {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.shareLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 8px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.shareLink:hover {
+  opacity: 0.9;
+}
+
+.copyLink {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.linkInput {
+  flex: 1;
+  padding: 10px;
+  background: var(--bg-tertiary, #1f1f1f);
+  border: 1px solid var(--border, #2a2a2a);
+  border-radius: 6px;
+  color: var(--text, #fff);
+  font-size: 13px;
+}
+
+.copyBtn {
+  padding: 10px 16px;
+  background: var(--accent, #00d9ff);
+  border: none;
+  border-radius: 6px;
+  color: #000;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.copyBtn:hover {
+  opacity: 0.9;
+}
+
+.closeBtn {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: 1px solid var(--border, #2a2a2a);
+  border-radius: 8px;
+  color: var(--text-secondary, #888);
+  cursor: pointer;
+}
+
+.closeBtn:hover {
+  border-color: var(--text, #fff);
+  color: var(--text, #fff);
+}

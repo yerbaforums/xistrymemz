@@ -1,0 +1,78 @@
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+import { redirect } from 'next/navigation'
+import PlanDetailClient from './PlanDetailClient'
+
+export default async function PlanDetailPage({ 
+  params 
+}: { 
+  params: Promise<{ id: string }> 
+}) {
+  const session = await getServerSession(authOptions)
+  const { id } = await params
+  const userId = session?.user?.id || ''
+  const userRole = (session?.user as { role?: string })?.role || 'USER'
+  
+  const plan = await prisma.plan.findUnique({
+    where: { id },
+    include: {
+      user: { select: { id: true, name: true, email: true } },
+      editors: { select: { userId: true } },
+      requests: {
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: { select: { id: true, name: true, email: true } },
+          product: { select: { id: true, title: true, price: true, imageUrl: true } }
+        }
+      },
+      events: {
+        orderBy: { eventDate: 'asc' },
+        include: {
+          joiners: {
+            include: { user: { select: { id: true, name: true, email: true } } }
+          }
+        }
+      }
+    }
+  })
+
+  if (!plan) {
+    redirect('/plans/public')
+  }
+
+  const isOwner = plan.userId === userId
+  const isEditor = plan.editors.some(e => e.userId === userId)
+  const isAdmin = userRole === 'ADMIN'
+  const canEdit = isOwner || isEditor || isAdmin
+
+  const serializedPlan = {
+    ...plan,
+    createdAt: plan.createdAt.toISOString(),
+    updatedAt: plan.updatedAt.toISOString(),
+    goals: plan.goals,
+    mileposts: plan.mileposts,
+    milepostStatus: plan.milepostStatus,
+    schoolId: plan.schoolId,
+    shopId: plan.shopId,
+    requests: plan.requests.map(req => ({
+      ...req,
+      createdAt: req.createdAt.toISOString(),
+      updatedAt: req.updatedAt.toISOString(),
+    })),
+    isOwner,
+    isEditor: canEdit,
+    events: plan.events.map(event => ({
+      ...event,
+      createdAt: event.createdAt.toISOString(),
+      updatedAt: event.updatedAt.toISOString(),
+      eventDate: event.eventDate ? event.eventDate.toISOString() : null,
+      joiners: event.joiners.map(j => ({
+        ...j,
+        joinedAt: j.joinedAt.toISOString()
+      }))
+    }))
+  }
+
+  return <PlanDetailClient plan={serializedPlan} userId={userId} isOwner={canEdit} />
+}

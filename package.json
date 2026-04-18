@@ -1,0 +1,39 @@
+{
+  "name": "xistrymemz",
+  "version": "0.3.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.2",
+    "@tari-project/indexer-provider": "^0.14.6",
+    "@tari-project/metamask-signer": "^0.14.6",
+    "@tari-project/tari-permissions": "^0.14.6",
+    "@tari-project/tari-universe-signer": "^0.14.6",
+    "@tari-project/tarijs": "^0.4.0",
+    "@tari-project/wallet_jrpc_client": "^1.15.0",
+    "@tari-project/wallet-daemon-signer": "^0.14.6",
+    "@types/leaflet": "^1.9.21",
+    "bcryptjs": "^2.4.3",
+    "leaflet": "^1.9.4",
+    "next": "15.1.6",
+    "next-auth": "^4.24.11",
+    "prisma": "^6.4.1",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-leaflet": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.1.6",
+    "typescript": "^5"
+  }
+}

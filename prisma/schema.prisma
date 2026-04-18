@@ -1,0 +1,848 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  name      String?
+  password  String
+  image     String?
+  bio       String?
+  location  String?
+  neighborhood String?
+  latitude  Float?
+  longitude Float?
+  searchRadius Float   @default(50)
+  website   String?
+  coverImage String?
+  userClass String?
+  role      String    @default("USER")
+  shopName  String?
+  shopAbout String?
+  shopImage String?
+  shopSlug  String?   @unique
+  schoolName  String?
+  schoolAbout String?
+  schoolImage String?
+  schoolSlug  String?   @unique
+  walletAddress String?
+  paymentAddress String?
+  refundAddress String?
+  cryptoCurrency String?  @default("ETH")
+  balance         Float    @default(0)
+  
+  // Passport & Identity
+  earthId         String?   @unique  // Unique Earth Passport ID
+  verificationLevel String @default("NONE") // NONE, BASIC, STANDARD, ADVANCED, PREMIUM
+  reputationScore Float    @default(0)
+  verifiedEmail   Boolean   @default(false)
+  verifiedPhone  Boolean   @default(false)
+  verifiedIdentity Boolean @default(false)
+  verifiedAddress Boolean @default(false)
+  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  plans     Plan[]
+  planEditors PlanEditor[]
+  requests  Request[]
+  comments  Comment[]
+  joiners   PlanJoiner[]
+  eventJoiners PlanEventJoiner[]
+  products  Product[]
+  schoolContentsOwned   SchoolContent[] @relation("SchoolOwner")
+  schoolContentsAuthored SchoolContent[] @relation("SchoolAuthor")
+  sentConnections     Connection[] @relation("ConnectionRequester")
+  receivedConnections Connection[] @relation("ConnectionReceiver")
+  sentMessages        Message[] @relation("MessageSender")
+  receivedMessages    Message[] @relation("MessageReceiver")
+  posts     Post[]
+  planUpdates PlanUpdate[]
+  statusHistory RequestStatusHistory[]
+  groupsCreated   Group[]
+  groupMemberships GroupMember[]
+  groupPosts      GroupPost[]
+  groupBuys      GroupBuy[]
+  groupBuySupports GroupBuySupporter[]
+  eventTickets    EventTicket[]
+  payments       Payment[]
+  refunds        Refund[]
+  schoolPurchases SchoolPurchase[]
+  schoolSubscriptions SchoolSubscription[] @relation("SchoolSubscriber")
+  ratingsGiven    Rating[]
+  ratingsReceived Rating[] @relation("RatingReceiver")
+  courierServices CourierService[]
+  escrowAsSeller  EscrowTransaction[] @relation("EscrowSeller")
+  escrowAsBuyer  EscrowTransaction[] @relation("EscrowBuyer")
+  escrowAsCourier EscrowTransaction[] @relation("EscrowCourier")
+  wallets         UserWallet[]
+  adminWallets    AdminWallet[]
+  deposits        Deposit[]
+  forumPosts      ForumPost[]
+  forumReplies   ForumReply[]
+  forumPostTips  ForumPostTip[]
+  forumReplyTips ForumReplyTip[]
+  userEvents     UserEvent[]
+  schoolEvents   GroupEvent[] @relation("SchoolEvents")
+  shopEvents     GroupEvent[] @relation("ShopEvents")
+  organizedEvents GroupEvent[]
+  groupEventJoiners GroupEventJoiner[]
+  groupEventTickets GroupEventTicket[]
+  badges        Badge[]
+  badgesAwarded  Badge[]   @relation("BadgeAwardedBy")
+}
+
+model Plan {
+  id             String     @id @default(cuid())
+  title          String
+  description    String?
+  category       String?
+  goals          String?
+  mileposts      String?
+  milepostStatus String?   @default("[]")
+  status         String     @default("DRAFT")
+  published      Boolean    @default(false)
+  pinned         Boolean    @default(false)
+  location       String?
+  locationDetails String?
+  latitude       Float?
+  longitude      Float?
+  schoolId       String?
+  shopId        String?
+  userId         String
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  editors        PlanEditor[]
+  requests       Request[]
+  joiners        PlanJoiner[]
+  events         PlanEvent[]
+  updates        PlanUpdate[]
+  statusHistory  PlanStatusHistory[]
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+}
+
+model PlanStatusHistory {
+  id        String   @id @default(cuid())
+  planId    String
+  plan      Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  fromStatus String?
+  toStatus   String
+  reason    String?
+  createdAt DateTime @default(now())
+}
+
+model PlanEditor {
+  id        String   @id @default(cuid())
+  planId    String
+  plan      Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([planId, userId])
+}
+
+model PlanEvent {
+  id              String   @id @default(cuid())
+  title           String
+  description     String?
+  eventCategory   String?
+  eventDate       DateTime?
+  location        String?
+  locationDetails String?
+  latitude        Float?
+  longitude       Float?
+  maxJoiners      Int      @default(0)
+  pinned          Boolean  @default(false)
+  isTicketed      Boolean  @default(false)
+  ticketPrice     Float    @default(0)
+  currency        String   @default("USD")
+  planId          String
+  plan            Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  joiners         PlanEventJoiner[]
+  tickets         EventTicket[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model EventTicket {
+  id              String     @id @default(cuid())
+  eventId         String
+  event           PlanEvent  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quantity        Int        @default(1)
+  totalPaid       Float      @default(0)
+  paymentStatus   String     @default("PENDING")
+  purchasedAt     DateTime   @default(now())
+
+  @@unique([eventId, userId])
+}
+
+model PlanEventJoiner {
+  id        String    @id @default(cuid())
+  eventId   String
+  event     PlanEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinedAt  DateTime  @default(now())
+
+  @@unique([eventId, userId])
+}
+
+model PlanJoiner {
+  id        String   @id @default(cuid())
+  planId    String
+  plan      Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinedAt  DateTime @default(now())
+
+  @@unique([planId, userId])
+}
+
+model Request {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  status      String    @default("PENDING")
+  category    String    @default("GENERAL")
+  priority    String    @default("MEDIUM")
+  budget      Float?
+  deadline    DateTime?
+  location    String?
+  latitude    Float?
+  longitude   Float?
+  planId      String?
+  plan        Plan?     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  productId   String?
+  product     Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+  groupId     String?
+  group       Group?    @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  schoolContentId String?
+  schoolContent   SchoolContent? @relation(fields: [schoolContentId], references: [id], onDelete: SetNull)
+  eventId     String?
+  event       GroupEvent? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  completedBy String?
+  completedAt DateTime?
+  comments    Comment[]
+  statusHistory RequestStatusHistory[]
+  likes       Int       @default(0)
+  reposts     Int       @default(0)
+  isPublic    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  requestId String
+  request   Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model RequestStatusHistory {
+  id           String   @id @default(cuid())
+  requestId    String
+  request      Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  fromStatus   String
+  toStatus     String
+  changedById  String
+  changedBy    User     @relation(fields: [changedById], references: [id], onDelete: Cascade)
+  reason       String?
+  createdAt    DateTime @default(now())
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  price       Float?
+  type        String   @default("PRODUCT")
+  category    String?
+  condition   String?
+  location    String?
+  locationDetails String?
+  latitude    Float?
+  longitude   Float?
+  isGlobal   Boolean  @default(false)
+  isRemote   Boolean  @default(false)
+  imageUrl    String?
+  published   Boolean  @default(true)
+  pinned      Boolean  @default(false)
+  paymentMethods String?
+  paymentType  String   @default("BOTH")
+  acceptsRequests Boolean @default(false)
+  requestPrice Float?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  requests    Request[]
+  groupPosts  GroupPost[]
+  ratings     Rating[]
+  escrowTxns  EscrowTransaction[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SchoolContent {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  contentType String   @default("article")
+  price       Float    @default(0)
+  currency    String   @default("USD")
+  isPaid     Boolean  @default(false)
+  isSubscription Boolean @default(false)
+  subscriptionPrice Float @default(0)
+  userId      String
+  user        User     @relation("SchoolOwner", fields: [userId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User     @relation("SchoolAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  originalContentId String?
+  originalContent   SchoolContent? @relation("RepostedContent", fields: [originalContentId], references: [id], onDelete: SetNull)
+  reposts     SchoolContent[] @relation("RepostedContent")
+  purchases   SchoolPurchase[]
+  requests    Request[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SchoolPurchase {
+  id          String   @id @default(cuid())
+  type        String
+  amount      Float
+  currency    String   @default("USD")
+  status      String   @default("PENDING")
+  txHash      String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contentId   String
+  content     SchoolContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, contentId])
+}
+
+model SchoolSubscription {
+  id          String   @id @default(cuid())
+  schoolOwnerId String
+  subscriberId String
+  subscriber  User     @relation("SchoolSubscriber", fields: [subscriberId], references: [id], onDelete: Cascade)
+  tier        String
+  price       Float
+  currency    String   @default("USD")
+  status      String   @default("ACTIVE")
+  startedAt   DateTime @default(now())
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([schoolOwnerId, subscriberId])
+}
+
+model Connection {
+  id          String    @id @default(cuid())
+  requesterId String
+  requester   User      @relation("ConnectionRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  receiverId  String
+  receiver    User      @relation("ConnectionReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  status      String    @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  message     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([requesterId, receiverId])
+}
+
+model Message {
+  id           String    @id @default(cuid())
+  senderId     String
+  sender       User      @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId   String
+  receiver     User      @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  content      String
+  read         Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+}
+
+model EmailSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  subscribed Boolean  @default(true)
+  source    String   @default("landing_page")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PlanUpdate {
+  id        String   @id @default(cuid())
+  content   String
+  imageUrl  String?
+  pinned    Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId    String
+  plan      Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  likes     Int      @default(0)
+  reposts   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  content   String
+  imageUrl  String?
+  pinned    Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Group {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  imageUrl    String?
+  isPrivate   Boolean  @default(false)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  members     GroupMember[]
+  posts      GroupPost[]
+  groupBuys  GroupBuy[]
+  events     GroupEvent[]
+  requests    Request[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model GroupMember {
+  id        String   @id @default(cuid())
+  role      String   @default("MEMBER")
+  joinedAt  DateTime @default(now())
+  groupId   String
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+}
+
+model GroupPost {
+  id        String   @id @default(cuid())
+  content   String
+  imageUrl  String?
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupId   String
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  likes     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model GroupBuy {
+  id              String      @id @default(cuid())
+  title           String
+  description     String?
+  targetPrice     Float
+  currentPrice    Float       @default(0)
+  minSupporters   Int
+  currentSupporters Int       @default(0)
+  status          String      @default("ACTIVE")
+  productUrl      String?
+  productImage    String?
+  organizerId     String
+  organizer       User        @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  groupId         String
+  group           Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  supporters      GroupBuySupporter[]
+  completedAt     DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model GroupBuySupporter {
+  id          String    @id @default(cuid())
+  groupBuyId  String
+  groupBuy    GroupBuy  @relation(fields: [groupBuyId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount      Float     @default(1)
+  joinedAt    DateTime  @default(now())
+
+  @@unique([groupBuyId, userId])
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String
+  subject   String?
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Recommendation {
+  id         String   @id @default(cuid())
+  name       String?
+  email      String?
+  category   String   @default("general")
+  recommendation String
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model Payment {
+  id            String   @id @default(cuid())
+  type          String
+  amount        Float
+  currency      String   @default("USD")
+  status        String   @default("PENDING")
+  txHash        String?
+  fromAddress   String?
+  toAddress     String?
+  platformFee   Float    @default(0)
+  netAmount     Float    @default(0)
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId        String?
+  eventId       String?
+  productId     String?
+  description   String?
+  refunds       Refund[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model PlatformSettings {
+  id                 String   @id @default(cuid())
+  platformFeePercent Float    @default(10)
+  platformWallet     String?
+  adminPrivateKeys   String?  // Encrypted JSON of private keys (legacy)
+  remoteNodeUrl      String?
+  remoteNodeApiKey   String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model AdminWallet {
+  id          String   @id @default(cuid())
+  cryptoType  String   // ETH, BTC, XMR, etc.
+  address     String
+  privateKey  String?  // Encrypted
+  seedPhrase  String?  // Encrypted (for HD wallets)
+  publicKey   String?
+  isPrimary   Boolean  @default(false)
+  label       String?  // Optional label for the wallet
+  userId      String?  // Optional: if user generated this wallet
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Refund {
+  id            String   @id @default(cuid())
+  amount        Float
+  currency      String   @default("USD")
+  status        String   @default("PENDING")
+  txHash        String?
+  refundAddress String?
+  reason        String?
+  paymentId     String
+  payment       Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Rating {
+  id            String   @id @default(cuid())
+  type          String   @default("SELLER") // SELLER, BUYER, PRODUCT
+  rating        Int      // 1-5 stars
+  comment       String?
+  raterId       String
+  rater         User     @relation(fields: [raterId], references: [id], onDelete: Cascade)
+  userId        String   // The user being rated
+  user          User     @relation("RatingReceiver", fields: [userId], references: [id], onDelete: Cascade)
+  productId     String?
+  product       Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  transactionId String?  // Optional reference to a transaction
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([raterId, userId])
+}
+
+model Badge {
+  id          String   @id @default(cuid())
+  name        String   // Badge name: EARLY_ADOPTER, TRUSTED_CONNECTOR, VERIFIED_SELLER, COMMUNITY_BUILDER, MENTOR, GUIDE, PIONEER, EARTH_GUARDIAN, etc.
+  description String?  
+  imageUrl    String?
+  tier        String   @default("BRONZE") // BRONZE, SILVER, GOLD, PLATINUM, DIAMOND
+  userId      String   // Who earned this badge
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  awardedBy   String?  // User ID who awarded (null if system awarded)
+  awardedByUser User?   @relation("BadgeAwardedBy", fields: [awardedBy], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  
+  @@unique([userId, name])
+}
+
+model EscrowTransaction {
+  id              String   @id @default(cuid())
+  amount          Float
+  currency        String   @default("USD")
+  cryptoAmount    Float?
+  cryptoCurrency  String?  // USDT, USDC, ETH, BTC, XMR, XTM, ARRR, DERO, ZANO, FIRO
+  txHash          String?  // Initial payment tx
+  releaseTxHash   String?  // Release to seller tx
+  status          String   @default("PENDING") // PENDING, FUNDED, RELEASED, DISPUTED, REFUNDED, CANCELLED
+  paymentType    String   @default("ESCROW") // ESCROW or DIRECT payment
+  feePercent      Float    @default(10)
+  platformFee     Float    @default(0)
+  netAmount       Float    @default(0)
+  description     String?
+  notes          String?  // Order notes
+   
+  // Crypto payment fields
+  paymentAddress  String?  // Address buyer sends crypto to
+  fundingTxHash   String?  // Transaction hash that funded escrow
+  
+  productId       String?
+  product         Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  sellerId        String
+  seller          User     @relation("EscrowSeller", fields: [sellerId], references: [id], onDelete: Cascade)
+  buyerId         String
+  buyer           User     @relation("EscrowBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
+  courierId       String?
+  courier         User?    @relation("EscrowCourier", fields: [courierId], references: [id], onDelete: SetNull)
+  courierFee      Float?
+  courierService  String?  // e.g., "DELIVERY", "PICKUP", "EXPRESS"
+  deliveryAddress String?
+  deliveryStatus String   @default("PENDING") // PENDING, ACCEPTED, PICKED_UP, IN_TRANSIT, DELIVERED, COMPLETED, DECLINED
+  trackingNumber  String?
+  expectedDelivery DateTime?  // Expected delivery date
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model CourierService {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  serviceType     String   @default("DELIVERY") // DELIVERY, PICKUP, EXPRESS, INTERNATIONAL
+  basePrice       Float
+  pricePerMile    Float    @default(0)
+  maxDistance     Float    @default(100)
+  availableAreas  String?  // JSON string of available zip codes/areas
+  isActive        Boolean  @default(true)
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model InviteCode {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  type        String   @default("BETA") // BETA, EMAIL_LIST, GENERAL
+  maxUses     Int      @default(1)
+  usedCount   Int      @default(0)
+  expiresAt   DateTime?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model UserWallet {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cryptoType  String   // ETH, BTC, XMR, etc.
+  address     String
+  privateKey  String?  // Encrypted
+  publicKey   String?
+  isPrimary   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deposits    Deposit[]
+
+  @@unique([userId, address])
+}
+
+model Deposit {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  walletId      String?
+  wallet        UserWallet? @relation(fields: [walletId], references: [id])
+  cryptoType    String
+  amount        Float
+  txHash        String   @unique
+  fromAddress   String?
+  status        String   @default("PENDING") // PENDING, CONFIRMED, FAILED
+  confirmations Int      @default(0)
+  createdAt     DateTime @default(now())
+  confirmedAt   DateTime?
+}
+
+model ForumCategory {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  slug        String   @unique
+  icon        String?
+  sortOrder   Int      @default(0)
+  posts       ForumPost[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ForumPost {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  categoryId  String
+  category    ForumCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  pinned      Boolean  @default(false)
+  locked      Boolean  @default(false)
+  viewCount   Int      @default(0)
+  replyCount  Int      @default(0)
+  totalTips  Float    @default(0)
+  tippers     Int      @default(0)
+  replies     ForumReply[]
+  postTips    ForumPostTip[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ForumReply {
+  id          String   @id @default(cuid())
+  content     String
+  postId      String
+  post        ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  totalTips  Float    @default(0)
+  tippers     Int      @default(0)
+  replyTips   ForumReplyTip[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ForumPostTip {
+  id        String   @id @default(cuid())
+  postId    String
+  post      ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Float
+  createdAt DateTime @default(now())
+}
+
+model ForumReplyTip {
+  id        String   @id @default(cuid())
+  replyId   String
+  reply     ForumReply @relation(fields: [replyId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Float
+  createdAt DateTime @default(now())
+}
+
+model UserEvent {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime?
+  allDay      Boolean  @default(false)
+  location    String?
+  color       String   @default("#3b82f6")
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  visibility  String   @default("PRIVATE") // PRIVATE, PUBLIC, CONNECTIONS
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model GroupEvent {
+  id              String   @id @default(cuid())
+  title           String
+  description     String?
+  eventCategory   String?  // GROUP, SCHOOL, SHOP
+  eventDate       DateTime?
+  endDate         DateTime?
+  location        String?
+  locationDetails String?
+  latitude        Float?
+  longitude       Float?
+  maxJoiners      Int      @default(0)
+  isTicketed      Boolean  @default(false)
+  ticketPrice     Float    @default(0)
+  currency        String   @default("USD")
+  
+  // Link to entity
+  groupId         String?
+  group           Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  schoolId        String?
+  school          User?    @relation("SchoolEvents", fields: [schoolId], references: [id], onDelete: Cascade)
+  shopId          String?
+  shop            User?    @relation("ShopEvents", fields: [shopId], references: [id], onDelete: Cascade)
+  
+  organizerId     String
+  organizer       User     @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  
+  eventJoiners    GroupEventJoiner[]
+  eventTickets    GroupEventTicket[]
+  requests        Request[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model GroupEventJoiner {
+  id        String     @id @default(cuid())
+  eventId   String
+  event     GroupEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+
+  @@unique([eventId, userId])
+}
+
+model GroupEventTicket {
+  id              String     @id @default(cuid())
+  eventId         String
+  event           GroupEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quantity        Int        @default(1)
+  totalPrice      Float
+  currency        String     @default("USD")
+  status          String     @default("PENDING")
+  createdAt      DateTime   @default(now())
+}
