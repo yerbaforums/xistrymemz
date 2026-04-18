@@ -1,6 +1,12 @@
-import { randomBytes, createCipheriv, createDecipheriv, createHash } from 'crypto'
+import { randomBytes, createCipheriv, createDecipheriv, createHash, pbkdf2Sync } from 'crypto'
 
-const ENCRYPTION_KEY = process.env.WALLET_ENCRYPTION_KEY || 'xistrymemz-wallet-secret-key-32byte!'
+function getEncryptionKey(): Buffer {
+  const key = process.env.WALLET_ENCRYPTION_KEY
+  if (!key || key.length < 32) {
+    throw new Error('WALLET_ENCRYPTION_KEY must be at least 32 characters')
+  }
+  return Buffer.from(key.slice(0, 32), 'utf-8')
+}
 
 export interface WalletResult {
   address: string
@@ -9,20 +15,21 @@ export interface WalletResult {
   cryptoType: string
 }
 
-function deriveKey(password: string, salt: string): string {
-  return createHash('sha256').update(password + salt).digest('hex')
+function deriveKey(salt: string): Buffer {
+  const encryptionKey = getEncryptionKey()
+  return pbkdf2Sync(encryptionKey, salt, 100000, 32, 'sha512')
 }
 
 export function encryptPrivateKey(privateKey: string): string {
   const salt = randomBytes(16).toString('hex')
-  const key = deriveKey(ENCRYPTION_KEY, salt)
-  const iv = randomBytes(16).toString('hex')
-  
-  const cipher = createCipheriv('aes-256-cbc', Buffer.from(key.slice(0, 32), 'utf8'), Buffer.from(iv, 'hex'))
+  const key = deriveKey(salt)
+  const iv = randomBytes(16)
+   
+  const cipher = createCipheriv('aes-256-cbc', key, iv)
   let encrypted = cipher.update(privateKey, 'utf8', 'hex')
   encrypted += cipher.final('hex')
   
-  return salt + ':' + iv + ':' + encrypted
+  return salt + ':' + iv.toString('hex') + ':' + encrypted
 }
 
 export function decryptPrivateKey(encryptedData: string): string {
@@ -33,11 +40,11 @@ export function decryptPrivateKey(encryptedData: string): string {
     }
     
     const salt = parts[0]
-    const iv = parts[1]
+    const iv = Buffer.from(parts[1], 'hex')
     const encrypted = parts[2]
     
-    const key = deriveKey(ENCRYPTION_KEY, salt)
-    const decipher = createDecipheriv('aes-256-cbc', Buffer.from(key.slice(0, 32), 'utf8'), Buffer.from(iv, 'hex'))
+    const key = deriveKey(salt)
+    const decipher = createDecipheriv('aes-256-cbc', key, iv)
     
     let decrypted = decipher.update(encrypted, 'hex', 'utf8')
     decrypted += decipher.final('utf8')

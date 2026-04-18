@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { generateWallet } from '@/lib/wallet'
+import { validateInput, escrowSchema } from '@/lib/validation'
 
 export async function GET(request: Request) {
   try {
@@ -60,6 +61,12 @@ export async function POST(request: Request) {
     }
 
 const body = await request.json()
+  
+  const validation = validateInput(escrowSchema, body)
+  if (!validation.success) {
+    return NextResponse.json({ error: validation.error }, { status: 400 })
+  }
+  
   const { 
     sellerId, 
     amount, 
@@ -72,11 +79,7 @@ const body = await request.json()
     deliveryAddress,
     cryptoCurrency,
     paymentType
-  } = body
-
-  if (!sellerId || !amount) {
-    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
-  }
+  } = validation.data
 
   if (session.user.id === sellerId) {
     return NextResponse.json({ error: 'Cannot create escrow with yourself' }, { status: 400 })
