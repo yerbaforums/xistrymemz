@@ -5,6 +5,8 @@ import RequestsClient from './RequestsClient'
 import { Suspense } from 'react'
 import Loading from '@/components/Loading'
 
+export const dynamic = 'force-dynamic'
+
 export default async function RequestsPage() {
   const session = await getServerSession(authOptions)
   const userId = session?.user?.id || ''

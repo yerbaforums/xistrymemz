@@ -5,6 +5,8 @@ import PlansClient from './PlansClient'
 import { Suspense } from 'react'
 import Loading from '@/components/Loading'
 
+export const dynamic = 'force-dynamic'
+
 export default async function PlansPage() {
   const session = await getServerSession(authOptions)
   
