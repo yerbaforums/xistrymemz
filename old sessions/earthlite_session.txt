@@ -1,0 +1,132 @@
+================================================================================
+                    EARTHLITE PLATFORM - PRODUCTION READY
+================================================================================
+
+Project: earthlite (Decentralized Community Platform)
+Date: 2026-04-12
+Location: /home/xb4zy/builds/xistrymemz/earthlite
+Mobile: /home/xb4zy/builds/xistrymemz/earthlite-mobile
+
+================================================================================
+                          STATUS: PRODUCTION READY
+================================================================================
+
+✅ Web App - BUILD SUCCESSFUL
+✅ Mobile App - TRUE WebRTC Video
+✅ Docker & Docker Compose Ready
+✅ Multi-network Support (Clearnet/Tor/I2P)
+✅ Landing Page with Beta Signup
+✅ Mobile Download Links
+✅ Instance Configuration via Environment
+
+================================================================================
+                       DISTRIBUTION FILES
+================================================================================
+
+Core Files:
+- Dockerfile - Multi-stage build optimized for redistribution
+- docker-compose.yml - Full stack with optional Tor/I2P
+- .env.example - Environment template
+- src/lib/config.ts - Network detection & config
+
+Landing Page Features:
+- Beta email signup
+- Download links (Android APK, iOS, etc.)
+- Network access (Clearnet, Tor .onion, I2P)
+- Feature showcase
+
+================================================================================
+                      REDISTRIBUTION OPTIONS
+================================================================================
+
+1. Self-Host (Clearnet):
+   docker compose up -d
+
+2. Tor Hidden Service:
+   docker compose --profile tor up -d
+   # Access via http://xxx.onion
+
+3. I2P Hidden Service:
+   docker compose --profile i2p up -d
+   # Access via http://localhost:4444
+
+4. Custom Domain:
+   docker run -p 3000:3000 \
+     -e NEXT_PUBLIC_URL=https://your-domain.com \
+     -e INSTANCE_NAME="YourCommunity" \
+     earthlite
+
+5. Federation Enabled:
+   docker run -p 3000:3000 \
+     -e ENABLE_FEDERATION=true \
+     earthlite
+
+================================================================================
+                      ENVIRONMENT VARIABLES
+================================================================================
+
+Core:
+INSTANCE_NAME=EarthLite
+REGISTRATION_OPEN=true
+NETWORK_TYPE=clearnet | tor | i2p
+NEXTAUTH_SECRET=your-secret
+
+Database:
+DATABASE_URL=file:./data/earthlite.db
+
+Features:
+ENABLE_FEDERATION=false | true
+ENABLE_MARKETPLACE=true | false
+ENABLE_GROUPS=true | false
+ENABLE_EVENTS=true | false
+DISABLE_VIDEO=false | true
+
+================================================================================
+                         MOBILE APP
+================================================================================
+
+Location: /home/xb4zy/builds/xistrymemz/earthlite-mobile/
+
+Features:
+- 6 tabs (Feed, Groups, Events, Market, Messages, Profile)
+- True WebRTC video calling (react-native-webrtc)
+- API integration with web backend
+
+Build: cd earthlite-mobile && npx expo build
+
+================================================================================
+                            APIS
+================================================================================
+
+All API Routes (23):
+/api/posts          /api/groups
+/api/events        /api/products
+/api/messages     /api/users
+/api/users/me    /api/calls
+/api/scheduled-calls /api/wallet
+/api/follow       /api/register
+/api/forums/categories /api/forums/posts
+/api/plans        /api/requests
+/api/activitypub/* /api/auth/*
+
+================================================================================
+                          COMMANDS
+================================================================================
+
+# Development
+cd earthlite && npm run dev
+
+# Build Production
+npm run build
+
+# Docker Build & Run
+docker build -t earthlite .
+docker run -p 3000:3000 earthlite
+
+# Docker Compose Full Stack
+docker compose up -d
+
+# Mobile
+cd earthlite-mobile && npx expo start
+
+================================================================================

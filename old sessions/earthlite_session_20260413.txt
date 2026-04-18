@@ -1,0 +1,95 @@
+================================================================================
+                    EARTHLITE PLATFORM - SESSION STATE
+================================================================================
+
+Project: earthlite
+Date: 2026-04-13
+Location: /home/xb4zy/builds/xistrymemz/earthlite
+Mobile: /home/xb4zy/builds/xistrymemz/earthlite-mobile
+
+================================================================================
+                          CURRENT STATUS
+================================================================================
+
+Web App:
+- Status: READY (build exists in .next/)
+- Dependencies: Next.js 15, Prisma, NextAuth, Fedify (stub), simple-peer
+- API Routes: 32+ (posts, groups, events, products, messages, calls, etc.)
+- Pages: Landing, Feed, Groups, Events, Market, Messages, Profile, Login, Register
+- Features: Docker-ready, Tor/I2P profiles, Federation ready
+
+Mobile App:
+- Status: BUILD INCOMPLETE (dist/ empty)
+- Location: earthlite-mobile/
+- Dependencies: Expo SDK 51, react-native-webrtc
+- Features: 6 tabs, WebRTC video calling
+
+================================================================================
+                          COMPLETED TASKS
+================================================================================
+
+[✓] Task 1: Create /api/subscribe route for beta signup
+    - Created: earthlite/src/app/api/subscribe/route.ts
+
+[✓] Task 2: Make mobile API_URL configurable
+    - Modified: earthlite-mobile/App.tsx
+    - Added: process.env.EXPO_PUBLIC_API_URL support
+
+================================================================================
+                          PENDING TASKS
+================================================================================
+
+[ ] Task 3: Test web app startup (npm run dev)
+[ ] Task 4: Fix CORS configuration
+[ ] Task 5: Complete mobile build (expo export)
+[ ] Task 6: Test mobile ↔ web API
+[ ] Task 7: Decide federation strategy
+[ ] Task 8: Test Docker deployment
+[ ] Task 9: Run lint/typecheck
+
+================================================================================
+                          BUGS IDENTIFIED
+================================================================================
+
+1. Missing /api/subscribe - FIXED ✓
+2. Mobile API_URL hardcoded - FIXED ✓
+3. Federation not implemented (stub functions)
+4. CORS may block mobile → web cross-origin
+5. Mobile build incomplete (dist/ empty)
+
+================================================================================
+                          COMMANDS
+================================================================================
+
+# Web Development
+cd /home/xb4zy/builds/xistrymemz/earthlite
+npm run dev                    # Start dev server
+
+# Build Production
+npx prisma generate          # Generate Prisma client
+npm run build              # Build Next.js
+
+# Database
+npx prisma db push        # Push schema to dev.db
+
+# Mobile
+cd /home/xb4zy/builds/xistrymemz/earthlite-mobile
+npx expo export            # Export for production
+
+# Docker
+cd /home/xb4zy/builds/xistrymemz/earthlite
+docker compose up -d      # Start full stack
+
+================================================================================
+                          ENVIRONMENT VARIABLES
+================================================================================
+
+Web (.env):
+NEXTAUTH_SECRET=your-secret-key-here
+NEXTAUTH_URL=http://localhost:3000
+DATABASE_URL=file:./dev.db
+
+Mobile (app.json extra):
+EXPO_PUBLIC_API_URL=http://localhost:3000
+
+================================================================================

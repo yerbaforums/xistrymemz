@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EarthLite Session Summary - PLANV1</title>
+    <style>
+        @page { size: A4; margin: 1cm; }
+        body { font-family: 'Courier New', monospace; font-size: 11pt; line-height: 1.4; max-width: 210mm; margin: 0 auto; padding: 20px; }
+        h1 { font-size: 18pt; border-bottom: 2px solid #333; padding-bottom: 10px; margin-top: 20px; }
+        h2 { font-size: 14pt; border-bottom: 1px solid #999; padding-bottom: 5px; margin-top: 15px; background: #f0f0f0; padding: 5px; }
+        h3 { font-size: 12pt; margin-top: 10px; }
+        code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: 'Courier New', monospace; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; overflow-x: auto; font-size: 9pt; }
+        .keyword { color: #c586c0; }
+        .string { color: #ce9178; }
+        ul { list-style-type: square; }
+        li { margin: 5px 0; }
+        .note { background: #fff3cd; border: 1px solid #ffc107; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+
+<h1>EARTHLITE SESSION - PLANV1</h1>
+
+<p><strong>Project:</strong> earthlite<br>
+<strong>Date:</strong> 2026-04-12<br>
+<strong>Backup:</strong> /home/xb4zy/builds/xistrymemz/earthlite_backup_planv1_20260412_110558<br>
+<strong>Status:</strong> Launch planning phase</p>
+
+<h2>LAUNCH REQUIREMENTS</h2>
+
+<ul>
+<li><strong>Target:</strong> All features at launch (full feature set)</li>
+<li><strong>Deployment:</strong> Self-hosted (Docker/VPS)</li>
+<li><strong>Auth:</strong> OAuth (Google, GitHub) + Credentials</li>
+</ul>
+
+<h2>DEVELOPMENT ROADMAP</h2>
+
+<h3>Phase 1: Core Infrastructure (Week 1-2)</h3>
+<ul>
+<li>Database expansion - Add 20+ models (Plan, Request, SchoolContent, ForumPost, etc.)</li>
+<li>OAuth integration - Add Google + GitHub providers</li>
+<li>Docker setup - Dockerfile, docker-compose.yml, Nginx</li>
+<li>Environment config - Production .env template</li>
+</ul>
+
+<h3>Phase 2: Extended Features (Week 2-3)</h3>
+<ul>
+<li>Plans/Projects - Full CRUD, joiners, events, updates</li>
+<li>Requests - System for requests between users</li>
+<li>Schools/Courses - Content model with purchases/subscriptions</li>
+<li>Forums - Categories, posts, replies, tips</li>
+</ul>
+
+<h3>Phase 3: Federation (Week 3-4)</h3>
+<ul>
+<li>Fedify setup - @fedify/fedify, @fedify/next</li>
+<li>Actor system - User actors with WebFinger</li>
+<li>Content mapping - Posts→Note, Groups→Group, Events→Event</li>
+<li>Inbox/Outbox - Federation endpoints</li>
+</ul>
+
+<h3>Phase 4: Deployment (Week 4)</h3>
+<ul>
+<li>Production build</li>
+<li>Docker image</li>
+<li>Self-host documentation</li>
+<li>Backup strategy</li>
+</ul>
+
+<h2>KEY DECISIONS</h2>
+
+<ol>
+<li>Domain style: @user@earthlite.com OR earthlite.com/@user</li>
+<li>Node version: 22+ required for Fedify</li>
+<li>Database: SQLite or PostgreSQL?</li>
+</ol>
+
+<h2>EXISTING PROJECT STRUCTURE</h2>
+
+<p>Location: /home/xb4zy/builds/xistrymemz/earthlite/</p>
+<ul>
+<li>10 models (User, Post, Like, Follow, Product, Event, EventRsvp, Group, GroupMember, Message)</li>
+<li>Pages: feed, groups, events, market, messages, profile, login, register</li>
+<li>API routes for all features</li>
+<li>NextAuth with credentials provider</li>
+</ul>
+
+<h2>COMMANDS</h2>
+
+<pre>cd /home/xb4zy/builds/xistrymemz/earthlite
+npm run dev
+npm run build
+npx prisma generate
+npx prisma db push</pre>
+
+<hr>
+<p style="text-align: center; color: #666;"><i>Generated: 2026-04-12 | PlanV1</i></p>
+
+</body>
+</html>

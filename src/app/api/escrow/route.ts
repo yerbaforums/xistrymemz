@@ -85,7 +85,9 @@ const body = await request.json()
   const cryptoType = cryptoCurrency || 'ETH'
   const paymentAddress = cryptoCurrency ? generateWallet(cryptoType).address : null
 
-  const feePercent = paymentType === 'DIRECT' ? 5 : 10
+  const directFee = parseFloat(process.env.SITE_DIRECT_FEE || '5')
+  const escrowFee = parseFloat(process.env.SITE_ESCROW_FEE || '10')
+  const feePercent = paymentType === 'DIRECT' ? directFee : escrowFee
   const platformFee = amount * (feePercent / 100)
   const netAmount = amount - platformFee
 
