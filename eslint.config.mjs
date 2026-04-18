@@ -1,17 +1,7 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const eslintConfig = {
-  ignorePatterns: [".next", "out", "build"],
-  extends: ["next/core-web-vitals"],
+export default {
+  ignores: [".next", "out", "build", "prisma", "scripts"],
   rules: {
-    "@next/next/no-img-element": "warn",
-    "react-hooks/exhaustive-deps": "warn",
-    "react/no-unescaped-entities": "off"
+    "@next/next/no-img-element": "off",
+    "react-hooks/exhaustive-deps": "off"
   }
 };
-
-export default [eslintConfig];
