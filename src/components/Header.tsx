@@ -33,18 +33,24 @@ function Dropdown({ label, items, pathname, onClose }: { label: string, items: {
 }
 
 export default function Header() {
-  const { data: session, status, update } = useSession()
+  const { data: session, status } = useSession()
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
   const [notificationCount, setNotificationCount] = useState(0)
-  const [roleRefreshed, setRoleRefreshed] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
-    if (status === 'authenticated' && !roleRefreshed) {
-      update()
-      setRoleRefreshed(true)
+    if (status === 'authenticated') {
+      fetch('/api/users/me')
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data?.user?.role === 'ADMIN') {
+            setIsAdmin(true)
+          }
+        })
+        .catch(() => {})
     }
-  }, [status, roleRefreshed, update])
+  }, [status])
 
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<{
@@ -155,7 +161,6 @@ const marketplaceItems = [
     { href: '/profile', icon: '👤', label: 'My Profile' },
   ]
 
-  const isAdmin = session.user.role === 'ADMIN'
   const adminItems = [
     { href: '/admin/subscribers', icon: '📧', label: 'Subscribers' },
     { href: '/admin/orders', icon: '📦', label: 'Orders' },

@@ -29,6 +29,7 @@ export async function GET() {
         paymentAddress: true,
         refundAddress: true,
         cryptoCurrency: true,
+        role: true,
         createdAt: true
       }
     })
