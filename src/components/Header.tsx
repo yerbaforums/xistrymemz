@@ -41,10 +41,10 @@ export default function Header() {
 
   useEffect(() => {
     if (status === 'authenticated') {
-      fetch('/api/users/me')
+      fetch('/api/auth/role')
         .then(res => res.ok ? res.json() : null)
         .then(data => {
-          if (data?.user?.role === 'ADMIN') {
+          if (data?.role === 'ADMIN') {
             setIsAdmin(true)
           }
         })

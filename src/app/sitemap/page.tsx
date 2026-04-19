@@ -76,15 +76,6 @@ const siteSections = [
       { href: '/courier/setup', label: 'Courier Setup' },
     ]
   },
-  {
-    title: 'Admin',
-    links: [
-      { href: '/admin/subscribers', label: 'Subscribers' },
-      { href: '/admin/orders', label: 'Orders' },
-      { href: '/admin/wallets', label: 'Wallets' },
-      { href: '/admin/invite-codes', label: 'Invite Codes' },
-    ]
-  },
 ]
 
 export default function SitemapPage() {
