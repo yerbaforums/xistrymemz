@@ -44,6 +44,9 @@ export default async function AdminLayout({
           <Link href="/admin/invite-codes" className={styles.navLink}>
             🎟️ Invites
           </Link>
+          <Link href="/admin/users" className={styles.navLink}>
+            👤 Users
+          </Link>
         </nav>
         <main className={styles.main}>
           {children}
