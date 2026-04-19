@@ -66,21 +66,25 @@ export const authOptions: NextAuthOptions = {
     error: '/auth/login'
   },
   callbacks: {
-    async jwt({ token, user, trigger }) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id
         token.role = (user as { role?: string }).role || 'USER'
       }
 
-      if (token.sub || token.id) {
+      try {
         const userId = (token.id as string) || (token.sub as string)
-        const dbUser = await prisma.user.findUnique({
-          where: { id: userId },
-          select: { role: true }
-        })
-        if (dbUser) {
-          token.role = dbUser.role
+        if (userId) {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { role: true }
+          })
+          if (dbUser) {
+            token.role = dbUser.role
+          }
         }
+      } catch {
+        // DB unavailable - keep existing token.role
       }
 
       return token
@@ -89,13 +93,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         const userId = (token.id as string) || (token.sub as string)
         ;(session.user as typeof session.user & { id: string; role?: string }).id = userId
-
-        const dbUser = await prisma.user.findUnique({
-          where: { id: userId },
-          select: { role: true }
-        })
-
-        ;(session.user as typeof session.user & { id: string; role?: string }).role = dbUser?.role || (token.role as string) || 'USER'
+        ;(session.user as typeof session.user & { id: string; role?: string }).role = (token.role as string) || 'USER'
       }
       return session
     }

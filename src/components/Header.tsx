@@ -33,10 +33,18 @@ function Dropdown({ label, items, pathname, onClose }: { label: string, items: {
 }
 
 export default function Header() {
-  const { data: session, status } = useSession()
+  const { data: session, status, update } = useSession()
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
   const [notificationCount, setNotificationCount] = useState(0)
+  const [roleRefreshed, setRoleRefreshed] = useState(false)
+
+  useEffect(() => {
+    if (status === 'authenticated' && !roleRefreshed) {
+      update()
+      setRoleRefreshed(true)
+    }
+  }, [status, roleRefreshed, update])
 
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<{
