@@ -38,24 +38,17 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [notificationCount, setNotificationCount] = useState(0)
   const [isAdmin, setIsAdmin] = useState(false)
-  const [roleDebug, setRoleDebug] = useState<string>('')
 
   useEffect(() => {
     if (status === 'authenticated') {
       fetch('/api/auth/role', { credentials: 'include' })
-        .then(res => {
-          setRoleDebug(`status:${res.status}`)
-          return res.json()
-        })
+        .then(res => res.json())
         .then(data => {
-          setRoleDebug(prev => `${prev} role:${data?.role || 'null'} src:${data?.source || 'null'}`)
           if (data?.role === 'ADMIN') {
             setIsAdmin(true)
           }
         })
-        .catch(err => {
-          setRoleDebug(`err:${err.message}`)
-        })
+        .catch(() => {})
     }
   }, [status])
 
@@ -421,6 +414,29 @@ const marketplaceItems = [
                 <Link href="/messages" className={styles.userLink} onClick={() => setMenuOpen(false)}>
                   Messages
                 </Link>
+                {isAdmin && (
+                  <>
+                    <div className={styles.adminDivider}>Admin</div>
+                    <Link href="/admin/subscribers" className={`${styles.userLink} ${styles.adminLink}`} onClick={() => setMenuOpen(false)}>
+                      📧 Subscribers
+                    </Link>
+                    <Link href="/admin/orders" className={`${styles.userLink} ${styles.adminLink}`} onClick={() => setMenuOpen(false)}>
+                      📦 Orders
+                    </Link>
+                    <Link href="/admin/wallets" className={`${styles.userLink} ${styles.adminLink}`} onClick={() => setMenuOpen(false)}>
+                      💳 Wallets
+                    </Link>
+                    <Link href="/admin/messages" className={`${styles.userLink} ${styles.adminLink}`} onClick={() => setMenuOpen(false)}>
+                      💬 Messages
+                    </Link>
+                    <Link href="/admin/invite-codes" className={`${styles.userLink} ${styles.adminLink}`} onClick={() => setMenuOpen(false)}>
+                      🎟️ Invite Codes
+                    </Link>
+                    <Link href="/admin/users" className={`${styles.userLink} ${styles.adminLink}`} onClick={() => setMenuOpen(false)}>
+                      👤 Users
+                    </Link>
+                  </>
+                )}
               </div>
               <button onClick={() => signOut()} className={styles.signOutBtn}>
                 Sign Out
@@ -428,11 +444,6 @@ const marketplaceItems = [
             </div>
           </div>
         </div>
-        {roleDebug && (
-          <div style={{ position: 'fixed', bottom: 8, right: 8, background: isAdmin ? '#10b981' : '#ef4444', color: '#fff', padding: '4px 10px', borderRadius: 6, fontSize: 11, zIndex: 9999, fontFamily: 'monospace' }}>
-            {roleDebug} | admin:{isAdmin ? 'YES' : 'NO'}
-          </div>
-        )}
       </div>
     </header>
   )
