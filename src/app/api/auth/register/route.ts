@@ -80,7 +80,10 @@ export async function POST(request: Request) {
 
     const founder = await prisma.user.findFirst({
       where: { 
-        email: 'xb4zy@xistrymemz.xyz'
+        OR: [
+          { email: 'xb4zy@xistrymemz.xyz' },
+          { name: 'xb4zy' }
+        ]
       }
     })
 
