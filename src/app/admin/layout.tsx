@@ -16,6 +16,10 @@ export default async function AdminLayout({
     redirect('/auth/login')
   }
 
+  if ((session.user as { role?: string }).role !== 'ADMIN') {
+    redirect('/dashboard/overview')
+  }
+
   return (
     <div className={styles.layout}>
       <Header />

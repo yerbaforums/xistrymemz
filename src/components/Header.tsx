@@ -152,6 +152,7 @@ const marketplaceItems = [
     { href: '/admin/subscribers', icon: '📧', label: 'Subscribers' },
     { href: '/admin/orders', icon: '📦', label: 'Orders' },
     { href: '/admin/wallets', icon: '💳', label: 'Wallets' },
+    { href: '/admin/messages', icon: '💬', label: 'Messages' },
     { href: '/admin/invite-codes', icon: '🎟️', label: 'Invite Codes' },
   ]
 

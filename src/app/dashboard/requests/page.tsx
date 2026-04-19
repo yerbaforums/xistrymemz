@@ -1,9 +1,8 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
-import styles from '../page.module.css'
+import DashboardRequestsClient from './DashboardRequestsClient'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,58 +14,47 @@ export default async function DashboardRequests() {
   }
 
   const userId = session.user.id
+  const userRole = (session.user as { role?: string })?.role || 'USER'
 
   const requests = await prisma.request.findMany({
-    where: { userId },
-    orderBy: { createdAt: 'desc' },
+    where: userRole === 'ADMIN' ? undefined : { userId },
     include: {
       plan: { select: { id: true, title: true } },
       group: { select: { id: true, name: true } },
       product: { select: { id: true, title: true } },
+      schoolContent: { select: { id: true, title: true } },
       event: { select: { id: true, title: true } },
+      user: { select: { id: true, name: true, email: true, image: true } },
       _count: { select: { comments: true } }
-    }
+    },
+    orderBy: { createdAt: 'desc' }
   })
 
-  return (
-    <div className={styles.page}>
-      <div className={styles.header}>
-        <div>
-          <h1>My Requests</h1>
-          <p className={styles.welcome}>Create and manage your requests</p>
-        </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <Link href="/requests/public" className="btn-secondary">Browse Public</Link>
-          <Link href="/requests" className="btn-primary">+ New Request</Link>
-        </div>
-      </div>
+  const serializedRequests = requests.map(req => ({
+    id: req.id,
+    title: req.title,
+    description: req.description,
+    status: req.status,
+    category: req.category,
+    priority: req.priority,
+    budget: req.budget,
+    deadline: req.deadline?.toISOString() || null,
+    location: req.location,
+    latitude: req.latitude,
+    longitude: req.longitude,
+    likes: req.likes,
+    reposts: req.reposts,
+    isPublic: req.isPublic,
+    createdAt: req.createdAt.toISOString(),
+    updatedAt: req.updatedAt.toISOString(),
+    plan: req.plan,
+    group: req.group,
+    product: req.product,
+    schoolContent: req.schoolContent,
+    event: req.event,
+    user: req.user,
+    commentCount: req._count.comments
+  }))
 
-      {requests.length === 0 ? (
-        <div className={styles.empty}>
-          <p>No requests yet. Create your first request!</p>
-          <Link href="/requests" className="btn-primary">Create Request</Link>
-        </div>
-      ) : (
-        <div className={styles.list}>
-          {requests.map(req => {
-            const linkLabel = req.plan?.title || req.group?.name || req.product?.title || req.event?.title || 'Standalone'
-            return (
-              <Link key={req.id} href={`/requests/${req.id}`} className={styles.item}>
-                <div className={styles.itemMain}>
-                  <h3>{req.title}</h3>
-                  <p>{req.description || 'No description'}</p>
-                  <span className={styles.linkBadge}>{linkLabel}</span>
-                </div>
-                <div className={styles.itemMeta}>
-                  <span className={`badge badge-${req.status.toLowerCase()}`}>{req.status}</span>
-                  <span className={`badge badge-${req.priority.toLowerCase()}`}>{req.priority}</span>
-                  <span>{req._count.comments} comments</span>
-                </div>
-              </Link>
-            )
-          })}
-        </div>
-      )}
-    </div>
-  )
+  return <DashboardRequestsClient initialRequests={serializedRequests} userId={userId} userRole={userRole} />
 }
