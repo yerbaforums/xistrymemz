@@ -38,17 +38,24 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [notificationCount, setNotificationCount] = useState(0)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [roleDebug, setRoleDebug] = useState<string>('')
 
   useEffect(() => {
     if (status === 'authenticated') {
-      fetch('/api/auth/role')
-        .then(res => res.ok ? res.json() : null)
+      fetch('/api/auth/role', { credentials: 'include' })
+        .then(res => {
+          setRoleDebug(`status:${res.status}`)
+          return res.json()
+        })
         .then(data => {
+          setRoleDebug(prev => `${prev} role:${data?.role || 'null'} src:${data?.source || 'null'}`)
           if (data?.role === 'ADMIN') {
             setIsAdmin(true)
           }
         })
-        .catch(() => {})
+        .catch(err => {
+          setRoleDebug(`err:${err.message}`)
+        })
     }
   }, [status])
 
@@ -362,7 +369,6 @@ const marketplaceItems = [
             pathname={pathname}
             onClose={() => setMenuOpen(false)}
           />
-          
           {isAdmin && (
             <Dropdown 
               label="Admin ⚙️" 
@@ -422,6 +428,11 @@ const marketplaceItems = [
             </div>
           </div>
         </div>
+        {roleDebug && (
+          <div style={{ position: 'fixed', bottom: 8, right: 8, background: isAdmin ? '#10b981' : '#ef4444', color: '#fff', padding: '4px 10px', borderRadius: 6, fontSize: 11, zIndex: 9999, fontFamily: 'monospace' }}>
+            {roleDebug} | admin:{isAdmin ? 'YES' : 'NO'}
+          </div>
+        )}
       </div>
     </header>
   )
