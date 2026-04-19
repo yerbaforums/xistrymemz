@@ -2,9 +2,13 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
+import { useSession } from 'next-auth/react'
 import styles from './Footer.module.css'
 
 export default function Footer() {
+  const { status } = useSession()
+  const isAuthenticated = status === 'authenticated'
+
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>
@@ -33,10 +37,12 @@ export default function Footer() {
           <div className={styles.linksColumn}>
             <h4>Explore</h4>
             <Link href="/plans/public">Browse Projects</Link>
+            <Link href="/requests/public">Public Requests</Link>
             <Link href="/products">Marketplace</Link>
             <Link href="/shops">Shops</Link>
             <Link href="/events">Events</Link>
             <Link href="/community/groups">Groups</Link>
+            <Link href="/schools">Schools</Link>
           </div>
 
           <div className={styles.linksColumn}>
@@ -47,15 +53,22 @@ export default function Footer() {
             <Link href="/schools">Schools</Link>
           </div>
 
-          <div className={styles.linksColumn}>
-            <h4>Account</h4>
-            <Link href="/dashboard/overview">Dashboard</Link>
-            <Link href="/dashboard/projects">My Projects</Link>
-            <Link href="/dashboard/requests">My Requests</Link>
-            <Link href="/dashboard/marketplace">My Marketplace</Link>
-            <Link href="/dashboard/events">My Events</Link>
-            <Link href="/wallet">Wallet</Link>
-          </div>
+          {isAuthenticated ? (
+            <div className={styles.linksColumn}>
+              <h4>Account</h4>
+              <Link href="/dashboard/overview">Dashboard</Link>
+              <Link href="/plans">My Projects</Link>
+              <Link href="/requests">My Requests</Link>
+              <Link href="/wallet">Wallet</Link>
+              <Link href="/profile">Profile</Link>
+            </div>
+          ) : (
+            <div className={styles.linksColumn}>
+              <h4>Get Started</h4>
+              <Link href="/auth/register">Sign Up</Link>
+              <Link href="/auth/login">Login</Link>
+            </div>
+          )}
 
           <div className={styles.linksColumn}>
             <h4>Support</h4>
@@ -63,12 +76,11 @@ export default function Footer() {
             <Link href="/contact">Contact Us</Link>
             <Link href="/about">About Us</Link>
             <Link href="/sitemap">Site Map</Link>
-            <Link href="/auth/register">Sign Up</Link>
           </div>
         </div>
 
         <div className={styles.bottomSection}>
-          <p className={styles.copyright}>© {new Date().getFullYear()} XistrYmemZ. All rights reserved.</p>
+          <p className={styles.copyright}>&copy; {new Date().getFullYear()} XistrYmemZ. All rights reserved.</p>
           <div className={styles.legalLinks}>
             <Link href="/privacy">Privacy Policy</Link>
             <Link href="/terms">Terms of Service</Link>

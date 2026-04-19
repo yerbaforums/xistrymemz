@@ -4,7 +4,6 @@ import { useSession } from 'next-auth/react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useEffect } from 'react'
 import Link from 'next/link'
-import Header from '@/components/Header'
 import styles from './layout.module.css'
 import sidebarStyles from './layout-sidebar.module.css'
 
@@ -57,7 +56,6 @@ export default function CommunityLayout({
   if (status === 'loading') {
     return (
       <div className={styles.layout}>
-        <Header />
         <div className={styles.container}>
           <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Loading...</div>
         </div>
@@ -71,7 +69,6 @@ export default function CommunityLayout({
 
   return (
     <div className={styles.layout}>
-      <Header />
       <div className={styles.container}>
         <CommunityNav />
         <main className={styles.main}>

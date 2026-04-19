@@ -1,7 +1,6 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import Header from '@/components/Header'
 import styles from '../layout.module.css'
 
 export default async function GroupDetailLayout({
@@ -17,7 +16,6 @@ export default async function GroupDetailLayout({
 
   return (
     <div className={styles.layout}>
-      <Header />
       <div className={styles.container}>
         <main className={styles.main}>
           {children}

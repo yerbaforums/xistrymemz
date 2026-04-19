@@ -2,7 +2,6 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import Header from '@/components/Header'
 import styles from './settings.module.css'
 
 export default async function ProfileSettingsPage() {
@@ -14,7 +13,6 @@ export default async function ProfileSettingsPage() {
 
   return (
     <div className={styles.layout}>
-      <Header />
       <div className={styles.container}>
         <main className={styles.main}>
           <div className={styles.header}>

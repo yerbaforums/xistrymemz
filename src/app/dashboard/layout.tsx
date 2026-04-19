@@ -4,7 +4,6 @@ import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import Header from '@/components/Header'
 import styles from './layout.module.css'
 import sidebarStyles from './layout-sidebar.module.css'
 
@@ -52,7 +51,6 @@ export default function DashboardLayout({
   if (status === 'loading') {
     return (
       <div className={styles.layout}>
-        <Header />
         <div className={styles.container}>
           <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Loading...</div>
         </div>
@@ -66,7 +64,6 @@ export default function DashboardLayout({
 
   return (
     <div className={styles.layout}>
-      <Header />
       <div className={styles.container}>
         <DashboardNav />
         <main className={styles.main}>
