@@ -289,23 +289,16 @@ export default function About() {
           
           <div className={styles.donationSection}>
             <div className={styles.donationCard}>
+              <div className={styles.cryptoIcon}>₮</div>
+              <h3>Tari (XTM)</h3>
+              <code className={styles.address} onClick={() => navigator.clipboard.writeText('128Fop9866GtF5WD5cE1FgmMuwRmiddj2ZRaNewMWh4WQPuVuTUz15DwA2AmFzTgAN2nRig4EXZY6QtgMZjZdLxWoqE')}>128Fop9866...WoqE</code>
+              <span className={styles.copyHint}>Click to copy</span>
+            </div>
+
+            <div className={styles.donationCard}>
               <div className={styles.cryptoIcon}>🪙</div>
               <h3>Monero (XMR)</h3>
-              <code className={styles.address} onClick={() => navigator.clipboard.writeText('43Zq1pUmvxUCd6bCQmBaH8UQd3DKeVDKmk6Z7D8E8gC6XGaNRLW8R7xVxV4Y9m3KxQ4xF8Y9m3KxQ4xF8Y9m3KxQ4xF')}>43Zq1pUmvxUCd6bCQmBaH8UQd3DKeVDKmk6Z7D8E8gC6XGaNRLW8R7xVxV4Y9m</code>
-              <span className={styles.copyHint}>Click to copy</span>
-            </div>
-
-            <div className={styles.donationCard}>
-              <div className={styles.cryptoIcon}>₿</div>
-              <h3>Bitcoin (BTC)</h3>
-              <code className={styles.address} onClick={() => navigator.clipboard.writeText('bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh')}>bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</code>
-              <span className={styles.copyHint}>Click to copy</span>
-            </div>
-
-            <div className={styles.donationCard}>
-              <div className={styles.cryptoIcon}>Ξ</div>
-              <h3>Ethereum (ETH)</h3>
-              <code className={styles.address} onClick={() => navigator.clipboard.writeText('0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D')}>0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D</code>
+              <code className={styles.address} onClick={() => navigator.clipboard.writeText('83bjLcDbqc3Srwuo6uraFCG1tQ98BZCDLAodCrnZFhCyFtcEx6awuF63GhHocw9SK1gDujttS5KoCEH2G94iDexQHHa6PXs')}>83bjLcDb...6PXs</code>
               <span className={styles.copyHint}>Click to copy</span>
             </div>
           </div>

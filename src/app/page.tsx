@@ -132,15 +132,15 @@ export default function Home() {
           <div className={styles.paymentOptions}>
             <div className={styles.paymentCard}>
               <h3>Crypto Donations</h3>
-              <p>Send ETH or USDT to support our mission</p>
+              <p>Send XTM or XMR to support our mission</p>
               <div className={styles.cryptoAddresses}>
                 <div className={styles.cryptoItem}>
-                  <span className={styles.cryptoLabel}>ETH:</span>
-                  <code>0x742d35Cc6634C0532925a3b844Bc9e7595f0Ab12</code>
+                  <span className={styles.cryptoLabel}>XTM:</span>
+                  <code>128Fop9866GtF5WD5cE1FgmMuwRmiddj2ZRaNewMWh4WQPuVuTUz15DwA2AmFzTgAN2nRig4EXZY6QtgMZjZdLxWoqE</code>
                 </div>
                 <div className={styles.cryptoItem}>
-                  <span className={styles.cryptoLabel}>USDT:</span>
-                  <code>0x742d35Cc6634C0532925a3b844Bc9e7595f0Ab12</code>
+                  <span className={styles.cryptoLabel}>XMR:</span>
+                  <code>83bjLcDbqc3Srwuo6uraFCG1tQ98BZCDLAodCrnZFhCyFtcEx6awuF63GhHocw9SK1gDujttS5KoCEH2G94iDexQHHa6PXs</code>
                 </div>
               </div>
             </div>
