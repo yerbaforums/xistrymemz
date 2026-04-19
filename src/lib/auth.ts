@@ -37,10 +37,10 @@ export const authOptions: NextAuthOptions = {
         }
 
         const isAdminEmail = user.email.toLowerCase() === 'reed.bobby.jr@gmail.com'
-                       || user.email.toLowerCase() === 'xb4zy@xistrymemz.xyz'
-const isAdminName = user.name?.toLowerCase() === 'xb4zy'
+                           || user.email.toLowerCase() === 'xb4zy@xistrymemz.xyz'
+        const isAdminName = user.name?.toLowerCase() === 'xb4zy'
 
-      if ((isAdminEmail || isAdminName) && user.role !== 'ADMIN') {
+        if ((isAdminEmail || isAdminName) && user.role !== 'ADMIN') {
           await prisma.user.update({
             where: { id: user.id },
             data: { role: 'ADMIN' }
@@ -66,26 +66,36 @@ const isAdminName = user.name?.toLowerCase() === 'xb4zy'
     error: '/auth/login'
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id
         token.role = (user as { role?: string }).role || 'USER'
       }
-      if (token.id) {
+
+      if (token.sub || token.id) {
+        const userId = (token.id as string) || (token.sub as string)
         const dbUser = await prisma.user.findUnique({
-          where: { id: token.id as string },
+          where: { id: userId },
           select: { role: true }
         })
         if (dbUser) {
           token.role = dbUser.role
         }
       }
+
       return token
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as typeof session.user & { id: string; role?: string }).id = token.id as string
-        (session.user as typeof session.user & { id: string; role?: string }).role = token.role as string
+        const userId = (token.id as string) || (token.sub as string)
+        ;(session.user as typeof session.user & { id: string; role?: string }).id = userId
+
+        const dbUser = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { role: true }
+        })
+
+        ;(session.user as typeof session.user & { id: string; role?: string }).role = dbUser?.role || (token.role as string) || 'USER'
       }
       return session
     }
