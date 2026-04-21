@@ -236,6 +236,7 @@
   border: 1px solid var(--border-color);
   position: relative;
   background: var(--bg-secondary);
+  z-index: 40;
 }
 
 .mapExpanded {
@@ -246,7 +247,7 @@
   position: absolute;
   top: 12px;
   right: 12px;
-  z-index: 1000;
+  z-index: 45;
   display: flex;
   gap: 8px;
 }

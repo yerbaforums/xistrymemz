@@ -204,7 +204,7 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
         <div>
           <h1>My Requests</h1>
           <p className={styles.subtitle}>
-            {isAdmin ? 'All requests (Admin)' : 'Create and manage your requests'}
+            {isAdmin ? 'All requests' : 'Create and manage your requests'}
           </p>
         </div>
         <div className={styles.headerActions}>
