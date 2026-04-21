@@ -114,6 +114,17 @@
   background: var(--bg-tertiary);
 }
 
+.navLink.disabled {
+  color: var(--text-muted);
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+.navLink.disabled:hover {
+  background: transparent;
+}
+
 /* Right Section */
 .rightSection {
   display: flex;

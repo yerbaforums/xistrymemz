@@ -45,6 +45,9 @@ export default async function AdminLayout({
           <Link href="/admin/users" className={styles.navLink}>
             👤 Users
           </Link>
+          <Link href="/admin/settings" className={styles.navLink}>
+            ⚙️ Settings
+          </Link>
         </nav>
         <main className={styles.main}>
           {children}

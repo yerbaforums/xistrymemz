@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation'
 import { useState, useEffect, useCallback } from 'react'
 import styles from './Header.module.css'
 import CartButton from './CartButton'
+import { useSiteSettings } from '@/hooks/useSiteSettings'
 
 export default function Header() {
   const { data: session, status } = useSession()
@@ -27,6 +28,7 @@ export default function Header() {
   const [searching, setSearching] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
 
+  const { settings } = useSiteSettings()
   const isAuthenticated = status === 'authenticated'
   const isAuthPage = pathname?.startsWith('/auth')
 
@@ -139,7 +141,11 @@ export default function Header() {
                 <div className={styles.navDropdown}>
                   <Link href="/messages" className={styles.navLink} onClick={() => setMenuOpen(false)}>💬 Messages</Link>
                   <Link href="/orders" className={styles.navLink} onClick={() => setMenuOpen(false)}>📦 Orders</Link>
-                  <Link href="/wallet" className={styles.navLink} onClick={() => setMenuOpen(false)}>💳 Wallet</Link>
+                  {settings.enableWallet ? (
+                    <Link href="/wallet" className={styles.navLink} onClick={() => setMenuOpen(false)}>💳 Wallet</Link>
+                  ) : (
+                    <span className={`${styles.navLink} ${styles.disabled}`} title="Coming Soon">💳 Wallet</span>
+                  )}
                   <Link href="/courier/setup" className={styles.navLink} onClick={() => setMenuOpen(false)}>🚚 Courier</Link>
                 </div>
               </div>
@@ -205,7 +211,11 @@ export default function Header() {
                 <Link href="/plans" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🚀 My Projects</Link>
                 <Link href="/requests" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📝 My Requests</Link>
                 <Link href="/dashboard/events" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📅 My Events</Link>
-                <Link href="/wallet" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>💳 Wallet</Link>
+                {settings.enableWallet ? (
+                  <Link href="/wallet" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>💳 Wallet</Link>
+                ) : (
+                  <span className={`${styles.mobileLink} ${styles.disabled}`}>💳 Wallet (Coming Soon)</span>
+                )}
                 <Link href="/messages" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>💬 Messages</Link>
                 <Link href="/profile" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>👤 Profile</Link>
                 <Link href="/profile/settings" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>⚙️ Settings</Link>
@@ -220,6 +230,7 @@ export default function Header() {
                   <Link href="/admin/messages" className={`${styles.mobileLink} ${styles.adminLink}`} onClick={() => setMenuOpen(false)}>💬 Messages</Link>
                   <Link href="/admin/invite-codes" className={`${styles.mobileLink} ${styles.adminLink}`} onClick={() => setMenuOpen(false)}>🎟️ Invite Codes</Link>
                   <Link href="/admin/users" className={`${styles.mobileLink} ${styles.adminLink}`} onClick={() => setMenuOpen(false)}>👤 Users</Link>
+                  <Link href="/admin/settings" className={`${styles.mobileLink} ${styles.adminLink}`} onClick={() => setMenuOpen(false)}>⚙️ Settings</Link>
                 </div>
               )}
 
@@ -355,7 +366,11 @@ export default function Header() {
                     <Link href="/profile" className={styles.userLink}>My Profile</Link>
                     <Link href="/profile/settings" className={styles.userLink}>Settings</Link>
                     <Link href="/dashboard/overview" className={styles.userLink}>Dashboard</Link>
-                    <Link href="/wallet" className={styles.userLink}>Wallet</Link>
+                    {settings.enableWallet ? (
+                      <Link href="/wallet" className={styles.userLink}>Wallet</Link>
+                    ) : (
+                      <span className={`${styles.userLink} ${styles.disabled}`}>Wallet (Coming Soon)</span>
+                    )}
                     <Link href="/orders" className={styles.userLink}>Orders</Link>
                     <Link href="/messages" className={styles.userLink}>Messages</Link>
                     {isAdmin && (
@@ -367,6 +382,7 @@ export default function Header() {
                         <Link href="/admin/messages" className={`${styles.userLink} ${styles.adminLink}`}>💬 Messages</Link>
                         <Link href="/admin/invite-codes" className={`${styles.userLink} ${styles.adminLink}`}>🎟️ Invite Codes</Link>
                         <Link href="/admin/users" className={`${styles.userLink} ${styles.adminLink}`}>👤 Users</Link>
+                        <Link href="/admin/settings" className={`${styles.userLink} ${styles.adminLink}`}>⚙️ Settings</Link>
                       </>
                     )}
                   </div>

@@ -16,6 +16,16 @@
   border-color: var(--accent-primary);
 }
 
+.cartBtn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cartBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .dropdown {
   position: absolute;
   top: 100%;
@@ -112,4 +122,11 @@
 
 .checkoutBtn:hover {
   opacity: 0.9;
+}
+
+.checkoutBtn.disabled {
+  background: var(--text-muted);
+  cursor: not-allowed;
+  text-align: center;
+  display: block;
 }

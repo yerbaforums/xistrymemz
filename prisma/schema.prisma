@@ -540,8 +540,10 @@ model PlatformSettings {
   adminPrivateKeys   String?  // Encrypted JSON of private keys (legacy)
   remoteNodeUrl      String?
   remoteNodeApiKey   String?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  enableCheckout   Boolean  @default(true)
+  enableWallet    Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model AdminWallet {

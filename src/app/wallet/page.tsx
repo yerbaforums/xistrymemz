@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
-import { getCryptoIcon, getCryptoName } from '@/lib/crypto-icons'
+import { getCryptoIcon, getCryptoName, CRYPTO_ICONS } from '@/lib/crypto-icons'
 import { useTariWallet } from '@/context/TariWalletContext'
 
 interface UserWallet {
@@ -31,6 +31,8 @@ export default function WalletPage() {
     { value: 'DERO', label: 'Dero (DERO)', network: 'Dero', icon: '/crypto-logos/dero.png', color: '#2F3854' },
     { value: 'ZANO', label: 'Zano (ZANO)', network: 'Zano', icon: '/crypto-logos/zano.png', color: '#4A90D9' },
   ])
+
+console.log('CRYPTO_ICONS from wallet:', CRYPTO_ICONS)
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [copied, setCopied] = useState(false)

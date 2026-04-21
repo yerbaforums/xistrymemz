@@ -6,7 +6,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import styles from './page.module.css'
 import { CartItem } from '@/context/CartContext'
-import { getCryptoInfo } from '@/lib/crypto-icons'
+import Image from 'next/image'
+import { getCryptoInfo, CRYPTO_ICONS } from '@/lib/crypto-icons'
 
 interface Product {
   id: string
@@ -26,16 +27,19 @@ interface Product {
 }
 
 const CRYPTO_OPTIONS = [
-  getCryptoInfo('XMR')!,
-  getCryptoInfo('XTM')!,
-  getCryptoInfo('ARRR')!,
-  getCryptoInfo('DERO')!,
-  getCryptoInfo('ZANO')!,
-  getCryptoInfo('USDT')!,
-  getCryptoInfo('USDC')!,
-  getCryptoInfo('ETH')!,
-  getCryptoInfo('BTC')!
-].filter(Boolean)
+  getCryptoInfo('XMR'),
+  getCryptoInfo('XTM'),
+  getCryptoInfo('ARRR'),
+  getCryptoInfo('DERO'),
+  getCryptoInfo('ZANO'),
+  getCryptoInfo('USDT'),
+  getCryptoInfo('USDC'),
+  getCryptoInfo('ETH'),
+  getCryptoInfo('BTC')
+].filter(c => c !== undefined && c !== null)
+
+console.log('CRYPTO_ICONS:', CRYPTO_ICONS)
+console.log('CRYPTO_OPTIONS:', CRYPTO_OPTIONS)
 
 const PAYMENT_FEE = 0.02
 const DIRECT_FEE = 0.05
@@ -48,6 +52,8 @@ function CheckoutContent() {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [directProduct, setDirectProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
+
+  console.log('>>> CheckoutContent rendering, CRYPTO_OPTIONS:', CRYPTO_OPTIONS)
   const [processing, setProcessing] = useState(false)
   const [selectedCrypto, setSelectedCrypto] = useState(CRYPTO_OPTIONS[0] || CRYPTO_OPTIONS[1])
   const [paymentMethod, setPaymentMethod] = useState<'escrow' | 'direct'>('escrow')
@@ -379,16 +385,32 @@ function CheckoutContent() {
               <>
                 <div className={styles.cryptoSelect}>
                   <h3>Select Cryptocurrency</h3>
-                  <div className={styles.cryptoGrid}>
+<div className={styles.cryptoGrid}>
                     {CRYPTO_OPTIONS.map(crypto => (
                       <button
-                        key={crypto.id}
-                        className={`${styles.cryptoBtn} ${selectedCrypto.id === crypto.id ? styles.selected : ''}`}
-                        onClick={() => setSelectedCrypto(crypto)}
-                      >
-                        <span className={styles.cryptoName}>{crypto.symbol}</span>
-                      </button>
-                    ))}
+                          key={crypto.id}
+                          className={`${styles.cryptoBtn} ${selectedCrypto.id === crypto.id ? styles.selected : ''}`}
+                          onClick={() => setSelectedCrypto(crypto)}
+                        >
+                          {crypto.icon ? (
+                            <img 
+                              src={crypto.icon} 
+                              alt={crypto.symbol}
+                              className={styles.cryptoIcon}
+                              onError={(e) => {
+                                console.log('Icon failed for', crypto.symbol, '- showing fallback');
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
+                              onLoad={(e) => console.log('Icon loaded for', crypto.symbol)}
+                            />
+                          ) : (
+                            <span className={styles.cryptoIcon} style={{display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: '50%', background: crypto.color, color: '#fff', fontWeight: 700, fontSize: 12}}>
+                              {crypto.symbol.slice(0, 3)}
+                            </span>
+                          )}
+                          <span className={styles.cryptoName}>{crypto.symbol}</span>
+                        </button>
+                      ))}
                   </div>
                 </div>
 

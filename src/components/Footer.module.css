@@ -81,6 +81,13 @@
   color: var(--accent-primary);
 }
 
+.linksColumn .disabled {
+  color: var(--text-muted);
+  opacity: 0.5;
+  filter: grayscale(1);
+  font-size: 0.85rem;
+}
+
 .bottomSection {
   display: flex;
   justify-content: space-between;

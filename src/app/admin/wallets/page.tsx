@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
-import { getCryptoIcon } from '@/lib/crypto-icons'
+import { getCryptoIcon, CRYPTO_ICONS } from '@/lib/crypto-icons'
 
 function Breadcrumbs() {
   return (

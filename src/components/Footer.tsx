@@ -4,9 +4,11 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useSession } from 'next-auth/react'
 import styles from './Footer.module.css'
+import { useSiteSettings } from '@/hooks/useSiteSettings'
 
 export default function Footer() {
   const { status } = useSession()
+  const { settings } = useSiteSettings()
   const isAuthenticated = status === 'authenticated'
 
   return (
@@ -59,7 +61,11 @@ export default function Footer() {
               <Link href="/dashboard/overview">Dashboard</Link>
               <Link href="/plans">My Projects</Link>
               <Link href="/requests">My Requests</Link>
-              <Link href="/wallet">Wallet</Link>
+              {settings.enableWallet ? (
+                <Link href="/wallet">Wallet</Link>
+              ) : (
+                <span className={styles.disabled}>Wallet (Coming Soon)</span>
+              )}
               <Link href="/profile">Profile</Link>
             </div>
           ) : (

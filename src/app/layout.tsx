@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { TariWalletProvider } from "@/context/TariWalletContext";
+import { SiteSettingsProvider } from "@/hooks/useSiteSettings";
 import AppShell from "@/components/AppShell";
 import Footer from "@/components/Footer";
 
@@ -35,12 +36,14 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <Providers>
-          <TariWalletProvider>
-            <AppShell>
-              {children}
-            </AppShell>
-            <Footer />
-          </TariWalletProvider>
+          <SiteSettingsProvider>
+            <TariWalletProvider>
+              <AppShell>
+                {children}
+              </AppShell>
+              <Footer />
+            </TariWalletProvider>
+          </SiteSettingsProvider>
         </Providers>
       </body>
     </html>
