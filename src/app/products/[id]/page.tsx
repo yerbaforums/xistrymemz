@@ -148,24 +148,24 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: requestTitle,
-          description: requestDesc || `Request for product: ${product.title}`,
+          title: requestTitle || `Wanted: ${product.title}`,
+          description: requestDesc || `Looking for: ${product.title}`,
           productId: product.id,
-          isPublic: false
+          isPublic: true
         })
       })
 
       if (res.ok) {
-        alert('Request sent to seller!')
+        alert('Request posted!')
         setShowRequestModal(false)
         setRequestTitle('')
         setRequestDesc('')
       } else {
         const error = await res.json()
-        alert(error.error || 'Failed to send request')
+        alert(error.error || 'Failed to post request')
       }
     } catch (error) {
-      console.error('Failed to send request:', error)
+      console.error('Failed to post request:', error)
     } finally {
       setRequestLoading(false)
     }
@@ -672,7 +672,7 @@ alert(`Escrow created! Transaction ID: ${data.id}. Please send crypto payment to
       {showRequestModal && product && (
         <div className="modal-overlay" onClick={() => setShowRequestModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <h2>📝 Make a Request</h2>
+            <h2>📝 Post Public Request</h2>
             <p className={styles.planModalDesc}>
               Request this product or service from the seller. Your request will be sent to their dashboard.
             </p>

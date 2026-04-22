@@ -272,25 +272,25 @@ export default function ProductsPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: requestTitle,
-          description: requestDesc || `Request for product: ${requestProduct.title}`,
+          title: requestTitle || `Wanted: ${requestProduct.title}`,
+          description: requestDesc || `Looking for: ${requestProduct.title}`,
           productId: requestProduct.id,
-          isPublic: false
+          isPublic: true
         })
       })
 
       if (res.ok) {
-        alert('Request sent to seller!')
+        alert('Request posted!')
         setShowRequestModal(false)
         setRequestProduct(null)
         setRequestTitle('')
         setRequestDesc('')
       } else {
         const error = await res.json()
-        alert(error.error || 'Failed to send request')
+        alert(error.error || 'Failed to post request')
       }
     } catch (error) {
-      console.error('Failed to send request:', error)
+      console.error('Failed to post request:', error)
     } finally {
       setRequestLoading(false)
     }
@@ -838,7 +838,7 @@ export default function ProductsPage() {
       {showRequestModal && requestProduct && (
         <div className="modal-overlay" onClick={() => { setShowRequestModal(false); setRequestProduct(null) }}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <h2>📝 Make a Request</h2>
+            <h2>📝 Post Public Request</h2>
             <p className="text-secondary mb-4">
               Request <strong>{requestProduct.title}</strong> from the seller.
             </p>
