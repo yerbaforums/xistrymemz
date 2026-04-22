@@ -43,7 +43,7 @@ interface RequestsClientProps {
 }
 
 export default function RequestsClient({ initialRequests, userId, userRole = 'USER' }: RequestsClientProps) {
-  const settings = useSiteSettings()
+  const { settings } = useSiteSettings()
   const [requests, setRequests] = useState(initialRequests)
   const [filter, setFilter] = useState('ALL')
   const [showCreate, setShowCreate] = useState(false)
@@ -445,7 +445,7 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
                       </button>
                     ) : null}
 
-                    {settings.settings.enableCheckout ? (
+                    {settings.enableCheckout ? (
                       <div className={styles.actionButtons}>
                         <button onClick={() => setContributeRequest(req)} className={styles.contributeBtn}>
                           Contribute
