@@ -446,3 +446,13 @@
   font-size: 1rem;
   border-radius: var(--radius-md);
 }
+
+.contactBtn {
+  width: 100%;
+  background: var(--accent-secondary);
+  color: var(--bg-primary);
+  padding: 14px;
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: var(--radius-md);
+}

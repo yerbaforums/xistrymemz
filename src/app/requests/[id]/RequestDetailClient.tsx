@@ -114,6 +114,8 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
   const [purchaseMessage, setPurchaseMessage] = useState('')
   const [completeMessage, setCompleteMessage] = useState('')
   const [rollbackReason, setRollbackReason] = useState('')
+  const [showContactModal, setShowContactModal] = useState(false)
+  const [contactMessage, setContactMessage] = useState('')
   const [editForm, setEditForm] = useState({
     title: initialRequest.title,
     description: initialRequest.description || '',
@@ -127,8 +129,9 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
   const isOwnRequest = request.user.id === userId
   const canPurchase = request.product && request.status === 'PENDING' && !isOwnRequest
   const canPurchaseSelf = request.product && request.status === 'PENDING' && isOwnRequest
-  const canComplete = request.status === 'PENDING' && (isOwnRequest || !isOwnRequest)
-  const canMarkPurchased = request.status === 'PENDING' && isOwnRequest
+  const canMarkPurchased = request.status === 'PENDING' && isOwnRequest && (request.goalAmount || 0) > 0
+  const canHelpComplete = request.status === 'PENDING' && !isOwnRequest && !request.product
+  const canContact = !isOwnRequest
   const canEdit = isOwnRequest && request.status === 'PENDING'
   const canRollback = (isOwnRequest || isPlanOwner || userRole === 'ADMIN') && request.status !== 'PENDING'
   const canViewHistory = (isPlanOwner || isOwnRequest) && request.statusHistory && request.statusHistory.length > 0
@@ -263,6 +266,30 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
       }
     } catch (error) {
       console.error('Failed to rollback:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleContactMessage = async () => {
+    if (!contactMessage.trim()) return
+    setLoading(true)
+    try {
+      const res = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          receiverId: request.user.id,
+          content: contactMessage
+        })
+      })
+      if (res.ok) {
+        setShowContactModal(false)
+        setContactMessage('')
+        alert('Message sent!')
+      }
+    } catch (error) {
+      console.error('Failed to send message:', error)
     } finally {
       setLoading(false)
     }
@@ -528,7 +555,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               </div>
             )}
 
-            {canComplete && !request.product && (
+            {canHelpComplete && (
               <div className={styles.actions}>
                 <button 
                   onClick={() => setShowCompleteModal(true)} 
@@ -548,6 +575,18 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                   disabled={loading}
                 >
                   ✅ Mark as Purchased
+                </button>
+              </div>
+            )}
+
+            {canContact && (
+              <div className={styles.actions}>
+                <button 
+                  onClick={() => setShowContactModal(true)} 
+                  className={styles.contactBtn}
+                  disabled={loading}
+                >
+                  💬 Contact Requestor
                 </button>
               </div>
             )}
@@ -757,10 +796,47 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               </div>
             )}
           </div>
-        </div>
-      )}
+</div>
+        )}
 
-      {showEditModal && (
+        {showContactModal && (
+          <div className="modal-overlay" onClick={() => setShowContactModal(false)}>
+            <div className="modal" onClick={e => e.stopPropagation()}>
+              <h2>💬 Contact Requestor</h2>
+              <p className={styles.modalText}>
+                Send a message to {request.user.name || request.user.email} about this request.
+              </p>
+              <div className="form-group">
+                <label>Message</label>
+                <textarea
+                  value={contactMessage}
+                  onChange={e => setContactMessage(e.target.value)}
+                  placeholder="Write your message..."
+                  rows={3}
+                />
+              </div>
+              <div className={styles.modalActions}>
+                <button 
+                  type="button" 
+                  onClick={() => setShowContactModal(false)}
+                  className="btn-ghost"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="button" 
+                  onClick={handleContactMessage}
+                  className="btn-primary"
+                  disabled={loading || !contactMessage.trim()}
+                >
+                  {loading ? 'Sending...' : 'Send Message'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showEditModal && (
         <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
           <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
             <h2>✏️ Edit Request</h2>
