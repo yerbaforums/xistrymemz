@@ -593,9 +593,13 @@ alert(`Escrow created! Transaction ID: ${data.id}. Please send crypto payment to
               {session?.user && !isOwner && (
                 <button 
                   className={styles.addToPlanBtn}
-                  onClick={() => setShowRequestModal(true)}
+                  onClick={() => {
+                    setRequestTitle(`Wanted: ${product.title}`)
+                    setRequestDesc(`Looking for: ${product.title}`)
+                    setShowRequestModal(true)
+                  }}
                 >
-                  📝 Make Request
+                  📝 Post Request
                 </button>
               )}
               {settings.enableCheckout && product.requestPrice && !isOwner && session?.user && (

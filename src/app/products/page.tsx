@@ -617,6 +617,8 @@ export default function ProductsPage() {
                           className={styles.addBtn}
                           onClick={(e) => {
                             e.stopPropagation()
+                            setRequestTitle(`Wanted: ${product.title}`)
+                            setRequestDesc(`Looking for: ${product.title}`)
                             setRequestProduct(product)
                             setShowRequestModal(true)
                           }}
