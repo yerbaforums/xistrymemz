@@ -56,6 +56,8 @@ export default async function RequestsPage() {
     category: req.category,
     priority: req.priority,
     budget: req.budget,
+    goalAmount: req.goalAmount,
+    currentFunding: req.currentFunding,
     deadline: req.deadline?.toISOString() || null,
     location: req.location,
     likes: req.likes,

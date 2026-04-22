@@ -228,13 +228,15 @@ model PlanJoiner {
 }
 
 model Request {
-  id          String    @id @default(cuid())
-  title       String
-  description String?
-  status      String    @default("PENDING")
-  category    String    @default("GENERAL")
+  id           String    @id @default(cuid())
+  title        String
+  description  String?
+  status       String    @default("PENDING")
+  category     String    @default("GENERAL")
   priority    String    @default("MEDIUM")
   budget      Float?
+  goalAmount  Float?    @default(0)
+  currentFunding Float? @default(0)
   deadline    DateTime?
   location    String?
   latitude    Float?

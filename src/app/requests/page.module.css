@@ -169,6 +169,54 @@
   border: 1px solid var(--border-color);
 }
 
+.fundingProgress {
+  margin: 16px 0;
+  padding: 16px;
+  background: rgba(0, 217, 255, 0.05);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(0, 217, 255, 0.2);
+}
+
+.fundingHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.875rem;
+}
+
+.fundingHeader span:first-child {
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+
+.progressBar {
+  height: 8px;
+  background: var(--bg-primary);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-success));
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.contributeBtn {
+  width: 100%;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  padding: 10px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+}
+
+.contributeBtn:hover {
+  box-shadow: 0 0 20px rgba(0, 217,255,0.4);
+}
+
 @media (max-width: 768px) {
   .list {
     grid-template-columns: 1fr;

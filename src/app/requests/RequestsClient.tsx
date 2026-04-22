@@ -12,6 +12,8 @@ interface Request {
   category: string
   priority: string
   budget: number | null
+  goalAmount: number | null
+  currentFunding: number | null
   deadline: string | null
   location: string | null
   likes: number
@@ -44,9 +46,10 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
   const [newRequest, setNewRequest] = useState({
     title: '',
     description: '',
-    category: 'GENERAL',
+    category: 'FUNDING',
     priority: 'MEDIUM',
     budget: '',
+    goalAmount: '',
     location: '',
     isPublic: true
   })
@@ -68,14 +71,15 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...newRequest,
-          budget: newRequest.budget ? parseFloat(newRequest.budget) : null
+          budget: newRequest.budget ? parseFloat(newRequest.budget) : null,
+          goalAmount: newRequest.goalAmount ? parseFloat(newRequest.goalAmount) : null
         })
       })
       if (res.ok) {
         const created = await res.json()
         setRequests([{ ...created, user: { id: userId, name: null, email: '', image: null } }, ...requests])
         setShowCreate(false)
-        setNewRequest({ title: '', description: '', category: 'GENERAL', priority: 'MEDIUM', budget: '', location: '', isPublic: true })
+        setNewRequest({ title: '', description: '', category: 'FUNDING', priority: 'MEDIUM', budget: '', goalAmount: '', location: '', isPublic: true })
       }
     } catch (error) {
       console.error('Failed to create:', error)
@@ -167,6 +171,7 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
               onChange={e => setNewRequest({ ...newRequest, category: e.target.value })}
               className={styles.select}
             >
+              <option value="FUNDING">Community Funding</option>
               <option value="GENERAL">General</option>
               <option value="HELP">Help Needed</option>
               <option value="COLLABORATION">Collaboration</option>
@@ -191,9 +196,9 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
           <div className={styles.formRow}>
             <input
               type="number"
-              placeholder="Budget (optional)"
-              value={newRequest.budget}
-              onChange={e => setNewRequest({ ...newRequest, budget: e.target.value })}
+              placeholder="Goal Amount ($)"
+              value={newRequest.goalAmount}
+              onChange={e => setNewRequest({ ...newRequest, goalAmount: e.target.value })}
               className={styles.input}
             />
             <input
@@ -273,6 +278,22 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
                 </Link>
                 
                 {req.description && <p className={styles.cardDesc}>{req.description}</p>}
+                
+                {(req.goalAmount || 0) > 0 && (
+                  <div className={styles.fundingProgress}>
+                    <div className={styles.fundingHeader}>
+                      <span>💝 ${req.currentFunding || 0} raised</span>
+                      <span>of ${req.goalAmount} goal</span>
+                    </div>
+                    <div className={styles.progressBar}>
+                      <div 
+                        className={styles.progressFill} 
+                        style={{ width: `${Math.min(((req.currentFunding || 0) / (req.goalAmount || 1)) * 100, 100)}%` }}
+                      />
+                    </div>
+                    <button className={styles.contributeBtn}>Contribute</button>
+                  </div>
+                )}
                 
                 <div className={styles.cardMeta}>
                   <span>👤 {req.user.name || req.user.email}</span>

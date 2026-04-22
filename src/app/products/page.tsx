@@ -66,6 +66,7 @@ export default function ProductsPage() {
   const [requestProduct, setRequestProduct] = useState<Product | null>(null)
   const [requestTitle, setRequestTitle] = useState('')
   const [requestDesc, setRequestDesc] = useState('')
+  const [requestGoal, setRequestGoal] = useState('')
   const [requestLoading, setRequestLoading] = useState(false)
   const [mapExpanded, setMapExpanded] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
@@ -275,16 +276,18 @@ export default function ProductsPage() {
           title: requestTitle || `Wanted: ${requestProduct.title}`,
           description: requestDesc || `Looking for: ${requestProduct.title}`,
           productId: requestProduct.id,
+          goalAmount: requestGoal ? parseFloat(requestGoal) : (requestProduct.price || 0),
           isPublic: true
         })
       })
 
       if (res.ok) {
-        alert('Request posted!')
+        alert('Request posted! Request is now live for community funding.')
         setShowRequestModal(false)
         setRequestProduct(null)
         setRequestTitle('')
         setRequestDesc('')
+        setRequestGoal('')
       } else {
         const error = await res.json()
         alert(error.error || 'Failed to post request')
@@ -619,11 +622,12 @@ export default function ProductsPage() {
                             e.stopPropagation()
                             setRequestTitle(`Wanted: ${product.title}`)
                             setRequestDesc(`Looking for: ${product.title}`)
+                            setRequestGoal(product.price?.toString() || '')
                             setRequestProduct(product)
                             setShowRequestModal(true)
                           }}
                         >
-                          📝 Request
+                          💝 Fund
                         </button>
                       )}
                       {product.price && (
@@ -840,9 +844,9 @@ export default function ProductsPage() {
       {showRequestModal && requestProduct && (
         <div className="modal-overlay" onClick={() => { setShowRequestModal(false); setRequestProduct(null) }}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <h2>📝 Post Public Request</h2>
+            <h2>💝 Request Community Funding</h2>
             <p className="text-secondary mb-4">
-              Request <strong>{requestProduct.title}</strong> from the seller.
+              Ask the community to help fund <strong>{requestProduct.title}</strong>!
             </p>
             <div className="form-group">
               <label htmlFor="request-title">Request Title</label>
@@ -865,6 +869,18 @@ export default function ProductsPage() {
                 rows={4}
               />
             </div>
+            <div className="form-group">
+              <label htmlFor="request-goal">Funding Goal ($)</label>
+              <input
+                id="request-goal"
+                type="number"
+                value={requestGoal}
+                onChange={e => setRequestGoal(e.target.value)}
+                placeholder={requestProduct.price ? `$${requestProduct.price}` : "0"}
+                min="1"
+                step="0.01"
+              />
+            </div>
             <div className={styles.modalActions}>
               <button 
                 type="button" 
@@ -879,7 +895,7 @@ export default function ProductsPage() {
                 disabled={!requestTitle.trim() || requestLoading}
                 onClick={handleMakeRequest}
               >
-                {requestLoading ? 'Sending...' : 'Send Request'}
+                {requestLoading ? 'Creating...' : 'Start Funding Request'}
               </button>
             </div>
           </div>

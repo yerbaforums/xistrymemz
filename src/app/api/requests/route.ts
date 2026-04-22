@@ -68,7 +68,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json()
-  const { title, description, planId, productId, groupId, schoolContentId, eventId, category, priority, budget, location, isPublic } = body
+  const { title, description, planId, productId, groupId, schoolContentId, eventId, category, priority, budget, goalAmount, currentFunding, location, isPublic } = body
 
   if (!title) {
     return NextResponse.json({ error: 'Title is required' }, { status: 400 })
@@ -93,7 +93,7 @@ export async function POST(request: Request) {
     }
   }
 
-  if (productId) {
+  if (productId && !isPublic) {
     const product = await prisma.product.findFirst({
       where: { id: productId, acceptsRequests: true }
     })
@@ -139,9 +139,11 @@ export async function POST(request: Request) {
       schoolContentId: schoolContentId || null,
       eventId: eventId || null,
       userId: session.user.id,
-      category: category || 'GENERAL',
+      category: category || 'FUNDING',
       priority: priority || 'MEDIUM',
       budget: budget || null,
+      goalAmount: goalAmount || null,
+      currentFunding: currentFunding || 0,
       location: location || null,
       isPublic: isPublic || false,
       status: 'PENDING'

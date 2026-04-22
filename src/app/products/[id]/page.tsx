@@ -77,6 +77,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [showRequestModal, setShowRequestModal] = useState(false)
   const [requestTitle, setRequestTitle] = useState('')
   const [requestDesc, setRequestDesc] = useState('')
+  const [requestGoal, setRequestGoal] = useState('')
   const [requestLoading, setRequestLoading] = useState(false)
   const [showEscrowModal, setShowEscrowModal] = useState(false)
   const [escrowLoading, setEscrowLoading] = useState(false)
@@ -151,15 +152,17 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           title: requestTitle || `Wanted: ${product.title}`,
           description: requestDesc || `Looking for: ${product.title}`,
           productId: product.id,
+          goalAmount: requestGoal ? parseFloat(requestGoal) : (product.price || 0),
           isPublic: true
         })
       })
 
       if (res.ok) {
-        alert('Request posted!')
+        alert('Request posted! Request is now live for community funding.')
         setShowRequestModal(false)
         setRequestTitle('')
         setRequestDesc('')
+        setRequestGoal('')
       } else {
         const error = await res.json()
         alert(error.error || 'Failed to post request')
@@ -600,10 +603,11 @@ alert(`Escrow created! Transaction ID: ${data.id}. Please send crypto payment to
                 onClick={() => {
                   setRequestTitle(`Wanted: ${product.title}`)
                   setRequestDesc(`Looking for: ${product.title}`)
+                  setRequestGoal(product.price?.toString() || '')
                   setShowRequestModal(true)
                 }}
               >
-                📝 Post Request
+                📝 Request Funding
               </button>
             )}
           </div>
@@ -659,9 +663,9 @@ alert(`Escrow created! Transaction ID: ${data.id}. Please send crypto payment to
       {showRequestModal && product && (
         <div className="modal-overlay" onClick={() => setShowRequestModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <h2>📝 Post Public Request</h2>
+            <h2>💝 Request Community Funding</h2>
             <p className={styles.planModalDesc}>
-              Request this product or service from the seller. Your request will be sent to their dashboard.
+              Ask the community to help fund this purchase. Share your request to get funded!
             </p>
             <div className="form-group">
               <label htmlFor="request-title">Request Title</label>
@@ -684,6 +688,18 @@ alert(`Escrow created! Transaction ID: ${data.id}. Please send crypto payment to
                 rows={4}
               />
             </div>
+            <div className="form-group">
+              <label htmlFor="request-goal">Funding Goal ($)</label>
+              <input
+                id="request-goal"
+                type="number"
+                value={requestGoal}
+                onChange={e => setRequestGoal(e.target.value)}
+                placeholder={product.price ? `$${product.price}` : "0"}
+                min="1"
+                step="0.01"
+              />
+            </div>
             <div className={styles.modalActions}>
               <button 
                 type="button" 
@@ -698,7 +714,7 @@ alert(`Escrow created! Transaction ID: ${data.id}. Please send crypto payment to
                 disabled={!requestTitle.trim() || requestLoading}
                 onClick={handleMakeRequest}
               >
-                {requestLoading ? 'Sending...' : 'Send Request'}
+                {requestLoading ? 'Creating...' : 'Start Funding Request'}
               </button>
             </div>
           </div>
