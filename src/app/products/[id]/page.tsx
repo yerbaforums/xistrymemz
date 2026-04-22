@@ -574,7 +574,7 @@ alert(`Escrow created! Transaction ID: ${data.id}. Please send crypto payment to
               >
                 Add to Cart
               </button>
-              {!isOwner && session?.user && (
+              {session?.user && !isOwner && (
                 <button 
                   className={styles.escrowBtn}
                   onClick={openEscrowModal}
@@ -590,40 +590,23 @@ alert(`Escrow created! Transaction ID: ${data.id}. Please send crypto payment to
                   Add to Plan
                 </button>
               )}
-              {session?.user && !isOwner && (
-                <button 
-                  className={styles.addToPlanBtn}
-                  onClick={() => {
-                    setRequestTitle(`Wanted: ${product.title}`)
-                    setRequestDesc(`Looking for: ${product.title}`)
-                    setShowRequestModal(true)
-                  }}
-                >
-                  📝 Post Request
-                </button>
-              )}
-              {settings.enableCheckout && product.requestPrice && !isOwner && session?.user && (
-                <div className={styles.fundingSection}>
-                  <div className={styles.fundingProgress}>
-                    <p className={styles.fundingLabel}>🎯 Fund this request</p>
-                    <p className={styles.fundingAmount}>${currentFunding} raised of ${product.requestPrice} goal</p>
-                    <div className={styles.progressBar}>
-                      <div 
-                        className={styles.progressFill} 
-                        style={{ width: `${Math.min((currentFunding / product.requestPrice) * 100, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                  <button 
-                    className={styles.fundBtn}
-                    onClick={() => setShowFundingModal(true)}
-                  >
-                    💝 Contribute
-                  </button>
-                </div>
-              )}
             </div>
           )}
+
+          <div className={styles.priceCard}>
+            {session?.user && (
+              <button 
+                className={styles.addToPlanBtn}
+                onClick={() => {
+                  setRequestTitle(`Wanted: ${product.title}`)
+                  setRequestDesc(`Looking for: ${product.title}`)
+                  setShowRequestModal(true)
+                }}
+              >
+                📝 Post Request
+              </button>
+            )}
+          </div>
 
           <div className={styles.metaCard}>
             <p>Listed {new Date(product.createdAt).toLocaleDateString()}</p>
