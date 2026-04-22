@@ -598,7 +598,7 @@ alert(`Escrow created! Transaction ID: ${data.id}. Please send crypto payment to
                   📝 Make Request
                 </button>
               )}
-              {product.acceptsRequests && product.requestPrice && !isOwner && session?.user && (
+              {settings.enableCheckout && product.requestPrice && !isOwner && session?.user && (
                 <div className={styles.fundingSection}>
                   <div className={styles.fundingProgress}>
                     <p className={styles.fundingLabel}>🎯 Fund this request</p>

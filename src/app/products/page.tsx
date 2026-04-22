@@ -89,8 +89,6 @@ export default function ProductsPage() {
     imageUrl: '',
     paymentMethods: [] as string[],
     paymentType: 'BOTH',
-    acceptsRequests: false,
-    requestPrice: '',
     sellerPayoutAddress: '',
     sellerCryptoCurrency: 'ETH'
   })
@@ -250,8 +248,6 @@ export default function ProductsPage() {
           imageUrl: '',
           paymentMethods: [],
           paymentType: 'BOTH',
-          acceptsRequests: false,
-          requestPrice: '',
           sellerPayoutAddress: '',
           sellerCryptoCurrency: 'ETH'
         })
@@ -579,19 +575,6 @@ export default function ProductsPage() {
                         >
                           🛒
                         </button>
-                        {session?.user && (
-                          <button 
-                            className={styles.quickActionBtn}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setRequestProduct(product)
-                              setShowRequestModal(true)
-                            }}
-                            title="Make Request"
-                          >
-                            📝
-                          </button>
-                        )}
                       </div>
                     </div>
                   )}
@@ -629,6 +612,18 @@ export default function ProductsPage() {
                       <Link href={`/products/${product.id}`} className={styles.viewBtn}>
                         View
                       </Link>
+                      {session?.user && (
+                        <button 
+                          className={styles.addBtn}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setRequestProduct(product)
+                            setShowRequestModal(true)
+                          }}
+                        >
+                          📝 Request
+                        </button>
+                      )}
                       {product.price && (
                         <button 
                           className={styles.addBtn}
@@ -823,28 +818,6 @@ export default function ProductsPage() {
                   </div>
                 </div>
               )}
-              <div className="form-group">
-                <label className={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    checked={newProduct.acceptsRequests}
-                    onChange={e => setNewProduct({...newProduct, acceptsRequests: e.target.checked})}
-                  />
-                  Allow this item to be requested via Projects
-                </label>
-                {newProduct.acceptsRequests && (
-                  <div className="form-group" style={{ marginTop: '8px' }}>
-                    <label>Request Price (optional)</label>
-                    <input
-                      type="number"
-                      value={newProduct.requestPrice}
-                      onChange={e => setNewProduct({...newProduct, requestPrice: e.target.value})}
-                      placeholder="Price when requested via projects"
-                      step="0.01"
-                    />
-                  </div>
-                )}
-              </div>
               <div className={styles.modalActions}>
                 <button 
                   type="button" 
