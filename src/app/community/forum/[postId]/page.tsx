@@ -54,6 +54,100 @@ export default function ForumThreadPage() {
   const [tipCrypto, setTipCrypto] = useState('USDT')
   const [cryptoBalances, setCryptoBalances] = useState<{symbol: string, name: string, available: number, icon: string, color: string}[]>([])
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set())
+  const [editingPost, setEditingPost] = useState(false)
+  const [editPostTitle, setEditPostTitle] = useState('')
+  const [editPostContent, setEditPostContent] = useState('')
+  const [editingReply, setEditingReply] = useState<string | null>(null)
+  const [editReplyContent, setEditReplyContent] = useState('')
+  const [deleting, setDeleting] = useState(false)
+
+  const userId = session?.user?.id
+  const isAuthor = post && userId && post.author.id === userId
+
+  const handleEditPost = () => {
+    if (!post) return
+    setEditPostTitle(post.title)
+    setEditPostContent(post.content)
+    setEditingPost(true)
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editPostTitle.trim() || !editPostContent.trim()) return
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/forum/post/${postId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: editPostTitle, content: editPostContent })
+      })
+      if (res.ok) {
+        const updated = await res.json()
+        setPost({ ...post, ...updated })
+        setEditingPost(false)
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleDeletePost = async () => {
+    if (!confirm('Are you sure you want to delete this post? This cannot be undone.')) return
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/forum/post/${postId}`, { method: 'DELETE' })
+      if (res.ok) {
+        window.location.href = '/community/forum'
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  const handleEditReply = (reply: Reply) => {
+    setEditingReply(reply.id)
+    setEditReplyContent(reply.content)
+  }
+
+  const handleSaveReplyEdit = async (replyId: string) => {
+    if (!editReplyContent.trim()) return
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/forum/reply/${replyId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: editReplyContent })
+      })
+      if (res.ok) {
+        const updated = await res.json()
+        setReplies(replies.map(r => r.id === replyId ? { ...r, content: updated.content } : r))
+        setEditingReply(null)
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleDeleteReply = async (replyId: string) => {
+    if (!confirm('Delete this reply?')) return
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/forum/reply/${replyId}`, { method: 'DELETE' })
+      if (res.ok) {
+        setReplies(replies.filter(r => r.id !== replyId))
+        if (post) setPost({ ...post, replyCount: post.replyCount - 1 })
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   useEffect(() => {
     fetchPost()
@@ -206,7 +300,30 @@ export default function ForumThreadPage() {
         </div>
 
         <div className={styles.threadContent}>
-          {post.content}
+          {editingPost ? (
+            <div className={styles.editForm}>
+              <input
+                type="text"
+                value={editPostTitle}
+                onChange={e => setEditPostTitle(e.target.value)}
+                className={styles.editTitle}
+              />
+              <textarea
+                value={editPostContent}
+                onChange={e => setEditPostContent(e.target.value)}
+                rows={8}
+                className={styles.editContent}
+              />
+              <div className={styles.editActions}>
+                <button onClick={() => setEditingPost(false)} className="btn-ghost">Cancel</button>
+                <button onClick={handleSaveEdit} className="btn-primary" disabled={submitting}>
+                  {submitting ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            post.content
+          )}
         </div>
 
         <div className={styles.threadActions}>
@@ -233,6 +350,16 @@ export default function ForumThreadPage() {
           >
             💰 Tip
           </button>
+          {isAuthor && !editingPost && (
+            <>
+              <button onClick={handleEditPost} className={styles.actionBtn}>
+                ✏️ Edit
+              </button>
+              <button onClick={handleDeletePost} className={styles.actionBtn} disabled={deleting}>
+                🗑️ Delete
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -267,7 +394,24 @@ export default function ForumThreadPage() {
                 </div>
                 
                 <div className={styles.replyContent}>
-                  {reply.content}
+                  {editingReply === reply.id ? (
+                    <div className={styles.editForm}>
+                      <textarea
+                        value={editReplyContent}
+                        onChange={e => setEditReplyContent(e.target.value)}
+                        rows={4}
+                        className={styles.editContent}
+                      />
+                      <div className={styles.editActions}>
+                        <button onClick={() => setEditingReply(null)} className="btn-ghost">Cancel</button>
+                        <button onClick={() => handleSaveReplyEdit(reply.id)} className="btn-primary" disabled={submitting}>
+                          {submitting ? 'Saving...' : 'Save'}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    reply.content
+                  )}
                 </div>
                 
                 <div className={styles.replyActions}>
@@ -280,6 +424,16 @@ export default function ForumThreadPage() {
                   >
                     💰 Tip
                   </button>
+                  {userId && reply.author.id === userId && (
+                    <>
+                      <button onClick={() => handleEditReply(reply)} className={styles.actionBtn}>
+                        ✏️ Edit
+                      </button>
+                      <button onClick={() => handleDeleteReply(reply.id)} className={styles.actionBtn}>
+                        🗑️
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}

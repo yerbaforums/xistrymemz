@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(
@@ -30,4 +32,97 @@ export async function GET(
     console.error('Error fetching post:', error)
     return NextResponse.json({ error: 'Failed to fetch post' }, { status: 500 })
   }
+}
+
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ postId: string }> }
+) {
+  const session = await getServerSession(authOptions)
+  
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const { postId } = await params
+  const body = await request.json()
+  const { title, content, categoryId } = body
+
+  const existingPost = await prisma.forumPost.findUnique({
+    where: { id: postId }
+  })
+
+  if (!existingPost) {
+    return NextResponse.json({ error: 'Post not found' }, { status: 404 })
+  }
+
+  // Check if user is author or admin
+  const isAuthor = existingPost.userId === session.user.id
+  const userRole = (session.user as { role?: string }).role
+  const isAdmin = userRole === 'ADMIN'
+
+  if (!isAuthor && !isAdmin) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  const updated = await prisma.forumPost.update({
+    where: { id: postId },
+    data: {
+      ...(title && { title }),
+      ...(content !== undefined && { content }),
+      ...(categoryId && { categoryId })
+    }
+  })
+
+  return NextResponse.json(updated)
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ postId: string }> }
+) {
+  const session = await getServerSession(authOptions)
+  
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const { postId } = await params
+
+  const existingPost = await prisma.forumPost.findUnique({
+    where: { id: postId },
+    include: {
+      replies: { select: { id: true } }
+    }
+  })
+
+  if (!existingPost) {
+    return NextResponse.json({ error: 'Post not found' }, { status: 404 })
+  }
+
+  // Check if user is author or admin
+  const isAuthor = existingPost.userId === session.user.id
+  const userRole = (session.user as { role?: string }).role
+  const isAdmin = userRole === 'ADMIN'
+
+  if (!isAuthor && !isAdmin) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  // Delete associated replies first
+  await prisma.forumReply.deleteMany({
+    where: { postId }
+  })
+
+  // Delete tips
+  await prisma.forumPostTip.deleteMany({
+    where: { postId }
+  })
+
+  // Delete post
+  await prisma.forumPost.delete({
+    where: { id: postId }
+  })
+
+  return NextResponse.json({ success: true })
 }
