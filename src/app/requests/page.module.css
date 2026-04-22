@@ -217,6 +217,32 @@
   box-shadow: 0 0 20px rgba(0, 217,255,0.4);
 }
 
+.actionButtons {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.actionButtons button {
+  flex: 1;
+  padding: 10px;
+  font-size: 0.875rem;
+}
+
+.contactBtn {
+  width: 100%;
+  background: var(--accent-secondary);
+  color: var(--bg-primary);
+  padding: 10px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  margin-top: 8px;
+}
+
+.contactBtn:hover {
+  box-shadow: 0 0 20px rgba(255, 51, 102, 0.4);
+}
+
 .editGoalBtn {
   width: 100%;
   background: transparent;

@@ -67,6 +67,9 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
   const [contributeAmount, setContributeAmount] = useState('')
   const [contributing, setContributing] = useState(false)
   const [copiedPayout, setCopiedPayout] = useState(false)
+  const [contactRequest, setContactRequest] = useState<Request | null>(null)
+  const [messageContent, setMessageContent] = useState('')
+  const [sendingMessage, setSendingMessage] = useState(false)
 
   const filteredRequests = filter === 'ALL' 
     ? requests 
@@ -150,6 +153,33 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
       console.error('Failed to contribute:', error)
     } finally {
       setContributing(false)
+    }
+  }
+
+  const handleSendMessage = async () => {
+    if (!contactRequest || !messageContent.trim()) return
+    setSendingMessage(true)
+    try {
+      const res = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          receiverId: contactRequest.user.id,
+          content: messageContent
+        })
+      })
+      if (res.ok) {
+        alert('Message sent!')
+        setContactRequest(null)
+        setMessageContent('')
+      } else {
+        const error = await res.json()
+        alert(error.error || 'Failed to send message')
+      }
+    } catch (error) {
+      console.error('Failed to send message:', error)
+    } finally {
+      setSendingMessage(false)
     }
   }
 
@@ -416,9 +446,16 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
                     ) : null}
 
                     {settings.settings.enableCheckout ? (
-                      <button onClick={() => setContributeRequest(req)} className={styles.contributeBtn}>
-                        Contribute
-                      </button>
+                      <div className={styles.actionButtons}>
+                        <button onClick={() => setContributeRequest(req)} className={styles.contributeBtn}>
+                          Contribute
+                        </button>
+                        {!isOwner && (
+                          <button onClick={() => setContactRequest(req)} className={styles.contactBtn}>
+                            Contact Requestor
+                          </button>
+                        )}
+                      </div>
                     ) : req.payoutAddress ? (
                       <div className={styles.payoutCard}>
                         <p className={styles.payoutCrypto}>Crypto: {req.payoutCurrency || 'ETH'}</p>
@@ -491,9 +528,39 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
                 {contributing ? 'Processing...' : 'Contribute'}
               </button>
             </div>
+</div>
           </div>
-        </div>
-      )}
+        )}
+
+        {contactRequest && (
+          <div className="modal-overlay" onClick={() => setContactRequest(null)}>
+            <div className="modal" onClick={e => e.stopPropagation()}>
+              <h2>💬 Contact Requestor</h2>
+              <p className={styles.planModalDesc}>
+                Send a message about: <strong>{contactRequest.title}</strong>
+              </p>
+              <div className="form-group">
+                <label>Message</label>
+                <textarea
+                  value={messageContent}
+                  onChange={e => setMessageContent(e.target.value)}
+                  placeholder="Write your message..."
+                  rows={4}
+                />
+              </div>
+              <div className={styles.modalActions}>
+                <button onClick={() => setContactRequest(null)} className="btn-ghost">Cancel</button>
+                <button 
+                  onClick={handleSendMessage} 
+                  disabled={sendingMessage || !messageContent.trim()}
+                  className="btn-primary"
+                >
+                  {sendingMessage ? 'Sending...' : 'Send Message'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   )
 }
