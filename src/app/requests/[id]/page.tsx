@@ -12,6 +12,7 @@ export default async function RequestDetailPage({
   params: Promise<{ id: string }> 
 }) {
   const session = await getServerSession(authOptions)
+  const userRole = (session?.user as { role?: string })?.role || 'USER'
   const { id } = await params
   
   const request = await prisma.request.findFirst({
@@ -121,5 +122,5 @@ export default async function RequestDetailPage({
     })),
   }
 
-  return <RequestDetailClient request={serializedRequest} userId={session?.user?.id || ''} />
+  return <RequestDetailClient request={serializedRequest} userId={session?.user?.id || ''} userRole={userRole} />
 }

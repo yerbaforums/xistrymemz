@@ -99,9 +99,10 @@ interface Request {
 interface RequestDetailClientProps {
   request: Request
   userId: string
+  userRole?: string
 }
 
-export default function RequestDetailClient({ request: initialRequest, userId }: RequestDetailClientProps) {
+export default function RequestDetailClient({ request: initialRequest, userId, userRole = 'USER' }: RequestDetailClientProps) {
   const [request, setRequest] = useState(initialRequest)
   const [comment, setComment] = useState('')
   const [loading, setLoading] = useState(false)
@@ -129,7 +130,7 @@ export default function RequestDetailClient({ request: initialRequest, userId }:
   const canComplete = request.status === 'PENDING' && (isOwnRequest || !isOwnRequest)
   const canMarkPurchased = request.status === 'PENDING' && isOwnRequest
   const canEdit = isOwnRequest && request.status === 'PENDING'
-  const canRollback = isPlanOwner && request.status !== 'PENDING'
+  const canRollback = (isOwnRequest || isPlanOwner || userRole === 'ADMIN') && request.status !== 'PENDING'
   const canViewHistory = (isPlanOwner || isOwnRequest) && request.statusHistory && request.statusHistory.length > 0
   const canApprove = request.plan && request.status === 'PENDING'
   const category = CATEGORIES.find(c => c.value === request.category) || CATEGORIES[0]
