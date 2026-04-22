@@ -70,6 +70,10 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
   const [contactRequest, setContactRequest] = useState<Request | null>(null)
   const [messageContent, setMessageContent] = useState('')
   const [sendingMessage, setSendingMessage] = useState(false)
+  const [editPayoutId, setEditPayoutId] = useState<string | null>(null)
+  const [editPayoutAddress, setEditPayoutAddress] = useState('')
+  const [editPayoutCurrency, setEditPayoutCurrency] = useState('ETH')
+  const [savingPayout, setSavingPayout] = useState(false)
 
   const filteredRequests = filter === 'ALL' 
     ? requests 
@@ -180,6 +184,34 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
       console.error('Failed to send message:', error)
     } finally {
       setSendingMessage(false)
+    }
+  }
+
+  const handleSavePayout = async (id: string) => {
+    setSavingPayout(true)
+    try {
+      const res = await fetch(`/api/requests/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          payoutAddress: editPayoutAddress || null,
+          payoutCurrency: editPayoutCurrency
+        })
+      })
+      if (res.ok) {
+        setRequests(requests.map(r => r.id === id ? { 
+          ...r, 
+          payoutAddress: editPayoutAddress || null,
+          payoutCurrency: editPayoutCurrency
+        } : r))
+        setEditPayoutId(null)
+        setEditPayoutAddress('')
+        setEditPayoutCurrency('ETH')
+      }
+    } catch (error) {
+      console.error('Failed to save payout:', error)
+    } finally {
+      setSavingPayout(false)
     }
   }
 
@@ -445,17 +477,56 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
                       </button>
                     ) : null}
 
-                    {settings.enableCheckout ? (
-                      <div className={styles.actionButtons}>
-                        <button onClick={() => setContributeRequest(req)} className={styles.contributeBtn}>
-                          Contribute
-                        </button>
-                        {!isOwner && (
-                          <button onClick={() => setContactRequest(req)} className={styles.contactBtn}>
-                            Contact Requestor
+                    {isOwner && (req.goalAmount || 0) > 0 && (
+                      <button onClick={() => { setEditPayoutId(req.id); setEditPayoutAddress(req.payoutAddress || ''); setEditPayoutCurrency(req.payoutCurrency || 'ETH') }} className={styles.editGoalBtn}>
+                        Edit Payout
+                      </button>
+                    )}
+
+                    {!isOwner && (
+                      <button onClick={() => setContactRequest(req)} className={styles.contactBtn}>
+                        Contact Requestor
+                      </button>
+                    )}
+
+                    {editPayoutId === req.id ? (
+                      <div className={styles.editControls}>
+                        <select
+                          value={editPayoutCurrency}
+                          onChange={e => setEditPayoutCurrency(e.target.value)}
+                          className={styles.select}
+                        >
+                          <option value="BTC">BTC</option>
+                          <option value="ETH">ETH</option>
+                          <option value="USDT">USDT</option>
+                          <option value="USDC">USDC</option>
+                          <option value="XMR">XMR</option>
+                          <option value="XTM">XTM</option>
+                          <option value="ARRR">ARRR</option>
+                          <option value="DERO">DERO</option>
+                          <option value="ZANO">ZANO</option>
+                          <option value="OTHER">OTHER</option>
+                        </select>
+                        <input
+                          type="text"
+                          value={editPayoutAddress}
+                          onChange={e => setEditPayoutAddress(e.target.value)}
+                          className={styles.input}
+                          placeholder="Payout address"
+                        />
+                        <div className={styles.editActions}>
+                          <button onClick={() => handleSavePayout(req.id)} disabled={savingPayout} className="btn-primary">
+                            {savingPayout ? 'Saving...' : 'Save'}
                           </button>
-                        )}
+                          <button onClick={() => { setEditPayoutId(null); setEditPayoutAddress('') }} className="btn-ghost">
+                            Cancel
+                          </button>
+                        </div>
                       </div>
+                    ) : settings.enableCheckout ? (
+                      <button onClick={() => setContributeRequest(req)} className={styles.contributeBtn}>
+                        Contribute
+                      </button>
                     ) : req.payoutAddress ? (
                       <div className={styles.payoutCard}>
                         <p className={styles.payoutCrypto}>Crypto: {req.payoutCurrency || 'ETH'}</p>

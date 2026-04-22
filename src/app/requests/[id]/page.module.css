@@ -399,3 +399,50 @@
     grid-template-columns: 1fr;
   }
 }
+
+.fundingProgress {
+  margin-top: 8px;
+}
+
+.fundingBar {
+  height: 10px;
+  background: var(--bg-primary);
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.fundingFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-success));
+  border-radius: 5px;
+}
+
+.fundingText {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.payoutInfo {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.payoutInfo code {
+  font-size: 0.75rem;
+  background: var(--bg-primary);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  word-break: break-all;
+}
+
+.primaryBtn {
+  width: 100%;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  padding: 14px;
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: var(--radius-md);
+}

@@ -65,6 +65,10 @@ interface Request {
   category: string
   priority: string
   budget: number | null
+  goalAmount: number | null
+  currentFunding: number | null
+  payoutAddress: string | null
+  payoutCurrency: string | null
   deadline: string | null
   location: string | null
   likes: number
@@ -122,7 +126,8 @@ export default function RequestDetailClient({ request: initialRequest, userId }:
   const isOwnRequest = request.user.id === userId
   const canPurchase = request.product && request.status === 'PENDING' && !isOwnRequest
   const canPurchaseSelf = request.product && request.status === 'PENDING' && isOwnRequest
-  const canComplete = request.status === 'PENDING' && !isOwnRequest
+  const canComplete = request.status === 'PENDING' && (isOwnRequest || !isOwnRequest)
+  const canMarkPurchased = request.status === 'PENDING' && isOwnRequest
   const canEdit = isOwnRequest && request.status === 'PENDING'
   const canRollback = isPlanOwner && request.status !== 'PENDING'
   const canViewHistory = (isPlanOwner || isOwnRequest) && request.statusHistory && request.statusHistory.length > 0
@@ -424,6 +429,31 @@ export default function RequestDetailClient({ request: initialRequest, userId }:
                   <span className={styles.metaValue}>${request.budget.toFixed(2)}</span>
                 </div>
               )}
+              {(request.goalAmount || 0) > 0 && (
+                <div className={styles.metaItem}>
+                  <span className={styles.metaLabel}>Funding</span>
+                  <div className={styles.fundingProgress}>
+                    <div className={styles.fundingBar}>
+                      <div 
+                        className={styles.fundingFill} 
+                        style={{ width: `${Math.min(((request.currentFunding || 0) / (request.goalAmount || 1)) * 100, 100)}%` }}
+                      />
+                    </div>
+                    <span className={styles.fundingText}>
+                      ${request.currentFunding || 0} raised of ${request.goalAmount} goal
+                    </span>
+                  </div>
+                </div>
+              )}
+              {request.payoutAddress && (
+                <div className={styles.metaItem}>
+                  <span className={styles.metaLabel}>Payout</span>
+                  <div className={styles.payoutInfo}>
+                    <span>{request.payoutCurrency || 'ETH'}: </span>
+                    <code>{request.payoutAddress}</code>
+                  </div>
+                </div>
+              )}
               {request.deadline && (
                 <div className={styles.metaItem}>
                   <span className={styles.metaLabel}>Deadline</span>
@@ -505,6 +535,18 @@ export default function RequestDetailClient({ request: initialRequest, userId }:
                   disabled={loading}
                 >
                   🤝 Help Complete This Request
+                </button>
+              </div>
+            )}
+
+            {canMarkPurchased && (request.goalAmount || 0) > 0 && (
+              <div className={styles.actions}>
+                <button 
+                  onClick={() => setShowCompleteModal(true)} 
+                  className={styles.primaryBtn}
+                  disabled={loading}
+                >
+                  ✅ Mark as Purchased
                 </button>
               </div>
             )}

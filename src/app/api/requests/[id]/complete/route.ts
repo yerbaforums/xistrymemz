@@ -31,8 +31,12 @@ export async function POST(
     return NextResponse.json({ error: 'Request not found or already processed' }, { status: 404 })
   }
 
-  if (req.userId === session.user.id) {
-    return NextResponse.json({ error: 'Cannot complete your own request' }, { status: 400 })
+  const isOwner = req.userId === session.user.id
+  const userRole = (session.user as { role?: string }).role
+  const isAdmin = userRole === 'ADMIN'
+
+  if (!isOwner && !isAdmin) {
+    return NextResponse.json({ error: 'Only request owner can mark as purchased' }, { status: 403 })
   }
 
   const updatedRequest = await prisma.request.update({
