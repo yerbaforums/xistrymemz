@@ -230,38 +230,50 @@ model PlanJoiner {
 model Request {
   id           String    @id @default(cuid())
   title        String
-  description  String?
-  status       String    @default("PENDING")
-  category     String    @default("GENERAL")
+  description String?
+  status      String    @default("PENDING")
+  category    String    @default("GENERAL")
   priority    String    @default("MEDIUM")
   budget      Float?
   goalAmount  Float?    @default(0)
   currentFunding Float? @default(0)
+  payoutAddress    String?
+  payoutCurrency  String? @default("ETH")
   deadline    DateTime?
   location    String?
-  latitude    Float?
-  longitude   Float?
-  planId      String?
-  plan        Plan?     @relation(fields: [planId], references: [id], onDelete: Cascade)
-  productId   String?
-  product     Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
-  groupId     String?
-  group       Group?    @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  latitude   Float?
+  longitude  Float?
+  planId     String?
+  plan       Plan?     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  productId  String?
+  product    Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+  groupId    String?
+  group      Group?    @relation(fields: [groupId], references: [id], onDelete: SetNull)
   schoolContentId String?
   schoolContent   SchoolContent? @relation(fields: [schoolContentId], references: [id], onDelete: SetNull)
-  eventId     String?
-  event       GroupEvent? @relation(fields: [eventId], references: [id], onDelete: SetNull)
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  completedBy String?
-  completedAt DateTime?
-  comments    Comment[]
-  statusHistory RequestStatusHistory[]
-  likes       Int       @default(0)
-  reposts     Int       @default(0)
-  isPublic    Boolean   @default(false)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  eventId    String?
+  event      GroupEvent? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  completedBy   String?
+  completedAt   DateTime?
+  comments       Comment[]
+  statusHistory   RequestStatusHistory[]
+  contributions  Contribution[]
+  likes      Int       @default(0)
+  reposts    Int       @default(0)
+  isPublic   Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Contribution {
+  id         String   @id @default(cuid())
+  amount    Float
+  requestId String
+  request   Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  userId    String
+  createdAt DateTime  @default(now())
 }
 
 model Comment {

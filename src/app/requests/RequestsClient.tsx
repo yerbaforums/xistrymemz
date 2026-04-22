@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
+import { useSiteSettings } from '@/hooks/useSiteSettings'
 
 interface Request {
   id: string
@@ -14,6 +15,8 @@ interface Request {
   budget: number | null
   goalAmount: number | null
   currentFunding: number | null
+  payoutAddress: string | null
+  payoutCurrency: string | null
   deadline: string | null
   location: string | null
   likes: number
@@ -40,6 +43,7 @@ interface RequestsClientProps {
 }
 
 export default function RequestsClient({ initialRequests, userId, userRole = 'USER' }: RequestsClientProps) {
+  const settings = useSiteSettings()
   const [requests, setRequests] = useState(initialRequests)
   const [filter, setFilter] = useState('ALL')
   const [showCreate, setShowCreate] = useState(false)
@@ -50,10 +54,19 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
     priority: 'MEDIUM',
     budget: '',
     goalAmount: '',
+    payoutAddress: '',
+    payoutCurrency: 'ETH',
     location: '',
     isPublic: true
   })
   const [creating, setCreating] = useState(false)
+  const [editingGoalId, setEditingGoalId] = useState<string | null>(null)
+  const [editGoalAmount, setEditGoalAmount] = useState('')
+  const [savingGoal, setSavingGoal] = useState(false)
+  const [contributeRequest, setContributeRequest] = useState<Request | null>(null)
+  const [contributeAmount, setContributeAmount] = useState('')
+  const [contributing, setContributing] = useState(false)
+  const [copiedPayout, setCopiedPayout] = useState(false)
 
   const filteredRequests = filter === 'ALL' 
     ? requests 
@@ -72,19 +85,71 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
         body: JSON.stringify({
           ...newRequest,
           budget: newRequest.budget ? parseFloat(newRequest.budget) : null,
-          goalAmount: newRequest.goalAmount ? parseFloat(newRequest.goalAmount) : null
+          goalAmount: newRequest.goalAmount ? parseFloat(newRequest.goalAmount) : null,
+          payoutAddress: newRequest.payoutAddress || null,
+          payoutCurrency: newRequest.payoutCurrency || 'ETH'
         })
       })
       if (res.ok) {
         const created = await res.json()
         setRequests([{ ...created, user: { id: userId, name: null, email: '', image: null } }, ...requests])
         setShowCreate(false)
-        setNewRequest({ title: '', description: '', category: 'FUNDING', priority: 'MEDIUM', budget: '', goalAmount: '', location: '', isPublic: true })
+        setNewRequest({ title: '', description: '', category: 'FUNDING', priority: 'MEDIUM', budget: '', goalAmount: '', payoutAddress: '', payoutCurrency: 'ETH', location: '', isPublic: true })
       }
     } catch (error) {
       console.error('Failed to create:', error)
     } finally {
       setCreating(false)
+    }
+  }
+
+  const handleSaveGoal = async (id: string) => {
+    setSavingGoal(true)
+    try {
+      const res = await fetch(`/api/requests/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          goalAmount: editGoalAmount ? parseFloat(editGoalAmount) : 0
+        })
+      })
+      if (res.ok) {
+        setRequests(requests.map(r => r.id === id ? { ...r, goalAmount: parseFloat(editGoalAmount) || 0 } : r))
+        setEditingGoalId(null)
+        setEditGoalAmount('')
+      }
+    } catch (error) {
+      console.error('Failed to save goal:', error)
+    } finally {
+      setSavingGoal(false)
+    }
+  }
+
+  const handleContribute = async () => {
+    if (!contributeRequest || !contributeAmount) return
+    setContributing(true)
+    try {
+      const res = await fetch(`/api/requests/${contributeRequest.id}/contribute`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: parseFloat(contributeAmount)
+        })
+      })
+      if (res.ok) {
+        const updated = await res.json()
+        setRequests(requests.map(r => r.id === contributeRequest.id ? { 
+          ...r, 
+          currentFunding: (r.currentFunding || 0) + parseFloat(contributeAmount) 
+        } : r))
+        setContributeRequest(null)
+        setContributeAmount('')
+        alert('Contribution successful!')
+      }
+    } catch (error) {
+      console.error('Failed to contribute:', error)
+    } finally {
+      setContributing(false)
     }
   }
 
@@ -209,6 +274,31 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
               className={styles.input}
             />
           </div>
+          <div className={styles.formRow}>
+            <select
+              value={newRequest.payoutCurrency}
+              onChange={e => setNewRequest({ ...newRequest, payoutCurrency: e.target.value })}
+              className={styles.select}
+            >
+              <option value="BTC">BTC</option>
+              <option value="ETH">ETH</option>
+              <option value="USDT">USDT</option>
+              <option value="USDC">USDC</option>
+              <option value="XMR">XMR</option>
+              <option value="XTM">XTM</option>
+              <option value="ARRR">ARRR</option>
+              <option value="DERO">DERO</option>
+              <option value="ZANO">ZANO</option>
+              <option value="OTHER">OTHER</option>
+            </select>
+            <input
+              type="text"
+              placeholder="Payout address (or leave blank for profile default)"
+              value={newRequest.payoutAddress}
+              onChange={e => setNewRequest({ ...newRequest, payoutAddress: e.target.value })}
+              className={styles.input}
+            />
+          </div>
           <label className={styles.checkbox}>
             <input
               type="checkbox"
@@ -291,7 +381,63 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
                         style={{ width: `${Math.min(((req.currentFunding || 0) / (req.goalAmount || 1)) * 100, 100)}%` }}
                       />
                     </div>
-                    <button className={styles.contributeBtn}>Contribute</button>
+                    
+                    {editingGoalId === req.id ? (
+                      <div className={styles.editControls}>
+                        <input
+                          type="range"
+                          min="0"
+                          max="10000"
+                          step="100"
+                          value={editGoalAmount || req.goalAmount || 0}
+                          onChange={e => setEditGoalAmount(e.target.value)}
+                          className={styles.slider}
+                        />
+                        <input
+                          type="number"
+                          value={editGoalAmount || req.goalAmount || 0}
+                          onChange={e => setEditGoalAmount(e.target.value)}
+                          className={styles.input}
+                          placeholder="Goal amount"
+                        />
+                        <div className={styles.editActions}>
+                          <button onClick={() => handleSaveGoal(req.id)} disabled={savingGoal} className="btn-primary">
+                            {savingGoal ? 'Saving...' : 'Save'}
+                          </button>
+                          <button onClick={() => { setEditingGoalId(null); setEditGoalAmount('') }} className="btn-ghost">
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : isOwner ? (
+                      <button onClick={() => { setEditingGoalId(req.id); setEditGoalAmount(req.goalAmount?.toString() || '') }} className={styles.editGoalBtn}>
+                        Edit Goal
+                      </button>
+                    ) : null}
+
+                    {settings.settings.enableCheckout ? (
+                      <button onClick={() => setContributeRequest(req)} className={styles.contributeBtn}>
+                        Contribute
+                      </button>
+                    ) : req.payoutAddress ? (
+                      <div className={styles.payoutCard}>
+                        <p className={styles.payoutCrypto}>Crypto: {req.payoutCurrency || 'ETH'}</p>
+                        <div className={styles.payoutAddress}>
+                          <code>{req.payoutAddress}</code>
+                          <button 
+                            onClick={() => {
+                              navigator.clipboard.writeText(req.payoutAddress || '')
+                              setCopiedPayout(true)
+                              setTimeout(() => setCopiedPayout(false), 2000)
+                            }}
+                            className={styles.copyPayoutBtn}
+                          >
+                            {copiedPayout ? '✓ Copied' : 'Copy'}
+                          </button>
+                        </div>
+                        <p className={styles.payoutHint}>Send {req.payoutCurrency || 'ETH'} to contribute</p>
+                      </div>
+                    ) : null}
                   </div>
                 )}
                 
@@ -304,6 +450,48 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
               </div>
             )
           })}
+        </div>
+      )}
+
+      {contributeRequest && (
+        <div className="modal-overlay" onClick={() => setContributeRequest(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2>💝 Contribute to Request</h2>
+            <p className={styles.planModalDesc}>
+              Help fund <strong>{contributeRequest.title}</strong>
+            </p>
+            <div className={styles.escrowSummary}>
+              <div className={styles.escrowRow}>
+                <span>Goal:</span>
+                <strong>${contributeRequest.goalAmount}</strong>
+              </div>
+              <div className={styles.escrowRow}>
+                <span>Raised:</span>
+                <strong>${contributeRequest.currentFunding || 0}</strong>
+              </div>
+            </div>
+            <div className="form-group">
+              <label>Contribution Amount</label>
+              <input
+                type="number"
+                value={contributeAmount}
+                onChange={e => setContributeAmount(e.target.value)}
+                placeholder="Enter amount..."
+                min="1"
+                step="0.01"
+              />
+            </div>
+            <div className={styles.modalActions}>
+              <button onClick={() => setContributeRequest(null)} className="btn-ghost">Cancel</button>
+              <button 
+                onClick={handleContribute} 
+                disabled={contributing || !contributeAmount || parseFloat(contributeAmount) <= 0}
+                className="btn-primary"
+              >
+                {contributing ? 'Processing...' : 'Contribute'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

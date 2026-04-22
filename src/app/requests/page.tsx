@@ -58,6 +58,8 @@ export default async function RequestsPage() {
     budget: req.budget,
     goalAmount: req.goalAmount,
     currentFunding: req.currentFunding,
+    payoutAddress: req.payoutAddress,
+    payoutCurrency: req.payoutCurrency,
     deadline: req.deadline?.toISOString() || null,
     location: req.location,
     likes: req.likes,

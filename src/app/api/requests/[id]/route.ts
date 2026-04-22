@@ -144,3 +144,39 @@ export async function DELETE(
 
   return NextResponse.json({ success: true })
 }
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await getServerSession(authOptions)
+  
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const { id } = await params
+  const body = await request.json()
+
+  const existingRequest = await prisma.request.findFirst({
+    where: {
+      id,
+      userId: session.user.id
+    }
+  })
+
+  if (!existingRequest) {
+    return NextResponse.json({ error: 'Request not found' }, { status: 404 })
+  }
+
+  const req = await prisma.request.update({
+    where: { id },
+    data: {
+      goalAmount: body.goalAmount !== undefined ? body.goalAmount : existingRequest.goalAmount,
+      payoutAddress: body.payoutAddress !== undefined ? body.payoutAddress : existingRequest.payoutAddress,
+      payoutCurrency: body.payoutCurrency || existingRequest.payoutCurrency
+    }
+  })
+
+  return NextResponse.json(req)
+}
