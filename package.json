@@ -1,6 +1,6 @@
 {
-  "name": "xistrymemz",
-  "version": "0.3.0",
+  "name": "javalina-park",
+  "version": "0.4.0",
   "private": true,
   "scripts": {
     "dev": "next dev",

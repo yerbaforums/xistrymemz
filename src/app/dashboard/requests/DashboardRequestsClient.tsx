@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import styles from './requests.module.css'
 
 interface Request {
@@ -200,6 +201,11 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'My Requests' }
+      ]} />
+      
       <div className={styles.header}>
         <div>
           <h1>My Requests</h1>

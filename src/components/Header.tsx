@@ -103,6 +103,12 @@ export default function Header() {
 
         {/* Desktop Navigation */}
         <nav className={styles.nav}>
+          {isAuthenticated && (
+            <Link href="/dashboard/overview" className={`${styles.navToggle} ${styles.dashboardLink} ${isActive('/dashboard')}`} onClick={() => setMenuOpen(false)}>
+              📊 Dashboard
+            </Link>
+          )}
+
           <div className={styles.navItem}>
             <button className={`${styles.navToggle} ${isActive('/plans') || isActive('/requests/public')}`}>
               Discover
@@ -129,27 +135,21 @@ export default function Header() {
           </div>
 
           {isAuthenticated && (
-            <>
-              <Link href="/dashboard/overview" className={`${styles.navToggle} ${isActive('/dashboard')}`} onClick={() => setMenuOpen(false)}>
-                Dashboard
-              </Link>
-
-              <div className={styles.navItem}>
-                <button className={`${styles.navToggle} ${isActive('/messages') || isActive('/connections')}`}>
-                  More
-                </button>
-                <div className={styles.navDropdown}>
-                  <Link href="/messages" className={styles.navLink} onClick={() => setMenuOpen(false)}>💬 Messages</Link>
-                  <Link href="/orders" className={styles.navLink} onClick={() => setMenuOpen(false)}>📦 Orders</Link>
-                  {settings.enableWallet ? (
-                    <Link href="/wallet" className={styles.navLink} onClick={() => setMenuOpen(false)}>💳 Wallet</Link>
-                  ) : (
-                    <span className={`${styles.navLink} ${styles.disabled}`} title="Coming Soon">💳 Wallet</span>
-                  )}
-                  <Link href="/courier/setup" className={styles.navLink} onClick={() => setMenuOpen(false)}>🚚 Courier</Link>
-                </div>
+            <div className={styles.navItem}>
+              <button className={`${styles.navToggle} ${isActive('/messages') || isActive('/connections')}`}>
+                More
+              </button>
+              <div className={styles.navDropdown}>
+                <Link href="/messages" className={styles.navLink} onClick={() => setMenuOpen(false)}>💬 Messages</Link>
+                <Link href="/orders" className={styles.navLink} onClick={() => setMenuOpen(false)}>📦 Orders</Link>
+                {settings.enableWallet ? (
+                  <Link href="/wallet" className={styles.navLink} onClick={() => setMenuOpen(false)}>💳 Wallet</Link>
+                ) : (
+                  <span className={`${styles.navLink} ${styles.disabled}`} title="Coming Soon">💳 Wallet</span>
+                )}
+                <Link href="/courier/setup" className={styles.navLink} onClick={() => setMenuOpen(false)}>🚚 Courier</Link>
               </div>
-            </>
+            </div>
           )}
 
           {!isAuthenticated && (

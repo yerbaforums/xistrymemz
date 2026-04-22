@@ -340,3 +340,98 @@
     font-size: 1.5rem;
   }
 }
+
+.locationsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.locationItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.locationInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.locationInfo strong {
+  font-size: 0.875rem;
+}
+
+.locationInfo span {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.locationActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.primaryBadge {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  background: rgba(0, 217, 255, 0.2);
+  color: var(--accent-primary);
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.smallBtn {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.smallBtn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.smallBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.smallBtnDanger {
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  background: transparent;
+  border: none;
+  color: var(--accent-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.smallBtnDanger:hover {
+  color: var(--accent-secondary);
+  opacity: 0.8;
+}
+
+.addLocationForm {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.addLocationForm input {
+  flex: 1;
+  min-width: 120px;
+  padding: 8px 12px;
+  font-size: 0.875rem;
+}

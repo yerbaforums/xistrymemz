@@ -81,6 +81,16 @@ export async function POST(request: Request) {
     if (!plan) {
       return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
     }
+    // Check if user is owner, editor, or admin
+    const isOwner = plan.userId === session.user.id
+    const isEditor = await prisma.planEditor.findFirst({
+      where: { planId, userId: session.user.id }
+    })
+    const userRole = (session.user as { role?: string }).role
+    const isAdmin = userRole === 'ADMIN'
+    if (!isOwner && !isEditor && !isAdmin) {
+      return NextResponse.json({ error: 'You do not have permission to add requests to this plan' }, { status: 403 })
+    }
   }
 
   if (productId) {

@@ -92,6 +92,50 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<SortOption>('newest')
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
+  const [nearbyMode, setNearbyMode] = useState<'ALL' | 'NEARBY'>('ALL')
+  const [userLocation, setUserLocation] = useState<{lat: number; lng: number; radius: number} | null>(null)
+  const [loadingLocation, setLoadingLocation] = useState(false)
+
+  // Haversine formula to calculate distance
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 3959 // Earth's radius in miles
+    const dLat = (lat2 - lat1) * Math.PI / 180
+    const dLon = (lon2 - lon1) * Math.PI / 180
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon/2) * Math.sin(dLon/2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+    return R * c
+  }
+
+  // Load user location when switching to nearby mode
+  const handleNearbyToggle = async (mode: 'ALL' | 'NEARBY') => {
+    if (mode === 'NEARBY' && !userLocation) {
+      setLoadingLocation(true)
+      try {
+        // Fetch user's primary location
+        const res = await fetch('/api/users/me')
+        if (res.ok) {
+          const user = await res.json()
+          if (user.latitude && user.longitude) {
+            setUserLocation({
+              lat: user.latitude,
+              lng: user.longitude,
+              radius: user.searchRadius || 50
+            })
+          } else {
+            alert('Please set your location in your profile to use nearby filtering')
+            return
+          }
+        }
+      } catch (e) {
+        console.error(e)
+      } finally {
+        setLoadingLocation(false)
+      }
+    }
+    setNearbyMode(mode)
+  }
 
   const filteredPlans = useMemo(() => {
     let result = [...initialPlans]
@@ -102,6 +146,20 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
 
     if (category !== 'ALL') {
       result = result.filter(p => p.category === category)
+    }
+
+    // Filter by nearby distance
+    if (nearbyMode === 'NEARBY' && userLocation && userLocation.lat && userLocation.lng) {
+      result = result.filter(p => {
+        if (!p.latitude || !p.longitude) return false
+        const distance = calculateDistance(
+          userLocation.lat,
+          userLocation.lng,
+          p.latitude,
+          p.longitude
+        )
+        return distance <= userLocation.radius
+      })
     }
 
     if (showPinned !== null) {
@@ -259,6 +317,13 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
             onClick={() => setShowPinned(showPinned === true ? null : true)}
           >
             📌 Featured
+          </button>
+          <button 
+            className={`${styles.filterBtn} ${nearbyMode === 'NEARBY' ? styles.active : ''}`}
+            onClick={() => handleNearbyToggle(nearbyMode === 'NEARBY' ? 'ALL' : 'NEARBY')}
+            disabled={loadingLocation}
+          >
+            {loadingLocation ? '⏳' : '📍'} {nearbyMode === 'NEARBY' ? 'Nearby' : 'All'}
           </button>
         </div>
 

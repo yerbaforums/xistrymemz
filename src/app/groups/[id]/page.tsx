@@ -11,6 +11,26 @@ interface Member {
   user: { id: string; name: string | null; image: string | null; email: string }
 }
 
+interface ActivityItem {
+  id: string
+  title: string
+  description: string | null
+  status?: string
+  type?: string
+  category?: string | null
+  location?: string | null
+  createdAt: string
+  user: { id: string; name: string | null; image: string | null }
+  [key: string]: unknown
+}
+
+interface Activity {
+  projects: ActivityItem[]
+  requests: ActivityItem[]
+  products: ActivityItem[]
+  events: ActivityItem[]
+}
+
 interface Post {
   id: string
   content: string
@@ -41,6 +61,9 @@ function GroupDetailContent() {
   const [joining, setJoining] = useState(false)
   const [postContent, setPostContent] = useState('')
   const [posting, setPosting] = useState(false)
+  const [activeTab, setActiveTab] = useState<'posts' | 'activity'>('posts')
+  const [activity, setActivity] = useState<Activity>({ projects: [], requests: [], products: [], events: [] })
+  const [loadingActivity, setLoadingActivity] = useState(false)
 
   useEffect(() => {
     fetch('/api/auth/session')
@@ -64,6 +87,19 @@ function GroupDetailContent() {
       })
       .catch(() => setLoading(false))
   }, [params.id])
+
+  useEffect(() => {
+    if (activeTab === 'activity' && group?.isMember) {
+      setLoadingActivity(true)
+      fetch(`/api/groups/${params.id}/members-activity`)
+        .then(res => res.json())
+        .then(data => {
+          setActivity(data)
+          setLoadingActivity(false)
+        })
+        .catch(() => setLoadingActivity(false))
+    }
+  }, [activeTab, group?.isMember, params.id])
 
   const handleJoin = async () => {
     console.log('userId state:', userId)
@@ -162,6 +198,23 @@ function GroupDetailContent() {
               )}
             </div>
           )}
+
+          {group.isMember && (
+            <div className={styles.tabs}>
+              <button 
+                className={`${styles.tab} ${activeTab === 'posts' ? styles.activeTab : ''}`}
+                onClick={() => setActiveTab('posts')}
+              >
+                💬 Posts
+              </button>
+              <button 
+                className={`${styles.tab} ${activeTab === 'activity' ? styles.activeTab : ''}`}
+                onClick={() => setActiveTab('activity')}
+              >
+                🚀 Member Activity
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -183,6 +236,7 @@ function GroupDetailContent() {
             </div>
           )}
 
+          {activeTab === 'posts' && (
           <div className={styles.postsList}>
             {group.posts.length === 0 ? (
               <div className={styles.emptyPosts}>
@@ -216,9 +270,89 @@ function GroupDetailContent() {
               ))
             )}
           </div>
+          )}
         </div>
 
-        <div className={styles.sidebar}>
+        {activeTab === 'activity' && (
+          <div className={styles.activitySection}>
+            {loadingActivity ? (
+              <div className={styles.loading}>Loading activity...</div>
+            ) : (
+              <>
+                {activity.projects.length > 0 && (
+                  <div className={styles.activityGroup}>
+                    <h3>🚀 Projects</h3>
+                    <div className={styles.activityGrid}>
+                      {activity.projects.map(p => (
+                        <Link key={p.id} href={`/plans/${p.id}`} className={styles.activityCard}>
+                          <span className={styles.activityTitle}>{p.title}</span>
+                          <span className={styles.activityMeta}>{p.category} · {p.status}</span>
+                          <span className={styles.activityAuthor}>by {p.user.name}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {activity.requests.length > 0 && (
+                  <div className={styles.activityGroup}>
+                    <h3>📝 Requests</h3>
+                    <div className={styles.activityGrid}>
+                      {activity.requests.map(r => (
+                        <Link key={r.id} href={`/requests/${r.id}`} className={styles.activityCard}>
+                          <span className={styles.activityTitle}>{r.title}</span>
+                          <span className={styles.activityMeta}>{r.category} · {r.status}</span>
+                          <span className={styles.activityAuthor}>by {r.user.name}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {activity.products.length > 0 && (
+                  <div className={styles.activityGroup}>
+                    <h3>🛒 Products</h3>
+                    <div className={styles.activityGrid}>
+                      {activity.products.map(p => (
+                        <Link key={p.id} href={`/products/${p.id}`} className={styles.activityCard}>
+                          {p.imageUrl && <img src={p.imageUrl} alt="" className={styles.activityImage} />}
+                          <span className={styles.activityTitle}>{p.title}</span>
+                          <span className={styles.activityMeta}>${p.price} · {p.type}</span>
+                          <span className={styles.activityAuthor}>by {p.user.name}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {activity.events.length > 0 && (
+                  <div className={styles.activityGroup}>
+                    <h3>📅 Events</h3>
+                    <div className={styles.activityGrid}>
+                      {activity.events.map(e => (
+                        <Link key={e.id} href={`/events/${e.id}`} className={styles.activityCard}>
+                          <span className={styles.activityTitle}>{e.title}</span>
+                          <span className={styles.activityMeta}>{e.eventDate ? new Date(e.eventDate).toLocaleDateString() : ''} · {e.location}</span>
+                          <span className={styles.activityAuthor}>{e.joinerCount} attending</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {activity.projects.length === 0 && activity.requests.length === 0 && 
+                 activity.products.length === 0 && activity.events.length === 0 && (
+                  <div className={styles.emptyPosts}>
+                    <p>No member activity yet.</p>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className={styles.sidebar}>
           <div className={styles.membersCard}>
             <h3>Members ({group._count.members})</h3>
             <div className={styles.membersList}>

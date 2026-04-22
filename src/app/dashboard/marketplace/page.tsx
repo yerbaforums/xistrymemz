@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import styles from '../page.module.css'
 
 interface Product {
@@ -34,6 +35,11 @@ export default function DashboardMarketplace() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'My Marketplace' }
+      ]} />
+      
       <div className={styles.header}>
         <div>
           <h1>My Marketplace</h1>

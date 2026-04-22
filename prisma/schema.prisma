@@ -48,6 +48,11 @@ model User {
   
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  
+  // Multiple locations support
+  primaryLocationId String?
+  userLocations     UserLocation[]
+  
   plans     Plan[]
   planEditors PlanEditor[]
   requests  Request[]
@@ -95,6 +100,22 @@ model User {
   groupEventTickets GroupEventTicket[]
   badges        Badge[]
   badgesAwarded  Badge[]   @relation("BadgeAwardedBy")
+}
+
+// User-defined locations for filtering content
+model UserLocation {
+  id          String   @id @default(cuid())
+  name        String   // User-defined name: "My Hometown", "Work", "SF Apartment"
+  location    String   // Actual location: "San Francisco, CA" or coordinates
+  latitude    Float?
+  longitude   Float?
+  isPrimary   Boolean  @default(false)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model Plan {
@@ -420,6 +441,11 @@ model Group {
   description String?
   imageUrl    String?
   isPrivate   Boolean  @default(false)
+  // Location-based group support
+  location       String?   // e.g., "San Francisco Bay Area"
+  latitude       Float?
+  longitude      Float?
+  isLocationBased Boolean @default(false)
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   members     GroupMember[]
@@ -429,6 +455,8 @@ model Group {
   requests    Request[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  
+  @@index([location])
 }
 
 model GroupMember {

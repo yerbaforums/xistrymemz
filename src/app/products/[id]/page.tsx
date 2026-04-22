@@ -68,6 +68,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [plans, setPlans] = useState<Plan[]>([])
   const [selectedPlan, setSelectedPlan] = useState('')
   const [addingToPlan, setAddingToPlan] = useState(false)
+  const [showRequestModal, setShowRequestModal] = useState(false)
+  const [requestTitle, setRequestTitle] = useState('')
+  const [requestDesc, setRequestDesc] = useState('')
+  const [requestLoading, setRequestLoading] = useState(false)
   const [showEscrowModal, setShowEscrowModal] = useState(false)
   const [escrowLoading, setEscrowLoading] = useState(false)
   const [courierServices, setCourierServices] = useState<{id: string, name: string, basePrice: number}[]>([])
@@ -125,6 +129,38 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         })
     }
   }, [showPlanModal])
+
+  const handleMakeRequest = async () => {
+    if (!requestTitle.trim() || !product) return
+    setRequestLoading(true)
+
+    try {
+      const res = await fetch('/api/requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: requestTitle,
+          description: requestDesc || `Request for product: ${product.title}`,
+          productId: product.id,
+          isPublic: false
+        })
+      })
+
+      if (res.ok) {
+        alert('Request sent to seller!')
+        setShowRequestModal(false)
+        setRequestTitle('')
+        setRequestDesc('')
+      } else {
+        const error = await res.json()
+        alert(error.error || 'Failed to send request')
+      }
+    } catch (error) {
+      console.error('Failed to send request:', error)
+    } finally {
+      setRequestLoading(false)
+    }
+  }
 
   const handleAddToPlan = async () => {
     if (!selectedPlan || !product) return
@@ -497,6 +533,14 @@ alert(`Escrow created! Transaction ID: ${data.id}. Please send crypto payment to
                   Add to Plan
                 </button>
               )}
+              {session?.user && !isOwner && (
+                <button 
+                  className={styles.addToPlanBtn}
+                  onClick={() => setShowRequestModal(true)}
+                >
+                  📝 Make Request
+                </button>
+              )}
               {product.acceptsRequests && product.requestPrice && !isOwner && session?.user && (
                 <div className={styles.fundingSection}>
                   <div className={styles.fundingProgress}>
@@ -562,6 +606,55 @@ alert(`Escrow created! Transaction ID: ${data.id}. Please send crypto payment to
                 onClick={handleAddToPlan}
               >
                 {addingToPlan ? 'Adding...' : 'Add to Plan'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showRequestModal && product && (
+        <div className="modal-overlay" onClick={() => setShowRequestModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2>📝 Make a Request</h2>
+            <p className={styles.planModalDesc}>
+              Request this product or service from the seller. Your request will be sent to their dashboard.
+            </p>
+            <div className="form-group">
+              <label htmlFor="request-title">Request Title</label>
+              <input
+                id="request-title"
+                type="text"
+                value={requestTitle}
+                onChange={e => setRequestTitle(e.target.value)}
+                placeholder="What do you need?"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="request-desc">Description</label>
+              <textarea
+                id="request-desc"
+                value={requestDesc}
+                onChange={e => setRequestDesc(e.target.value)}
+                placeholder="Provide more details about your request..."
+                rows={4}
+              />
+            </div>
+            <div className={styles.modalActions}>
+              <button 
+                type="button" 
+                onClick={() => setShowRequestModal(false)}
+                className="btn-ghost"
+              >
+                Cancel
+              </button>
+              <button 
+                type="button"
+                className="btn-primary" 
+                disabled={!requestTitle.trim() || requestLoading}
+                onClick={handleMakeRequest}
+              >
+                {requestLoading ? 'Sending...' : 'Send Request'}
               </button>
             </div>
           </div>

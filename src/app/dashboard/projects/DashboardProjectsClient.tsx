@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import styles from './projects.module.css'
 
 interface Plan {
@@ -109,6 +110,11 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'My Projects' }
+      ]} />
+      
       <div className={styles.header}>
         <div>
           <h1>My Projects</h1>

@@ -74,6 +74,17 @@
   background: rgba(0, 217, 255, 0.1);
 }
 
+.dashboardLink {
+  color: var(--accent-primary);
+  font-weight: 600;
+  background: rgba(0, 217, 255, 0.1);
+}
+
+.dashboardLink:hover {
+  background: rgba(0, 217, 255, 0.2);
+  box-shadow: 0 0 12px rgba(0, 217, 255, 0.3);
+}
+
 .navDropdown {
   position: absolute;
   top: 100%;

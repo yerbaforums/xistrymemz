@@ -15,8 +15,13 @@ export default function OnboardingPage() {
   const [name, setName] = useState('')
   const [bio, setBio] = useState('')
   const [location, setLocation] = useState('')
+  const [locationName, setLocationName] = useState('')
   const [neighborhood, setNeighborhood] = useState('')
   const [searchRadius, setSearchRadius] = useState('50')
+  const [userLocations, setUserLocations] = useState<{id: string; name: string; location: string; isPrimary: boolean}[]>([])
+  const [newLocationName, setNewLocationName] = useState('')
+  const [newLocationPlace, setNewLocationPlace] = useState('')
+  const [addingLocation, setAddingLocation] = useState(false)
   const [planTitle, setPlanTitle] = useState('')
   const [planDescription, setPlanDescription] = useState('')
   const [loading, setLoading] = useState(false)
@@ -27,6 +32,58 @@ export default function OnboardingPage() {
       router.push('/auth/login')
     }
   }, [status, router])
+
+  useEffect(() => {
+    if (step === 'profile') {
+      fetch('/api/users/locations')
+        .then(res => res.json())
+        .then(data => setUserLocations(data || []))
+        .catch(() => {})
+    }
+  }, [step])
+
+  const handleAddLocation = async () => {
+    if (!newLocationName.trim() || !newLocationPlace.trim()) return
+    setAddingLocation(true)
+    try {
+      const res = await fetch('/api/users/locations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newLocationName, location: newLocationPlace })
+      })
+      if (res.ok) {
+        const newLoc = await res.json()
+        setUserLocations([...userLocations, newLoc])
+        setNewLocationName('')
+        setNewLocationPlace('')
+        if (newLoc.isPrimary) {
+          setLocation(newLoc.location)
+        }
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setAddingLocation(false)
+    }
+  }
+
+  const handleDeleteLocation = async (id: string) => {
+    await fetch(`/api/users/locations/${id}`, { method: 'DELETE' })
+    setUserLocations(userLocations.filter(l => l.id !== id))
+  }
+
+  const handleSetPrimary = async (id: string) => {
+    const res = await fetch(`/api/users/locations/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    })
+    if (res.ok) {
+      setUserLocations(userLocations.map(l => ({ ...l, isPrimary: l.id === id })))
+      const updated = userLocations.find(l => l.id === id)
+      if (updated) setLocation(updated.location)
+    }
+  }
 
   const steps: { key: OnboardingStep; label: string }[] = [
     { key: 'welcome', label: 'Welcome' },
@@ -184,23 +241,50 @@ export default function OnboardingPage() {
                 </div>
                 
                 <div className={styles.formGroup}>
-                  <label>Location</label>
-                  <input
-                    type="text"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    placeholder="City, Country"
-                  />
-                </div>
-
-                <div className={styles.formGroup}>
-                  <label>Neighborhood / Area</label>
-                  <input
-                    type="text"
-                    value={neighborhood}
-                    onChange={(e) => setNeighborhood(e.target.value)}
-                    placeholder="Your neighborhood or area"
-                  />
+                  <label>My Locations</label>
+                  {userLocations.length > 0 && (
+                    <div className={styles.locationsList}>
+                      {userLocations.map(loc => (
+                        <div key={loc.id} className={styles.locationItem}>
+                          <div className={styles.locationInfo}>
+                            <strong>{loc.name}</strong>
+                            <span>{loc.location}</span>
+                          </div>
+                          <div className={styles.locationActions}>
+                            {loc.isPrimary && <span className={styles.primaryBadge}>Primary</span>}
+                            {!loc.isPrimary && (
+                              <>
+                                <button type="button" onClick={() => handleSetPrimary(loc.id)} className={styles.smallBtn}>Set Primary</button>
+                                <button type="button" onClick={() => handleDeleteLocation(loc.id)} className={styles.smallBtnDanger}>✕</button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className={styles.addLocationForm}>
+                    <input
+                      type="text"
+                      value={newLocationName}
+                      onChange={(e) => setNewLocationName(e.target.value)}
+                      placeholder="Name (e.g., My Hometown)"
+                    />
+                    <input
+                      type="text"
+                      value={newLocationPlace}
+                      onChange={(e) => setNewLocationPlace(e.target.value)}
+                      placeholder="City, Country"
+                    />
+                    <button 
+                      type="button" 
+                      onClick={handleAddLocation}
+                      disabled={addingLocation || !newLocationName.trim() || !newLocationPlace.trim()}
+                      className={styles.smallBtn}
+                    >
+                      {addingLocation ? 'Adding...' : '+ Add'}
+                    </button>
+                  </div>
                 </div>
 
                 <div className={styles.formGroup}>

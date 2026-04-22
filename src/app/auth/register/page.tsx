@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import styles from '../login/page.module.css'
 
 export default function RegisterPage() {
@@ -98,7 +99,7 @@ export default function RegisterPage() {
     <div className={styles.authPage}>
       <div className={styles.authContainer}>
         <div className={styles.logo}>
-          <img src="/logo.png" alt="XistrYmemZ" style={{height: '40px', marginRight: '10px'}} />
+          <Image src="/logo.png" alt="XistrYmemZ" width={40} height={40} style={{marginRight: '10px'}} />
           XistrYmemZ
         </div>
 
@@ -106,7 +107,7 @@ export default function RegisterPage() {
         <p className={styles.subtitle}>Get started with XistrYmemZ</p>
 
         <form onSubmit={handleSubmit} className={styles.form}>
-          {error && <div className={styles.error}>{error}</div>}
+          {error && <div className={styles.error} role="alert">⚠️ {error}</div>}
           
           <div className={styles.formGroup}>
             <label htmlFor="name">Name</label>
@@ -139,10 +140,12 @@ export default function RegisterPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="Create a password"
               required
               minLength={6}
+              aria-describedby="password-hint"
             />
+            <span id="password-hint" className={styles.fieldHint}>Minimum 6 characters</span>
           </div>
 
           <div className={styles.formGroup}>
@@ -172,7 +175,12 @@ export default function RegisterPage() {
           </div>
 
           <button type="submit" className={styles.submitBtn} disabled={loading}>
-            {loading ? 'Creating account...' : 'Create Account'}
+            {loading ? (
+              <span className={styles.loadingContent}>
+                <span className={styles.spinner} aria-hidden="true"></span>
+                Creating account...
+              </span>
+            ) : 'Create Account'}
           </button>
         </form>
 

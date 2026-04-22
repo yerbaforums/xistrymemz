@@ -53,7 +53,7 @@ export default function LoginPage() {
         <p className={styles.subtitle}>Sign in to your account</p>
 
         <form onSubmit={handleSubmit} className={styles.form}>
-          {error && <div className={styles.error}>{error}</div>}
+          {error && <div className={styles.error} role="alert">⚠️ {error}</div>}
           
           <div className={styles.formGroup}>
             <label htmlFor="email">Email</label>
@@ -74,13 +74,21 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="Enter your password"
               required
+              minLength={6}
+              aria-describedby="password-hint"
             />
+            <span id="password-hint" className={styles.fieldHint}>Minimum 6 characters</span>
           </div>
 
           <button type="submit" className={styles.submitBtn} disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? (
+              <span className={styles.loadingContent}>
+                <span className={styles.spinner} aria-hidden="true"></span>
+                Signing in...
+              </span>
+            ) : 'Sign In'}
           </button>
         </form>
 

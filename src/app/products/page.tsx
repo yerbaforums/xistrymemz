@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
 import styles from './page.module.css'
 import { calculateDistance, geocodeLocation } from '@/lib/geocoding'
 import { useCart } from '@/context/CartContext'
@@ -46,6 +47,7 @@ interface Product {
 }
 
 export default function ProductsPage() {
+  const { data: session } = useSession()
   const [products, setProducts] = useState<Product[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [type, setType] = useState('ALL')
@@ -60,6 +62,11 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [showRequestModal, setShowRequestModal] = useState(false)
+  const [requestProduct, setRequestProduct] = useState<Product | null>(null)
+  const [requestTitle, setRequestTitle] = useState('')
+  const [requestDesc, setRequestDesc] = useState('')
+  const [requestLoading, setRequestLoading] = useState(false)
   const [mapExpanded, setMapExpanded] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [sortBy, setSortBy] = useState('newest')
@@ -253,6 +260,39 @@ export default function ProductsPage() {
       console.error('Failed to create:', error)
     } finally {
       setCreating(false)
+    }
+  }
+
+  const handleMakeRequest = async () => {
+    if (!requestTitle.trim() || !requestProduct) return
+    setRequestLoading(true)
+
+    try {
+      const res = await fetch('/api/requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: requestTitle,
+          description: requestDesc || `Request for product: ${requestProduct.title}`,
+          productId: requestProduct.id,
+          isPublic: false
+        })
+      })
+
+      if (res.ok) {
+        alert('Request sent to seller!')
+        setShowRequestModal(false)
+        setRequestProduct(null)
+        setRequestTitle('')
+        setRequestDesc('')
+      } else {
+        const error = await res.json()
+        alert(error.error || 'Failed to send request')
+      }
+    } catch (error) {
+      console.error('Failed to send request:', error)
+    } finally {
+      setRequestLoading(false)
     }
   }
 
@@ -535,6 +575,19 @@ export default function ProductsPage() {
                         >
                           🛒
                         </button>
+                        {session?.user && (
+                          <button 
+                            className={styles.quickActionBtn}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setRequestProduct(product)
+                              setShowRequestModal(true)
+                            }}
+                            title="Make Request"
+                          >
+                            📝
+                          </button>
+                        )}
                       </div>
                     </div>
                   )}
@@ -764,6 +817,55 @@ export default function ProductsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showRequestModal && requestProduct && (
+        <div className="modal-overlay" onClick={() => { setShowRequestModal(false); setRequestProduct(null) }}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2>📝 Make a Request</h2>
+            <p className="text-secondary mb-4">
+              Request <strong>{requestProduct.title}</strong> from the seller.
+            </p>
+            <div className="form-group">
+              <label htmlFor="request-title">Request Title</label>
+              <input
+                id="request-title"
+                type="text"
+                value={requestTitle}
+                onChange={e => setRequestTitle(e.target.value)}
+                placeholder="What do you need?"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="request-desc">Description</label>
+              <textarea
+                id="request-desc"
+                value={requestDesc}
+                onChange={e => setRequestDesc(e.target.value)}
+                placeholder="Provide more details about your request..."
+                rows={4}
+              />
+            </div>
+            <div className={styles.modalActions}>
+              <button 
+                type="button" 
+                onClick={() => { setShowRequestModal(false); setRequestProduct(null) }}
+                className="btn-ghost"
+              >
+                Cancel
+              </button>
+              <button 
+                type="button"
+                className="btn-primary" 
+                disabled={!requestTitle.trim() || requestLoading}
+                onClick={handleMakeRequest}
+              >
+                {requestLoading ? 'Sending...' : 'Send Request'}
+              </button>
+            </div>
           </div>
         </div>
       )}

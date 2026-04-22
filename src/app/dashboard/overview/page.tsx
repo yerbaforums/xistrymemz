@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import styles from '../page.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -126,6 +127,11 @@ const [
 
   return (
     <div className={styles.overview}>
+      <Breadcrumbs items={[
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Overview' }
+      ]} />
+      
       <div className={styles.welcomeHeader}>
         <h2>Welcome back, {session.user.name?.split(' ')[0] || 'User'}!</h2>
         <p>Here&apos;s what&apos;s happening with your activity</p>
