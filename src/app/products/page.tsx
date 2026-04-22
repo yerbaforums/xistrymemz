@@ -90,7 +90,9 @@ export default function ProductsPage() {
     paymentMethods: [] as string[],
     paymentType: 'BOTH',
     acceptsRequests: false,
-    requestPrice: ''
+    requestPrice: '',
+    sellerPayoutAddress: '',
+    sellerCryptoCurrency: 'ETH'
   })
   const [creating, setCreating] = useState(false)
   const { addItem } = useCart()
@@ -249,7 +251,9 @@ export default function ProductsPage() {
           paymentMethods: [],
           paymentType: 'BOTH',
           acceptsRequests: false,
-          requestPrice: ''
+          requestPrice: '',
+          sellerPayoutAddress: '',
+          sellerCryptoCurrency: 'ETH'
         })
         fetchProducts()
       } else {
@@ -782,6 +786,43 @@ export default function ProductsPage() {
                   {newProduct.paymentType === 'BOTH' && 'Buyers can choose their preferred payment method'}
                 </small>
               </div>
+              {(newProduct.paymentType === 'DIRECT' || newProduct.paymentType === 'BOTH') && (
+                <div className="form-group">
+                  <label>Payout Settings</label>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+                    Set your crypto address for direct payments. Displayed to buyers when checkout is disabled.
+                  </p>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Crypto</label>
+                      <select
+                        value={newProduct.sellerCryptoCurrency}
+                        onChange={e => setNewProduct({...newProduct, sellerCryptoCurrency: e.target.value})}
+                      >
+                        <option value="ETH">ETH (Ethereum)</option>
+                        <option value="BTC">BTC (Bitcoin)</option>
+                        <option value="USDT">USDT (Tether)</option>
+                        <option value="USDC">USDC (USD Coin)</option>
+                        <option value="XMR">XMR (Monero)</option>
+                        <option value="XTM">XTM (Tari)</option>
+                        <option value="ARRR">ARRR (Pirate)</option>
+                        <option value="DERO">DERO (Dero)</option>
+                        <option value="ZANO">ZANO (Zano)</option>
+                        <option value="OTHER">OTHER</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>Payout Address</label>
+                      <input
+                        type="text"
+                        value={newProduct.sellerPayoutAddress}
+                        onChange={e => setNewProduct({...newProduct, sellerPayoutAddress: e.target.value})}
+                        placeholder="Your crypto wallet address"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
               <div className="form-group">
                 <label className={styles.checkboxLabel}>
                   <input

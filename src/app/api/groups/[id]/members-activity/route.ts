@@ -99,7 +99,7 @@ export async function GET(
   const events = await prisma.groupEvent.findMany({
     where: {
       OR: [
-        { userId: { in: memberIds } },
+        { organizerId: { in: memberIds } },
         { groupId: id }
       ]
     },
@@ -112,8 +112,8 @@ export async function GET(
       latitude: true,
       longitude: true,
       maxJoiners: true,
-      joiners: { select: { userId: true } },
-      user: { select: { id: true, name: true, image: true } }
+      eventJoiners: { select: { userId: true } },
+      organizer: { select: { id: true, name: true, image: true } }
     },
     orderBy: { eventDate: 'asc' },
     take: limit
@@ -137,7 +137,8 @@ export async function GET(
     events: events.map(e => ({
       ...e,
       eventDate: e.eventDate?.toISOString() || null,
-      joinerCount: e.joiners.length
+      joinerCount: e.eventJoiners.length,
+      organizer: e.organizer
     }))
   })
 }

@@ -102,7 +102,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json()
-  const { title, description, price, type, category, condition, location, locationDetails, imageUrl, isGlobal, isRemote, paymentMethods, paymentType, acceptsRequests, requestPrice } = body
+  const { title, description, price, type, category, condition, location, locationDetails, imageUrl, isGlobal, isRemote, paymentMethods, paymentType, acceptsRequests, requestPrice, sellerPayoutAddress, sellerCryptoCurrency } = body
 
   let latitude = null
   let longitude = null
@@ -134,6 +134,8 @@ export async function POST(request: Request) {
       paymentType: paymentType || 'BOTH',
       acceptsRequests: acceptsRequests || false,
       requestPrice: requestPrice ? parseFloat(requestPrice) : null,
+      sellerPayoutAddress: sellerPayoutAddress || null,
+      sellerCryptoCurrency: sellerCryptoCurrency || null,
       userId: session.user.id
     }
   })

@@ -85,6 +85,10 @@ export default function ForumPage() {
     setPosts(filtered)
   }
 
+  const filteredPosts = categorySlug 
+    ? posts.filter(p => p.category.slug === categorySlug)
+    : posts
+
   const sortedPosts = [...filteredPosts].sort((a, b) => {
     switch (sortBy) {
       case 'oldest':
@@ -122,10 +126,6 @@ export default function ForumPage() {
       setPosting(false)
     }
   }
-
-  const filteredPosts = categorySlug 
-    ? posts.filter(p => p.category.slug === categorySlug)
-    : posts
 
   return (
     <div className={styles.page}>

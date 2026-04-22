@@ -57,7 +57,7 @@ export async function PUT(
   }
 
   // Check if user is author or admin
-  const isAuthor = existingPost.userId === session.user.id
+  const isAuthor = existingPost.authorId === session.user.id
   const userRole = (session.user as { role?: string }).role
   const isAdmin = userRole === 'ADMIN'
 
@@ -139,7 +139,7 @@ export async function DELETE(
   }
 
   // Check if user is author or admin
-  const isAuthor = existingPost.userId === session.user.id
+  const isAuthor = existingPost.authorId === session.user.id
   const userRole = (session.user as { role?: string }).role
   const isAdmin = userRole === 'ADMIN'
 

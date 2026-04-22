@@ -45,7 +45,7 @@ export async function PUT(
     return NextResponse.json({ error: 'Product not found' }, { status: 404 })
   }
 
-  const { title, description, price, type, category, condition, location, locationDetails, imageUrl, isGlobal, published, paymentMethods, paymentType, acceptsRequests, requestPrice } = body
+  const { title, description, price, type, category, condition, location, locationDetails, imageUrl, isGlobal, published, paymentMethods, paymentType, acceptsRequests, requestPrice, sellerPayoutAddress, sellerCryptoCurrency } = body
 
   let latitude = existing.latitude
   let longitude = existing.longitude
@@ -77,7 +77,9 @@ export async function PUT(
       paymentMethods: paymentMethods ? paymentMethods.join(',') : existing.paymentMethods,
       paymentType: paymentType ?? existing.paymentType,
       acceptsRequests: acceptsRequests ?? existing.acceptsRequests,
-      requestPrice: requestPrice ? parseFloat(requestPrice) : existing.requestPrice
+      requestPrice: requestPrice ? parseFloat(requestPrice) : existing.requestPrice,
+      sellerPayoutAddress: sellerPayoutAddress ?? existing.sellerPayoutAddress,
+      sellerCryptoCurrency: sellerCryptoCurrency ?? existing.sellerCryptoCurrency
     }
   })
 

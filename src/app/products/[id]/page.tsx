@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import styles from './page.module.css'
 import { useCart } from '@/context/CartContext'
+import { useSiteSettings } from '@/hooks/useSiteSettings'
 import Rating from '@/components/Rating'
 
 interface Product {
@@ -29,6 +30,8 @@ interface Product {
   createdAt: string
   acceptsRequests: boolean
   requestPrice: number | null
+  sellerPayoutAddress: string | null
+  sellerCryptoCurrency: string | null
 }
 
 interface Plan {
@@ -45,6 +48,7 @@ interface Plan {
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { data: session } = useSession()
   const { addItem } = useCart()
+  const { settings } = useSiteSettings()
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [isOwner, setIsOwner] = useState(false)
@@ -60,7 +64,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     location: '',
     locationDetails: '',
     isGlobal: false,
-    published: true
+    published: true,
+    sellerPayoutAddress: '',
+    sellerCryptoCurrency: 'ETH'
   })
   const [saving, setSaving] = useState(false)
   const [resolvedParams, setResolvedParams] = useState<{ id: string } | null>(null)
@@ -81,6 +87,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [fundAmount, setFundAmount] = useState('')
   const [fundingLoading, setFundingLoading] = useState(false)
   const [currentFunding, setCurrentFunding] = useState(0)
+  const [copiedPayout, setCopiedPayout] = useState(false)
 
   useEffect(() => {
     params.then(setResolvedParams)
@@ -103,7 +110,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           location: data.location || '',
           locationDetails: data.locationDetails || '',
           isGlobal: data.isGlobal,
-          published: data.published
+          published: data.published,
+          sellerPayoutAddress: data.sellerPayoutAddress || '',
+          sellerCryptoCurrency: data.sellerCryptoCurrency || 'ETH'
         })
         fetch(`/api/user/shop?userId=${data.user.id}`)
           .then(r => r.json())
@@ -431,6 +440,33 @@ alert(`Escrow created! Transaction ID: ${data.id}. Please send crypto payment to
                   onChange={e => setEditData({...editData, locationDetails: e.target.value})}
                 />
               </div>
+              <div className="form-group">
+                <label>Payout Crypto</label>
+                <select
+                  value={editData.sellerCryptoCurrency}
+                  onChange={e => setEditData({...editData, sellerCryptoCurrency: e.target.value})}
+                >
+                  <option value="ETH">ETH (Ethereum)</option>
+                  <option value="BTC">BTC (Bitcoin)</option>
+                  <option value="USDT">USDT (Tether)</option>
+                  <option value="USDC">USDC (USD Coin)</option>
+                  <option value="XMR">XMR (Monero)</option>
+                  <option value="XTM">XTM (Tari)</option>
+                  <option value="ARRR">ARRR (Pirate)</option>
+                  <option value="DERO">DERO (Dero)</option>
+                  <option value="ZANO">ZANO (Zano)</option>
+                  <option value="OTHER">OTHER</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Payout Address</label>
+                <input
+                  type="text"
+                  value={editData.sellerPayoutAddress}
+                  onChange={e => setEditData({...editData, sellerPayoutAddress: e.target.value})}
+                  placeholder="Your crypto wallet address"
+                />
+              </div>
               <div className={styles.editActions}>
                 <button onClick={() => setIsEditing(false)} className="btn-ghost">
                   Cancel
@@ -507,6 +543,27 @@ alert(`Escrow created! Transaction ID: ${data.id}. Please send crypto payment to
               <p className={styles.locationDetails}>{product.locationDetails}</p>
             )}
           </div>
+
+          {!settings.enableCheckout && session?.user && product.sellerPayoutAddress && (
+            <div className={styles.payoutCard}>
+              <h3>💰 Direct Crypto Payment</h3>
+              <p className={styles.payoutCrypto}>Crypto: {product.sellerCryptoCurrency || 'ETH'}</p>
+              <div className={styles.payoutAddress}>
+                <code>{product.sellerPayoutAddress}</code>
+                <button 
+                  className={styles.copyPayoutBtn}
+                  onClick={() => {
+                    navigator.clipboard.writeText(product.sellerPayoutAddress || '')
+                    setCopiedPayout(true)
+                    setTimeout(() => setCopiedPayout(false), 2000)
+                  }}
+                >
+                  {copiedPayout ? '✓ Copied' : 'Copy'}
+                </button>
+              </div>
+              <p className={styles.payoutHint}>Send {product.sellerCryptoCurrency || 'ETH'} to this address for direct payment</p>
+            </div>
+          )}
 
           {product.price && (
             <div className={styles.priceCard}>
