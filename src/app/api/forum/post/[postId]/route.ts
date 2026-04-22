@@ -77,6 +77,44 @@ export async function PUT(
   return NextResponse.json(updated)
 }
 
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ postId: string }> }
+) {
+  const session = await getServerSession(authOptions)
+  
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const userRole = (session.user as { role?: string }).role
+  if (userRole !== 'ADMIN') {
+    return NextResponse.json({ error: 'Forbidden - Admin only' }, { status: 403 })
+  }
+
+  const { postId } = await params
+  const body = await request.json()
+  const { pinned, locked } = body
+
+  const existingPost = await prisma.forumPost.findUnique({
+    where: { id: postId }
+  })
+
+  if (!existingPost) {
+    return NextResponse.json({ error: 'Post not found' }, { status: 404 })
+  }
+
+  const updated = await prisma.forumPost.update({
+    where: { id: postId },
+    data: {
+      ...(pinned !== undefined && { pinned }),
+      ...(locked !== undefined && { locked })
+    }
+  })
+
+  return NextResponse.json(updated)
+}
+
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ postId: string }> }

@@ -38,6 +38,8 @@ export default function ForumPage() {
   const [newPostCategory, setNewPostCategory] = useState('')
   const [posting, setPosting] = useState(false)
   const [error, setError] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [sortBy, setSortBy] = useState('newest')
 
   const fetchForumData = async () => {
     setLoading(true)
@@ -70,7 +72,33 @@ export default function ForumPage() {
 
   useEffect(() => {
     fetchForumData()
-  }, [categorySlug])
+  }, [categorySlug, sortBy])
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    const filtered = searchQuery.trim()
+      ? posts.filter(p => 
+          p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          p.content.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      : (categorySlug ? posts.filter(p => p.category.slug === categorySlug) : posts)
+    setPosts(filtered)
+  }
+
+  const sortedPosts = [...filteredPosts].sort((a, b) => {
+    switch (sortBy) {
+      case 'oldest':
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      case 'mostReplies':
+        return b.replyCount - a.replyCount
+      case 'mostViews':
+        return b.viewCount - a.viewCount
+      case 'mostTips':
+        return b.totalTips - a.totalTips
+      default:
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    }
+  })
 
   const handleCreatePost = async () => {
     if (!newPostTitle.trim() || !newPostContent.trim()) return
@@ -109,7 +137,7 @@ export default function ForumPage() {
       <div className={styles.layout}>
         <aside className={styles.sidebar}>
           <div className={styles.categories}>
-            <h3>Categories</h3>
+
             <Link 
               href="/community/forum" 
               className={`${styles.categoryLink} ${!categorySlug ? styles.active : ''}`}
@@ -131,6 +159,29 @@ export default function ForumPage() {
         </aside>
 
         <main className={styles.main}>
+          <div className={styles.toolbar}>
+            <form onSubmit={handleSearch} className={styles.searchForm}>
+              <input
+                type="text"
+                placeholder="Search posts..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className={styles.searchInput}
+              />
+            </form>
+            <select 
+              value={sortBy} 
+              onChange={e => setSortBy(e.target.value)}
+              className={styles.sortSelect}
+            >
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="mostReplies">Most Replies</option>
+              <option value="mostViews">Most Views</option>
+              <option value="mostTips">Most Tips</option>
+            </select>
+          </div>
+
           <div className={styles.createPost}>
             <input
               type="text"
@@ -174,11 +225,11 @@ export default function ForumPage() {
               <p>{error}</p>
               <button onClick={fetchForumData} className={styles.postBtn}>Retry</button>
             </div>
-          ) : filteredPosts.length === 0 ? (
+          ) : sortedPosts.length === 0 ? (
             <div className={styles.empty}>No posts yet. Be the first to post!</div>
           ) : (
             <div className={styles.posts}>
-              {filteredPosts.map(post => (
+              {sortedPosts.map(post => (
                 <Link key={post.id} href={`/community/forum/${post.id}`} className={styles.postCard}>
                   <div className={styles.postHeader}>
                     <span className={styles.postCategory}>{post.category.name}</span>

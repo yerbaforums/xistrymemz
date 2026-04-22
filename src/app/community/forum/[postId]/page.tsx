@@ -62,7 +62,42 @@ export default function ForumThreadPage() {
   const [deleting, setDeleting] = useState(false)
 
   const userId = session?.user?.id
+  const userRole = (session?.user as { role?: string })?.role
   const isAuthor = post && userId && post.author.id === userId
+  const isAdmin = userRole === 'ADMIN'
+  const canModerate = isAuthor || isAdmin
+
+  const handleTogglePin = async () => {
+    if (!post || !isAdmin) return
+    try {
+      const res = await fetch(`/api/forum/post/${postId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pinned: !post.pinned })
+      })
+      if (res.ok) {
+        setPost({ ...post, pinned: !post.pinned })
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const handleToggleLock = async () => {
+    if (!post || !isAdmin) return
+    try {
+      const res = await fetch(`/api/forum/post/${postId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ locked: !post.locked })
+      })
+      if (res.ok) {
+        setPost({ ...post, locked: !post.locked })
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }
 
   const handleEditPost = () => {
     if (!post) return
@@ -350,13 +385,23 @@ export default function ForumThreadPage() {
           >
             💰 Tip
           </button>
-          {isAuthor && !editingPost && (
+          {canModerate && !editingPost && (
             <>
               <button onClick={handleEditPost} className={styles.actionBtn}>
                 ✏️ Edit
               </button>
               <button onClick={handleDeletePost} className={styles.actionBtn} disabled={deleting}>
                 🗑️ Delete
+              </button>
+            </>
+          )}
+          {isAdmin && (
+            <>
+              <button onClick={handleTogglePin} className={styles.actionBtn}>
+                {post.pinned ? '📌 Unpin' : '📌 Pin'}
+              </button>
+              <button onClick={handleToggleLock} className={styles.actionBtn}>
+                {post.locked ? '🔓 Unlock' : '🔒 Lock'}
               </button>
             </>
           )}
