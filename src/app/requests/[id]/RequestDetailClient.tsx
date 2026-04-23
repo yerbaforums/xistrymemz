@@ -29,6 +29,21 @@ const STATUS_LABELS: Record<string, { label: string, icon: string }> = {
   COMPLETED: { label: 'Completed', icon: '🎉' },
 }
 
+const CRYPTO_ICONS: Record<string, string> = {
+  BTC: '₿',
+  ETH: '⟐',
+  USDT: '₮',
+  USDC: '$',
+  XMR: 'ɱ',
+  XTM: 'XT',
+  ARRR: '☵',
+  DERO: 'Ð',
+  ZANO: 'Z',
+  OTHER: '◯',
+}
+
+const getCryptoIcon = (currency: string) => CRYPTO_ICONS[currency] || '◯'
+
 interface Comment {
   id: string
   content: string
@@ -116,6 +131,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
   const [rollbackReason, setRollbackReason] = useState('')
   const [showContactModal, setShowContactModal] = useState(false)
   const [contactMessage, setContactMessage] = useState('')
+  const [copiedPayout, setCopiedPayout] = useState(false)
   const [editForm, setEditForm] = useState({
     title: initialRequest.title,
     description: initialRequest.description || '',
@@ -476,9 +492,19 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               {request.payoutAddress && (
                 <div className={styles.metaItem}>
                   <span className={styles.metaLabel}>Payout</span>
-                  <div className={styles.payoutInfo}>
-                    <span>{request.payoutCurrency || 'ETH'}: </span>
-                    <code>{request.payoutAddress}</code>
+                  <div className={styles.payoutDisplay}>
+                    <span className={styles.cryptoIcon}>{getCryptoIcon(request.payoutCurrency || 'ETH')}</span>
+                    <code className={styles.payoutAddress}>{request.payoutAddress}</code>
+                    <button 
+                      className={styles.copyBtn}
+                      onClick={() => {
+                        navigator.clipboard.writeText(request.payoutAddress || '')
+                        setCopiedPayout(true)
+                        setTimeout(() => setCopiedPayout(false), 2000)
+                      }}
+                    >
+                      {copiedPayout ? '✓' : 'Copy'}
+                    </button>
                   </div>
                 </div>
               )}

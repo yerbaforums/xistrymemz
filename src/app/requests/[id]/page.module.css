@@ -429,6 +429,39 @@
   align-items: center;
 }
 
+.payoutDisplay {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cryptoIcon {
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--accent-primary);
+  background: rgba(0, 217, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.payoutAddress {
+  font-size: 0.7rem;
+  background: var(--bg-primary);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  word-break: break-all;
+  max-width: 250px;
+}
+
+.copyBtn {
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border-radius: var(--radius-sm);
+}
+
 .payoutInfo code {
   font-size: 0.75rem;
   background: var(--bg-primary);
