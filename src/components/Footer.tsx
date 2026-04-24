@@ -1,95 +1,45 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
-import { useSession } from 'next-auth/react'
 import styles from './Footer.module.css'
-import { useSiteSettings } from '@/hooks/useSiteSettings'
 
 export default function Footer() {
-  const { status } = useSession()
-  const { settings } = useSiteSettings()
-  const isAuthenticated = status === 'authenticated'
-
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>
-        <div className={styles.topSection}>
-          <div className={styles.brandColumn}>
-            <div className={styles.logo}>
-              <Image src="/logo.png" alt="XistrYmemZ" width={40} height={40} />
-            </div>
-            <p className={styles.tagline}>
-              Collaborative planning and community platform for projects worldwide.
-            </p>
-            <div className={styles.social}>
-              <a href="https://x.com/xistrymemz" target="_blank" rel="noopener noreferrer" className={styles.socialLink} title="Follow us on X">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                </svg>
-              </a>
-              <a href="https://instagram.com/xistrymemz" target="_blank" rel="noopener noreferrer" className={styles.socialLink} title="Follow us on Instagram">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                </svg>
-              </a>
-            </div>
-          </div>
-
-          <div className={styles.linksColumn}>
+        <div className={styles.brand}>
+          <Link href="/" className={styles.logo}>XistrYmemZ</Link>
+          <p>Plan. Request. Complete.</p>
+        </div>
+        
+        <div className={styles.links}>
+          <div className={styles.col}>
             <h4>Explore</h4>
-            <Link href="/plans/public">Browse Projects</Link>
-            <Link href="/requests/public">Public Requests</Link>
-            <Link href="/products">Marketplace</Link>
-            <Link href="/shops">Shops</Link>
+            <Link href="/plans/public">Projects</Link>
+            <Link href="/products">Market</Link>
             <Link href="/events">Events</Link>
-            <Link href="/community/groups">Groups</Link>
-            <Link href="/schools">Schools</Link>
           </div>
-
-          <div className={styles.linksColumn}>
+          
+          <div className={styles.col}>
             <h4>Community</h4>
-            <Link href="/community/forum">Forum</Link>
-            <Link href="/community/groups">Groups</Link>
             <Link href="/community">Members</Link>
-            <Link href="/schools">Schools</Link>
+            <Link href="/groups">Groups</Link>
+            <Link href="/forum">Forum</Link>
           </div>
-
-          {isAuthenticated ? (
-            <div className={styles.linksColumn}>
-              <h4>Account</h4>
-              <Link href="/dashboard/overview">Dashboard</Link>
-              <Link href="/plans">My Projects</Link>
-              <Link href="/requests">My Requests</Link>
-              {settings.enableWallet ? (
-                <Link href="/wallet">Wallet</Link>
-              ) : (
-                <span className={styles.disabled}>Wallet (Coming Soon)</span>
-              )}
-              <Link href="/profile">Profile</Link>
-            </div>
-          ) : (
-            <div className={styles.linksColumn}>
-              <h4>Get Started</h4>
-              <Link href="/auth/register">Sign Up</Link>
-              <Link href="/auth/login">Login</Link>
-            </div>
-          )}
-
-          <div className={styles.linksColumn}>
+          
+          <div className={styles.col}>
             <h4>Support</h4>
-            <Link href="/help">Help Center</Link>
-            <Link href="/contact">Contact Us</Link>
-            <Link href="/about">About Us</Link>
-            <Link href="/sitemap">Site Map</Link>
+            <Link href="/help">Help</Link>
+            <Link href="/contact">Contact</Link>
+            <Link href="/about">About</Link>
           </div>
         </div>
-
-        <div className={styles.bottomSection}>
-          <p className={styles.copyright}>&copy; {new Date().getFullYear()} XistrYmemZ. All rights reserved.</p>
-          <div className={styles.legalLinks}>
-            <Link href="/privacy">Privacy Policy</Link>
-            <Link href="/terms">Terms of Service</Link>
+        
+        <div className={styles.bottom}>
+          <p>&copy; {new Date().getFullYear()} XistrYmemZ</p>
+          <div className={styles.legal}>
+            <Link href="/privacy">Privacy</Link>
+            <Link href="/terms">Terms</Link>
           </div>
         </div>
       </div>

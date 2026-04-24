@@ -301,10 +301,16 @@ export default function EventsPage() {
       <div className={styles.header}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h1>Public Events</h1>
+            <h1>Events</h1>
             <p className={styles.subtitle}>Discover and join events near you</p>
           </div>
-          <div className={styles.viewToggle}>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            {userId && (
+              <Link href="/dashboard?tab=events" className="btn-primary">
+                Create Event
+              </Link>
+            )}
+            <div className={styles.viewToggle}>
             <button 
               className={`${styles.toggleBtn} ${viewMode === 'list' ? styles.active : ''}`}
               onClick={() => setViewMode('list')}
@@ -326,6 +332,7 @@ export default function EventsPage() {
           </div>
         </div>
       </div>
+    </div>
 
       <div className={styles.filters}>
         <select value={category} onChange={e => setCategory(e.target.value)} className={styles.filterSelect}>
@@ -426,7 +433,7 @@ export default function EventsPage() {
           </div>
         </div>
       ) : viewMode === 'map' ? (
-        <div style={{ height: '500px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)', marginBottom: '24px' }}>
+        <div style={{ height: '500px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)', marginBottom: '24px', position: 'relative', zIndex: 1 }}>
           <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%' }}>
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -455,8 +462,8 @@ export default function EventsPage() {
         </div>
       ) : (
         <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
-          <div className={styles.mapSection} style={{ width: '350px', height: '350px', flexShrink: 0 }}>
-            <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%' }}>
+          <div className={styles.mapSection} style={{ width: '350px', height: '350px', flexShrink: 0, position: 'relative', zIndex: 1 }}>
+            <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%', position: 'relative', zIndex: 1 }}>
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
