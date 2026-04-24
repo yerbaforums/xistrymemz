@@ -1,0 +1,127 @@
+.container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: var(--z-toast, 500);
+  max-width: 400px;
+  width: calc(100vw - 48px);
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  border: 1px solid transparent;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.success {
+  background: var(--bg-secondary);
+  border-color: var(--accent-success);
+  color: var(--accent-success);
+}
+
+.error {
+  background: var(--bg-secondary);
+  border-color: var(--accent-secondary);
+  color: var(--accent-secondary);
+}
+
+.warning {
+  background: var(--bg-secondary);
+  border-color: var(--accent-warning);
+  color: var(--accent-warning);
+}
+
+.info {
+  background: var(--bg-secondary);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.icon {
+  font-size: 1rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: currentColor;
+  color: var(--bg-primary);
+}
+
+.error .icon,
+.warning .icon,
+.info .icon {
+  background: transparent;
+  border: 2px solid currentColor;
+}
+
+.success .icon {
+  background: var(--accent-success);
+  color: var(--bg-primary);
+}
+
+.message {
+  flex: 1;
+  color: var(--text-primary);
+  min-width: 0;
+  word-break: break-word;
+}
+
+.dismiss {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s, background 0.2s;
+}
+
+.dismiss:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+@media (max-width: 480px) {
+  .container {
+    bottom: 16px;
+    right: 16px;
+    left: 16px;
+    width: auto;
+    max-width: none;
+  }
+
+  .toast {
+    padding: 12px 14px;
+  }
+}

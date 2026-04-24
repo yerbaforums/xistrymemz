@@ -159,11 +159,11 @@
 }
 
 .inputValid {
-  border-color: #10b981 !important;
+  border-color: var(--accent-success) !important;
 }
 
 .inputError {
-  border-color: #ef4444 !important;
+  border-color: var(--accent-secondary) !important;
 }
 
 .fieldHint {
@@ -174,12 +174,12 @@
 
 .fieldSuccess {
   font-size: 0.75rem;
-  color: #10b981;
+  color: var(--accent-success);
   margin-top: 0.25rem;
 }
 
 .fieldError {
   font-size: 0.75rem;
-  color: #ef4444;
+  color: var(--accent-secondary);
   margin-top: 0.25rem;
 }

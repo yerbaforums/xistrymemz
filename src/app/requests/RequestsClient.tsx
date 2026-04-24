@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
+import { useToast } from '@/context/ToastContext'
 
 interface Request {
   id: string
@@ -44,6 +45,7 @@ interface RequestsClientProps {
 
 export default function RequestsClient({ initialRequests, userId, userRole = 'USER' }: RequestsClientProps) {
   const { settings } = useSiteSettings()
+  const { success, error, warning } = useToast()
   const [requests, setRequests] = useState(initialRequests)
   const [filter, setFilter] = useState('ALL')
   const [showCreate, setShowCreate] = useState(false)
@@ -81,7 +83,7 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
 
   const handleCreate = async () => {
     if (!newRequest.title.trim()) {
-      alert('Please enter a title')
+      warning('Please enter a title')
       return
     }
     setCreating(true)
@@ -103,8 +105,8 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
         setShowCreate(false)
         setNewRequest({ title: '', description: '', category: 'FUNDING', priority: 'MEDIUM', budget: '', goalAmount: '', payoutAddress: '', payoutCurrency: 'ETH', location: '', isPublic: true })
       }
-    } catch (error) {
-      console.error('Failed to create:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setCreating(false)
     }
@@ -125,8 +127,8 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
         setEditingGoalId(null)
         setEditGoalAmount('')
       }
-    } catch (error) {
-      console.error('Failed to save goal:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setSavingGoal(false)
     }
@@ -151,10 +153,10 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
         } : r))
         setContributeRequest(null)
         setContributeAmount('')
-        alert('Contribution successful!')
+        success('Contribution successful!')
       }
-    } catch (error) {
-      console.error('Failed to contribute:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setContributing(false)
     }
@@ -173,15 +175,15 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
         })
       })
       if (res.ok) {
-        alert('Message sent!')
+        success('Message sent!')
         setContactRequest(null)
         setMessageContent('')
       } else {
         const error = await res.json()
-        alert(error.error || 'Failed to send message')
+        error(error.error || 'Failed to send message')
       }
-    } catch (error) {
-      console.error('Failed to send message:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setSendingMessage(false)
     }
@@ -208,8 +210,8 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
         setEditPayoutAddress('')
         setEditPayoutCurrency('ETH')
       }
-    } catch (error) {
-      console.error('Failed to save payout:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setSavingPayout(false)
     }
@@ -221,8 +223,8 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
       if (res.ok) {
         setRequests(requests.map(r => r.id === id ? { ...r, status: 'APPROVED' } : r))
       }
-    } catch (error) {
-      console.error('Failed to approve:', error)
+    } catch (err) {
+      console.error(err)
     }
   }
 
@@ -232,8 +234,8 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
       if (res.ok) {
         setRequests(requests.map(r => r.id === id ? { ...r, status: 'REJECTED' } : r))
       }
-    } catch (error) {
-      console.error('Failed to reject:', error)
+    } catch (err) {
+      console.error(err)
     }
   }
 
@@ -244,8 +246,8 @@ export default function RequestsClient({ initialRequests, userId, userRole = 'US
       if (res.ok) {
         setRequests(requests.filter(r => r.id !== id))
       }
-    } catch (error) {
-      console.error('Failed to delete:', error)
+    } catch (err) {
+      console.error(err)
     }
   }
 

@@ -215,8 +215,8 @@
 
 .fundBtn {
   padding: 10px 20px;
-  background: #3b82f6;
-  color: white;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
   border: none;
   border-radius: var(--radius-md);
   font-weight: 600;
@@ -225,8 +225,8 @@
 
 .releaseBtn {
   padding: 10px 20px;
-  background: #10b981;
-  color: white;
+  background: var(--accent-success);
+  color: var(--bg-primary);
   border: none;
   border-radius: var(--radius-md);
   font-weight: 600;
@@ -235,8 +235,8 @@
 
 .disputeBtn {
   padding: 10px 20px;
-  background: #f59e0b;
-  color: white;
+  background: var(--accent-warning);
+  color: var(--bg-primary);
   border: none;
   border-radius: var(--radius-md);
   font-weight: 600;
@@ -245,8 +245,8 @@
 
 .refundBtn {
   padding: 10px 20px;
-  background: #ef4444;
-  color: white;
+  background: var(--accent-secondary);
+  color: var(--bg-primary);
   border: none;
   border-radius: var(--radius-md);
   font-weight: 600;
@@ -255,7 +255,7 @@
 
 .resolveBtn {
   padding: 10px 20px;
-  background: #8b5cf6;
+  background: #9333ea;
   color: white;
   border: none;
   border-radius: var(--radius-md);
@@ -265,8 +265,8 @@
 
 .shipBtn {
   padding: 10px 20px;
-  background: #3b82f6;
-  color: white;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
   border: none;
   border-radius: var(--radius-md);
   font-weight: 600;
@@ -275,8 +275,8 @@
 
 .deliverBtn {
   padding: 10px 20px;
-  background: #10b981;
-  color: white;
+  background: var(--accent-success);
+  color: var(--bg-primary);
   border: none;
   border-radius: var(--radius-md);
   font-weight: 600;
@@ -285,8 +285,8 @@
 
 .acceptBtn {
   padding: 10px 20px;
-  background: #10b981;
-  color: white;
+  background: var(--accent-success);
+  color: var(--bg-primary);
   border: none;
   border-radius: var(--radius-md);
   font-weight: 600;
@@ -294,13 +294,13 @@
 }
 
 .acceptBtn:hover {
-  background: #059669;
+  background: var(--accent-success);
 }
 
 .declineBtn {
   padding: 10px 20px;
-  background: #ef4444;
-  color: white;
+  background: var(--accent-secondary);
+  color: var(--bg-primary);
   border: none;
   border-radius: var(--radius-md);
   font-weight: 600;
@@ -308,7 +308,7 @@
 }
 
 .declineBtn:hover {
-  background: #dc2626;
+  background: var(--accent-secondary);
 }
 
 .loading {
@@ -423,17 +423,17 @@
 
 .paymentBadge {
   background: #6366f1;
-  color: white;
+  color: var(--bg-primary);
 }
 
 .roleBadge {
-  background: #10b981;
-  color: white;
+  background: var(--accent-success);
+  color: var(--bg-primary);
 }
 
 .cryptoBadge {
-  background: #f59e0b;
-  color: black;
+  background: var(--accent-warning);
+  color: var(--bg-primary);
 }
 
 .modalDate {

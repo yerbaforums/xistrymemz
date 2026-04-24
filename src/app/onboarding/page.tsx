@@ -36,7 +36,10 @@ export default function OnboardingPage() {
   useEffect(() => {
     if (step === 'profile') {
       fetch('/api/users/locations')
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to fetch locations')
+          return res.json()
+        })
         .then(data => setUserLocations(data || []))
         .catch(() => {})
     }
@@ -99,6 +102,13 @@ export default function OnboardingPage() {
     const idx = currentStepIndex
     if (idx < steps.length - 1) {
       setStep(steps[idx + 1].key)
+    }
+  }
+
+  const prevStep = () => {
+    const idx = currentStepIndex
+    if (idx > 0) {
+      setStep(steps[idx - 1].key)
     }
   }
 
@@ -171,9 +181,16 @@ export default function OnboardingPage() {
             <img src="/logo.png" alt="XistrYmemZ" style={{height: '40px', marginRight: '10px'}} />
             XistrYmemZ
           </div>
-          <button onClick={skipAndGoToDashboard} className={styles.skipBtn}>
-            Skip for now
-          </button>
+          <div className={styles.headerActions}>
+            {currentStepIndex > 0 && (
+              <button onClick={prevStep} className={styles.backBtn} aria-label="Go back">
+                &#8592; Back
+              </button>
+            )}
+            <button onClick={skipAndGoToDashboard} className={styles.skipBtn}>
+              Skip for now
+            </button>
+          </div>
         </div>
 
         <div className={styles.progress}>

@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import styles from './page.module.css'
+import { useToast } from '@/context/ToastContext'
 
 interface Member {
   id: string
@@ -58,6 +59,7 @@ interface Group {
 
 function GroupDetailContent() {
   const params = useParams()
+  const { success, error, warning } = useToast()
   const [group, setGroup] = useState<Group | null>(null)
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
@@ -70,7 +72,10 @@ function GroupDetailContent() {
 
   useEffect(() => {
     fetch('/api/auth/session')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch session')
+        return res.json()
+      })
       .then(data => {
         if (data?.user?.id) setUserId(data.user.id)
       })
@@ -79,7 +84,14 @@ function GroupDetailContent() {
   useEffect(() => {
     setLoading(true)
     fetch(`/api/groups/${params.id}`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          return res.json().catch(() => ({ error: 'Failed to fetch group' })).then(data => {
+            throw new Error(data.error || 'Request failed')
+          })
+        }
+        return res.json()
+      })
       .then(data => {
         if (data.error) {
           setGroup(null)
@@ -95,7 +107,14 @@ function GroupDetailContent() {
     if (activeTab === 'activity' && group?.isMember) {
       setLoadingActivity(true)
       fetch(`/api/groups/${params.id}/members-activity`)
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) {
+            return res.json().catch(() => ({ error: 'Failed to fetch activity' })).then(data => {
+              throw new Error(data.error || 'Request failed')
+            })
+          }
+          return res.json()
+        })
         .then(data => {
           setActivity(data)
           setLoadingActivity(false)
@@ -106,7 +125,7 @@ function GroupDetailContent() {
 
   const handleJoin = async () => {
     if (!userId) {
-      alert('Please log in to join this group')
+      warning('Please log in to join this group')
       return
     }
     setJoining(true)
@@ -116,10 +135,10 @@ function GroupDetailContent() {
       if (res.ok) {
         setGroup(g => g ? { ...g, isMember: true, members: [...g.members, data], _count: { ...g._count, members: g._count.members + 1 } } : g)
       } else {
-        alert(data.error)
+        error(data.error)
       }
-    } catch (error) {
-      alert('Failed to join group')
+    } catch (err) {
+      error('Failed to join group')
     } finally {
       setJoining(false)
     }
@@ -133,8 +152,8 @@ function GroupDetailContent() {
       if (res.ok) {
         setGroup(g => g ? { ...g, isMember: false, members: g.members.filter(m => m.user.id !== userId), _count: { ...g._count, members: g._count.members - 1 } } : g)
       }
-    } catch (error) {
-      console.error('Failed to leave:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setJoining(false)
     }
@@ -155,8 +174,8 @@ function GroupDetailContent() {
         setGroup(g => g ? { ...g, posts: [newPost, ...g.posts], _count: { ...g._count, posts: g._count.posts + 1 } } : g)
         setPostContent('')
       }
-    } catch (error) {
-      console.error('Failed to post:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setPosting(false)
     }

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './calendar.module.css'
+import { useToast } from '@/context/ToastContext'
 
 interface CalendarEvent {
   id: string
@@ -30,6 +31,7 @@ interface PlanEventJoiner {
 }
 
 export default function CalendarWidget() {
+  const { warning } = useToast()
   const [events, setEvents] = useState<CalendarEvent[]>([])
   const [currentDate, setCurrentDate] = useState(new Date())
   const [showAddEvent, setShowAddEvent] = useState(false)
@@ -57,31 +59,29 @@ export default function CalendarWidget() {
         fetch('/api/plans/events/joined')
       ])
       
-      if (calRes.ok) {
-        const data = await calRes.json()
-        setEvents([...(data.myEvents || []), ...(data.publicEvents || []), ...(data.connectionEvents || [])])
-      }
+      if (!calRes.ok) throw new Error('Failed to fetch calendar events')
+      const data = await calRes.json()
+      setEvents([...(data.myEvents || []), ...(data.publicEvents || []), ...(data.connectionEvents || [])])
       
-      if (planRes.ok) {
-        const planData = await planRes.json()
-        const planEvents: CalendarEvent[] = (planData || []).map((joiner: PlanEventJoiner) => ({
-          id: joiner.event.id,
-          title: joiner.event.title,
-          startDate: joiner.event.eventDate?.toString() || '',
-          color: '#10b981',
-          userId: '',
-          visibility: 'PUBLIC'
-        }))
-        setEvents(prev => [...prev, ...planEvents])
-      }
-    } catch (error) {
-      console.error('Error fetching events:', error)
+      if (!planRes.ok) throw new Error('Failed to fetch plan events')
+      const planData = await planRes.json()
+      const planEvents: CalendarEvent[] = (planData || []).map((joiner: PlanEventJoiner) => ({
+        id: joiner.event.id,
+        title: joiner.event.title,
+        startDate: joiner.event.eventDate?.toString() || '',
+        color: '#10b981',
+        userId: '',
+        visibility: 'PUBLIC'
+      }))
+      setEvents(prev => [...prev, ...planEvents])
+    } catch (err) {
+      console.error(err)
     }
   }
 
   const createEvent = async () => {
     if (!newEvent.title || !newEvent.startDate) {
-      alert('Please fill in required fields')
+      warning('Please fill in required fields')
       return
     }
     try {
@@ -104,8 +104,8 @@ export default function CalendarWidget() {
         })
         fetchEvents()
       }
-    } catch (error) {
-      console.error('Error creating event:', error)
+    } catch (err) {
+      console.error(err)
     }
   }
 

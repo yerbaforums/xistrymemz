@@ -36,9 +36,10 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        const isAdminEmail = user.email.toLowerCase() === 'reed.bobby.jr@gmail.com'
-                           || user.email.toLowerCase() === 'xb4zy@xistrymemz.xyz'
-        const isAdminName = user.name?.toLowerCase() === 'xb4zy'
+        const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
+        const adminNames = (process.env.ADMIN_NAMES || '').split(',').map(n => n.trim().toLowerCase()).filter(Boolean)
+        const isAdminEmail = adminEmails.includes(user.email.toLowerCase())
+        const isAdminName = user.name ? adminNames.includes(user.name.toLowerCase()) : false
 
         if ((isAdminEmail || isAdminName) && user.role !== 'ADMIN') {
           await prisma.user.update({

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import styles from './page.module.css'
 import { getCryptoIcon, getCryptoName, CRYPTO_ICONS } from '@/lib/crypto-icons'
 import { useTariWallet } from '@/context/TariWalletContext'
+import { useToast } from '@/context/ToastContext'
 
 interface UserWallet {
   id: string
@@ -16,6 +17,7 @@ interface UserWallet {
 
 export default function WalletPage() {
   const { connection, balance: tariBalance, connect, disconnect, isConnecting } = useTariWallet()
+  const { success, error } = useToast()
   const [balance, setBalance] = useState(0)
   const [wallets, setWallets] = useState<UserWallet[]>([])
   const [paymentAddress, setPaymentAddress] = useState('')
@@ -62,8 +64,8 @@ console.log('CRYPTO_ICONS from wallet:', CRYPTO_ICONS)
       if (data.wallets?.length > 0 && !selectedCrypto) {
         setSelectedCrypto(data.wallets[0].cryptoType)
       }
-    } catch (error) {
-      console.error('Failed to fetch wallet:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setLoading(false)
     }
@@ -82,19 +84,18 @@ console.log('CRYPTO_ICONS from wallet:', CRYPTO_ICONS)
       console.log('Generate address response:', data)
       if (data.success) {
         if (data.isNew) {
-          alert(`New address generated for ${data.cryptoCurrency}!`)
+          success(`New address generated for ${data.cryptoCurrency}!`)
         } else {
           console.log('Existing address found')
         }
         fetchWallet()
         setSelectedCrypto(data.cryptoCurrency)
       } else if (data.error) {
-        alert(data.error)
-        console.error('Error:', data.error)
+        error(data.error)
       }
-    } catch (error) {
-      console.error('Failed to generate address:', error)
-      alert('Failed to generate address: ' + error)
+    } catch (err) {
+      console.error(err)
+      error('Failed to generate address: ' + (err instanceof Error ? err.message : String(err)))
     } finally {
       setGenerating(false)
     }
@@ -113,14 +114,14 @@ console.log('CRYPTO_ICONS from wallet:', CRYPTO_ICONS)
       })
       const data = await res.json()
       if (data.success) {
-        alert(`New address generated for ${data.cryptoCurrency}!`)
+        success(`New address generated for ${data.cryptoCurrency}!`)
         fetchWallet()
       } else if (data.error) {
-        alert(data.error)
+        error(data.error)
       }
-    } catch (error) {
-      console.error('Failed to generate new address:', error)
-      alert('Failed to generate new address')
+    } catch (err) {
+      console.error(err)
+      error('Failed to generate new address')
     } finally {
       setGenerating(false)
     }

@@ -8,6 +8,7 @@ import styles from './page.module.css'
 import { CartItem } from '@/context/CartContext'
 import Image from 'next/image'
 import { getCryptoInfo, CRYPTO_ICONS } from '@/lib/crypto-icons'
+import { useToast } from '@/context/ToastContext'
 
 interface Product {
   id: string
@@ -49,6 +50,7 @@ function CheckoutContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { success, error, warning } = useToast()
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [directProduct, setDirectProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
@@ -103,8 +105,8 @@ function CheckoutContent() {
           setPaymentMethod('escrow')
         }
       }
-    } catch (error) {
-      console.error('Failed to load product:', error)
+    } catch (err) {
+      console.error(err)
     }
   }
 
@@ -115,8 +117,8 @@ function CheckoutContent() {
         const data = await res.json()
         setCourierServices(data)
       }
-    } catch (error) {
-      console.error('Failed to load courier services:', error)
+    } catch (err) {
+      console.error(err)
     }
   }
 
@@ -184,9 +186,9 @@ function CheckoutContent() {
           clearCart()
         }
       }
-    } catch (error) {
-      console.error('Checkout failed:', error)
-      alert('Checkout failed. Please try again.')
+    } catch (err) {
+      console.error(err)
+      error('Checkout failed. Please try again.')
     } finally {
       setProcessing(false)
     }
@@ -194,7 +196,7 @@ function CheckoutContent() {
 
   const handleFundEscrow = async () => {
     if (!escrowData?.id || !txHash) {
-      alert('Please enter your transaction hash')
+      warning('Please enter your transaction hash')
       return
     }
     
@@ -210,16 +212,16 @@ function CheckoutContent() {
       })
       
       if (res.ok) {
-        alert('Payment confirmed! Your funds are now held in escrow.')
+        success('Payment confirmed! Your funds are now held in escrow.')
         setEscrowData(null)
         setTxHash('')
       } else {
         const err = await res.json()
-        alert(err.error || 'Failed to confirm payment')
+        error(err.error || 'Failed to confirm payment')
       }
-    } catch (error) {
-      console.error('Funding failed:', error)
-      alert('Failed to submit transaction hash')
+    } catch (err) {
+      console.error(err)
+      error('Failed to submit transaction hash')
     } finally {
       setProcessing(false)
     }

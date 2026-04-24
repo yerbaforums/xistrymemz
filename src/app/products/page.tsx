@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react'
 import styles from './page.module.css'
 import { calculateDistance, geocodeLocation } from '@/lib/geocoding'
 import { useCart } from '@/context/CartContext'
+import { useToast } from '@/context/ToastContext'
 
 import dynamic from 'next/dynamic'
 
@@ -48,6 +49,7 @@ interface Product {
 
 export default function ProductsPage() {
   const { data: session } = useSession()
+  const { warning, error, success } = useToast()
   const [products, setProducts] = useState<Product[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [type, setType] = useState('ALL')
@@ -108,11 +110,11 @@ export default function ProductsPage() {
       if (result) {
         setUserLocation({ lat: result.latitude, lon: result.longitude })
       } else {
-        alert('Could not find location for that zip code')
+        warning('Could not find location for that zip code')
         setUserLocation(null)
       }
-    } catch (error) {
-      console.error('Geocoding error:', error)
+    } catch (err) {
+      console.error(err)
       setUserLocation(null)
     } finally {
       setGeocodingLoading(false)
@@ -127,6 +129,7 @@ export default function ProductsPage() {
   const checkAuth = async () => {
     try {
       const res = await fetch('/api/auth/session')
+      if (!res.ok) throw new Error('Failed to fetch session')
       const session = await res.json()
       setIsLoggedIn(!!session?.user)
     } catch {
@@ -136,7 +139,14 @@ export default function ProductsPage() {
 
   const fetchProducts = () => {
     fetch('/api/products')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          return res.json().catch(() => ({ error: 'Failed to fetch products' })).then(data => {
+            throw new Error(data.error || 'Request failed')
+          })
+        }
+        return res.json()
+      })
       .then(data => {
         setProducts(data)
         setFilteredProducts(data)
@@ -254,11 +264,11 @@ export default function ProductsPage() {
         })
         fetchProducts()
       } else {
-        const error = await res.json()
-        alert(error.error || 'Failed to create product')
+        const err = await res.json()
+        error(err.error || 'Failed to create product')
       }
-    } catch (error) {
-      console.error('Failed to create:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setCreating(false)
     }
@@ -282,18 +292,18 @@ export default function ProductsPage() {
       })
 
       if (res.ok) {
-        alert('Request posted! Request is now live for community funding.')
+        success('Request posted! Request is now live for community funding.')
         setShowRequestModal(false)
         setRequestProduct(null)
         setRequestTitle('')
         setRequestDesc('')
         setRequestGoal('')
       } else {
-        const error = await res.json()
-        alert(error.error || 'Failed to post request')
+        const err = await res.json()
+        error(err.error || 'Failed to post request')
       }
-    } catch (error) {
-      console.error('Failed to post request:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setRequestLoading(false)
     }

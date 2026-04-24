@@ -155,7 +155,7 @@
 .postBtn {
   padding: 8px 20px;
   background: var(--accent-primary);
-  color: #000;
+  color: var(--bg-primary);
   border: none;
   border-radius: var(--radius-md);
   font-weight: 600;

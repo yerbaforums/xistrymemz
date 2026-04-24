@@ -8,105 +8,120 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params
+  try {
+    const { id } = await params
 
-  const product = await prisma.product.findUnique({
-    where: { id },
-    include: {
-      user: { select: { id: true, name: true, email: true } }
+    const product = await prisma.product.findUnique({
+      where: { id },
+      include: {
+        user: { select: { id: true, name: true, email: true } }
+      }
+    })
+
+    if (!product) {
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 })
     }
-  })
 
-  if (!product) {
-    return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+    return NextResponse.json(product)
+  } catch (error) {
+    console.error('GET /api/products/[id]:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-
-  return NextResponse.json(product)
 }
 
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getServerSession(authOptions)
-  
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const { id } = await params
-  const body = await request.json()
-
-  const existing = await prisma.product.findFirst({
-    where: { id, userId: session.user.id }
-  })
-
-  if (!existing) {
-    return NextResponse.json({ error: 'Product not found' }, { status: 404 })
-  }
-
-  const { title, description, price, type, category, condition, location, locationDetails, imageUrl, isGlobal, published, paymentMethods, paymentType, acceptsRequests, requestPrice, sellerPayoutAddress, sellerCryptoCurrency } = body
-
-  let latitude = existing.latitude
-  let longitude = existing.longitude
-
-  if (location && location !== existing.location && !isGlobal) {
-    const geocodeResult = await geocodeLocation(location)
-    if (geocodeResult) {
-      latitude = geocodeResult.latitude
-      longitude = geocodeResult.longitude
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-  }
 
-  const product = await prisma.product.update({
-    where: { id },
-    data: {
-      title: title ?? existing.title,
-      description: description ?? existing.description,
-      price: price ? parseFloat(price) : existing.price,
-      type: type ?? existing.type,
-      category: category ?? existing.category,
-      condition: condition ?? existing.condition,
-      location: isGlobal ? 'GLOBAL' : (location ?? existing.location),
-      locationDetails: locationDetails ?? existing.locationDetails,
-      latitude,
-      longitude,
-      isGlobal: isGlobal ?? existing.isGlobal,
-      imageUrl: imageUrl ?? existing.imageUrl,
-      published: published ?? existing.published,
-      paymentMethods: paymentMethods ? paymentMethods.join(',') : existing.paymentMethods,
-      paymentType: paymentType ?? existing.paymentType,
-      acceptsRequests: acceptsRequests ?? existing.acceptsRequests,
-      requestPrice: requestPrice ? parseFloat(requestPrice) : existing.requestPrice,
-      sellerPayoutAddress: sellerPayoutAddress ?? existing.sellerPayoutAddress,
-      sellerCryptoCurrency: sellerCryptoCurrency ?? existing.sellerCryptoCurrency
+    const { id } = await params
+    const body = await request.json()
+
+    const existing = await prisma.product.findFirst({
+      where: { id, userId: session.user.id }
+    })
+
+    if (!existing) {
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 })
     }
-  })
 
-  return NextResponse.json(product)
+    const { title, description, price, type, category, condition, location, locationDetails, imageUrl, isGlobal, published, paymentMethods, paymentType, acceptsRequests, requestPrice, sellerPayoutAddress, sellerCryptoCurrency } = body
+
+    let latitude = existing.latitude
+    let longitude = existing.longitude
+
+    if (location && location !== existing.location && !isGlobal) {
+      const geocodeResult = await geocodeLocation(location)
+      if (geocodeResult) {
+        latitude = geocodeResult.latitude
+        longitude = geocodeResult.longitude
+      }
+    }
+
+    const product = await prisma.product.update({
+      where: { id },
+      data: {
+        title: title ?? existing.title,
+        description: description ?? existing.description,
+        price: price ? parseFloat(price) : existing.price,
+        type: type ?? existing.type,
+        category: category ?? existing.category,
+        condition: condition ?? existing.condition,
+        location: isGlobal ? 'GLOBAL' : (location ?? existing.location),
+        locationDetails: locationDetails ?? existing.locationDetails,
+        latitude,
+        longitude,
+        isGlobal: isGlobal ?? existing.isGlobal,
+        imageUrl: imageUrl ?? existing.imageUrl,
+        published: published ?? existing.published,
+        paymentMethods: paymentMethods ? paymentMethods.join(',') : existing.paymentMethods,
+        paymentType: paymentType ?? existing.paymentType,
+        acceptsRequests: acceptsRequests ?? existing.acceptsRequests,
+        requestPrice: requestPrice ? parseFloat(requestPrice) : existing.requestPrice,
+        sellerPayoutAddress: sellerPayoutAddress ?? existing.sellerPayoutAddress,
+        sellerCryptoCurrency: sellerCryptoCurrency ?? existing.sellerCryptoCurrency
+      }
+    })
+
+    return NextResponse.json(product)
+  } catch (error) {
+    console.error('PUT /api/products/[id]:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 }
 
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getServerSession(authOptions)
-  
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { id } = await params
+
+    const existing = await prisma.product.findFirst({
+      where: { id, userId: session.user.id }
+    })
+
+    if (!existing) {
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+    }
+
+    await prisma.product.delete({ where: { id } })
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('DELETE /api/products/[id]:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-
-  const { id } = await params
-
-  const existing = await prisma.product.findFirst({
-    where: { id, userId: session.user.id }
-  })
-
-  if (!existing) {
-    return NextResponse.json({ error: 'Product not found' }, { status: 404 })
-  }
-
-  await prisma.product.delete({ where: { id } })
-
-  return NextResponse.json({ success: true })
 }

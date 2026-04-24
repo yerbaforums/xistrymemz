@@ -259,7 +259,7 @@
   display: inline-block;
   padding: 10px 20px;
   background: var(--accent-primary);
-  color: #000;
+  color: var(--bg-primary);
   border-radius: var(--radius-md);
   text-decoration: none;
   font-weight: 600;
@@ -797,7 +797,7 @@
 
 .donation {
   background: var(--bg-secondary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 20px;
   text-align: center;
@@ -867,8 +867,8 @@
 }
 
 .badge {
-  background: #ef4444;
-  color: #fff;
+  background: var(--accent-secondary);
+  color: var(--bg-primary);
   font-size: 0.7rem;
   padding: 2px 6px;
   border-radius: 10px;
@@ -964,17 +964,17 @@
 }
 
 .published {
-  color: #10b981;
+  color: var(--accent-success);
   font-size: 0.75rem;
 }
 
 .draft {
-  color: #f59e0b;
+  color: var(--accent-warning);
   font-size: 0.75rem;
 }
 
 .pending {
-  color: #f59e0b;
+  color: var(--accent-warning);
   font-size: 0.75rem;
 }
 
@@ -1205,8 +1205,8 @@
 
 .joinedBadge {
   display: inline-block;
-  background: #10b981;
-  color: #fff;
+  background: var(--accent-success);
+  color: var(--bg-primary);
   font-size: 0.75rem;
   padding: 4px 10px;
   border-radius: var(--radius-md);

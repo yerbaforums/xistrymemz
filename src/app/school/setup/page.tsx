@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
+import { useToast } from '@/context/ToastContext'
 
 export default function SchoolSetupPage() {
+  const { success, error } = useToast()
   const [schoolName, setSchoolName] = useState('')
   const [schoolAbout, setSchoolAbout] = useState('')
   const [schoolImage, setSchoolImage] = useState('')
@@ -44,12 +46,12 @@ export default function SchoolSetupPage() {
         const data = await res.json()
         setSchoolSlug(data.schoolSlug)
         setHasSchool(true)
-        alert('School saved successfully!')
+        success('School saved successfully!')
       } else {
-        alert('Failed to save school')
+        error('Failed to save school')
       }
-    } catch (error) {
-      console.error('Failed to save:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setSaving(false)
     }

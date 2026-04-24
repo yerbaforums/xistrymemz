@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import styles from './page.module.css'
+import { useToast } from '@/context/ToastContext'
 
 interface Subscriber {
   id: string
@@ -13,6 +14,7 @@ interface Subscriber {
 }
 
 export default function SubscribersPage() {
+  const { info } = useToast()
   const [subscribers, setSubscribers] = useState<Subscriber[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -35,8 +37,8 @@ export default function SubscribersPage() {
         const data = await res.json()
         setSubscribers(data)
       }
-    } catch (error) {
-      console.error('Failed to fetch subscribers:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setLoading(false)
     }
@@ -49,8 +51,8 @@ export default function SubscribersPage() {
       if (res.ok) {
         setSubscribers(subscribers.filter(s => s.id !== id))
       }
-    } catch (error) {
-      console.error('Failed to delete:', error)
+    } catch (err) {
+      console.error(err)
     }
   }
 
@@ -71,8 +73,8 @@ export default function SubscribersPage() {
         setAddName('')
         fetchSubscribers()
       }
-    } catch (error) {
-      console.error('Failed to add:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setAdding(false)
     }
@@ -108,12 +110,12 @@ export default function SubscribersPage() {
     try {
       const emails = filteredSubscribers.map(s => s.email)
       console.log('Sending email to:', emails, 'Subject:', emailSubject, 'Body:', emailBody)
-      alert(`Email feature ready! Would send to ${emails.length} subscribers.\n\nSubject: ${emailSubject}\n\nThis would integrate with an email service like SendGrid, Mailgun, or AWS SES.`)
+      info(`Email feature ready! Would send to ${emails.length} subscribers.\n\nSubject: ${emailSubject}\n\nThis would integrate with an email service like SendGrid, Mailgun, or AWS SES.`)
       setShowEmailForm(false)
       setEmailSubject('')
       setEmailBody('')
-    } catch (error) {
-      console.error('Failed to send:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setSending(false)
     }

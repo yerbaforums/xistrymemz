@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import styles from '../page.module.css'
+import { useToast } from '@/context/ToastContext'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
@@ -86,6 +87,7 @@ type SortOption = 'newest' | 'oldest' | 'mostActive' | 'mostPopular'
 type ViewMode = 'grid' | 'map'
 
 export default function PublicPlansClient({ initialPlans }: PublicPlansClientProps) {
+  const { warning } = useToast()
   const [filter, setFilter] = useState<'ALL' | 'ACTIVE' | 'COMPLETED'>('ALL')
   const [category, setCategory] = useState<string>('ALL')
   const [showPinned, setShowPinned] = useState<boolean | null>(null)
@@ -124,7 +126,7 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
               radius: user.searchRadius || 50
             })
           } else {
-            alert('Please set your location in your profile to use nearby filtering')
+            warning('Please set your location in your profile to use nearby filtering')
             return
           }
         }

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
+import { useToast } from '@/context/ToastContext'
 
 const CATEGORIES = [
   { value: 'GENERAL', label: 'General', icon: '📋' },
@@ -118,6 +119,7 @@ interface RequestDetailClientProps {
 }
 
 export default function RequestDetailClient({ request: initialRequest, userId, userRole = 'USER' }: RequestDetailClientProps) {
+  const { success, error } = useToast()
   const [request, setRequest] = useState(initialRequest)
   const [comment, setComment] = useState('')
   const [loading, setLoading] = useState(false)
@@ -164,8 +166,8 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
         setRequest(updated)
         addToHistory('PENDING', 'APPROVED', 'Request approved by project owner')
       }
-    } catch (error) {
-      console.error('Failed to approve:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setLoading(false)
     }
@@ -179,8 +181,8 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
         setRequest({ ...request, status: 'REJECTED' })
         addToHistory('PENDING', 'REJECTED', 'Request rejected by project owner')
       }
-    } catch (error) {
-      console.error('Failed to reject:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setLoading(false)
     }
@@ -201,8 +203,8 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
         setRequest({ ...request, status: 'APPROVED' })
         addToHistory('PENDING', 'APPROVED', 'Item purchased on behalf of requester')
       }
-    } catch (error) {
-      console.error('Failed to purchase:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setLoading(false)
     }
@@ -226,8 +228,8 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
         })
         addToHistory(request.status, 'COMPLETED', 'Self-completed by requester')
       }
-    } catch (error) {
-      console.error('Failed to self-purchase:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setLoading(false)
     }
@@ -253,8 +255,8 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
         })
         addToHistory('PENDING', 'COMPLETED', completeMessage || 'Request completed by helper')
       }
-    } catch (error) {
-      console.error('Failed to complete:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setLoading(false)
     }
@@ -280,8 +282,8 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
         setRequest({ ...request, status: selectedHistory.fromStatus })
         addToHistory(request.status, selectedHistory.fromStatus, rollbackReason || `Rolled back to ${STATUS_LABELS[selectedHistory.fromStatus]?.label}`)
       }
-    } catch (error) {
-      console.error('Failed to rollback:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setLoading(false)
     }
@@ -302,10 +304,10 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
       if (res.ok) {
         setShowContactModal(false)
         setContactMessage('')
-        alert('Message sent!')
+        success('Message sent!')
       }
-    } catch (error) {
-      console.error('Failed to send message:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setLoading(false)
     }
@@ -358,8 +360,8 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
           deadline: editForm.deadline ? new Date(editForm.deadline).toISOString() : null,
         })
       }
-    } catch (error) {
-      console.error('Failed to edit:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setLoading(false)
     }
@@ -385,8 +387,8 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
         })
         setComment('')
       }
-    } catch (error) {
-      console.error('Failed to add comment:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setLoading(false)
     }

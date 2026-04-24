@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import styles from '../page.module.css'
+import { useToast } from '@/context/ToastContext'
 
 interface EscrowTransaction {
   id: string
@@ -42,6 +43,7 @@ export default function OrderDetailPage() {
   const { data: session, status: sessionStatus } = useSession()
   const router = useRouter()
   const params = useParams()
+  const { success, error } = useToast()
   const [order, setOrder] = useState<EscrowTransaction | null>(null)
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
@@ -76,8 +78,8 @@ export default function OrderDetailPage() {
       } else {
         router.push('/orders')
       }
-    } catch (error) {
-      console.error('Failed to fetch order:', error)
+    } catch (err) {
+      console.error(err)
       router.push('/orders')
     } finally {
       setLoading(false)
@@ -96,8 +98,8 @@ export default function OrderDetailPage() {
       if (res.ok) {
         fetchOrder()
       }
-    } catch (error) {
-      console.error('Failed to update order:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setUpdating(false)
     }
@@ -119,13 +121,13 @@ export default function OrderDetailPage() {
       if (res.ok) {
         setMessageText('')
         setShowMessageModal(false)
-        alert('Message sent!')
+        success('Message sent!')
       } else {
         const err = await res.json()
-        alert(err.error || 'Failed to send message')
+        error(err.error || 'Failed to send message')
       }
-    } catch (error) {
-      console.error('Failed to send message:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setSendingMessage(false)
     }
@@ -143,8 +145,8 @@ export default function OrderDetailPage() {
       if (res.ok) {
         fetchOrder()
       }
-    } catch (error) {
-      console.error('Failed to save notes:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setSavingNotes(false)
     }

@@ -4,7 +4,10 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useToast } from '@/context/ToastContext'
 import styles from './community.module.css'
+import { EmptyState } from '@/components/EmptyState'
+import { SkeletonList } from '@/components/Skeleton'
 
 interface Member {
   id: string
@@ -55,6 +58,7 @@ interface Request {
 export default function CommunityPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { success, error, warning } = useToast()
   const [activeTab, setActiveTab] = useState<'members' | 'connections' | 'requests' | 'groups' | 'marketRequests' | 'forum'>('members')
   const [members, setMembers] = useState<Member[]>([])
   const [connections, setConnections] = useState<Connection[]>([])
@@ -128,8 +132,8 @@ export default function CommunityPage() {
         const tipData = await tipRes.json()
         setCryptoBalances(tipData.cryptoBalances || [])
       }
-    } catch (error) {
-      console.error('Error fetching community data:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setLoading(false)
     }
@@ -143,14 +147,14 @@ export default function CommunityPage() {
         const data = await res.json()
         setForumPosts(data || [])
       }
-    } catch (error) {
-      console.error('Error fetching forum posts:', error)
+    } catch (err) {
+      console.error(err)
     }
   }
 
   const handleCreatePost = async () => {
     if (!newPostTitle || !newPostContent || !selectedCategory) {
-      alert('Please fill in all fields')
+      warning('Please fill in all fields')
       return
     }
     try {
@@ -165,15 +169,15 @@ export default function CommunityPage() {
         setNewPostContent('')
         fetchForumPosts(selectedCategory)
       }
-    } catch (error) {
-      console.error('Error creating post:', error)
+    } catch (err) {
+      console.error(err)
     }
   }
 
   const handleTip = async (type: 'post' | 'user', id: string, authorId: string) => {
     const amount = parseFloat(tipAmount)
     if (!amount || amount <= 0) {
-      alert('Please enter a valid amount')
+      warning('Please enter a valid amount')
       return
     }
     try {
@@ -184,13 +188,13 @@ export default function CommunityPage() {
           body: JSON.stringify({ userId: authorId, amount, cryptoSymbol: tipCrypto })
         })
         if (res.ok) {
-          alert('Tip sent successfully!')
+          success(`Tip sent! ${amount} ${tipCrypto}`)
           setTipTarget(null)
           setTipAmount('')
           fetchData()
         } else {
           const data = await res.json()
-          alert(data.error || 'Failed to send tip')
+          error(data.error || 'Failed to send tip')
         }
         } else {
           const res = await fetch('/api/forum/tip-post', {
@@ -199,18 +203,18 @@ export default function CommunityPage() {
             body: JSON.stringify({ postId: id, amount, cryptoSymbol: tipCrypto })
           })
           if (res.ok) {
-            alert(`Tip sent! ${amount} ${tipCrypto}`)
+            success(`Tip sent! ${amount} ${tipCrypto}`)
             setTipTarget(null)
             setTipAmount('')
             fetchForumPosts(selectedCategory || undefined)
             fetchData()
           } else {
             const errorData = await res.json()
-            alert(errorData.error || 'Failed to send tip')
+            error(errorData.error || 'Failed to send tip')
           }
         }
-    } catch (error) {
-      console.error('Error sending tip:', error)
+    } catch (err) {
+      console.error(err)
     }
   }
 
@@ -225,8 +229,8 @@ export default function CommunityPage() {
       if (res.ok) {
         fetchData()
       }
-    } catch (error) {
-      console.error('Error connecting:', error)
+    } catch (err) {
+      console.error(err)
     }
   }
 
@@ -241,8 +245,8 @@ export default function CommunityPage() {
       if (res.ok) {
         fetchData()
       }
-    } catch (error) {
-      console.error('Error accepting connection:', error)
+    } catch (err) {
+      console.error(err)
     }
   }
 

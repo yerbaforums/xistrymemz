@@ -7,39 +7,46 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getServerSession(authOptions)
-  
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const { id } = await params
-
-  const existingRequest = await prisma.request.findFirst({
-    where: {
-      id,
-      plan: { userId: session.user.id }
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-  })
 
-  if (!existingRequest) {
-    return NextResponse.json({ error: 'Request not found or unauthorized' }, { status: 404 })
-  }
+    const { id } = await params
 
-  const req = await prisma.request.update({
-    where: { id },
-    data: { status: 'REJECTED' }
-  })
+    const userRole = (session.user as { role?: string }).role
+    const isAdmin = userRole === 'ADMIN'
 
-  await prisma.requestStatusHistory.create({
-    data: {
-      requestId: id,
-      fromStatus: existingRequest.status,
-      toStatus: 'REJECTED',
-      changedById: session.user.id,
-      reason: 'Rejected by project owner'
+    const existingRequest = await prisma.request.findFirst({
+      where: isAdmin
+        ? { id }
+        : { id, plan: { userId: session.user.id } }
+    })
+
+    if (!existingRequest) {
+      return NextResponse.json({ error: 'Request not found or unauthorized' }, { status: 404 })
     }
-  })
 
-  return NextResponse.json(req)
+    const req = await prisma.request.update({
+      where: { id },
+      data: { status: 'REJECTED' }
+    })
+
+    await prisma.requestStatusHistory.create({
+      data: {
+        requestId: id,
+        fromStatus: existingRequest.status,
+        toStatus: 'REJECTED',
+        changedById: session.user.id,
+        reason: isAdmin ? 'Rejected by admin' : 'Rejected by project owner'
+      }
+    })
+
+    return NextResponse.json(req)
+  } catch (error) {
+    console.error('POST /api/requests/[id]/reject:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 }

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
 import { calculateDistance, geocodeLocation } from '@/lib/geocoding'
+import { useToast } from '@/context/ToastContext'
 
 import dynamic from 'next/dynamic'
 
@@ -51,6 +52,7 @@ interface Plan {
 }
 
 export default function EventsPage() {
+  const { warning, info } = useToast()
   const [plans, setPlans] = useState<Plan[]>([])
   const [filteredPlans, setFilteredPlans] = useState<Plan[]>([])
   const [category, setCategory] = useState('ALL')
@@ -82,11 +84,11 @@ export default function EventsPage() {
       if (result) {
         setUserLocation({ lat: result.latitude, lon: result.longitude })
       } else {
-        alert('Could not find location for that zip code')
+        warning('Could not find location for that zip code')
         setUserLocation(null)
       }
-    } catch (error) {
-      console.error('Geocoding error:', error)
+    } catch (err) {
+      console.error(err)
       setUserLocation(null)
     } finally {
       setGeocodingLoading(false)
@@ -95,7 +97,14 @@ export default function EventsPage() {
 
   useEffect(() => {
     fetch('/api/public/events')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          return res.json().catch(() => ({ error: 'Failed to fetch events' })).then(data => {
+            throw new Error(data.error || 'Request failed')
+          })
+        }
+        return res.json()
+      })
       .then(data => {
         setPlans(data)
         setFilteredPlans(data)
@@ -104,7 +113,10 @@ export default function EventsPage() {
       .catch(() => setLoading(false))
     
     fetch('/api/auth/session')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch session')
+        return res.json()
+      })
       .then(data => {
         if (data?.user?.id) {
           setUserId(data.user.id)
@@ -115,7 +127,7 @@ export default function EventsPage() {
 
   const handleJoin = async (eventId: string) => {
     if (!userId) {
-      alert('Please sign in to join events')
+      info('Please sign in to join events')
       return
     }
     setJoining(eventId)
@@ -129,8 +141,8 @@ export default function EventsPage() {
           setSelectedPlan({ ...selectedPlan, joiners: [...(selectedPlan.joiners || []), newJoiner], joined: true })
         }
       }
-    } catch (error) {
-      console.error('Failed to join:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setJoining(null)
     }
@@ -148,8 +160,8 @@ export default function EventsPage() {
           setSelectedPlan({ ...selectedPlan, joiners: (selectedPlan.joiners || []).slice(0, -1), joined: false })
         }
       }
-    } catch (error) {
-      console.error('Failed to leave:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setJoining(null)
     }

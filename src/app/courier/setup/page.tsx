@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import styles from './page.module.css'
+import { useToast } from '@/context/ToastContext'
 
 interface CourierService {
   id: string
@@ -20,6 +21,7 @@ interface CourierService {
 export default function CourierSetupPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { success, error } = useToast()
   const [services, setServices] = useState<CourierService[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -55,8 +57,8 @@ export default function CourierSetupPage() {
         const data = await res.json()
         setServices(data)
       }
-    } catch (error) {
-      console.error('Failed to fetch services:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setLoading(false)
     }
@@ -97,11 +99,11 @@ export default function CourierSetupPage() {
         })
         fetchServices()
       } else {
-        const error = await res.json()
-        alert(error.error || 'Failed to save service')
+        const err = await res.json()
+        error(err.error || 'Failed to save service')
       }
-    } catch (error) {
-      console.error('Failed to save service:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setSaving(false)
     }
@@ -129,8 +131,8 @@ export default function CourierSetupPage() {
       if (res.ok) {
         fetchServices()
       }
-    } catch (error) {
-      console.error('Failed to delete:', error)
+    } catch (err) {
+      console.error(err)
     }
   }
 
@@ -144,8 +146,8 @@ export default function CourierSetupPage() {
       if (res.ok) {
         fetchServices()
       }
-    } catch (error) {
-      console.error('Failed to toggle:', error)
+    } catch (err) {
+      console.error(err)
     }
   }
 

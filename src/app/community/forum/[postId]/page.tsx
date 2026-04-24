@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import styles from '../../community.module.css'
+import { useToast } from '@/context/ToastContext'
 
 interface Author {
   id: string
@@ -41,8 +42,8 @@ interface Reply {
 export default function ForumThreadPage() {
   const params = useParams()
   const postId = params.postId as string
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: session } = useSession()
+  const { success, error } = useToast()
   
   const [post, setPost] = useState<Post | null>(null)
   const [replies, setReplies] = useState<Reply[]>([])
@@ -197,8 +198,8 @@ export default function ForumThreadPage() {
         const data = await res.json()
         setPost(data)
       }
-    } catch (error) {
-      console.error('Error fetching post:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setLoading(false)
     }
@@ -211,8 +212,8 @@ export default function ForumThreadPage() {
         const data = await res.json()
         setReplies(data)
       }
-    } catch (error) {
-      console.error('Error fetching replies:', error)
+    } catch (err) {
+      console.error(err)
     }
   }
 
@@ -223,8 +224,8 @@ export default function ForumThreadPage() {
         const data = await res.json()
         setCryptoBalances(data.cryptoBalances || [])
       }
-    } catch (error) {
-      console.error('Error fetching tip options:', error)
+    } catch (err) {
+      console.error(err)
     }
   }
 
@@ -242,8 +243,8 @@ export default function ForumThreadPage() {
         fetchReplies()
         fetchPost()
       }
-    } catch (error) {
-      console.error('Error submitting reply:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setSubmitting(false)
     }
@@ -267,7 +268,7 @@ export default function ForumThreadPage() {
       })
       if (res.ok) {
         const data = await res.json()
-        alert(`Tip sent! ${amount} ${tipCrypto} ($${data.amount?.toFixed(2)})`)
+        success(`Tip sent! ${amount} ${tipCrypto} ($${data.amount?.toFixed(2)})`)
         setTipTarget(null)
         setTipAmount('')
         fetchPost()
@@ -275,10 +276,10 @@ export default function ForumThreadPage() {
         fetchTipOptions()
       } else {
         const data = await res.json()
-        alert(data.error || 'Failed to send tip')
+        error(data.error || 'Failed to send tip')
       }
-    } catch (error) {
-      console.error('Error sending tip:', error)
+    } catch (err) {
+      console.error(err)
     }
   }
 

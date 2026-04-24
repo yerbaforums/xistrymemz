@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
+import { useToast } from '@/context/ToastContext'
 
 interface ShopData {
   shopName: string | null
@@ -34,6 +35,7 @@ interface Product {
 }
 
 export default function SetupShopPage() {
+  const { success, error, warning } = useToast()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -97,6 +99,9 @@ export default function SetupShopPage() {
         fetch('/api/my-products')
       ])
       
+      if (!shopRes.ok) throw new Error('Failed to fetch shop')
+      if (!productsRes.ok) throw new Error('Failed to fetch products')
+      
       const shop = await shopRes.json()
       const prods = await productsRes.json()
       
@@ -109,8 +114,8 @@ export default function SetupShopPage() {
         name: shop.name || ''
       })
       setProducts(prods || [])
-    } catch (error) {
-      console.error('Failed to fetch shop data:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setLoading(false)
     }
@@ -126,12 +131,16 @@ export default function SetupShopPage() {
         method: 'POST',
         body: formData
       })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Upload failed')
+      }
       const data = await res.json()
       if (data.url) {
         callback(data.url)
       }
-    } catch (error) {
-      console.error('Upload failed:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setUploading(false)
     }
@@ -169,14 +178,14 @@ export default function SetupShopPage() {
       })
 
       if (res.ok) {
-        alert('Shop settings saved!')
+        success('Shop settings saved!')
         fetchShopData()
       } else {
-        const error = await res.json()
-        alert(error.error || 'Failed to save')
+        const err = await res.json()
+        error(err.error || 'Failed to save')
       }
-    } catch (error) {
-      console.error('Failed to save:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setSaving(false)
     }
@@ -212,11 +221,11 @@ export default function SetupShopPage() {
         })
         fetchShopData()
       } else {
-        const error = await res.json()
-        alert(error.error || 'Failed to create product')
+        const err = await res.json()
+        error(err.error || 'Failed to create product')
       }
-    } catch (error) {
-      console.error('Failed to create:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setSaving(false)
     }
@@ -261,11 +270,11 @@ export default function SetupShopPage() {
         setEditingProduct(null)
         fetchShopData()
       } else {
-        const error = await res.json()
-        alert(error.error || 'Failed to update product')
+        const err = await res.json()
+        error(err.error || 'Failed to update product')
       }
-    } catch (error) {
-      console.error('Failed to update:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setSaving(false)
     }
@@ -279,8 +288,8 @@ export default function SetupShopPage() {
       if (res.ok) {
         fetchShopData()
       }
-    } catch (error) {
-      console.error('Failed to delete:', error)
+    } catch (err) {
+      console.error(err)
     }
   }
 
@@ -294,8 +303,8 @@ export default function SetupShopPage() {
       if (res.ok) {
         fetchShopData()
       }
-    } catch (error) {
-      console.error('Failed to toggle:', error)
+    } catch (err) {
+      console.error(err)
     }
   }
 

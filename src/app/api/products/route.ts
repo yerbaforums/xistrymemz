@@ -3,80 +3,86 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { geocodeLocation } from '@/lib/geocoding'
+import { productSchema, validateBody } from '@/lib/schemas'
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
-  const category = searchParams.get('category')
-  const type = searchParams.get('type')
-  const location = searchParams.get('location')
-  const shopSlug = searchParams.get('shopSlug')
-  const userId = searchParams.get('userId')
-  const localOnly = searchParams.get('localOnly') === 'true'
-  const userLat = searchParams.get('lat')
-  const userLng = searchParams.get('lng')
-  const radius = searchParams.get('radius')
+  try {
+    const { searchParams } = new URL(request.url)
+    const category = searchParams.get('category')
+    const type = searchParams.get('type')
+    const location = searchParams.get('location')
+    const shopSlug = searchParams.get('shopSlug')
+    const userId = searchParams.get('userId')
+    const localOnly = searchParams.get('localOnly') === 'true'
+    const userLat = searchParams.get('lat')
+    const userLng = searchParams.get('lng')
+    const radius = searchParams.get('radius')
 
-  const session = await getServerSession(authOptions)
-  let userLocation = null
-  let userRadius = 50
+    const session = await getServerSession(authOptions)
+    let userLocation = null
+    let userRadius = 50
 
-  if (session?.user?.id) {
-    userLocation = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { latitude: true, longitude: true, searchRadius: true }
-    })
-    if (userLocation?.searchRadius) {
-      userRadius = userLocation.searchRadius
-    }
-  }
-
-  const searchRadius = radius ? parseFloat(radius) : userRadius
-
-  const where: { published: boolean; category?: string; type?: string; location?: string; user?: { shopSlug: string }; userId?: string; OR?: Record<string, unknown>[] } = { published: true }
-
-  if (category && category !== 'ALL') {
-    where.category = category
-  }
-  if (type && type !== 'ALL') {
-    where.type = type
-  }
-  if (location && location !== 'ALL') {
-    where.location = location
-  }
-  if (shopSlug) {
-    where.user = { shopSlug }
-  }
-  if (userId) {
-    where.userId = userId
-  }
-
-  const products = await prisma.product.findMany({
-    where,
-    include: {
-      user: { select: { name: true, location: true, neighborhood: true } }
-    },
-    orderBy: [
-      { pinned: 'desc' },
-      { createdAt: 'desc' }
-    ]
-  })
-
-  let filteredProducts = products
-  if (localOnly && (userLat || userLocation?.latitude)) {
-    const lat = userLat ? parseFloat(userLat) : userLocation?.latitude
-    const lng = userLng ? parseFloat(userLng) : userLocation?.longitude
-
-    if (lat && lng) {
-      filteredProducts = products.filter(p => {
-        if (p.isGlobal || p.isRemote) return true
-        if (!p.latitude || !p.longitude) return true
-        const distance = calculateDistance(lat, lng, p.latitude, p.longitude)
-        return distance <= searchRadius
+    if (session?.user?.id) {
+      userLocation = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { latitude: true, longitude: true, searchRadius: true }
       })
+      if (userLocation?.searchRadius) {
+        userRadius = userLocation.searchRadius
+      }
     }
-  }
 
-  return NextResponse.json(filteredProducts)
+    const searchRadius = radius ? parseFloat(radius) : userRadius
+
+    const where: { published: boolean; category?: string; type?: string; location?: string; user?: { shopSlug: string }; userId?: string; OR?: Record<string, unknown>[] } = { published: true }
+
+    if (category && category !== 'ALL') {
+      where.category = category
+    }
+    if (type && type !== 'ALL') {
+      where.type = type
+    }
+    if (location && location !== 'ALL') {
+      where.location = location
+    }
+    if (shopSlug) {
+      where.user = { shopSlug }
+    }
+    if (userId) {
+      where.userId = userId
+    }
+
+    const products = await prisma.product.findMany({
+      where,
+      include: {
+        user: { select: { name: true, location: true, neighborhood: true } }
+      },
+      orderBy: [
+        { pinned: 'desc' },
+        { createdAt: 'desc' }
+      ]
+    })
+
+    let filteredProducts = products
+    if (localOnly && (userLat || userLocation?.latitude)) {
+      const lat = userLat ? parseFloat(userLat) : userLocation?.latitude
+      const lng = userLng ? parseFloat(userLng) : userLocation?.longitude
+
+      if (lat && lng) {
+        filteredProducts = products.filter(p => {
+          if (p.isGlobal || p.isRemote) return true
+          if (!p.latitude || !p.longitude) return true
+          const distance = calculateDistance(lat, lng, p.latitude, p.longitude)
+          return distance <= searchRadius
+        })
+      }
+    }
+
+    return NextResponse.json(filteredProducts)
+  } catch (error) {
+    console.error('GET /api/products:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 }
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -95,50 +101,42 @@ function toRad(deg: number): number {
 }
 
 export async function POST(request: Request) {
-  const session = await getServerSession(authOptions)
-  
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const body = await request.json()
-  const { title, description, price, type, category, condition, location, locationDetails, imageUrl, isGlobal, isRemote, paymentMethods, paymentType, acceptsRequests, requestPrice, sellerPayoutAddress, sellerCryptoCurrency } = body
-
-  let latitude = null
-  let longitude = null
-
-  if (location && !isGlobal) {
-    const geocodeResult = await geocodeLocation(location)
-    if (geocodeResult) {
-      latitude = geocodeResult.latitude
-      longitude = geocodeResult.longitude
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-  }
 
-  const product = await prisma.product.create({
-    data: {
-      title,
-      description,
-      price: price ? parseFloat(price) : null,
-      type: type || 'PRODUCT',
-      category,
-      condition,
-      location: isGlobal ? 'GLOBAL' : location,
-      locationDetails,
-      latitude,
-      longitude,
-      isGlobal: isGlobal || false,
-      isRemote: isRemote || false,
-      imageUrl,
-      paymentMethods: paymentMethods ? paymentMethods.join(',') : null,
-      paymentType: paymentType || 'BOTH',
-      acceptsRequests: acceptsRequests || false,
-      requestPrice: requestPrice ? parseFloat(requestPrice) : null,
-      sellerPayoutAddress: sellerPayoutAddress || null,
-      sellerCryptoCurrency: sellerCryptoCurrency || null,
-      userId: session.user.id
+    const body = await request.json()
+    const validation = validateBody(productSchema, body)
+    
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400 })
     }
-  })
 
-  return NextResponse.json(product)
+    const { name, description, price, category, imageUrl } = validation.data
+
+    let latitude: number | null = null
+    let longitude: number | null = null
+
+    const product = await prisma.product.create({
+      data: {
+        title: name,
+        description,
+        price,
+        type: 'PRODUCT',
+        category,
+        location: 'GLOBAL',
+        isGlobal: true,
+        imageUrl,
+        userId: session.user.id
+      }
+    })
+
+    return NextResponse.json(product)
+  } catch (error) {
+    console.error('POST /api/products:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 }

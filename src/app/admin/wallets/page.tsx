@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
 import { getCryptoIcon, CRYPTO_ICONS } from '@/lib/crypto-icons'
+import { useToast } from '@/context/ToastContext'
 
 function Breadcrumbs() {
   return (
@@ -52,6 +53,7 @@ type SortField = 'cryptoType' | 'address' | 'createdAt' | 'user' | 'isPrimary' |
 type SortDir = 'asc' | 'desc'
 
 export default function AdminWalletsPage() {
+  const { success, error } = useToast()
   const [wallets, setWallets] = useState<AdminWallet[]>([])
   const [userWallets, setUserWallets] = useState<UserWallet[]>([])
   const [cryptoTypes, setCryptoTypes] = useState<CryptoType[]>([])
@@ -86,6 +88,7 @@ export default function AdminWalletsPage() {
         fetch('/api/admin/wallets?userWallets=true')
       ])
       
+      if (!adminRes.ok) throw new Error('Failed to fetch admin wallets')
       const adminData = await adminRes.json()
       if (adminData.wallets) setWallets(adminData.wallets)
       if (adminData.cryptoTypes) setCryptoTypes(adminData.cryptoTypes)
@@ -95,10 +98,11 @@ export default function AdminWalletsPage() {
       }
       if (adminData.platformWallet) setPlatformWallet(adminData.platformWallet)
       
+      if (!userRes.ok) throw new Error('Failed to fetch user wallets')
       const userData = await userRes.json()
       if (userData.wallets) setUserWallets(userData.wallets)
-    } catch (error) {
-      console.error('Failed to fetch wallets:', error)
+    } catch (err) {
+      console.error('Failed to fetch wallets:', err)
     } finally {
       setLoading(false)
     }
@@ -112,16 +116,17 @@ export default function AdminWalletsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'generate', cryptoType: selectedCrypto })
       })
+      if (!res.ok) throw new Error('Failed to generate wallet')
       const data = await res.json()
       if (data.success && data.wallet) {
         setWallets(prev => [data.wallet, ...prev])
-        alert(`Wallet generated for ${data.wallet.cryptoName}!`)
+        success(`Wallet generated for ${data.wallet.cryptoName}!`)
       } else if (data.error) {
-        alert(data.error)
+        error(data.error)
       }
-    } catch (error) {
-      console.error('Failed to generate wallet:', error)
-      alert('Failed to generate wallet')
+    } catch (err) {
+      console.error('Failed to generate wallet:', err)
+      error('Failed to generate wallet')
     } finally {
       setSaving(false)
     }
@@ -147,15 +152,16 @@ export default function AdminWalletsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'delete', walletId })
       })
+      if (!res.ok) throw new Error('Failed to delete wallet')
       const data = await res.json()
       if (data.success) {
         setWallets(prev => prev.filter(w => w.id !== walletId))
       } else if (data.error) {
-        alert(data.error)
+        error(data.error)
       }
-    } catch (error) {
-      console.error('Failed to delete wallet:', error)
-      alert('Failed to delete wallet')
+    } catch (err) {
+      console.error('Failed to delete wallet:', err)
+      error('Failed to delete wallet')
     } finally {
       setSaving(false)
     }
@@ -180,19 +186,20 @@ export default function AdminWalletsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'setPrimary', walletId, cryptoType: wallet.cryptoType })
       })
+      if (!res.ok) throw new Error('Failed to set primary wallet')
       const data = await res.json()
       if (data.success) {
         setWallets(prev => prev.map(w => ({
           ...w,
           isPrimary: w.cryptoType === wallet.cryptoType ? w.id === walletId : w.isPrimary
         })))
-        alert('Primary wallet updated!')
+        success('Primary wallet updated!')
       } else if (data.error) {
-        alert(data.error)
+        error(data.error)
       }
-    } catch (error) {
-      console.error('Failed to set primary wallet:', error)
-      alert('Failed to set primary wallet')
+    } catch (err) {
+      console.error('Failed to set primary wallet:', err)
+      error('Failed to set primary wallet')
     } finally {
       setSaving(false)
     }
@@ -213,15 +220,16 @@ export default function AdminWalletsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'viewPrivateKey', walletId: keyToView })
       })
+      if (!res.ok) throw new Error('Failed to view private key')
       const data = await res.json()
       if (data.success && data.privateKey) {
         setViewedData({ type: 'key', data: data.privateKey })
       } else if (data.error) {
-        alert(data.error)
+        error(data.error)
       }
-    } catch (error) {
-      console.error('Failed to view private key:', error)
-      alert('Failed to view private key')
+    } catch (err) {
+      console.error('Failed to view private key:', err)
+      error('Failed to view private key')
     } finally {
       setSaving(false)
       setShowKeyWarning(false)
@@ -238,15 +246,16 @@ export default function AdminWalletsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'viewSeedPhrase', walletId: keyToView })
       })
+      if (!res.ok) throw new Error('Failed to view seed phrase')
       const data = await res.json()
       if (data.success && data.seedPhrase) {
         setViewedData({ type: 'seed', data: data.seedPhrase })
       } else if (data.error) {
-        alert(data.error)
+        error(data.error)
       }
-    } catch (error) {
-      console.error('Failed to view seed phrase:', error)
-      alert('Failed to view seed phrase')
+    } catch (err) {
+      console.error('Failed to view seed phrase:', err)
+      error('Failed to view seed phrase')
     } finally {
       setSaving(false)
       setShowKeyWarning(false)
@@ -296,10 +305,10 @@ export default function AdminWalletsPage() {
       setWallets(prev => prev.filter(w => !selectedWallets.has(w.id)))
       setSelectedWallets(new Set())
       setSelectAll(false)
-      alert(`${selectedWallets.size} wallet(s) deleted successfully!`)
-    } catch (error) {
-      console.error('Failed to delete wallets:', error)
-      alert('Failed to delete wallets')
+      success(`${selectedWallets.size} wallet(s) deleted successfully!`)
+    } catch (err) {
+      console.error('Failed to delete wallets:', err)
+      error('Failed to delete wallets')
     } finally {
       setSaving(false)
     }
@@ -327,10 +336,10 @@ export default function AdminWalletsPage() {
       setUserWallets(prev => prev.filter(w => !selectedUserWallets.has(w.id)))
       setSelectedUserWallets(new Set())
       setUserWalletSelectAll(false)
-      alert(`${selectedUserWallets.size} user wallet(s) deleted successfully!`)
-    } catch (error) {
-      console.error('Failed to delete user wallets:', error)
-      alert('Failed to delete user wallets')
+      success(`${selectedUserWallets.size} user wallet(s) deleted successfully!`)
+    } catch (err) {
+      console.error('Failed to delete user wallets:', err)
+      error('Failed to delete user wallets')
     } finally {
       setSaving(false)
     }
@@ -344,12 +353,13 @@ export default function AdminWalletsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ platformFeePercent: escrowFee })
       })
+      if (!res.ok) throw new Error('Failed to save fee')
       const data = await res.json()
       if (data.success) {
-        alert('Escrow fee updated successfully!')
+        success('Escrow fee updated successfully!')
       }
-    } catch (error) {
-      console.error('Failed to save fee:', error)
+    } catch (err) {
+      console.error('Failed to save fee:', err)
     } finally {
       setSaving(false)
     }

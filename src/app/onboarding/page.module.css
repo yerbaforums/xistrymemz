@@ -2,6 +2,7 @@
   min-height: 100vh;
   background: var(--bg-primary);
   padding: 24px;
+  padding-top: calc(var(--header-height) + 24px);
 }
 
 .container {
@@ -34,6 +35,25 @@
 .skipBtn:hover {
   color: var(--text-primary);
   background: var(--bg-tertiary);
+}
+
+.headerActions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.backBtn {
+  background: transparent;
+  color: var(--accent-primary);
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--radius-md);
+}
+
+.backBtn:hover {
+  background: rgba(0, 217, 255, 0.1);
 }
 
 .progress {

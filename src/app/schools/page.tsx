@@ -81,6 +81,7 @@ export default function SchoolsPage() {
       if (sort) params.set('sort', sort)
       
       const res = await fetch(`/api/schools?${params}`)
+      if (!res.ok) throw new Error('Failed to fetch')
       const data = await res.json()
       setSchools(data.schools || [])
       setContents(data.contents || [])

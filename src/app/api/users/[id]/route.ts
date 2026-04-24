@@ -196,7 +196,7 @@ export async function GET(
       })
 
       if (connection) {
-        isConnected = connection.status === 'CONNECTED'
+        isConnected = connection.status === 'ACCEPTED'
         hasPendingRequest = connection.status === 'PENDING' && connection.requesterId === id
         connectionId = connection.id
       }

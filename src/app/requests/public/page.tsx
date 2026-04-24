@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
 import { calculateDistance, geocodeLocation } from '@/lib/geocoding'
+import { useToast } from '@/context/ToastContext'
 
 import dynamic from 'next/dynamic'
 
@@ -48,6 +49,7 @@ interface Request {
 }
 
 export default function PublicRequestsPage() {
+  const { warning } = useToast()
   const [requests, setRequests] = useState<Request[]>([])
   const [filteredRequests, setFilteredRequests] = useState<Request[]>([])
   const [status, setStatus] = useState('ALL')
@@ -124,11 +126,11 @@ export default function PublicRequestsPage() {
       if (result) {
         setUserLocation({ lat: result.latitude, lon: result.longitude })
       } else {
-        alert('Could not find location')
+        warning('Could not find location')
         setUserLocation(null)
       }
-    } catch (error) {
-      console.error('Geocoding error:', error)
+    } catch (err) {
+      console.error(err)
       setUserLocation(null)
     } finally {
       setGeocodingLoading(false)

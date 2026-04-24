@@ -40,7 +40,10 @@ export default function ShopPage() {
         setShop(data)
         return fetch(`/api/products?userId=${data.user.id}`)
       })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch products')
+        return res.json()
+      })
       .then(data => {
         setProducts(data)
         setLoading(false)

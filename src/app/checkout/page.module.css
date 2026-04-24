@@ -215,7 +215,7 @@
 }
 
 .paymentOptions:has(.paymentOption.active:first-child) {
-  border-color: #10b981;
+  border-color: var(--accent-success);
 }
 
 .paymentOption {
@@ -238,7 +238,7 @@
 }
 
 .paymentOption.active {
-  border-color: #10b981;
+  border-color: var(--accent-success);
   background: rgba(16, 185, 129, 0.15);
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.4);
 }
@@ -263,8 +263,8 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-md);
-  background: #10b981;
-  color: #fff;
+  background: var(--accent-success);
+  color: var(--bg-primary);
   line-height: 1.1;
   text-align: center;
 }
@@ -314,12 +314,12 @@
 }
 
 .cryptoBtn:hover {
-  border-color: #10b981;
+  border-color: var(--accent-success);
   background: rgba(16, 185, 129, 0.15);
 }
 
 .cryptoBtn.selected {
-  border-color: #10b981;
+  border-color: var(--accent-success);
   background: rgba(16, 185, 129, 0.2);
   box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
 }
@@ -429,7 +429,7 @@
 .checkoutBtn {
   width: 100%;
   padding: 16px;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-success) 100%);
   color: white;
   border: none;
   border-radius: var(--radius-md);
@@ -469,11 +469,11 @@
   border-radius: var(--radius-lg);
   padding: 24px;
   margin: 20px 0;
-  border: 1px solid #3b82f6;
+  border: 1px solid var(--accent-primary);
 }
 
 .paymentInstructions h3 {
-  color: #60a5fa;
+  color: var(--accent-primary);
   margin-bottom: 16px;
 }
 
@@ -487,19 +487,19 @@
 
 .paymentAddress code {
   display: block;
-  color: #10b981;
+  color: var(--accent-success);
   font-size: 0.9rem;
   margin-top: 8px;
 }
 
 .paymentAmount {
-  color: #fbbf24;
+  color: var(--accent-warning);
   font-weight: 600;
   margin: 12px 0;
 }
 
 .paymentHint {
-  color: #9ca3af;
+  color: var(--text-muted);
   font-size: 0.875rem;
   margin-bottom: 16px;
 }
@@ -512,7 +512,7 @@
 
 .txHashInput label {
   display: block;
-  color: #d1d5db;
+  color: var(--text-secondary);
   margin-bottom: 8px;
   font-size: 0.875rem;
 }
@@ -521,16 +521,16 @@
   width: 100%;
   padding: 12px;
   background: rgba(0, 0, 0, 0.3);
-  border: 1px solid #4b5563;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  color: #e5e7eb;
+  color: var(--text-secondary);
   font-family: monospace;
   font-size: 0.875rem;
 }
 
 .txInput:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: var(--accent-primary);
 }
 
 .confirmBtn {

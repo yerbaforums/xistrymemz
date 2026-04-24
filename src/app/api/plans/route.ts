@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { planSchema, validateBody } from '@/lib/schemas'
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -36,11 +37,13 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json()
-  const { title, description, goals, mileposts } = body
-
-  if (!title) {
-    return NextResponse.json({ error: 'Title is required' }, { status: 400 })
+  const validation = validateBody(planSchema, body)
+  
+  if (!validation.success) {
+    return NextResponse.json({ error: validation.error }, { status: 400 })
   }
+
+  const { title, description, goals, mileposts } = validation.data
 
   const plan = await prisma.plan.create({
     data: {

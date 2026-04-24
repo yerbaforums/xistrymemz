@@ -114,6 +114,7 @@ export default function RatingDisplay({ userId, productId, type = 'SELLER' }: Ra
         <button 
           onClick={() => setShowRatingForm(true)} 
           className={styles.rateBtn}
+          aria-label="Leave a review"
         >
           Leave a Review
         </button>
@@ -130,6 +131,7 @@ export default function RatingDisplay({ userId, productId, type = 'SELLER' }: Ra
                 onClick={() => setNewRating(star)}
                 className={styles.starBtn}
                 style={{ color: star <= newRating ? '#FFD700' : '#ccc' }}
+                aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
               >
                 ★
               </button>

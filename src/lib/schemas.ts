@@ -1,0 +1,110 @@
+import { z } from 'zod'
+
+export const planSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(200),
+  description: z.string().max(5000).optional(),
+  goals: z.string().optional(),
+  mileposts: z.string().optional()
+})
+
+export const requestSchema = z.object({
+  planId: z.string().optional(),
+  productId: z.string().optional(),
+  groupId: z.string().optional(),
+  schoolContentId: z.string().optional(),
+  eventId: z.string().optional(),
+  title: z.string().min(1, 'Title is required').max(200),
+  description: z.string().max(5000).optional(),
+  category: z.string().optional(),
+  priority: z.string().optional(),
+  budget: z.number().optional(),
+  goalAmount: z.number().optional(),
+  currentFunding: z.number().optional(),
+  location: z.string().optional(),
+  isPublic: z.boolean().optional()
+})
+
+export const productSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(200),
+  description: z.string().max(5000).optional(),
+  price: z.number().min(0),
+  category: z.string().optional(),
+  imageUrl: z.string().url().optional()
+})
+
+export const groupSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100),
+  description: z.string().max(1000).optional(),
+  privacy: z.enum(['PUBLIC', 'PRIVATE']).optional()
+})
+
+export const forumPostSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(300),
+  content: z.string().min(1, 'Content is required').max(20000),
+  categoryId: z.string().optional()
+})
+
+export const eventSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(200),
+  description: z.string().max(5000).optional(),
+  startDate: z.string(),
+  endDate: z.string().optional(),
+  location: z.string().optional(),
+  isOnline: z.boolean().optional()
+})
+
+export const updateSchema = z.object({
+  content: z.string().min(1, 'Content is required').max(10000)
+})
+
+export const commentSchema = z.object({
+  content: z.string().min(1, 'Content is required').max(2000)
+})
+
+export const roleSchema = z.object({
+  userId: z.string().min(1, 'User ID is required'),
+  role: z.enum(['ADMIN', 'MODERATOR', 'USER'])
+})
+
+export const settingsSchema = z.object({
+  key: z.string().min(1, 'Key is required'),
+  value: z.string()
+})
+
+export const schoolSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(200),
+  description: z.string().max(5000).optional(),
+  category: z.string().optional()
+})
+
+export const shopSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100),
+  slug: z.string().min(1, 'Slug is required').max(100),
+  description: z.string().max(2000).optional()
+})
+
+export const escrowSchema = z.object({
+  requestId: z.string().min(1, 'Request ID is required'),
+  amount: z.number().min(1, 'Amount must be greater than 0')
+})
+
+export const contactSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100),
+  email: z.string().email('Invalid email').max(200),
+  message: z.string().min(1, 'Message is required').max(5000)
+})
+
+export const locationSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(200),
+  lat: z.number().min(-90).max(90),
+  lng: z.number().min(-180).max(180)
+})
+
+export function validateBody<T>(schema: z.ZodSchema<T>, body: unknown): { success: true; data: T } | { success: false; error: string } {
+  const result = schema.safeParse(body)
+  if (!result.success) {
+    const issues = result.error.issues.map(i => i.message).join(', ')
+    return { success: false, error: issues }
+  }
+  return { success: true, data: result.data }
+}

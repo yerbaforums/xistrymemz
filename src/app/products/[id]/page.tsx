@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react'
 import styles from './page.module.css'
 import { useCart } from '@/context/CartContext'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
+import { useToast } from '@/context/ToastContext'
 import Rating from '@/components/Rating'
 
 interface Product {
@@ -49,6 +50,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const { data: session } = useSession()
   const { addItem } = useCart()
   const { settings } = useSiteSettings()
+  const { success, error, warning, info } = useToast()
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [isOwner, setIsOwner] = useState(false)
@@ -98,7 +100,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     if (!resolvedParams) return
     
     fetch(`/api/products/${resolvedParams.id}`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          return res.json().catch(() => ({ error: 'Failed to fetch product' })).then(data => {
+            throw new Error(data.error || 'Request failed')
+          })
+        }
+        return res.json()
+      })
       .then(data => {
         setProduct(data)
         setEditData({
@@ -116,7 +125,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           sellerCryptoCurrency: data.sellerCryptoCurrency || 'ETH'
         })
         fetch(`/api/user/shop?userId=${data.user.id}`)
-          .then(r => r.json())
+          .then(r => {
+            if (!r.ok) throw new Error('Failed to fetch shop')
+            return r.json()
+          })
           .then(shop => setSellerShop(shop))
         setLoading(false)
       })
@@ -132,7 +144,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   useEffect(() => {
     if (showPlanModal) {
       fetch('/api/plans')
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) {
+            return res.json().catch(() => ({ error: 'Failed to fetch plans' })).then(data => {
+              throw new Error(data.error || 'Request failed')
+            })
+          }
+          return res.json()
+        })
         .then(data => {
           const userPlans = Array.isArray(data) ? data.filter((p: Plan) => p.status === 'ACTIVE') : []
           setPlans(userPlans)
@@ -158,17 +177,17 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       })
 
       if (res.ok) {
-        alert('Request posted! Request is now live for community funding.')
+        success('Request posted! Request is now live for community funding.')
         setShowRequestModal(false)
         setRequestTitle('')
         setRequestDesc('')
         setRequestGoal('')
       } else {
-        const error = await res.json()
-        alert(error.error || 'Failed to post request')
+        const err = await res.json()
+        error(err.error || 'Failed to post request')
       }
-    } catch (error) {
-      console.error('Failed to post request:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setRequestLoading(false)
     }
@@ -191,15 +210,15 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       })
 
       if (res.ok) {
-        alert('Added to plan!')
+        success('Added to plan!')
         setShowPlanModal(false)
         setSelectedPlan('')
       } else {
-        const error = await res.json()
-        alert(error.error || 'Failed to add to plan')
+        const err = await res.json()
+        error(err.error || 'Failed to add to plan')
       }
-    } catch (error) {
-      console.error('Failed to add to plan:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setAddingToPlan(false)
     }
@@ -207,7 +226,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
   const handleEscrowCheckout = async () => {
     if (!product || !session?.user) {
-      alert('Please sign in to use escrow checkout')
+      info('Please sign in to use escrow checkout')
       return
     }
     setEscrowLoading(true)
@@ -229,14 +248,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       })
       if (res.ok) {
         const data = await res.json()
-alert(`Escrow created! Transaction ID: ${data.id}. Please send crypto payment to fund the escrow.`)
+        success(`Escrow created! Transaction ID: ${data.id}. Please send crypto payment to fund the escrow.`)
         setShowEscrowModal(false)
       } else {
-        const error = await res.json()
-        alert(error.error || 'Failed to create escrow')
+        const err = await res.json()
+        error(err.error || 'Failed to create escrow')
       }
-    } catch (error) {
-      console.error('Escrow checkout failed:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setEscrowLoading(false)
     }
@@ -244,7 +263,7 @@ alert(`Escrow created! Transaction ID: ${data.id}. Please send crypto payment to
 
   const handleFundRequest = async () => {
     if (!product || !session?.user || !fundAmount || parseFloat(fundAmount) <= 0) {
-      alert('Please enter a valid amount')
+      warning('Please enter a valid amount')
       return
     }
     setFundingLoading(true)
@@ -260,15 +279,15 @@ alert(`Escrow created! Transaction ID: ${data.id}. Please send crypto payment to
       if (res.ok) {
         const data = await res.json()
         setCurrentFunding(data.currentFunding)
-        alert('Thank you for your contribution!')
+        success('Thank you for your contribution!')
         setShowFundingModal(false)
         setFundAmount('')
       } else {
-        const error = await res.json()
-        alert(error.error || 'Failed to contribute')
+        const err = await res.json()
+        error(err.error || 'Failed to contribute')
       }
-    } catch (error) {
-      console.error('Fund request failed:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setFundingLoading(false)
     }
@@ -276,7 +295,7 @@ alert(`Escrow created! Transaction ID: ${data.id}. Please send crypto payment to
 
   const openEscrowModal = async () => {
     if (!session?.user) {
-      alert('Please sign in to use escrow checkout')
+      info('Please sign in to use escrow checkout')
       return
     }
     try {
@@ -285,8 +304,8 @@ alert(`Escrow created! Transaction ID: ${data.id}. Please send crypto payment to
         const data = await res.json()
         setCourierServices(data)
       }
-    } catch (error) {
-      console.error('Failed to fetch courier services:', error)
+    } catch (err) {
+      console.error(err)
     }
     setShowEscrowModal(true)
   }
@@ -307,10 +326,10 @@ alert(`Escrow created! Transaction ID: ${data.id}. Please send crypto payment to
         setProduct(updated)
         setIsEditing(false)
       } else {
-        alert('Failed to update')
+        error('Failed to update')
       }
-    } catch (error) {
-      console.error('Failed to update:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setSaving(false)
     }
@@ -324,10 +343,10 @@ alert(`Escrow created! Transaction ID: ${data.id}. Please send crypto payment to
       if (res.ok) {
         window.location.href = '/products'
       } else {
-        alert('Failed to delete')
+        error('Failed to delete')
       }
-    } catch (error) {
-      console.error('Failed to delete:', error)
+    } catch (err) {
+      console.error(err)
     }
   }
 

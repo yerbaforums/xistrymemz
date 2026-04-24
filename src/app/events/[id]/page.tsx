@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import styles from './page.module.css'
 import dynamic from 'next/dynamic'
+import { useToast } from '@/context/ToastContext'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
@@ -41,6 +42,7 @@ interface Event {
 
 function EventDetailContent() {
   const params = useParams()
+  const { success, error, info } = useToast()
   const [event, setEvent] = useState<Event | null>(null)
   const [loading, setLoading] = useState(true)
   const [joining, setJoining] = useState(false)
@@ -52,7 +54,10 @@ function EventDetailContent() {
 
   useEffect(() => {
     fetch('/api/auth/session')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch session')
+        return res.json()
+      })
       .then(data => {
         if (data?.user?.id) {
           setUserId(data.user.id)
@@ -64,7 +69,14 @@ function EventDetailContent() {
   useEffect(() => {
     setLoading(true)
     fetch('/api/public/events')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          return res.json().catch(() => ({ error: 'Failed to fetch events' })).then(data => {
+            throw new Error(data.error || 'Request failed')
+          })
+        }
+        return res.json()
+      })
       .then(data => {
         const foundEvent = data.find((e: Event) => e.id === params.id)
         if (foundEvent) {
@@ -77,7 +89,7 @@ function EventDetailContent() {
 
   const handleJoin = async () => {
     if (!userId || !event) {
-      alert('Please sign in to join events')
+      info('Please sign in to join events')
       return
     }
     setJoining(true)
@@ -86,8 +98,8 @@ function EventDetailContent() {
       if (res.ok) {
         setEvent({ ...event, joined: true, joiners: [...event.joiners, { id: userId, userId, user: { name: null, email: '' } }] })
       }
-    } catch (error) {
-      console.error('Failed to join:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setJoining(false)
     }
@@ -101,8 +113,8 @@ function EventDetailContent() {
       if (res.ok) {
         setEvent({ ...event, joined: false, joiners: event.joiners.filter(j => j.userId !== userId) })
       }
-    } catch (error) {
-      console.error('Failed to leave:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setJoining(false)
     }
@@ -125,11 +137,11 @@ function EventDetailContent() {
         setBulkSuccess(`Message sent to ${event.joiners.length} attendee(s)!`)
         setBulkMessage('')
       } else {
-        alert('Failed to send message')
+        error('Failed to send message')
       }
-    } catch (error) {
-      console.error('Failed to send bulk message:', error)
-      alert('Failed to send message')
+    } catch (err) {
+      console.error(err)
+      error('Failed to send message')
     } finally {
       setSendingBulk(false)
     }

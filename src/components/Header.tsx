@@ -332,7 +332,7 @@ export default function Header() {
                     )}
                   </>
                 ) : (
-                  <button className={styles.searchToggleBtn} onClick={() => setSearchOpen(true)} title="Search">
+                  <button className={styles.searchToggleBtn} onClick={() => setSearchOpen(true)} aria-label="Search" title="Search">
                     🔍
                   </button>
                 )}
@@ -341,14 +341,14 @@ export default function Header() {
               <CartButton />
 
               {notificationCount > 0 && (
-                <Link href="/community" className={styles.notificationBtn}>
+                <Link href="/community" className={styles.notificationBtn} aria-label={`Notifications (${notificationCount})`}>
                   <span className={styles.bellIcon}>🔔</span>
                   <span className={styles.notificationBadge}>{notificationCount}</span>
                 </Link>
               )}
 
               <div className={styles.userMenu}>
-                <button className={styles.userBtn}>
+                <button className={styles.userBtn} aria-label="User menu">
                   {session.user.image ? (
                     <Image src={session.user.image} alt={session.user.name || ''} className={styles.userAvatar} width={36} height={36} />
                   ) : (

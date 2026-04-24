@@ -3,6 +3,7 @@ import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { TariWalletProvider } from "@/context/TariWalletContext";
 import { SiteSettingsProvider } from "@/hooks/useSiteSettings";
+import { ToastContainer } from "@/components/Toast";
 import AppShell from "@/components/AppShell";
 import Footer from "@/components/Footer";
 
@@ -40,6 +41,7 @@ export default function RootLayout({
             <TariWalletProvider>
               <AppShell>
                 {children}
+                <ToastContainer />
               </AppShell>
               <Footer />
             </TariWalletProvider>

@@ -37,7 +37,10 @@ export default function GroupsPage() {
 
   useEffect(() => {
     fetch('/api/auth/session')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch session')
+        return res.json()
+      })
       .then(data => {
         if (data?.user?.id) setUserId(data.user.id)
       })
@@ -47,7 +50,14 @@ export default function GroupsPage() {
     setLoading(true)
     const url = filter === 'my' ? '/api/groups?my=true' : '/api/groups'
     fetch(url)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          return res.json().catch(() => ({ error: 'Failed to fetch groups' })).then(data => {
+            throw new Error(data.error || 'Request failed')
+          })
+        }
+        return res.json()
+      })
       .then(data => {
         setGroups(data)
         setLoading(false)

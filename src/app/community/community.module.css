@@ -24,14 +24,14 @@
   display: flex;
   gap: 8px;
   margin-bottom: 24px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 16px;
 }
 
 .tab {
   padding: 12px 20px;
   background: transparent;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   color: var(--text-secondary);
   cursor: pointer;
@@ -58,7 +58,7 @@
   width: 100%;
   padding: 12px 16px;
   background: var(--bg-tertiary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   color: var(--text-primary);
   font-size: 0.95rem;
@@ -82,7 +82,7 @@
 
 .memberCard {
   background: var(--bg-secondary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 24px;
   transition: all 0.2s;
@@ -196,7 +196,7 @@
 .viewProfile {
   padding: 8px 16px;
   background: transparent;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   color: var(--text-primary);
   text-decoration: none;
@@ -265,7 +265,7 @@
   align-items: center;
   gap: 16px;
   background: var(--bg-secondary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 20px;
 }
@@ -303,7 +303,7 @@
 .declineBtn {
   padding: 8px 20px;
   background: transparent;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   color: var(--text-secondary);
   cursor: pointer;
@@ -361,7 +361,7 @@
 
 .groupCard {
   background: var(--bg-secondary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 20px;
   text-decoration: none;
@@ -487,9 +487,9 @@
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   background: var(--bg-tertiary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-color);
   border-radius: 20px;
-  color: var(--text);
+  color: var(--text-primary);
   cursor: pointer;
   font-size: 0.875rem;
   transition: all 0.2s;
@@ -558,7 +558,7 @@
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
   border-radius: 6px;
-  color: var(--text);
+  color: var(--text-primary);
   resize: vertical;
 }
 
@@ -569,8 +569,8 @@
 
 .submitPostBtn {
   padding: 0.5rem 1.5rem;
-  background: var(--accent);
-  color: #000;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -580,8 +580,8 @@
 .cancelPostBtn {
   padding: 0.5rem 1.5rem;
   background: transparent;
-  color: var(--text);
-  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   cursor: pointer;
 }
@@ -656,7 +656,7 @@
 }
 
 .postTips {
-  color: #10b981;
+  color: var(--accent-success);
   font-weight: 600;
 }
 
@@ -693,25 +693,25 @@
 }
 
 .actionBtn.liked {
-  color: #ef4444;
-  border-color: #ef4444;
-  background: rgba(239, 68, 68, 0.1);
+  color: var(--accent-secondary);
+  border-color: var(--accent-secondary);
+  background: rgba(255, 51, 102, 0.1);
 }
 
 .tipBtn, .tipUserBtn {
   padding: 0.375rem 0.75rem;
   background: transparent;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
-  color: var(--text);
+  color: var(--text-primary);
   cursor: pointer;
   font-size: 0.75rem;
 }
 
 .tipBtn:hover, .tipUserBtn:hover {
-  background: var(--accent);
-  color: #000;
-  border-color: var(--accent);
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border-color: var(--accent-primary);
 }
 
 .tipModal {
@@ -744,9 +744,9 @@
   padding: 0.75rem;
   margin-bottom: 1rem;
   background: var(--bg-tertiary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
-  color: var(--text);
+  color: var(--text-primary);
   font-size: 1.125rem;
 }
 
@@ -758,8 +758,8 @@
 .confirmTipBtn {
   flex: 1;
   padding: 0.75rem;
-  background: var(--accent);
-  color: #000;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -770,8 +770,8 @@
   flex: 1;
   padding: 0.75rem;
   background: transparent;
-  color: var(--text);
-  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   cursor: pointer;
 }
@@ -940,7 +940,7 @@
 }
 
 .replyTips {
-  color: #10b981;
+  color: var(--accent-success);
   font-weight: 600;
   font-size: 0.85rem;
 }

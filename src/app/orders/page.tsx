@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import styles from './page.module.css'
+import { useToast } from '@/context/ToastContext'
 
 interface EscrowTransaction {
   id: string
@@ -41,6 +42,7 @@ interface EscrowTransaction {
 export default function OrdersPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { success, error } = useToast()
   const [orders, setOrders] = useState<EscrowTransaction[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'asBuyer' | 'asSeller' | 'asCourier'>('all')
@@ -70,8 +72,8 @@ export default function OrdersPage() {
         const data = await res.json()
         setOrders(data)
       }
-    } catch (error) {
-      console.error('Failed to fetch orders:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setLoading(false)
     }
@@ -89,8 +91,8 @@ export default function OrdersPage() {
         fetchOrders()
         setSelectedOrder(null)
       }
-    } catch (error) {
-      console.error('Failed to update order:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setUpdating(false)
     }
@@ -112,13 +114,13 @@ export default function OrdersPage() {
       if (res.ok) {
         setMessageText('')
         setShowMessageModal(false)
-        alert('Message sent!')
+        success('Message sent!')
       } else {
         const err = await res.json()
-        alert(err.error || 'Failed to send message')
+        error(err.error || 'Failed to send message')
       }
-    } catch (error) {
-      console.error('Failed to send message:', error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setSendingMessage(false)
     }

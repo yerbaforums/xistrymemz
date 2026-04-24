@@ -419,8 +419,8 @@
 }
 
 .eventActions .deleteBtn {
-  color: #ef4444;
-  border: 1px solid #ef4444;
+  color: var(--accent-secondary);
+  border: 1px solid var(--accent-secondary);
 }
 
 .eventActions .editBtn:hover,

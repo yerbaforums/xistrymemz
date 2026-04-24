@@ -2,24 +2,26 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { contactSchema, validateBody } from '@/lib/schemas'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, email, subject, message } = body
-
-    if (!email || !message) {
+    const validation = validateBody(contactSchema, body)
+    
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'Email and message are required' },
+        { error: validation.error },
         { status: 400 }
       )
     }
 
+    const { name, email, message } = validation.data
+
     await prisma.contactMessage.create({
       data: {
-        name: name || null,
+        name,
         email,
-        subject: subject || null,
         message
       }
     })

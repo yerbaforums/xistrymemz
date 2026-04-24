@@ -159,24 +159,23 @@ export default function ProfilePage() {
   const fetchProfile = async (targetId: string) => {
     try {
       const res = await fetch(`/api/users/${targetId}`)
-      if (res.ok) {
-        const data = await res.json()
-        setUser(data.user)
-        setPosts(data.posts || [])
-        setPlans(data.plans || [])
-        setProducts(data.products || [])
-        setConnections(data.connections || [])
-        setGroups(data.groups || [])
-        setEditForm({
-          name: data.user.name || '',
-          bio: data.user.bio || '',
-          location: data.user.location || '',
-          website: data.user.website || '',
-          image: data.user.image || '',
-          coverImage: data.user.coverImage || '',
-          userClass: data.user.userClass || ''
-        })
-      }
+      if (!res.ok) throw new Error('Failed to fetch profile')
+      const data = await res.json()
+      setUser(data.user)
+      setPosts(data.posts || [])
+      setPlans(data.plans || [])
+      setProducts(data.products || [])
+      setConnections(data.connections || [])
+      setGroups(data.groups || [])
+      setEditForm({
+        name: data.user.name || '',
+        bio: data.user.bio || '',
+        location: data.user.location || '',
+        website: data.user.website || '',
+        image: data.user.image || '',
+        coverImage: data.user.coverImage || '',
+        userClass: data.user.userClass || ''
+      })
     } catch (error) {
       console.error('Error fetching profile:', error)
     } finally {
