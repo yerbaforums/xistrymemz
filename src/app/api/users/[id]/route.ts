@@ -11,75 +11,43 @@ export async function GET(
     const session = await getServerSession(authOptions)
     const { id } = await context.params
 
+    // PUBLIC FIELDS ONLY - no sensitive data exposed
+    const publicSelect = {
+      id: true,
+      name: true,
+      image: true,
+      coverImage: true,
+      bio: true,
+      location: true,
+      website: true,
+      userClass: true,
+      shopName: true,
+      shopSlug: true,
+      schoolName: true,
+      schoolSlug: true,
+      createdAt: true,
+      reputationScore: true,
+      verifiedEmail: true,
+      _count: {
+        select: {
+          plans: true,
+          posts: true,
+          products: true
+        }
+      }
+    }
+
     // Check if id is a username/shopSlug first
     let user = await prisma.user.findUnique({
       where: { shopSlug: id },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        image: true,
-        coverImage: true,
-        bio: true,
-        location: true,
-        website: true,
-        userClass: true,
-        shopName: true,
-        shopSlug: true,
-        schoolName: true,
-        schoolSlug: true,
-        createdAt: true,
-        earthId: true,
-        verificationLevel: true,
-        reputationScore: true,
-        verifiedEmail: true,
-        verifiedPhone: true,
-        verifiedIdentity: true,
-        verifiedAddress: true,
-        _count: {
-          select: { 
-            plans: true,
-            posts: true,
-            products: true
-          }
-        }
-      }
+      select: publicSelect
     })
 
     // If not found by slug, try by id
     if (!user) {
       user = await prisma.user.findUnique({
         where: { id },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          image: true,
-          coverImage: true,
-          bio: true,
-          location: true,
-          website: true,
-          userClass: true,
-          shopName: true,
-          shopSlug: true,
-          schoolName: true,
-          schoolSlug: true,
-          createdAt: true,
-          earthId: true,
-          verificationLevel: true,
-          reputationScore: true,
-          verifiedEmail: true,
-          verifiedPhone: true,
-          verifiedIdentity: true,
-          verifiedAddress: true,
-          _count: {
-            select: { 
-              plans: true,
-              posts: true,
-              products: true
-            }
-          }
-        }
+        select: publicSelect
       })
     }
 
@@ -156,10 +124,10 @@ export async function GET(
         },
         include: {
           requester: {
-            select: { id: true, name: true, email: true, image: true, userClass: true }
+            select: { id: true, name: true, image: true, userClass: true }
           },
           receiver: {
-            select: { id: true, name: true, email: true, image: true, userClass: true }
+            select: { id: true, name: true, image: true, userClass: true }
           }
         },
         take: 12
@@ -212,12 +180,11 @@ export async function GET(
       }
     })
 
-    const       userConnections = connections.map(conn => {
+    const userConnections = connections.map(conn => {
       const otherUser = conn.requesterId === id ? conn.receiver : conn.requester
       return {
         id: otherUser.id,
         name: otherUser.name,
-        email: otherUser.email,
         image: otherUser.image,
         userClass: otherUser.userClass
       }

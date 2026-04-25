@@ -145,6 +145,12 @@ model Plan {
   statusHistory  PlanStatusHistory[]
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
+
+  @@index([status])
+  @@index([published])
+  @@index([userId])
+  @@index([category])
+  @@index([location])
 }
 
 model PlanStatusHistory {
@@ -265,6 +271,14 @@ model Request {
   isPublic   Boolean   @default(false)
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
+
+  @@index([status])
+  @@index([category])
+  @@index([userId])
+  @@index([isPublic])
+  @@index([planId])
+  @@index([groupId])
+  @@index([productId])
 }
 
 model Contribution {
@@ -329,6 +343,12 @@ model Product {
   escrowTxns       EscrowTransaction[]
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+
+  @@index([published])
+  @@index([category])
+  @@index([type])
+  @@index([userId])
+  @@index([location])
 }
 
 model SchoolContent {
@@ -449,6 +469,8 @@ model Post {
   likes     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model Group {
@@ -782,6 +804,10 @@ model ForumPost {
   postTips    ForumPostTip[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([authorId])
+  @@index([pinned])
 }
 
 model ForumReply {
@@ -796,6 +822,9 @@ model ForumReply {
   replyTips   ForumReplyTip[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([postId])
+  @@index([authorId])
 }
 
 model ForumPostTip {

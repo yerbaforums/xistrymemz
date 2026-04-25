@@ -6,7 +6,20 @@ import { contactSchema, validateBody } from '@/lib/schemas'
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { error: 'Invalid JSON body' },
+        { status: 400 }
+      );
+    }
+
+    if (body.website) {
+      return NextResponse.json({ success: true });
+    }
+
     const validation = validateBody(contactSchema, body)
     
     if (!validation.success) {
