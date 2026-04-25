@@ -15,7 +15,7 @@ const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ss
 interface Joiner {
   id: string
   userId: string
-  user: { name: string | null; email: string }
+  user: { name: string | null; email: string; image?: string }
 }
 
 interface Event {
@@ -24,6 +24,7 @@ interface Event {
   description: string | null
   eventCategory: string | null
   eventDate: string | null
+  endDate: string | null
   location: string | null
   locationDetails: string | null
   latitude: number | null
@@ -32,17 +33,21 @@ interface Event {
   isTicketed: boolean
   ticketPrice: number
   currency: string
-  planId: string
-  planTitle: string
+  planId: string | null
+  planTitle: string | null
   userId: string
   userName: string | null
+  organizer?: { id: string; name: string; email: string; image: string }
+  group?: { id: string; name: string }
   joiners: Joiner[]
   joined?: boolean
+  isOrganizer?: boolean
+  _count?: { eventJoiners: number }
 }
 
 function EventDetailContent() {
   const params = useParams()
-  const { success, error, info } = useToast()
+  const { error, info } = useToast()
   const [event, setEvent] = useState<Event | null>(null)
   const [loading, setLoading] = useState(true)
   const [joining, setJoining] = useState(false)
@@ -68,20 +73,18 @@ function EventDetailContent() {
 
   useEffect(() => {
     setLoading(true)
-    fetch('/api/public/events')
+    fetch(`/api/events/${params.id}`)
       .then(res => {
         if (!res.ok) {
-          return res.json().catch(() => ({ error: 'Failed to fetch events' })).then(data => {
-            throw new Error(data.error || 'Request failed')
-          })
+          if (res.status === 404) {
+            return null
+          }
+          throw new Error('Failed to fetch event')
         }
         return res.json()
       })
       .then(data => {
-        const foundEvent = data.find((e: Event) => e.id === params.id)
-        if (foundEvent) {
-          setEvent(foundEvent)
-        }
+        setEvent(data)
         setLoading(false)
       })
       .catch(() => setLoading(false))
@@ -94,12 +97,21 @@ function EventDetailContent() {
     }
     setJoining(true)
     try {
-      const res = await fetch(`/api/plans/${event.planId}/events/${event.id}/join`, { method: 'POST' })
+      const res = await fetch(`/api/events/${event.id}/join`, { method: 'POST' })
       if (res.ok) {
-        setEvent({ ...event, joined: true, joiners: [...event.joiners, { id: userId, userId, user: { name: null, email: '' } }] })
+        setEvent({ 
+          ...event, 
+          joined: true, 
+          joiners: [...event.joiners, { id: '', userId, user: { name: null, email: '' } }],
+          _count: event._count ? { eventJoiners: event._count.eventJoiners + 1 } : undefined
+        })
+      } else {
+        const data = await res.json()
+        error(data.error || 'Failed to join event')
       }
     } catch (err) {
       console.error(err)
+      error('Failed to join event')
     } finally {
       setJoining(false)
     }
@@ -109,12 +121,21 @@ function EventDetailContent() {
     if (!userId || !event) return
     setJoining(true)
     try {
-      const res = await fetch(`/api/plans/${event.planId}/events/${event.id}/join`, { method: 'DELETE' })
+      const res = await fetch(`/api/events/${event.id}/join`, { method: 'DELETE' })
       if (res.ok) {
-        setEvent({ ...event, joined: false, joiners: event.joiners.filter(j => j.userId !== userId) })
+        setEvent({ 
+          ...event, 
+          joined: false, 
+          joiners: event.joiners.filter(j => j.userId !== userId),
+          _count: event._count ? { eventJoiners: event._count.eventJoiners - 1 } : undefined
+        })
+      } else {
+        const data = await res.json()
+        error(data.error || 'Failed to leave event')
       }
     } catch (err) {
       console.error(err)
+      error('Failed to leave event')
     } finally {
       setJoining(false)
     }
@@ -127,7 +148,7 @@ function EventDetailContent() {
     setBulkSuccess('')
     
     try {
-      const res = await fetch(`/api/plans/${event.planId}/events/${event.id}/bulk-message`, {
+      const res = await fetch(`/api/events/${event.id}/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: bulkMessage })
@@ -148,9 +169,18 @@ function EventDetailContent() {
   }
 
   if (loading) return <div className={styles.loading}>Loading...</div>
-  if (!event) return <div className={styles.error}>Event not found</div>
+  if (!event) return (
+    <div className={styles.page}>
+      <div className={styles.notFound}>
+        <h2>Event not found</h2>
+        <p>This event may have been deleted or doesn't exist.</p>
+        <Link href="/events" className="btn-primary">Browse Events</Link>
+      </div>
+    </div>
+  )
 
-  const isOwner = userId === event.userId
+  const isOwner = userId === event.userId || event.isOrganizer
+  const joinerCount = event._count?.eventJoiners ?? event.joiners.length
   const center: [number, number] = event.latitude && event.longitude 
     ? [event.latitude, event.longitude]
     : [34.8697, -111.7610]
@@ -191,7 +221,9 @@ function EventDetailContent() {
             
             <h1>{event.title}</h1>
             <p className={styles.author}>by {event.userName || 'Unknown'}</p>
-            <p className={styles.planRef}>From plan: {event.planTitle}</p>
+            {event.planTitle && (
+              <p className={styles.planRef}>From: {event.planTitle}</p>
+            )}
             
             {event.description && (
               <p className={styles.description}>{event.description}</p>
@@ -199,7 +231,7 @@ function EventDetailContent() {
 
             <div className={styles.locationSection}>
               <h3>📍 Location</h3>
-              <p className={styles.locationType}>Type: {event.location}</p>
+              <p className={styles.locationType}>{event.location || 'Not specified'}</p>
               {event.locationDetails && (
                 <p className={styles.locationDetails}>{event.locationDetails}</p>
               )}
@@ -209,7 +241,7 @@ function EventDetailContent() {
               <div className={styles.mapSection}>
                 <h3>🗺️ Event Location</h3>
                 <div className={styles.mapContainer}>
-                  <MapContainer center={center} zoom={13} style={{ height: '100%', width: '100%' }}>
+                  <MapContainer center={center} zoom={13} style={{ height: '100%', width: '100%', position: 'relative', zIndex: 1 }}>
                     <TileLayer
                       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -227,16 +259,20 @@ function EventDetailContent() {
             )}
 
             <div className={styles.joinActions}>
-              {event.maxJoiners === 0 || event.joiners.length < event.maxJoiners ? (
-                <button
-                  onClick={event.joined ? handleLeave : handleJoin}
-                  disabled={joining}
-                  className={event.joined ? styles.leaveBtn : styles.joinBtn}
-                >
-                  {joining ? 'Processing...' : event.joined ? 'Leave Event' : (event.isTicketed ? 'Get Tickets' : 'RSVP Free')}
-                </button>
-              ) : (
-                <span className={styles.fullBadge}>Event is Full</span>
+              {!isOwner && (
+                <>
+                  {event.maxJoiners === 0 || joinerCount < event.maxJoiners ? (
+                    <button
+                      onClick={event.joined ? handleLeave : handleJoin}
+                      disabled={joining}
+                      className={event.joined ? styles.leaveBtn : styles.joinBtn}
+                    >
+                      {joining ? 'Processing...' : event.joined ? 'Leave Event' : (event.isTicketed ? 'Get Tickets' : 'RSVP Free')}
+                    </button>
+                  ) : (
+                    <span className={styles.fullBadge}>Event is Full</span>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -247,7 +283,7 @@ function EventDetailContent() {
             <h3>Event Stats</h3>
             <div className={styles.stat}>
               <span>👥 Attendees</span>
-              <span>{event.joiners.length} {event.maxJoiners > 0 ? `/ ${event.maxJoiners}` : ''}</span>
+              <span>{joinerCount} {event.maxJoiners > 0 ? `/ ${event.maxJoiners}` : ''}</span>
             </div>
             {event.eventDate && (
               <div className={styles.stat}>
@@ -269,13 +305,13 @@ function EventDetailContent() {
             )}
           </div>
 
-          {isOwner && event.joiners.length > 0 && (
+          {isOwner && joinerCount > 0 && (
             <div className={styles.joinersCard}>
               <button 
                 className={styles.ownerToggle}
                 onClick={() => setShowJoiners(!showJoiners)}
               >
-                <h3>👥 Attendees ({event.joiners.length})</h3>
+                <h3>👥 Attendees ({joinerCount})</h3>
                 <span>{showJoiners ? '▼' : '▶'}</span>
               </button>
               
@@ -319,18 +355,18 @@ function EventDetailContent() {
             </div>
           )}
 
-          {!isOwner && event.joiners.length > 0 && (
+          {!isOwner && joinerCount > 0 && (
             <div className={styles.joinersCard}>
-              <h3>Joined Users ({event.joiners.length})</h3>
+              <h3>Joined ({joinerCount})</h3>
               <div className={styles.joinerList}>
                 {event.joiners.slice(0, 10).map((j, i) => (
                   <span key={`${j.id}-${i}`} className={styles.joinerBadge}>
                     {j.user.name || j.user.email || `User ${i + 1}`}
                   </span>
                 ))}
-                {event.joiners.length > 10 && (
+                {joinerCount > 10 && (
                   <span className={styles.joinerBadge}>
-                    +{event.joiners.length - 10} more
+                    +{joinerCount - 10} more
                   </span>
                 )}
               </div>

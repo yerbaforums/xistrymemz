@@ -23,21 +23,37 @@ export async function GET(request: Request) {
     }
 
     const events = await prisma.groupEvent.findMany({
-      where: {
-        OR: [
-          { groupId: { not: null } },
-          { schoolId: { not: null } },
-          { shopId: { not: null } }
-        ]
-      },
       include: {
+        organizer: { select: { id: true, name: true } },
         group: { select: { id: true, name: true } },
         _count: { select: { eventJoiners: true } }
       },
       orderBy: { eventDate: 'asc' }
     })
 
-    return NextResponse.json(events)
+    const formattedEvents = events.map(event => ({
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      eventCategory: event.eventCategory,
+      eventDate: event.eventDate?.toISOString() || null,
+      location: event.location,
+      locationDetails: event.locationDetails,
+      latitude: event.latitude,
+      longitude: event.longitude,
+      maxJoiners: event.maxJoiners,
+      isTicketed: event.isTicketed,
+      ticketPrice: event.ticketPrice,
+      currency: event.currency,
+      planId: null,
+      planTitle: event.group?.name || null,
+      userId: event.organizerId,
+      userName: event.organizer?.name || null,
+      joiners: [],
+      _count: event._count
+    }))
+
+    return NextResponse.json(formattedEvents)
   } catch (error) {
     console.error('GET /api/events:', error)
     return NextResponse.json({ error: 'Failed to fetch events' }, { status: 500 })

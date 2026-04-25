@@ -367,3 +367,17 @@
     height: 200px;
   }
 }
+
+.notFound {
+  text-align: center;
+  padding: 64px 24px;
+}
+
+.notFound h2 {
+  margin-bottom: 16px;
+}
+
+.notFound p {
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
