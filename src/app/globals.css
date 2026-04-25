@@ -146,6 +146,10 @@ a:focus-visible {
 .btn-primary {
   background: var(--accent-primary);
   color: var(--bg-primary);
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -153,19 +157,36 @@ a:focus-visible {
   box-shadow: var(--shadow-glow);
 }
 
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
 .btn-secondary {
   background: transparent;
   border: 1px solid var(--accent-primary);
   color: var(--accent-primary);
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
 .btn-secondary:hover:not(:disabled) {
   background: rgba(0, 217, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.btn-secondary:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .btn-danger {
   background: var(--accent-secondary);
   color: var(--text-primary);
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
 .btn-danger:hover:not(:disabled) {
