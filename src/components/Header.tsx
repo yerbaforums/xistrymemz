@@ -183,7 +183,7 @@ export default function Header() {
           <div className={styles.mobileNavHeader}>
             <Image src="/logo.png" alt="XistrYmemZ" width={28} height={28} />
             <span>XistrYmemZ</span>
-            <button className={styles.mobileClose} onClick={() => setMenuOpen(false)}>✕</button>
+            <button className={styles.mobileClose} onClick={() => setMenuOpen(false)} aria-label="Close menu">✕</button>
           </div>
 
           <div className={styles.mobileSection}>

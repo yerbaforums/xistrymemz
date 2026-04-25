@@ -143,6 +143,9 @@ export default function PlansClient({ initialPlans }: PlansClientProps) {
           <div className={styles.emptyIcon}>🚀</div>
           <p>No projects found</p>
           <span>Create your first project to get started</span>
+          <Link href="/plans/new" className="btn-primary" style={{ marginTop: '16px' }}>
+            Create Project
+          </Link>
         </div>
       ) : (
         <div className={styles.grid}>

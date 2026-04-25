@@ -52,7 +52,7 @@ interface Plan {
 }
 
 export default function EventsPage() {
-  const { warning, info } = useToast()
+  const { warning, info, error: toastError } = useToast()
   const [plans, setPlans] = useState<Plan[]>([])
   const [filteredPlans, setFilteredPlans] = useState<Plan[]>([])
   const [category, setCategory] = useState('ALL')
@@ -89,6 +89,7 @@ export default function EventsPage() {
       }
     } catch (err) {
       console.error(err)
+      warning('Could not find location for that zip code')
       setUserLocation(null)
     } finally {
       setGeocodingLoading(false)
@@ -143,6 +144,7 @@ export default function EventsPage() {
       }
     } catch (err) {
       console.error(err)
+      toastError('Failed to join event')
     } finally {
       setJoining(null)
     }
@@ -162,6 +164,7 @@ export default function EventsPage() {
       }
     } catch (err) {
       console.error(err)
+      toastError('Failed to leave event')
     } finally {
       setJoining(null)
     }
@@ -314,18 +317,21 @@ export default function EventsPage() {
             <button 
               className={`${styles.toggleBtn} ${viewMode === 'list' ? styles.active : ''}`}
               onClick={() => setViewMode('list')}
+              aria-label="List view"
             >
               List
             </button>
             <button 
               className={`${styles.toggleBtn} ${viewMode === 'calendar' ? styles.active : ''}`}
               onClick={() => setViewMode('calendar')}
+              aria-label="Calendar view"
             >
               Calendar
             </button>
             <button 
               className={`${styles.toggleBtn} ${viewMode === 'map' ? styles.active : ''}`}
               onClick={() => setViewMode('map')}
+              aria-label="Map view"
             >
               Map
             </button>
@@ -417,11 +423,11 @@ export default function EventsPage() {
       {viewMode === 'calendar' ? (
         <div className={styles.calendarView}>
           <div className={styles.calendarHeader}>
-            <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))} className={styles.calendarNavBtn}>
+            <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))} className={styles.calendarNavBtn} aria-label="Previous month">
               ←
             </button>
             <h2>{currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h2>
-            <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))} className={styles.calendarNavBtn}>
+            <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))} className={styles.calendarNavBtn} aria-label="Next month">
               →
             </button>
           </div>
@@ -514,7 +520,14 @@ export default function EventsPage() {
             {loading ? (
               <div className={styles.loading}>Loading events...</div>
             ) : filteredPlans.length === 0 ? (
-              <div className={styles.empty}>No events found</div>
+              <div className={styles.empty}>
+                <p>No events found</p>
+                {userId && (
+                  <Link href="/dashboard?tab=events" className="btn-primary">
+                    Create Event
+                  </Link>
+                )}
+              </div>
             ) : (
               filteredPlans.map(plan => (
                 <div 
