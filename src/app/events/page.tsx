@@ -309,7 +309,7 @@ export default function EventsPage() {
           </div>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             {userId && (
-              <Link href="/dashboard?tab=events" className="btn-primary">
+              <Link href="/events/new" className="btn-primary">
                 Create Event
               </Link>
             )}

@@ -1,0 +1,144 @@
+.page {
+  min-height: 100vh;
+  padding: 80px 24px;
+  background: var(--bg-primary);
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.container h1 {
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.eventTypeToggle {
+  display: flex;
+  gap: 8px;
+  padding: 4px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.typeBtn {
+  flex: 1;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.typeBtn:hover {
+  color: var(--text-primary);
+}
+
+.typeBtn.active {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.field input,
+.field textarea,
+.field select {
+  padding: 12px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.ticketing {
+  padding: 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.checkboxField {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.checkboxField input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.checkboxField label {
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.actions {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+@media (max-width: 600px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+  
+  .actions {
+    flex-direction: column-reverse;
+  }
+  
+  .actions button {
+    width: 100%;
+  }
+}
