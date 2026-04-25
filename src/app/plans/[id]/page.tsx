@@ -31,7 +31,7 @@ export default async function PlanDetailPage({
       events: {
         orderBy: { eventDate: 'asc' },
         include: {
-          joiners: {
+          eventJoiners: {
             include: { user: { select: { id: true, name: true, email: true } } }
           }
         }
@@ -69,7 +69,8 @@ export default async function PlanDetailPage({
       createdAt: event.createdAt.toISOString(),
       updatedAt: event.updatedAt.toISOString(),
       eventDate: event.eventDate ? event.eventDate.toISOString() : null,
-      joiners: event.joiners.map(j => ({
+      endDate: event.endDate ? event.endDate.toISOString() : null,
+      joiners: event.eventJoiners.map(j => ({
         ...j,
         joinedAt: j.joinedAt.toISOString()
       }))

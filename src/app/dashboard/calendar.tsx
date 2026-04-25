@@ -19,13 +19,14 @@ interface CalendarEvent {
   visibility: string
 }
 
-interface PlanEventJoiner {
+interface EventJoinerResponse {
   id: string
   event: {
     id: string
     title: string
     eventDate: Date | null
-    planId: string
+    planId: string | null
+    groupId: string | null
     color: string
   }
 }
@@ -65,7 +66,7 @@ export default function CalendarWidget() {
       
       if (!planRes.ok) throw new Error('Failed to fetch plan events')
       const planData = await planRes.json()
-      const planEvents: CalendarEvent[] = (planData || []).map((joiner: PlanEventJoiner) => ({
+      const planEvents: CalendarEvent[] = (planData || []).map((joiner: EventJoinerResponse) => ({
         id: joiner.event.id,
         title: joiner.event.title,
         startDate: joiner.event.eventDate?.toString() || '',

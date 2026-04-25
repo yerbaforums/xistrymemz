@@ -240,3 +240,78 @@
     position: static;
   }
 }
+
+.pollToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.pollOptions {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+}
+
+.pollTypeSelect {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.pollTypeSelect label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.pollInputGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.pollOptionInput {
+  padding: 8px 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+}
+
+.pollOptionInput:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.addPollOptionBtn {
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: transparent;
+  color: var(--accent-primary);
+  border: 1px dashed var(--accent-primary);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  cursor: pointer;
+  width: 100%;
+}
+
+.addPollOptionBtn:hover {
+  background: rgba(0, 217, 255, 0.05);
+}
+
+.pollBadge {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 0.7rem;
+  font-weight: 600;
+}

@@ -6,24 +6,23 @@ import { prisma } from '@/lib/prisma'
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
-    const type = searchParams.get('type') // group, school, shop
+    const type = searchParams.get('type')
     const groupId = searchParams.get('groupId')
     const schoolId = searchParams.get('schoolId')
     const shopId = searchParams.get('shopId')
+    const planId = searchParams.get('planId')
 
     const where: Record<string, string> = {}
 
-    if (type === 'group' && groupId) {
-      where.groupId = groupId
-    } else if (type === 'school' && schoolId) {
-      where.schoolId = schoolId
-    } else if (type === 'shop' && shopId) {
-      where.shopId = shopId
-    }
+    if (groupId) where.groupId = groupId
+    if (schoolId) where.schoolId = schoolId
+    if (shopId) where.shopId = shopId
+    if (planId) where.planId = planId
 
-    const events = await prisma.groupEvent.findMany({
+    const events = await prisma.event.findMany({
       where,
       include: {
+        plan: { select: { id: true, title: true } },
         group: { select: { id: true, name: true, imageUrl: true } },
         school: { select: { id: true, schoolName: true, schoolImage: true } },
         shop: { select: { id: true, shopName: true, shopImage: true } },
@@ -35,7 +34,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(events)
   } catch (error) {
-    console.error('Error fetching group events:', error)
+    console.error('Error fetching events:', error)
     return NextResponse.json({ error: 'Failed to fetch events' }, { status: 500 })
   }
 }
@@ -47,18 +46,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await req.json()
-    const { title, description, eventCategory, eventDate, endDate, location, locationDetails, maxJoiners, isTicketed, ticketPrice, groupId, schoolId, shopId } = body
+    let body;
+    try {
+      body = await req.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
+
+    const { title, description, eventCategory, eventDate, endDate, location, locationDetails, maxJoiners, isTicketed, ticketPrice, groupId, schoolId, shopId, planId } = body
 
     if (!title || !eventCategory) {
       return NextResponse.json({ error: 'Title and category are required' }, { status: 400 })
     }
 
-    if (!groupId && !schoolId && !shopId) {
-      return NextResponse.json({ error: 'Must specify group, school, or shop' }, { status: 400 })
-    }
-
-    const event = await prisma.groupEvent.create({
+    const event = await prisma.event.create({
       data: {
         title,
         description,
@@ -73,6 +74,7 @@ export async function POST(req: Request) {
         groupId: groupId || null,
         schoolId: schoolId || null,
         shopId: shopId || null,
+        planId: planId || null,
         organizerId: session.user.id
       },
       include: {
@@ -82,7 +84,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(event)
   } catch (error) {
-    console.error('Error creating group event:', error)
+    console.error('Error creating event:', error)
     return NextResponse.json({ error: 'Failed to create event' }, { status: 500 })
   }
 }

@@ -135,7 +135,7 @@ export async function POST(request: Request) {
     }
 
     if (eventId) {
-      const event = await prisma.groupEvent.findFirst({
+      const event = await prisma.event.findFirst({
         where: { id: eventId }
       })
       if (!event) {

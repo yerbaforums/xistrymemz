@@ -8,6 +8,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type') || 'public'
+    const planId = searchParams.get('planId')
 
     if (type === 'personal') {
       const session = await getServerSession(authOptions)
@@ -22,36 +23,60 @@ export async function GET(request: Request) {
       return NextResponse.json(events)
     }
 
-    const events = await prisma.groupEvent.findMany({
+    const session = await getServerSession(authOptions)
+    const userId = session?.user?.id
+
+    const where: Record<string, unknown> = {}
+    
+    if (planId) {
+      where.planId = planId
+    }
+
+    const events = await prisma.event.findMany({
+      where,
       include: {
         organizer: { select: { id: true, name: true } },
+        plan: { select: { id: true, title: true, userId: true } },
         group: { select: { id: true, name: true } },
-        _count: { select: { eventJoiners: true } }
+        school: { select: { id: true, schoolName: true, name: true } },
+        shop: { select: { id: true, shopName: true, name: true } },
+        _count: { select: { eventJoiners: true } },
+        eventJoiners: {
+          select: { userId: true },
+          take: 20
+        }
       },
       orderBy: { eventDate: 'asc' }
     })
 
-    const formattedEvents = events.map(event => ({
-      id: event.id,
-      title: event.title,
-      description: event.description,
-      eventCategory: event.eventCategory,
-      eventDate: event.eventDate?.toISOString() || null,
-      location: event.location,
-      locationDetails: event.locationDetails,
-      latitude: event.latitude,
-      longitude: event.longitude,
-      maxJoiners: event.maxJoiners,
-      isTicketed: event.isTicketed,
-      ticketPrice: event.ticketPrice,
-      currency: event.currency,
-      planId: null,
-      planTitle: event.group?.name || null,
-      userId: event.organizerId,
-      userName: event.organizer?.name || null,
-      joiners: [],
-      _count: event._count
-    }))
+    const formattedEvents = events.map(event => {
+      const linkedTitle = event.plan?.title || event.group?.name || event.school?.schoolName || event.shop?.shopName || null
+      
+      return {
+        id: event.id,
+        title: event.title,
+        description: event.description,
+        eventCategory: event.eventCategory,
+        eventDate: event.eventDate?.toISOString() || null,
+        endDate: event.endDate?.toISOString() || null,
+        location: event.location,
+        locationDetails: event.locationDetails,
+        latitude: event.latitude,
+        longitude: event.longitude,
+        maxJoiners: event.maxJoiners,
+        pinned: event.pinned,
+        isTicketed: event.isTicketed,
+        ticketPrice: event.ticketPrice,
+        currency: event.currency,
+        planId: event.planId,
+        planTitle: linkedTitle,
+        userId: event.organizerId,
+        userName: event.organizer?.name || null,
+        joiners: event.eventJoiners.map(j => j.userId),
+        joined: userId ? event.eventJoiners.some(j => j.userId === userId) : false,
+        _count: event._count
+      }
+    })
 
     return NextResponse.json(formattedEvents)
   } catch (error) {
@@ -67,7 +92,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
+    let body;
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
+
     const { 
       title, 
       description, 
@@ -81,22 +112,13 @@ export async function POST(request: NextRequest) {
       ticketPrice,
       currency,
       visibility,
-      eventType
+      eventType,
+      planId,
+      groupId
     } = body
 
     if (!title) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 })
-    }
-
-    let latitude: number | null = null
-    let longitude: number | null = null
-
-    if (location) {
-      const geocodeResult = await geocodeLocation(location)
-      if (geocodeResult) {
-        latitude = geocodeResult.latitude
-        longitude = geocodeResult.longitude
-      }
     }
 
     if (eventType === 'personal') {
@@ -114,7 +136,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(event)
     }
 
-    const event = await prisma.groupEvent.create({
+    let latitude: number | null = null
+    let longitude: number | null = null
+
+    if (location) {
+      const geocodeResult = await geocodeLocation(location)
+      if (geocodeResult) {
+        latitude = geocodeResult.latitude
+        longitude = geocodeResult.longitude
+      }
+    }
+
+    if (planId) {
+      const plan = await prisma.plan.findFirst({
+        where: { id: planId }
+      })
+      if (!plan) {
+        return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
+      }
+    }
+
+    const event = await prisma.event.create({
       data: {
         title,
         description,
@@ -129,8 +171,10 @@ export async function POST(request: NextRequest) {
         isTicketed: isTicketed || false,
         ticketPrice: ticketPrice || 0,
         currency: currency || 'USD',
-        organizerId: session.user.id,
-        shopId: eventCategory === 'SHOP' ? session.user.id : undefined
+        planId: planId || null,
+        groupId: groupId || null,
+        shopId: eventCategory === 'SHOP' ? session.user.id : undefined,
+        organizerId: session.user.id
       }
     })
 

@@ -57,13 +57,15 @@ export async function POST(request: NextRequest) {
       }
       
       case 'event': {
-        const event = await prisma.planEvent.findUnique({ where: { id } })
+        const event = await prisma.event.findUnique({ where: { id } })
         if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 })
         
-        const plan = await prisma.plan.findUnique({ where: { id: event.planId } })
-        if (!plan || plan.userId !== session.user.id) return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
+        const isOwner = event.organizerId === session.user.id
+        const userRole = (session.user as { role?: string }).role
+        const isAdmin = userRole === 'ADMIN'
+        if (!isOwner && !isAdmin) return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
         
-        await prisma.planEvent.update({
+        await prisma.event.update({
           where: { id },
           data: { pinned: isPinned }
         })

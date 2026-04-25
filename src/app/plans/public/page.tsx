@@ -34,11 +34,12 @@ export default async function PublicPlansPage() {
           id: true,
           title: true,
           eventDate: true,
+          endDate: true,
           location: true,
           latitude: true,
           longitude: true,
           maxJoiners: true,
-          joiners: { select: { userId: true } }
+          eventJoiners: { select: { userId: true } }
         }
       },
       requests: {
@@ -63,7 +64,9 @@ export default async function PublicPlansPage() {
     updatedAt: plan.updatedAt.toISOString(),
     events: plan.events.map(e => ({
       ...e,
-      eventDate: e.eventDate?.toISOString() || null
+      eventDate: e.eventDate?.toISOString() || null,
+      endDate: e.endDate?.toISOString() || null,
+      joiners: e.eventJoiners
     }))
   }))
 

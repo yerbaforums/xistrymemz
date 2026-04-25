@@ -96,7 +96,7 @@ export async function GET(
   })
 
   // Fetch recent events from members
-  const events = await prisma.groupEvent.findMany({
+  const events = await prisma.event.findMany({
     where: {
       OR: [
         { organizerId: { in: memberIds } },

@@ -21,7 +21,7 @@ export async function GET() {
         where: { id: session.user.id },
         select: { schoolName: true, schoolSlug: true, shopName: true, shopSlug: true, schoolContentsOwned: { select: { id: true } } }
       }),
-      prisma.planEventJoiner.findMany({
+      prisma.eventJoiner.findMany({
         where: { userId: session.user.id },
         include: { event: { select: { id: true, title: true, eventDate: true, location: true, planId: true } } }
       })

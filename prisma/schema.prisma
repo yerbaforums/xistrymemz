@@ -58,7 +58,6 @@ model User {
   requests  Request[]
   comments  Comment[]
   joiners   PlanJoiner[]
-  eventJoiners PlanEventJoiner[]
   products  Product[]
   schoolContentsOwned   SchoolContent[] @relation("SchoolOwner")
   schoolContentsAuthored SchoolContent[] @relation("SchoolAuthor")
@@ -74,7 +73,6 @@ model User {
   groupPosts      GroupPost[]
   groupBuys      GroupBuy[]
   groupBuySupports GroupBuySupporter[]
-  eventTickets    EventTicket[]
   payments       Payment[]
   refunds        Refund[]
   schoolPurchases SchoolPurchase[]
@@ -92,12 +90,13 @@ model User {
   forumReplies   ForumReply[]
   forumPostTips  ForumPostTip[]
   forumReplyTips ForumReplyTip[]
+  pollVotes    ForumPollVote[]
   userEvents     UserEvent[]
-  schoolEvents   GroupEvent[] @relation("SchoolEvents")
-  shopEvents     GroupEvent[] @relation("ShopEvents")
-  organizedEvents GroupEvent[]
-  groupEventJoiners GroupEventJoiner[]
-  groupEventTickets GroupEventTicket[]
+  schoolEvents   Event[] @relation("SchoolEvents")
+  shopEvents     Event[] @relation("ShopEvents")
+  organizedEvents Event[]
+  eventJoiners    EventJoiner[]
+  eventTickets   EventTicket[]
   badges        Badge[]
   badgesAwarded  Badge[]   @relation("BadgeAwardedBy")
 }
@@ -140,7 +139,7 @@ model Plan {
   editors        PlanEditor[]
   requests       Request[]
   joiners        PlanJoiner[]
-  events         PlanEvent[]
+  events         Event[]
   updates        PlanUpdate[]
   statusHistory  PlanStatusHistory[]
   createdAt      DateTime   @default(now())
@@ -174,12 +173,13 @@ model PlanEditor {
   @@unique([planId, userId])
 }
 
-model PlanEvent {
+model Event {
   id              String   @id @default(cuid())
   title           String
   description     String?
   eventCategory   String?
   eventDate       DateTime?
+  endDate         DateTime?
   location        String?
   locationDetails String?
   latitude        Float?
@@ -189,35 +189,55 @@ model PlanEvent {
   isTicketed      Boolean  @default(false)
   ticketPrice     Float    @default(0)
   currency        String   @default("USD")
-  planId          String
-  plan            Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
-  joiners         PlanEventJoiner[]
-  tickets         EventTicket[]
+  
+  planId          String?
+  plan            Plan?    @relation(fields: [planId], references: [id], onDelete: Cascade)
+  groupId         String?
+  group           Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  schoolId        String?
+  school          User?    @relation("SchoolEvents", fields: [schoolId], references: [id], onDelete: Cascade)
+  shopId          String?
+  shop            User?    @relation("ShopEvents", fields: [shopId], references: [id], onDelete: Cascade)
+  
+  organizerId     String
+  organizer       User     @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  
+  eventJoiners    EventJoiner[]
+  eventTickets    EventTicket[]
+  requests        Request[]
+  
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  
+  @@index([planId])
+  @@index([groupId])
+  @@index([eventDate])
+  @@index([organizerId])
+}
+
+model EventJoiner {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinedAt  DateTime @default(now())
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
 }
 
 model EventTicket {
-  id              String     @id @default(cuid())
+  id              String   @id @default(cuid())
   eventId         String
-  event           PlanEvent  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event           Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   userId          String
-  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  quantity        Int        @default(1)
-  totalPaid       Float      @default(0)
-  paymentStatus   String     @default("PENDING")
-  purchasedAt     DateTime   @default(now())
-
-  @@unique([eventId, userId])
-}
-
-model PlanEventJoiner {
-  id        String    @id @default(cuid())
-  eventId   String
-  event     PlanEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  joinedAt  DateTime  @default(now())
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quantity        Int      @default(1)
+  totalPaid       Float    @default(0)
+  paymentStatus   String   @default("PENDING")
+  purchasedAt     DateTime @default(now())
 
   @@unique([eventId, userId])
 }
@@ -258,7 +278,7 @@ model Request {
   schoolContentId String?
   schoolContent   SchoolContent? @relation(fields: [schoolContentId], references: [id], onDelete: SetNull)
   eventId    String?
-  event      GroupEvent? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  event      Event?    @relation(fields: [eventId], references: [id], onDelete: SetNull)
   userId     String
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   completedBy   String?
@@ -489,7 +509,7 @@ model Group {
   members     GroupMember[]
   posts      GroupPost[]
   groupBuys  GroupBuy[]
-  events     GroupEvent[]
+  events     Event[]
   requests    Request[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -796,18 +816,49 @@ model ForumPost {
   author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   pinned      Boolean  @default(false)
   locked      Boolean  @default(false)
+  isPoll      Boolean  @default(false)
+  pollType    String   @default("single")  // "single" or "multi"
+  pollEndsAt  DateTime?
   viewCount   Int      @default(0)
   replyCount  Int      @default(0)
   totalTips  Float    @default(0)
   tippers     Int      @default(0)
   replies     ForumReply[]
   postTips    ForumPostTip[]
+  pollOptions ForumPollOption[]
+  pollVotes   ForumPollVote[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([categoryId])
   @@index([authorId])
   @@index([pinned])
+}
+
+model ForumPollOption {
+  id         String   @id @default(cuid())
+  optionText String
+  voteCount  Int      @default(0)
+  sortOrder  Int
+  postId     String
+  post       ForumPost       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  votes      ForumPollVote[]
+
+  @@index([postId])
+}
+
+model ForumPollVote {
+  id        String          @id @default(cuid())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  optionId String
+  option   ForumPollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  postId   String
+  post     ForumPost       @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@index([postId])
+  @@index([userId])
 }
 
 model ForumReply {
@@ -861,63 +912,4 @@ model UserEvent {
   visibility  String   @default("PRIVATE") // PRIVATE, PUBLIC, CONNECTIONS
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-}
-
-model GroupEvent {
-  id              String   @id @default(cuid())
-  title           String
-  description     String?
-  eventCategory   String?  // GROUP, SCHOOL, SHOP
-  eventDate       DateTime?
-  endDate         DateTime?
-  location        String?
-  locationDetails String?
-  latitude        Float?
-  longitude       Float?
-  maxJoiners      Int      @default(0)
-  isTicketed      Boolean  @default(false)
-  ticketPrice     Float    @default(0)
-  currency        String   @default("USD")
-  
-  // Link to entity
-  groupId         String?
-  group           Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  schoolId        String?
-  school          User?    @relation("SchoolEvents", fields: [schoolId], references: [id], onDelete: Cascade)
-  shopId          String?
-  shop            User?    @relation("ShopEvents", fields: [shopId], references: [id], onDelete: Cascade)
-  
-  organizerId     String
-  organizer       User     @relation(fields: [organizerId], references: [id], onDelete: Cascade)
-  
-  eventJoiners    GroupEventJoiner[]
-  eventTickets    GroupEventTicket[]
-  requests        Request[]
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-}
-
-model GroupEventJoiner {
-  id        String     @id @default(cuid())
-  eventId   String
-  event     GroupEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime   @default(now())
-
-  @@unique([eventId, userId])
-}
-
-model GroupEventTicket {
-  id              String     @id @default(cuid())
-  eventId         String
-  event           GroupEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  userId          String
-  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  quantity        Int        @default(1)
-  totalPrice      Float
-  currency        String     @default("USD")
-  status          String     @default("PENDING")
-  createdAt      DateTime   @default(now())
 }

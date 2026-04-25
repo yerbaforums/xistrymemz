@@ -20,6 +20,8 @@ interface Post {
   content: string
   pinned: boolean
   locked: boolean
+  isPoll: boolean
+  pollType: string
   viewCount: number
   replyCount: number
   totalTips: number
@@ -28,6 +30,7 @@ interface Post {
   updatedAt: string
   author: Author
   category: { id: string; name: string; slug: string }
+  pollOptions?: { id: string; optionText: string; voteCount: number; sortOrder: number }[]
 }
 
 interface Reply {
@@ -37,6 +40,14 @@ interface Reply {
   tippers: number
   createdAt: string
   author: Author
+}
+
+interface PollOption {
+  id: string
+  optionText: string
+  voteCount: number
+  sortOrder: number
+  percentage?: number
 }
 
 export default function ForumThreadPage() {
@@ -61,6 +72,13 @@ export default function ForumThreadPage() {
   const [editingReply, setEditingReply] = useState<string | null>(null)
   const [editReplyContent, setEditReplyContent] = useState('')
   const [deleting, setDeleting] = useState(false)
+  const [pollOptions, setPollOptions] = useState<PollOption[]>([])
+  const [totalVotes, setTotalVotes] = useState(0)
+  const [userVoted, setUserVoted] = useState(false)
+  const [userVotes, setUserVotes] = useState<string[]>([])
+  const [voting, setVoting] = useState(false)
+  const [isPollExpired, setIsPollExpired] = useState(false)
+  const [pollEndsAt, setPollEndsAt] = useState<string | null>(null)
 
   const userId = session?.user?.id
   const userRole = (session?.user as { role?: string })?.role
@@ -197,6 +215,14 @@ export default function ForumThreadPage() {
       if (res.ok) {
         const data = await res.json()
         setPost(data)
+        if (data.isPoll && data.pollOptions) {
+          const total = data.pollOptions.reduce((sum: number, o: { voteCount: number }) => sum + o.voteCount, 0)
+          setTotalVotes(total)
+          setPollOptions(data.pollOptions.map((o: { id: string; optionText: string; voteCount: number; sortOrder: number }) => ({
+            ...o,
+            percentage: total > 0 ? Math.round((o.voteCount / total) * 100) : 0
+          })))
+        }
       }
     } catch (err) {
       console.error(err)
@@ -247,6 +273,29 @@ export default function ForumThreadPage() {
       console.error(err)
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handleVote = async (optionId: string) => {
+    if (!session || userVoted) return
+    setVoting(true)
+    try {
+      const res = await fetch('/api/forum/poll/vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ postId, optionId })
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setPollOptions(data.pollOptions || [])
+        setTotalVotes(prev => prev + 1)
+        setUserVoted(true)
+        setUserVotes([optionId])
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setVoting(false)
     }
   }
 
@@ -361,6 +410,45 @@ export default function ForumThreadPage() {
             post.content
           )}
         </div>
+
+        {post.isPoll && (
+          <div className={styles.pollSection}>
+            <div className={styles.pollHeader}>
+              <span className={styles.pollTitle}>📊 Poll</span>
+              <span className={styles.pollVotes}>{totalVotes} votes</span>
+              {pollEndsAt && (
+                <span className={isPollExpired ? styles.pollExpired : styles.pollActive}>
+                  {isPollExpired ? 'Ended' : `Ends ${new Date(pollEndsAt).toLocaleDateString()}`}
+                </span>
+              )}
+            </div>
+            <div className={styles.pollOptions}>
+              {pollOptions.map(option => (
+                <button
+                  key={option.id}
+                  onClick={() => handleVote(option.id)}
+                  disabled={voting || userVoted || isPollExpired}
+                  className={`${styles.pollOptionBtn} ${userVotes.includes(option.id) ? styles.votedOption : ''}`}
+                >
+                  <div className={styles.pollOptionBar}>
+                    <div 
+                      className={styles.pollOptionFill}
+                      style={{ width: `${option.percentage || 0}%` }}
+                    />
+                  </div>
+                  <span className={styles.pollOptionText}>{option.optionText}</span>
+                  <span className={styles.pollOptionPercent}>{option.percentage || 0}%</span>
+                </button>
+              ))}
+            </div>
+            {session && !userVoted && !isPollExpired && (
+              <p className={styles.pollHint}>Click an option to vote</p>
+            )}
+            {userVoted && (
+              <p className={styles.pollThanks}>You voted!</p>
+            )}
+          </div>
+        )}
 
         <div className={styles.threadActions}>
           <button

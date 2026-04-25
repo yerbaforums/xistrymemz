@@ -11,6 +11,10 @@ interface Post {
   content: string
   author: { id: string; name: string | null; email: string; image: string | null }
   category: { name: string; slug: string }
+  isPoll: boolean
+  pollType: string
+  pollOptions: { id: string; optionText: string; voteCount: number; sortOrder: number }[]
+  totalVotes: number
   totalTips: number
   tippers: number
   viewCount: number
@@ -36,6 +40,9 @@ export default function ForumPage() {
   const [newPostTitle, setNewPostTitle] = useState('')
   const [newPostContent, setNewPostContent] = useState('')
   const [newPostCategory, setNewPostCategory] = useState('')
+  const [isPoll, setIsPoll] = useState(false)
+  const [pollType, setPollType] = useState('single')
+  const [pollOptions, setPollOptions] = useState(['', '', '', ''])
   const [posting, setPosting] = useState(false)
   const [error, setError] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
@@ -106,17 +113,32 @@ export default function ForumPage() {
 
   const handleCreatePost = async () => {
     if (!newPostTitle.trim() || !newPostContent.trim()) return
+    
+    const payload: Record<string, unknown> = { 
+      title: newPostTitle, 
+      content: newPostContent, 
+      category: newPostCategory 
+    }
+    
+    if (isPoll) {
+      payload.isPoll = true
+      payload.pollType = pollType
+      payload.pollOptions = pollOptions.filter(o => o.trim())
+    }
+    
     setPosting(true)
     try {
       const res = await fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: newPostTitle, content: newPostContent, category: newPostCategory })
+        body: JSON.stringify(payload)
       })
       if (res.ok) {
         setNewPostTitle('')
         setNewPostContent('')
         setNewPostCategory('')
+        setIsPoll(false)
+        setPollOptions(['', '', '', ''])
         const updated = await fetch('/api/community/forum').then(r => r.json())
         setPosts(updated.posts || [])
       }
@@ -195,9 +217,18 @@ export default function ForumPage() {
               value={newPostContent}
               onChange={e => setNewPostContent(e.target.value)}
               className={styles.postTextarea}
-              rows={3}
+              rows={isPoll ? 2 : 3}
             />
+            
             <div className={styles.postActions}>
+              <label className={styles.pollToggle}>
+                <input
+                  type="checkbox"
+                  checked={isPoll}
+                  onChange={e => setIsPoll(e.target.checked)}
+                />
+                Create Poll
+              </label>
               <select
                 value={newPostCategory}
                 onChange={e => setNewPostCategory(e.target.value)}
@@ -216,6 +247,58 @@ export default function ForumPage() {
                 {posting ? 'Posting...' : 'Post'}
               </button>
             </div>
+
+            {isPoll && (
+              <div className={styles.pollOptions}>
+                <div className={styles.pollTypeSelect}>
+                  <label>
+                    <input
+                      type="radio"
+                      name="pollType"
+                      value="single"
+                      checked={pollType === 'single'}
+                      onChange={() => setPollType('single')}
+                    />
+                    Single Choice
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="pollType"
+                      value="multi"
+                      checked={pollType === 'multi'}
+                      onChange={() => setPollType('multi')}
+                    />
+                    Multiple Choices
+                  </label>
+                </div>
+                <div className={styles.pollInputGrid}>
+                  {pollOptions.map((opt, idx) => (
+                    <input
+                      key={idx}
+                      type="text"
+                      placeholder={`Option ${idx + 1}`}
+                      value={opt}
+                      onChange={e => {
+                        const newOpts = [...pollOptions]
+                        newOpts[idx] = e.target.value
+                        setPollOptions(newOpts)
+                      }}
+                      className={styles.pollOptionInput}
+                    />
+                  ))}
+                </div>
+                {pollOptions.length < 6 && (
+                  <button 
+                    type="button"
+                    onClick={() => setPollOptions([...pollOptions, ''])}
+                    className={styles.addPollOptionBtn}
+                  >
+                    + Add Option
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {loading ? (
@@ -243,8 +326,17 @@ export default function ForumPage() {
                   </p>
                   <div className={styles.postMeta}>
                     <span>👤 {post.author.name || post.author.email.split('@')[0]}</span>
-                    <span>💬 {post.replyCount} replies</span>
-                    <span>👁️ {post.viewCount} views</span>
+                    {post.isPoll ? (
+                      <>
+                        <span>📊 {post.totalVotes || 0} votes</span>
+                        <span className={styles.pollBadge}>Poll</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>💬 {post.replyCount} replies</span>
+                        <span>👁️ {post.viewCount} views</span>
+                      </>
+                    )}
                   </div>
                 </Link>
               ))}

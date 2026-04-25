@@ -27,12 +27,13 @@ if (typeof window !== 'undefined') {
   })
 }
 
-interface Joiner {
+interface EventJoiner {
   id: string
+  userId: string
   user: { name: string | null; email: string }
 }
 
-interface Plan {
+interface Event {
   id: string
   title: string
   description: string | null
@@ -43,18 +44,22 @@ interface Plan {
   latitude: number | null
   longitude: number | null
   maxJoiners: number
-  planId: string
-  planTitle: string
+  pinned: boolean
+  isTicketed: boolean
+  ticketPrice: number
+  currency: string
+  planId: string | null
+  planTitle: string | null
   userName: string | null
-  joiners: Joiner[]
-  _count?: { joiners: number }
+  userId: string
+  joiners: EventJoiner[]
   joined?: boolean
 }
 
 export default function EventsPage() {
   const { warning, info, error: toastError } = useToast()
-  const [plans, setPlans] = useState<Plan[]>([])
-  const [filteredPlans, setFilteredPlans] = useState<Plan[]>([])
+  const [events, setEvents] = useState<Event[]>([])
+  const [filteredEvents, setFilteredEvents] = useState<Event[]>([])
   const [category, setCategory] = useState('ALL')
   const [location, setLocation] = useState('ALL')
   const [zipCode, setZipCode] = useState('')
@@ -65,7 +70,7 @@ export default function EventsPage() {
   const [endDate, setEndDate] = useState('')
   const [userLocation, setUserLocation] = useState<{lat: number, lon: number} | null>(null)
   const [geocodingLoading, setGeocodingLoading] = useState(false)
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null)
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
   const [joining, setJoining] = useState<string | null>(null)
@@ -107,8 +112,8 @@ export default function EventsPage() {
         return res.json()
       })
       .then(data => {
-        setPlans(data)
-        setFilteredPlans(data)
+        setEvents(data)
+        setFilteredEvents(data)
         setLoading(false)
       })
       .catch(() => setLoading(false))
@@ -133,13 +138,13 @@ export default function EventsPage() {
     }
     setJoining(eventId)
     try {
-      const res = await fetch(`/api/plans/${selectedPlan?.planId}/events/${eventId}/join`, { method: 'POST' })
+      const res = await fetch(`/api/events/${eventId}/join`, { method: 'POST' })
       if (res.ok) {
-        const newJoiner = { id: '', user: { name: null, email: '' } }
-        setPlans(plans.map(p => p.id === eventId ? { ...p, joiners: [...(p.joiners || []), newJoiner], joined: true } : p))
-        setFilteredPlans(filteredPlans.map(p => p.id === eventId ? { ...p, joiners: [...(p.joiners || []), newJoiner], joined: true } : p))
-        if (selectedPlan?.id === eventId) {
-          setSelectedPlan({ ...selectedPlan, joiners: [...(selectedPlan.joiners || []), newJoiner], joined: true })
+        const newJoiner = { id: '', userId: userId, user: { name: null, email: '' } }
+        setEvents(events.map(e => e.id === eventId ? { ...e, joiners: [...(e.joiners || []), newJoiner], joined: true } : e))
+        setFilteredEvents(filteredEvents.map(e => e.id === eventId ? { ...e, joiners: [...(e.joiners || []), newJoiner], joined: true } : e))
+        if (selectedEvent?.id === eventId) {
+          setSelectedEvent({ ...selectedEvent, joiners: [...(selectedEvent.joiners || []), newJoiner], joined: true })
         }
       }
     } catch (err) {
@@ -154,12 +159,12 @@ export default function EventsPage() {
     if (!userId) return
     setJoining(eventId)
     try {
-      const res = await fetch(`/api/plans/${selectedPlan?.planId}/events/${eventId}/join`, { method: 'DELETE' })
+      const res = await fetch(`/api/events/${eventId}/join`, { method: 'DELETE' })
       if (res.ok) {
-        setPlans(plans.map(p => p.id === eventId ? { ...p, joiners: (p.joiners || []).slice(0, -1), joined: false } : p))
-        setFilteredPlans(filteredPlans.map(p => p.id === eventId ? { ...p, joiners: (p.joiners || []).slice(0, -1), joined: false } : p))
-        if (selectedPlan?.id === eventId) {
-          setSelectedPlan({ ...selectedPlan, joiners: (selectedPlan.joiners || []).slice(0, -1), joined: false })
+        setEvents(events.map(e => e.id === eventId ? { ...e, joiners: (e.joiners || []).filter(j => j.userId !== userId), joined: false } : e))
+        setFilteredEvents(filteredEvents.map(e => e.id === eventId ? { ...e, joiners: (e.joiners || []).filter(j => j.userId !== userId), joined: false } : e))
+        if (selectedEvent?.id === eventId) {
+          setSelectedEvent({ ...selectedEvent, joiners: (selectedEvent.joiners || []).filter(j => j.userId !== userId), joined: false })
         }
       }
     } catch (err) {
@@ -171,23 +176,24 @@ export default function EventsPage() {
   }
 
   useEffect(() => {
-    let result = plans
+    let result = events
+
     if (category !== 'ALL') {
-      result = result.filter(p => p.eventCategory === category)
+      result = result.filter(e => e.eventCategory === category)
     }
     if (location !== 'ALL') {
-      result = result.filter(p => p.location === location)
+      result = result.filter(e => e.location === location)
     }
     
     if (userLocation && radius) {
       const radiusMiles = parseInt(radius)
-      result = result.filter(p => {
-        if (p.latitude == null || p.longitude == null) return false
+      result = result.filter(e => {
+        if (e.latitude == null || e.longitude == null) return false
         const distance = calculateDistance(
           userLocation.lat,
           userLocation.lon,
-          p.latitude,
-          p.longitude
+          e.latitude,
+          e.longitude
         )
         return distance <= radiusMiles
       })
@@ -227,9 +233,9 @@ export default function EventsPage() {
     }
 
     if (rangeStart || rangeEnd) {
-      result = result.filter(p => {
-        if (!p.eventDate) return false
-        const eventDate = new Date(p.eventDate)
+      result = result.filter(e => {
+        if (!e.eventDate) return false
+        const eventDate = new Date(e.eventDate)
         if (rangeStart && eventDate < rangeStart) return false
         if (rangeEnd && eventDate > rangeEnd) return false
         return true
@@ -250,24 +256,24 @@ export default function EventsPage() {
       })
     }
     
-    setFilteredPlans(result)
-  }, [category, location, plans, userLocation, radius, sortBy, dateRange, startDate, endDate])
+    setFilteredEvents(result)
+  }, [category, location, events, userLocation, radius, sortBy, dateRange, startDate, endDate])
 
-  const categories = [...new Set(plans.map(p => p.eventCategory).filter(Boolean))]
-  const locations = [...new Set(plans.map(p => p.location).filter(Boolean))]
+  const categories = [...new Set(events.map(e => e.eventCategory).filter(Boolean))]
+  const locations = [...new Set(events.map(e => e.location).filter(Boolean))]
 
-  const plansWithCoords = filteredPlans.filter(p => p.latitude != null && p.longitude != null)
+  const eventsWithCoords = filteredEvents.filter(e => e.latitude != null && e.longitude != null)
   
   const getMapCenter = (): [number, number] => {
     if (userLocation) {
       return [userLocation.lat, userLocation.lon]
     }
-    if (plansWithCoords.length > 0) {
-      if (plansWithCoords.length === 1) {
-        return [plansWithCoords[0].latitude!, plansWithCoords[0].longitude!]
+    if (eventsWithCoords.length > 0) {
+      if (eventsWithCoords.length === 1) {
+        return [eventsWithCoords[0].latitude!, eventsWithCoords[0].longitude!]
       }
-      const lats = plansWithCoords.map(p => p.latitude!)
-      const lons = plansWithCoords.map(p => p.longitude!)
+      const lats = eventsWithCoords.map(e => e.latitude!)
+      const lons = eventsWithCoords.map(e => e.longitude!)
       const avgLat = (Math.min(...lats) + Math.max(...lats)) / 2
       const avgLon = (Math.min(...lons) + Math.max(...lons)) / 2
       return [avgLat, avgLon]
@@ -276,14 +282,14 @@ export default function EventsPage() {
   }
 
   const getMapZoom = (): number => {
-    if (userLocation || plansWithCoords.length === 0) {
+    if (userLocation || eventsWithCoords.length === 0) {
       return 10
     }
-    if (plansWithCoords.length === 1) {
+    if (eventsWithCoords.length === 1) {
       return 13
     }
-    const lats = plansWithCoords.map(p => p.latitude!)
-    const lons = plansWithCoords.map(p => p.longitude!)
+    const lats = eventsWithCoords.map(e => e.latitude!)
+    const lons = eventsWithCoords.map(e => e.longitude!)
     const latDiff = Math.max(...lats) - Math.min(...lats)
     const lonDiff = Math.max(...lons) - Math.min(...lons)
     const maxDiff = Math.max(latDiff, lonDiff)
@@ -445,21 +451,21 @@ export default function EventsPage() {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            {plansWithCoords.map(plan => (
+            {eventsWithCoords.map(event => (
               <Marker 
-                key={plan.id} 
-                position={[plan.latitude!, plan.longitude!]}
+                key={event.id} 
+                position={[event.latitude!, event.longitude!]}
                 eventHandlers={{
-                  click: () => setSelectedPlan(plan),
+                  click: () => setSelectedEvent(event),
                 }}
               >
                 <Popup>
                   <div style={{ minWidth: 200 }}>
-                    <strong>{plan.title}</strong>
+                    <strong>{event.title}</strong>
                     <br />
-                    {plan.eventDate && <span>{new Date(plan.eventDate).toLocaleDateString()}</span>}
+                    {event.eventDate && <span>{new Date(event.eventDate).toLocaleDateString()}</span>}
                     <br />
-                    {plan.location}
+                    {event.location}
                   </div>
                 </Popup>
               </Marker>
@@ -474,37 +480,37 @@ export default function EventsPage() {
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
-              {plansWithCoords.map(plan => (
+              {eventsWithCoords.map(event => (
                 <Marker 
-                  key={plan.id} 
-                  position={[plan.latitude!, plan.longitude!]}
+                  key={event.id} 
+                  position={[event.latitude!, event.longitude!]}
                   eventHandlers={{
-                    click: () => setSelectedPlan(plan),
+                    click: () => setSelectedEvent(event),
                   }}
                 >
                   <Popup>
                     <div style={{ minWidth: 200 }}>
-                      <strong style={{ fontSize: '14px' }}>{plan.title}</strong>
+                      <strong style={{ fontSize: '14px' }}>{event.title}</strong>
                       <br />
-                      {plan.eventCategory && <span className={`badge badge-${plan.eventCategory.toLowerCase()}`}>{plan.eventCategory}</span>}
-                      {plan.eventDate && (
+                      {event.eventCategory && <span className={`badge badge-${event.eventCategory.toLowerCase()}`}>{event.eventCategory}</span>}
+                      {event.eventDate && (
                         <p style={{ margin: '8px 0', fontSize: '12px' }}>
-                          📅 {new Date(plan.eventDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                          📅 {new Date(event.eventDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
                         </p>
                       )}
-                      {plan.location && <p style={{ margin: '4px 0', fontSize: '12px' }}>📍 {plan.location}</p>}
-                      {plan.locationDetails && <p style={{ margin: '4px 0', fontSize: '11px', color: '#666' }}>{plan.locationDetails}</p>}
-                      <p style={{ margin: '8px 0', fontSize: '12px' }}>👥 {(plan.joiners || []).length}{plan.maxJoiners > 0 ? `/${plan.maxJoiners}` : ''} joined</p>
-                      {plan.maxJoiners === 0 || (plan.joiners || []).length < plan.maxJoiners ? (
+                      {event.location && <p style={{ margin: '4px 0', fontSize: '12px' }}>📍 {event.location}</p>}
+                      {event.locationDetails && <p style={{ margin: '4px 0', fontSize: '11px', color: '#666' }}>{event.locationDetails}</p>}
+                      <p style={{ margin: '8px 0', fontSize: '12px' }}>👥 {(event.joiners || []).length}{event.maxJoiners > 0 ? `/${event.maxJoiners}` : ''} joined</p>
+                      {event.maxJoiners === 0 || (event.joiners || []).length < event.maxJoiners ? (
                         <button 
                           onClick={(e) => { 
                             e.stopPropagation()
-                            if (plan.joined) { handleLeave(plan.id) } else { handleJoin(plan.id) }
+                            if (event.joined) { handleLeave(event.id) } else { handleJoin(event.id) }
                           }}
-                          disabled={joining === plan.id}
-                          style={{ marginTop: '8px', padding: '6px 12px', background: plan.joined ? '#666' : '#00d9ff', color: plan.joined ? '#fff' : '#000', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                          disabled={joining === event.id}
+                          style={{ marginTop: '8px', padding: '6px 12px', background: event.joined ? '#666' : '#00d9ff', color: event.joined ? '#fff' : '#000', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
                         >
-                          {joining === plan.id ? '...' : plan.joined ? 'Leave' : 'Join Event'}
+                          {joining === event.id ? '...' : event.joined ? 'Leave' : 'Join Event'}
                         </button>
                       ) : (
                         <p style={{ marginTop: '8px', fontSize: '11px', color: '#e53e3e' }}>Event is full</p>
@@ -519,7 +525,7 @@ export default function EventsPage() {
           <div className={styles.listSection} style={{ flex: 1 }}>
             {loading ? (
               <div className={styles.loading}>Loading events...</div>
-            ) : filteredPlans.length === 0 ? (
+            ) : filteredEvents.length === 0 ? (
               <div className={styles.empty}>
                 <p>No events found</p>
                 {userId && (
@@ -529,48 +535,48 @@ export default function EventsPage() {
                 )}
               </div>
             ) : (
-              filteredPlans.map(plan => (
+              filteredEvents.map(event => (
                 <div 
-                  key={plan.id} 
-                  className={`${styles.eventCard} ${selectedPlan?.id === plan.id ? styles.selected : ''}`}
-                  onClick={() => setSelectedPlan(plan)}
+                  key={event.id} 
+                  className={`${styles.eventCard} ${selectedEvent?.id === event.id ? styles.selected : ''}`}
+                  onClick={() => setSelectedEvent(event)}
                 >
                   <div className={styles.eventHeader}>
-                    <span className={`badge badge-${plan.eventCategory?.toLowerCase()}`}>
-                      {plan.eventCategory}
+                    <span className={`badge badge-${event.eventCategory?.toLowerCase()}`}>
+                      {event.eventCategory}
                     </span>
-                    {plan.eventDate && (
+                    {event.eventDate && (
                       <span className={styles.eventDate}>
-                        {new Date(plan.eventDate).toLocaleDateString()}
+                        {new Date(event.eventDate).toLocaleDateString()}
                       </span>
                     )}
                   </div>
-                  <h3>{plan.title}</h3>
-                  {plan.description && <p className={styles.eventDesc}>{plan.description}</p>}
+                  <h3>{event.title}</h3>
+                  {event.description && <p className={styles.eventDesc}>{event.description}</p>}
                   <div className={styles.eventMeta}>
-                    <span>📍 {plan.location}</span>
-                    {plan.maxJoiners > 0 && (
-                      <span>👥 {(plan.joiners || []).length}/{plan.maxJoiners} joined</span>
+                    <span>📍 {event.location}</span>
+                    {event.maxJoiners > 0 && (
+                      <span>👥 {(event.joiners || []).length}/{event.maxJoiners} joined</span>
                     )}
-                    {plan.userName && <span>👤 {plan.userName}</span>}
+                    {event.userName && <span>👤 {event.userName}</span>}
                   </div>
                       <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                    {plan.maxJoiners === 0 || (plan.joiners || []).length < plan.maxJoiners ? (
+                    {event.maxJoiners === 0 || (event.joiners || []).length < event.maxJoiners ? (
                       <button 
                         onClick={(e) => { 
                           e.stopPropagation()
-                          if (plan.joined) { handleLeave(plan.id) } else { handleJoin(plan.id) }
+                          if (event.joined) { handleLeave(event.id) } else { handleJoin(event.id) }
                         }}
-                        disabled={joining === plan.id}
-                        className={plan.joined ? "btn-secondary" : "btn-primary"}
+                        disabled={joining === event.id}
+                        className={event.joined ? "btn-secondary" : "btn-primary"}
                         style={{ flex: 1 }}
                       >
-                        {joining === plan.id ? '...' : plan.joined ? 'Leave' : 'Join Event'}
+                        {joining === event.id ? '...' : event.joined ? 'Leave' : 'Join Event'}
                       </button>
                     ) : (
                       <span className="badge badge-full" style={{ flex: 1, textAlign: 'center', padding: '8px' }}>Event Full</span>
                     )}
-                    <Link href={`/events/${plan.id}`} className={styles.viewBtn} onClick={e => e.stopPropagation()}>
+                    <Link href={`/events/${event.id}`} className={styles.viewBtn} onClick={e => e.stopPropagation()}>
                       View Details
                     </Link>
                   </div>
@@ -597,9 +603,9 @@ export default function EventsPage() {
     
     for (let day = 1; day <= lastDay.getDate(); day++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-      const eventsOnDay = filteredPlans.filter(p => {
-        if (!p.eventDate) return false
-        const eventDate = new Date(p.eventDate).toISOString().split('T')[0]
+      const eventsOnDay = filteredEvents.filter(e => {
+        if (!e.eventDate) return false
+        const eventDate = new Date(e.eventDate).toISOString().split('T')[0]
         return eventDate === dateStr
       })
       

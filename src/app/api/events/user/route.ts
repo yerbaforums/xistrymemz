@@ -14,9 +14,9 @@ export async function GET() {
 
   const userId = session.user.id
 
-  const [organizedEvents, joinedPlanEvents, joinedGroupEvents, userEvents] = await Promise.all([
-    prisma.planEvent.findMany({
-      where: { plan: { userId } },
+  const [organizedEvents, joinedEvents, userEvents] = await Promise.all([
+    prisma.event.findMany({
+      where: { organizerId: userId },
       select: {
         id: true,
         title: true,
@@ -33,10 +33,11 @@ export async function GET() {
         currency: true,
         createdAt: true,
         plan: { select: { id: true, title: true } },
-        _count: { select: { joiners: true } }
+        group: { select: { id: true, name: true } },
+        _count: { select: { eventJoiners: true } }
       }
     }),
-    prisma.planEventJoiner.findMany({
+    prisma.eventJoiner.findMany({
       where: { userId },
       include: {
         event: {
@@ -56,31 +57,8 @@ export async function GET() {
             currency: true,
             createdAt: true,
             plan: { select: { id: true, title: true } },
-            _count: { select: { joiners: true } }
-          }
-        }
-      }
-    }),
-    prisma.groupEventJoiner.findMany({
-      where: { userId },
-      include: {
-        event: {
-          select: {
-            id: true,
-            title: true,
-            description: true,
-            eventDate: true,
-            eventCategory: true,
-            location: true,
-            locationDetails: true,
-            latitude: true,
-            longitude: true,
-            maxJoiners: true,
-            isTicketed: true,
-            ticketPrice: true,
-            currency: true,
-            createdAt: true,
-            _count: { select: { eventJoiners: true, eventTickets: true } }
+            group: { select: { id: true, name: true } },
+            _count: { select: { eventJoiners: true } }
           }
         }
       }
@@ -116,13 +94,15 @@ export async function GET() {
       isTicketed: e.isTicketed,
       ticketPrice: e.ticketPrice,
       currency: e.currency,
-      joinerCount: e._count.joiners,
+      joinerCount: e._count.eventJoiners,
       type: 'ORGANIZED',
       planTitle: e.plan?.title || null,
       planId: e.plan?.id || null,
+      groupTitle: e.group?.name || null,
+      groupId: e.group?.id || null,
       createdAt: e.createdAt.toISOString()
     })),
-    ...joinedPlanEvents.map(j => ({
+    ...joinedEvents.map(j => ({
       id: j.event.id,
       title: j.event.title,
       description: j.event.description,
@@ -136,30 +116,12 @@ export async function GET() {
       isTicketed: j.event.isTicketed,
       ticketPrice: j.event.ticketPrice,
       currency: j.event.currency,
-      joinerCount: j.event._count.joiners,
-      type: 'JOINED_PLAN',
+      joinerCount: j.event._count.eventJoiners,
+      type: 'JOINED',
       planTitle: j.event.plan?.title || null,
       planId: j.event.plan?.id || null,
-      createdAt: j.event.createdAt.toISOString()
-    })),
-    ...joinedGroupEvents.map(j => ({
-      id: j.event.id,
-      title: j.event.title,
-      description: j.event.description,
-      eventDate: j.event.eventDate?.toISOString() || null,
-      eventCategory: j.event.eventCategory,
-      location: j.event.location,
-      locationDetails: j.event.locationDetails,
-      latitude: j.event.latitude,
-      longitude: j.event.longitude,
-      maxJoiners: j.event.maxJoiners,
-      isTicketed: j.event.isTicketed,
-      ticketPrice: j.event.ticketPrice,
-      currency: j.event.currency,
-      joinerCount: (j.event._count as { eventJoiners: number }).eventJoiners,
-      type: 'JOINED_GROUP',
-      planTitle: null,
-      planId: null,
+      groupTitle: j.event.group?.name || null,
+      groupId: j.event.group?.id || null,
       createdAt: j.event.createdAt.toISOString()
     })),
     ...userEvents.map(e => ({
@@ -180,6 +142,8 @@ export async function GET() {
       type: 'PERSONAL',
       planTitle: null,
       planId: null,
+      groupTitle: null,
+      groupId: null,
       createdAt: e.createdAt.toISOString()
     }))
   ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())

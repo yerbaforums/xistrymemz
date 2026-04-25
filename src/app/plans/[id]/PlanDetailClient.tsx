@@ -40,6 +40,7 @@ interface PlanEvent {
   description: string | null
   eventCategory: string | null
   eventDate: string | null
+  endDate: string | null
   location: string | null
   locationDetails: string | null
   latitude: number | null

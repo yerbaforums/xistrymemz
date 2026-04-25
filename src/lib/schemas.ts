@@ -41,7 +41,16 @@ export const groupSchema = z.object({
 export const forumPostSchema = z.object({
   title: z.string().min(1, 'Title is required').max(300),
   content: z.string().min(1, 'Content is required').max(20000),
-  categoryId: z.string().optional()
+  categoryId: z.string().optional(),
+  isPoll: z.boolean().optional(),
+  pollType: z.enum(['single', 'multi']).optional(),
+  pollEndsAt: z.string().optional(),
+  pollOptions: z.array(z.string().min(1)).max(6).optional()
+})
+
+export const pollVoteSchema = z.object({
+  postId: z.string().min(1, 'Post ID is required'),
+  optionId: z.string().min(1, 'Option ID is required')
 })
 
 export const eventSchema = z.object({

@@ -15,7 +15,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const event = await prisma.groupEvent.findUnique({
+    const event = await prisma.event.findUnique({
       where: { id },
       select: { 
         id: true, 
@@ -37,7 +37,7 @@ export async function POST(
       return NextResponse.json({ error: 'Event is full' }, { status: 400 })
     }
 
-    const existing = await prisma.groupEventJoiner.findUnique({
+    const existing = await prisma.eventJoiner.findUnique({
       where: {
         eventId_userId: {
           eventId: id,
@@ -50,7 +50,7 @@ export async function POST(
       return NextResponse.json({ error: 'Already joined' }, { status: 400 })
     }
 
-    await prisma.groupEventJoiner.create({
+    await prisma.eventJoiner.create({
       data: {
         eventId: id,
         userId: session.user.id
@@ -76,7 +76,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    await prisma.groupEventJoiner.deleteMany({
+    await prisma.eventJoiner.deleteMany({
       where: {
         eventId: id,
         userId: session.user.id

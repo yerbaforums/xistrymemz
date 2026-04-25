@@ -24,6 +24,15 @@ const DANGEROUS_EXTENSIONS = [
   ' htaccess', 'htpasswd'
 ]
 
+const MAGIC_BYTES: Record<string, number[]> = {
+  'image/jpeg': [0xFF, 0xD8, 0xFF],
+  'image/png': [0x89, 0x50, 0x4E, 0x47],
+  'image/webp': [0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50],
+  'image/gif': [0x47, 0x49, 0x46, 0x38],
+  'video/mp4': [0x00, 0x00, 0x00],
+  'video/webm': [0x1A, 0x45, 0xDF, 0xA3]
+}
+
 const TYPE_EXTENSIONS = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
@@ -39,6 +48,12 @@ function isValidMimeType(mimeType: string): mimeType is typeof ALLOWED_TYPES[num
 
 function isDangerousExtension(ext: string): boolean {
   return DANGEROUS_EXTENSIONS.includes(ext.toLowerCase())
+}
+
+function validateMagicBytes(buffer: Buffer, mimeType: string): boolean {
+  const magic = MAGIC_BYTES[mimeType]
+  if (!magic) return false
+  return magic.every((byte, i) => buffer[i] === byte)
 }
 
 function getMaxSize(mimeType: string): number {
@@ -88,6 +103,13 @@ export async function POST(request: Request) {
     if (fileSize > maxSize) {
       return NextResponse.json(
         { error: `File too large. Max size: ${maxSize / (1024 * 1024)}MB` },
+        { status: 400 }
+      )
+    }
+
+    if (!validateMagicBytes(buffer, mimeType)) {
+      return NextResponse.json(
+        { error: 'Invalid file content. File type mismatch detected.' },
         { status: 400 }
       )
     }

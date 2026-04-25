@@ -10,10 +10,10 @@ export async function GET(
 ) {
   const { eventId } = await params
 
-  const event = await prisma.planEvent.findUnique({
+  const event = await prisma.event.findUnique({
     where: { id: eventId },
     include: {
-      joiners: {
+      eventJoiners: {
         include: { user: { select: { id: true, name: true, email: true } } }
       }
     }
@@ -37,15 +37,28 @@ export async function PUT(
   }
 
   const { eventId } = await params
-  const body = await request.json()
 
-  const existingEvent = await prisma.planEvent.findUnique({
-    where: { id: eventId },
-    include: { plan: true }
+  let body;
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
+
+  const existingEvent = await prisma.event.findUnique({
+    where: { id: eventId }
   })
 
-  if (!existingEvent || existingEvent.plan.userId !== session.user.id) {
+  if (!existingEvent) {
     return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+  }
+
+  const isOwner = existingEvent.organizerId === session.user.id
+  const userRole = (session.user as { role?: string }).role
+  const isAdmin = userRole === 'ADMIN'
+
+  if (!isOwner && !isAdmin) {
+    return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
   }
 
   let latitude = existingEvent.latitude
@@ -60,7 +73,7 @@ export async function PUT(
     }
   }
 
-  const event = await prisma.planEvent.update({
+  const event = await prisma.event.update({
     where: { id: eventId },
     data: {
       title: body.title ?? existingEvent.title,
@@ -90,16 +103,23 @@ export async function DELETE(
 
   const { eventId } = await params
 
-  const existingEvent = await prisma.planEvent.findUnique({
-    where: { id: eventId },
-    include: { plan: true }
+  const existingEvent = await prisma.event.findUnique({
+    where: { id: eventId }
   })
 
-  if (!existingEvent || existingEvent.plan.userId !== session.user.id) {
+  if (!existingEvent) {
     return NextResponse.json({ error: 'Event not found' }, { status: 404 })
   }
 
-  await prisma.planEvent.delete({
+  const isOwner = existingEvent.organizerId === session.user.id
+  const userRole = (session.user as { role?: string }).role
+  const isAdmin = userRole === 'ADMIN'
+
+  if (!isOwner && !isAdmin) {
+    return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
+  }
+
+  await prisma.event.delete({
     where: { id: eventId }
   })
 

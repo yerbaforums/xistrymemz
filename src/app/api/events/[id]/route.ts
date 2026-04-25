@@ -11,21 +11,16 @@ export async function GET(
     const { id } = await params
     const session = await getServerSession(authOptions)
 
-    const event = await prisma.groupEvent.findUnique({
+    const event = await prisma.event.findUnique({
       where: { id },
       include: {
         organizer: {
           select: { id: true, name: true, email: true, image: true }
         },
-        group: {
-          select: { id: true, name: true }
-        },
-        school: {
-          select: { id: true, schoolName: true, name: true }
-        },
-        shop: {
-          select: { id: true, shopName: true, name: true }
-        },
+        plan: { select: { id: true, title: true } },
+        group: { select: { id: true, name: true } },
+        school: { select: { id: true, schoolName: true, name: true } },
+        shop: { select: { id: true, shopName: true, name: true } },
         _count: {
           select: { eventJoiners: true }
         },
@@ -51,6 +46,8 @@ export async function GET(
       ? event.eventJoiners.some(j => j.userId === session.user.id)
       : false
 
+    const linkedTitle = event.plan?.title || event.group?.name || event.school?.schoolName || event.shop?.shopName || null
+
     return NextResponse.json({
       id: event.id,
       title: event.title,
@@ -63,13 +60,14 @@ export async function GET(
       latitude: event.latitude,
       longitude: event.longitude,
       maxJoiners: event.maxJoiners,
+      pinned: event.pinned,
       isTicketed: event.isTicketed,
       ticketPrice: event.ticketPrice,
       currency: event.currency,
+      planId: event.planId,
+      planTitle: linkedTitle,
       userId: event.organizerId,
       userName: event.organizer.name,
-      planTitle: event.group?.name || event.school?.schoolName || event.shop?.shopName || null,
-      planId: null,
       organizer: event.organizer,
       group: event.group,
       joiners: event.eventJoiners.map(j => ({

@@ -14,7 +14,14 @@ export async function POST(
     }
 
     const { id: planId, eventId } = await params
-    const body = await request.json()
+
+    let body;
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
+
     const { message } = body
 
     if (!message || !message.trim()) {
@@ -30,10 +37,10 @@ export async function POST(
       return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
     }
 
-    const event = await prisma.planEvent.findUnique({
+    const event = await prisma.event.findUnique({
       where: { id: eventId },
       include: {
-        joiners: {
+        eventJoiners: {
           include: {
             user: { select: { id: true, email: true, name: true } }
           }
@@ -47,7 +54,7 @@ export async function POST(
 
     const senderId = session.user.id
 
-    const messagePromises = event.joiners.map((joiner) => {
+    const messagePromises = event.eventJoiners.map((joiner) => {
       if (joiner.userId !== senderId) {
         return prisma.message.create({
           data: {
@@ -64,7 +71,7 @@ export async function POST(
 
     return NextResponse.json({ 
       success: true, 
-      message: `Message sent to ${event.joiners.length - 1} attendee(s)`
+      message: `Message sent to ${event.eventJoiners.length - 1} attendee(s)`
     })
   } catch (error) {
     console.error('Bulk message error:', error)

@@ -8,38 +8,27 @@ export async function GET() {
   const session = await getServerSession(authOptions)
   const userId = session?.user?.id
 
-  const events = await prisma.planEvent.findMany({
+  const events = await prisma.event.findMany({
     where: {
-      plan: { published: true },
       OR: [
         { eventDate: { gte: new Date() } },
         { eventDate: null }
       ]
     },
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      eventCategory: true,
-      eventDate: true,
-      location: true,
-      locationDetails: true,
-      latitude: true,
-      longitude: true,
-      maxJoiners: true,
-      isTicketed: true,
-      ticketPrice: true,
-      currency: true,
-      pinned: true,
-      plan: {
-        select: {
-          id: true,
-          title: true,
+    include: {
+      organizer: { select: { id: true, name: true } },
+      plan: { 
+        select: { 
+          id: true, 
+          title: true, 
           userId: true,
+          published: true,
           user: { select: { name: true } }
         }
       },
-      joiners: { 
+      group: { select: { id: true, name: true } },
+      _count: { select: { eventJoiners: true } },
+      eventJoiners: {
         include: { user: { select: { name: true, email: true } } }
       }
     },
@@ -50,6 +39,8 @@ export async function GET() {
   })
 
   const result = await Promise.all(events.map(async event => {
+    if (event.plan && !event.plan.published) return null
+
     let latitude = event.latitude
     let longitude = event.longitude
     
@@ -61,7 +52,7 @@ export async function GET() {
       }
     }
     
-    const isJoined = userId ? event.joiners.some(j => j.userId === userId) : false
+    const isJoined = userId ? event.eventJoiners.some(j => j.userId === userId) : false
     
     return {
       id: event.id,
@@ -74,15 +65,15 @@ export async function GET() {
       latitude,
       longitude,
       maxJoiners: event.maxJoiners,
+      pinned: event.pinned,
       isTicketed: event.isTicketed,
       ticketPrice: event.ticketPrice,
       currency: event.currency,
-      pinned: event.pinned,
-      planId: event.plan.id,
-      planTitle: event.plan.title,
-      userName: event.plan.user.name,
-      userId: event.plan.userId,
-      joiners: event.joiners.map(j => ({
+      planId: event.planId,
+      planTitle: event.plan?.title || null,
+      userName: event.plan?.user?.name || event.organizer?.name || null,
+      userId: event.plan?.userId || event.organizerId,
+      joiners: event.eventJoiners.map(j => ({
         id: j.id,
         userId: j.userId,
         user: { name: j.user.name, email: j.user.email }
@@ -91,5 +82,5 @@ export async function GET() {
     }
   }))
 
-  return NextResponse.json(result)
+  return NextResponse.json(result.filter(Boolean))
 }

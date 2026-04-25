@@ -14,7 +14,11 @@ export async function GET(
       where: { id: postId },
       include: {
         author: { select: { id: true, name: true, email: true, image: true } },
-        category: { select: { id: true, name: true, slug: true } }
+        category: { select: { id: true, name: true, slug: true } },
+        pollOptions: { 
+          select: { id: true, optionText: true, voteCount: true, sortOrder: true },
+          orderBy: { sortOrder: 'asc' }
+        }
       }
     })
 

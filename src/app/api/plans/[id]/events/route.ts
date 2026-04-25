@@ -10,10 +10,10 @@ export async function GET(
 ) {
   const { id } = await params
 
-  const events = await prisma.planEvent.findMany({
+  const events = await prisma.event.findMany({
     where: { planId: id },
     include: {
-      joiners: {
+      eventJoiners: {
         include: { user: { select: { id: true, name: true, email: true } } }
       }
     },
@@ -34,19 +34,37 @@ export async function POST(
   }
 
   const { id } = await params
-  const body = await request.json()
+
+  let body;
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
+
   const { title, description, eventCategory, eventDate, location, locationDetails, maxJoiners, isTicketed, ticketPrice, currency } = body
 
   const plan = await prisma.plan.findFirst({
-    where: { id, userId: session.user.id }
+    where: { id }
   })
 
   if (!plan) {
     return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
   }
 
-  let latitude = null
-  let longitude = null
+  const isOwner = plan.userId === session.user.id
+  const isEditor = await prisma.planEditor.findFirst({
+    where: { planId: id, userId: session.user.id }
+  })
+  const userRole = (session.user as { role?: string }).role
+  const isAdmin = userRole === 'ADMIN'
+
+  if (!isOwner && !isEditor && !isAdmin) {
+    return NextResponse.json({ error: 'Permission denied' }, { status: 403 })
+  }
+
+  let latitude: number | null = null
+  let longitude: number | null = null
 
   if (location) {
     const geocodeResult = await geocodeLocation(location)
@@ -56,7 +74,7 @@ export async function POST(
     }
   }
 
-  const event = await prisma.planEvent.create({
+  const event = await prisma.event.create({
     data: {
       title,
       description,
@@ -70,7 +88,8 @@ export async function POST(
       isTicketed: isTicketed || false,
       ticketPrice: ticketPrice || 0,
       currency: currency || 'USD',
-      planId: id
+      planId: id,
+      organizerId: session.user.id
     }
   })
 

@@ -54,7 +54,7 @@ export async function GET(request: Request) {
       select: { id: true, name: true, description: true, _count: { select: { members: true } } },
       take: limit
     }),
-    prisma.groupEvent.findMany({
+    prisma.event.findMany({
       where: {
         OR: [
           { title: { contains: query } },

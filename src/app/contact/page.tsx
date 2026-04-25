@@ -5,7 +5,7 @@ import Link from 'next/link'
 import styles from './page.module.css'
 
 export default function Contact() {
-  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
+  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '', website: '' })
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [statusMessage, setStatusMessage] = useState('')
 
@@ -25,7 +25,7 @@ export default function Contact() {
       if (res.ok) {
         setStatus('success')
         setStatusMessage('Thank you for your message! We\'ll get back to you soon.')
-        setForm({ name: '', email: '', subject: '', message: '' })
+        setForm({ name: '', email: '', subject: '', message: '', website: '' })
       } else {
         setStatus('error')
         setStatusMessage('Failed to send message. Please try again.')
@@ -128,6 +128,16 @@ export default function Contact() {
                 required
               />
             </div>
+
+            <input
+              type="text"
+              name="website"
+              value={form.website}
+              onChange={(e) => setForm({ ...form, website: e.target.value })}
+              style={{ position: 'absolute', left: -9999, opacity: 0 }}
+              tabIndex={-1}
+              autoComplete="off"
+            />
 
             <button type="submit" className={styles.submitBtn} disabled={status === 'loading'}>
               {status === 'loading' ? 'Sending...' : 'Send Message'}

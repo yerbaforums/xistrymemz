@@ -15,25 +15,15 @@ export async function POST(
 
   const { eventId } = await params
   
-  const userExists = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { id: true }
-  })
-  
-  if (!userExists) {
-    return NextResponse.json({ error: 'User not found' }, { status: 400 })
-  }
-
-  const event = await prisma.planEvent.findUnique({
-    where: { id: eventId },
-    include: { plan: true }
+  const event = await prisma.event.findUnique({
+    where: { id: eventId }
   })
 
   if (!event) {
     return NextResponse.json({ error: 'Event not found' }, { status: 404 })
   }
 
-  const existingJoiner = await prisma.planEventJoiner.findUnique({
+  const existingJoiner = await prisma.eventJoiner.findUnique({
     where: {
       eventId_userId: { eventId, userId: session.user.id }
     }
@@ -44,7 +34,7 @@ export async function POST(
   }
 
   if (event.maxJoiners > 0) {
-    const joinerCount = await prisma.planEventJoiner.count({
+    const joinerCount = await prisma.eventJoiner.count({
       where: { eventId }
     })
     if (joinerCount >= event.maxJoiners) {
@@ -53,7 +43,7 @@ export async function POST(
   }
 
   try {
-    const joiner = await prisma.planEventJoiner.create({
+    const joiner = await prisma.eventJoiner.create({
       data: {
         eventId,
         userId: session.user.id
@@ -82,7 +72,7 @@ export async function DELETE(
 
   const { eventId } = await params
 
-  const existingJoiner = await prisma.planEventJoiner.findUnique({
+  const existingJoiner = await prisma.eventJoiner.findUnique({
     where: {
       eventId_userId: { eventId, userId: session.user.id }
     }
@@ -92,7 +82,7 @@ export async function DELETE(
     return NextResponse.json({ error: 'Not joined' }, { status: 400 })
   }
 
-  await prisma.planEventJoiner.delete({
+  await prisma.eventJoiner.delete({
     where: { id: existingJoiner.id }
   })
 

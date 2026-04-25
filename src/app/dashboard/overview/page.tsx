@@ -112,7 +112,7 @@ const [
     prisma.request.count({ where: { userId } }),
     prisma.product.count({ where: { userId } }),
     prisma.groupMember.count({ where: { userId } }),
-    prisma.groupEventJoiner.count({ where: { userId } }),
+    prisma.eventJoiner.count({ where: { userId } }),
     prisma.schoolContent.count({ where: { userId } }),
   ])
 

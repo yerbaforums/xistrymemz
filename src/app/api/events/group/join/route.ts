@@ -10,14 +10,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await req.json()
+    let body;
+    try {
+      body = await req.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
+
     const { eventId } = body
 
     if (!eventId) {
       return NextResponse.json({ error: 'Event ID required' }, { status: 400 })
     }
 
-    const event = await prisma.groupEvent.findUnique({
+    const event = await prisma.event.findUnique({
       where: { id: eventId }
     })
 
@@ -26,7 +32,7 @@ export async function POST(req: Request) {
     }
 
     if (event.maxJoiners > 0) {
-      const joinerCount = await prisma.groupEventJoiner.count({
+      const joinerCount = await prisma.eventJoiner.count({
         where: { eventId }
       })
       if (joinerCount >= event.maxJoiners) {
@@ -34,7 +40,7 @@ export async function POST(req: Request) {
       }
     }
 
-    const existingJoiner = await prisma.groupEventJoiner.findUnique({
+    const existingJoiner = await prisma.eventJoiner.findUnique({
       where: {
         eventId_userId: { eventId, userId: session.user.id }
       }
@@ -44,7 +50,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Already joined' }, { status: 400 })
     }
 
-    const joiner = await prisma.groupEventJoiner.create({
+    const joiner = await prisma.eventJoiner.create({
       data: {
         eventId,
         userId: session.user.id
@@ -53,7 +59,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, joiner })
   } catch (error) {
-    console.error('Error joining group event:', error)
+    console.error('Error joining event:', error)
     return NextResponse.json({ error: 'Failed to join event' }, { status: 500 })
   }
 }
@@ -72,7 +78,7 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: 'Event ID required' }, { status: 400 })
     }
 
-    await prisma.groupEventJoiner.delete({
+    await prisma.eventJoiner.delete({
       where: {
         eventId_userId: { eventId, userId: session.user.id }
       }
@@ -80,7 +86,7 @@ export async function DELETE(req: Request) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error leaving group event:', error)
+    console.error('Error leaving event:', error)
     return NextResponse.json({ error: 'Failed to leave event' }, { status: 500 })
   }
 }

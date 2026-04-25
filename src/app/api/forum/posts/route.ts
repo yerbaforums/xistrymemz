@@ -18,6 +18,7 @@ export async function GET(request: Request) {
       include: {
         author: { select: { id: true, name: true, email: true, image: true } },
         category: { select: { id: true, name: true, slug: true } },
+        pollOptions: { select: { id: true, optionText: true, voteCount: true, sortOrder: true }, orderBy: { sortOrder: 'asc' } },
         _count: { select: { replies: true } }
       },
       orderBy: [{ pinned: 'desc' }, { createdAt: 'desc' }],
@@ -28,7 +29,8 @@ export async function GET(request: Request) {
     const postsWithMeta = posts.map(p => ({
       ...p,
       viewCount: p.viewCount || 0,
-      replyCount: p._count?.replies || 0
+      replyCount: p._count?.replies || 0,
+      totalVotes: p.pollOptions.reduce((sum, opt) => sum + opt.voteCount, 0) || 0
     }))
 
     return NextResponse.json(postsWithMeta)
@@ -52,7 +54,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { title, content, categoryId } = validation.data
+    const { title, content, categoryId, isPoll, pollType, pollEndsAt, pollOptions } = validation.data
 
     if (!categoryId) {
       return NextResponse.json({ error: 'Category is required' }, { status: 400 })
@@ -63,13 +65,26 @@ export async function POST(req: Request) {
         title,
         content,
         categoryId,
-        authorId: session.user.id
+        authorId: session.user.id,
+        isPoll: isPoll || false,
+        pollType: pollType || 'single',
+        pollEndsAt: pollEndsAt ? new Date(pollEndsAt) : null
       },
       include: {
         author: { select: { id: true, name: true, email: true, image: true } },
         category: { select: { id: true, name: true, slug: true } }
       }
     })
+
+    if (isPoll && pollOptions && pollOptions.length >= 2) {
+      await prisma.forumPollOption.createMany({
+        data: pollOptions.map((optionText, index) => ({
+          optionText,
+          sortOrder: index,
+          postId: post.id
+        }))
+      })
+    }
 
     return NextResponse.json(post)
   } catch (error) {

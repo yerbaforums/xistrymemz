@@ -10,9 +10,20 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const joinedEvents = await prisma.planEventJoiner.findMany({
+    const joinedEvents = await prisma.eventJoiner.findMany({
       where: { userId: session.user.id },
-      include: { event: { select: { id: true, title: true, eventDate: true, location: true, planId: true } } },
+      include: { 
+        event: { 
+          select: { 
+            id: true, 
+            title: true, 
+            eventDate: true, 
+            location: true, 
+            planId: true,
+            groupId: true
+          } 
+        } 
+      },
       orderBy: { joinedAt: 'desc' },
       take: 20
     })
