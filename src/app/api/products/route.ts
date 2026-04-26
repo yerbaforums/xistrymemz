@@ -127,10 +127,9 @@ export async function POST(request: Request) {
       paymentMethods, paymentType, acceptsRequests, acceptsOffers, requestPrice, published
     } = validation.data
 
-    const paymentMethodsString = Array.isArray(paymentMethods) ? paymentMethods.join(',') : paymentMethods
-
-    let latitude: number | null = null
-    let longitude: number | null = null
+    const paymentMethodsString = paymentMethods ? 
+      (Array.isArray(paymentMethods) ? paymentMethods.join(',') : String(paymentMethods)) 
+      : ''
 
     const product = await prisma.product.create({
       data: {
@@ -158,6 +157,7 @@ export async function POST(request: Request) {
     return NextResponse.json(product)
   } catch (error) {
     console.error('POST /api/products:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json({ error: `Failed to create product: ${errorMessage}` }, { status: 500 })
   }
 }

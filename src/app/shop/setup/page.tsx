@@ -202,8 +202,12 @@ export default function SetupShopPage() {
     try {
       const productData = {
         ...newProduct,
-        paymentMethods: newProduct.paymentMethods.join(',')
+        paymentMethods: newProduct.paymentMethods.join(','),
+        price: newProduct.price ? parseFloat(newProduct.price) : undefined,
+        requestPrice: newProduct.requestPrice ? parseFloat(newProduct.requestPrice) : undefined,
       }
+      
+      console.log('Creating product with data:', productData)
       
       const res = await fetch('/api/products', {
         method: 'POST',
@@ -211,6 +215,9 @@ export default function SetupShopPage() {
         body: JSON.stringify(productData)
       })
 
+      const result = await res.json()
+      console.log('Create product response:', res.status, result)
+      
       if (res.ok) {
         setShowProductModal(false)
         setNewProduct({

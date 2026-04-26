@@ -26,21 +26,21 @@ export const requestSchema = z.object({
 
 export const productSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200),
-  description: z.string().max(5000).optional(),
-  price: z.coerce.number().min(0).optional(),
-  type: z.enum(['PRODUCT', 'SERVICE']).optional(),
-  category: z.string().optional(),
-  condition: z.string().optional(),
-  location: z.string().optional(),
-  locationDetails: z.string().optional(),
+  description: z.string().max(5000).optional().nullable(),
+  price: z.coerce.number().min(0).optional().nullable(),
+  type: z.enum(['PRODUCT', 'SERVICE']).optional().nullable(),
+  category: z.string().optional().nullable(),
+  condition: z.string().optional().nullable(),
+  location: z.string().optional().nullable(),
+  locationDetails: z.string().optional().nullable(),
   isGlobal: z.boolean().optional(),
   isRemote: z.boolean().optional(),
-  imageUrl: z.string().url().optional().or(z.string().optional()),
-  paymentMethods: z.string().optional(),
-  paymentType: z.enum(['BOTH', 'ESCROW', 'DIRECT']).optional(),
+  imageUrl: z.string().optional().nullable(),
+  paymentMethods: z.string().optional().nullable(),
+  paymentType: z.enum(['BOTH', 'ESCROW', 'DIRECT']).optional().nullable(),
   acceptsRequests: z.boolean().optional(),
   acceptsOffers: z.boolean().optional(),
-  requestPrice: z.coerce.number().optional(),
+  requestPrice: z.coerce.number().min(0).optional().nullable(),
   published: z.boolean().optional()
 })
 
