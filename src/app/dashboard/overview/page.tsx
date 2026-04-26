@@ -116,6 +116,11 @@ const [
     prisma.schoolContent.count({ where: { userId } }),
   ])
 
+  const [offersSent, offersReceived] = await Promise.all([
+    prisma.barterOffer.count({ where: { makerId: userId } }),
+    prisma.barterOffer.count({ where: { receiverId: userId } }),
+  ])
+
   const plans = _plans
   const requests = _requests
 
@@ -146,12 +151,22 @@ const [
         <Link href="/dashboard/requests" className={styles.statCard}>
           <span className={styles.statIcon}>📝</span>
           <span className={styles.statValue}>{pendingRequests}</span>
-          <span className={styles.statLabel}>Pending Requests</span>
+          <span className={styles.statLabel}>Requests</span>
         </Link>
         <Link href="/dashboard/marketplace" className={styles.statCard}>
           <span className={styles.statIcon}>🛒</span>
           <span className={styles.statValue}>{allStats[2]}</span>
           <span className={styles.statLabel}>Products</span>
+        </Link>
+        <Link href="/dashboard/offers" className={styles.statCard}>
+          <span className={styles.statIcon}>🤝</span>
+          <span className={styles.statValue}>{offersReceived}</span>
+          <span className={styles.statLabel}>Offers In</span>
+        </Link>
+        <Link href="/dashboard/offers" className={styles.statCard}>
+          <span className={styles.statIcon}>📤</span>
+          <span className={styles.statValue}>{offersSent}</span>
+          <span className={styles.statLabel}>Offers Out</span>
         </Link>
         <Link href="/community" className={styles.statCard}>
           <span className={styles.statIcon}>👥</span>
@@ -159,7 +174,7 @@ const [
           <span className={styles.statLabel}>Connections</span>
         </Link>
         <Link href="/community/groups" className={styles.statCard}>
-          <span className={styles.statIcon}>👥</span>
+          <span className={styles.statIcon}>🏠</span>
           <span className={styles.statValue}>{allStats[3]}</span>
           <span className={styles.statLabel}>Groups</span>
         </Link>
@@ -167,11 +182,6 @@ const [
           <span className={styles.statIcon}>📅</span>
           <span className={styles.statValue}>{allStats[4]}</span>
           <span className={styles.statLabel}>Events</span>
-        </Link>
-        <Link href="/wallet" className={styles.statCard}>
-          <span className={styles.statIcon}>💳</span>
-          <span className={styles.statValue}>Wallet</span>
-          <span className={styles.statLabel}>View Balance</span>
         </Link>
         <Link href="/orders" className={styles.statCard}>
           <span className={styles.statIcon}>📦</span>
@@ -183,17 +193,23 @@ const [
       <div className={styles.quickActions}>
         <h3>Quick Actions</h3>
         <div className={styles.actionButtons}>
+          <Link href="/shop/setup" className={styles.actionBtn}>
+            <span>🛒</span> New Product
+          </Link>
           <Link href="/plans/new" className={styles.actionBtn}>
             <span>🚀</span> New Project
           </Link>
           <Link href="/requests" className={styles.actionBtn}>
             <span>📝</span> Post Request
           </Link>
-          <Link href="/products" className={styles.actionBtn}>
-            <span>🛒</span> List Product
+          <Link href="/groups/new" className={styles.actionBtn}>
+            <span>👥</span> New Group
           </Link>
-          <Link href="/community/groups" className={styles.actionBtn}>
-            <span>👥</span> Browse Groups
+          <Link href="/events/new" className={styles.actionBtn}>
+            <span>📅</span> New Event
+          </Link>
+          <Link href="/community" className={styles.actionBtn}>
+            <span>💬</span> Community
           </Link>
         </div>
       </div>
