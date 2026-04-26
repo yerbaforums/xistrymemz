@@ -349,8 +349,14 @@ export default function SetupShopPage() {
       </Link>
 
       <div className={styles.header}>
-        <h1>Setup Your Shop</h1>
-        <p className={styles.subtitle}>Configure your marketplace profile and listings</p>
+        <div>
+          <h1>Setup Your Shop</h1>
+          <p className={styles.subtitle}>Configure your marketplace profile and listings</p>
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <Link href="/dashboard/marketplace" className="btn-secondary">📦 My Products</Link>
+          <Link href="/dashboard" className="btn-secondary">← Dashboard</Link>
+        </div>
       </div>
 
       <div className={styles.sections}>
