@@ -51,16 +51,24 @@ export async function PUT(
       return NextResponse.json({ error: 'Product not found' }, { status: 404 })
     }
 
-    const { title, description, price, type, category, condition, location, locationDetails, imageUrl, isGlobal, published, paymentMethods, paymentType, acceptsRequests, requestPrice, sellerPayoutAddress, sellerCryptoCurrency } = body
+    const { title, description, price, type, category, condition, location, locationDetails, imageUrl, isGlobal, published, paymentMethods, paymentType, acceptsRequests, acceptsOffers, requestPrice, sellerPayoutAddress, sellerCryptoCurrency } = body
+
+    const paymentMethodsString = paymentMethods ? 
+      (Array.isArray(paymentMethods) ? paymentMethods.join(',') : String(paymentMethods)) 
+      : existing.paymentMethods
 
     let latitude = existing.latitude
     let longitude = existing.longitude
 
     if (location && location !== existing.location && !isGlobal) {
-      const geocodeResult = await geocodeLocation(location)
-      if (geocodeResult) {
-        latitude = geocodeResult.latitude
-        longitude = geocodeResult.longitude
+      try {
+        const geocodeResult = await geocodeLocation(location)
+        if (geocodeResult) {
+          latitude = geocodeResult.latitude
+          longitude = geocodeResult.longitude
+        }
+      } catch (err) {
+        console.error('Geocoding error:', err)
       }
     }
 
@@ -69,21 +77,22 @@ export async function PUT(
       data: {
         title: title ?? existing.title,
         description: description ?? existing.description,
-        price: price ? parseFloat(price) : existing.price,
+        price: price != null ? parseFloat(price) : existing.price,
         type: type ?? existing.type,
         category: category ?? existing.category,
         condition: condition ?? existing.condition,
         location: isGlobal ? 'GLOBAL' : (location ?? existing.location),
         locationDetails: locationDetails ?? existing.locationDetails,
-        latitude,
-        longitude,
+        latitude: latitude ?? existing.latitude,
+        longitude: longitude ?? existing.longitude,
         isGlobal: isGlobal ?? existing.isGlobal,
         imageUrl: imageUrl ?? existing.imageUrl,
         published: published ?? existing.published,
-        paymentMethods: paymentMethods ? paymentMethods.join(',') : existing.paymentMethods,
+        paymentMethods: paymentMethodsString,
         paymentType: paymentType ?? existing.paymentType,
         acceptsRequests: acceptsRequests ?? existing.acceptsRequests,
-        requestPrice: requestPrice ? parseFloat(requestPrice) : existing.requestPrice,
+        acceptsOffers: acceptsOffers ?? existing.acceptsOffers,
+        requestPrice: requestPrice != null ? parseFloat(requestPrice) : existing.requestPrice,
         sellerPayoutAddress: sellerPayoutAddress ?? existing.sellerPayoutAddress,
         sellerCryptoCurrency: sellerCryptoCurrency ?? existing.sellerCryptoCurrency
       }
@@ -92,7 +101,8 @@ export async function PUT(
     return NextResponse.json(product)
   } catch (error) {
     console.error('PUT /api/products/[id]:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json({ error: `Update failed: ${errorMessage}` }, { status: 500 })
   }
 }
 

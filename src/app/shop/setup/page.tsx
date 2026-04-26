@@ -279,8 +279,12 @@ export default function SetupShopPage() {
     try {
       const productData = {
         ...editProduct,
-        paymentMethods: editProduct.paymentMethods.join(',')
+        paymentMethods: editProduct.paymentMethods.join(','),
+        price: editProduct.price ? parseFloat(editProduct.price) : undefined,
+        requestPrice: editProduct.requestPrice ? parseFloat(editProduct.requestPrice) : undefined,
       }
+      
+      console.log('Updating product:', editingProduct.id, productData)
       
       const res = await fetch(`/api/products/${editingProduct.id}`, {
         method: 'PUT',
@@ -288,6 +292,9 @@ export default function SetupShopPage() {
         body: JSON.stringify(productData)
       })
 
+      const result = await res.json()
+      console.log('Update response:', res.status, result)
+      
       if (res.ok) {
         setShowEditModal(false)
         setEditingProduct(null)
