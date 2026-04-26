@@ -1,7 +1,10 @@
 .container {
   max-width: 700px;
   margin: 0 auto;
-  padding: 2rem;
+  padding-top: var(--header-height);
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-bottom: 2rem;
 }
 
 .filters {
