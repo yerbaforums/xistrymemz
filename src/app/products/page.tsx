@@ -316,11 +316,18 @@ export default function ProductsPage() {
           <h1>Marketplace</h1>
           <p className={styles.subtitle}>Discover products and services near you</p>
         </div>
-        {isLoggedIn && (
-          <button onClick={() => setShowCreateModal(true)} className={styles.createBtn}>
-            + List Item
-          </button>
-        )}
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          {isLoggedIn && (
+            <>
+              <Link href="/shop/listings" className={styles.createBtn}>
+                📦 Manage Listings
+              </Link>
+              <button onClick={() => setShowCreateModal(true)} className={styles.createBtn}>
+                + List Item
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       <div className={styles.mainLayout}>

@@ -103,9 +103,10 @@ export default function DashboardMarketplace() {
           <p className={styles.welcome}>Manage your listings</p>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <Link href="/shop/listings" className="btn-secondary">📦 My Listings</Link>
           <Link href="/shop/setup" className="btn-secondary">⚙️ Shop Settings</Link>
           <Link href="/products" className="btn-secondary">🌐 Public View</Link>
-          <Link href="/shop/setup" className="btn-primary">➕ New Product</Link>
+          <Link href="/shop/listings" className="btn-primary">➕ New Product</Link>
         </div>
       </div>
 
@@ -178,7 +179,7 @@ export default function DashboardMarketplace() {
                   <Link href={`/products/${product.id}`} className={styles.viewBtn}>
                     👁️ View
                   </Link>
-                  <Link href={`/shop/setup?edit=${product.id}`} className={styles.editBtn}>
+                  <Link href={`/shop/listings?edit=${product.id}`} className={styles.editBtn}>
                     ✏️ Edit
                   </Link>
                   <button 
