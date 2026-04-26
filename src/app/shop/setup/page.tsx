@@ -140,9 +140,11 @@ export default function SetupShopPage() {
       const data = await res.json()
       if (data.url) {
         callback(data.url)
+        success('Image uploaded!')
       }
     } catch (err) {
       console.error(err)
+      error('Failed to upload image. Try using an image URL instead.')
     } finally {
       setUploading(false)
     }
@@ -198,10 +200,15 @@ export default function SetupShopPage() {
     setSaving(true)
 
     try {
+      const productData = {
+        ...newProduct,
+        paymentMethods: newProduct.paymentMethods.join(',')
+      }
+      
       const res = await fetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newProduct)
+        body: JSON.stringify(productData)
       })
 
       if (res.ok) {
@@ -263,10 +270,15 @@ export default function SetupShopPage() {
     
     setSaving(true)
     try {
+      const productData = {
+        ...editProduct,
+        paymentMethods: editProduct.paymentMethods.join(',')
+      }
+      
       const res = await fetch(`/api/products/${editingProduct.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editProduct)
+        body: JSON.stringify(productData)
       })
 
       if (res.ok) {
