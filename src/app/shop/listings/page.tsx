@@ -30,6 +30,7 @@ function ShopListingsContent() {
   const searchParams = useSearchParams()
   const { success, error } = useToast()
   const editId = searchParams.get('edit')
+  const isNew = searchParams.get('new') === 'true'
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -58,6 +59,29 @@ function ShopListingsContent() {
   useEffect(() => {
     fetchProducts()
   }, [])
+
+  useEffect(() => {
+    if (isNew && !loading) {
+      setShowForm(true)
+      setEditingProduct(null)
+      setFormData({
+        title: '',
+        description: '',
+        price: '',
+        type: 'PRODUCT',
+        category: '',
+        condition: '',
+        location: '',
+        isGlobal: false,
+        imageUrl: '',
+        paymentMethods: [] as string[],
+        paymentType: 'BOTH',
+        acceptsRequests: false,
+        acceptsOffers: true,
+        published: true
+      })
+    }
+  }, [isNew, loading])
 
   useEffect(() => {
     if (editId) {

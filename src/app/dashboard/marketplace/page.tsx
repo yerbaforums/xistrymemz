@@ -106,7 +106,7 @@ export default function DashboardMarketplace() {
           <Link href="/shop/listings" className="btn-secondary">📦 My Listings</Link>
           <Link href="/shop/setup" className="btn-secondary">⚙️ Shop Settings</Link>
           <Link href="/products" className="btn-secondary">🌐 Public View</Link>
-          <Link href="/shop/listings" className="btn-primary">➕ New Product</Link>
+          <Link href="/shop/listings?new=true" className="btn-primary">➕ New Product</Link>
         </div>
       </div>
 
