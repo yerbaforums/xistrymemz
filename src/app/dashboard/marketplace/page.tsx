@@ -45,7 +45,10 @@ export default function DashboardMarketplace() {
           <h1>My Marketplace</h1>
           <p className={styles.welcome}>Manage your products and services</p>
         </div>
-        <Link href="/products" className="btn-secondary">Browse Marketplace</Link>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <Link href="/shop/setup" className="btn-primary">Create New</Link>
+          <Link href="/products" className="btn-secondary">Browse</Link>
+        </div>
       </div>
 
       {loading ? (

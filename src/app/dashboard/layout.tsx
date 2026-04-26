@@ -15,6 +15,7 @@ function DashboardNav() {
     { href: '/dashboard/projects', icon: '🚀', label: 'Projects' },
     { href: '/dashboard/requests', icon: '📝', label: 'Requests' },
     { href: '/dashboard/marketplace', icon: '🛒', label: 'Marketplace' },
+    { href: '/dashboard/offers', icon: '🤝', label: 'Offers' },
     { href: '/dashboard/events', icon: '📅', label: 'Events' },
   ]
 

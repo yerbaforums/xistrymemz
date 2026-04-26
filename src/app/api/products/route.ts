@@ -121,21 +121,36 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { name, description, price, category, imageUrl } = validation.data
+    const { 
+      title, description, price, type, category, condition,
+      location, locationDetails, isGlobal, isRemote, imageUrl,
+      paymentMethods, paymentType, acceptsRequests, acceptsOffers, requestPrice, published
+    } = validation.data
+
+    const paymentMethodsString = Array.isArray(paymentMethods) ? paymentMethods.join(',') : paymentMethods
 
     let latitude: number | null = null
     let longitude: number | null = null
 
     const product = await prisma.product.create({
       data: {
-        title: name,
+        title: title || 'Untitled',
         description,
-        price,
-        type: 'PRODUCT',
+        price: price || null,
+        type: type || 'PRODUCT',
         category,
-        location: 'GLOBAL',
-        isGlobal: true,
+        condition,
+        location: location || 'GLOBAL',
+        locationDetails,
+        isGlobal: isGlobal ?? false,
+        isRemote: isRemote ?? false,
         imageUrl,
+        paymentMethods: paymentMethodsString,
+        paymentType: paymentType || 'BOTH',
+        acceptsRequests: acceptsRequests ?? false,
+        acceptsOffers: acceptsOffers ?? true,
+        requestPrice: requestPrice || null,
+        published: published ?? true,
         userId: session.user.id
       }
     })

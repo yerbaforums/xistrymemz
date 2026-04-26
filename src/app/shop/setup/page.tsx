@@ -66,7 +66,9 @@ export default function SetupShopPage() {
     isGlobal: false,
     imageUrl: '',
     paymentMethods: [] as string[],
+    paymentType: 'BOTH',
     acceptsRequests: false,
+    acceptsOffers: true,
     requestPrice: ''
   })
 
@@ -216,7 +218,9 @@ export default function SetupShopPage() {
           isGlobal: false,
           imageUrl: '',
           paymentMethods: [],
+          paymentType: 'BOTH',
           acceptsRequests: false,
+          acceptsOffers: true,
           requestPrice: ''
         })
         fetchShopData()
@@ -598,6 +602,17 @@ export default function SetupShopPage() {
                 </div>
               </div>
               <div className="form-group">
+                <label>Payment Type</label>
+                <select
+                  value={newProduct.paymentType}
+                  onChange={e => setNewProduct({...newProduct, paymentType: e.target.value})}
+                >
+                  <option value="BOTH">Both (Escrow + Direct)</option>
+                  <option value="ESCROW">Escrow Only</option>
+                  <option value="DIRECT">Direct Only</option>
+                </select>
+              </div>
+              <div className="form-group">
                 <label className={styles.checkboxLabel}>
                   <input
                     type="checkbox"
@@ -605,6 +620,16 @@ export default function SetupShopPage() {
                     onChange={e => setNewProduct({...newProduct, acceptsRequests: e.target.checked})}
                   />
                   Allow via Project Requests
+                </label>
+              </div>
+              <div className="form-group">
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={newProduct.acceptsOffers}
+                    onChange={e => setNewProduct({...newProduct, acceptsOffers: e.target.checked})}
+                  />
+                  Accept Barter Offers
                 </label>
               </div>
               <div className={styles.modalActions}>

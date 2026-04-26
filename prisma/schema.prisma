@@ -355,6 +355,7 @@ model Product {
   paymentMethods   String?
   paymentType      String   @default("BOTH")
   acceptsRequests  Boolean  @default(false)
+  acceptsOffers  Boolean  @default(true)
   requestPrice     Float?
   sellerPayoutAddress String?  // Crypto address for direct payouts
   sellerCryptoCurrency String? // BTC, ETH, USDT, USDC, XMR, XTM, ARRR, DERO, ZANO, OTHER

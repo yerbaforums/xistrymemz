@@ -31,6 +31,7 @@ interface Product {
   }
   createdAt: string
   acceptsRequests: boolean
+  acceptsOffers: boolean
   requestPrice: number | null
   sellerPayoutAddress: string | null
   sellerCryptoCurrency: string | null
@@ -606,7 +607,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   🔒 Escrow Checkout
                 </button>
               )}
-              {session?.user && !isOwner && (
+              {session?.user && !isOwner && product.acceptsOffers !== false && (
                 <button 
                   className={styles.addToPlanBtn}
                   onClick={() => setShowOfferModal(true)}
