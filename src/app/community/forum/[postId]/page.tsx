@@ -371,7 +371,7 @@ export default function ForumThreadPage() {
             {post.author.image ? (
               <img src={post.author.image} alt={post.author.name || 'User'} />
             ) : (
-              <span>{post.author.name?.[0] || post.author.email[0].toUpperCase()}</span>
+              <span>{post.author.name?.[0] || 'A'}</span>
             )}
           </div>
           <div className={styles.authorInfo}>

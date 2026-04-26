@@ -325,7 +325,7 @@ export default function ForumPage() {
                     {post.content.length > 150 ? post.content.substring(0, 150) + '...' : post.content}
                   </p>
                   <div className={styles.postMeta}>
-                    <span>👤 {post.author.name || post.author.email.split('@')[0]}</span>
+                    <span>👤 {post.author.name || 'Anonymous'}</span>
                     {post.isPoll ? (
                       <>
                         <span>📊 {post.totalVotes || 0} votes</span>

@@ -317,7 +317,7 @@ export default function CommunityPage() {
           <div className={styles.searchBar}>
             <input
               type="text"
-              placeholder="Search members by name, email, or location..."
+              placeholder="Search members by name or location..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={styles.searchInput}
@@ -347,7 +347,6 @@ export default function CommunityPage() {
                     {member.userClass && (
                       <span className={styles.classBadge}>{member.userClass}</span>
                     )}
-                    <p className={styles.memberEmail}>{member.email}</p>
                     {member.location && (
                       <p className={styles.memberLocation}>
                         <span>📍</span> {member.location}
@@ -414,7 +413,6 @@ export default function CommunityPage() {
                     </div>
                     <div className={styles.memberInfo}>
                       <h3>{connectedMember.name || 'Anonymous User'}</h3>
-                      <p className={styles.memberEmail}>{connectedMember.email}</p>
                       {connectedMember.location && (
                         <p className={styles.memberLocation}>
                           <span>📍</span> {connectedMember.location}
@@ -548,7 +546,7 @@ export default function CommunityPage() {
                     <p className={styles.memberBio}>{req.description.slice(0, 100)}{req.description.length > 100 ? '...' : ''}</p>
                   )}
                   <p className={styles.memberMeta}>
-                    <span>by {req.user.name || req.user.email}</span>
+                    <span>by {req.user.name || 'Anonymous'}</span>
                     {req.budget && <span>Budget: ${req.budget}</span>}
                     {req.location && <span>📍 {req.location}</span>}
                   </p>
@@ -649,7 +647,7 @@ export default function CommunityPage() {
                 <h3 className={styles.postTitle}>{post.title}</h3>
                 <p className={styles.postContent}>{post.content.slice(0, 200)}{post.content.length > 200 ? '...' : ''}</p>
                 <div className={styles.postFooter}>
-                  <span className={styles.postAuthor}>by {post.author?.name || post.author?.email}</span>
+                  <span className={styles.postAuthor}>by {post.author?.name || 'Anonymous'}</span>
                   {post.totalTips > 0 && (
                     <span className={styles.postTips}>💰 ${post.totalTips.toFixed(2)}</span>
                   )}
