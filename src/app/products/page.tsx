@@ -319,7 +319,7 @@ export default function ProductsPage() {
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           {isLoggedIn && (
             <>
-              <Link href="/shop/listings" className={styles.createBtn}>
+              <Link href="/dashboard/marketplace" className={styles.createBtn}>
                 📦 Manage Listings
               </Link>
               <button onClick={() => setShowCreateModal(true)} className={styles.createBtn}>

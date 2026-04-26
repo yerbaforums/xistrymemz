@@ -33,9 +33,9 @@ export async function PUT(request: Request) {
   }
 
   const body = await request.json()
-  const { shopName, shopAbout, shopImage } = body
+  const { shopName, shopAbout, shopImage, shopSlug, email } = body
 
-  const slug = shopName?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+  const slug = shopSlug || shopName?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
   const user = await prisma.user.update({
     where: { id: session.user.id },
@@ -43,7 +43,8 @@ export async function PUT(request: Request) {
       shopName,
       shopAbout,
       shopImage,
-      shopSlug: slug
+      shopSlug: slug,
+      email
     }
   })
 
@@ -51,6 +52,7 @@ export async function PUT(request: Request) {
     shopName: user.shopName,
     shopAbout: user.shopAbout,
     shopImage: user.shopImage,
-    shopSlug: user.shopSlug
+    shopSlug: user.shopSlug,
+    email: user.email
   })
 }
