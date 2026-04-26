@@ -53,9 +53,10 @@ export default function Header() {
 
   const fetchNotificationCount = async () => {
     try {
-      const [connRes, msgRes] = await Promise.all([
+      const [connRes, msgRes, notifRes] = await Promise.all([
         fetch('/api/community/members'),
-        fetch('/api/messages/conversations')
+        fetch('/api/messages/conversations'),
+        fetch('/api/notifications/unread')
       ])
       if (connRes.ok) {
         const connData = await connRes.json()
@@ -65,6 +66,10 @@ export default function Header() {
         const msgData = await msgRes.json()
         const unreadCount = msgData.conversations?.reduce((sum: number, c: { unreadCount: number }) => sum + c.unreadCount, 0) || 0
         setNotificationCount(prev => prev + unreadCount)
+      }
+      if (notifRes.ok) {
+        const notifData = await notifRes.json()
+        setNotificationCount(prev => prev + (notifData.unreadCount || 0))
       }
     } catch (error) {
       console.error('Error fetching notifications:', error)
@@ -341,9 +346,15 @@ export default function Header() {
               <CartButton />
 
               {notificationCount > 0 && (
-                <Link href="/community" className={styles.notificationBtn} aria-label={`Notifications (${notificationCount})`}>
+                <Link href="/notifications" className={styles.notificationBtn} aria-label={`Notifications (${notificationCount})`}>
                   <span className={styles.bellIcon}>🔔</span>
                   <span className={styles.notificationBadge}>{notificationCount}</span>
+                </Link>
+              )}
+
+              {notificationCount === 0 && isAuthenticated && (
+                <Link href="/notifications" className={styles.notificationBtn} aria-label="Notifications">
+                  <span className={styles.bellIcon}>🔔</span>
                 </Link>
               )}
 

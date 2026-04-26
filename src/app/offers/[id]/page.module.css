@@ -1,0 +1,167 @@
+.page {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.backLink {
+  display: inline-block;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.content {
+  background: var(--bg-primary);
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.header h1 {
+  margin: 0;
+}
+
+.status {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.section {
+  margin-bottom: 2rem;
+}
+
+.section h2 {
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.card {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.cardLabel {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.cardValue {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.cardLink {
+  font-size: 1rem;
+  color: var(--primary-color);
+  text-decoration: none;
+  margin-bottom: 0.5rem;
+}
+
+.cardLink:hover {
+  text-decoration: underline;
+}
+
+.cardMeta {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.meta {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.acceptBtn {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  background: #2a2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.acceptBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.acceptBtn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.rejectBtn {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  background: #f44;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.rejectBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.rejectBtn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.withdrawBtn {
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  background: #888;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.withdrawBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.withdrawBtn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary);
+}

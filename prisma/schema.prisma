@@ -99,6 +99,9 @@ model User {
   eventTickets   EventTicket[]
   badges        Badge[]
   badgesAwarded  Badge[]   @relation("BadgeAwardedBy")
+  barterOffersMade   BarterOffer[] @relation("BarterOfferMaker")
+  barterOffersReceived BarterOffer[] @relation("BarterOfferReceiver")
+  notifications Notification[]
 }
 
 // User-defined locations for filtering content
@@ -912,4 +915,45 @@ model UserEvent {
   visibility  String   @default("PRIVATE") // PRIVATE, PUBLIC, CONNECTIONS
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model BarterOffer {
+  id            String      @id @default(cuid())
+  status        String      @default("PENDING") // PENDING, ACCEPTED, REJECTED, COUNTERED, WITHDRAWN, COMPLETED
+  offerType     String      // MAKE_OFFER (I offer my item), REQUEST_OFFER (I want offers)
+  listingType   String      // PRODUCT, REQUEST
+  listingId     String
+  listingTitle  String      // Cached listing title for easier display
+  offeredItem   String      // Description of item being offered
+  offeredValue Float?      // Estimated value of offered item
+  message      String?      // Optional message to listing owner
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  makerId       String
+  maker        User        @relation("BarterOfferMaker", fields: [makerId], references: [id], onDelete: Cascade)
+  receiverId   String
+  receiver    User        @relation("BarterOfferReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([makerId])
+  @@index([receiverId])
+  @@index([listingId])
+  @@index([status])
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  type        String   // OFFER_RECEIVED, OFFER_ACCEPTED, OFFER_REJECTED, OFFER_WITHDRAWN
+  title       String
+  message    String
+  link       String?
+  read        Boolean  @default(false)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  relatedId  String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([read])
+  @@index([createdAt])
 }

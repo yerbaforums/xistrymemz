@@ -8,6 +8,7 @@ import { useCart } from '@/context/CartContext'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { useToast } from '@/context/ToastContext'
 import Rating from '@/components/Rating'
+import { MakeOfferModal } from '@/components/MakeOfferModal'
 
 interface Product {
   id: string
@@ -91,6 +92,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [fundingLoading, setFundingLoading] = useState(false)
   const [currentFunding, setCurrentFunding] = useState(0)
   const [copiedPayout, setCopiedPayout] = useState(false)
+  const [showOfferModal, setShowOfferModal] = useState(false)
 
   useEffect(() => {
     params.then(setResolvedParams)
@@ -604,6 +606,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   🔒 Escrow Checkout
                 </button>
               )}
+              {session?.user && !isOwner && (
+                <button 
+                  className={styles.addToPlanBtn}
+                  onClick={() => setShowOfferModal(true)}
+                >
+                  🤝 Make Offer
+                </button>
+              )}
               {product.acceptsRequests && (
                 <button 
                   className={styles.addToPlanBtn}
@@ -873,6 +883,17 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             </div>
           </div>
         </div>
+      )}
+
+      {product && (
+        <MakeOfferModal
+          isOpen={showOfferModal}
+          onClose={() => setShowOfferModal(false)}
+          listingId={product.id}
+          listingTitle={product.title}
+          listingType="PRODUCT"
+          listingOwnerName={product.user.name || undefined}
+        />
       )}
     </div>
   )

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
+import { MakeOfferModal } from '@/components/MakeOfferModal'
 
 const CATEGORIES = [
   { value: 'GENERAL', label: 'General', icon: '📋' },
@@ -132,6 +133,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
   const [completeMessage, setCompleteMessage] = useState('')
   const [rollbackReason, setRollbackReason] = useState('')
   const [showContactModal, setShowContactModal] = useState(false)
+  const [showOfferModal, setShowOfferModal] = useState(false)
   const [contactMessage, setContactMessage] = useState('')
   const [copiedPayout, setCopiedPayout] = useState(false)
   const [editForm, setEditForm] = useState({
@@ -610,6 +612,13 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
             {canContact && (
               <div className={styles.actions}>
                 <button 
+                  onClick={() => setShowOfferModal(true)} 
+                  className={styles.contactBtn}
+                  disabled={loading}
+                >
+                  🤝 Make Offer
+                </button>
+                <button 
                   onClick={() => setShowContactModal(true)} 
                   className={styles.contactBtn}
                   disabled={loading}
@@ -948,6 +957,17 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
             </div>
           </div>
         </div>
+      )}
+
+      {request && (
+        <MakeOfferModal
+          isOpen={showOfferModal}
+          onClose={() => setShowOfferModal(false)}
+          listingId={request.id}
+          listingTitle={request.title}
+          listingType="REQUEST"
+          listingOwnerName={request.user.name || undefined}
+        />
       )}
     </div>
   )

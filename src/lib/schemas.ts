@@ -117,3 +117,18 @@ export function validateBody<T>(schema: z.ZodSchema<T>, body: unknown): { succes
   }
   return { success: true, data: result.data }
 }
+
+export const barterOfferCreateSchema = z.object({
+  offerType: z.enum(['MAKE_OFFER', 'REQUEST_OFFER']),
+  listingType: z.enum(['PRODUCT', 'REQUEST']),
+  listingId: z.string().min(1, 'Listing ID is required'),
+  listingTitle: z.string().min(1, 'Listing title is required').max(200),
+  offeredItem: z.string().min(1, 'Offered item description is required').max(500),
+  offeredValue: z.number().min(0).optional(),
+  message: z.string().max(1000).optional()
+})
+
+export const barterOfferUpdateSchema = z.object({
+  status: z.enum(['ACCEPTED', 'REJECTED', 'COUNTERED', 'WITHDRAWN', 'COMPLETED']).optional(),
+  message: z.string().max(1000).optional()
+})

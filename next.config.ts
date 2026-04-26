@@ -14,6 +14,9 @@ const nextConfig: NextConfig = {
     ],
   },
   serverExternalPackages: ['@prisma/client', 'prisma'],
+  experimental: {
+    optimizePackageImports: ['next-auth'],
+  },
 };
 
 export default nextConfig;
