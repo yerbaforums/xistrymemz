@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { useToast } from '@/context/ToastContext'
 import styles from './events.module.css'
 
 interface Event {
@@ -43,6 +44,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 type SortOption = 'newest' | 'oldest' | 'soonest' | 'mostAttendees'
 
 export default function DashboardEvents() {
+  const { success, error } = useToast()
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -50,8 +52,49 @@ export default function DashboardEvents() {
   const [sortBy, setSortBy] = useState<SortOption>('newest')
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
   const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null)
+  const [saving, setSaving] = useState(false)
 
-  useEffect(() => {
+  const handleDeleteEvent = async (id: string) => {
+    if (!confirm('Delete this event? This cannot be undone.')) return
+    try {
+      const res = await fetch(`/api/events/${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        success('Event deleted')
+        setSelectedEvent(null)
+        fetchAll()
+      } else {
+        error('Failed to delete')
+      }
+    } catch (err) {
+      error('Failed to delete')
+    }
+  }
+
+  const handleUpdateEvent = async (id: string, data: Partial<Event>) => {
+    setSaving(true)
+    try {
+      const res = await fetch(`/api/events/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      if (res.ok) {
+        success('Event updated')
+        setEditingEvent(null)
+        fetchAll()
+      } else {
+        error('Failed to update')
+      }
+    } catch (err) {
+      error('Failed to update')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const fetchAll = () => {
     fetch('/api/events/user')
       .then(res => res.json())
       .then(data => {
@@ -59,6 +102,10 @@ export default function DashboardEvents() {
         setLoading(false)
       })
       .catch(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    fetchAll()
   }, [])
 
   const filteredEvents = useMemo(() => {
@@ -334,14 +381,123 @@ export default function DashboardEvents() {
                 <div key={day} className={`${styles.calendarDay} ${dayEvents.length > 0 ? styles.hasEvents : ''}`}>
                   <span className={styles.dayNumber}>{day}</span>
                   {dayEvents.slice(0, 2).map(event => (
-                    <div key={event.id} className={styles.eventDot} style={{ backgroundColor: TYPE_CONFIG[event.type]?.color || '#666' }}>
-                      {event.title.slice(0, 10)}
+                    <div 
+                      key={event.id} 
+                      className={styles.eventDot} 
+                      style={{ backgroundColor: TYPE_CONFIG[event.type]?.color || '#666' }}
+                      onClick={() => setSelectedEvent(event)}
+                    >
+                      {event.title.slice(0, 12)}
                     </div>
                   ))}
-                  {dayEvents.length > 2 && <div className={styles.moreEvents}>+{dayEvents.length - 2} more</div>}
+                  {dayEvents.length > 2 && (
+                    <div className={styles.moreEvents} onClick={() => setSelectedEvent(dayEvents[0])}>
+                      +{dayEvents.length - 2} more
+                    </div>
+                  )}
                 </div>
               )
             })}
+          </div>
+        </div>
+      )}
+
+      {selectedEvent && (
+        <div className="modal-overlay" onClick={() => { setSelectedEvent(null); setEditingEvent(null) }}>
+          <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
+            {!editingEvent ? (
+              <>
+                <div className={styles.eventModalHeader}>
+                  <h2>{selectedEvent.title}</h2>
+                  <button onClick={() => setSelectedEvent(null)} className={styles.closeBtn}>✕</button>
+                </div>
+                <div className={styles.eventModalContent}>
+                  <div className={styles.eventDetailRow}>
+                    <span className={styles.eventLabel}>📅 Date</span>
+                    <span>{selectedEvent.eventDate ? new Date(selectedEvent.eventDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : 'Not set'}</span>
+                  </div>
+                  <div className={styles.eventDetailRow}>
+                    <span className={styles.eventLabel}>📍 Location</span>
+                    <span>{selectedEvent.location || 'Not set'}</span>
+                  </div>
+                  <div className={styles.eventDetailRow}>
+                    <span className={styles.eventLabel}>👥 Attendees</span>
+                    <span>{selectedEvent.joinerCount} attending</span>
+                  </div>
+                  {selectedEvent.isTicketed && (
+                    <div className={styles.eventDetailRow}>
+                      <span className={styles.eventLabel}>🎫 Price</span>
+                      <span>${selectedEvent.ticketPrice}</span>
+                    </div>
+                  )}
+                  <div className={styles.eventDetailRow}>
+                    <span className={styles.eventLabel}>🏷️ Type</span>
+                    <span>{selectedEvent.type}</span>
+                  </div>
+                  {selectedEvent.description && (
+                    <div className={styles.eventDetailRow}>
+                      <span className={styles.eventLabel}>📝 Description</span>
+                      <p>{selectedEvent.description.slice(0, 200)}{selectedEvent.description.length > 200 ? '...' : ''}</p>
+                    </div>
+                  )}
+                </div>
+                <div className={styles.eventModalActions}>
+                  {selectedEvent.type === 'ORGANIZED' && (
+                    <button onClick={() => setEditingEvent(selectedEvent)} className="btn-secondary">
+                      ✏️ Edit Event
+                    </button>
+                  )}
+                  <Link href={`/events/${selectedEvent.id}`} className="btn-primary">
+                    View Full Details
+                  </Link>
+                  {selectedEvent.type === 'ORGANIZED' && (
+                    <button onClick={() => handleDeleteEvent(selectedEvent.id)} className={styles.deleteBtn}>
+                      🗑️ Delete
+                    </button>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className={styles.eventModalHeader}>
+                  <h2>✏️ Edit Event</h2>
+                  <button onClick={() => setEditingEvent(null)} className={styles.closeBtn}>✕</button>
+                </div>
+                <form onSubmit={(e) => {
+                  e.preventDefault()
+                  const formData = new FormData(e.currentTarget)
+                  handleUpdateEvent(editingEvent.id, {
+                    title: formData.get('title') as string,
+                    description: formData.get('description') as string,
+                    location: formData.get('location') as string,
+                    eventDate: formData.get('eventDate') as string,
+                  })
+                }} className={styles.editForm}>
+                  <div className="form-group">
+                    <label>Title</label>
+                    <input name="title" defaultValue={editingEvent.title} required />
+                  </div>
+                  <div className="form-group">
+                    <label>Date</label>
+                    <input name="eventDate" type="datetime-local" defaultValue={editingEvent.eventDate ? editingEvent.eventDate.slice(0, 16) : ''} />
+                  </div>
+                  <div className="form-group">
+                    <label>Location</label>
+                    <input name="location" defaultValue={editingEvent.location || ''} />
+                  </div>
+                  <div className="form-group">
+                    <label>Description</label>
+                    <textarea name="description" defaultValue={editingEvent.description || ''} rows={4} />
+                  </div>
+                  <div className={styles.eventModalActions}>
+                    <button type="button" onClick={() => setEditingEvent(null)} className="btn-ghost">Cancel</button>
+                    <button type="submit" className="btn-primary" disabled={saving}>
+                      {saving ? 'Saving...' : 'Save Changes'}
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
           </div>
         </div>
       )}

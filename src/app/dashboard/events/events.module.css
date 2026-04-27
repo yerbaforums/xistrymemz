@@ -443,4 +443,73 @@
 .moreEvents {
   font-size: 0.7rem;
   color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.eventModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.eventModalHeader h2 {
+  margin: 0;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 8px;
+  color: var(--text-secondary);
+}
+
+.eventModalContent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.eventDetailRow {
+  display: flex;
+  gap: 12px;
+}
+
+.eventDetailRow p {
+  margin: 0;
+}
+
+.eventLabel {
+  font-weight: 600;
+  color: var(--text-secondary);
+  min-width: 80px;
+}
+
+.eventModalActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.deleteBtn {
+  background: transparent;
+  border: 1px solid #f44;
+  color: #f44;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.deleteBtn:hover {
+  background: #f44;
+  color: white;
+}
+
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
