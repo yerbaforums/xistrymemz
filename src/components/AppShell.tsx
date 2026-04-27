@@ -6,7 +6,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Header />
-      {children}
+      <main id="main-content">
+        {children}
+      </main>
     </>
   )
 }

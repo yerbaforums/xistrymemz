@@ -335,6 +335,16 @@ a:focus-visible {
   
   h1 { font-size: 1.75rem; }
   h2 { font-size: 1.5rem; }
+
+  button, .btn-primary, .btn-secondary, .btn-danger, .btn-ghost {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 12px 20px;
+  }
+
+  input, textarea, select {
+    min-height: 44px;
+  }
 }
 
 @keyframes fadeIn {
@@ -444,6 +454,25 @@ a:focus-visible {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+.sr-only.focus:not(.sr-only),
+.sr-only:focus:not(.sr-only) {
+  position: fixed;
+  width: auto;
+  height: auto;
+  padding: 12px 24px;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  background: var(--bg-secondary);
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  z-index: 9999;
+  top: 16px;
+  left: 16px;
 }
 
 .skeleton {

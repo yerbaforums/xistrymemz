@@ -71,27 +71,21 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id
         token.role = (user as { role?: string }).role || 'USER'
-        console.log('[auth] jwt: login, userId:', user.id, 'role:', token.role)
       }
 
-      try {
-        const userId = (token.id as string) || (token.sub as string)
-        if (userId) {
+      const userId = (token.id as string) || (token.sub as string)
+      if (userId) {
+        try {
           const dbUser = await prisma.user.findUnique({
             where: { id: userId },
             select: { role: true }
           })
           if (dbUser) {
             token.role = dbUser.role
-            console.log('[auth] jwt: db refresh, userId:', userId, 'role:', dbUser.role)
-          } else {
-            console.log('[auth] jwt: db user not found for id:', userId)
           }
-        } else {
-          console.log('[auth] jwt: no userId in token')
+        } catch (e) {
+          token.role = 'USER'
         }
-      } catch (e) {
-        console.error('[auth] jwt: db query failed:', e)
       }
 
       return token
@@ -101,7 +95,6 @@ export const authOptions: NextAuthOptions = {
         const userId = (token.id as string) || (token.sub as string)
         ;(session.user as typeof session.user & { id: string; role?: string }).id = userId
         ;(session.user as typeof session.user & { id: string; role?: string }).role = (token.role as string) || 'USER'
-        console.log('[auth] session: userId:', userId, 'role:', token.role)
       }
       return session
     }
