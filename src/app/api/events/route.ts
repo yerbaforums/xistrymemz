@@ -114,7 +114,10 @@ export async function POST(request: NextRequest) {
       visibility,
       eventType,
       planId,
-      groupId
+      groupId,
+      acceptsDonations,
+      donationAddress,
+      donationCurrency
     } = body
 
     if (!title) {
@@ -171,6 +174,9 @@ export async function POST(request: NextRequest) {
         isTicketed: isTicketed || false,
         ticketPrice: ticketPrice || 0,
         currency: currency || 'USD',
+        acceptsDonations: acceptsDonations || false,
+        donationAddress: donationAddress || null,
+        donationCurrency: donationCurrency || 'ETH',
         planId: planId || null,
         groupId: groupId || null,
         shopId: eventCategory === 'SHOP' ? session.user.id : undefined,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { geocodeLocation } from '@/lib/geocoding'
 
 export async function GET(
   request: NextRequest,
@@ -64,6 +65,9 @@ export async function GET(
       isTicketed: event.isTicketed,
       ticketPrice: event.ticketPrice,
       currency: event.currency,
+      acceptsDonations: event.acceptsDonations,
+      donationAddress: event.donationAddress,
+      donationCurrency: event.donationCurrency,
       planId: event.planId,
       planTitle: linkedTitle,
       userId: event.organizerId,
@@ -82,5 +86,90 @@ export async function GET(
   } catch (error) {
     console.error('GET /api/events/[id]:', error)
     return NextResponse.json({ error: 'Failed to fetch event' }, { status: 500 })
+  }
+}
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const event = await prisma.event.findUnique({ where: { id } })
+    if (!event) {
+      return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+    }
+
+    if (event.organizerId !== session.user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    let body
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+    }
+
+    const { 
+      title, 
+      description, 
+      eventCategory, 
+      eventDate, 
+      endDate, 
+      location, 
+      locationDetails,
+      maxJoiners,
+      isTicketed,
+      ticketPrice,
+      currency,
+      acceptsDonations,
+      donationAddress,
+      donationCurrency
+    } = body
+
+    let latitude = event.latitude
+    let longitude = event.longitude
+
+    if (location && location !== event.location) {
+      const geocodeResult = await geocodeLocation(location)
+      if (geocodeResult) {
+        latitude = geocodeResult.latitude
+        longitude = geocodeResult.longitude
+      }
+    }
+
+    const updated = await prisma.event.update({
+      where: { id },
+      data: {
+        title,
+        description,
+        eventCategory: eventCategory || event.eventCategory,
+        eventDate: eventDate ? new Date(eventDate) : event.eventDate,
+        endDate: endDate ? new Date(endDate) : event.endDate,
+        location,
+        locationDetails,
+        latitude,
+        longitude,
+        maxJoiners: maxJoiners ?? event.maxJoiners,
+        isTicketed: isTicketed ?? event.isTicketed,
+        ticketPrice: ticketPrice ?? event.ticketPrice,
+        currency: currency ?? event.currency,
+        acceptsDonations: acceptsDonations ?? event.acceptsDonations,
+        donationAddress: donationAddress ?? event.donationAddress,
+        donationCurrency: donationCurrency ?? event.donationCurrency
+      }
+    })
+
+    return NextResponse.json(updated)
+  } catch (error) {
+    console.error('PUT /api/events/[id]:', error)
+    return NextResponse.json({ error: 'Failed to update event' }, { status: 500 })
   }
 }

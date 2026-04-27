@@ -189,9 +189,16 @@ model Event {
   longitude       Float?
   maxJoiners      Int      @default(0)
   pinned          Boolean  @default(false)
+  
+  // Ticketing
   isTicketed      Boolean  @default(false)
   ticketPrice     Float    @default(0)
-  currency        String   @default("USD")
+  currency       String   @default("USD")
+  
+  // Donations
+  acceptsDonations Boolean   @default(false)
+  donationAddress String?
+  donationCurrency  String   @default("ETH")
   
   planId          String?
   plan            Plan?    @relation(fields: [planId], references: [id], onDelete: Cascade)

@@ -20,6 +20,9 @@ interface Event {
   isTicketed: boolean
   ticketPrice: number | null
   currency: string
+  acceptsDonations: boolean
+  donationAddress: string | null
+  donationCurrency: string
   joinerCount: number
   type: string
   planTitle: string | null
@@ -488,6 +491,25 @@ export default function DashboardEvents() {
                   <div className="form-group">
                     <label>Description</label>
                     <textarea name="description" defaultValue={editingEvent.description || ''} rows={4} />
+                  </div>
+                  <div className="form-group">
+                    <label className={styles.checkboxLabel}>
+                      <input type="checkbox" name="acceptsDonations" defaultChecked={editingEvent.acceptsDonations} />
+                      Accept Donations
+                    </label>
+                  </div>
+                  <div className="form-group">
+                    <label>Donation Address (crypto)</label>
+                    <input name="donationAddress" defaultValue={editingEvent.donationAddress || ''} placeholder="0x..." />
+                    <small style={{color: 'var(--text-secondary)'}}>Custom crypto address (ETH/SOL), or leave empty to use profile default</small>
+                  </div>
+                  <div className="form-group">
+                    <label>Donation Currency</label>
+                    <select name="donationCurrency" defaultValue={editingEvent.donationCurrency || 'ETH'}>
+                      <option value="ETH">ETH</option>
+                      <option value="SOL">SOL</option>
+                      <option value="USDT">USDT</option>
+                    </select>
                   </div>
                   <div className={styles.eventModalActions}>
                     <button type="button" onClick={() => setEditingEvent(null)} className="btn-ghost">Cancel</button>
