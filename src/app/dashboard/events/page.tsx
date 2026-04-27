@@ -48,6 +48,8 @@ export default function DashboardEvents() {
   const [searchQuery, setSearchQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState('ALL')
   const [sortBy, setSortBy] = useState<SortOption>('newest')
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
+  const [currentMonth, setCurrentMonth] = useState(new Date())
 
   useEffect(() => {
     fetch('/api/events/user')
@@ -152,6 +154,9 @@ export default function DashboardEvents() {
           <p className={styles.subtitle}>Manage and discover events</p>
         </div>
         <div className={styles.headerActions}>
+          <button onClick={() => setViewMode(viewMode === 'list' ? 'calendar' : 'list')} className={styles.viewToggle}>
+            {viewMode === 'list' ? '📅 Calendar' : '📋 List'}
+          </button>
           <Link href="/events" className="btn-secondary">Browse Events</Link>
         </div>
       </div>
@@ -300,6 +305,44 @@ export default function DashboardEvents() {
               </div>
             )
           })}
+        </div>
+      )}
+
+      {viewMode === 'calendar' && (
+        <div className={styles.calendarContainer}>
+          <div className={styles.calendarHeader}>
+            <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))} className={styles.calendarNav}>
+              ←
+            </button>
+            <h3>{currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h3>
+            <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))} className={styles.calendarNav}>
+              →
+            </button>
+          </div>
+          <div className={styles.calendarGrid}>
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+              <div key={day} className={styles.calendarDayHeader}>{day}</div>
+            ))}
+            {Array.from({ length: new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay() }).map((_, i) => (
+              <div key={`empty-${i}`} className={styles.calendarEmpty} />
+            ))}
+            {Array.from({ length: new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate() }).map((_, i) => {
+              const day = i + 1
+              const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+              const dayEvents = filteredEvents.filter(e => e.eventDate?.startsWith(dateStr))
+              return (
+                <div key={day} className={`${styles.calendarDay} ${dayEvents.length > 0 ? styles.hasEvents : ''}`}>
+                  <span className={styles.dayNumber}>{day}</span>
+                  {dayEvents.slice(0, 2).map(event => (
+                    <div key={event.id} className={styles.eventDot} style={{ backgroundColor: TYPE_CONFIG[event.type]?.color || '#666' }}>
+                      {event.title.slice(0, 10)}
+                    </div>
+                  ))}
+                  {dayEvents.length > 2 && <div className={styles.moreEvents}>+{dayEvents.length - 2} more</div>}
+                </div>
+              )
+            })}
+          </div>
         </div>
       )}
     </div>
