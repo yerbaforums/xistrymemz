@@ -334,110 +334,6 @@ function MarketplaceContent() {
         <span className={styles.filterCount}>{filteredProducts.length} items</span>
       </div>
 
-      {showProductForm && (
-        <div className={styles.formSection}>
-          <div className={styles.formHeader}>
-            <h2>{editingProduct ? '✏️ Edit Product' : '➕ Add Product'}</h2>
-            <button onClick={resetProductForm} className={styles.closeBtn}>✕</button>
-          </div>
-          <form onSubmit={handleProductSubmit} className={styles.form}>
-            <div className="form-group">
-              <label>Title *</label>
-              <input
-                type="text"
-                value={productForm.title}
-                onChange={e => setProductForm({...productForm, title: e.target.value})}
-                placeholder="Product or service name"
-                required
-              />
-            </div>
-            <div className="form-row">
-              <div className="form-group">
-                <label>Type</label>
-                <select value={productForm.type} onChange={e => setProductForm({...productForm, type: e.target.value})}>
-                  <option value="PRODUCT">Product</option>
-                  <option value="SERVICE">Service</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Price</label>
-                <input type="number" value={productForm.price} onChange={e => setProductForm({...productForm, price: e.target.value})} placeholder="0.00" step="0.01" />
-              </div>
-              <div className="form-group">
-                <label>Category</label>
-                <input type="text" value={productForm.category} onChange={e => setProductForm({...productForm, category: e.target.value})} placeholder="e.g., Electronics" />
-              </div>
-            </div>
-            <div className="form-group">
-              <label>Description</label>
-              <textarea value={productForm.description} onChange={e => setProductForm({...productForm, description: e.target.value})} rows={2} placeholder="Describe your product..." />
-            </div>
-            <div className="form-row">
-              <div className="form-group">
-                <label>Condition</label>
-                <select value={productForm.condition} onChange={e => setProductForm({...productForm, condition: e.target.value})}>
-                  <option value="">Select...</option>
-                  <option value="NEW">New</option>
-                  <option value="LIKE_NEW">Like New</option>
-                  <option value="GOOD">Good</option>
-                  <option value="FAIR">Fair</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Image URL</label>
-                <input type="text" value={productForm.imageUrl} onChange={e => setProductForm({...productForm, imageUrl: e.target.value})} placeholder="https://..." />
-              </div>
-            </div>
-            <div className="form-group">
-              <label className={styles.checkboxLabel}>
-                <input type="checkbox" checked={productForm.isGlobal} onChange={e => setProductForm({...productForm, isGlobal: e.target.checked})} />
-                Available Globally
-              </label>
-            </div>
-            {!productForm.isGlobal && (
-              <div className="form-group">
-                <label>Location</label>
-                <input type="text" value={productForm.location} onChange={e => setProductForm({...productForm, location: e.target.value})} placeholder="City, State" />
-              </div>
-            )}
-            <div className="form-group">
-              <label>Payment Methods</label>
-              <div className={styles.paymentOptions}>
-                {['Cash', 'Venmo', 'PayPal', 'Zelle', 'Crypto', 'Card'].map(method => (
-                  <label key={method} className={styles.paymentCheckbox}>
-                    <input type="checkbox" checked={productForm.paymentMethods.includes(method)} onChange={e => {
-                      if (e.target.checked) setProductForm({...productForm, paymentMethods: [...productForm.paymentMethods, method]})
-                      else setProductForm({...productForm, paymentMethods: productForm.paymentMethods.filter(m => m !== method)})
-                    }} />
-                    {method}
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div className={styles.toggles}>
-              <label className={styles.checkboxLabel}>
-                <input type="checkbox" checked={productForm.acceptsRequests} onChange={e => setProductForm({...productForm, acceptsRequests: e.target.checked})} />
-                Allow Requests
-              </label>
-              <label className={styles.checkboxLabel}>
-                <input type="checkbox" checked={productForm.acceptsOffers} onChange={e => setProductForm({...productForm, acceptsOffers: e.target.checked})} />
-                Accept Barter
-              </label>
-              <label className={styles.checkboxLabel}>
-                <input type="checkbox" checked={productForm.published} onChange={e => setProductForm({...productForm, published: e.target.checked})} />
-                Publish Now
-              </label>
-            </div>
-            <div className={styles.formActions}>
-              <button type="button" onClick={resetProductForm} className="btn-ghost">Cancel</button>
-              <button type="submit" className="btn-primary" disabled={saving}>
-                {saving ? 'Saving...' : editingProduct ? 'Save Changes' : 'Create'}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
       {filteredProducts.length === 0 && !showProductForm ? (
         <div className={styles.empty}>
           <p>No products yet. Add your first!</p>
@@ -507,6 +403,103 @@ function MarketplaceContent() {
               <div className={styles.formActions}>
                 <button type="button" onClick={() => setShowShopModal(false)} className="btn-ghost">Cancel</button>
                 <button type="submit" className="btn-primary" disabled={saving}>{saving ? 'Saving...' : 'Save Settings'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showProductForm && (
+        <div className="modal-overlay" onClick={resetProductForm}>
+          <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
+            <h2>{editingProduct ? '✏️ Edit Product' : '➕ Add New Product'}</h2>
+            <form onSubmit={handleProductSubmit}>
+              <div className="form-group">
+                <label>Title *</label>
+                <input type="text" value={productForm.title} onChange={e => setProductForm({...productForm, title: e.target.value})} placeholder="Product or service name" required />
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Type</label>
+                  <select value={productForm.type} onChange={e => setProductForm({...productForm, type: e.target.value})}>
+                    <option value="PRODUCT">Product</option>
+                    <option value="SERVICE">Service</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Price</label>
+                  <input type="number" value={productForm.price} onChange={e => setProductForm({...productForm, price: e.target.value})} placeholder="0.00" step="0.01" />
+                </div>
+                <div className="form-group">
+                  <label>Category</label>
+                  <input type="text" value={productForm.category} onChange={e => setProductForm({...productForm, category: e.target.value})} placeholder="e.g., Electronics" />
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <textarea value={productForm.description} onChange={e => setProductForm({...productForm, description: e.target.value})} rows={2} placeholder="Describe your product..." />
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Condition</label>
+                  <select value={productForm.condition} onChange={e => setProductForm({...productForm, condition: e.target.value})}>
+                    <option value="">Select...</option>
+                    <option value="NEW">New</option>
+                    <option value="LIKE_NEW">Like New</option>
+                    <option value="GOOD">Good</option>
+                    <option value="FAIR">Fair</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Image URL</label>
+                  <input type="text" value={productForm.imageUrl} onChange={e => setProductForm({...productForm, imageUrl: e.target.value})} placeholder="https://..." />
+                </div>
+              </div>
+              <div className="form-group">
+                <label className={styles.checkboxLabel}>
+                  <input type="checkbox" checked={productForm.isGlobal} onChange={e => setProductForm({...productForm, isGlobal: e.target.checked})} />
+                  Available Globally
+                </label>
+              </div>
+              {!productForm.isGlobal && (
+                <div className="form-group">
+                  <label>Location</label>
+                  <input type="text" value={productForm.location} onChange={e => setProductForm({...productForm, location: e.target.value})} placeholder="City, State" />
+                </div>
+              )}
+              <div className="form-group">
+                <label>Payment Methods</label>
+                <div className={styles.paymentOptions}>
+                  {['Cash', 'Venmo', 'PayPal', 'Zelle', 'Crypto', 'Card'].map(method => (
+                    <label key={method} className={styles.paymentCheckbox}>
+                      <input type="checkbox" checked={productForm.paymentMethods.includes(method)} onChange={e => {
+                        if (e.target.checked) setProductForm({...productForm, paymentMethods: [...productForm.paymentMethods, method]})
+                        else setProductForm({...productForm, paymentMethods: productForm.paymentMethods.filter(m => m !== method)})
+                      }} />
+                      {method}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div className={styles.toggles}>
+                <label className={styles.checkboxLabel}>
+                  <input type="checkbox" checked={productForm.acceptsRequests} onChange={e => setProductForm({...productForm, acceptsRequests: e.target.checked})} />
+                  Allow Requests
+                </label>
+                <label className={styles.checkboxLabel}>
+                  <input type="checkbox" checked={productForm.acceptsOffers} onChange={e => setProductForm({...productForm, acceptsOffers: e.target.checked})} />
+                  Accept Barter
+                </label>
+                <label className={styles.checkboxLabel}>
+                  <input type="checkbox" checked={productForm.published} onChange={e => setProductForm({...productForm, published: e.target.checked})} />
+                  Publish Now
+                </label>
+              </div>
+              <div className={styles.formActions}>
+                <button type="button" onClick={resetProductForm} className="btn-ghost">Cancel</button>
+                <button type="submit" className="btn-primary" disabled={saving}>
+                  {saving ? 'Saving...' : editingProduct ? 'Save Changes' : 'Create'}
+                </button>
               </div>
             </form>
           </div>
