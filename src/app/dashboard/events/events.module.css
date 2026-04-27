@@ -265,11 +265,49 @@
   align-items: center;
   padding-top: 8px;
   border-top: 1px solid var(--border-color);
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .cardDate {
   font-size: 0.8rem;
   color: var(--text-muted);
+}
+
+.cardActions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.cardActionBtn {
+  padding: 4px 10px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.cardActionBtn:hover {
+  border-color: var(--accent-primary);
+}
+
+.cardDeleteBtn {
+  padding: 4px 8px;
+  background: transparent;
+  border: 1px solid #f44;
+  border-radius: 4px;
+  color: #f44;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.cardDeleteBtn:hover {
+  background: #f44;
+  color: white;
 }
 
 .viewDetailsBtn {
