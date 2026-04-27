@@ -53,16 +53,21 @@ export default function DashboardEvents() {
   const [searchQuery, setSearchQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState('ALL')
   const [sortBy, setSortBy] = useState<SortOption>('newest')
-  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('calendar')
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
   const [saving, setSaving] = useState(false)
 
-  const handleDeleteEvent = async (id: string) => {
+  const handleDeleteEvent = async (id: string, eventType: string) => {
     if (!confirm('Delete this event? This cannot be undone.')) return
     try {
-      const res = await fetch(`/api/events/${id}`, { method: 'DELETE' })
+      const endpoint = eventType === 'PERSONAL' 
+        ? `/api/events/personal/${id}`
+        : `/api/events/${id}`
+      const method = eventType === 'PERSONAL' ? 'DELETE' : 'DELETE'
+      
+      const res = await fetch(endpoint, { method })
       if (res.ok) {
         success('Event deleted')
         setSelectedEvent(null)
@@ -429,8 +434,14 @@ export default function DashboardEvents() {
                   </div>
                   {selectedEvent.isTicketed && (
                     <div className={styles.eventDetailRow}>
-                      <span className={styles.eventLabel}>🎫 Price</span>
+                      <span className={styles.eventLabel}>🎫 Ticket</span>
                       <span>${selectedEvent.ticketPrice}</span>
+                    </div>
+                  )}
+                  {selectedEvent.acceptsDonations && (
+                    <div className={styles.eventDetailRow}>
+                      <span className={styles.eventLabel}>💎 Donate</span>
+                      <span style={{color: 'var(--accent-primary)'}}>{selectedEvent.donationCurrency || 'ETH'}</span>
                     </div>
                   )}
                   <div className={styles.eventDetailRow}>
@@ -445,7 +456,7 @@ export default function DashboardEvents() {
                   )}
                 </div>
                 <div className={styles.eventModalActions}>
-                  {selectedEvent.type === 'ORGANIZED' && (
+                  {(selectedEvent.type === 'ORGANIZED' || selectedEvent.type === 'PERSONAL') && (
                     <button onClick={() => setEditingEvent(selectedEvent)} className="btn-secondary">
                       ✏️ Edit Event
                     </button>
@@ -453,8 +464,8 @@ export default function DashboardEvents() {
                   <Link href={`/events/${selectedEvent.id}`} className="btn-primary">
                     View Full Details
                   </Link>
-                  {selectedEvent.type === 'ORGANIZED' && (
-                    <button onClick={() => handleDeleteEvent(selectedEvent.id)} className={styles.deleteBtn}>
+                  {(selectedEvent.type === 'ORGANIZED' || selectedEvent.type === 'PERSONAL') && (
+                    <button onClick={() => handleDeleteEvent(selectedEvent.id, selectedEvent.type)} className={styles.deleteBtn}>
                       🗑️ Delete
                     </button>
                   )}
@@ -469,11 +480,21 @@ export default function DashboardEvents() {
                 <form onSubmit={(e) => {
                   e.preventDefault()
                   const formData = new FormData(e.currentTarget)
+                  const acceptsDonations = formData.get('acceptsDonations') === 'on'
+                  const isTicketed = formData.get('isTicketed') === 'on'
+                  const donationAddr = formData.get('donationAddress') as string
+                  const donationCurr = formData.get('donationCurrency') as string
                   handleUpdateEvent(editingEvent.id, {
                     title: formData.get('title') as string,
-                    description: formData.get('description') as string,
-                    location: formData.get('location') as string,
-                    eventDate: formData.get('eventDate') as string,
+                    description: formData.get('description') as string || undefined,
+                    location: formData.get('location') as string || undefined,
+                    eventDate: formData.get('eventDate') as string || undefined,
+                    eventCategory: formData.get('eventCategory') as string || undefined,
+                    isTicketed,
+                    ticketPrice: isTicketed ? parseFloat(formData.get('ticketPrice') as string) || 0 : 0,
+                    acceptsDonations,
+                    donationAddress: acceptsDonations ? donationAddr || undefined : undefined,
+                    donationCurrency: acceptsDonations ? donationCurr || undefined : undefined,
                   })
                 }} className={styles.editForm}>
                   <div className="form-group">
@@ -491,6 +512,25 @@ export default function DashboardEvents() {
                   <div className="form-group">
                     <label>Description</label>
                     <textarea name="description" defaultValue={editingEvent.description || ''} rows={4} />
+                  </div>
+                  <div className="form-group">
+                    <label className={styles.checkboxLabel}>
+                      <input type="checkbox" name="isTicketed" defaultChecked={editingEvent.isTicketed} />
+                      Require Tickets
+                    </label>
+                  </div>
+                  <div className="form-group">
+                    <label>Ticket Price</label>
+                    <input name="ticketPrice" type="number" step="0.01" defaultValue={editingEvent.ticketPrice || 0} placeholder="0.00" />
+                  </div>
+                  <div className="form-group">
+                    <label>Category</label>
+                    <select name="eventCategory" defaultValue={editingEvent.eventCategory || 'GENERAL'}>
+                      <option value="GENERAL">General</option>
+                      <option value="GROUP">Group</option>
+                      <option value="SCHOOL">School</option>
+                      <option value="SHOP">Shop</option>
+                    </select>
                   </div>
                   <div className="form-group">
                     <label className={styles.checkboxLabel}>
