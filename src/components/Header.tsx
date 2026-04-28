@@ -157,10 +157,6 @@ export default function Header() {
               </div>
             </div>
           )}
-                <Link href="/courier/setup" className={styles.navLink} onClick={() => setMenuOpen(false)}>🚚 Courier</Link>
-              </div>
-            </div>
-          )}
 
           {!isAuthenticated && (
             <>
