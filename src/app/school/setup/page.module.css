@@ -1,80 +1,231 @@
 .page {
-  max-width: 800px;
+  max-width: 1000px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 2rem;
 }
 
 .header {
-  margin-bottom: 32px;
+  margin-bottom: 2rem;
 }
 
 .backLink {
   display: inline-block;
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
+  color: #888888;
   text-decoration: none;
+  font-size: 0.875rem;
 }
 
 .backLink:hover {
-  color: var(--accent-primary);
-}
-
-.header h1 {
-  margin-bottom: 8px;
+  color: #00d9ff;
 }
 
 .subtitle {
-  color: var(--text-secondary);
-}
-
-.form {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 24px;
-}
-
-.imagePreview {
-  margin-top: 12px;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  max-width: 300px;
-}
-
-.imagePreview img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 24px;
+  color: #888888;
+  margin-top: 0.5rem;
 }
 
 .loading {
   text-align: center;
-  padding: 64px;
-  color: var(--text-secondary);
+  padding: 3rem;
+  color: #888888;
 }
 
-.previewBtn {
-  display: inline-flex;
-  align-items: center;
-  padding: 12px 24px;
-  background: transparent;
-  border: 1px solid var(--accent-primary);
-  border-radius: var(--radius-md);
-  color: var(--accent-primary);
-  font-weight: 500;
-  text-decoration: none;
-  transition: var(--transition);
+.stepContent {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stepContent h2 {
+  margin: 0 0 0.5rem 0;
+  color: #ffffff;
+}
+
+.stepContent > p {
+  color: #888888;
+  margin-bottom: 1.5rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.templateGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.templateCard {
+  background: #161616;
+  border: 2px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 1.5rem;
   cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
 }
 
-.previewBtn:hover {
-  background: rgba(0, 217, 255, 0.1);
-  text-decoration: none;
+.templateCard:hover {
+  border-color: #00d9ff;
+  box-shadow: 0 4px 24px rgba(0, 217, 255, 0.1);
+}
+
+.selected {
+  border-color: #00d9ff;
+  box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+  background: #1a1a2e;
+}
+
+.templateIcon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.templateCard h3 {
+  margin: 0 0 0.25rem 0;
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+.category {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  background: #1f1f1f;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: #00d9ff;
+  margin-bottom: 0.5rem;
+}
+
+.templateCard p {
+  color: #888888;
+  font-size: 0.813rem;
+  margin: 0.25rem 0;
+  line-height: 1.4;
+}
+
+.meta {
+  display: block;
+  font-size: 0.75rem;
+  color: #555555;
+  margin-top: 0.5rem;
+}
+
+.imagePreview {
+  margin-top: 1rem;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.imagePreview img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+}
+
+.templatePrompt {
+  background: #1f1f1f;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.templatePrompt p {
+  color: #888888;
+  margin: 0;
+}
+
+.info {
+  color: #888888;
+  font-size: 0.875rem;
+  margin-top: 1rem;
+}
+
+.infoBox {
+  background: #1f1f1f;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.infoBox p {
+  color: #888888;
+  margin: 0.5rem 0;
+  font-size: 0.875rem;
+}
+
+.reviewSection {
+  background: #161616;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.reviewSection h3 {
+  color: #ffffff;
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+}
+
+.reviewSection p {
+  color: #888888;
+  margin: 0.5rem 0;
+  font-size: 0.875rem;
+}
+
+.reviewImage {
+  width: 200px;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.reviewList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.reviewList li {
+  padding: 0.5rem 0;
+  color: #888888;
+  border-bottom: 1px solid #2a2a2a;
+  font-size: 0.875rem;
+}
+
+.reviewList li:last-child {
+  border-bottom: none;
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: 1rem;
+  }
+
+  .templateGrid {
+    grid-template-columns: 1fr;
+  }
 }

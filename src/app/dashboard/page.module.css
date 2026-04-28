@@ -265,6 +265,24 @@
   font-weight: 600;
 }
 
+.promoBtnSecondary {
+  display: inline-block;
+  padding: 8px 16px;
+  background: transparent;
+  color: var(--accent-primary);
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  font-weight: 600;
+  margin-right: 8px;
+  transition: all 0.2s;
+}
+
+.promoBtnSecondary:hover {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+}
+
 .recentActivity {
   margin-top: 32px;
 }

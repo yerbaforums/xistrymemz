@@ -148,10 +148,15 @@ export default function Header() {
                 <Link href="/messages" className={styles.navLink} onClick={() => setMenuOpen(false)}>💬 Messages</Link>
                 <Link href="/orders" className={styles.navLink} onClick={() => setMenuOpen(false)}>📦 Orders</Link>
                 {settings.enableWallet ? (
-                  <Link href="/wallet" className={styles.navLink} onClick={() => setMenuOpen(false)}>💳 Wallet</Link>
+                  <Link href="/wallet" className={styles.navLink} onClick={() => setMenuOpen(false)}>💰 Wallet</Link>
                 ) : (
-                  <span className={`${styles.navLink} ${styles.disabled}`} title="Coming Soon">💳 Wallet</span>
+                  <span className={`${styles.navLink} ${styles.disabled}`} title="Coming Soon">💰 Wallet</span>
                 )}
+                <Link href="/courier/setup" className={styles.navLink} onClick={() => setMenuOpen(false)}>🚚 Courier</Link>
+                <Link href="/templates" className={styles.navLink} onClick={() => setMenuOpen(false)}>📋 Templates</Link>
+              </div>
+            </div>
+          )}
                 <Link href="/courier/setup" className={styles.navLink} onClick={() => setMenuOpen(false)}>🚚 Courier</Link>
               </div>
             </div>
@@ -222,6 +227,7 @@ export default function Header() {
                   <span className={`${styles.mobileLink} ${styles.disabled}`}>💳 Wallet (Coming Soon)</span>
                 )}
                 <Link href="/messages" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>💬 Messages</Link>
+                <Link href="/templates" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📋 Templates</Link>
                 <Link href="/profile" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>👤 Profile</Link>
                 <Link href="/profile/settings" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>⚙️ Settings</Link>
               </div>

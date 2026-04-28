@@ -1,0 +1,141 @@
+.wizard {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.progressContainer {
+  margin-bottom: 2rem;
+}
+
+.progressBar {
+  width: 100%;
+  height: 4px;
+  background: #2a2a2a;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #00d9ff, #00ff88);
+  border-radius: 2px;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stepDots {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.stepDot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.2s;
+  flex: 1;
+}
+
+.stepDot:disabled {
+  cursor: default;
+}
+
+.stepDot:hover:not(:disabled) {
+  background: #1f1f1f;
+}
+
+.dotNumber {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+  background: #1f1f1f;
+  color: #888888;
+  border: 2px solid #2a2a2a;
+  transition: all 0.2s;
+}
+
+.stepDot.active .dotNumber {
+  background: #00d9ff;
+  color: #0d0d0d;
+  border-color: #00d9ff;
+  box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+}
+
+.stepDot.completed .dotNumber {
+  background: #00ff88;
+  color: #0d0d0d;
+  border-color: #00ff88;
+}
+
+.dotLabel {
+  font-size: 0.75rem;
+  color: #555555;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.stepDot.active .dotLabel {
+  color: #ffffff;
+}
+
+.stepDot.completed .dotLabel {
+  color: #00ff88;
+}
+
+.content {
+  min-height: 300px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #2a2a2a;
+}
+
+.navLeft,
+.navRight {
+  display: flex;
+  gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .wizard {
+    padding: 1rem;
+  }
+
+  .dotLabel {
+    display: none;
+  }
+
+  .stepDot {
+    padding: 0.25rem;
+  }
+}

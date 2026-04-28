@@ -190,29 +190,32 @@ const [
         </Link>
       </div>
 
-      <div className={styles.quickActions}>
-        <h3>Quick Actions</h3>
-        <div className={styles.actionButtons}>
-          <Link href="/shop/setup" className={styles.actionBtn}>
-            <span>🛒</span> New Product
-          </Link>
-          <Link href="/plans/new" className={styles.actionBtn}>
-            <span>🚀</span> New Project
-          </Link>
-          <Link href="/requests" className={styles.actionBtn}>
-            <span>📝</span> Post Request
-          </Link>
-          <Link href="/groups/new" className={styles.actionBtn}>
-            <span>👥</span> New Group
-          </Link>
-          <Link href="/events/new" className={styles.actionBtn}>
-            <span>📅</span> New Event
-          </Link>
-          <Link href="/community" className={styles.actionBtn}>
-            <span>💬</span> Community
-          </Link>
+        <div className={styles.quickActions}>
+          <h3>Quick Actions</h3>
+          <div className={styles.actionButtons}>
+            <Link href="/templates" className={styles.actionBtn}>
+              <span>📋</span> Browse Templates
+            </Link>
+            <Link href="/shop/setup" className={styles.actionBtn}>
+              <span>🛒</span> New Product
+            </Link>
+            <Link href="/plans/new" className={styles.actionBtn}>
+              <span>🚀</span> New Project
+            </Link>
+            <Link href="/requests" className={styles.actionBtn}>
+              <span>📝</span> Post Request
+            </Link>
+            <Link href="/groups/new" className={styles.actionBtn}>
+              <span>👥</span> New Group
+            </Link>
+            <Link href="/events/new" className={styles.actionBtn}>
+              <span>📅</span> New Event
+            </Link>
+            <Link href="/community" className={styles.actionBtn}>
+              <span>💬</span> Community
+            </Link>
+          </div>
         </div>
-      </div>
 
       <div className={styles.activityGrid}>
         <div className={styles.activitySection}>
@@ -268,11 +271,18 @@ const [
 
       {(!user?.shopSlug || !user?.schoolSlug) && (
         <div className={styles.promoGrid}>
+          <div className={styles.promoCard}>
+            <div className={styles.promoIcon}>📋</div>
+            <h4>Business Templates</h4>
+            <p>Start with pre-built templates for shops, schools, or courier services</p>
+            <Link href="/templates" className={styles.promoBtn}>Browse All Templates</Link>
+          </div>
           {!user?.shopSlug && (
             <div className={styles.promoCard}>
               <div className={styles.promoIcon}>🏪</div>
               <h4>Start Selling</h4>
               <p>Create your shop and start listing products or services</p>
+              <Link href="/templates" className={styles.promoBtnSecondary}>Browse Templates</Link>
               <Link href="/shop/setup" className={styles.promoBtn}>Setup Shop</Link>
             </div>
           )}
@@ -281,6 +291,7 @@ const [
               <div className={styles.promoIcon}>🏫</div>
               <h4>Teach & Earn</h4>
               <p>Share your knowledge and create educational content</p>
+              <Link href="/templates" className={styles.promoBtnSecondary}>Browse Templates</Link>
               <Link href="/school/setup" className={styles.promoBtn}>Create School</Link>
             </div>
           )}
