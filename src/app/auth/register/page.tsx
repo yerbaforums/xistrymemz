@@ -68,13 +68,20 @@ export default function RegisterPage() {
         return
       }
 
-      if (subscribeNewsletter) {
-        fetch('/api/subscribe', {
+        if (subscribeNewsletter) {
+          fetch('/api/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, name, source: 'registration' })
+          }).catch(() => {})
+        }
+
+        // Send verification email
+        fetch('/api/auth/resend-verification', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, name, source: 'registration' })
+          body: JSON.stringify({ email })
         }).catch(() => {})
-      }
 
       const result = await signIn('credentials', {
         email,

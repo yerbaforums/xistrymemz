@@ -11,6 +11,7 @@ export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -23,6 +24,7 @@ export default function LoginPage() {
       const result = await signIn('credentials', {
         email,
         password,
+        rememberMe,
         redirect: false
       })
 
@@ -54,7 +56,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className={styles.form}>
           {error && <div className={styles.error} role="alert">⚠️ {error}</div>}
-          
+
           <div className={styles.formGroup}>
             <label htmlFor="email">Email</label>
             <input
@@ -80,6 +82,20 @@ export default function LoginPage() {
               aria-describedby="password-hint"
             />
             <span id="password-hint" className={styles.fieldHint}>Minimum 6 characters</span>
+          </div>
+
+          <div className={styles.formOptions}>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
+              <span>Remember me</span>
+            </label>
+            <Link href="/auth/forgot-password" className={styles.forgotLink}>
+              Forgot password?
+            </Link>
           </div>
 
           <button type="submit" className={styles.submitBtn} disabled={loading}>

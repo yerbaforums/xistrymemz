@@ -13,7 +13,8 @@ export const authOptions: NextAuthOptions = {
       name: 'credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' }
+        password: { label: 'Password', type: 'password' },
+        rememberMe: { label: 'Remember Me', type: 'boolean' }
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -54,13 +55,15 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           image: user.image,
-          role: user.role as string
+          role: user.role as string,
+          rememberMe: credentials.rememberMe === 'true'
         }
       }
     })
   ],
   session: {
-    strategy: 'jwt'
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days default
   },
   pages: {
     signIn: '/auth/login',
@@ -71,6 +74,9 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id
         token.role = (user as { role?: string }).role || 'USER'
+        if ('rememberMe' in user) {
+          token.rememberMe = (user as { rememberMe?: boolean }).rememberMe
+        }
       }
 
       const userId = (token.id as string) || (token.sub as string)

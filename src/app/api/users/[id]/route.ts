@@ -28,6 +28,9 @@ export async function GET(
       createdAt: true,
       reputationScore: true,
       verifiedEmail: true,
+      acceptsDonations: true,
+      donationAddress: true,
+      donationCurrency: true,
       _count: {
         select: {
           plans: true,
@@ -190,6 +193,20 @@ export async function GET(
       }
     })
 
+    // Fetch user links and donation info if public
+    const [links, donationInfo] = await Promise.all([
+      prisma.userLink.findMany({
+        where: { userId: user.id },
+        orderBy: { sortOrder: 'asc' }
+      }),
+      Promise.resolve(
+        user.acceptsDonations ? {
+          donationAddress: user.donationAddress,
+          donationCurrency: user.donationCurrency
+        } : null
+      )
+    ])
+
     return NextResponse.json({
       user: {
         ...user,
@@ -199,7 +216,11 @@ export async function GET(
         connectionCount: connectedCount,
         isConnected,
         hasPendingRequest,
-        connectionId
+        connectionId,
+        acceptsDonations: user.acceptsDonations || false,
+        donationAddress: donationInfo?.donationAddress,
+        donationCurrency: donationInfo?.donationCurrency,
+        links
       },
       plans,
       posts,

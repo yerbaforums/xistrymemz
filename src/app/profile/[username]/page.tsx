@@ -8,6 +8,15 @@ import Image from 'next/image'
 import styles from './profile.module.css'
 import Rating from '@/components/Rating'
 
+interface UserLink {
+  id: string
+  type: string
+  url: string
+  label?: string | null
+  icon?: string | null
+  sortOrder: number
+}
+
 interface ProfileUser {
   id: string
   name: string | null
@@ -37,6 +46,10 @@ interface ProfileUser {
   isConnected: boolean
   hasPendingRequest: boolean
   connectionId: string | null
+  acceptsDonations: boolean
+  donationAddress: string | null
+  donationCurrency: string | null
+  links: UserLink[]
 }
 
 interface Post {
@@ -401,12 +414,50 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {!isOwnProfile && (
+             {!isOwnProfile && (
               <div className={styles.ratingSection}>
                 <Rating userId={user.id} type="SELLER" />
               </div>
             )}
-          </div>
+            </div>
+
+          {/* Social Links - Show on all profiles */}
+          {user.links && user.links.length > 0 && (
+            <div style={{marginTop: '20px', display: 'flex', flexWrap: 'wrap', gap: '8px'}}>
+              {user.links.map((link: UserLink) => {
+                const socialType = ['twitter', 'github', 'instagram', 'linkedin', 'youtube', 'tiktok', 'discord', 'telegram'].includes(link.type)
+                  ? link.type
+                  : 'website'
+                const iconMap: Record<string, string> = {
+                  twitter: 'https://cdn.jsdelivr.net/simple-icons@v12/twitter.svg',
+                  github: 'https://cdn.jsdelivr.net/simple-icons@v12/github.svg',
+                  instagram: 'https://cdn.jsdelivr.net/simple-icons@v12/instagram.svg',
+                  linkedin: 'https://cdn.jsdelivr.net/simple-icons@v12/linkedin.svg',
+                  youtube: 'https://cdn.jsdelivr.net/simple-icons@v12/youtube.svg',
+                  tiktok: 'https://cdn.jsdelivr.net/simple-icons@v12/tiktok.svg',
+                  discord: 'https://cdn.jsdelivr.net/simple-icons@v12/discord.svg',
+                  telegram: 'https://cdn.jsdelivr.net/simple-icons@v12/telegram.svg',
+                  website: '🔗'
+                }
+                return (
+                  <a
+                    key={link.id}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '20px', textDecoration: 'none', color: 'var(--text-primary)', fontSize: '0.875rem'}}
+                  >
+                    {iconMap[socialType].startsWith('http') ? (
+                      <img src={iconMap[socialType]} alt={link.type} width={16} height={16} style={{filter: 'invert(1)'}} />
+                    ) : (
+                      <span>{iconMap[socialType]}</span>
+                    )}
+                    <span>{link.label || link.type}</span>
+                  </a>
+                )
+              })}
+            </div>
+          )}
           
           <div className={styles.actions}>
             {isOwnProfile ? (

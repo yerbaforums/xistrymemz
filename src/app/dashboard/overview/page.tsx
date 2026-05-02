@@ -104,7 +104,7 @@ const [
 
   const user = await prisma.user.findUnique({ 
     where: { id: userId },
-    select: { shopSlug: true, schoolSlug: true }
+    select: { shopSlug: true, schoolSlug: true, walletAddress: true, paymentAddress: true, refundAddress: true, cryptoCurrency: true, donationAddress: true, donationCurrency: true, acceptsDonations: true }
   })
 
   const allStats = await Promise.all([
@@ -268,6 +268,47 @@ const [
           </div>
         )}
       </div>
+
+      {/* My Wallet Addresses */}
+      {user && (user.walletAddress || user.paymentAddress || user.refundAddress || (user.acceptsDonations && user.donationAddress)) && (
+        <div className={styles.promoGrid}>
+          <div className={styles.promoCard} style={{gridColumn: '1 / -1'}}>
+            <div className={styles.promoIcon}>💳</div>
+            <h4>My Wallet Addresses</h4>
+            <div style={{display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px'}}>
+              {user.walletAddress && (
+                <div style={{display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.875rem'}}>
+                  <img src={`/crypto-logos/${user.cryptoCurrency?.toLowerCase() || 'ethereum'}.png`} alt="" width={20} height={20} style={{borderRadius: '50%'}} />
+                  <span style={{color: 'var(--text-secondary)', minWidth: '120px'}}>Wallet:</span>
+                  <code style={{flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.75rem', background: 'var(--bg-tertiary)', padding: '4px 8px', borderRadius: '4px'}}>{user.walletAddress}</code>
+                </div>
+              )}
+              {user.paymentAddress && (
+                <div style={{display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.875rem'}}>
+                  <img src={`/crypto-logos/${user.cryptoCurrency?.toLowerCase() || 'ethereum'}.png`} alt="" width={20} height={20} style={{borderRadius: '50%'}} />
+                  <span style={{color: 'var(--text-secondary)', minWidth: '120px'}}>Payment:</span>
+                  <code style={{flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.75rem', background: 'var(--bg-tertiary)', padding: '4px 8px', borderRadius: '4px'}}>{user.paymentAddress}</code>
+                </div>
+              )}
+              {user.refundAddress && (
+                <div style={{display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.875rem'}}>
+                  <img src={`/crypto-logos/${user.cryptoCurrency?.toLowerCase() || 'ethereum'}.png`} alt="" width={20} height={20} style={{borderRadius: '50%'}} />
+                  <span style={{color: 'var(--text-secondary)', minWidth: '120px'}}>Refund:</span>
+                  <code style={{flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.75rem', background: 'var(--bg-tertiary)', padding: '4px 8px', borderRadius: '4px'}}>{user.refundAddress}</code>
+                </div>
+              )}
+              {user.acceptsDonations && user.donationAddress && (
+                <div style={{display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.875rem'}}>
+                  <img src={`/crypto-logos/${user.donationCurrency?.toLowerCase() || 'ethereum'}.png`} alt="" width={20} height={20} style={{borderRadius: '50%'}} />
+                  <span style={{color: 'var(--text-secondary)', minWidth: '120px'}}>Donation:</span>
+                  <code style={{flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.75rem', background: 'var(--bg-tertiary)', padding: '4px 8px', borderRadius: '4px'}}>{user.donationAddress}</code>
+                </div>
+              )}
+            </div>
+            <Link href="/profile/edit" className={styles.promoBtn} style={{marginTop: '12px'}}>Manage Addresses</Link>
+          </div>
+        </div>
+      )}
 
       {(!user?.shopSlug || !user?.schoolSlug) && (
         <div className={styles.promoGrid}>

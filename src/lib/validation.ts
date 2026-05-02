@@ -39,3 +39,31 @@ export function validateInput<T>(schema: z.ZodSchema<T>, data: unknown): { succe
   const errorMessage = result.error.issues.map(i => i.message).join(', ')
   return { success: false, error: errorMessage }
 }
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().email('Invalid email address')
+})
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1, 'Token is required'),
+  password: z.string().min(8, 'Password must be at least 8 characters')
+})
+
+export const verifyEmailSchema = z.object({
+  token: z.string().min(1, 'Token is required')
+})
+
+export const resendVerificationSchema = z.object({
+  email: z.string().email('Invalid email address')
+})
+
+export const userLinkSchema = z.object({
+  type: z.string().min(1, 'Link type is required'),
+  url: z.string().url('Invalid URL').refine(
+    (url) => !url.startsWith('javascript:') && !url.startsWith('data:'),
+    'Invalid URL protocol'
+  ),
+  label: z.string().max(100).optional().nullable(),
+  icon: z.string().url().optional().nullable(),
+  sortOrder: z.number().int().optional()
+})

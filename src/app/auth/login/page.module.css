@@ -183,3 +183,20 @@
   color: var(--accent-secondary);
   margin-top: 0.25rem;
 }
+
+.formOptions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.forgotLink {
+  color: var(--accent-primary);
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+
+.forgotLink:hover {
+  text-decoration: underline;
+}

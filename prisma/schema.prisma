@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -98,6 +98,14 @@ model User {
   eventJoiners    EventJoiner[]
   eventTickets   EventTicket[]
   badges        Badge[]
+  passwordResetTokens PasswordResetToken[]
+  verificationTokens VerificationToken[]
+  userLinks         UserLink[]
+
+  // Donation settings
+  donationAddress  String?
+  donationCurrency String   @default("ETH")
+  acceptsDonations Boolean  @default(false)
   badgesAwarded  Badge[]   @relation("BadgeAwardedBy")
   barterOffersMade   BarterOffer[] @relation("BarterOfferMaker")
   barterOffersReceived BarterOffer[] @relation("BarterOfferReceiver")
@@ -964,4 +972,42 @@ model Notification {
   @@index([userId])
   @@index([read])
   @@index([createdAt])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([userId])
+}
+
+model VerificationToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([userId])
+}
+
+model UserLink {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // twitter, github, instagram, website, youtube, etc.
+  url       String
+  label     String?
+  icon      String?  // URL to icon image
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
