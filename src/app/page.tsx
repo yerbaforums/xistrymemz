@@ -39,14 +39,32 @@ export default function Home() {
         
         <div className={styles.feature}>
           <span className={styles.featureIcon}>🤝</span>
-          <h3>Collaborate</h3>
-          <p>Get community help, accept requests, complete together</p>
+          <h3>Community Connections</h3>
+          <p>Connect with others, coordinate efforts, and build your network</p>
+        </div>
+        
+        <div className={styles.feature}>
+          <span className={styles.featureIcon}>📋</span>
+          <h3>Cohesive Planning</h3>
+          <p>Powerful organizational tools for teams and individuals</p>
+        </div>
+        
+        <div className={styles.feature}>
+          <span className={styles.featureIcon}>💼</span>
+          <h3>Business Opportunities</h3>
+          <p>Build clientele, showcase skills, and grow your business</p>
+        </div>
+        
+        <div className={styles.feature}>
+          <span className={styles.featureIcon}>🏪</span>
+          <h3>Shop &amp; School</h3>
+          <p>Sell products, teach courses, and share your expertise</p>
         </div>
         
         <div className={styles.feature}>
           <span className={styles.featureIcon}>💰</span>
-          <h3>Earn</h3>
-          <p>Accept donations and payments via crypto or fiat</p>
+          <h3>Crypto Payments</h3>
+          <p>Accept donations, payments, and escrow via crypto</p>
         </div>
       </section>
 

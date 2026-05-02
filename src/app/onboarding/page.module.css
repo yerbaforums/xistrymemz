@@ -455,3 +455,129 @@
   padding: 8px 12px;
   font-size: 0.875rem;
 }
+
+.walletOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 32px 0;
+  text-align: left;
+}
+
+.walletCard {
+  padding: 20px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+}
+
+.walletCard:hover {
+  border-color: var(--accent-primary);
+  background: rgba(0, 217, 255, 0.03);
+}
+
+.walletHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.walletHeader img {
+  border-radius: 50%;
+}
+
+.walletHeader strong {
+  color: var(--text-primary);
+  font-size: 1rem;
+  display: block;
+}
+
+.walletDesc {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.walletSteps {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.walletSteps p {
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.walletSteps ol {
+  margin: 0 0 16px 0;
+  padding-left: 20px;
+}
+
+.walletSteps li {
+  margin-bottom: 6px;
+}
+
+.walletSteps a {
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+
+.walletSteps a:hover {
+  text-decoration: underline;
+}
+
+.walletDownloadBtn {
+  display: inline-block;
+  padding: 10px 20px;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: var(--transition);
+}
+
+.walletDownloadBtn:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-glow);
+  text-decoration: none;
+}
+
+.warningBox {
+  text-align: left;
+  margin: 24px 0;
+  padding: 16px;
+  background: rgba(255, 51, 102, 0.05);
+  border: 1px solid rgba(255, 51, 102, 0.3);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.warningBox strong {
+  color: var(--accent-secondary);
+}
+
+.warningBox ul {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+}
+
+.warningBox li {
+  margin-bottom: 4px;
+}
+
+@media (max-width: 768px) {
+  .walletCard {
+    padding: 16px;
+  }
+  
+  .walletHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}

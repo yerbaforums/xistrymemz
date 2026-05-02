@@ -301,6 +301,13 @@ export default function ProfilePage() {
 
   return (
     <div className={styles.container}>
+      <nav className="breadcrumbs" style={{ marginBottom: '16px' }}>
+        <Link href="/" className="breadcrumb-link">Home</Link>
+        <span className="breadcrumb-sep"> / </span>
+        <Link href="/community" className="breadcrumb-link">Community</Link>
+        <span className="breadcrumb-sep"> / </span>
+        <span className="breadcrumb-current">{user?.name || 'Profile'}</span>
+      </nav>
       <div className={styles.profileHeader}>
         <div 
           className={styles.coverImage}
@@ -421,41 +428,67 @@ export default function ProfilePage() {
             )}
             </div>
 
-          {/* Social Links - Show on all profiles */}
-          {user.links && user.links.length > 0 && (
-            <div style={{marginTop: '20px', display: 'flex', flexWrap: 'wrap', gap: '8px'}}>
-              {user.links.map((link: UserLink) => {
-                const socialType = ['twitter', 'github', 'instagram', 'linkedin', 'youtube', 'tiktok', 'discord', 'telegram'].includes(link.type)
-                  ? link.type
-                  : 'website'
-                const iconMap: Record<string, string> = {
-                  twitter: 'https://cdn.jsdelivr.net/simple-icons@v12/twitter.svg',
-                  github: 'https://cdn.jsdelivr.net/simple-icons@v12/github.svg',
-                  instagram: 'https://cdn.jsdelivr.net/simple-icons@v12/instagram.svg',
-                  linkedin: 'https://cdn.jsdelivr.net/simple-icons@v12/linkedin.svg',
-                  youtube: 'https://cdn.jsdelivr.net/simple-icons@v12/youtube.svg',
-                  tiktok: 'https://cdn.jsdelivr.net/simple-icons@v12/tiktok.svg',
-                  discord: 'https://cdn.jsdelivr.net/simple-icons@v12/discord.svg',
-                  telegram: 'https://cdn.jsdelivr.net/simple-icons@v12/telegram.svg',
-                  website: '🔗'
-                }
-                return (
-                  <a
-                    key={link.id}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '20px', textDecoration: 'none', color: 'var(--text-primary)', fontSize: '0.875rem'}}
-                  >
-                    {iconMap[socialType].startsWith('http') ? (
-                      <img src={iconMap[socialType]} alt={link.type} width={16} height={16} style={{filter: 'invert(1)'}} />
-                    ) : (
-                      <span>{iconMap[socialType]}</span>
-                    )}
-                    <span>{link.label || link.type}</span>
-                  </a>
-                )
-              })}
+          {/* Social & Business Links - Show on all profiles */}
+          {(user.links && user.links.length > 0) && (
+            <div style={{marginTop: '20px'}}>
+              <h3 style={{marginBottom: '12px', fontSize: '1rem'}}>Links</h3>
+              <div style={{display: 'flex', flexWrap: 'wrap', gap: '8px'}}>
+                {user.links.map((link: UserLink) => {
+                  const socialType = ['twitter', 'github', 'instagram', 'linkedin', 'youtube', 'tiktok', 'discord', 'telegram'].includes(link.type)
+                    ? link.type
+                    : 'website'
+                  const iconMap: Record<string, string> = {
+                    twitter: 'https://cdn.jsdelivr.net/simple-icons@v12/twitter.svg',
+                    github: 'https://cdn.jsdelivr.net/simple-icons@v12/github.svg',
+                    instagram: 'https://cdn.jsdelivr.net/simple-icons@v12/instagram.svg',
+                    linkedin: 'https://cdn.jsdelivr.net/simple-icons@v12/linkedin.svg',
+                    youtube: 'https://cdn.jsdelivr.net/simple-icons@v12/youtube.svg',
+                    tiktok: 'https://cdn.jsdelivr.net/simple-icons@v12/tiktok.svg',
+                    discord: 'https://cdn.jsdelivr.net/simple-icons@v12/discord.svg',
+                    telegram: 'https://cdn.jsdelivr.net/simple-icons@v12/telegram.svg',
+                    website: '🔗'
+                  }
+                  return (
+                    <a
+                      key={link.id}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '20px', textDecoration: 'none', color: 'var(--text-primary)', fontSize: '0.875rem'}}
+                    >
+                      {iconMap[socialType].startsWith('http') ? (
+                        <img src={iconMap[socialType]} alt={link.type} width={16} height={16} style={{filter: 'invert(1)'}} />
+                      ) : (
+                        <span>{iconMap[socialType]}</span>
+                      )}
+                      <span>{link.label || link.type}</span>
+                    </a>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Donation Section */}
+          {!isOwnProfile && user.acceptsDonations && user.donationAddress && (
+            <div style={{marginTop: '20px'}}>
+              <h3 style={{marginBottom: '12px', fontSize: '1rem'}}>Support with Donations</h3>
+              <div style={{display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px'}}>
+                <div style={{display: 'flex', alignItems: 'center', gap: '8px', flex: 1}}>
+                  <img src={`/crypto-logos/${user.donationCurrency?.toLowerCase() || 'ethereum'}.png`} alt="" width={24} height={24} style={{borderRadius: '50%'}} />
+                  <div>
+                    <div style={{fontSize: '0.875rem', color: 'var(--text-secondary)'}}>{user.donationCurrency || 'ETH'} Address</div>
+                    <code style={{fontSize: '0.8rem', color: 'var(--text-primary)', wordBreak: 'break-all'}}>{user.donationAddress}</code>
+                  </div>
+                </div>
+                <button
+                  onClick={() => { navigator.clipboard.writeText(user.donationAddress || ''); }}
+                  style={{padding: '8px 16px', background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, whiteSpace: 'nowrap'}}
+                  title="Copy address"
+                >
+                  Copy
+                </button>
+              </div>
             </div>
           )}
           

@@ -4,8 +4,16 @@
 
 **Project Name:** XistryMemz  
 **Type:** Full-stack web application  
-**Core Functionality:** Users create projects, submit requests to complete them, and connect with community members globally for collaboration
-**Target Users:** Individuals and teams who want to plan tasks, collaborate, and connect with others worldwide
+**Core Functionality:** Users create projects, submit requests to complete them, connect with community members globally, build businesses, and collaborate on shared goals
+**Target Users:** Individuals, teams, entrepreneurs, educators, and community organizers who want to plan tasks, coordinate efforts, build clientele, and collaborate worldwide
+
+### Site Goals
+- **Community Connections:** Enable users to find, connect with, and build relationships with like-minded individuals globally
+- **Coordination:** Provide tools for organizing group efforts, events, and collaborative work
+- **Cohesive Planning:** Powerful organizational tools with milestones, progress tracking, and shared visibility
+- **Business Opportunities:** Platform for showcasing skills, building clientele, running shops, and accepting payments
+- **Powerful Organizational Tools:** Projects, requests, events, groups, schools, shops, and messaging in one place
+- **Building Clientele:** Help users grow their audience through profiles, shops, schools, and community engagement
 
 ---
 
@@ -549,6 +557,34 @@ Users can select one or more classes that represent their skills/roles:
 - [x] Users can send message when connecting
 - [x] Users can pin posts, plans, and products to top of profile
 - [x] Pinned items show with highlighted styling
+
+### Social & Business Links
+- [x] Users can add social media links (Twitter, GitHub, Instagram, LinkedIn, YouTube, TikTok, Discord, Telegram)
+- [x] Users can add custom website/business links with labels
+- [x] Links display on profile pages with platform icons
+- [x] Links can be reordered with sort order
+
+### Crypto Wallet & Donations
+- [x] Users can configure crypto wallet addresses (ETH, BTC, XMR, XTM, USDT, USDC, ARRR, DERO, ZANO)
+- [x] Users can enable donations on their profile
+- [x] Donation addresses display on profile with copy-to-clipboard
+- [x] Wallet addresses shown in dashboard overview
+- [x] Onboarding includes wallet setup instructions with download links
+
+### Onboarding
+- [x] Welcome screen with introduction
+- [x] Profile setup step (name, bio, locations, search radius)
+- [x] Create first project step
+- [x] Crypto wallet setup step with download links and instructions
+- [x] Community overview with quick links
+- [x] Completion screen with tips
+
+### Navigation & UI
+- [x] Breadcrumbs on profile pages
+- [x] Breadcrumbs on public plans page
+- [x] Dashboard breadcrumbs on all sub-pages
+- [x] Fixed profile links in header navigation
+- [x] Enhanced landing page with 6 feature cards
 
 ---
 

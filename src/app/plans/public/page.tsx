@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import PublicPlansClient from './PublicPlansClient'
+import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
@@ -70,5 +71,16 @@ export default async function PublicPlansPage() {
     }))
   }))
 
-  return <PublicPlansClient initialPlans={serializedPlans} />
+  return (
+    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px' }}>
+      <nav className="breadcrumbs" style={{ marginBottom: '16px' }}>
+        <Link href="/" className="breadcrumb-link">Home</Link>
+        <span className="breadcrumb-sep"> / </span>
+        <Link href="/dashboard/overview" className="breadcrumb-link">Dashboard</Link>
+        <span className="breadcrumb-sep"> / </span>
+        <span className="breadcrumb-current">Browse Projects</span>
+      </nav>
+      <PublicPlansClient initialPlans={serializedPlans} />
+    </div>
+  )
 }

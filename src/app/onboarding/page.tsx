@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import styles from './page.module.css'
 
-type OnboardingStep = 'welcome' | 'profile' | 'first-plan' | 'community' | 'complete'
+type OnboardingStep = 'welcome' | 'profile' | 'first-plan' | 'wallet' | 'community' | 'complete'
 
 export default function OnboardingPage() {
   const router = useRouter()
@@ -92,6 +92,7 @@ export default function OnboardingPage() {
     { key: 'welcome', label: 'Welcome' },
     { key: 'profile', label: 'Profile' },
     { key: 'first-plan', label: 'First Plan' },
+    { key: 'wallet', label: 'Wallet' },
     { key: 'community', label: 'Community' },
     { key: 'complete', label: 'Complete' }
   ]
@@ -369,6 +370,144 @@ export default function OnboardingPage() {
                 </button>
                 <button onClick={nextStep} className={styles.secondaryBtn}>
                   Skip
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 'wallet' && (
+            <div className={styles.stepContent}>
+              <h2>Set Up Your Crypto Wallet</h2>
+              <p>XistrYmemZ uses crypto for payments, donations, and escrow. Choose a wallet to get started.</p>
+              
+              <div className={styles.walletOptions}>
+                <div className={styles.walletCard}>
+                  <div className={styles.walletHeader}>
+                    <img src="/crypto-logos/ethereum.png" alt="ETH" width={32} height={32} />
+                    <div>
+                      <strong>Ethereum (ETH)</strong>
+                      <span className={styles.walletDesc}>Most widely accepted</span>
+                    </div>
+                  </div>
+                  <div className={styles.walletSteps}>
+                    <p><strong>Setup:</strong></p>
+                    <ol>
+                      <li>Download <a href="https://metamask.io/download/" target="_blank" rel="noopener noreferrer">MetaMask</a> (browser extension or mobile app)</li>
+                      <li>Create a new wallet and <strong>write down your seed phrase</strong></li>
+                      <li>Copy your wallet address (starts with 0x...)</li>
+                      <li>Buy ETH from an exchange and send it to your wallet</li>
+                    </ol>
+                    <a href="https://metamask.io/download/" target="_blank" rel="noopener noreferrer" className={styles.walletDownloadBtn}>
+                      Download MetaMask
+                    </a>
+                  </div>
+                </div>
+
+                <div className={styles.walletCard}>
+                  <div className={styles.walletHeader}>
+                    <img src="/crypto-logos/bitcoin.png" alt="BTC" width={32} height={32} />
+                    <div>
+                      <strong>Bitcoin (BTC)</strong>
+                      <span className={styles.walletDesc}>Original cryptocurrency</span>
+                    </div>
+                  </div>
+                  <div className={styles.walletSteps}>
+                    <p><strong>Setup:</strong></p>
+                    <ol>
+                      <li>Download <a href="https://bluewallet.io/" target="_blank" rel="noopener noreferrer">BlueWallet</a> (mobile) or <a href="https://electrum.org/" target="_blank" rel="noopener noreferrer">Electrum</a> (desktop)</li>
+                      <li>Create wallet and securely back up seed phrase</li>
+                      <li>Copy your receiving address</li>
+                      <li>Purchase BTC from an exchange and transfer to your wallet</li>
+                    </ol>
+                    <a href="https://bluewallet.io/" target="_blank" rel="noopener noreferrer" className={styles.walletDownloadBtn}>
+                      Download BlueWallet
+                    </a>
+                  </div>
+                </div>
+
+                <div className={styles.walletCard}>
+                  <div className={styles.walletHeader}>
+                    <img src="/crypto-logos/monero.png" alt="XMR" width={32} height={32} />
+                    <div>
+                      <strong>Monero (XMR)</strong>
+                      <span className={styles.walletDesc}>Private, untraceable transactions</span>
+                    </div>
+                  </div>
+                  <div className={styles.walletSteps}>
+                    <p><strong>Setup:</strong></p>
+                    <ol>
+                      <li>Download <a href="https://www.getmonero.org/downloads/" target="_blank" rel="noopener noreferrer">Monero GUI Wallet</a> or <a href="https://cakewallet.com/" target="_blank" rel="noopener noreferrer">Cake Wallet</a> (mobile)</li>
+                      <li>Create wallet and save your seed phrase offline</li>
+                      <li>Wait for blockchain sync (or use a remote node)</li>
+                      <li>Copy your primary address</li>
+                    </ol>
+                    <a href="https://www.getmonero.org/downloads/" target="_blank" rel="noopener noreferrer" className={styles.walletDownloadBtn}>
+                      Download Monero Wallet
+                    </a>
+                  </div>
+                </div>
+
+                <div className={styles.walletCard}>
+                  <div className={styles.walletHeader}>
+                    <img src="/crypto-logos/tari.png" alt="XTM" width={32} height={32} />
+                    <div>
+                      <strong>Tari (XTM)</strong>
+                      <span className={styles.walletDesc}>Built for digital assets &amp; NFTs</span>
+                    </div>
+                  </div>
+                  <div className={styles.walletSteps}>
+                    <p><strong>Setup:</strong></p>
+                    <ol>
+                      <li>Download <a href="https://tari.com/universe" target="_blank" rel="noopener noreferrer">Tari Universe</a> wallet app</li>
+                      <li>Create account and complete onboarding</li>
+                      <li>Your wallet address is generated automatically</li>
+                      <li>Acquire XTM through supported exchanges</li>
+                    </ol>
+                    <a href="https://tari.com/universe" target="_blank" rel="noopener noreferrer" className={styles.walletDownloadBtn}>
+                      Download Tari Universe
+                    </a>
+                  </div>
+                </div>
+
+                <div className={styles.walletCard}>
+                  <div className={styles.walletHeader}>
+                    <img src="/crypto-logos/tether.png" alt="USDT" width={32} height={32} />
+                    <div>
+                      <strong>Tether (USDT) / USD Coin (USDC)</strong>
+                      <span className={styles.walletDesc}>Stablecoins, pegged to USD</span>
+                    </div>
+                  </div>
+                  <div className={styles.walletSteps}>
+                    <p><strong>Setup:</strong></p>
+                    <ol>
+                      <li>Use MetaMask (same as ETH setup above)</li>
+                      <li>Add USDT/USDC tokens to your wallet</li>
+                      <li>Buy on an exchange and transfer to your ETH address</li>
+                      <li>ERC-20 tokens use the same address as ETH</li>
+                    </ol>
+                    <a href="https://metamask.io/download/" target="_blank" rel="noopener noreferrer" className={styles.walletDownloadBtn}>
+                      Use MetaMask
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.warningBox}>
+                <strong>Important Security Tips:</strong>
+                <ul>
+                  <li>Never share your seed phrase or private keys</li>
+                  <li>Store your seed phrase offline in a secure location</li>
+                  <li>Always verify addresses before sending funds</li>
+                  <li>Start with small amounts when testing</li>
+                </ul>
+              </div>
+              
+              <div className={styles.actionBtns}>
+                <button onClick={nextStep} className={styles.primaryBtn}>
+                  Continue
+                </button>
+                <button onClick={nextStep} className={styles.secondaryBtn}>
+                  I&apos;ll set this up later
                 </button>
               </div>
             </div>
