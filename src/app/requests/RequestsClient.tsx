@@ -1,11 +1,31 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import dynamic from 'next/dynamic'
 import styles from './page.module.css'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { useToast } from '@/context/ToastContext'
+
+const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
+const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
+const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false })
+const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false })
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let L: any
+
+if (typeof window !== 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  L = require('leaflet')
+  delete L.Icon.Default.prototype._getIconUrl
+  L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  })
+}
 
 interface Request {
   id: string
@@ -90,6 +110,9 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
     location: '', isPublic: true, allowFulfillments: true
   })
   const [creating, setCreating] = useState(false)
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list')
+  const [selectedRequest, setSelectedRequest] = useState<Request | null>(null)
+  const mapRef = useRef<L.Map | null>(null)
 
   const isAdmin = userRole === 'ADMIN'
 
@@ -232,6 +255,32 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
   }
 
   const filtered = filteredRequests()
+  const requestsWithCoords = filtered.filter(r => r.latitude != null && r.longitude != null)
+
+  const getMapCenter = (): [number, number] => {
+    if (requestsWithCoords.length === 0) return [34.8697, -111.7610]
+    if (requestsWithCoords.length === 1) {
+      return [requestsWithCoords[0].latitude!, requestsWithCoords[0].longitude!]
+    }
+    const lats = requestsWithCoords.map(r => r.latitude!)
+    const lons = requestsWithCoords.map(r => r.longitude!)
+    return [(Math.min(...lats) + Math.max(...lats)) / 2, (Math.min(...lons) + Math.max(...lons)) / 2]
+  }
+
+  const getMapZoom = (): number => {
+    if (requestsWithCoords.length === 0) return 4
+    if (requestsWithCoords.length === 1) return 13
+    const lats = requestsWithCoords.map(r => r.latitude!)
+    const lons = requestsWithCoords.map(r => r.longitude!)
+    const maxDiff = Math.max(Math.max(...lats) - Math.min(...lats), Math.max(...lons) - Math.min(...lons))
+    if (maxDiff < 0.1) return 13
+    if (maxDiff < 0.5) return 11
+    if (maxDiff < 1) return 10
+    if (maxDiff < 5) return 8
+    if (maxDiff < 10) return 6
+    return 4
+  }
+
   const statusCounts = {
     ALL: requests.length,
     PENDING: requests.filter(r => r.status === 'PENDING').length,
@@ -260,7 +309,23 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
           <h1>Requests</h1>
           <p className={styles.subtitle}>Create, manage, and fulfill community requests</p>
         </div>
-        <button onClick={() => setShowCreate(true)} className="btn-primary">+ New Request</button>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <div className={styles.viewToggle}>
+            <button
+              className={`${styles.toggleBtn} ${viewMode === 'list' ? styles.active : ''}`}
+              onClick={() => setViewMode('list')}
+            >
+              List
+            </button>
+            <button
+              className={`${styles.toggleBtn} ${viewMode === 'map' ? styles.active : ''}`}
+              onClick={() => setViewMode('map')}
+            >
+              Map
+            </button>
+          </div>
+          <button onClick={() => setShowCreate(true)} className="btn-primary">+ New Request</button>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -340,7 +405,40 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
         {searchQuery && ` matching "${searchQuery}"`}
       </div>
 
-      {filtered.length === 0 ? (
+      {viewMode === 'map' ? (
+        <div className={styles.mapContainer}>
+          <MapContainer center={getMapCenter()} zoom={getMapZoom()} style={{ height: '100%', width: '100%' }} ref={mapRef}>
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            {requestsWithCoords.map(req => (
+              <Marker
+                key={req.id}
+                position={[req.latitude!, req.longitude!]}
+                eventHandlers={{
+                  click: () => setSelectedRequest(req),
+                }}
+              >
+                <Popup>
+                  <div style={{ minWidth: 200 }}>
+                    <strong>{req.title}</strong>
+                    <br />
+                    <span className={`badge badge-${req.status.toLowerCase()}`} style={{ fontSize: '0.7rem', padding: '2px 6px' }}>{req.status}</span>
+                    {req.budget && <p style={{ margin: '6px 0', fontSize: '0.85rem' }}>💰 ${req.budget}</p>}
+                    {req.location && <p style={{ margin: '4px 0', fontSize: '0.8rem', color: '#666' }}>📍 {req.location}</p>}
+                    <Link href={`/requests/${req.id}`} style={{ color: '#00d9ff', fontSize: '0.8rem', display: 'inline-block', marginTop: '6px', textDecoration: 'none' }}>
+                      View Details →
+                    </Link>
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
+          </MapContainer>
+        </div>
+      ) : null}
+
+      {viewMode === 'list' && filtered.length === 0 ? (
         <div className={styles.emptyState}>
           <div className={styles.emptyIcon}>📝</div>
           <h3>No requests found</h3>
@@ -398,8 +496,17 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
                         <span className={styles.payoutCrypto}>{req.payoutCurrency}:</span>
                         <code className={styles.payoutAddr}>{req.payoutAddress.slice(0, 20)}...</code>
                         <button onClick={() => copyPayout(req.payoutAddress || '')} className={styles.copyPayoutBtn}>Copy</button>
-                      </div>
-                    )}
+          </div>
+      )}
+
+      {viewMode === 'map' && filtered.length === 0 ? (
+        <div className={styles.emptyState}>
+          <div className={styles.emptyIcon}>📝</div>
+          <h3>No requests with location data</h3>
+          <p>Try adjusting your filters or create a new request with a location.</p>
+          <button onClick={() => setShowCreate(true)} className="btn-primary">Create Request</button>
+        </div>
+      ) : null}
                   </div>
                 )}
 

@@ -427,6 +427,44 @@
   margin-bottom: 24px;
 }
 
+.viewToggle {
+  display: flex;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.toggleBtn {
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toggleBtn:hover {
+  color: var(--text-primary);
+}
+
+.toggleBtn.active {
+  color: var(--accent-primary);
+  background: rgba(0, 217, 255, 0.1);
+  font-weight: 600;
+}
+
+.mapContainer {
+  height: 500px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
+}
+
 .formRow {
   display: grid;
   grid-template-columns: 1fr 1fr;

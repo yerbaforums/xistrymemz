@@ -30,8 +30,6 @@ export async function GET() {
             plans: true,
             requests: true,
             products: true,
-            sentConnections: true,
-            receivedConnections: true,
             posts: true
           }
         }
@@ -43,17 +41,30 @@ export async function GET() {
       plans: number
       requests: number
       products: number
-      sentConnections: number
-      receivedConnections: number
       posts: number
     } }) => ({
       ...m,
       planCount: m._count.plans,
       requestCount: m._count.requests,
       productCount: m._count.products,
-      connectionCount: m._count.sentConnections + m._count.receivedConnections,
+      connectionCount: 0,
       postCount: m._count.posts
     }))
+
+    const acceptedConnections = await prisma.connection.findMany({
+      where: { status: 'ACCEPTED' },
+      select: { requesterId: true, receiverId: true }
+    })
+
+    const countMap = new Map<string, number>()
+    for (const c of acceptedConnections) {
+      countMap.set(c.requesterId, (countMap.get(c.requesterId) || 0) + 1)
+      countMap.set(c.receiverId, (countMap.get(c.receiverId) || 0) + 1)
+    }
+
+    membersWithCount.forEach(m => {
+      m.connectionCount = countMap.get(m.id) || 0
+    })
 
     const connections = await prisma.connection.findMany({
       where: {

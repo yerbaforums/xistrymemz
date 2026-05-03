@@ -227,11 +227,41 @@ export default function ProductsPage() {
   const conditions = ['NEW', 'LIKE_NEW', 'GOOD', 'FAIR']
 
   const productsWithCoords = filteredProducts.filter(p => p.isGlobal || (p.latitude != null && p.longitude != null))
-  const center: [number, number] = userLocation 
-    ? [userLocation.lat, userLocation.lon]
-    : productsWithCoords.length > 0 && productsWithCoords[0].latitude
-      ? [productsWithCoords[0].latitude!, productsWithCoords[0].longitude!]
-      : [39.8283, -98.5795]
+
+  const getMapCenter = (): [number, number] => {
+    if (userLocation) {
+      return [userLocation.lat, userLocation.lon]
+    }
+    if (productsWithCoords.length > 0) {
+      if (productsWithCoords.length === 1) {
+        return [productsWithCoords[0].latitude!, productsWithCoords[0].longitude!]
+      }
+      const lats = productsWithCoords.map(p => p.latitude!)
+      const lons = productsWithCoords.map(p => p.longitude!)
+      return [(Math.min(...lats) + Math.max(...lats)) / 2, (Math.min(...lons) + Math.max(...lons)) / 2]
+    }
+    return [39.8283, -98.5795]
+  }
+
+  const getMapZoom = (): number => {
+    if (userLocation) return 10
+    if (productsWithCoords.length === 0) return 4
+    if (productsWithCoords.length === 1) return 13
+    const lats = productsWithCoords.map(p => p.latitude!)
+    const lons = productsWithCoords.map(p => p.longitude!)
+    const latDiff = Math.max(...lats) - Math.min(...lats)
+    const lonDiff = Math.max(...lons) - Math.min(...lons)
+    const maxDiff = Math.max(latDiff, lonDiff)
+    if (maxDiff < 0.1) return 13
+    if (maxDiff < 0.5) return 11
+    if (maxDiff < 1) return 10
+    if (maxDiff < 5) return 8
+    if (maxDiff < 10) return 6
+    return 4
+  }
+
+  const center = getMapCenter()
+  const zoom = getMapZoom()
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -473,7 +503,7 @@ export default function ProductsPage() {
             </div>
             <MapContainer 
               center={center} 
-              zoom={4} 
+              zoom={zoom} 
               style={{ height: '100%', width: '100%' }}
               ref={mapRef}
             >
