@@ -449,16 +449,21 @@ export default function ProfilePage() {
           {!user.coverImage && <div className={styles.coverPlaceholder} />}
         </div>
         
-        <div className={styles.profileContent}>
-          <div className={styles.avatarSection}>
-            <div className={styles.avatar}>
-              {user.image ? (
-                <Image src={user.image} alt={user.name || 'User'} fill />
-              ) : (
-                <span>{user.name?.[0] || 'U'}</span>
-              )}
-            </div>
-          </div>
+           <div className={styles.profileContent}>
+             <div className={styles.avatarSection}>
+               <div className={styles.avatar}>
+                 {user.image ? (
+                   <Image src={user.image} alt={user.name || 'User'} fill />
+                 ) : (
+                   <span>{user.name?.[0] || 'U'}</span>
+                 )}
+               </div>
+               {user.verifiedIdentity && (
+                 <div className={styles.verifiedBadge}>
+                   <img src="/logo.png" alt="Verified" width={20} height={20} className={styles.logoBadge} />
+                 </div>
+               )}
+             </div>
           
           <div className={styles.profileInfo}>
             <div className={styles.nameRow}>

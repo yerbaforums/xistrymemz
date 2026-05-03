@@ -57,6 +57,7 @@
 
 .avatarSection {
   grid-row: span 2;
+  position: relative;
 }
 
 .avatar {
@@ -82,6 +83,20 @@
   font-size: 1.8rem;
   font-weight: 700;
   color: var(--accent-primary);
+}
+
+.verifiedBadge {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  background: var(--bg-primary);
+  border-radius: 50%;
+  padding: 2px;
+  line-height: 1;
+}
+
+.logoBadge {
+  border-radius: 4px;
 }
 
 .profileInfo {
