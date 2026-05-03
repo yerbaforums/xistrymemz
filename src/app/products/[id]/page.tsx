@@ -10,6 +10,7 @@ import { useToast } from '@/context/ToastContext'
 import Rating from '@/components/Rating'
 import { getUserProfileUrl } from '@/lib/utils'
 import { MakeOfferModal } from '@/components/MakeOfferModal'
+import { ComingSoonModal } from '@/components/ComingSoonModal'
 
 interface Product {
   id: string
@@ -96,6 +97,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [currentFunding, setCurrentFunding] = useState(0)
   const [copiedPayout, setCopiedPayout] = useState(false)
   const [showOfferModal, setShowOfferModal] = useState(false)
+  const [showCartModal, setShowCartModal] = useState(false)
 
   useEffect(() => {
     params.then(setResolvedParams)
@@ -595,12 +597,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           {product.price && (
             <div className={styles.priceCard}>
               <p className={styles.price}>${product.price}</p>
-              <button 
-                className={styles.addToCartBtn}
-                onClick={() => addItem({ id: product.id, title: product.title, price: product.price || 0, imageUrl: product.imageUrl })}
-              >
-                Add to Cart
-              </button>
+               <button 
+                 className={styles.addToCartBtn}
+                 onClick={() => setShowCartModal(true)}
+               >
+                 Add to Cart
+               </button>
               {session?.user && !isOwner && (
                 <button 
                   className={styles.escrowBtn}
@@ -898,6 +900,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           listingOwnerName={product.user.name || undefined}
         />
       )}
+
+      <ComingSoonModal
+        isOpen={showCartModal}
+        onClose={() => setShowCartModal(false)}
+        feature="Shopping cart"
+      />
     </div>
   )
 }
