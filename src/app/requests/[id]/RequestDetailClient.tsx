@@ -5,6 +5,7 @@ import Link from 'next/link'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import { MakeOfferModal } from '@/components/MakeOfferModal'
+import { getUserProfileUrl } from '@/lib/utils'
 
 const CATEGORIES = [
   { value: 'GENERAL', label: 'General', icon: '📋' },
@@ -54,6 +55,7 @@ interface Comment {
     id: string
     name: string | null
     email: string
+    shopSlug: string | null
   }
 }
 
@@ -72,6 +74,20 @@ interface StatusChange {
   changedByName: string
   reason: string | null
   createdAt: string
+}
+
+interface Fulfillment {
+  id: string
+  title: string
+  content: string
+  status: string
+  createdAt: string
+  user: {
+    id: string
+    name: string | null
+    email: string
+    shopSlug: string | null
+  }
 }
 
 interface Request {
@@ -94,6 +110,7 @@ interface Request {
   updatedAt: string
   completedBy: string | null
   completedAt: string | null
+  allowFulfillments: boolean
   plan: {
     id: string
     title: string
@@ -101,16 +118,19 @@ interface Request {
       id: string
       name: string | null
       email: string
+      shopSlug: string | null
     }
   } | null
   user: {
     id: string
     name: string | null
     email: string
+    shopSlug: string | null
   }
   product?: Product | null
   comments: Comment[]
   statusHistory?: StatusChange[]
+  fulfillments: Fulfillment[]
 }
 
 interface RequestDetailClientProps {
@@ -136,6 +156,10 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
   const [showOfferModal, setShowOfferModal] = useState(false)
   const [contactMessage, setContactMessage] = useState('')
   const [copiedPayout, setCopiedPayout] = useState(false)
+  const [showFulfillmentForm, setShowFulfillmentForm] = useState(false)
+  const [fulfillmentForm, setFulfillmentForm] = useState({ title: '', content: '' })
+  const [fulfillments, setFulfillments] = useState<Fulfillment[]>(initialRequest.fulfillments || [])
+  const [allowFulfillments, setAllowFulfillments] = useState(initialRequest.allowFulfillments)
   const [editForm, setEditForm] = useState({
     title: initialRequest.title,
     description: initialRequest.description || '',
@@ -143,6 +167,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
     priority: initialRequest.priority,
     budget: initialRequest.budget?.toString() || '',
     deadline: initialRequest.deadline ? initialRequest.deadline.split('T')[0] : '',
+    allowFulfillments: initialRequest.allowFulfillments,
   })
 
   const isPlanOwner = request.plan?.user.id === userId
@@ -347,6 +372,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
           priority: editForm.priority,
           budget: editForm.budget ? parseFloat(editForm.budget) : null,
           deadline: editForm.deadline ? new Date(editForm.deadline).toISOString() : null,
+          allowFulfillments: editForm.allowFulfillments,
         })
       })
       
@@ -360,7 +386,9 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
           priority: editForm.priority,
           budget: editForm.budget ? parseFloat(editForm.budget) : null,
           deadline: editForm.deadline ? new Date(editForm.deadline).toISOString() : null,
+          allowFulfillments: editForm.allowFulfillments,
         })
+        setAllowFulfillments(editForm.allowFulfillments)
       }
     } catch (err) {
       console.error(err)
@@ -388,6 +416,81 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
           comments: [...request.comments, newComment]
         })
         setComment('')
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCreateFulfillment = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!fulfillmentForm.title.trim() || !fulfillmentForm.content.trim()) return
+
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/requests/${request.id}/fulfillments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(fulfillmentForm)
+      })
+
+      if (res.ok) {
+        const newFulfillment = await res.json()
+        setFulfillments([newFulfillment, ...fulfillments])
+        setFulfillmentForm({ title: '', content: '' })
+        setShowFulfillmentForm(false)
+        success('Offer submitted!')
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleRespondFulfillment = async (fid: string, action: string, autoComplete = false) => {
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/requests/${request.id}/fulfillments/${fid}/respond`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, autoComplete })
+      })
+
+      if (res.ok) {
+        setFulfillments(fulfillments.map(f => 
+          f.id === fid ? { ...f, status: action } : f
+        ))
+        if (action === 'APPROVED' && autoComplete) {
+          setRequest({
+            ...request,
+            status: 'COMPLETED',
+            completedAt: new Date().toISOString()
+          })
+        }
+        success(`Offer ${action.toLowerCase()}!`)
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleToggleFulfillments = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/requests/${request.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ allowFulfillments: !allowFulfillments })
+      })
+
+      if (res.ok) {
+        setAllowFulfillments(!allowFulfillments)
+        success(`Fulfillments ${!allowFulfillments ? 'enabled' : 'disabled'}`)
       }
     } catch (err) {
       console.error(err)
@@ -459,14 +562,14 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               )}
               <div className={styles.metaItem}>
                 <span className={styles.metaLabel}>Requested by</span>
-                <Link href={`/profile/${request.user.id}`} className={styles.metaValue}>
+                <Link href={getUserProfileUrl(request.user)} className={styles.metaValue}>
                   {request.user.name || request.user.email}
                 </Link>
               </div>
               {request.plan && (
                 <div className={styles.metaItem}>
                   <span className={styles.metaLabel}>Project owner</span>
-                  <Link href={`/profile/${request.plan.user.id}`} className={styles.metaValue}>
+                  <Link href={getUserProfileUrl(request.plan.user)} className={styles.metaValue}>
                     {request.plan.user.name || request.plan.user.email}
                   </Link>
                 </div>
@@ -638,6 +741,110 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                   ↩️ Rollback Status
                 </button>
               </div>
+            )}
+          </div>
+        </div>
+
+        <div className={styles.commentsSection}>
+          <h2>🤝 Offers ({fulfillments.length})</h2>
+
+          {canEdit && (
+            <div className={styles.fulfillmentToggle}>
+              <label className={styles.toggleLabel}>
+                <input
+                  type="checkbox"
+                  checked={allowFulfillments}
+                  onChange={handleToggleFulfillments}
+                  disabled={loading}
+                />
+                <span className={styles.toggleText}>
+                  {allowFulfillments ? 'Accepting offers' : 'Not accepting offers'}
+                </span>
+              </label>
+            </div>
+          )}
+
+          {allowFulfillments && !isOwnRequest && request.status === 'PENDING' && (
+            <button
+              onClick={() => setShowFulfillmentForm(!showFulfillmentForm)}
+              className={styles.fulfillmentFormToggle}
+            >
+              {showFulfillmentForm ? 'Cancel' : 'Make an Offer'}
+            </button>
+          )}
+
+          {showFulfillmentForm && (
+            <form onSubmit={handleCreateFulfillment} className={styles.fulfillmentForm}>
+              <div className="form-group">
+                <label>Title</label>
+                <input
+                  type="text"
+                  value={fulfillmentForm.title}
+                  onChange={e => setFulfillmentForm({ ...fulfillmentForm, title: e.target.value })}
+                  placeholder="Brief description of your offer"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Details</label>
+                <textarea
+                  value={fulfillmentForm.content}
+                  onChange={e => setFulfillmentForm({ ...fulfillmentForm, content: e.target.value })}
+                  placeholder="Explain how you can fulfill this request..."
+                  rows={4}
+                  required
+                />
+              </div>
+              <button type="submit" className="btn-primary" disabled={loading}>
+                Submit Offer
+              </button>
+            </form>
+          )}
+
+          <div className={styles.fulfillmentsList}>
+            {fulfillments.map(f => (
+              <div key={f.id} className={styles.fulfillmentItem}>
+                <div className={styles.fulfillmentHeader}>
+                  <div className={styles.fulfillmentAuthor}>
+                    <Link href={getUserProfileUrl(f.user)} className={styles.fulfillmentAuthorName}>
+                      {f.user.name || f.user.email}
+                    </Link>
+                    <span className={styles.fulfillmentDate}>
+                      {new Date(f.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <span className={`${styles.fulfillmentStatus} ${styles[`status${f.status.toLowerCase()}`]}`}>
+                    {f.status}
+                  </span>
+                </div>
+                <h4 className={styles.fulfillmentTitle}>{f.title}</h4>
+                <p className={styles.fulfillmentContent}>{f.content}</p>
+                {isOwnRequest && f.status === 'PENDING' && (
+                  <div className={styles.fulfillmentActions}>
+                    <button
+                      onClick={() => handleRespondFulfillment(f.id, 'APPROVED')}
+                      className={styles.fulfillmentApproveBtn}
+                      disabled={loading}
+                    >
+                      ✓ Accept
+                    </button>
+                    <button
+                      onClick={() => handleRespondFulfillment(f.id, 'DECLINED')}
+                      className={styles.fulfillmentDeclineBtn}
+                      disabled={loading}
+                    >
+                      ✕ Decline
+                    </button>
+                    <label className={styles.autoCompleteLabel}>
+                      <input type="checkbox" id={`auto-${f.id}`} />
+                      <span>Auto-complete request</span>
+                    </label>
+                  </div>
+                )}
+              </div>
+            ))}
+            {fulfillments.length === 0 && (
+              <p className={styles.noFulfillments}>No offers yet.</p>
             )}
           </div>
         </div>
@@ -937,6 +1144,16 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                   onChange={e => setEditForm({...editForm, deadline: e.target.value})}
                 />
               </div>
+            </div>
+            <div className="form-group">
+              <label className={styles.toggleLabel}>
+                <input
+                  type="checkbox"
+                  checked={editForm.allowFulfillments}
+                  onChange={e => setEditForm({...editForm, allowFulfillments: e.target.checked})}
+                />
+                <span className={styles.toggleText}>Allow others to make offers to fulfill this request</span>
+              </label>
             </div>
             <div className={styles.modalActions}>
               <button 

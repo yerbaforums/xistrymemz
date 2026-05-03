@@ -8,6 +8,7 @@ import { useToast } from '@/context/ToastContext'
 import styles from './community.module.css'
 import { EmptyState } from '@/components/EmptyState'
 import { SkeletonList } from '@/components/Skeleton'
+import { getUserProfileUrl } from '@/lib/utils'
 
 interface Member {
   id: string
@@ -17,6 +18,7 @@ interface Member {
   bio: string | null
   location: string | null
   userClass: string | null
+  shopSlug: string | null
   createdAt: string
   planCount?: number
   requestCount?: number
@@ -371,7 +373,7 @@ export default function CommunityPage() {
                     </p>
                   </div>
                   <div className={styles.memberActions}>
-                    <Link href={`/profile/${member.id}`} className={styles.viewProfile}>
+                    <Link href={getUserProfileUrl(member)} className={styles.viewProfile}>
                       View Profile
                     </Link>
                     {member.id !== session?.user?.id && (
@@ -429,7 +431,7 @@ export default function CommunityPage() {
                       <Link href={`/messages?user=${connectedMember.id}`} className={styles.messageBtn}>
                         Message
                       </Link>
-                      <Link href={`/profile/${connectedMember.id}`} className={styles.viewProfile}>
+                      <Link href={getUserProfileUrl(connectedMember)} className={styles.viewProfile}>
                         View Profile
                       </Link>
                     </div>
@@ -565,7 +567,7 @@ export default function CommunityPage() {
           {filteredRequests.length === 0 && (
             <div className={styles.empty}>
               <p>No requests found.</p>
-              <Link href="/requests/public" className={styles.createGroupLink}>
+              <Link href="/requests" className={styles.createGroupLink}>
                 Browse all requests →
               </Link>
             </div>

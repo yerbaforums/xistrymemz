@@ -8,6 +8,7 @@ import { useCart } from '@/context/CartContext'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { useToast } from '@/context/ToastContext'
 import Rating from '@/components/Rating'
+import { getUserProfileUrl } from '@/lib/utils'
 import { MakeOfferModal } from '@/components/MakeOfferModal'
 
 interface Product {
@@ -28,6 +29,7 @@ interface Product {
     id: string
     name: string | null
     email: string
+    shopSlug: string | null
   }
   createdAt: string
   acceptsRequests: boolean
@@ -550,7 +552,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         <div className={styles.sidebar}>
           <div className={styles.sellerCard}>
             <h3>Seller</h3>
-            <Link href={`/profile/${product.user.id}`} className={styles.sellerName}>
+            <Link href={getUserProfileUrl(product.user)} className={styles.sellerName}>
               {product.user.name || 'Unknown'}
             </Link>
             <Rating userId={product.user.id} productId={product.id} type="SELLER" />

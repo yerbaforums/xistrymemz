@@ -7,6 +7,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import styles from './profile.module.css'
 import Rating from '@/components/Rating'
+import { getUserProfileUrl, slugify } from '@/lib/utils'
 
 interface UserLink {
   id: string
@@ -74,6 +75,7 @@ interface Post {
     id: string
     name: string | null
     image: string | null
+    shopSlug: string | null
   }
 }
 
@@ -102,6 +104,7 @@ interface Connection {
   email: string
   image: string | null
   userClass: string | null
+  shopSlug: string | null
 }
 
 interface UserGroup {
@@ -743,7 +746,7 @@ export default function ProfilePage() {
                               )}
                             </div>
                             <div>
-                              <Link href={`/profile/${post.user.id}`} className={styles.postAuthorName}>
+                              <Link href={getUserProfileUrl(post.user)} className={styles.postAuthorName}>
                                 {post.pinned && <span className={styles.pinnedBadge}>📌</span>}
                                 {post.user.name || 'Anonymous'}
                               </Link>
@@ -834,7 +837,7 @@ export default function ProfilePage() {
             {connections.length > 0 ? (
               <div className={styles.connectionsGrid}>
                 {connections.map((conn) => (
-                  <Link key={conn.id} href={`/profile/${conn.id}`} className={styles.connectionCard}>
+                  <Link key={conn.id} href={getUserProfileUrl(conn)} className={styles.connectionCard}>
                     <div className={styles.connectionAvatar}>
                       {conn.image ? (
                         <Image src={conn.image} alt={conn.name || 'User'} fill />

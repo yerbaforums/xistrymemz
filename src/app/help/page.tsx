@@ -65,7 +65,7 @@ export default function Help() {
   const guides = [
     { title: 'Getting Started', description: 'Learn the basics of using XistrYmemZ', link: '/about' },
     { title: 'Creating Plans', description: 'How to create and manage project plans', link: '/plans' },
-    { title: 'Submitting Requests', description: 'Guide to requesting help on projects', link: '/requests/public' },
+    { title: 'Submitting Requests', description: 'Guide to requesting help on projects', link: '/requests' },
     { title: 'Joining Groups', description: 'Find and join community groups', link: '/groups' },
     { title: 'Setting Up Shop', description: 'Create your own store', link: '/shop/setup' },
     { title: 'Hosting Events', description: 'Create and manage community events', link: '/events' }

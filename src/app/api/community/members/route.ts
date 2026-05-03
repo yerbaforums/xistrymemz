@@ -23,6 +23,7 @@ export async function GET() {
         bio: true,
         location: true,
         userClass: true,
+        shopSlug: true,
         createdAt: true,
         _count: {
           select: { 
@@ -64,10 +65,10 @@ export async function GET() {
       },
       include: {
         requester: {
-          select: { id: true, name: true, email: true, image: true, location: true }
+          select: { id: true, name: true, email: true, image: true, location: true, shopSlug: true }
         },
         receiver: {
-          select: { id: true, name: true, email: true, image: true, location: true }
+          select: { id: true, name: true, email: true, image: true, location: true, shopSlug: true }
         }
       }
     })

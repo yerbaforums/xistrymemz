@@ -36,6 +36,7 @@ export default function Footer() {
         <div className={styles.links}>
           <div className={styles.col}>
             <h4>Explore</h4>
+            <Link href="/">Home</Link>
             <Link href="/plans/public">Projects</Link>
             <Link href="/products">Market</Link>
             <Link href="/events">Events</Link>
@@ -45,7 +46,7 @@ export default function Footer() {
             <h4>Community</h4>
             <Link href="/community">Members</Link>
             <Link href="/groups">Groups</Link>
-            <Link href="/requests/public">Requests</Link>
+            <Link href="/requests">Requests</Link>
           </div>
           
           <div className={styles.col}>

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
+import { getUserProfileUrl } from '@/lib/utils'
 
 interface BarterOffer {
   id: string
@@ -23,12 +24,14 @@ interface BarterOffer {
     name: string | null
     location: string | null
     image: string | null
+    shopSlug: string | null
   }
   receiver: {
     id: string
     name: string | null
     location: string | null
     image: string | null
+    shopSlug: string | null
   }
 }
 
@@ -189,7 +192,7 @@ export default function OfferDetailPage({
             {isMaker ? (
               <>
                 <div className={styles.cardLabel}>Receiver</div>
-                <Link href={`/profile/${offer.receiver.id}`} className={styles.cardLink}>
+                <Link href={getUserProfileUrl(offer.receiver)} className={styles.cardLink}>
                   {offer.receiver.name || 'Unknown'}
                 </Link>
                 {offer.receiver.location && (
@@ -199,7 +202,7 @@ export default function OfferDetailPage({
             ) : (
               <>
                 <div className={styles.cardLabel}>Maker</div>
-                <Link href={`/profile/${offer.maker.id}`} className={styles.cardLink}>
+                <Link href={getUserProfileUrl(offer.maker)} className={styles.cardLink}>
                   {offer.maker.name || 'Unknown'}
                 </Link>
                 {offer.maker.location && (

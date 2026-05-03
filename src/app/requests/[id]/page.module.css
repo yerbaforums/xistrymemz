@@ -489,3 +489,172 @@
   font-size: 1rem;
   border-radius: var(--radius-md);
 }
+
+.fulfillmentToggle {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.toggleLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.toggleLabel input[type="checkbox"] {
+  accent-color: var(--accent-primary);
+  width: 16px;
+  height: 16px;
+}
+
+.toggleText {
+  font-weight: 500;
+}
+
+.fulfillmentFormToggle {
+  width: 100%;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  padding: 12px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+}
+
+.fulfillmentForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+}
+
+.fulfillmentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.fulfillmentItem {
+  padding: 16px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.fulfillmentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.fulfillmentAuthor {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fulfillmentAuthorName {
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+
+.fulfillmentAuthorName:hover {
+  color: var(--accent-primary);
+}
+
+.fulfillmentDate {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.fulfillmentStatus {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+}
+
+.fulfillmentStatus.statuspending {
+  background: rgba(0, 217, 255, 0.1);
+  color: var(--accent-primary);
+}
+
+.fulfillmentStatus.statusapproved {
+  background: rgba(0, 255, 136, 0.1);
+  color: var(--accent-success);
+}
+
+.fulfillmentStatus.statusdeclined {
+  background: rgba(255, 51, 102, 0.1);
+  color: var(--accent-secondary);
+}
+
+.fulfillmentTitle {
+  font-size: 0.95rem;
+  margin: 0 0 8px;
+  color: var(--text-primary);
+}
+
+.fulfillmentContent {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0 0 12px;
+}
+
+.fulfillmentActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.fulfillmentApproveBtn {
+  background: var(--accent-success);
+  color: var(--bg-primary);
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+}
+
+.fulfillmentDeclineBtn {
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+.autoCompleteLabel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.autoCompleteLabel input[type="checkbox"] {
+  accent-color: var(--accent-primary);
+}
+
+.noFulfillments {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 20px;
+  font-style: italic;
+}

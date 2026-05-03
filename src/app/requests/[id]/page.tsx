@@ -28,12 +28,12 @@ export default async function RequestDetailPage({
       plan: {
         include: {
           user: {
-            select: { id: true, name: true, email: true }
+            select: { id: true, name: true, email: true, shopSlug: true }
           }
         }
       },
       user: {
-        select: { id: true, name: true, email: true }
+        select: { id: true, name: true, email: true, shopSlug: true }
       },
       product: {
         select: { id: true, title: true, price: true, imageUrl: true }
@@ -41,7 +41,7 @@ export default async function RequestDetailPage({
       comments: {
         include: {
           user: {
-            select: { id: true, name: true, email: true }
+            select: { id: true, name: true, email: true, shopSlug: true }
           }
         },
         orderBy: { createdAt: 'asc' }
@@ -50,6 +50,14 @@ export default async function RequestDetailPage({
         include: {
           changedBy: {
             select: { id: true, name: true, email: true }
+          }
+        },
+        orderBy: { createdAt: 'desc' }
+      },
+      fulfillments: {
+        include: {
+          user: {
+            select: { id: true, name: true, email: true, shopSlug: true }
           }
         },
         orderBy: { createdAt: 'desc' }
@@ -81,6 +89,7 @@ export default async function RequestDetailPage({
     updatedAt: request.updatedAt.toISOString(),
     completedBy: request.completedBy,
     completedAt: request.completedAt?.toISOString() || null,
+    allowFulfillments: request.allowFulfillments,
     plan: request.plan ? {
       id: request.plan.id,
       title: request.plan.title,
@@ -88,12 +97,14 @@ export default async function RequestDetailPage({
         id: request.plan.user.id,
         name: request.plan.user.name,
         email: request.plan.user.email,
+        shopSlug: request.plan.user.shopSlug,
       },
     } : null,
     user: {
       id: request.user.id,
       name: request.user.name,
       email: request.user.email,
+      shopSlug: request.user.shopSlug,
     },
     product: request.product ? {
       id: request.product.id,
@@ -109,6 +120,7 @@ export default async function RequestDetailPage({
         id: comment.user.id,
         name: comment.user.name,
         email: comment.user.email,
+        shopSlug: comment.user.shopSlug,
       },
     })),
     statusHistory: request.statusHistory.map(h => ({
@@ -119,6 +131,19 @@ export default async function RequestDetailPage({
       changedByName: h.changedBy.name || h.changedBy.email,
       reason: h.reason,
       createdAt: h.createdAt.toISOString(),
+    })),
+    fulfillments: request.fulfillments.map(f => ({
+      id: f.id,
+      title: f.title,
+      content: f.content,
+      status: f.status,
+      createdAt: f.createdAt.toISOString(),
+      user: {
+        id: f.user.id,
+        name: f.user.name,
+        email: f.user.email,
+        shopSlug: f.user.shopSlug,
+      },
     })),
   }
 

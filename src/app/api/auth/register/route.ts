@@ -104,13 +104,6 @@ export async function POST(request: Request) {
           status: 'ACCEPTED'
         }
       })
-      await prisma.connection.create({
-        data: {
-          requesterId: founder.id,
-          receiverId: user.id,
-          status: 'ACCEPTED'
-        }
-      })
     }
 
     return NextResponse.json({

@@ -8,6 +8,7 @@ import { useState, useEffect, useCallback } from 'react'
 import styles from './Header.module.css'
 import CartButton from './CartButton'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
+import { slugify } from '@/lib/utils'
 
 export default function Header() {
   const { data: session, status } = useSession()
@@ -115,12 +116,13 @@ export default function Header() {
           )}
 
           <div className={styles.navItem}>
-            <button className={`${styles.navToggle} ${isActive('/plans') || isActive('/requests/public')}`}>
+            <button className={`${styles.navToggle} ${isActive('/plans') || isActive('/requests')}`}>
               Discover
             </button>
             <div className={styles.navDropdown}>
+              <Link href="/" className={styles.navLink} onClick={() => setMenuOpen(false)}>🏠 Home</Link>
               <Link href="/plans/public" className={styles.navLink} onClick={() => setMenuOpen(false)}>🚀 Browse Projects</Link>
-              <Link href="/requests/public" className={styles.navLink} onClick={() => setMenuOpen(false)}>📝 Public Requests</Link>
+              <Link href="/requests" className={styles.navLink} onClick={() => setMenuOpen(false)}>📝 Requests</Link>
               <Link href="/events" className={styles.navLink} onClick={() => setMenuOpen(false)}>📅 Events</Link>
               <Link href="/products" className={styles.navLink} onClick={() => setMenuOpen(false)}>🛒 Marketplace</Link>
               <Link href="/shops" className={styles.navLink} onClick={() => setMenuOpen(false)}>🏪 Shops</Link>
@@ -194,8 +196,9 @@ export default function Header() {
 
           <div className={styles.mobileSection}>
             <div className={styles.mobileSectionTitle}>Discover</div>
+            <Link href="/" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🏠 Home</Link>
             <Link href="/plans/public" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🚀 Browse Projects</Link>
-            <Link href="/requests/public" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📝 Public Requests</Link>
+            <Link href="/requests" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📝 Requests</Link>
             <Link href="/events" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📅 Events</Link>
             <Link href="/products" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🛒 Marketplace</Link>
             <Link href="/shops" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🏪 Shops</Link>
@@ -224,7 +227,7 @@ export default function Header() {
                 )}
                 <Link href="/messages" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>💬 Messages</Link>
                 <Link href="/templates" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📋 Templates</Link>
-                <Link href={`/profile/${session?.user?.id || ''}`} className={styles.mobileLink} onClick={() => setMenuOpen(false)}>👤 Profile</Link>
+                <Link href={`/profile/${session?.user?.name ? slugify(session.user.name) : session?.user?.id || ''}`} className={styles.mobileLink} onClick={() => setMenuOpen(false)}>👤 Profile</Link>
                 <Link href="/profile/settings" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>⚙️ Settings</Link>
               </div>
 
@@ -376,7 +379,7 @@ export default function Header() {
                     <span className={styles.userEmail}>{session.user.email}</span>
                   </div>
                   <div className={styles.userLinks}>
-                    <Link href={`/profile/${session?.user?.id || ''}`} className={styles.userLink}>My Profile</Link>
+                    <Link href={`/profile/${session?.user?.name ? slugify(session.user.name) : session?.user?.id || ''}`} className={styles.userLink}>My Profile</Link>
                     <Link href="/profile/settings" className={styles.userLink}>Settings</Link>
                     <Link href="/dashboard/overview" className={styles.userLink}>Dashboard</Link>
                     {settings.enableWallet ? (

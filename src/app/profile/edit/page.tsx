@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { getAllCryptos, getCryptoIcon, getCryptoName } from '@/lib/crypto-icons'
+import { getUserProfileUrl } from '@/lib/utils'
 import styles from '../[username]/profile.module.css'
 
 interface UserLink {
@@ -47,6 +48,7 @@ export default function ProfileEditPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [userData, setUserData] = useState<{ id: string; name: string | null; shopSlug: string | null } | null>(null)
 
   // Profile fields
   const [name, setName] = useState('')
@@ -95,6 +97,7 @@ export default function ProfileEditPage() {
       const data = await res.json()
 
       const user = data.user
+      setUserData({ id: user.id, name: user.name, shopSlug: user.shopSlug })
       setName(user.name || '')
       setBio(user.bio || '')
       setLocation(user.location || '')
@@ -259,7 +262,7 @@ export default function ProfileEditPage() {
       <div style={{maxWidth: '800px', margin: '0 auto', padding: '20px'}}>
         <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px'}}>
           <h1>Edit Profile</h1>
-          <Link href={`/profile/${session?.user?.id || ''}`} className={styles.editBtn}>
+          <Link href={getUserProfileUrl(userData || { id: session?.user?.id || '', name: session?.user?.name })} className={styles.editBtn}>
             View Profile
           </Link>
         </div>

@@ -96,7 +96,7 @@ export async function GET() {
 
     const posts = await prisma.forumPost.findMany({
       include: {
-        author: { select: { id: true, name: true, email: true, image: true } },
+        author: { select: { id: true, name: true, email: true, image: true, shopSlug: true } },
         category: { select: { id: true, name: true, slug: true } },
         _count: { select: { replies: true } }
       },

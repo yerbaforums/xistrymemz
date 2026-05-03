@@ -6,12 +6,14 @@ import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import styles from '../../community.module.css'
 import { useToast } from '@/context/ToastContext'
+import { getUserProfileUrl } from '@/lib/utils'
 
 interface Author {
   id: string
   name: string | null
   email: string
   image: string | null
+  shopSlug: string | null
 }
 
 interface Post {
@@ -375,7 +377,7 @@ export default function ForumThreadPage() {
             )}
           </div>
           <div className={styles.authorInfo}>
-            <Link href={`/profile/${post.author.id}`} className={styles.authorName}>
+            <Link href={getUserProfileUrl(post.author)} className={styles.authorName}>
               {post.author.name || 'Anonymous'}
             </Link>
             <span className={styles.postDate}>
@@ -518,7 +520,7 @@ export default function ForumThreadPage() {
                         <span>{reply.author.name?.[0] || reply.author.email[0].toUpperCase()}</span>
                       )}
                     </div>
-                    <Link href={`/profile/${reply.author.id}`} className={styles.authorName}>
+                    <Link href={getUserProfileUrl(reply.author)} className={styles.authorName}>
                       {reply.author.name || 'Anonymous'}
                     </Link>
                     <span className={styles.replyDate}>

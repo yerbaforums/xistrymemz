@@ -17,19 +17,27 @@ export async function GET(request: Request) {
     const category = searchParams.get('category')
     const priority = searchParams.get('priority')
     const status = searchParams.get('status')
-    
+    const q = searchParams.get('q')
+
     const where: Record<string, unknown> = {}
-    
+
     if (publicOnly) {
-      where.isPublic = true
+      where.OR = [
+        { isPublic: true },
+        { plan: { published: true } }
+      ]
     } else if (session?.user?.id) {
       where.OR = [
         { userId: session.user.id },
         { plan: { userId: session.user.id } },
-        { group: { members: { some: { userId: session.user.id } } } }
+        { plan: { editors: { some: { userId: session.user.id } } } },
+        { isPublic: true }
       ]
     } else {
-      where.isPublic = true
+      where.OR = [
+        { isPublic: true },
+        { plan: { published: true } }
+      ]
     }
 
     if (planId) where.planId = planId
@@ -40,6 +48,13 @@ export async function GET(request: Request) {
     if (category) where.category = category
     if (priority) where.priority = priority
     if (status) where.status = status
+    if (q) {
+      where.OR = [
+        ...(where.OR as Record<string, unknown>[]),
+        { title: { contains: q, mode: 'insensitive' } },
+        { description: { contains: q, mode: 'insensitive' } }
+      ].filter(Boolean)
+    }
 
     const requests = await prisma.request.findMany({
       where,
@@ -50,10 +65,10 @@ export async function GET(request: Request) {
         schoolContent: { select: { id: true, title: true } },
         event: { select: { id: true, title: true } },
         user: {
-          select: { id: true, name: true, email: true, image: true }
+          select: { id: true, name: true, email: true, image: true, shopSlug: true }
         },
         _count: {
-          select: { comments: true }
+          select: { comments: true, fulfillments: true }
         }
       },
       orderBy: { createdAt: 'desc' }
@@ -69,7 +84,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -82,7 +97,7 @@ export async function POST(request: Request) {
     }
 
     const validation = validateBody(requestSchema, body)
-    
+
     if (!validation.success) {
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
@@ -160,7 +175,11 @@ export async function POST(request: Request) {
         currentFunding: currentFunding || 0,
         location: location || null,
         isPublic: isPublic || false,
+        allowFulfillments: body.allowFulfillments !== undefined ? body.allowFulfillments : true,
         status: 'PENDING'
+      },
+      include: {
+        user: { select: { id: true, name: true, email: true, image: true, shopSlug: true } }
       }
     })
 

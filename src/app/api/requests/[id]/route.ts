@@ -3,52 +3,66 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+async function canAccessRequest(userId: string, roleId: string, requestId: string) {
+  const req = await prisma.request.findFirst({
+    where: { id: requestId },
+    select: { userId: true, planId: true, isPublic: true }
+  })
+  if (!req) return null
+  const isOwner = req.userId === userId
+  const isAdmin = roleId === 'ADMIN'
+  let isPlanOwner = false
+  let isPlanEditor = false
+  if (req.planId) {
+    const plan = await prisma.plan.findFirst({ where: { id: req.planId }, select: { userId: true } })
+    if (plan) {
+      isPlanOwner = plan.userId === userId
+      isPlanEditor = await prisma.planEditor.findFirst({ where: { planId: req.planId, userId } }).then(Boolean)
+    }
+  }
+  const hasAccess = isOwner || isPlanOwner || isPlanEditor || isAdmin || req.isPublic
+  return { req, isOwner, isPlanOwner, isPlanEditor, isAdmin, hasAccess }
+}
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
-    
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { id } = await params
+    const access = await canAccessRequest(session.user.id, (session.user as { role?: string }).role || 'USER', id)
+    if (!access || !access.hasAccess) {
+      return NextResponse.json({ error: 'Request not found' }, { status: 404 })
+    }
 
-    const req = await prisma.request.findFirst({
-      where: {
-        id,
-        OR: [
-          { userId: session.user.id },
-          { plan: { userId: session.user.id } }
-        ]
-      },
+    const req = await prisma.request.findUnique({
+      where: { id },
       include: {
         plan: {
           include: {
-            user: {
-              select: { id: true, name: true, email: true }
-            }
+            user: { select: { id: true, name: true, email: true, shopSlug: true } }
           }
         },
-        user: {
-          select: { id: true, name: true, email: true }
-        },
-        product: {
-          select: { id: true, title: true, price: true, imageUrl: true }
-        },
+        user: { select: { id: true, name: true, email: true, image: true, shopSlug: true } },
+        product: { select: { id: true, title: true, price: true, imageUrl: true } },
         comments: {
           include: {
-            user: {
-              select: { id: true, name: true, email: true }
-            }
+            user: { select: { id: true, name: true, email: true, image: true, shopSlug: true } }
           },
           orderBy: { createdAt: 'asc' }
         },
         statusHistory: {
+          include: {
+            changedBy: { select: { id: true, name: true, email: true } }
+          },
           orderBy: { createdAt: 'desc' }
-        }
+        },
+        _count: { select: { fulfillments: true } }
       }
     })
 
@@ -69,30 +83,24 @@ export async function PUT(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { id } = await params
+    const access = await canAccessRequest(session.user.id, (session.user as { role?: string }).role || 'USER', id)
+    if (!access || !(access.isOwner || access.isPlanOwner || access.isPlanEditor || access.isAdmin)) {
+      return NextResponse.json({ error: 'Request not found or unauthorized' }, { status: 404 })
+    }
+
     const body = await request.json()
-
-    const existingRequest = await prisma.request.findFirst({
-      where: {
-        id,
-        OR: [
-          { userId: session.user.id },
-          { plan: { userId: session.user.id } }
-        ]
-      }
-    })
-
+    const existingRequest = await prisma.request.findUnique({ where: { id } })
     if (!existingRequest) {
       return NextResponse.json({ error: 'Request not found' }, { status: 404 })
     }
 
     const newStatus = body.status ?? existingRequest.status
-    
+
     const req = await prisma.request.update({
       where: { id },
       data: {
@@ -102,7 +110,14 @@ export async function PUT(
         category: body.category ?? existingRequest.category,
         priority: body.priority ?? existingRequest.priority,
         budget: body.budget !== undefined ? body.budget : existingRequest.budget,
-        deadline: body.deadline ? new Date(body.deadline) : existingRequest.deadline
+        goalAmount: body.goalAmount !== undefined ? body.goalAmount : existingRequest.goalAmount,
+        currentFunding: body.currentFunding !== undefined ? body.currentFunding : existingRequest.currentFunding,
+        payoutAddress: body.payoutAddress !== undefined ? body.payoutAddress : existingRequest.payoutAddress,
+        payoutCurrency: body.payoutCurrency !== undefined ? body.payoutCurrency : existingRequest.payoutCurrency,
+        location: body.location !== undefined ? body.location : existingRequest.location,
+        deadline: body.deadline ? new Date(body.deadline) : existingRequest.deadline,
+        isPublic: body.isPublic !== undefined ? body.isPublic : existingRequest.isPublic,
+        allowFulfillments: body.allowFulfillments !== undefined ? body.allowFulfillments : existingRequest.allowFulfillments
       }
     })
 
@@ -131,28 +146,17 @@ export async function DELETE(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { id } = await params
-
-    const existingRequest = await prisma.request.findFirst({
-      where: {
-        id,
-        userId: session.user.id
-      }
-    })
-
-    if (!existingRequest) {
-      return NextResponse.json({ error: 'Request not found' }, { status: 404 })
+    const access = await canAccessRequest(session.user.id, (session.user as { role?: string }).role || 'USER', id)
+    if (!access || !(access.isOwner || access.isPlanOwner || access.isPlanEditor || access.isAdmin)) {
+      return NextResponse.json({ error: 'Request not found or unauthorized' }, { status: 404 })
     }
 
-    await prisma.request.delete({
-      where: { id }
-    })
-
+    await prisma.request.delete({ where: { id } })
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('DELETE /api/requests/[id]:', error)
@@ -166,21 +170,18 @@ export async function PATCH(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { id } = await params
+    const access = await canAccessRequest(session.user.id, (session.user as { role?: string }).role || 'USER', id)
+    if (!access || !(access.isOwner || access.isPlanOwner || access.isPlanEditor || access.isAdmin)) {
+      return NextResponse.json({ error: 'Request not found or unauthorized' }, { status: 404 })
+    }
+
     const body = await request.json()
-
-    const existingRequest = await prisma.request.findFirst({
-      where: {
-        id,
-        userId: session.user.id
-      }
-    })
-
+    const existingRequest = await prisma.request.findUnique({ where: { id } })
     if (!existingRequest) {
       return NextResponse.json({ error: 'Request not found' }, { status: 404 })
     }
@@ -190,7 +191,8 @@ export async function PATCH(
       data: {
         goalAmount: body.goalAmount !== undefined ? body.goalAmount : existingRequest.goalAmount,
         payoutAddress: body.payoutAddress !== undefined ? body.payoutAddress : existingRequest.payoutAddress,
-        payoutCurrency: body.payoutCurrency || existingRequest.payoutCurrency
+        payoutCurrency: body.payoutCurrency !== undefined ? body.payoutCurrency : existingRequest.payoutCurrency,
+        allowFulfillments: body.allowFulfillments !== undefined ? body.allowFulfillments : existingRequest.allowFulfillments
       }
     })
 

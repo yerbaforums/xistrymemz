@@ -535,7 +535,7 @@ export default function OnboardingPage() {
                   </div>
                 </Link>
                 
-                <Link href="/requests/public" className={styles.quickLink}>
+                <Link href="/requests" className={styles.quickLink}>
                   <span className={styles.linkIcon}>📝</span>
                   <div>
                     <strong>Open Requests</strong>

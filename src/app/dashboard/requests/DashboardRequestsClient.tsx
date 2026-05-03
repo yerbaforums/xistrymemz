@@ -214,7 +214,7 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
           </p>
         </div>
         <div className={styles.headerActions}>
-          <Link href="/requests/public" className="btn-secondary">Browse Public</Link>
+          <Link href="/requests" className="btn-secondary">Browse All</Link>
           <button onClick={() => setShowCreate(true)} className="btn-primary">+ New Request</button>
         </div>
       </div>

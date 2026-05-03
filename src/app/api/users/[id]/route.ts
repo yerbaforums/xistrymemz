@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { slugify } from '@/lib/utils'
 
 export async function GET(
   request: Request,
@@ -9,7 +10,7 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    const { id } = await context.params
+    const { id: param } = await context.params
 
     // PUBLIC FIELDS ONLY - no sensitive data exposed
     const publicSelect = {
@@ -45,16 +46,34 @@ export async function GET(
       }
     }
 
-    // Check if id is a username/shopSlug first
+    // Resolve param: try shopSlug first, then slugified name, then id
     let user = await prisma.user.findUnique({
-      where: { shopSlug: id },
+      where: { shopSlug: param },
       select: publicSelect
     })
 
-    // If not found by slug, try by id
+    if (!user) {
+      const slug = slugify(param)
+      if (slug) {
+        user = await prisma.user.findFirst({
+          where: {
+            name: {
+              contains: param,
+              mode: 'insensitive'
+            }
+          },
+          select: publicSelect
+        })
+        // Verify the found user's name actually slugifies to the param
+        if (user && slugify(user.name) !== slug) {
+          user = null
+        }
+      }
+    }
+
     if (!user) {
       user = await prisma.user.findUnique({
-        where: { id },
+        where: { id: param },
         select: publicSelect
       })
     }
@@ -95,7 +114,8 @@ export async function GET(
             select: {
               id: true,
               name: true,
-              image: true
+              image: true,
+              shopSlug: true
             }
           }
         },
@@ -132,10 +152,10 @@ export async function GET(
         },
         include: {
           requester: {
-            select: { id: true, name: true, image: true, userClass: true }
+            select: { id: true, name: true, image: true, userClass: true, shopSlug: true }
           },
           receiver: {
-            select: { id: true, name: true, image: true, userClass: true }
+            select: { id: true, name: true, image: true, userClass: true, shopSlug: true }
           }
         },
         take: 12
@@ -181,7 +201,7 @@ export async function GET(
 
       if (connection) {
         isConnected = connection.status === 'ACCEPTED'
-        hasPendingRequest = connection.status === 'PENDING' && connection.requesterId === id
+        hasPendingRequest = connection.status === 'PENDING'
         connectionId = connection.id
       }
     }
@@ -202,7 +222,8 @@ export async function GET(
         id: otherUser.id,
         name: otherUser.name,
         image: otherUser.image,
-        userClass: otherUser.userClass
+        userClass: otherUser.userClass,
+        shopSlug: otherUser.shopSlug
       }
     })
 
