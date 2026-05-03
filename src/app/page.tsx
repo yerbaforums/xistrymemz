@@ -1,9 +1,31 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
 
+interface DonationAddr {
+  id: string
+  currency: string
+  address: string
+  label: string | null
+  showQR: boolean
+}
+
 export default function Home() {
+  const [donations, setDonations] = useState<DonationAddr[]>([])
+
+  useEffect(() => {
+    fetch('/api/site/donations')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { if (data?.addresses) setDonations(data.addresses) })
+      .catch(() => {})
+  }, [])
+
+  const copyAddress = async (addr: string) => {
+    await navigator.clipboard.writeText(addr)
+  }
+
   return (
     <div className={styles.landing}>
       <section className={styles.hero}>
@@ -73,6 +95,36 @@ export default function Home() {
           <p>Grow your audience through profiles, ratings, social links, and community engagement</p>
         </div>
       </section>
+
+      {donations.length > 0 && (
+        <section className={styles.donateSection}>
+          <h2>Support XistrYmemZ</h2>
+          <p>Help us keep the platform free and independent</p>
+          <div className={styles.cryptoAddresses}>
+            {donations.map(da => (
+              <div key={da.id} className={styles.cryptoItem}>
+                <div className={styles.cryptoItemHeader}>
+                  <span className={styles.cryptoLabel}>{da.label || da.currency}</span>
+                  <button onClick={() => copyAddress(da.address)} className={styles.copyBtn} title="Copy address">
+                    Copy
+                  </button>
+                </div>
+                <code className={styles.cryptoAddr}>{da.address}</code>
+                {da.showQR && (
+                  <div className={styles.qrCode}>
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(da.address)}&bgcolor=0d0d0d&color=ffffff`}
+                      alt={`${da.currency} QR`}
+                      width={120}
+                      height={120}
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className={styles.cta}>
         <p>Open source. Built with Next.js.</p>

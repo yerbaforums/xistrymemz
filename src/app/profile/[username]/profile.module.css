@@ -28,15 +28,31 @@
 }
 
 .profileHeader {
+  position: relative;
+  margin-bottom: 32px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--border-color);
+  padding-top: 80px;
+}
+
+.profileContent {
   display: grid;
   grid-template-columns: auto 1fr auto;
   gap: 32px;
   align-items: start;
-  margin-bottom: 32px;
-  padding-bottom: 32px;
-  border-bottom: 1px solid var(--border-color);
-  margin-top: -60px;
-  position: relative;
+}
+
+.coverImage {
+  height: 200px;
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+  background-size: cover;
+  background-position: center;
+  border-radius: 12px;
+  margin: 0 -24px;
+  position: absolute;
+  top: -80px;
+  left: 24px;
+  right: 24px;
 }
 
 .avatarSection {
@@ -772,14 +788,21 @@
 
 @media (max-width: 768px) {
   .profileHeader {
+    padding-top: 120px;
+  }
+
+  .coverImage {
+    height: 150px;
+    top: -120px;
+  }
+
+  .profileContent {
     grid-template-columns: 1fr;
     text-align: center;
-    margin-top: -80px;
   }
-  
+
   .avatarSection {
     justify-self: center;
-    grid-row: auto;
   }
   
   .avatar {

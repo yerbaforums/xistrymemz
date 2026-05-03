@@ -1,9 +1,31 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
 
+interface DonationAddr {
+  id: string
+  currency: string
+  address: string
+  label: string | null
+  showQR: boolean
+}
+
 export default function About() {
+  const [donations, setDonations] = useState<DonationAddr[]>([])
+
+  useEffect(() => {
+    fetch('/api/site/donations')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { if (data?.addresses) setDonations(data.addresses) })
+      .catch(() => {})
+  }, [])
+
+  const copyAddress = async (addr: string) => {
+    await navigator.clipboard.writeText(addr)
+  }
+
   return (
     <div className={styles.page}>
       <section className={styles.hero}>
@@ -29,6 +51,32 @@ export default function About() {
             <Link href="/community">Join community</Link>
           </div>
         </div>
+
+        {donations.length > 0 && (
+          <div className={styles.block}>
+            <h2>Support XistrYmemZ</h2>
+            <p>Help us keep the platform free and independent</p>
+            <div className={styles.donationList}>
+              {donations.map(da => (
+                <div key={da.id} className={styles.donationItem}>
+                  <span className={styles.donationLabel}>{da.label || da.currency}</span>
+                  <code className={styles.donationAddr}>{da.address}</code>
+                  <button onClick={() => copyAddress(da.address)} className={styles.copyBtn}>Copy</button>
+                  {da.showQR && (
+                    <div className={styles.donationQR}>
+                      <img
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(da.address)}&bgcolor=0d0d0d&color=ffffff`}
+                        alt={`${da.currency} QR`}
+                        width={120}
+                        height={120}
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className={styles.block}>
           <h2>Support</h2>

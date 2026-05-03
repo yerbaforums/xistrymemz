@@ -654,6 +654,10 @@ model PlatformSettings {
   remoteNodeApiKey   String?
   enableCheckout   Boolean  @default(true)
   enableWallet    Boolean  @default(true)
+  
+  // Site-wide donation addresses
+  donationAddresses String?   // JSON string: [{ currency, address, label, qrUrl?, showQR }]
+  
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }

@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 async function getOrCreateSettings() {
   const settings = await prisma.platformSettings.findFirst()
   if (settings) return settings
-  
+
   return prisma.platformSettings.create({
     data: {
       platformFeePercent: 10,
@@ -27,10 +27,19 @@ export async function GET() {
 
   try {
     const settings = await getOrCreateSettings()
+    let donationAddresses = []
+    try {
+      if (settings.donationAddresses) {
+        donationAddresses = JSON.parse(settings.donationAddresses)
+      }
+    } catch {
+      donationAddresses = []
+    }
     return NextResponse.json({
       enableCheckout: settings.enableCheckout,
       enableWallet: settings.enableWallet,
-      platformFeePercent: settings.platformFeePercent
+      platformFeePercent: settings.platformFeePercent,
+      donationAddresses
     })
   } catch (error) {
     console.error('Error fetching settings:', error)
@@ -47,7 +56,7 @@ export async function PUT(request: Request) {
 
   try {
     const body = await request.json()
-    const { enableCheckout, enableWallet } = body
+    const { enableCheckout, enableWallet, platformFeePercent, donationAddresses } = body
 
     const settings = await getOrCreateSettings()
 
@@ -55,13 +64,26 @@ export async function PUT(request: Request) {
       where: { id: settings.id },
       data: {
         enableCheckout: enableCheckout !== undefined ? enableCheckout : settings.enableCheckout,
-        enableWallet: enableWallet !== undefined ? enableWallet : settings.enableWallet
+        enableWallet: enableWallet !== undefined ? enableWallet : settings.enableWallet,
+        platformFeePercent: platformFeePercent !== undefined ? platformFeePercent : settings.platformFeePercent,
+        donationAddresses: donationAddresses !== undefined ? JSON.stringify(donationAddresses) : settings.donationAddresses
       }
     })
 
+    let parsedAddresses = []
+    try {
+      if (updated.donationAddresses) {
+        parsedAddresses = JSON.parse(updated.donationAddresses)
+      }
+    } catch {
+      parsedAddresses = []
+    }
+
     return NextResponse.json({
       enableCheckout: updated.enableCheckout,
-      enableWallet: updated.enableWallet
+      enableWallet: updated.enableWallet,
+      platformFeePercent: updated.platformFeePercent,
+      donationAddresses: parsedAddresses
     })
   } catch (error) {
     console.error('Error updating settings:', error)

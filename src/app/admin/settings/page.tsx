@@ -6,16 +6,33 @@ import styles from './page.module.css'
 interface SiteSettings {
   enableCheckout: boolean
   enableWallet: boolean
+  platformFeePercent: number
+  donationAddresses: DonationAddr[]
+}
+
+interface DonationAddr {
+  id: string
+  currency: string
+  address: string
+  label: string | null
+  qrUrl?: string | null
+  showQR: boolean
 }
 
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<SiteSettings>({
     enableCheckout: true,
-    enableWallet: true
+    enableWallet: true,
+    platformFeePercent: 10,
+    donationAddresses: []
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+
+  const [showDonationForm, setShowDonationForm] = useState(false)
+  const [editingDonation, setEditingDonation] = useState<DonationAddr | null>(null)
+  const [donationForm, setDonationForm] = useState({ currency: 'XTM', address: '', label: '', showQR: true })
 
   useEffect(() => {
     fetchSettings()
@@ -28,7 +45,9 @@ export default function AdminSettingsPage() {
         const data = await res.json()
         setSettings({
           enableCheckout: data.enableCheckout,
-          enableWallet: data.enableWallet
+          enableWallet: data.enableWallet,
+          platformFeePercent: data.platformFeePercent,
+          donationAddresses: data.donationAddresses || []
         })
       }
     } catch (error) {
@@ -59,6 +78,64 @@ export default function AdminSettingsPage() {
       setSettings(prev => ({ ...prev, [key]: !newValue }))
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleSaveDonation = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!donationForm.address.trim()) return
+
+    setSaving(true)
+    const newAddr: DonationAddr = {
+      id: editingDonation?.id || `da-${Date.now()}`,
+      currency: donationForm.currency,
+      address: donationForm.address,
+      label: donationForm.label || null,
+      showQR: donationForm.showQR
+    }
+
+    const updated = editingDonation
+      ? settings.donationAddresses.map(da => da.id === editingDonation.id ? newAddr : da)
+      : [...settings.donationAddresses, newAddr]
+
+    setSettings(prev => ({ ...prev, donationAddresses: updated }))
+    setSaving(true)
+
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ donationAddresses: updated })
+      })
+      if (res.ok) {
+        setSaved(true)
+        setTimeout(() => setSaved(false), 2000)
+      }
+    } catch {
+      console.error('Failed to save donation address')
+    } finally {
+      setSaving(false)
+      setShowDonationForm(false)
+      setEditingDonation(null)
+      setDonationForm({ currency: 'XTM', address: '', label: '', showQR: true })
+    }
+  }
+
+  const handleDeleteDonation = async (id: string) => {
+    if (!confirm('Delete this donation address?')) return
+
+    const updated = settings.donationAddresses.filter(da => da.id !== id)
+    setSettings(prev => ({ ...prev, donationAddresses: updated }))
+
+    try {
+      await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ donationAddresses: updated })
+      })
+    } catch {
+      console.error('Failed to delete donation address')
+      fetchSettings()
     }
   }
 
@@ -137,6 +214,109 @@ export default function AdminSettingsPage() {
             </span>
           </div>
         </div>
+      </div>
+
+      {/* Site Donation Addresses */}
+      <div className={styles.section} style={{ marginTop: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <div>
+            <h2 style={{ marginBottom: '4px' }}>Site Donation Addresses</h2>
+            <p className={styles.description} style={{ marginBottom: 0 }}>
+              Crypto addresses displayed on the home page, about page, and footer for site-wide donations.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => { setShowDonationForm(true); setEditingDonation(null); setDonationForm({ currency: 'XTM', address: '', label: '', showQR: true }) }}
+            className={styles.addBtn}
+          >
+            + Add Address
+          </button>
+        </div>
+
+        {settings.donationAddresses.length === 0 && !showDonationForm && (
+          <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '24px' }}>
+            No donation addresses configured. Add XTM, XMR, or other crypto addresses.
+          </p>
+        )}
+
+        {settings.donationAddresses.map(da => (
+          <div key={da.id} style={{
+            display: 'flex', alignItems: 'center', gap: '12px', padding: '14px',
+            background: 'var(--bg-tertiary)', borderRadius: '10px', marginBottom: '8px',
+            border: '1px solid var(--border-color)'
+          }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{da.label || da.currency}</span>
+                {!da.showQR && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>(QR hidden)</span>}
+              </div>
+              <code style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', wordBreak: 'break-all' }}>{da.address}</code>
+            </div>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <button onClick={() => { setEditingDonation(da); setDonationForm({ currency: da.currency, address: da.address, label: da.label || '', showQR: da.showQR }); setShowDonationForm(true) }} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.8rem' }}>Edit</button>
+              <button onClick={() => handleDeleteDonation(da.id)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-secondary)', borderRadius: '6px', color: 'var(--accent-secondary)', cursor: 'pointer', fontSize: '0.8rem' }}>Delete</button>
+            </div>
+          </div>
+        ))}
+
+        {showDonationForm && (
+          <form onSubmit={handleSaveDonation} style={{ marginTop: '16px', padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+            <h3 style={{ marginTop: 0, fontSize: '1rem' }}>{editingDonation ? 'Edit Address' : 'Add Donation Address'}</h3>
+
+            <div style={{ marginBottom: '12px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Currency</label>
+              <select
+                value={donationForm.currency}
+                onChange={e => setDonationForm({ ...donationForm, currency: e.target.value })}
+                style={{ width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }}
+              >
+                <option value="XTM">XTM (Tari)</option>
+                <option value="XMR">XMR (Monero)</option>
+                <option value="ETH">ETH (Ethereum)</option>
+                <option value="BTC">BTC (Bitcoin)</option>
+                <option value="USDT">USDT</option>
+                <option value="USDC">USDC</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+
+            <div style={{ marginBottom: '12px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Address</label>
+              <input
+                type="text"
+                value={donationForm.address}
+                onChange={e => setDonationForm({ ...donationForm, address: e.target.value })}
+                placeholder={`Enter ${donationForm.currency} address...`}
+                required
+                style={{ width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '12px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Label (optional)</label>
+              <input
+                type="text"
+                value={donationForm.label}
+                onChange={e => setDonationForm({ ...donationForm, label: e.target.value })}
+                placeholder="e.g., Main Wallet, Community Fund..."
+                style={{ width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                <input type="checkbox" checked={donationForm.showQR} onChange={e => setDonationForm({ ...donationForm, showQR: e.target.checked })} />
+                <span>Show QR code</span>
+              </label>
+            </div>
+
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+              <button type="button" onClick={() => { setShowDonationForm(false); setEditingDonation(null) }} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer' }}>Cancel</button>
+              <button type="submit" disabled={saving} style={{ padding: '8px 16px', background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500 }}>{saving ? 'Saving...' : (editingDonation ? 'Update' : 'Add')}</button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   )
