@@ -259,7 +259,7 @@ export default function ProfileEditPage() {
       <div style={{maxWidth: '800px', margin: '0 auto', padding: '20px'}}>
         <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px'}}>
           <h1>Edit Profile</h1>
-          <Link href={`/profile/${session?.user?.name?.toLowerCase().replace(/\s+/g, '-') || ''}`} className={styles.editBtn}>
+          <Link href={`/profile/${session?.user?.id || ''}`} className={styles.editBtn}>
             View Profile
           </Link>
         </div>

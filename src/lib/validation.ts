@@ -64,6 +64,9 @@ export const userLinkSchema = z.object({
     'Invalid URL protocol'
   ),
   label: z.string().max(100).optional().nullable(),
-  icon: z.string().url().optional().nullable(),
+  icon: z.preprocess(
+    v => v === '' ? null : v,
+    z.string().url().optional().nullable()
+  ),
   sortOrder: z.number().int().optional()
 })

@@ -480,7 +480,7 @@ export default function ProfilePage() {
                 </span>
               )}
               {user.website && (
-                <a href={user.website} target="_blank" rel="noopener noreferrer" className={styles.metaItem}>
+                <a href={user.website.startsWith('http') ? user.website : `https://${user.website}`} target="_blank" rel="noopener noreferrer" className={styles.metaItem}>
                   <span>🔗</span> {user.website.replace(/^https?:\/\//, '')}
                 </a>
               )}
@@ -493,8 +493,8 @@ export default function ProfilePage() {
                 <div className={styles.passportHeader}>
                   <span className={styles.passportIcon}>🌍</span>
                   <span className={styles.passportTitle}>Earth Passport</span>
-                  {(user.earthId || user.verificationLevel !== 'NONE') && (
-                    <span className={`${styles.verificationBadge} ${styles[user.verificationLevel.toLowerCase()]}`}>
+                  {(user.earthId || (user.verificationLevel && user.verificationLevel !== 'NONE')) && (
+                    <span className={`${styles.verificationBadge} ${styles[(user.verificationLevel || 'none').toLowerCase()]}`}>
                       {user.verificationLevel}
                     </span>
                   )}
@@ -813,7 +813,7 @@ export default function ProfilePage() {
                         {plan.pinned && <span className={styles.pinnedBadge}>📌</span>}
                         {plan.title}
                       </h3>
-                      <span className={`${styles.planStatus} ${styles[plan.status.toLowerCase()]}`}>
+                      <span className={`${styles.planStatus} ${styles[(plan.status || '').toLowerCase()]}`}>
                         {plan.status}
                       </span>
                       <p>Created {new Date(plan.createdAt).toLocaleDateString()}</p>
@@ -920,7 +920,7 @@ export default function ProfilePage() {
                         </div>
                       )}
                       <div className={styles.productInfo}>
-                        <span className={`badge badge-${product.type.toLowerCase()}`}>
+                        <span className={`badge badge-${(product.type || 'product').toLowerCase()}`}>
                           {product.pinned && '📌 '}{product.type}
                         </span>
                         <h3>{product.title}</h3>
@@ -1041,7 +1041,7 @@ export default function ProfilePage() {
                     <dt>Location</dt>
                     <dd>{user.location || 'Not specified'}</dd>
                     <dt>Website</dt>
-                    <dd>{user.website ? <a href={user.website}>{user.website}</a> : 'Not specified'}</dd>
+                    <dd>{user.website ? <a href={user.website.startsWith('http') ? user.website : `https://${user.website}`} target="_blank" rel="noopener noreferrer">{user.website}</a> : 'Not specified'}</dd>
                     <dt>Member since</dt>
                     <dd>{new Date(user.createdAt).toLocaleDateString()}</dd>
                   </dl>

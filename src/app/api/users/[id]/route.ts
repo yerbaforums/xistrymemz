@@ -26,8 +26,13 @@ export async function GET(
       schoolName: true,
       schoolSlug: true,
       createdAt: true,
+      earthId: true,
+      verificationLevel: true,
       reputationScore: true,
       verifiedEmail: true,
+      verifiedPhone: true,
+      verifiedIdentity: true,
+      verifiedAddress: true,
       acceptsDonations: true,
       donationAddress: true,
       donationCurrency: true,
@@ -183,7 +188,7 @@ export async function GET(
 
     const connectedCount = await prisma.connection.count({
       where: {
-        status: 'CONNECTED',
+        status: 'ACCEPTED',
         OR: [
           { requesterId: userId },
           { receiverId: userId }
