@@ -214,6 +214,9 @@ const [
             <Link href="/community" className={styles.actionBtn}>
               <span>💬</span> Community
             </Link>
+            <Link href="/profile/settings" className={styles.actionBtn}>
+              <span>⚙️</span> Profile Settings
+            </Link>
           </div>
         </div>
 
