@@ -143,10 +143,6 @@ function DonationCard({ donation }: { donation: DonationAddr }) {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const qrUrl = donation.showQR
-    ? `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(donation.address)}&bgcolor=0d0d0d&color=ffffff`
-    : null
-
   return (
     <div className={styles.donationCard}>
       <div className={styles.donationInfo}>
@@ -159,18 +155,18 @@ function DonationCard({ donation }: { donation: DonationAddr }) {
         </div>
       </div>
       <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-        {qrUrl && (
-          <button onClick={() => setShowQR(!showQR)} className={styles.toggleQRBtn}>
-            {showQR ? 'Hide QR' : 'Show QR'}
+        {donation.showQR && (
+          <button onClick={() => setShowQR(true)} className={styles.toggleQRBtn}>
+            QR
           </button>
         )}
         <button onClick={handleCopy} className={styles.copyBtn}>
           {copied ? 'Copied!' : 'Copy'}
         </button>
       </div>
-      {showQR && qrUrl && (
+      {showQR && (
         <div className={styles.qrCodeSection}>
-          <img src={qrUrl} alt={`${donation.currency} QR code`} width={120} height={120} />
+          <img src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(donation.address)}&bgcolor=0d0d0d&color=ffffff`} alt={`${donation.currency} QR code`} width={120} height={120} />
         </div>
       )}
     </div>
