@@ -29,7 +29,6 @@ interface DonationAddr {
 interface ProfileUser {
   id: string
   name: string | null
-  email: string
   image: string | null
   coverImage: string | null
   bio: string | null
@@ -219,8 +218,8 @@ export default function ProfilePage() {
   }
 
   const getTargetId = () => {
-    if (params.id) {
-      return Array.isArray(params.id) ? params.id[0] : params.id
+    if (params.username) {
+      return Array.isArray(params.username) ? params.username[0] : params.username
     }
     return session?.user?.id || ''
   }
@@ -234,10 +233,9 @@ export default function ProfilePage() {
   useEffect(() => {
     if (session?.user) {
       const targetId = getTargetId()
-      setIsOwnProfile(targetId === session.user.id || !params.id)
       fetchProfile(targetId)
     }
-  }, [session, params.id])
+  }, [session, params.username])
 
   const fetchProfile = async (targetId: string) => {
     try {
@@ -245,6 +243,7 @@ export default function ProfilePage() {
       if (!res.ok) throw new Error('Failed to fetch profile')
       const data = await res.json()
       setUser(data.user)
+      setIsOwnProfile(data.user.id === session?.user?.id)
       setPosts(data.posts || [])
       setPlans(data.plans || [])
       setProducts(data.products || [])
@@ -277,7 +276,8 @@ export default function ProfilePage() {
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const res = await fetch(`/api/users/${params.id}`, {
+      if (!user) return
+      const res = await fetch(`/api/users/${user.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editForm)
@@ -445,7 +445,7 @@ export default function ProfilePage() {
               {user.image ? (
                 <Image src={user.image} alt={user.name || 'User'} fill />
               ) : (
-                <span>{user.name?.[0] || user.email[0].toUpperCase()}</span>
+                <span>{user.name?.[0] || 'U'}</span>
               )}
             </div>
           </div>

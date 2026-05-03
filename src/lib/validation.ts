@@ -60,7 +60,7 @@ export const resendVerificationSchema = z.object({
 export const userLinkSchema = z.object({
   type: z.string().min(1, 'Link type is required'),
   url: z.string().url('Invalid URL').refine(
-    (url) => !url.startsWith('javascript:') && !url.startsWith('data:'),
+    (url) => !url || (!url.startsWith('javascript:') && !url.startsWith('data:')),
     'Invalid URL protocol'
   ),
   label: z.string().max(100).optional().nullable(),

@@ -313,40 +313,37 @@ export default function ProfileEditPage() {
             </div>
           </div>
 
-          {/* Wallet Addresses */}
-          <div style={{background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '24px', marginBottom: '20px'}}>
-            <h2 style={{marginBottom: '20px'}}>Wallet Addresses</h2>
+          {/* Wallet Addresses - DISABLED until wallet features enabled */}
+          <div style={{background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '24px', marginBottom: '20px', opacity: 0.5, pointerEvents: 'none'}}>
+            <h2 style={{marginBottom: '20px'}}>Wallet Addresses <span style={{fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: '8px'}}>— Coming Soon</span></h2>
 
             <div style={{marginBottom: '16px'}}>
               <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>Wallet Address</label>
-              <input type="text" value={walletAddress} onChange={e => setWalletAddress(e.target.value)} placeholder="0x..." style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)'}} />
+              <input type="text" value={walletAddress} disabled placeholder="0x..." style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-muted)'}} />
             </div>
 
             <div style={{marginBottom: '16px'}}>
               <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>Payment Address</label>
-              <input type="text" value={paymentAddress} onChange={e => setPaymentAddress(e.target.value)} placeholder="0x..." style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)'}} />
+              <input type="text" value={paymentAddress} disabled placeholder="0x..." style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-muted)'}} />
             </div>
 
             <div style={{marginBottom: '16px'}}>
               <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>Refund Address</label>
-              <input type="text" value={refundAddress} onChange={e => setRefundAddress(e.target.value)} placeholder="0x..." style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)'}} />
+              <input type="text" value={refundAddress} disabled placeholder="0x..." style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-muted)'}} />
             </div>
 
             <div>
               <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>Default Currency</label>
               <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '8px'}}>
                 {allCryptos.map(crypto => (
-                  <button
+                  <div
                     key={crypto.id}
-                    type="button"
-                    onClick={() => setCryptoCurrency(crypto.id)}
                     style={{
                       padding: '8px 12px',
-                      background: cryptoCurrency === crypto.id ? 'var(--accent-primary)' : 'var(--bg-tertiary)',
-                      color: cryptoCurrency === crypto.id ? 'var(--bg-primary)' : 'var(--text-primary)',
+                      background: 'var(--bg-tertiary)',
+                      color: 'var(--text-muted)',
                       border: '1px solid var(--border-color)',
                       borderRadius: '8px',
-                      cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '6px',
@@ -355,173 +352,173 @@ export default function ProfileEditPage() {
                   >
                     {crypto.icon && <img src={crypto.icon} alt="" width={16} height={16} style={{borderRadius: '50%'}} />}
                     {crypto.symbol}
-                  </button>
+                  </div>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Donation Settings */}
-          <div style={{background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '24px', marginBottom: '20px'}}>
-            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
-              <h2 style={{margin: 0}}>Donation Addresses</h2>
-              <button
-                type="button"
-                onClick={() => { setShowDonationForm(true); setEditingDonation(null); setDonationForm({ currency: 'ETH', address: '', label: '', showQR: true }) }}
-                style={{padding: '8px 16px', background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500}}
-              >
-                + Add Address
-              </button>
-            </div>
+        <button type="submit" disabled={saving} style={{width: '100%', padding: '14px', background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '1rem'}}>
+          {saving ? 'Saving...' : 'Save Profile'}
+        </button>
+      </form>
 
-            <div style={{marginBottom: '16px'}}>
-              <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'}}>
-                <input
-                  type="checkbox"
-                  checked={acceptsDonations}
-                  onChange={e => setAcceptsDonations(e.target.checked)}
-                  style={{width: '18px', height: '18px', accentColor: 'var(--accent-primary)'}}
-                />
-                <span>Accept donations on my profile</span>
-              </label>
-            </div>
-
-            {donationAddresses.length === 0 && !showDonationForm && acceptsDonations && (
-              <p style={{color: 'var(--text-secondary)', textAlign: 'center', padding: '20px', fontSize: '0.875rem'}}>
-                No donation addresses yet. Add crypto addresses to receive donations with QR codes.
-              </p>
-            )}
-
-            {donationAddresses.map(da => {
-              const crypto = allCryptos.find(c => c.id === da.currency)
-              return (
-                <div key={da.id} style={{display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '14px', background: 'var(--bg-tertiary)', borderRadius: '10px', marginBottom: '8px', border: '1px solid var(--border-color)'}}>
-                  <div style={{flex: 1}}>
-                    <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px'}}>
-                      {crypto?.icon && <img src={crypto.icon} alt="" width={20} height={20} style={{borderRadius: '50%'}} />}
-                      <span style={{fontWeight: 600, fontSize: '0.9rem'}}>{da.label || crypto?.name || da.currency}</span>
-                      {!da.showQR && <span style={{fontSize: '0.7rem', color: 'var(--text-muted)'}}>(QR hidden)</span>}
-                    </div>
-                    <code style={{fontSize: '0.75rem', color: 'var(--text-secondary)', wordBreak: 'break-all'}}>{da.address}</code>
-                  </div>
-                  <div style={{display: 'flex', gap: '6px'}}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingDonation(da)
-                        setDonationForm({ currency: da.currency, address: da.address, label: da.label || '', showQR: da.showQR })
-                        setShowDonationForm(true)
-                      }}
-                      style={{padding: '6px 12px', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.8rem'}}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteDonation(da.id)}
-                      style={{padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-secondary)', borderRadius: '6px', color: 'var(--accent-secondary)', cursor: 'pointer', fontSize: '0.8rem'}}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              )
-            })}
-
-            {showDonationForm && (
-              <form onSubmit={handleSaveDonation} style={{marginTop: '16px', padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '10px', border: '1px solid var(--border-color)'}}>
-                <h3 style={{marginTop: 0, fontSize: '1rem'}}>{editingDonation ? 'Edit Donation Address' : 'Add Donation Address'}</h3>
-
-                <div style={{marginBottom: '12px'}}>
-                  <label style={{display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem'}}>Currency</label>
-                  <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '6px'}}>
-                    {allCryptos.map(crypto => (
-                      <button
-                        key={crypto.id}
-                        type="button"
-                        onClick={() => setDonationForm({...donationForm, currency: crypto.id})}
-                        style={{
-                          padding: '6px 10px',
-                          background: donationForm.currency === crypto.id ? 'var(--accent-primary)' : 'var(--bg-secondary)',
-                          color: donationForm.currency === crypto.id ? 'var(--bg-primary)' : 'var(--text-primary)',
-                          border: '1px solid var(--border-color)',
-                          borderRadius: '6px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          fontSize: '0.8rem'
-                        }}
-                      >
-                        {crypto.icon && <img src={crypto.icon} alt="" width={14} height={14} style={{borderRadius: '50%'}} />}
-                        {crypto.symbol}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div style={{marginBottom: '12px'}}>
-                  <label style={{display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem'}}>{donationForm.currency} Address</label>
-                  <input
-                    type="text"
-                    value={donationForm.address}
-                    onChange={e => setDonationForm({...donationForm, address: e.target.value})}
-                    placeholder={`Enter your ${donationForm.currency} address...`}
-                    required
-                    style={{width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.875rem'}}
-                  />
-                </div>
-
-                <div style={{marginBottom: '12px'}}>
-                  <label style={{display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem'}}>Label (optional)</label>
-                  <input
-                    type="text"
-                    value={donationForm.label}
-                    onChange={e => setDonationForm({...donationForm, label: e.target.value})}
-                    placeholder="e.g., Main Wallet, Cold Storage..."
-                    style={{width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.875rem'}}
-                  />
-                </div>
-
-                <div style={{marginBottom: '16px'}}>
-                  <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.875rem'}}>
-                    <input
-                      type="checkbox"
-                      checked={donationForm.showQR}
-                      onChange={e => setDonationForm({...donationForm, showQR: e.target.checked})}
-                      style={{accentColor: 'var(--accent-primary)'}}
-                    />
-                    <span>Show QR code on profile</span>
-                  </label>
-                </div>
-
-                <div style={{display: 'flex', gap: '8px', justifyContent: 'flex-end'}}>
-                  <button
-                    type="button"
-                    onClick={() => { setShowDonationForm(false); setEditingDonation(null) }}
-                    style={{padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem'}}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={donationSaving}
-                    style={{padding: '8px 16px', background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500, fontSize: '0.875rem'}}
-                  >
-                    {donationSaving ? 'Saving...' : (editingDonation ? 'Update' : 'Add')}
-                  </button>
-                </div>
-              </form>
-            )}
+      {/* Donation Settings */}
+      <div style={{background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '24px', marginTop: '20px'}}>
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+            <h2 style={{margin: 0}}>Donation Addresses</h2>
+            <button
+              type="button"
+              onClick={() => { setShowDonationForm(true); setEditingDonation(null); setDonationForm({ currency: 'ETH', address: '', label: '', showQR: true }) }}
+              style={{padding: '8px 16px', background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500}}
+            >
+              + Add Address
+            </button>
           </div>
 
-          <button type="submit" disabled={saving} style={{width: '100%', padding: '14px', background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '1rem'}}>
-            {saving ? 'Saving...' : 'Save Profile'}
-          </button>
-        </form>
+          <div style={{marginBottom: '16px'}}>
+            <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'}}>
+              <input
+                type="checkbox"
+                checked={acceptsDonations}
+                onChange={e => setAcceptsDonations(e.target.checked)}
+                style={{width: '18px', height: '18px', accentColor: 'var(--accent-primary)'}}
+              />
+              <span>Accept donations on my profile</span>
+            </label>
+          </div>
 
-        {/* Social Links Section */}
-        <div style={{background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '24px', marginTop: '20px'}}>
+          {donationAddresses.length === 0 && !showDonationForm && acceptsDonations && (
+            <p style={{color: 'var(--text-secondary)', textAlign: 'center', padding: '20px', fontSize: '0.875rem'}}>
+              No donation addresses yet. Add crypto addresses to receive donations with QR codes.
+            </p>
+          )}
+
+          {donationAddresses.map(da => {
+            const crypto = allCryptos.find(c => c.id === da.currency)
+            return (
+              <div key={da.id} style={{display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '14px', background: 'var(--bg-tertiary)', borderRadius: '10px', marginBottom: '8px', border: '1px solid var(--border-color)'}}>
+                <div style={{flex: 1}}>
+                  <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px'}}>
+                    {crypto?.icon && <img src={crypto.icon} alt="" width={20} height={20} style={{borderRadius: '50%'}} />}
+                    <span style={{fontWeight: 600, fontSize: '0.9rem'}}>{da.label || crypto?.name || da.currency}</span>
+                    {!da.showQR && <span style={{fontSize: '0.7rem', color: 'var(--text-muted)'}}>(QR hidden)</span>}
+                  </div>
+                  <code style={{fontSize: '0.75rem', color: 'var(--text-secondary)', wordBreak: 'break-all'}}>{da.address}</code>
+                </div>
+                <div style={{display: 'flex', gap: '6px'}}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingDonation(da)
+                      setDonationForm({ currency: da.currency, address: da.address, label: da.label || '', showQR: da.showQR })
+                      setShowDonationForm(true)
+                    }}
+                    style={{padding: '6px 12px', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.8rem'}}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteDonation(da.id)}
+                    style={{padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-secondary)', borderRadius: '6px', color: 'var(--accent-secondary)', cursor: 'pointer', fontSize: '0.8rem'}}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            )
+          })}
+
+          {showDonationForm && (
+            <form onSubmit={handleSaveDonation} style={{marginTop: '16px', padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '10px', border: '1px solid var(--border-color)'}}>
+              <h3 style={{marginTop: 0, fontSize: '1rem'}}>{editingDonation ? 'Edit Donation Address' : 'Add Donation Address'}</h3>
+
+              <div style={{marginBottom: '12px'}}>
+                <label style={{display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem'}}>Currency</label>
+                <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '6px'}}>
+                  {allCryptos.map(crypto => (
+                    <button
+                      key={crypto.id}
+                      type="button"
+                      onClick={() => setDonationForm({...donationForm, currency: crypto.id})}
+                      style={{
+                        padding: '6px 10px',
+                        background: donationForm.currency === crypto.id ? 'var(--accent-primary)' : 'var(--bg-secondary)',
+                        color: donationForm.currency === crypto.id ? 'var(--bg-primary)' : 'var(--text-primary)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        fontSize: '0.8rem'
+                      }}
+                    >
+                      {crypto.icon && <img src={crypto.icon} alt="" width={14} height={14} style={{borderRadius: '50%'}} />}
+                      {crypto.symbol}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{marginBottom: '12px'}}>
+                <label style={{display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem'}}>{donationForm.currency} Address</label>
+                <input
+                  type="text"
+                  value={donationForm.address}
+                  onChange={e => setDonationForm({...donationForm, address: e.target.value})}
+                  placeholder={`Enter your ${donationForm.currency} address...`}
+                  required
+                  style={{width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.875rem'}}
+                />
+              </div>
+
+              <div style={{marginBottom: '12px'}}>
+                <label style={{display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem'}}>Label (optional)</label>
+                <input
+                  type="text"
+                  value={donationForm.label}
+                  onChange={e => setDonationForm({...donationForm, label: e.target.value})}
+                  placeholder="e.g., Main Wallet, Cold Storage..."
+                  style={{width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.875rem'}}
+                />
+              </div>
+
+              <div style={{marginBottom: '16px'}}>
+                <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.875rem'}}>
+                  <input
+                    type="checkbox"
+                    checked={donationForm.showQR}
+                    onChange={e => setDonationForm({...donationForm, showQR: e.target.checked})}
+                    style={{accentColor: 'var(--accent-primary)'}}
+                  />
+                  <span>Show QR code on profile</span>
+                </label>
+              </div>
+
+              <div style={{display: 'flex', gap: '8px', justifyContent: 'flex-end'}}>
+                <button
+                  type="button"
+                  onClick={() => { setShowDonationForm(false); setEditingDonation(null) }}
+                  style={{padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem'}}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={donationSaving}
+                  style={{padding: '8px 16px', background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500, fontSize: '0.875rem'}}
+                >
+                  {donationSaving ? 'Saving...' : (editingDonation ? 'Update' : 'Add')}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+
+      {/* Social Links Section */}
+      <div style={{background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '24px', marginTop: '20px'}}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
             <h2 style={{margin: 0}}>Social Links</h2>
             <button
