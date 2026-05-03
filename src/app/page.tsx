@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
+import { QRCodeModal } from '@/components/QRCodeModal'
 
 const CRYPTO_LOGOS: Record<string, string> = {
   BTC: 'bitcoin.png',
@@ -45,6 +46,7 @@ const STEPS = [
 
 export default function Home() {
   const [donations, setDonations] = useState<DonationAddr[]>([])
+  const [qrOpen, setQrOpen] = useState<DonationAddr | null>(null)
 
   useEffect(() => {
     fetch('/api/site/donations')
@@ -170,18 +172,13 @@ export default function Home() {
                   <button onClick={() => copyAddress(da.address)} className={styles.copyBtn} title="Copy address">
                     Copy
                   </button>
+                  {da.showQR && (
+                    <button onClick={() => setQrOpen(da)} className={styles.copyBtn} title="View QR code">
+                      QR
+                    </button>
+                  )}
                 </div>
                 <code className={styles.cryptoAddr}>{da.address}</code>
-                {da.showQR && (
-                  <div className={styles.qrCode}>
-                    <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(da.address)}&bgcolor=0d0d0d&color=ffffff`}
-                      alt={`${da.currency} QR`}
-                      width={120}
-                      height={120}
-                    />
-                  </div>
-                )}
               </div>
             ))}
           </div>
@@ -198,6 +195,15 @@ export default function Home() {
         </div>
         <p className={styles.copyright}>&copy; {new Date().getFullYear()} XistrYmemZ — Cosmic Whitepages Cooperative</p>
       </section>
+
+      {qrOpen && (
+        <QRCodeModal
+          isOpen={true}
+          onClose={() => setQrOpen(null)}
+          currency={qrOpen.label || qrOpen.currency}
+          address={qrOpen.address}
+        />
+      )}
     </div>
   )
 }

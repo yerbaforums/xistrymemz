@@ -187,6 +187,24 @@
   color: var(--accent-primary);
 }
 
+.qrBtn {
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.qrBtn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
 @media (max-width: 600px) {
   .links {
     flex-wrap: wrap;
