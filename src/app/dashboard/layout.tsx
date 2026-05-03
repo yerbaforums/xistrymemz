@@ -1,9 +1,9 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
-import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import styles from './layout.module.css'
 import sidebarStyles from './layout-sidebar.module.css'
 
@@ -35,6 +35,33 @@ function DashboardNav() {
   )
 }
 
+function ErrorBoundary({ children }: { children: React.ReactNode }) {
+  const [hasError, setHasError] = useState(false)
+  
+  useEffect(() => {
+    const handler = (event: ErrorEvent) => {
+      console.error('Dashboard error:', event.error)
+      setHasError(true)
+    }
+    window.addEventListener('error', handler)
+    return () => window.removeEventListener('error', handler)
+  }, [])
+
+  if (hasError) {
+    return (
+      <div className={styles.errorState}>
+        <h2>Something went wrong</h2>
+        <p>An error occurred while loading the dashboard.</p>
+        <button onClick={() => setHasError(false)} className={styles.retryBtn}>
+          Try Again
+        </button>
+      </div>
+    )
+  }
+
+  return <>{children}</>
+}
+
 export default function DashboardLayout({
   children,
 }: {
@@ -53,7 +80,7 @@ export default function DashboardLayout({
     return (
       <div className={styles.layout}>
         <div className={styles.container}>
-          <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Loading...</div>
+          <div className={styles.loading}>Loading dashboard...</div>
         </div>
       </div>
     )
@@ -68,7 +95,7 @@ export default function DashboardLayout({
       <div className={styles.container}>
         <DashboardNav />
         <main className={styles.main}>
-          {children}
+          <ErrorBoundary>{children}</ErrorBoundary>
         </main>
       </div>
     </div>

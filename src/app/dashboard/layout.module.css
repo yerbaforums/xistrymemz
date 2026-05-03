@@ -25,3 +25,41 @@
     padding: 20px;
   }
 }
+
+.loading {
+  text-align: center;
+  padding: 48px;
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+.errorState {
+  text-align: center;
+  padding: 48px;
+  color: var(--text-secondary);
+}
+
+.errorState h2 {
+  color: var(--accent-secondary);
+  margin-bottom: 8px;
+}
+
+.errorState p {
+  margin-bottom: 20px;
+}
+
+.retryBtn {
+  padding: 10px 24px;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.retryBtn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+}

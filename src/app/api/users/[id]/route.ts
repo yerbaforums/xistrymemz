@@ -60,7 +60,8 @@ export async function GET(
 
     const userId = user.id
 
-    const [plans, posts, products, connections, groupMemberships] = await Promise.all([
+    const postsTake = 20
+    const [plans, posts, products, connections, groupMemberships, totalPostCount] = await Promise.all([
       prisma.plan.findMany({
         where: { userId },
         select: {
@@ -78,14 +79,13 @@ export async function GET(
         take: 10
       }),
       prisma.post.findMany({
-        where: { userId: id },
-        select: {
-          id: true,
-          content: true,
-          imageUrl: true,
-          pinned: true,
-          likes: true,
-          createdAt: true,
+        where: {
+          OR: [
+            { userId, targetUserId: null },
+            { targetUserId: userId }
+          ]
+        },
+        include: {
           user: {
             select: {
               id: true,
@@ -98,10 +98,10 @@ export async function GET(
           { pinned: 'desc' },
           { createdAt: 'desc' }
         ],
-        take: 20
+        take: postsTake
       }),
       prisma.product.findMany({
-        where: { userId: id, published: true },
+        where: { userId: userId, published: true },
         select: {
           id: true,
           title: true,
@@ -121,8 +121,8 @@ export async function GET(
         where: {
           status: 'ACCEPTED',
           OR: [
-            { requesterId: id },
-            { receiverId: id }
+            { requesterId: userId },
+            { receiverId: userId }
           ]
         },
         include: {
@@ -136,7 +136,7 @@ export async function GET(
         take: 12
       }),
       prisma.groupMember.findMany({
-        where: { userId: id },
+        where: { userId: userId },
         include: {
           group: {
             select: {
@@ -149,6 +149,14 @@ export async function GET(
         },
         orderBy: { joinedAt: 'desc' },
         take: 10
+      }),
+      prisma.post.count({
+        where: {
+          OR: [
+            { userId, targetUserId: null },
+            { targetUserId: userId }
+          ]
+        }
       })
     ])
 
@@ -160,8 +168,8 @@ export async function GET(
       const connection = await prisma.connection.findFirst({
         where: {
           OR: [
-            { requesterId: session.user.id, receiverId: id },
-            { requesterId: id, receiverId: session.user.id }
+            { requesterId: session.user.id, receiverId: userId },
+            { requesterId: userId, receiverId: session.user.id }
           ]
         }
       })
@@ -177,14 +185,14 @@ export async function GET(
       where: {
         status: 'CONNECTED',
         OR: [
-          { requesterId: id },
-          { receiverId: id }
+          { requesterId: userId },
+          { receiverId: userId }
         ]
       }
     })
 
     const userConnections = connections.map(conn => {
-      const otherUser = conn.requesterId === id ? conn.receiver : conn.requester
+      const otherUser = conn.requesterId === userId ? conn.receiver : conn.requester
       return {
         id: otherUser.id,
         name: otherUser.name,
@@ -194,17 +202,15 @@ export async function GET(
     })
 
     // Fetch user links and donation info if public
-    const [links, donationInfo] = await Promise.all([
+    const [links, donationAddresses] = await Promise.all([
       prisma.userLink.findMany({
         where: { userId: user.id },
         orderBy: { sortOrder: 'asc' }
       }),
-      Promise.resolve(
-        user.acceptsDonations ? {
-          donationAddress: user.donationAddress,
-          donationCurrency: user.donationCurrency
-        } : null
-      )
+      user.acceptsDonations ? prisma.donationAddress.findMany({
+        where: { userId: user.id, isPublic: true },
+        orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }]
+      }) : Promise.resolve([])
     ])
 
     return NextResponse.json({
@@ -218,8 +224,7 @@ export async function GET(
         hasPendingRequest,
         connectionId,
         acceptsDonations: user.acceptsDonations || false,
-        donationAddress: donationInfo?.donationAddress,
-        donationCurrency: donationInfo?.donationCurrency,
+        donationAddresses,
         links
       },
       plans,
@@ -233,7 +238,8 @@ export async function GET(
         memberCount: gm.group._count.members,
         role: gm.role,
         joinedAt: gm.joinedAt
-      }))
+      })),
+      totalPostCount
     })
   } catch (error) {
     console.error('Error fetching user:', error)

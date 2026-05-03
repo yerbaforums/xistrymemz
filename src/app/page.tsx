@@ -40,31 +40,37 @@ export default function Home() {
         <div className={styles.feature}>
           <span className={styles.featureIcon}>🤝</span>
           <h3>Community Connections</h3>
-          <p>Connect with others, coordinate efforts, and build your network</p>
+          <p>Connect with others, coordinate efforts, and build your network globally</p>
         </div>
         
         <div className={styles.feature}>
           <span className={styles.featureIcon}>📋</span>
           <h3>Cohesive Planning</h3>
-          <p>Powerful organizational tools for teams and individuals</p>
+          <p>Powerful organizational tools with milestones, progress tracking, and shared visibility</p>
         </div>
         
         <div className={styles.feature}>
           <span className={styles.featureIcon}>💼</span>
           <h3>Business Opportunities</h3>
-          <p>Build clientele, showcase skills, and grow your business</p>
+          <p>Showcase skills, run shops and schools, accept payments, and build your clientele</p>
         </div>
         
         <div className={styles.feature}>
           <span className={styles.featureIcon}>🏪</span>
           <h3>Shop &amp; School</h3>
-          <p>Sell products, teach courses, and share your expertise</p>
+          <p>Sell products, teach courses, manage escrow, and share your expertise</p>
         </div>
         
         <div className={styles.feature}>
           <span className={styles.featureIcon}>💰</span>
           <h3>Crypto Payments</h3>
-          <p>Accept donations, payments, and escrow via crypto</p>
+          <p>Accept donations, payments, barter offers, and escrow via crypto wallets</p>
+        </div>
+        
+        <div className={styles.feature}>
+          <span className={styles.featureIcon}>🌍</span>
+          <h3>Building Clientele</h3>
+          <p>Grow your audience through profiles, ratings, social links, and community engagement</p>
         </div>
       </section>
 

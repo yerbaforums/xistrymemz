@@ -268,6 +268,12 @@ export default function CommunityPage() {
 
   return (
     <div className={styles.container}>
+      <nav className="breadcrumbs" style={{ marginBottom: '16px' }}>
+        <Link href="/" className="breadcrumb-link">Home</Link>
+        <span className="breadcrumb-sep"> / </span>
+        <span className="breadcrumb-current">Community</span>
+      </nav>
+
       <div className={styles.header}>
         <h1>Community</h1>
         <p>Connect with members globally</p>
@@ -595,12 +601,6 @@ export default function CommunityPage() {
                 <span className={styles.categoryCount}>{cat._count?.posts || 0}</span>
               </button>
             ))}
-          </div>
-
-          <div className={styles.forumActions}>
-            <button className={styles.createPostBtn} onClick={() => setShowNewPost(true)}>
-              + New Post
-            </button>
           </div>
 
           {showNewPost && (

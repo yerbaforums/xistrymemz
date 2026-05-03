@@ -90,7 +90,7 @@ export async function DELETE(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -105,8 +105,11 @@ export async function DELETE(
       return NextResponse.json({ error: 'Post not found' }, { status: 404 })
     }
 
-    if (post.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
+    const isAuthor = post.userId === session.user.id
+    const isWallOwner = post.targetUserId === session.user.id
+
+    if (!isAuthor && !isWallOwner) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     await prisma.post.delete({

@@ -72,11 +72,9 @@ export default async function PublicPlansPage() {
   }))
 
   return (
-    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px' }}>
+    <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px' }}>
       <nav className="breadcrumbs" style={{ marginBottom: '16px' }}>
         <Link href="/" className="breadcrumb-link">Home</Link>
-        <span className="breadcrumb-sep"> / </span>
-        <Link href="/dashboard/overview" className="breadcrumb-link">Dashboard</Link>
         <span className="breadcrumb-sep"> / </span>
         <span className="breadcrumb-current">Browse Projects</span>
       </nav>

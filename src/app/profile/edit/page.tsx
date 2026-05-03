@@ -17,6 +17,16 @@ interface UserLink {
   sortOrder: number
 }
 
+interface DonationAddr {
+  id: string
+  currency: string
+  address: string
+  label: string | null
+  qrCodeUrl: string | null
+  showQR: boolean
+  sortOrder: number
+}
+
 const SOCIAL_TYPES = [
   { type: 'website', label: 'Website', defaultIcon: '🔗' },
   { type: 'twitter', label: 'Twitter / X', defaultIcon: '/social-logos/twitter.png' },
@@ -50,8 +60,11 @@ export default function ProfileEditPage() {
   const [cryptoCurrency, setCryptoCurrency] = useState('ETH')
 
   // Donation fields
-  const [donationAddress, setDonationAddress] = useState('')
-  const [donationCurrency, setDonationCurrency] = useState('ETH')
+  const [donationAddresses, setDonationAddresses] = useState<DonationAddr[]>([])
+  const [showDonationForm, setShowDonationForm] = useState(false)
+  const [editingDonation, setEditingDonation] = useState<DonationAddr | null>(null)
+  const [donationForm, setDonationForm] = useState({ currency: 'ETH', address: '', label: '', showQR: true })
+  const [donationSaving, setDonationSaving] = useState(false)
   const [acceptsDonations, setAcceptsDonations] = useState(false)
 
   // Links
@@ -91,9 +104,14 @@ export default function ProfileEditPage() {
       setPaymentAddress(user.paymentAddress || '')
       setRefundAddress(user.refundAddress || '')
       setCryptoCurrency(user.cryptoCurrency || 'ETH')
-      setDonationAddress(user.donationAddress || '')
-      setDonationCurrency(user.donationCurrency || 'ETH')
       setAcceptsDonations(user.acceptsDonations || false)
+      const [donationsRes] = await Promise.all([
+        fetch('/api/users/donations')
+      ])
+      if (donationsRes.ok) {
+        const donationsData = await donationsRes.json()
+        setDonationAddresses(donationsData.addresses || [])
+      }
       setLinks(data.links || [])
     } catch (err) {
       console.error('Error fetching profile:', err)
@@ -115,8 +133,6 @@ export default function ProfileEditPage() {
         body: JSON.stringify({
           name, bio, location, website, userClass,
           walletAddress, paymentAddress, refundAddress, cryptoCurrency,
-          donationAddress: acceptsDonations ? donationAddress : null,
-          donationCurrency: acceptsDonations ? donationCurrency : 'ETH',
           acceptsDonations
         })
       })
@@ -172,8 +188,66 @@ export default function ProfileEditPage() {
     }
   }
 
+  const handleSaveDonation = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setDonationSaving(true)
+    try {
+      if (editingDonation) {
+        const res = await fetch(`/api/users/donations/${editingDonation.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(donationForm)
+        })
+        if (!res.ok) throw new Error('Failed to update')
+      } else {
+        const res = await fetch('/api/users/donations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(donationForm)
+        })
+        if (!res.ok) throw new Error('Failed to create')
+      }
+      setShowDonationForm(false)
+      setEditingDonation(null)
+      setDonationForm({ currency: 'ETH', address: '', label: '', showQR: true })
+      fetchData()
+    } catch (err) {
+      console.error('Error saving donation address:', err)
+      alert('Failed to save donation address')
+    } finally {
+      setDonationSaving(false)
+    }
+  }
+
+  const handleDeleteDonation = async (id: string) => {
+    if (!confirm('Delete this donation address?')) return
+    try {
+      await fetch(`/api/users/donations/${id}`, { method: 'DELETE' })
+      fetchData()
+    } catch (err) {
+      console.error('Error deleting donation address:', err)
+    }
+  }
+
   const getSocialType = (type: string) => {
     return SOCIAL_TYPES.find(t => t.type === type) || SOCIAL_TYPES[0]
+  }
+
+  const handleReorderLinks = async (draggedIndex: number, targetIndex: number) => {
+    const newLinks = [...links]
+    const [draggedItem] = newLinks.splice(draggedIndex, 1)
+    newLinks.splice(targetIndex, 0, draggedItem)
+    setLinks(newLinks)
+
+    for (let i = 0; i < newLinks.length; i++) {
+      if (newLinks[i].sortOrder !== i) {
+        await fetch(`/api/users/links/${newLinks[i].id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sortOrder: i })
+        })
+      }
+    }
   }
 
   if (loading) {
@@ -289,7 +363,16 @@ export default function ProfileEditPage() {
 
           {/* Donation Settings */}
           <div style={{background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '24px', marginBottom: '20px'}}>
-            <h2 style={{marginBottom: '20px'}}>Donation Settings</h2>
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+              <h2 style={{margin: 0}}>Donation Addresses</h2>
+              <button
+                type="button"
+                onClick={() => { setShowDonationForm(true); setEditingDonation(null); setDonationForm({ currency: 'ETH', address: '', label: '', showQR: true }) }}
+                style={{padding: '8px 16px', background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500}}
+              >
+                + Add Address
+              </button>
+            </div>
 
             <div style={{marginBottom: '16px'}}>
               <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'}}>
@@ -303,48 +386,132 @@ export default function ProfileEditPage() {
               </label>
             </div>
 
-            {acceptsDonations && (
-              <>
-                <div style={{marginBottom: '16px'}}>
-                  <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>Donation Address</label>
-                  <input
-                    type="text"
-                    value={donationAddress}
-                    onChange={e => setDonationAddress(e.target.value)}
-                    placeholder="Enter your donation address..."
-                    required={acceptsDonations}
-                    style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)'}}
-                  />
-                </div>
+            {donationAddresses.length === 0 && !showDonationForm && acceptsDonations && (
+              <p style={{color: 'var(--text-secondary)', textAlign: 'center', padding: '20px', fontSize: '0.875rem'}}>
+                No donation addresses yet. Add crypto addresses to receive donations with QR codes.
+              </p>
+            )}
 
-                <div>
-                  <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>Donation Currency</label>
-                  <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '8px'}}>
+            {donationAddresses.map(da => {
+              const crypto = allCryptos.find(c => c.id === da.currency)
+              return (
+                <div key={da.id} style={{display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '14px', background: 'var(--bg-tertiary)', borderRadius: '10px', marginBottom: '8px', border: '1px solid var(--border-color)'}}>
+                  <div style={{flex: 1}}>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px'}}>
+                      {crypto?.icon && <img src={crypto.icon} alt="" width={20} height={20} style={{borderRadius: '50%'}} />}
+                      <span style={{fontWeight: 600, fontSize: '0.9rem'}}>{da.label || crypto?.name || da.currency}</span>
+                      {!da.showQR && <span style={{fontSize: '0.7rem', color: 'var(--text-muted)'}}>(QR hidden)</span>}
+                    </div>
+                    <code style={{fontSize: '0.75rem', color: 'var(--text-secondary)', wordBreak: 'break-all'}}>{da.address}</code>
+                  </div>
+                  <div style={{display: 'flex', gap: '6px'}}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingDonation(da)
+                        setDonationForm({ currency: da.currency, address: da.address, label: da.label || '', showQR: da.showQR })
+                        setShowDonationForm(true)
+                      }}
+                      style={{padding: '6px 12px', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.8rem'}}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteDonation(da.id)}
+                      style={{padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-secondary)', borderRadius: '6px', color: 'var(--accent-secondary)', cursor: 'pointer', fontSize: '0.8rem'}}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+
+            {showDonationForm && (
+              <form onSubmit={handleSaveDonation} style={{marginTop: '16px', padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '10px', border: '1px solid var(--border-color)'}}>
+                <h3 style={{marginTop: 0, fontSize: '1rem'}}>{editingDonation ? 'Edit Donation Address' : 'Add Donation Address'}</h3>
+
+                <div style={{marginBottom: '12px'}}>
+                  <label style={{display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem'}}>Currency</label>
+                  <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '6px'}}>
                     {allCryptos.map(crypto => (
                       <button
                         key={crypto.id}
                         type="button"
-                        onClick={() => setDonationCurrency(crypto.id)}
+                        onClick={() => setDonationForm({...donationForm, currency: crypto.id})}
                         style={{
-                          padding: '8px 12px',
-                          background: donationCurrency === crypto.id ? 'var(--accent-primary)' : 'var(--bg-tertiary)',
-                          color: donationCurrency === crypto.id ? 'var(--bg-primary)' : 'var(--text-primary)',
+                          padding: '6px 10px',
+                          background: donationForm.currency === crypto.id ? 'var(--accent-primary)' : 'var(--bg-secondary)',
+                          color: donationForm.currency === crypto.id ? 'var(--bg-primary)' : 'var(--text-primary)',
                           border: '1px solid var(--border-color)',
-                          borderRadius: '8px',
+                          borderRadius: '6px',
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '6px',
-                          fontSize: '0.875rem'
+                          gap: '4px',
+                          fontSize: '0.8rem'
                         }}
                       >
-                        {crypto.icon && <img src={crypto.icon} alt="" width={16} height={16} style={{borderRadius: '50%'}} />}
+                        {crypto.icon && <img src={crypto.icon} alt="" width={14} height={14} style={{borderRadius: '50%'}} />}
                         {crypto.symbol}
                       </button>
                     ))}
                   </div>
                 </div>
-              </>
+
+                <div style={{marginBottom: '12px'}}>
+                  <label style={{display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem'}}>{donationForm.currency} Address</label>
+                  <input
+                    type="text"
+                    value={donationForm.address}
+                    onChange={e => setDonationForm({...donationForm, address: e.target.value})}
+                    placeholder={`Enter your ${donationForm.currency} address...`}
+                    required
+                    style={{width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.875rem'}}
+                  />
+                </div>
+
+                <div style={{marginBottom: '12px'}}>
+                  <label style={{display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem'}}>Label (optional)</label>
+                  <input
+                    type="text"
+                    value={donationForm.label}
+                    onChange={e => setDonationForm({...donationForm, label: e.target.value})}
+                    placeholder="e.g., Main Wallet, Cold Storage..."
+                    style={{width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.875rem'}}
+                  />
+                </div>
+
+                <div style={{marginBottom: '16px'}}>
+                  <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.875rem'}}>
+                    <input
+                      type="checkbox"
+                      checked={donationForm.showQR}
+                      onChange={e => setDonationForm({...donationForm, showQR: e.target.checked})}
+                      style={{accentColor: 'var(--accent-primary)'}}
+                    />
+                    <span>Show QR code on profile</span>
+                  </label>
+                </div>
+
+                <div style={{display: 'flex', gap: '8px', justifyContent: 'flex-end'}}>
+                  <button
+                    type="button"
+                    onClick={() => { setShowDonationForm(false); setEditingDonation(null) }}
+                    style={{padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem'}}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={donationSaving}
+                    style={{padding: '8px 16px', background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500, fontSize: '0.875rem'}}
+                  >
+                    {donationSaving ? 'Saving...' : (editingDonation ? 'Update' : 'Add')}
+                  </button>
+                </div>
+              </form>
             )}
           </div>
 
@@ -370,12 +537,28 @@ export default function ProfileEditPage() {
             <p style={{color: 'var(--text-secondary)', textAlign: 'center', padding: '20px'}}>No links added yet. Add your social media and website links!</p>
           )}
 
-          {links.map(link => {
+          {links.map((link, index) => {
             const socialType = getSocialType(link.type)
             return (
-              <div key={link.id} style={{display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--bg-tertiary)', borderRadius: '8px', marginBottom: '8px'}}>
+              <div
+                key={link.id}
+                draggable
+                onDragStart={(e) => e.dataTransfer.setData('text/plain', String(index))}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'))
+                  if (draggedIndex !== index) handleReorderLinks(draggedIndex, index)
+                }}
+                style={{display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--bg-tertiary)', borderRadius: '8px', marginBottom: '8px', cursor: 'grab', border: '1px solid var(--border-color)'}}
+              >
+                <div style={{width: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '1rem'}} title="Drag to reorder">
+                  ⠿
+                </div>
                 <div style={{width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem'}}>
-                  {socialType.defaultIcon.startsWith('/') ? (
+                  {link.icon ? (
+                    <img src={link.icon} alt={socialType.label} width={24} height={24} style={{borderRadius: '4px'}} />
+                  ) : socialType.defaultIcon.startsWith('/') ? (
                     <img src={socialType.defaultIcon} alt={socialType.label} width={24} height={24} style={{borderRadius: '4px'}} />
                   ) : (
                     <span>{socialType.defaultIcon}</span>
@@ -447,6 +630,23 @@ export default function ProfileEditPage() {
                   placeholder="Custom label..."
                   style={{width: '100%', padding: '8px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)'}}
                 />
+              </div>
+
+              <div style={{marginBottom: '12px'}}>
+                <label style={{display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem'}}>Custom Icon URL (optional)</label>
+                <input
+                  type="url"
+                  value={linkForm.icon}
+                  onChange={e => setLinkForm({...linkForm, icon: e.target.value})}
+                  placeholder="https://example.com/icon.png"
+                  style={{width: '100%', padding: '8px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)'}}
+                />
+                {linkForm.icon && (
+                  <div style={{marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px'}}>
+                    <span style={{fontSize: '0.75rem', color: 'var(--text-muted)'}}>Preview:</span>
+                    <img src={linkForm.icon} alt="Icon preview" width={20} height={20} style={{borderRadius: '4px'}} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                  </div>
+                )}
               </div>
 
               <div style={{display: 'flex', gap: '8px', justifyContent: 'flex-end'}}>

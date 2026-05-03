@@ -449,7 +449,7 @@
   border-color: var(--accent-primary);
 }
 
-.postActions {
+.formPostActions {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -532,13 +532,6 @@
   color: var(--accent-primary);
 }
 
-.postAuthorName {
-  display: block;
-  font-weight: 600;
-  color: var(--text-primary);
-  font-size: 0.95rem;
-}
-
 .postDate {
   display: block;
   font-size: 0.8rem;
@@ -572,11 +565,44 @@
   margin-top: 12px;
   padding-top: 12px;
   border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .postLikes {
   font-size: 0.85rem;
   color: var(--text-secondary);
+}
+
+.likeBtn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.likeBtn:hover {
+  border-color: var(--accent-secondary);
+  color: var(--accent-secondary);
+}
+
+.postAuthorName {
+  display: inline;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.postAuthorName:hover {
+  color: var(--accent-primary);
+  text-decoration: underline;
 }
 
 .classes {
@@ -787,13 +813,21 @@
     margin-top: 12px;
   }
   
-  .postActions {
+  .formPostActions {
     padding-left: 0;
   }
   
   .coverImage {
     height: 150px;
   }
+}
+
+.wallPostBadge {
+  color: var(--text-secondary);
+  font-style: italic;
+  font-size: 0.8rem;
+  margin-left: 4px;
+  font-weight: 400;
 }
 
 .pinnedCard {
@@ -807,7 +841,7 @@
   font-size: 0.9rem;
 }
 
-.postActions {
+.cardPostActions {
   display: flex;
   gap: 4px;
   align-items: center;
@@ -1161,4 +1195,244 @@
 .verificationBadge.premium {
   background: linear-gradient(135deg, rgba(255, 0, 255, 0.2), rgba(255, 215, 0, 0.2));
   color: #ff00ff;
+}
+
+/* Links Section */
+.linksSection {
+  margin-top: 20px;
+}
+
+.linksSection h3 {
+  margin-bottom: 12px;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.linksGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.linkPill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  text-decoration: none;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  transition: var(--transition);
+}
+
+.linkPill:hover {
+  border-color: var(--accent-primary);
+  background: var(--bg-tertiary);
+}
+
+.linkPill img {
+  filter: invert(1);
+}
+
+/* Donation Section */
+.donationSection {
+  margin-top: 20px;
+}
+
+.donationSection h3 {
+  margin-bottom: 12px;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.donationCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+.donationInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.donationInfo img {
+  border-radius: 50%;
+}
+
+.donationLabel {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.donationAddress {
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  word-break: break-all;
+  font-family: monospace;
+}
+
+.copyBtn {
+  padding: 8px 16px;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: var(--transition);
+}
+
+.copyBtn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+}
+
+/* Profile actions row */
+.actionsRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Section separator */
+.sectionSeparator {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Share button */
+.shareBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.shareBtn:hover {
+  border-color: var(--accent-primary);
+  background: var(--bg-tertiary);
+}
+
+/* Profile header sections */
+.profileSections {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Donations list */
+.donationsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.donationCard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  transition: var(--transition);
+}
+
+.donationCard:hover {
+  border-color: var(--accent-primary);
+}
+
+.donationInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.donationLabel {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.donationAddress {
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  word-break: break-all;
+  font-family: monospace;
+}
+
+.qrCodeSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.qrCodeSection img {
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.toggleQRBtn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.toggleQRBtn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.loadMoreBtn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin-top: 16px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.loadMoreBtn:hover:not(:disabled) {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.loadMoreBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

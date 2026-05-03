@@ -66,6 +66,7 @@ model User {
   sentMessages        Message[] @relation("MessageSender")
   receivedMessages    Message[] @relation("MessageReceiver")
   posts     Post[]
+  wallPosts Post[] @relation("WallPostTarget")
   planUpdates PlanUpdate[]
   statusHistory RequestStatusHistory[]
   groupsCreated   Group[]
@@ -102,10 +103,13 @@ model User {
   verificationTokens VerificationToken[]
   userLinks         UserLink[]
 
-  // Donation settings
+  // Donation settings (legacy single address)
   donationAddress  String?
   donationCurrency String   @default("ETH")
   acceptsDonations Boolean  @default(false)
+  
+  // Multiple donation addresses
+  donationAddresses DonationAddress[]
   badgesAwarded  Badge[]   @relation("BadgeAwardedBy")
   barterOffersMade   BarterOffer[] @relation("BarterOfferMaker")
   barterOffersReceived BarterOffer[] @relation("BarterOfferReceiver")
@@ -499,17 +503,20 @@ model PlanUpdate {
 }
 
 model Post {
-  id        String   @id @default(cuid())
-  content   String
-  imageUrl  String?
-  pinned    Boolean  @default(false)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  likes     Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(cuid())
+  content       String
+  imageUrl      String?
+  pinned        Boolean  @default(false)
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetUserId  String?
+  targetUser    User?    @relation("WallPostTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+  likes         Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@index([userId])
+  @@index([targetUserId])
 }
 
 model Group {
@@ -1008,6 +1015,23 @@ model UserLink {
   icon      String?  // URL to icon image
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model DonationAddress {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currency  String   // ETH, BTC, XMR, USDT, USDC, etc.
+  address   String
+  label     String?  // e.g., "Main ETH Wallet", "Cold Storage"
+  qrCodeUrl String?  // URL to QR code image
+  showQR    Boolean  @default(true)
+  sortOrder Int      @default(0)
+  isPublic  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
 }

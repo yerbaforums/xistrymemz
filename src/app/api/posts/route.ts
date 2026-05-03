@@ -7,10 +7,20 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('userId')
+    const targetUserId = searchParams.get('targetUserId')
     const limit = parseInt(searchParams.get('limit') || '20')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    const where = userId ? { userId } : {}
+    const where: Record<string, unknown> = {}
+    if (targetUserId) {
+      where.OR = [
+        { userId: targetUserId, targetUserId: null },
+        { targetUserId: targetUserId }
+      ]
+    } else if (userId) {
+      where.userId = userId
+      where.targetUserId = null
+    }
 
     const posts = await prisma.post.findMany({
       where,
@@ -23,7 +33,7 @@ export async function GET(request: NextRequest) {
           }
         }
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ pinned: 'desc' }, { createdAt: 'desc' }],
       take: limit,
       skip: offset
     })
@@ -46,7 +56,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { content, imageUrl } = body
+    const { content, imageUrl, targetUserId } = body
 
     if (!content || content.trim().length === 0) {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 })
@@ -56,11 +66,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Content too long (max 2000 characters)' }, { status: 400 })
     }
 
+    const isWallPost = targetUserId && targetUserId !== session.user.id
+
     const post = await prisma.post.create({
       data: {
         content: content.trim(),
         imageUrl: imageUrl || null,
-        userId: session.user.id
+        userId: session.user.id,
+        targetUserId: isWallPost ? targetUserId : null,
+        pinned: false
       },
       include: {
         user: {

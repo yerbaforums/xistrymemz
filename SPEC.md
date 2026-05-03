@@ -8,12 +8,12 @@
 **Target Users:** Individuals, teams, entrepreneurs, educators, and community organizers who want to plan tasks, coordinate efforts, build clientele, and collaborate worldwide
 
 ### Site Goals
-- **Community Connections:** Enable users to find, connect with, and build relationships with like-minded individuals globally
-- **Coordination:** Provide tools for organizing group efforts, events, and collaborative work
-- **Cohesive Planning:** Powerful organizational tools with milestones, progress tracking, and shared visibility
-- **Business Opportunities:** Platform for showcasing skills, building clientele, running shops, and accepting payments
-- **Powerful Organizational Tools:** Projects, requests, events, groups, schools, shops, and messaging in one place
-- **Building Clientele:** Help users grow their audience through profiles, shops, schools, and community engagement
+- **Community Connections:** Enable users to find, connect with, and build relationships with like-minded individuals globally through profiles, connections, messaging, groups, and community forums
+- **Coordination:** Provide tools for organizing group efforts, events, collaborative work, and real-time communication between team members
+- **Cohesive Planning:** Powerful organizational tools with milestones, progress tracking, shared visibility, status histories, and plan updates
+- **Business Opportunities:** Platform for showcasing skills, building clientele, running shops and schools, accepting crypto payments, barter offers, and escrow transactions
+- **Powerful Organizational Tools:** Projects, requests, events, groups, schools, shops, messaging, forums, reputation system, and Earth Passport verification in one unified platform
+- **Building Clientele:** Help users grow their audience through profiles, shops, schools, community engagement, social links, donation support, and a robust rating system
 
 ---
 

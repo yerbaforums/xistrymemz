@@ -8,8 +8,8 @@ import AppShell from "@/components/AppShell";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "XistrYmemZ - Plan & Request Platform",
-  description: "Create plans, submit requests to complete them, and track your progress",
+  title: "XistrYmemZ - Plan. Request. Complete.",
+  description: "Collaborative planning platform. Create projects, connect with community, build businesses, and coordinate efforts globally.",
   icons: [
     {
       rel: "icon",
@@ -26,6 +26,19 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "XistrYmemZ",
   },
+  openGraph: {
+    title: "XistrYmemZ - Plan. Request. Complete.",
+    description: "Collaborative planning platform. Create projects, connect with community, build businesses, and coordinate efforts globally.",
+    type: "website",
+    siteName: "XistrYmemZ",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "XistrYmemZ - Plan. Request. Complete.",
+    description: "Collaborative planning platform. Create projects, connect with community, build businesses, and coordinate efforts globally.",
+  },
+  keywords: ["collaborative planning", "community platform", "project management", "crypto payments", "business platform"],
 };
 
 export default function RootLayout({

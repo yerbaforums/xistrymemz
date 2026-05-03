@@ -17,6 +17,15 @@ interface UserLink {
   sortOrder: number
 }
 
+interface DonationAddr {
+  id: string
+  currency: string
+  address: string
+  label: string | null
+  qrCodeUrl: string | null
+  showQR: boolean
+}
+
 interface ProfileUser {
   id: string
   name: string | null
@@ -49,6 +58,7 @@ interface ProfileUser {
   acceptsDonations: boolean
   donationAddress: string | null
   donationCurrency: string | null
+  donationAddresses: DonationAddr[]
   links: UserLink[]
 }
 
@@ -57,6 +67,8 @@ interface Post {
   content: string
   imageUrl: string | null
   pinned: boolean
+  userId: string
+  targetUserId: string | null
   likes: number
   createdAt: string
   user: {
@@ -102,7 +114,7 @@ interface UserGroup {
   joinedAt: string
 }
 
-const USER_CLASSES = [
+  const USER_CLASSES = [
   'Healer',
   'Revealer',
   'Seer',
@@ -119,6 +131,50 @@ const USER_CLASSES = [
   'Mentor'
 ]
 
+function DonationCard({ donation }: { donation: DonationAddr }) {
+  const [showQR, setShowQR] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(donation.address)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const qrUrl = donation.showQR
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(donation.address)}&bgcolor=0d0d0d&color=ffffff`
+    : null
+
+  return (
+    <div className={styles.donationCard}>
+      <div className={styles.donationInfo}>
+        <img src={`/crypto-logos/${donation.currency.toLowerCase()}.png`} alt="" width={24} height={24} />
+        <div>
+          <div className={styles.donationLabel}>
+            {donation.label || donation.currency}
+          </div>
+          <code className={styles.donationAddress}>{donation.address}</code>
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        {qrUrl && (
+          <button onClick={() => setShowQR(!showQR)} className={styles.toggleQRBtn}>
+            {showQR ? 'Hide QR' : 'Show QR'}
+          </button>
+        )}
+        <button onClick={handleCopy} className={styles.copyBtn}>
+          {copied ? 'Copied!' : 'Copy'}
+        </button>
+      </div>
+      {showQR && qrUrl && (
+        <div className={styles.qrCodeSection}>
+          <img src={qrUrl} alt={`${donation.currency} QR code`} width={120} height={120} />
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function ProfilePage() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -129,6 +185,11 @@ export default function ProfilePage() {
   const [products, setProducts] = useState<Product[]>([])
   const [connections, setConnections] = useState<Connection[]>([])
   const [groups, setGroups] = useState<UserGroup[]>([])
+  const [donationAddresses, setDonationAddresses] = useState<DonationAddr[]>([])
+  const [loadingMorePosts, setLoadingMorePosts] = useState(false)
+  const [hasMorePosts, setHasMorePosts] = useState(true)
+  const [postsOffset, setPostsOffset] = useState(0)
+  const [totalPostCount, setTotalPostCount] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'posts' | 'plans' | 'connections' | 'groups' | 'shop' | 'school' | 'about'>('posts')
   const [editMode, setEditMode] = useState(false)
@@ -147,6 +208,15 @@ export default function ProfilePage() {
   const [connectMessage, setConnectMessage] = useState('')
   const [connecting, setConnecting] = useState(false)
   const [isOwnProfile, setIsOwnProfile] = useState(false)
+  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set())
+  const [copiedShare, setCopiedShare] = useState(false)
+
+  const handleShareProfile = async () => {
+    const url = window.location.href
+    await navigator.clipboard.writeText(url)
+    setCopiedShare(true)
+    setTimeout(() => setCopiedShare(false), 2000)
+  }
 
   const getTargetId = () => {
     if (params.id) {
@@ -180,6 +250,14 @@ export default function ProfilePage() {
       setProducts(data.products || [])
       setConnections(data.connections || [])
       setGroups(data.groups || [])
+      setDonationAddresses(data.donationAddresses || [])
+      setTotalPostCount(data.totalPostCount ?? data.posts?.length ?? 0)
+      setHasMorePosts((data.totalPostCount ?? 0) > (data.posts?.length ?? 0))
+      const donationsRes = await fetch(`/api/users/donations?userId=${targetId}`)
+      if (donationsRes.ok) {
+        const donationsData = await donationsRes.json()
+        setDonationAddresses(donationsData.addresses || [])
+      }
       setEditForm({
         name: data.user.name || '',
         bio: data.user.bio || '',
@@ -223,7 +301,10 @@ export default function ProfilePage() {
       const res = await fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newPost })
+        body: JSON.stringify({
+          content: newPost,
+          targetUserId: isOwnProfile ? undefined : getTargetId()
+        })
       })
 
       if (res.ok) {
@@ -247,6 +328,48 @@ export default function ProfilePage() {
       }
     } catch (error) {
       console.error('Error deleting post:', error)
+    }
+  }
+
+  const handleLikePost = async (postId: string, currentLikes: number) => {
+    try {
+      const isLiked = likedPosts.has(postId)
+      const newLikeCount = isLiked ? currentLikes - 1 : currentLikes + 1
+      const res = await fetch(`/api/posts/${postId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ likes: newLikeCount })
+      })
+      if (res.ok) {
+        setLikedPosts(prev => {
+          const next = new Set(prev)
+          if (isLiked) next.delete(postId)
+          else next.add(postId)
+          return next
+        })
+        fetchProfile(getTargetId())
+      }
+    } catch (error) {
+      console.error('Error liking post:', error)
+    }
+  }
+
+  const handleLoadMorePosts = async () => {
+    setLoadingMorePosts(true)
+    try {
+      const targetId = getTargetId()
+      const newOffset = postsOffset + 20
+      const res = await fetch(`/api/posts?targetUserId=${targetId}&limit=20&offset=${newOffset}`)
+      if (res.ok) {
+        const data = await res.json()
+        setPosts(prev => [...prev, ...data.posts])
+        setPostsOffset(newOffset)
+        setHasMorePosts(newOffset + data.posts.length < (totalPostCount ?? 0))
+      }
+    } catch (error) {
+      console.error('Error loading more posts:', error)
+    } finally {
+      setLoadingMorePosts(false)
     }
   }
 
@@ -430,69 +553,75 @@ export default function ProfilePage() {
 
           {/* Social & Business Links - Show on all profiles */}
           {(user.links && user.links.length > 0) && (
-            <div style={{marginTop: '20px'}}>
-              <h3 style={{marginBottom: '12px', fontSize: '1rem'}}>Links</h3>
-              <div style={{display: 'flex', flexWrap: 'wrap', gap: '8px'}}>
-                {user.links.map((link: UserLink) => {
-                  const socialType = ['twitter', 'github', 'instagram', 'linkedin', 'youtube', 'tiktok', 'discord', 'telegram'].includes(link.type)
-                    ? link.type
-                    : 'website'
-                  const iconMap: Record<string, string> = {
-                    twitter: 'https://cdn.jsdelivr.net/simple-icons@v12/twitter.svg',
-                    github: 'https://cdn.jsdelivr.net/simple-icons@v12/github.svg',
-                    instagram: 'https://cdn.jsdelivr.net/simple-icons@v12/instagram.svg',
-                    linkedin: 'https://cdn.jsdelivr.net/simple-icons@v12/linkedin.svg',
-                    youtube: 'https://cdn.jsdelivr.net/simple-icons@v12/youtube.svg',
-                    tiktok: 'https://cdn.jsdelivr.net/simple-icons@v12/tiktok.svg',
-                    discord: 'https://cdn.jsdelivr.net/simple-icons@v12/discord.svg',
-                    telegram: 'https://cdn.jsdelivr.net/simple-icons@v12/telegram.svg',
-                    website: '🔗'
-                  }
-                  return (
-                    <a
-                      key={link.id}
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '20px', textDecoration: 'none', color: 'var(--text-primary)', fontSize: '0.875rem'}}
-                    >
-                      {iconMap[socialType].startsWith('http') ? (
-                        <img src={iconMap[socialType]} alt={link.type} width={16} height={16} style={{filter: 'invert(1)'}} />
-                      ) : (
-                        <span>{iconMap[socialType]}</span>
-                      )}
-                      <span>{link.label || link.type}</span>
-                    </a>
-                  )
-                })}
+            <div className={styles.profileSections}>
+              <div className={styles.sectionSeparator} />
+              <div className={styles.linksSection}>
+                <h3>Links</h3>
+                <div className={styles.linksGrid}>
+                  {user.links.map((link: UserLink) => {
+                    const socialType = ['twitter', 'github', 'instagram', 'linkedin', 'youtube', 'tiktok', 'discord', 'telegram'].includes(link.type)
+                      ? link.type
+                      : 'website'
+                    const iconMap: Record<string, string> = {
+                      twitter: 'https://cdn.jsdelivr.net/simple-icons@v12/twitter.svg',
+                      github: 'https://cdn.jsdelivr.net/simple-icons@v12/github.svg',
+                      instagram: 'https://cdn.jsdelivr.net/simple-icons@v12/instagram.svg',
+                      linkedin: 'https://cdn.jsdelivr.net/simple-icons@v12/linkedin.svg',
+                      youtube: 'https://cdn.jsdelivr.net/simple-icons@v12/youtube.svg',
+                      tiktok: 'https://cdn.jsdelivr.net/simple-icons@v12/tiktok.svg',
+                      discord: 'https://cdn.jsdelivr.net/simple-icons@v12/discord.svg',
+                      telegram: 'https://cdn.jsdelivr.net/simple-icons@v12/telegram.svg',
+                      website: '🔗'
+                    }
+                    const iconSrc = link.icon || iconMap[socialType]
+                    return (
+                      <a
+                        key={link.id}
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.linkPill}
+                      >
+                        {iconSrc.startsWith('http') ? (
+                          <img src={iconSrc} alt={link.label || link.type} width={16} height={16} />
+                        ) : (
+                          <span>{iconSrc}</span>
+                        )}
+                        <span>{link.label || link.type}</span>
+                      </a>
+                    )
+                  })}
+                </div>
               </div>
             </div>
           )}
 
           {/* Donation Section */}
-          {!isOwnProfile && user.acceptsDonations && user.donationAddress && (
-            <div style={{marginTop: '20px'}}>
-              <h3 style={{marginBottom: '12px', fontSize: '1rem'}}>Support with Donations</h3>
-              <div style={{display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px'}}>
-                <div style={{display: 'flex', alignItems: 'center', gap: '8px', flex: 1}}>
-                  <img src={`/crypto-logos/${user.donationCurrency?.toLowerCase() || 'ethereum'}.png`} alt="" width={24} height={24} style={{borderRadius: '50%'}} />
-                  <div>
-                    <div style={{fontSize: '0.875rem', color: 'var(--text-secondary)'}}>{user.donationCurrency || 'ETH'} Address</div>
-                    <code style={{fontSize: '0.8rem', color: 'var(--text-primary)', wordBreak: 'break-all'}}>{user.donationAddress}</code>
-                  </div>
-                </div>
-                <button
-                  onClick={() => { navigator.clipboard.writeText(user.donationAddress || ''); }}
-                  style={{padding: '8px 16px', background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, whiteSpace: 'nowrap'}}
-                  title="Copy address"
-                >
-                  Copy
-                </button>
+          {!isOwnProfile && user.acceptsDonations && (
+            <div className={styles.donationSection}>
+              <div className={styles.sectionSeparator} />
+              <h3>Support with Donations</h3>
+              <div className={styles.donationsList}>
+                {(donationAddresses.length > 0 ? donationAddresses : (user.donationAddress ? [{
+                  id: 'legacy',
+                  currency: user.donationCurrency || 'ETH',
+                  address: user.donationAddress,
+                  label: null,
+                  qrCodeUrl: null,
+                  showQR: true
+                }] : [])).map(da => (
+                  <DonationCard key={da.id} donation={da} />
+                ))}
               </div>
             </div>
           )}
           
           <div className={styles.actions}>
+            {!isOwnProfile && (
+              <button onClick={handleShareProfile} className={styles.shareBtn}>
+                {copiedShare ? 'Copied!' : 'Share'}
+              </button>
+            )}
             {isOwnProfile ? (
               editMode ? (
                 <>
@@ -570,7 +699,7 @@ export default function ProfilePage() {
       <div className={styles.content}>
         {activeTab === 'posts' && (
           <div className={styles.postsSection}>
-            {isOwnProfile && (
+            {status === 'authenticated' && (
               <form onSubmit={handleCreatePost} className={styles.createPost}>
                 <div className={styles.postInputWrapper}>
                   <div className={styles.postAvatar}>
@@ -583,65 +712,79 @@ export default function ProfilePage() {
                   <textarea
                     value={newPost}
                     onChange={(e) => setNewPost(e.target.value)}
-                    placeholder="What's on your mind?"
+                    placeholder={isOwnProfile ? "What's on your mind?" : `Write on ${user.name || 'this user'}'s wall...`}
                     className={styles.postInput}
                     rows={3}
                   />
                 </div>
-                <div className={styles.postActions}>
+                <div className={styles.formPostActions}>
                   <span className={styles.charCount}>{newPost.length}/2000</span>
                   <button type="submit" disabled={posting || !newPost.trim()} className={styles.postBtn}>
-                    {posting ? 'Posting...' : 'Post'}
+                    {posting ? 'Posting...' : (isOwnProfile ? 'Post' : 'Post on Wall')}
                   </button>
                 </div>
               </form>
             )}
 
             {posts.length > 0 ? (
-              <div className={styles.postsList}>
-                {posts.map((post) => (
-                  <div key={post.id} className={`${styles.postCard} ${post.pinned ? styles.pinnedCard : ''}`}>
-                    <div className={styles.postHeader}>
-                      <div className={styles.postAuthor}>
-                        <div className={styles.postAvatarSmall}>
-                          {post.user.image ? (
-                            <Image src={post.user.image} alt="" fill />
-                          ) : (
-                            <span>{post.user.name?.[0] || 'U'}</span>
-                          )}
+              <>
+                <div className={styles.postsList}>
+                {[...posts].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0)).map((post) => {
+                  const isWallPost = post.targetUserId !== undefined && post.targetUserId !== null
+                  return (
+                    <div key={post.id} className={`${styles.postCard} ${post.pinned ? styles.pinnedCard : ''}`}>
+                        <div className={styles.postHeader}>
+                          <div className={styles.postAuthor}>
+                            <div className={styles.postAvatarSmall}>
+                              {post.user.image ? (
+                                <Image src={post.user.image} alt="" fill />
+                              ) : (
+                                <span>{post.user.name?.[0] || 'U'}</span>
+                              )}
+                            </div>
+                            <div>
+                              <Link href={`/profile/${post.user.id}`} className={styles.postAuthorName}>
+                                {post.pinned && <span className={styles.pinnedBadge}>📌</span>}
+                                {post.user.name || 'Anonymous'}
+                              </Link>
+                              {isWallPost && <span className={styles.wallPostBadge}> posted on {user.name || 'this user'}'s wall</span>}
+                              <span className={styles.postDate}>
+                                {new Date(post.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                          <div className={styles.cardPostActions}>
+                            {isOwnProfile && (
+                              <button 
+                                onClick={() => handlePin('post', post.id, post.pinned)} 
+                                className={styles.pinBtn}
+                                title={post.pinned ? 'Unpin' : 'Pin to top'}
+                              >
+                                {post.pinned ? '📌' : '📍'}
+                              </button>
+                            )}
+                            <button onClick={() => handleDeletePost(post.id)} className={styles.deletePost}>
+                              ×
+                            </button>
+                          </div>
                         </div>
-                        <div>
-                          <span className={styles.postAuthorName}>
-                            {post.pinned && <span className={styles.pinnedBadge}>📌</span>}
-                            {post.user.name || 'Anonymous'}
-                          </span>
-                          <span className={styles.postDate}>
-                            {new Date(post.createdAt).toLocaleDateString()}
-                          </span>
+                        <p className={styles.postContent}>{post.content}</p>
+                        <div className={styles.postFooter}>
+                          <span className={styles.postLikes}>♥ {post.likes}</span>
+                          <button onClick={() => handleLikePost(post.id, post.likes)} className={styles.likeBtn}>
+                            {likedPosts.has(post.id) ? 'Unlike' : 'Like'}
+                          </button>
                         </div>
                       </div>
-                      {isOwnProfile && (
-                        <div className={styles.postActions}>
-                          <button 
-                            onClick={() => handlePin('post', post.id, post.pinned)} 
-                            className={styles.pinBtn}
-                            title={post.pinned ? 'Unpin' : 'Pin to top'}
-                          >
-                            {post.pinned ? '📌' : '📍'}
-                          </button>
-                          <button onClick={() => handleDeletePost(post.id)} className={styles.deletePost}>
-                            ×
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                    <p className={styles.postContent}>{post.content}</p>
-                    <div className={styles.postFooter}>
-                      <span className={styles.postLikes}>♥ {post.likes} likes</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                    )
+                  })}
+                </div>
+                {hasMorePosts && (
+                  <button onClick={handleLoadMorePosts} disabled={loadingMorePosts} className={styles.loadMoreBtn}>
+                    {loadingMorePosts ? 'Loading...' : `Load more posts (${(totalPostCount ?? 0) - posts.length} remaining)`}
+                  </button>
+                )}
+              </>
             ) : (
               <div className={styles.empty}>
                 <p>No posts yet</p>

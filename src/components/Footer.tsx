@@ -24,7 +24,7 @@ export default function Footer() {
             <h4>Community</h4>
             <Link href="/community">Members</Link>
             <Link href="/groups">Groups</Link>
-            <Link href="/requests">Requests</Link>
+            <Link href="/requests/public">Requests</Link>
           </div>
           
           <div className={styles.col}>
