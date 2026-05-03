@@ -263,15 +263,10 @@ export default function ProfilePage() {
       setPlans(data.plans || [])
       setProducts(data.products || [])
       setConnections(data.connections || [])
-      setGroups(data.groups || [])
-      setDonationAddresses(data.user.donationAddresses || [])
-      setTotalPostCount(data.totalPostCount ?? data.posts?.length ?? 0)
-      setHasMorePosts((data.totalPostCount ?? 0) > (data.posts?.length ?? 0))
-      const donationsRes = await fetch(`/api/users/donations?userId=${targetId}`)
-      if (donationsRes.ok) {
-        const donationsData = await donationsRes.json()
-        setDonationAddresses(donationsData.addresses || [])
-      }
+       setGroups(data.groups || [])
+       setDonationAddresses(data.user.donationAddresses || [])
+       setTotalPostCount(data.totalPostCount ?? data.posts?.length ?? 0)
+       setHasMorePosts((data.totalPostCount ?? 0) > (data.posts?.length ?? 0))
       setEditForm({
         name: data.user.name || '',
         bio: data.user.bio || '',
@@ -566,50 +561,74 @@ export default function ProfilePage() {
             )}
             </div>
 
-          {/* Social & Business Links - Show on all profiles */}
-          {(user.links && user.links.length > 0) && (
-            <div className={styles.profileSections}>
-              <div className={styles.sectionSeparator} />
-              <div className={styles.linksSection}>
-                <h3>Links</h3>
-                <div className={styles.linksGrid}>
-                  {user.links.map((link: UserLink) => {
-                    const socialType = ['twitter', 'github', 'instagram', 'linkedin', 'youtube', 'tiktok', 'discord', 'telegram'].includes(link.type)
-                      ? link.type
-                      : 'website'
-                    const iconMap: Record<string, string> = {
-                      twitter: 'https://cdn.jsdelivr.net/simple-icons@v12/twitter.svg',
-                      github: 'https://cdn.jsdelivr.net/simple-icons@v12/github.svg',
-                      instagram: 'https://cdn.jsdelivr.net/simple-icons@v12/instagram.svg',
-                      linkedin: 'https://cdn.jsdelivr.net/simple-icons@v12/linkedin.svg',
-                      youtube: 'https://cdn.jsdelivr.net/simple-icons@v12/youtube.svg',
-                      tiktok: 'https://cdn.jsdelivr.net/simple-icons@v12/tiktok.svg',
-                      discord: 'https://cdn.jsdelivr.net/simple-icons@v12/discord.svg',
-                      telegram: 'https://cdn.jsdelivr.net/simple-icons@v12/telegram.svg',
-                      website: '🔗'
-                    }
-                    const iconSrc = link.icon || iconMap[socialType]
-                    return (
-                      <a
-                        key={link.id}
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.linkPill}
-                      >
-                        {iconSrc.startsWith('http') ? (
-                          <img src={iconSrc} alt={link.label || link.type} width={16} height={16} />
-                        ) : (
-                          <span>{iconSrc}</span>
-                        )}
-                        <span>{link.label || link.type}</span>
-                      </a>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
+            {/* Social & Business Links - Show on all profiles */}
+           {(user.links && user.links.length > 0) && (
+             <div className={styles.profileSections}>
+               <div className={styles.sectionSeparator} />
+               <div className={styles.linksSection}>
+                 <h3>Links</h3>
+                 <div className={styles.linksGrid}>
+                   {user.links.map((link: UserLink) => {
+                     const [qrOpen, setQrOpen] = useState(false)
+                     const [copied, setCopied] = useState(false)
+                     const socialType = ['twitter', 'github', 'instagram', 'linkedin', 'youtube', 'tiktok', 'discord', 'telegram'].includes(link.type)
+                       ? link.type
+                       : 'website'
+                     const iconMap: Record<string, string> = {
+                       twitter: '/social-logos/twitter.svg',
+                       github: '/social-logos/github.svg',
+                       instagram: '/social-logos/instagram.svg',
+                       linkedin: '/social-logos/linkedin.svg',
+                       youtube: '/social-logos/youtube.svg',
+                       tiktok: '/social-logos/tiktok.svg',
+                       discord: '/social-logos/discord.svg',
+                       telegram: '/social-logos/telegram.svg',
+                       website: '🔗'
+                     }
+                     const iconSrc = link.icon || iconMap[socialType]
+                     
+                     const handleCopyLink = async () => {
+                       await navigator.clipboard.writeText(link.url)
+                       setCopied(true)
+                       setTimeout(() => setCopied(false), 2000)
+                     }
+                     
+                     return (
+                       <div key={link.id} className={styles.linkPillContainer}>
+                         <a
+                           href={link.url}
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           className={styles.linkPill}
+                         >
+                           {iconSrc.startsWith('http') ? (
+                             <img src={iconSrc} alt={link.label || link.type} width={16} height={16} />
+                           ) : (
+                             <span>{iconSrc}</span>
+                           )}
+                           <span>{link.label || link.type}</span>
+                         </a>
+                         <button onClick={handleCopyLink} className={styles.copyLinkBtn} title="Copy Link">
+                           {copied ? '✓' : '📋'}
+                         </button>
+                         <button onClick={() => setQrOpen(true)} className={styles.qrBtn} title="Show QR Code">
+                           QR
+                         </button>
+                         {qrOpen && (
+                           <QRCodeModal
+                             isOpen={true}
+                             onClose={() => setQrOpen(false)}
+                             currency={link.label || link.type}
+                             address={link.url}
+                           />
+                         )}
+                       </div>
+                     )
+                   })}
+                 </div>
+               </div>
+             </div>
+           )}
 
           {/* Donation Section */}
           {user.acceptsDonations && (
