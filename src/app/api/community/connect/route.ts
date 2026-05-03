@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { connectionSchema, validateBody } from '@/lib/schemas'
 
 export async function POST(request: Request) {
   try {
@@ -13,12 +14,12 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const receiverId = body.receiverId
-    const message = body.message
-
-    if (!receiverId || typeof receiverId !== 'string') {
-      return NextResponse.json({ error: 'Receiver ID required' }, { status: 400 })
+    const validation = validateBody(connectionSchema, body)
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400 })
     }
+
+    const { receiverId, message } = validation.data
 
     if (receiverId === userId) {
       return NextResponse.json({ error: 'Cannot connect with yourself' }, { status: 400 })

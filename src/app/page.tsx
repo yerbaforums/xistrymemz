@@ -4,6 +4,18 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
 
+const CRYPTO_LOGOS: Record<string, string> = {
+  BTC: 'bitcoin.png',
+  ETH: 'ethereum.png',
+  USDT: 'tether.png',
+  USDC: 'usd-coin.png',
+  XMR: 'monero.png',
+  XTM: 'tari.png',
+  ARRR: 'pirate-chain.png',
+  DERO: 'dero.png',
+  ZANO: 'zano.png',
+}
+
 interface DonationAddr {
   id: string
   currency: string
@@ -149,6 +161,11 @@ export default function Home() {
             {donations.map(da => (
               <div key={da.id} className={styles.cryptoItem}>
                 <div className={styles.cryptoItemHeader}>
+                  <img
+                    src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'ethereum.png'}`}
+                    alt={da.currency}
+                    className={styles.cryptoIcon}
+                  />
                   <span className={styles.cryptoLabel}>{da.label || da.currency}</span>
                   <button onClick={() => copyAddress(da.address)} className={styles.copyBtn} title="Copy address">
                     Copy

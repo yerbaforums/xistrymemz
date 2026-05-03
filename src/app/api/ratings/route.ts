@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { ratingSchema, validateBody } from '@/lib/schemas'
 
 export async function GET(request: Request) {
   try {
@@ -59,15 +60,12 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { userId, productId, rating, comment, type, transactionId } = body
-
-    if (!userId || !rating) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    const validation = validateBody(ratingSchema, body)
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    if (rating < 1 || rating > 5) {
-      return NextResponse.json({ error: 'Rating must be between 1 and 5' }, { status: 400 })
-    }
+    const { userId, productId, rating, comment, type, transactionId } = validation.data
 
     const existing = await prisma.rating.findUnique({
       where: {

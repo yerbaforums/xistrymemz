@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 // Mock function to simulate checking blockchain for deposits
@@ -16,6 +18,11 @@ async function checkBlockchainForDeposits(_cryptoType: string, _address: string)
 
 export async function POST(request: Request) {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id || (session.user as { role?: string }).role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+    }
+
     const body = await request.json()
     const { action, walletAddress } = body
 
@@ -86,6 +93,11 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id || (session.user as { role?: string }).role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+    }
+
     const { searchParams } = new URL(request.url)
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const _action = searchParams.get('action')

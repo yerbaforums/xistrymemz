@@ -6,8 +6,8 @@ import { prisma } from '@/lib/prisma'
 export async function GET() {
   const session = await getServerSession(authOptions)
   
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session?.user?.id || (session.user as { role?: string }).role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
 
   const subscribers = await prisma.emailSubscriber.findMany({
@@ -20,8 +20,8 @@ export async function GET() {
 export async function DELETE(request: Request) {
   const session = await getServerSession(authOptions)
   
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session?.user?.id || (session.user as { role?: string }).role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
 
   const { searchParams } = new URL(request.url)
@@ -39,8 +39,8 @@ export async function DELETE(request: Request) {
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions)
   
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session?.user?.id || (session.user as { role?: string }).role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
 
   const { email, name } = await request.json()

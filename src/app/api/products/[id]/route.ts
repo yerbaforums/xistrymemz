@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { geocodeLocation } from '@/lib/geocoding'
+import { productSchema, validateBody } from '@/lib/schemas'
 
 export async function GET(
   request: Request,
@@ -43,6 +44,13 @@ export async function PUT(
     const { id } = await params
     const body = await request.json()
 
+    const validation = validateBody(productSchema.partial(), body)
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400 })
+    }
+
+    const { title, description, price, type, category, condition, location, locationDetails, imageUrl, isGlobal, published, paymentMethods, paymentType, acceptsRequests, acceptsOffers, requestPrice, sellerPayoutAddress, sellerCryptoCurrency } = body
+
     const existing = await prisma.product.findFirst({
       where: { id, userId: session.user.id }
     })
@@ -50,8 +58,6 @@ export async function PUT(
     if (!existing) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 })
     }
-
-    const { title, description, price, type, category, condition, location, locationDetails, imageUrl, isGlobal, published, paymentMethods, paymentType, acceptsRequests, acceptsOffers, requestPrice, sellerPayoutAddress, sellerCryptoCurrency } = body
 
     const paymentMethodsString = paymentMethods ? 
       (Array.isArray(paymentMethods) ? paymentMethods.join(',') : String(paymentMethods)) 

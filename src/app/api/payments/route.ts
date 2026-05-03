@@ -69,8 +69,11 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('userId')
+    const userRole = (session.user as { role?: string }).role
 
-    const where = userId ? { userId } : { userId: session.user.id }
+    const where = userId && userRole === 'ADMIN'
+      ? { userId }
+      : { userId: session.user.id }
 
     const payments = await prisma.payment.findMany({
       where,

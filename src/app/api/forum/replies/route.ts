@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { replySchema, validateBody } from '@/lib/schemas'
 
 export async function GET(request: Request) {
   try {
@@ -35,11 +36,12 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json()
-    const { content, postId } = body
-
-    if (!content || !postId) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    const validation = validateBody(replySchema, body)
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400 })
     }
+
+    const { content, postId } = validation.data
 
     const reply = await prisma.forumReply.create({
       data: {

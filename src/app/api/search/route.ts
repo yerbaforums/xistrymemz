@@ -40,7 +40,7 @@ export async function GET(request: Request) {
           { email: { contains: query } },
         ]
       },
-      select: { id: true, name: true, email: true, image: true, bio: true },
+      select: { id: true, name: true, image: true, bio: true },
       take: limit
     }),
     prisma.group.findMany({

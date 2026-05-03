@@ -144,3 +144,45 @@ export const barterOfferUpdateSchema = z.object({
   status: z.enum(['ACCEPTED', 'REJECTED', 'COUNTERED', 'WITHDRAWN', 'COMPLETED']).optional(),
   message: z.string().max(1000).optional()
 })
+
+export const postSchema = z.object({
+  content: z.string().min(1, 'Content is required').max(2000),
+  imageUrl: z.string().max(500).optional().nullable(),
+  targetUserId: z.string().uuid().optional().nullable()
+})
+
+export const profileUpdateSchema = z.object({
+  name: z.string().max(100).optional().nullable(),
+  bio: z.string().max(2000).optional().nullable(),
+  location: z.string().max(200).optional().nullable(),
+  neighborhood: z.string().max(200).optional().nullable(),
+  searchRadius: z.number().int().min(1).max(500).optional(),
+  website: z.string().max(500).optional().nullable(),
+  userClass: z.string().max(100).optional().nullable(),
+  walletAddress: z.string().max(200).optional().nullable(),
+  paymentAddress: z.string().max(200).optional().nullable(),
+  refundAddress: z.string().max(200).optional().nullable(),
+  cryptoCurrency: z.string().max(10).optional(),
+  donationAddress: z.string().max(500).optional().nullable(),
+  donationCurrency: z.string().max(10).optional(),
+  acceptsDonations: z.boolean().optional()
+})
+
+export const ratingSchema = z.object({
+  userId: z.string().uuid('Valid user ID is required'),
+  rating: z.number().int().min(1).max(5, 'Rating must be between 1 and 5'),
+  comment: z.string().max(1000).optional().nullable(),
+  type: z.enum(['SELLER', 'BUYER', 'GENERAL']).optional(),
+  productId: z.string().uuid().optional().nullable(),
+  transactionId: z.string().optional().nullable()
+})
+
+export const connectionSchema = z.object({
+  receiverId: z.string().uuid('Valid user ID is required'),
+  message: z.string().max(1000).optional()
+})
+
+export const replySchema = z.object({
+  content: z.string().min(1, 'Content is required').max(10000),
+  postId: z.string().uuid('Valid post ID is required')
+})

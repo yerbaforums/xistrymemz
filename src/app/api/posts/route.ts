@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { postSchema, validateBody } from '@/lib/schemas'
 
 export async function GET(request: NextRequest) {
   try {
@@ -56,15 +57,12 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { content, imageUrl, targetUserId } = body
-
-    if (!content || content.trim().length === 0) {
-      return NextResponse.json({ error: 'Content is required' }, { status: 400 })
+    const validation = validateBody(postSchema, body)
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    if (content.length > 2000) {
-      return NextResponse.json({ error: 'Content too long (max 2000 characters)' }, { status: 400 })
-    }
+    const { content, imageUrl, targetUserId } = validation.data
 
     const isWallPost = targetUserId && targetUserId !== session.user.id
 

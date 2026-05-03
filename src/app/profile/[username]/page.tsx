@@ -600,7 +600,7 @@ export default function ProfilePage() {
           )}
 
           {/* Donation Section */}
-          {!isOwnProfile && user.acceptsDonations && (
+          {user.acceptsDonations && (
             <div className={styles.donationSection}>
               <div className={styles.sectionSeparator} />
               <h3>Support with Donations</h3>

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { profileUpdateSchema, validateBody } from '@/lib/schemas'
 
 export async function GET() {
   try {
@@ -59,11 +60,17 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const body = await request.json()
+    const validation = validateBody(profileUpdateSchema, body)
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400 })
+    }
+
     const {
       name, bio, location, neighborhood, searchRadius, website, userClass,
       walletAddress, paymentAddress, refundAddress, cryptoCurrency,
       donationAddress, donationCurrency, acceptsDonations
-    } = await request.json()
+    } = validation.data
 
     const updated = await prisma.user.update({
       where: { id: session.user.id },
