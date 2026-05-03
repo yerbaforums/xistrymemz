@@ -21,7 +21,8 @@ export default async function DashboardOffers() {
     prisma.barterOffer.findMany({
       where: { makerId: userId },
       include: {
-        receiver: { select: { id: true, name: true, location: true, image: true } }
+        receiver: { select: { id: true, name: true, location: true, image: true } },
+        _count: { select: { counterOffers: true } }
       },
       orderBy: { createdAt: 'desc' },
       take: 20
@@ -29,7 +30,8 @@ export default async function DashboardOffers() {
     prisma.barterOffer.findMany({
       where: { receiverId: userId },
       include: {
-        maker: { select: { id: true, name: true, location: true, image: true } }
+        maker: { select: { id: true, name: true, location: true, image: true } },
+        _count: { select: { counterOffers: true } }
       },
       orderBy: { createdAt: 'desc' },
       take: 20
@@ -47,6 +49,7 @@ export default async function DashboardOffers() {
 
   const pendingCount = (sentOffers.filter(o => o.status === 'PENDING').length) + (receivedOffers.filter(o => o.status === 'PENDING').length)
   const acceptedCount = (sentOffers.filter(o => o.status === 'ACCEPTED').length) + (receivedOffers.filter(o => o.status === 'ACCEPTED').length)
+  const counteredCount = (sentOffers.filter(o => o.status === 'COUNTERED').length) + (receivedOffers.filter(o => o.status === 'COUNTERED').length)
 
   return (
     <div className={styles.container}>
@@ -66,6 +69,12 @@ export default async function DashboardOffers() {
           <span className={styles.statValue}>{acceptedCount}</span>
           <span className={styles.statLabel}>Accepted</span>
         </div>
+        {counteredCount > 0 && (
+          <div className={styles.statCard}>
+            <span className={styles.statValue} style={{ color: '#a6e' }}>{counteredCount}</span>
+            <span className={styles.statLabel}>Countered</span>
+          </div>
+        )}
         <div className={styles.statCard}>
           <span className={styles.statValue}>{sentOffers.length}</span>
           <span className={styles.statLabel}>Sent</span>
@@ -92,6 +101,11 @@ export default async function DashboardOffers() {
                   <span className={styles.itemTitle}>{offer.listingTitle}</span>
                   <span className={styles.itemMeta}>
                     {offer.listingType} • You offered: {offer.offeredItem}
+                    {offer._count.counterOffers > 0 && (
+                      <span className={styles.counterBadge}>
+                        ↩ {offer._count.counterOffers} counter{offer._count.counterOffers > 1 ? 's' : ''}
+                      </span>
+                    )}
                   </span>
                 </div>
                 <span className={`${styles.itemStatus} ${styles[offer.status.toLowerCase()]}`}>

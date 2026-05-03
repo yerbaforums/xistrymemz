@@ -145,6 +145,12 @@ export const barterOfferUpdateSchema = z.object({
   message: z.string().max(1000).optional()
 })
 
+export const counterOfferSchema = z.object({
+  offeredItem: z.string().min(1, 'Offered item description is required').max(500),
+  offeredValue: z.number().min(0).optional(),
+  message: z.string().max(1000).optional()
+})
+
 export const postSchema = z.object({
   content: z.string().min(1, 'Content is required').max(2000),
   imageUrl: z.string().max(500).optional().nullable(),

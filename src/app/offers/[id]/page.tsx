@@ -7,6 +7,7 @@ import Link from 'next/link'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
+import { CounterOfferModal } from '@/components/CounterOfferModal'
 
 interface BarterOffer {
   id: string
@@ -19,6 +20,7 @@ interface BarterOffer {
   offeredValue: number | null
   message: string | null
   createdAt: string
+  parentOfferId: string | null
   maker: {
     id: string
     name: string | null
@@ -33,6 +35,7 @@ interface BarterOffer {
     image: string | null
     shopSlug: string | null
   }
+  counterOffers?: BarterOffer[]
 }
 
 const STATUS_LABELS: Record<string, { label: string, color: string }> = {
@@ -53,9 +56,11 @@ export default function OfferDetailPage({
   const router = useRouter()
   const { success, error } = useToast()
   const [offer, setOffer] = useState<BarterOffer | null>(null)
+  const [counterOffers, setCounterOffers] = useState<BarterOffer[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [resolvedParams, setResolvedParams] = useState<{ id: string } | null>(null)
+  const [showCounterModal, setShowCounterModal] = useState(false)
 
   useEffect(() => {
     params.then(setResolvedParams)
@@ -75,6 +80,9 @@ export default function OfferDetailPage({
       })
       .then(data => {
         setOffer(data)
+        if (data.counterOffers) {
+          setCounterOffers(data.counterOffers)
+        }
         setLoading(false)
       })
       .catch(() => {
@@ -84,9 +92,9 @@ export default function OfferDetailPage({
 
   const isMaker = offer?.maker.id === session?.user?.id
   const isReceiver = offer?.receiver.id === session?.user?.id
-  const canRespond = offer?.status === 'PENDING' && isReceiver
-  const canWithdraw = offer?.status === 'PENDING' && isMaker
   const canAccept = offer?.status === 'PENDING' && isReceiver
+  const canWithdraw = offer?.status === 'PENDING' && isMaker
+  const canCounter = offer?.status === 'PENDING' && isReceiver
 
   const handleAction = async (action: 'ACCEPTED' | 'REJECTED' | 'WITHDRAWN') => {
     if (!offer) return
@@ -130,6 +138,8 @@ export default function OfferDetailPage({
   }
 
   const statusInfo = STATUS_LABELS[offer.status] || { label: offer.status, color: '#888' }
+  const otherUser = isMaker ? offer.receiver : offer.maker
+  const messageUser = isMaker ? offer.receiver : offer.maker
 
   return (
     <div className={styles.page}>
@@ -219,8 +229,8 @@ export default function OfferDetailPage({
           </div>
         </div>
 
-        {canAccept && (
-          <div className={styles.actions}>
+        <div className={styles.actions}>
+          {canAccept && (
             <button
               className={styles.acceptBtn}
               onClick={() => handleAction('ACCEPTED')}
@@ -228,18 +238,17 @@ export default function OfferDetailPage({
             >
               {actionLoading ? 'Processing...' : '✓ Accept Offer'}
             </button>
+          )}
+          {canCounter && (
             <button
-              className={styles.rejectBtn}
-              onClick={() => handleAction('REJECTED')}
+              className={styles.counterBtn}
+              onClick={() => setShowCounterModal(true)}
               disabled={actionLoading}
             >
-              ✗ Reject
+              🔄 Counter Offer
             </button>
-          </div>
-        )}
-
-        {canWithdraw && (
-          <div className={styles.actions}>
+          )}
+          {canWithdraw && (
             <button
               className={styles.withdrawBtn}
               onClick={() => handleAction('WITHDRAWN')}
@@ -247,9 +256,80 @@ export default function OfferDetailPage({
             >
               {actionLoading ? 'Processing...' : 'Withdraw Offer'}
             </button>
+          )}
+          {canAccept && (
+            <button
+              className={styles.rejectBtn}
+              onClick={() => handleAction('REJECTED')}
+              disabled={actionLoading}
+            >
+              ✗ Reject
+            </button>
+          )}
+          <Link
+            href={`/messages?user=${messageUser.id}`}
+            className={styles.messageBtn}
+          >
+            💬 Message
+          </Link>
+        </div>
+
+        {counterOffers.length > 0 && (
+          <div className={styles.section}>
+            <h2>Counter Offers</h2>
+            <div className={styles.counterChain}>
+              {counterOffers.map((co, i) => (
+                <div key={co.id} className={styles.counterCard}>
+                  <div className={styles.counterHeader}>
+                    <span className={styles.counterLabel}>
+                      Counter #{i + 1} — {new Date(co.createdAt).toLocaleString()}
+                    </span>
+                    <span 
+                      className={styles.counterStatus}
+                      style={{ backgroundColor: STATUS_LABELS[co.status]?.color || '#888' }}
+                    >
+                      {STATUS_LABELS[co.status]?.label || co.status}
+                    </span>
+                  </div>
+                  <div className={styles.counterFrom}>
+                    From: <Link href={getUserProfileUrl(co.maker)} className={styles.cardLink}>
+                      {co.maker.name || 'Unknown'}
+                    </Link>
+                  </div>
+                  <div className={styles.counterItem}>
+                    <strong>Offering:</strong> {co.offeredItem}
+                    {co.offeredValue && <span className={styles.counterValue}> (est. ${co.offeredValue.toFixed(2)})</span>}
+                  </div>
+                  {co.message && (
+                    <div className={styles.counterMessage}>
+                      <strong>Message:</strong> {co.message}
+                    </div>
+                  )}
+                  <Link href={`/offers/${co.id}`} className={styles.viewCounterBtn}>
+                    View Full Details →
+                  </Link>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
+
+      {offer && (
+        <CounterOfferModal
+          isOpen={showCounterModal}
+          onClose={() => setShowCounterModal(false)}
+          originalOffer={{
+            offeredItem: offer.offeredItem,
+            offeredValue: offer.offeredValue,
+            message: offer.message,
+            makerName: offer.maker.name || 'Unknown'
+          }}
+          listingTitle={offer.listingTitle}
+          listingId={offer.listingId}
+          offerId={offer.id}
+        />
+      )}
     </div>
   )
 }

@@ -20,7 +20,14 @@ export async function GET(
       where: { id },
       include: {
         maker: { select: { id: true, name: true, image: true, location: true, email: true } },
-        receiver: { select: { id: true, name: true, image: true, location: true, email: true } }
+        receiver: { select: { id: true, name: true, image: true, location: true, email: true } },
+        counterOffers: {
+          orderBy: { createdAt: 'asc' },
+          include: {
+            maker: { select: { id: true, name: true, image: true, location: true } },
+            receiver: { select: { id: true, name: true, image: true, location: true } }
+          }
+        }
       }
     })
 

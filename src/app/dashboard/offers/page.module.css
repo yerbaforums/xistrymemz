@@ -130,3 +130,14 @@
   background: #22a;
   color: #fff;
 }
+
+.counterBadge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.15rem 0.5rem;
+  background: rgba(170, 102, 238, 0.15);
+  color: #a6e;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}

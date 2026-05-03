@@ -978,10 +978,15 @@ model BarterOffer {
   receiverId   String
   receiver    User        @relation("BarterOfferReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
 
+  parentOfferId String?    @db.VarChar(30)
+  parentOffer   BarterOffer? @relation("CounterOffer", fields: [parentOfferId], references: [id], onDelete: SetNull)
+  counterOffers BarterOffer[] @relation("CounterOffer")
+
   @@index([makerId])
   @@index([receiverId])
   @@index([listingId])
   @@index([status])
+  @@index([parentOfferId])
 }
 
 model Notification {
