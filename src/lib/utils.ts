@@ -9,7 +9,7 @@ export function slugify(text: string | null | undefined): string {
 }
 
 export function getUserProfileParam(user: { id: string; name?: string | null; shopSlug?: string | null }): string {
-  return user.shopSlug || slugify(user.name) || user.id
+  return slugify(user.name) || user.shopSlug || user.id
 }
 
 export function getUserProfileUrl(user: { id: string; name?: string | null; shopSlug?: string | null }): string {

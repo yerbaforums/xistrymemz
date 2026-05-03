@@ -8,6 +8,19 @@ import Image from 'next/image'
 import styles from './profile.module.css'
 import Rating from '@/components/Rating'
 import { getUserProfileUrl, slugify } from '@/lib/utils'
+import { QRCodeModal } from '@/components/QRCodeModal'
+
+const CRYPTO_LOGOS: Record<string, string> = {
+  BTC: 'bitcoin.png',
+  ETH: 'ethereum.png',
+  USDT: 'tether.png',
+  USDC: 'usd-coin.png',
+  XMR: 'monero.png',
+  XTM: 'tari.png',
+  ARRR: 'pirate-chain.png',
+  DERO: 'dero.png',
+  ZANO: 'zano.png',
+}
 
 interface UserLink {
   id: string
@@ -134,8 +147,8 @@ interface UserGroup {
 ]
 
 function DonationCard({ donation }: { donation: DonationAddr }) {
-  const [showQR, setShowQR] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [qrOpen, setQrOpen] = useState(false)
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(donation.address)
@@ -144,32 +157,35 @@ function DonationCard({ donation }: { donation: DonationAddr }) {
   }
 
   return (
-    <div className={styles.donationCard}>
-      <div className={styles.donationInfo}>
-        <img src={`/crypto-logos/${donation.currency.toLowerCase()}.png`} alt="" width={24} height={24} />
-        <div>
-          <div className={styles.donationLabel}>
-            {donation.label || donation.currency}
+    <>
+      <div className={styles.donationCard}>
+        <div className={styles.donationInfo}>
+          <img src={`/crypto-logos/${CRYPTO_LOGOS[donation.currency] || 'ethereum.png'}`} alt="" width={24} height={24} />
+          <div>
+            <div className={styles.donationLabel}>
+              {donation.label || donation.currency}
+            </div>
+            <code className={styles.donationAddress}>{donation.address}</code>
           </div>
-          <code className={styles.donationAddress}>{donation.address}</code>
         </div>
-      </div>
-      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-        {donation.showQR && (
-          <button onClick={() => setShowQR(true)} className={styles.toggleQRBtn}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button onClick={() => setQrOpen(true)} className={styles.toggleQRBtn}>
             QR
           </button>
-        )}
-        <button onClick={handleCopy} className={styles.copyBtn}>
-          {copied ? 'Copied!' : 'Copy'}
-        </button>
-      </div>
-      {showQR && (
-        <div className={styles.qrCodeSection}>
-          <img src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(donation.address)}&bgcolor=0d0d0d&color=ffffff`} alt={`${donation.currency} QR code`} width={120} height={120} />
+          <button onClick={handleCopy} className={styles.copyBtn}>
+            {copied ? 'Copied!' : 'Copy'}
+          </button>
         </div>
+      </div>
+      {qrOpen && (
+        <QRCodeModal
+          isOpen={true}
+          onClose={() => setQrOpen(false)}
+          currency={donation.label || donation.currency}
+          address={donation.address}
+        />
       )}
-    </div>
+    </>
   )
 }
 
@@ -248,7 +264,7 @@ export default function ProfilePage() {
       setProducts(data.products || [])
       setConnections(data.connections || [])
       setGroups(data.groups || [])
-      setDonationAddresses(data.donationAddresses || [])
+      setDonationAddresses(data.user.donationAddresses || [])
       setTotalPostCount(data.totalPostCount ?? data.posts?.length ?? 0)
       setHasMorePosts((data.totalPostCount ?? 0) > (data.posts?.length ?? 0))
       const donationsRes = await fetch(`/api/users/donations?userId=${targetId}`)

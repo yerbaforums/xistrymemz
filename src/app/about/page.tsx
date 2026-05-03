@@ -5,6 +5,18 @@ import Link from 'next/link'
 import styles from './page.module.css'
 import { QRCodeModal } from '@/components/QRCodeModal'
 
+const CRYPTO_LOGOS: Record<string, string> = {
+  BTC: 'bitcoin.png',
+  ETH: 'ethereum.png',
+  USDT: 'tether.png',
+  USDC: 'usd-coin.png',
+  XMR: 'monero.png',
+  XTM: 'tari.png',
+  ARRR: 'pirate-chain.png',
+  DERO: 'dero.png',
+  ZANO: 'zano.png',
+}
+
 interface DonationAddr {
   id: string
   currency: string
@@ -61,12 +73,16 @@ export default function About() {
             <div className={styles.donationList}>
               {donations.map(da => (
                 <div key={da.id} className={styles.donationItem}>
+                  <img
+                    src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'ethereum.png'}`}
+                    alt={da.currency}
+                    width={24}
+                    height={24}
+                  />
                   <span className={styles.donationLabel}>{da.label || da.currency}</span>
                   <code className={styles.donationAddr}>{da.address}</code>
                   <button onClick={() => copyAddress(da.address)} className={styles.copyBtn}>Copy</button>
-                  {da.showQR && (
-                    <button onClick={() => setQrOpen(da)} className={styles.copyBtn}>QR</button>
-                  )}
+                  <button onClick={() => setQrOpen(da)} className={styles.copyBtn}>QR</button>
                 </div>
               ))}
             </div>
