@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
+import { QRCodeModal } from '@/components/QRCodeModal'
 
 interface DonationAddr {
   id: string
@@ -14,6 +15,7 @@ interface DonationAddr {
 
 export default function About() {
   const [donations, setDonations] = useState<DonationAddr[]>([])
+  const [qrOpen, setQrOpen] = useState<DonationAddr | null>(null)
 
   useEffect(() => {
     fetch('/api/site/donations')
@@ -63,14 +65,7 @@ export default function About() {
                   <code className={styles.donationAddr}>{da.address}</code>
                   <button onClick={() => copyAddress(da.address)} className={styles.copyBtn}>Copy</button>
                   {da.showQR && (
-                    <div className={styles.donationQR}>
-                      <img
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(da.address)}&bgcolor=0d0d0d&color=ffffff`}
-                        alt={`${da.currency} QR`}
-                        width={120}
-                        height={120}
-                      />
-                    </div>
+                    <button onClick={() => setQrOpen(da)} className={styles.copyBtn}>QR</button>
                   )}
                 </div>
               ))}
@@ -87,6 +82,15 @@ export default function About() {
           </div>
         </div>
       </section>
+
+      {qrOpen && (
+        <QRCodeModal
+          isOpen={true}
+          onClose={() => setQrOpen(null)}
+          currency={qrOpen.label || qrOpen.currency}
+          address={qrOpen.address}
+        />
+      )}
     </div>
   )
 }
