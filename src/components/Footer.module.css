@@ -73,6 +73,9 @@
 .bottomCenter {
   display: flex;
   justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 
 .openSourceLink {
@@ -97,6 +100,25 @@
 
 .openSourceLink:hover .githubIcon {
   color: var(--accent-primary);
+}
+
+.bottomBuiltWith {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  margin-top: 4px;
+}
+
+.version {
+  background: var(--bg-tertiary);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  letter-spacing: 0.5px;
 }
 
 .legal {

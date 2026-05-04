@@ -4,20 +4,9 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './Footer.module.css'
 import { QRCodeModal } from './QRCodeModal'
+import { CRYPTO_LOGOS } from '@/lib/constants'
 
 const PACKAGE_VERSION = '0.7.0'
-
-const CRYPTO_LOGOS: Record<string, string> = {
-  BTC: 'bitcoin.png',
-  ETH: 'ethereum.png',
-  USDT: 'tether.png',
-  USDC: 'usd-coin.png',
-  XMR: 'monero.png',
-  XTM: 'tari.png',
-  ARRR: 'pirate-chain.png',
-  DERO: 'dero.png',
-  ZANO: 'zano.png',
-}
 
 interface DonationAddr {
   id: string
@@ -116,7 +105,10 @@ export default function Footer() {
               </svg>
               Open Source
             </a>
-            <span className={styles.version}>Built with OpenCode and Next.js · {PACKAGE_VERSION}</span>
+          </div>
+          <div className={styles.bottomBuiltWith}>
+            <span>Built with OpenCode and Next.js</span>
+            <span className={styles.version}>{PACKAGE_VERSION}</span>
           </div>
         </div>
       </div>

@@ -329,30 +329,59 @@
   text-decoration: none;
 }
 
-/* Donations */
-.donateSection {
+/* Support CTA */
+.supportSection {
   padding: 64px 24px;
   text-align: center;
   border-bottom: 1px solid var(--border-color);
 }
 
-.donateSection h2 {
+.supportContent {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.supportContent h2 {
   font-size: 1.5rem;
   color: var(--text-primary);
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
-.donateSection > p {
+.supportContent p {
   color: var(--text-secondary);
-  margin-bottom: 32px;
+  margin-bottom: 24px;
+  font-size: 0.95rem;
+  line-height: 1.6;
 }
 
-.cryptoAddresses {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  max-width: 700px;
-  margin: 0 auto;
+/* Donations (legacy - unused on home page) */
+.copyBtn {
+  padding: 6px 14px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.copyBtn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.cryptoAddr {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  word-break: break-all;
+  font-family: monospace;
+  background: var(--bg-tertiary);
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
 }
 
 .cryptoItem {
@@ -385,7 +414,13 @@
   white-space: nowrap;
 }
 
-.copyBtn {
+.cryptoAddresses {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 700px;
+  margin: 0 auto;
+}
   padding: 6px 14px;
   background: transparent;
   border: 1px solid var(--border-color);

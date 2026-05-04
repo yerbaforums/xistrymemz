@@ -4,18 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
 import { QRCodeModal } from '@/components/QRCodeModal'
-
-const CRYPTO_LOGOS: Record<string, string> = {
-  BTC: 'bitcoin.png',
-  ETH: 'ethereum.png',
-  USDT: 'tether.png',
-  USDC: 'usd-coin.png',
-  XMR: 'monero.png',
-  XTM: 'tari.png',
-  ARRR: 'pirate-chain.png',
-  DERO: 'dero.png',
-  ZANO: 'zano.png',
-}
+import { CRYPTO_LOGOS } from '@/lib/constants'
 
 interface DonationAddr {
   id: string
