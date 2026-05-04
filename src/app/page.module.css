@@ -421,6 +421,8 @@
   max-width: 700px;
   margin: 0 auto;
 }
+
+.copyBtn {
   padding: 6px 14px;
   background: transparent;
   border: 1px solid var(--border-color);

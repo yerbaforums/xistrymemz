@@ -252,10 +252,10 @@ export default function ProfilePage() {
       setPlans(data.plans || [])
       setProducts(data.products || [])
       setConnections(data.connections || [])
-       setGroups(data.groups || [])
-       setDonationAddresses(data.user.donationAddresses || [])
-       setTotalPostCount(data.totalPostCount ?? data.posts?.length ?? 0)
-       setHasMorePosts((data.totalPostCount ?? 0) > (data.posts?.length ?? 0))
+      setGroups(data.groups || [])
+      setDonationAddresses(data.user.donationAddresses || [])
+      setTotalPostCount(data.totalPostCount ?? data.posts?.length ?? 0)
+      setHasMorePosts((data.totalPostCount ?? 0) > (data.posts?.length ?? 0))
       setEditForm({
         name: data.user.name || '',
         bio: data.user.bio || '',
