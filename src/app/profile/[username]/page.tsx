@@ -180,6 +180,9 @@ const CLASS_ICONS: Record<string, string> = {
 
 function DonationCard({ donation }: { donation: DonationAddr }) {
   const [qrOpen, setQrOpen] = useState(false)
+  const shortAddr = donation.address.length > 12
+    ? donation.address.slice(0, 6) + '...' + donation.address.slice(-4)
+    : donation.address
 
   return (
     <>
@@ -190,7 +193,7 @@ function DonationCard({ donation }: { donation: DonationAddr }) {
             <div className={styles.donationLabel}>
               {donation.label || donation.currency}
             </div>
-            <code className={styles.donationAddress}>{donation.address}</code>
+            <code className={styles.donationAddress} title={donation.address}>{shortAddr}</code>
           </div>
         </div>
         <DonationActions address={donation.address} onQrClick={() => setQrOpen(true)} size="md" />
@@ -208,41 +211,17 @@ function DonationCard({ donation }: { donation: DonationAddr }) {
 }
 
 function CompactDonation({ donation }: { donation: DonationAddr }) {
-  const [copied, setCopied] = useState(false)
   const [qrOpen, setQrOpen] = useState(false)
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(donation.address)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
   const shortAddr = donation.address.length > 8
     ? donation.address.slice(0, 3) + '...' + donation.address.slice(-3)
     : donation.address
 
   return (
     <>
-      <div className={styles.compactDonationCard}>
+      <div className={styles.compactDonationCard} onClick={() => setQrOpen(true)}>
         <img src={`/crypto-logos/${CRYPTO_LOGOS[donation.currency] || 'ethereum.png'}`} alt="" width={16} height={16} />
         <span className={styles.compactDonationLabel}>{donation.label || donation.currency}</span>
         <code className={styles.compactDonationAddr} title={donation.address}>{shortAddr}</code>
-        <div className={styles.compactDonationActions}>
-          <button onClick={() => setQrOpen(true)} className={styles.compactIconBtn} title="Show QR Code">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-              <rect x="3" y="14" width="7" height="7"/><rect x="17" y="17" width="4" height="4"/>
-              <line x1="17" y1="14" x2="17" y2="15"/><line x1="14" y1="17" x2="15" y2="17"/>
-            </svg>
-          </button>
-          <button onClick={handleCopy} className={styles.compactIconBtn} title="Copy address">
-            {copied ? (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
-            ) : (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            )}
-          </button>
-        </div>
       </div>
       {qrOpen && (
         <QRCodeModal
@@ -257,8 +236,6 @@ function CompactDonation({ donation }: { donation: DonationAddr }) {
 }
 
 function LinkCard({ link, styles }: { link: UserLink; styles: Record<string, string> }) {
-  const [qrOpen, setQrOpen] = useState(false)
-  const [copied, setCopied] = useState(false)
   const socialType = ['twitter', 'github', 'instagram', 'linkedin', 'youtube', 'tiktok', 'discord', 'telegram'].includes(link.type)
     ? link.type
     : 'website'
@@ -274,45 +251,23 @@ function LinkCard({ link, styles }: { link: UserLink; styles: Record<string, str
     website: '🔗'
   }
   const iconSrc = link.icon || iconMap[socialType]
-  
-  const handleCopyLink = async () => {
-    await navigator.clipboard.writeText(link.url)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
 
   return (
-    <>
-      <div className={styles.linkPillContainer}>
-        <a
-          href={link.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={styles.linkPill}
-        >
-          {iconSrc.startsWith('/') ? (
-            <img src={iconSrc} alt={link.label || link.type} width={16} height={16} />
-          ) : (
-            <span>{iconSrc}</span>
-          )}
-          <span>{link.label || link.type}</span>
-        </a>
-        <button onClick={handleCopyLink} className={styles.copyLinkBtn} title="Copy Link">
-          {copied ? '✓' : '📋'}
-        </button>
-        <button onClick={() => setQrOpen(true)} className={styles.qrBtn} title="Show QR Code">
-          QR
-        </button>
-      </div>
-      {qrOpen && (
-        <QRCodeModal
-          isOpen={true}
-          onClose={() => setQrOpen(false)}
-          currency={link.label || link.type}
-          address={link.url}
-        />
-      )}
-    </>
+    <div className={styles.linkPillContainer}>
+      <a
+        href={link.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={styles.linkPill}
+      >
+        {iconSrc.startsWith('/') ? (
+          <img src={iconSrc} alt={link.label || link.type} width={16} height={16} />
+        ) : (
+          <span>{iconSrc}</span>
+        )}
+        <span>{link.label || link.type}</span>
+      </a>
+    </div>
   )
 }
 
