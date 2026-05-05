@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation'
 import styles from './page.module.css'
 import dynamic from 'next/dynamic'
 import { useToast } from '@/context/ToastContext'
+import RoleBadge from '@/components/RoleBadge'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
@@ -15,7 +16,7 @@ const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ss
 interface Joiner {
   id: string
   userId: string
-  user: { name: string | null; email: string; image?: string }
+  user: { name: string | null; email: string; image?: string; role: string; userClass: string | null }
 }
 
 interface Event {
@@ -37,7 +38,7 @@ interface Event {
   planTitle: string | null
   userId: string
   userName: string | null
-  organizer?: { id: string; name: string; email: string; image: string }
+  organizer?: { id: string; name: string; email: string; image: string; role: string }
   group?: { id: string; name: string }
   joiners: Joiner[]
   joined?: boolean
@@ -102,7 +103,7 @@ function EventDetailContent() {
         setEvent({ 
           ...event, 
           joined: true, 
-          joiners: [...event.joiners, { id: '', userId, user: { name: null, email: '' } }],
+          joiners: [...event.joiners, { id: '', userId, user: { name: null, email: '', role: 'USER', userClass: null } }],
           _count: event._count ? { eventJoiners: event._count.eventJoiners + 1 } : undefined
         })
       } else {
@@ -220,7 +221,13 @@ function EventDetailContent() {
             </div>
             
             <h1>{event.title}</h1>
-            <p className={styles.author}>by {event.userName || 'Unknown'}</p>
+            <p className={styles.author}>
+              by{' '}
+              <Link href={`/profile/${event.userId}`} className={styles.authorLink}>
+                {event.userName || 'Unknown'}
+              </Link>
+              {event.organizer?.role && <RoleBadge role={event.organizer.role} />}
+            </p>
             {event.planTitle && (
               <p className={styles.planRef}>From: {event.planTitle}</p>
             )}
@@ -315,13 +322,21 @@ function EventDetailContent() {
                 <span>{showJoiners ? '▼' : '▶'}</span>
               </button>
               
-              {showJoiners && (
+               {showJoiners && (
                 <div className={styles.joinerList}>
                   {event.joiners.map((j, i) => (
                     <div key={`${j.id}-${i}`} className={styles.joinerItem}>
-                      <span className={styles.joinerName}>
-                        {j.user.name || j.user.email || `User ${i + 1}`}
-                      </span>
+                      <Link href={`/profile/${j.userId}`} className={styles.joinerLink}>
+                        <span className={styles.joinerName}>
+                          {j.user.name || j.user.email || `User ${i + 1}`}
+                        </span>
+                        {j.user.role && j.user.role !== 'USER' && (
+                          <span className={styles.joinerRoleBadge}><RoleBadge role={j.user.role} /></span>
+                        )}
+                        {j.user.userClass && (
+                          <span className={styles.joinerClass}>{j.user.userClass.split(',')[0].trim()}</span>
+                        )}
+                      </Link>
                       <Link href={`/messages?user=${j.userId}`} className={styles.messageBtn}>
                         💬
                       </Link>
@@ -355,14 +370,19 @@ function EventDetailContent() {
             </div>
           )}
 
-          {!isOwner && joinerCount > 0 && (
+           {!isOwner && joinerCount > 0 && (
             <div className={styles.joinersCard}>
               <h3>Joined ({joinerCount})</h3>
               <div className={styles.joinerList}>
                 {event.joiners.slice(0, 10).map((j, i) => (
-                  <span key={`${j.id}-${i}`} className={styles.joinerBadge}>
-                    {j.user.name || j.user.email || `User ${i + 1}`}
-                  </span>
+                  <Link key={`${j.id}-${i}`} href={`/profile/${j.userId}`} className={styles.joinerBadgeLink}>
+                    <span className={styles.joinerBadge}>
+                      {j.user.name || j.user.email || `User ${i + 1}`}
+                    </span>
+                    {j.user.role && j.user.role !== 'USER' && (
+                      <span className={styles.badgeDot} title={j.user.role}></span>
+                    )}
+                  </Link>
                 ))}
                 {joinerCount > 10 && (
                   <span className={styles.joinerBadge}>

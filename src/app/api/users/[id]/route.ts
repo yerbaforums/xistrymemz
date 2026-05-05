@@ -20,8 +20,13 @@ export async function GET(
       coverImage: true,
       bio: true,
       location: true,
+      neighborhood: true,
+      latitude: true,
+      longitude: true,
+      searchRadius: true,
       website: true,
       userClass: true,
+      role: true,
       shopName: true,
       shopSlug: true,
       schoolName: true,
@@ -85,7 +90,7 @@ export async function GET(
     const userId = user.id
 
     const postsTake = 20
-    const [plans, posts, products, connections, groupMemberships, totalPostCount] = await Promise.all([
+    const [plans, posts, products, connections, groupMemberships, totalPostCount, userLocations] = await Promise.all([
       prisma.plan.findMany({
         where: { userId },
         select: {
@@ -182,6 +187,11 @@ export async function GET(
             { targetUserId: userId }
           ]
         }
+      }),
+      prisma.userLocation.findMany({
+        where: { userId },
+        orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }],
+        take: 10
       })
     ])
 
@@ -265,7 +275,15 @@ export async function GET(
         role: gm.role,
         joinedAt: gm.joinedAt
       })),
-      totalPostCount
+      totalPostCount,
+      userLocations: userLocations.map(loc => ({
+        id: loc.id,
+        name: loc.name,
+        location: loc.location,
+        latitude: loc.latitude,
+        longitude: loc.longitude,
+        isPrimary: loc.isPrimary
+      }))
     })
   } catch (error) {
     console.error('Error fetching user:', error)

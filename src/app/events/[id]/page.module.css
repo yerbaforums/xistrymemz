@@ -61,6 +61,29 @@
   color: var(--text-muted);
   font-size: 0.9rem;
   margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.authorLink {
+  color: var(--accent-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.authorLink:hover {
+  text-decoration: underline;
+}
+
+.joinerLink {
+  text-decoration: none;
+  color: inherit;
+}
+
+.joinerLink:hover .joinerName {
+  color: var(--accent-primary);
 }
 
 .planRef {
@@ -256,6 +279,53 @@
   background: var(--bg-tertiary);
   border-radius: var(--radius-md);
   margin-bottom: 8px;
+}
+
+.joinerLink {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  flex: 1;
+  min-width: 0;
+}
+
+.joinerName {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.joinerRoleBadge {
+  flex-shrink: 0;
+}
+
+.joinerClass {
+  font-size: 0.65rem;
+  color: var(--accent-primary);
+  background: rgba(0, 217, 255, 0.1);
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.joinerBadgeLink {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.badgeDot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  flex-shrink: 0;
 }
 
 .joinerName {

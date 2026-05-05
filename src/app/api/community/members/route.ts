@@ -23,6 +23,7 @@ export async function GET() {
         bio: true,
         location: true,
         userClass: true,
+        role: true,
         shopSlug: true,
         createdAt: true,
         _count: {

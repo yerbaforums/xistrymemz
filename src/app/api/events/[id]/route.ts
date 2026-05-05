@@ -16,7 +16,7 @@ export async function GET(
       where: { id },
       include: {
         organizer: {
-          select: { id: true, name: true, email: true, image: true }
+          select: { id: true, name: true, email: true, image: true, role: true }
         },
         plan: { select: { id: true, title: true } },
         group: { select: { id: true, name: true } },
@@ -30,7 +30,7 @@ export async function GET(
             id: true,
             userId: true,
             user: {
-              select: { name: true, email: true, image: true }
+              select: { name: true, email: true, image: true, role: true, userClass: true }
             }
           },
           take: 50

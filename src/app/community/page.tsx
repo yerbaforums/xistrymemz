@@ -9,6 +9,7 @@ import styles from './community.module.css'
 import { EmptyState } from '@/components/EmptyState'
 import { SkeletonList } from '@/components/Skeleton'
 import { getUserProfileUrl } from '@/lib/utils'
+import RoleBadge from '@/components/RoleBadge'
 
 interface Member {
   id: string
@@ -18,6 +19,7 @@ interface Member {
   bio: string | null
   location: string | null
   userClass: string | null
+  role: string
   shopSlug: string | null
   createdAt: string
   planCount?: number
@@ -25,6 +27,13 @@ interface Member {
   productCount?: number
   connectionCount?: number
   postCount?: number
+}
+
+const CLASS_ICONS: Record<string, string> = {
+  Healer: '💚', Revealer: '👁️', Seer: '🔮', Teacher: '📚',
+  Guide: '🧭', Warrior: '⚔️', Guardian: '🛡️', Sage: '🦉',
+  Mystic: '✨', Architect: '🏗️', Artist: '🎨', Builder: '🔨',
+  Explorer: '🌍', Mentor: '🌟'
 }
 
 interface Connection {
@@ -351,9 +360,19 @@ export default function CommunityPage() {
                     )}
                   </div>
                   <div className={styles.memberInfo}>
-                    <h3>{member.name || 'Anonymous User'}</h3>
+                    <h3>
+                      {member.name || 'Anonymous User'}
+                      <RoleBadge role={member.role || 'USER'} />
+                    </h3>
                     {member.userClass && (
-                      <span className={styles.classBadge}>{member.userClass}</span>
+                      <div className={styles.classBadges}>
+                        {member.userClass.split(',').map(c => c.trim()).filter(Boolean).map(cls => (
+                          <span key={cls} className={styles.classBadge}>
+                            <span className={styles.classIcon}>{CLASS_ICONS[cls] || '👤'}</span>
+                            {cls}
+                          </span>
+                        ))}
+                      </div>
                     )}
                     {member.location && (
                       <p className={styles.memberLocation}>

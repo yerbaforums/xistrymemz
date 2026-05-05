@@ -11,6 +11,13 @@ import Rating from '@/components/Rating'
 import { getUserProfileUrl } from '@/lib/utils'
 import { MakeOfferModal } from '@/components/MakeOfferModal'
 import { ComingSoonModal } from '@/components/ComingSoonModal'
+import RoleBadge from '@/components/RoleBadge'
+import dynamic from 'next/dynamic'
+
+const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
+const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
+const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false })
+const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false })
 
 interface Product {
   id: string
@@ -31,6 +38,8 @@ interface Product {
     name: string | null
     email: string
     shopSlug: string | null
+    role: string
+    userClass: string | null
   }
   createdAt: string
   acceptsRequests: boolean
@@ -557,6 +566,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <Link href={getUserProfileUrl(product.user)} className={styles.sellerName}>
               {product.user.name || 'Unknown'}
             </Link>
+            {product.user.role && <RoleBadge role={product.user.role} />}
+            {product.user.userClass && (
+              <div className={styles.sellerClasses}>
+                {product.user.userClass.split(',').map(c => c.trim()).filter(Boolean).map(cls => (
+                  <span key={cls} className={styles.classBadge}>{cls}</span>
+                ))}
+              </div>
+            )}
             <Rating userId={product.user.id} productId={product.id} type="SELLER" />
             {sellerShop?.hasShop && sellerShop.shopSlug && (
               <Link href={`/shop/${sellerShop.shopSlug}`} className={styles.shopLink}>
@@ -572,6 +589,27 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               <p className={styles.locationDetails}>{product.locationDetails}</p>
             )}
           </div>
+
+          {!product.isGlobal && product.latitude && product.longitude && (
+            <div className={styles.mapCard}>
+              <h3>📍 Product Location</h3>
+              <div className={styles.mapContainer}>
+                <MapContainer center={[product.latitude, product.longitude]} zoom={13} style={{ height: '100%', width: '100%', position: 'relative', zIndex: 1 }}>
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  <Marker position={[product.latitude, product.longitude]}>
+                    <Popup>
+                      <strong>{product.title}</strong>
+                      <br />
+                      {product.location}
+                    </Popup>
+                  </Marker>
+                </MapContainer>
+              </div>
+            </div>
+          )}
 
           {!settings.enableCheckout && session?.user && product.sellerPayoutAddress && (
             <div className={styles.payoutCard}>

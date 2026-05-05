@@ -10,6 +10,13 @@ import Rating from '@/components/Rating'
 import { getUserProfileUrl, slugify } from '@/lib/utils'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { CRYPTO_LOGOS } from '@/lib/constants'
+import RoleBadge from '@/components/RoleBadge'
+import dynamic from 'next/dynamic'
+
+const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
+const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
+const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false })
+const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false })
 
 interface UserLink {
   id: string
@@ -29,6 +36,15 @@ interface DonationAddr {
   showQR: boolean
 }
 
+interface UserLocation {
+  id: string
+  name: string
+  location: string
+  latitude: number | null
+  longitude: number | null
+  isPrimary: boolean
+}
+
 interface ProfileUser {
   id: string
   name: string | null
@@ -36,8 +52,13 @@ interface ProfileUser {
   coverImage: string | null
   bio: string | null
   location: string | null
+  neighborhood: string | null
+  latitude: number | null
+  longitude: number | null
+  searchRadius: number
   website: string | null
   userClass: string | null
+  role: string
   shopName: string | null
   shopSlug: string | null
   schoolName: string | null
@@ -62,6 +83,7 @@ interface ProfileUser {
   donationCurrency: string | null
   donationAddresses: DonationAddr[]
   links: UserLink[]
+  userLocations: UserLocation[]
 }
 
 interface Post {
@@ -134,6 +156,23 @@ interface UserGroup {
   'Explorer',
   'Mentor'
 ]
+
+const CLASS_ICONS: Record<string, string> = {
+  Healer: '💚',
+  Revealer: '👁️',
+  Seer: '🔮',
+  Teacher: '📚',
+  Guide: '🧭',
+  Warrior: '⚔️',
+  Guardian: '🛡️',
+  Sage: '🦉',
+  Mystic: '✨',
+  Architect: '🏗️',
+  Artist: '🎨',
+  Builder: '🔨',
+  Explorer: '🌍',
+  Mentor: '🌟'
+}
 
 function DonationCard({ donation }: { donation: DonationAddr }) {
   const [copied, setCopied] = useState(false)
@@ -454,28 +493,34 @@ export default function ProfilePage() {
                )}
              </div>
           
-          <div className={styles.profileInfo}>
-            <div className={styles.nameRow}>
-              {editMode ? (
-                <input
-                  type="text"
-                  value={editForm.name}
-                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                  className={styles.editInput}
-                  placeholder="Display name"
-                />
-              ) : (
-                <h1>{user.name || 'Anonymous User'}</h1>
-              )}
-            </div>
-            
-            {userClasses.length > 0 && (
-              <div className={styles.classes}>
-                {userClasses.map(cls => (
-                  <span key={cls} className={styles.classBadge}>{cls}</span>
-                ))}
-              </div>
-            )}
+           <div className={styles.profileInfo}>
+             <div className={styles.nameRow}>
+               {editMode ? (
+                 <input
+                   type="text"
+                   value={editForm.name}
+                   onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                   className={styles.editInput}
+                   placeholder="Display name"
+                 />
+               ) : (
+                 <>
+                   <h1>{user.name || 'Anonymous User'}</h1>
+                   <RoleBadge role={user.role || 'USER'} />
+                 </>
+               )}
+             </div>
+             
+             {userClasses.length > 0 && (
+               <div className={styles.classes}>
+                 {userClasses.map(cls => (
+                   <span key={cls} className={styles.classBadge}>
+                     <span className={styles.classIcon}>{CLASS_ICONS[cls] || '👤'}</span>
+                     {cls}
+                   </span>
+                 ))}
+               </div>
+             )}
             
             <div className={styles.meta}>
               {user.location && (
@@ -493,7 +538,7 @@ export default function ProfilePage() {
                 </span>
               </div>
 
-              <div className={styles.passportSection}>
+               <div className={styles.passportSection}>
                 <div className={styles.passportHeader}>
                   <span className={styles.passportIcon}>🌍</span>
                   <span className={styles.passportTitle}>Earth Passport</span>
@@ -507,6 +552,39 @@ export default function ProfilePage() {
                   <div className={styles.passportId}>
                     <span className={styles.passportIdLabel}>Passport ID</span>
                     <span className={styles.passportIdValue}>{user.earthId}</span>
+                  </div>
+                )}
+                {(user.location || user.neighborhood) && (
+                  <div className={styles.passportLocation}>
+                    <div className={styles.passportLocationRow}>
+                      <span className={styles.passportLocationIcon}>📍</span>
+                      <div>
+                        {user.location && <span className={styles.passportLocationText}>{user.location}</span>}
+                        {user.neighborhood && <span className={styles.passportNeighborhood}>{user.neighborhood}</span>}
+                      </div>
+                    </div>
+                    {user.searchRadius > 0 && (
+                      <span className={styles.searchRadius} title="Search radius">
+                        📡 {user.searchRadius}km
+                      </span>
+                    )}
+                  </div>
+                )}
+                {user.latitude && user.longitude && (
+                  <div className={styles.passportCoords}>
+                    <span className={styles.coordLabel}>Coords</span>
+                    <span className={styles.coordValue}>{user.latitude.toFixed(4)}, {user.longitude.toFixed(4)}</span>
+                  </div>
+                )}
+                {user.userLocations && user.userLocations.length > 0 && (
+                  <div className={styles.userLocations}>
+                    <span className={styles.locationsLabel}>Locations</span>
+                    {user.userLocations.map(loc => (
+                      <div key={loc.id} className={styles.locationItem}>
+                        <span className={styles.locationName}>{loc.isPrimary ? '★' : '·'} {loc.name}</span>
+                        <span className={styles.locationText}>{loc.location}</span>
+                      </div>
+                    ))}
                   </div>
                 )}
                 {user.reputationScore > 0 && (
@@ -527,6 +605,23 @@ export default function ProfilePage() {
                   {user.verifiedIdentity && <span className={styles.vBadge}>✓ ID</span>}
                   {user.verifiedAddress && <span className={styles.vBadge}>✓ Address</span>}
                 </div>
+                {user.latitude && user.longitude && (
+                  <div className={styles.passportMap}>
+                    <MapContainer center={[user.latitude, user.longitude]} zoom={10} style={{ height: '100%', width: '100%', position: 'relative', zIndex: 1 }}>
+                      <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      />
+                      <Marker position={[user.latitude, user.longitude]}>
+                        <Popup>
+                          <strong>{user.name || 'User'}</strong>
+                          <br />
+                          {user.location || 'Earth'}
+                        </Popup>
+                      </Marker>
+                    </MapContainer>
+                  </div>
+                )}
               </div>
 
               <div className={styles.stats}>
@@ -1057,7 +1152,7 @@ export default function ProfilePage() {
                   </button>
                 </div>
               </form>
-            ) : (
+             ) : (
               <>
                 <div className={styles.aboutBlock}>
                   <h3>Bio</h3>
@@ -1066,8 +1161,43 @@ export default function ProfilePage() {
                 <div className={styles.aboutBlock}>
                   <h3>Details</h3>
                   <dl>
+                    <dt>Role</dt>
+                    <dd><RoleBadge role={user.role || 'USER'} size="small" /></dd>
+                    {userClasses.length > 0 && (
+                      <>
+                        <dt>Classes</dt>
+                        <dd>
+                          <div className={styles.aboutClasses}>
+                            {userClasses.map(cls => (
+                              <span key={cls} className={styles.classBadge}>
+                                <span className={styles.classIcon}>{CLASS_ICONS[cls] || '👤'}</span>
+                                {cls}
+                              </span>
+                            ))}
+                          </div>
+                        </dd>
+                      </>
+                    )}
                     <dt>Location</dt>
                     <dd>{user.location || 'Not specified'}</dd>
+                    {user.neighborhood && (
+                      <>
+                        <dt>Neighborhood</dt>
+                        <dd>{user.neighborhood}</dd>
+                      </>
+                    )}
+                    {user.latitude && user.longitude && (
+                      <>
+                        <dt>Coordinates</dt>
+                        <dd><code className={styles.coordCode}>{user.latitude.toFixed(4)}, {user.longitude.toFixed(4)}</code></dd>
+                      </>
+                    )}
+                    {user.searchRadius > 0 && (
+                      <>
+                        <dt>Search Radius</dt>
+                        <dd>{user.searchRadius} km</dd>
+                      </>
+                    )}
                     <dt>Website</dt>
                     <dd>{user.website ? <a href={user.website.startsWith('http') ? user.website : `https://${user.website}`} target="_blank" rel="noopener noreferrer">{user.website}</a> : 'Not specified'}</dd>
                     <dt>Member since</dt>

@@ -111,6 +111,13 @@
   line-height: 1.2;
 }
 
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .email {
   color: var(--text-secondary);
   font-size: 0.95rem;
@@ -345,6 +352,20 @@
 
 .aboutBlock dd a {
   color: var(--accent-primary);
+}
+
+.aboutClasses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.coordCode {
+  font-family: monospace;
+  background: var(--bg-tertiary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.85rem;
 }
 
 .editForm {
@@ -651,6 +672,13 @@
   border-radius: 20px;
   font-size: 0.8rem;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.classIcon {
+  font-size: 0.85rem;
 }
 
 .shopSection,
@@ -1151,6 +1179,107 @@
   letter-spacing: 1px;
 }
 
+.passportLocation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.passportLocationRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.passportLocationIcon {
+  font-size: 16px;
+  margin-top: 1px;
+}
+
+.passportLocationText {
+  display: block;
+  font-size: 13px;
+  color: #c0e0c0;
+  font-weight: 500;
+}
+
+.passportNeighborhood {
+  display: block;
+  font-size: 11px;
+  color: #88aa88;
+  margin-top: 2px;
+}
+
+.searchRadius {
+  font-size: 11px;
+  color: #88aa88;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 3px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.passportCoords {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.coordLabel {
+  font-size: 11px;
+  color: #6a8a6a;
+  font-weight: 500;
+}
+
+.coordValue {
+  font-family: monospace;
+  font-size: 12px;
+  color: #88bb88;
+}
+
+.userLocations {
+  margin-bottom: 10px;
+}
+
+.locationsLabel {
+  display: block;
+  font-size: 11px;
+  color: #6a8a6a;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.locationItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 10px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+.locationName {
+  font-size: 12px;
+  color: #a0c0a0;
+  font-weight: 500;
+}
+
+.locationText {
+  font-size: 11px;
+  color: #779977;
+}
+
 .reputationScore {
   display: flex;
   align-items: center;
@@ -1200,6 +1329,14 @@
   color: #7fff7f;
   border-radius: 4px;
   font-weight: 500;
+}
+
+.passportMap {
+  margin-top: 12px;
+  height: 180px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #2a4a2a;
 }
 
 .verificationBadge {
