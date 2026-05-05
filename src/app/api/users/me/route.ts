@@ -70,7 +70,8 @@ export async function PUT(request: Request) {
     const {
       name, username, bio, location, neighborhood, searchRadius, traveling, website, userClass,
       walletAddress, paymentAddress, refundAddress, cryptoCurrency,
-      donationAddress, donationCurrency, acceptsDonations
+      donationAddress, donationCurrency, acceptsDonations,
+      latitude, longitude
     } = validation.data
 
     if (username !== undefined && username !== null && username !== '') {
@@ -101,6 +102,8 @@ export async function PUT(request: Request) {
         neighborhood: neighborhood || null,
         searchRadius: searchRadius || 50,
         traveling: traveling || false,
+        latitude: latitude ?? null,
+        longitude: longitude ?? null,
         website: website || null,
         walletAddress: walletAddress || null,
         paymentAddress: paymentAddress || null,
@@ -121,6 +124,9 @@ export async function PUT(request: Request) {
         location: true,
         neighborhood: true,
         searchRadius: true,
+        traveling: true,
+        latitude: true,
+        longitude: true,
         website: true,
         walletAddress: true,
         paymentAddress: true,

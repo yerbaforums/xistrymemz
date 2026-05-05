@@ -122,7 +122,7 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
         </div>
         <div className={styles.headerActions}>
           <Link href="/plans/public" className="btn-secondary">Explore Projects</Link>
-          <Link href="/plans/new" className="btn-primary">+ New Project</Link>
+          <Link href="/plans" className="btn-primary">+ New Project</Link>
         </div>
       </div>
 
@@ -196,7 +196,7 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
           <div className={styles.emptyIcon}>📋</div>
           <h3>No projects found</h3>
           <p>Try adjusting your search or filters, or create a new project.</p>
-          <Link href="/plans/new" className="btn-primary">Create Your First Project</Link>
+          <Link href="/plans" className="btn-primary">Create Your First Project</Link>
         </div>
       ) : viewMode === 'grid' ? (
         <div className={styles.cardGrid}>

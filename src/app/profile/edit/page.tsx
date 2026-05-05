@@ -178,13 +178,20 @@ export default function ProfileEditPage() {
           name, username, bio, location, website, userClass,
           walletAddress, paymentAddress, refundAddress, cryptoCurrency,
           acceptsDonations, neighborhood, searchRadius,
-          latitude: latitude || null, longitude: longitude || null,
+          latitude: latitude ?? null, longitude: longitude ?? null,
           traveling
         })
       })
 
       if (!res.ok) throw new Error('Failed to update')
-      alert('Profile updated successfully!')
+
+      const oldUsername = userData?.username
+      const newUsername = username?.toLowerCase().replace(/[^a-z0-9]/g, '') || ''
+      if (newUsername && newUsername !== oldUsername) {
+        router.push(`/profile/${newUsername}`)
+      } else {
+        alert('Profile updated successfully!')
+      }
     } catch (err) {
       console.error('Error updating profile:', err)
       setError('Failed to update profile')

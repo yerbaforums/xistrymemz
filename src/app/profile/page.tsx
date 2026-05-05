@@ -17,7 +17,7 @@ export default async function MyProfilePage() {
     select: { shopSlug: true, name: true, email: true }
   })
   
-  const username = user?.shopSlug || user?.name?.toLowerCase().replace(/\s+/g, '-') || user?.email?.split('@')[0]
+  const username = user?.username || user?.shopSlug || user?.name?.toLowerCase().replace(/\s+/g, '-') || user?.email?.split('@')[0]
   
   if (username) {
     redirect(`/profile/${username}`)

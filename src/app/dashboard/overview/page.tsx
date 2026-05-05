@@ -199,7 +199,7 @@ const [
             <Link href="/shop/setup" className={styles.actionBtn}>
               <span>🛒</span> New Product
             </Link>
-            <Link href="/plans/new" className={styles.actionBtn}>
+            <Link href="/plans" className={styles.actionBtn}>
               <span>🚀</span> New Project
             </Link>
             <Link href="/requests" className={styles.actionBtn}>
@@ -242,7 +242,7 @@ const [
           ) : (
             <div className={styles.emptyState}>
               <p>No projects yet</p>
-              <Link href="/plans/new" className={styles.emptyAction}>Create your first project</Link>
+              <Link href="/plans" className={styles.emptyAction}>Create your first project</Link>
             </div>
           )}
         </div>
