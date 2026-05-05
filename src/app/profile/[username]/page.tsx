@@ -9,6 +9,7 @@ import styles from './profile.module.css'
 import Rating from '@/components/Rating'
 import { getUserProfileUrl } from '@/lib/utils'
 import { QRCodeModal } from '@/components/QRCodeModal'
+import { ShareProfileModal } from '@/components/ShareProfileModal'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
 import dynamic from 'next/dynamic'
@@ -314,12 +315,10 @@ export default function ProfilePage() {
   const [isOwnProfile, setIsOwnProfile] = useState(false)
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set())
   const [copiedShare, setCopiedShare] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
 
   const handleShareProfile = async () => {
-    const url = window.location.href
-    await navigator.clipboard.writeText(url)
-    setCopiedShare(true)
-    setTimeout(() => setCopiedShare(false), 2000)
+    setShowShareModal(true)
   }
 
   const getTargetId = () => {
@@ -1278,6 +1277,13 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
+
+      <ShareProfileModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        username={user.username || ''}
+        displayName={user.name || 'User'}
+      />
     </div>
   )
 }

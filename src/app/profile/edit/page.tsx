@@ -30,14 +30,14 @@ interface DonationAddr {
 
 const SOCIAL_TYPES = [
   { type: 'website', label: 'Website', defaultIcon: '🔗' },
-  { type: 'twitter', label: 'Twitter / X', defaultIcon: '/social-logos/twitter.png' },
-  { type: 'github', label: 'GitHub', defaultIcon: '/social-logos/github.png' },
-  { type: 'instagram', label: 'Instagram', defaultIcon: '/social-logos/instagram.png' },
-  { type: 'linkedin', label: 'LinkedIn', defaultIcon: '/social-logos/linkedin.png' },
-  { type: 'youtube', label: 'YouTube', defaultIcon: '/social-logos/youtube.png' },
-  { type: 'tiktok', label: 'TikTok', defaultIcon: '/social-logos/tiktok.png' },
-  { type: 'discord', label: 'Discord', defaultIcon: '/social-logos/discord.png' },
-  { type: 'telegram', label: 'Telegram', defaultIcon: '/social-logos/telegram.png' },
+  { type: 'twitter', label: 'Twitter / X', defaultIcon: '/social-logos/twitter.svg' },
+  { type: 'github', label: 'GitHub', defaultIcon: '/social-logos/github.svg' },
+  { type: 'instagram', label: 'Instagram', defaultIcon: '/social-logos/instagram.svg' },
+  { type: 'linkedin', label: 'LinkedIn', defaultIcon: '/social-logos/linkedin.svg' },
+  { type: 'youtube', label: 'YouTube', defaultIcon: '/social-logos/youtube.svg' },
+  { type: 'tiktok', label: 'TikTok', defaultIcon: '/social-logos/tiktok.svg' },
+  { type: 'discord', label: 'Discord', defaultIcon: '/social-logos/discord.svg' },
+  { type: 'telegram', label: 'Telegram', defaultIcon: '/social-logos/telegram.svg' },
   { type: 'custom', label: 'Custom Link', defaultIcon: '🔗' }
 ]
 
