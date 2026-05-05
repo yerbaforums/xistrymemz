@@ -139,7 +139,7 @@ export default function ConnectionsPage() {
                   borderRadius: '12px'
                 }}
               >
-                <Link href={`getUserProfileUrl(conn.requester)`}>
+                <Link href={getUserProfileUrl(conn.requester)}>
                   <div style={{
                     width: '60px',
                     height: '60px',
@@ -165,7 +165,7 @@ export default function ConnectionsPage() {
                   </div>
                 </Link>
                 <div style={{ flex: 1 }}>
-                  <Link href={`getUserProfileUrl(conn.requester)`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                  <Link href={getUserProfileUrl(conn.requester)} style={{ color: 'inherit', textDecoration: 'none' }}>
                     <div style={{ fontWeight: '600', marginBottom: '4px' }}>
                       {conn.requester.name || 'Unknown'}
                     </div>
@@ -237,7 +237,7 @@ export default function ConnectionsPage() {
                   opacity: 0.7
                 }}
               >
-                <Link href={`getUserProfileUrl(conn.receiver)`}>
+                <Link href={getUserProfileUrl(conn.receiver)}>
                   <div style={{
                     width: '50px',
                     height: '50px',
@@ -263,7 +263,7 @@ export default function ConnectionsPage() {
                   </div>
                 </Link>
                 <div style={{ flex: 1 }}>
-                  <Link href={`getUserProfileUrl(conn.receiver)`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                  <Link href={getUserProfileUrl(conn.receiver)} style={{ color: 'inherit', textDecoration: 'none' }}>
                     <div style={{ fontWeight: '500' }}>
                       {conn.receiver.name || 'Unknown'}
                     </div>

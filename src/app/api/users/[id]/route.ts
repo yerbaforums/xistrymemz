@@ -52,11 +52,18 @@ export async function GET(
       }
     }
 
-    // Resolve param: try username first, then ID
+    // Resolve param: try username first, then shopSlug, then ID
     let user = await prisma.user.findUnique({
       where: { username: param },
       select: publicSelect
     })
+
+    if (!user) {
+      user = await prisma.user.findUnique({
+        where: { shopSlug: param },
+        select: publicSelect
+      })
+    }
 
     if (!user) {
       user = await prisma.user.findUnique({
