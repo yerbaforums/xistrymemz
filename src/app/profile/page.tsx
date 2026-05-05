@@ -14,7 +14,7 @@ export default async function MyProfilePage() {
   
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { shopSlug: true, name: true, email: true }
+    select: { username: true, shopSlug: true, name: true, email: true }
   })
   
   const username = user?.username || user?.shopSlug || user?.name?.toLowerCase().replace(/\s+/g, '-') || user?.email?.split('@')[0]
