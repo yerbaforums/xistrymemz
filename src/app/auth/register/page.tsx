@@ -10,6 +10,7 @@ import styles from '../login/page.module.css'
 export default function RegisterPage() {
   const router = useRouter()
   const [name, setName] = useState('')
+  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [inviteCode, setInviteCode] = useState('')
@@ -57,7 +58,7 @@ export default function RegisterPage() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, inviteCode: inviteCode || null })
+        body: JSON.stringify({ name, username: username.toLowerCase().replace(/[^a-z0-9]/g, '') || null, email, password, inviteCode: inviteCode || null })
       })
 
       const data = await res.json()
@@ -117,15 +118,30 @@ export default function RegisterPage() {
           {error && <div className={styles.error} role="alert">⚠️ {error}</div>}
           
           <div className={styles.formGroup}>
-            <label htmlFor="name">Name</label>
+            <label htmlFor="name">Display Name</label>
             <input
               id="name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
+              placeholder="Your display name"
               required
             />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="username">Username</label>
+            <input
+              id="username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))}
+              placeholder="username"
+              required
+              maxLength={50}
+              pattern="[a-zA-Z0-9]+"
+            />
+            <span className={styles.fieldHint}>Letters and numbers only. This will be your profile URL.</span>
           </div>
 
           <div className={styles.formGroup}>

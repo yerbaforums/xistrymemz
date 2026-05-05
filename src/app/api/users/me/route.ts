@@ -18,6 +18,7 @@ export async function GET() {
         select: {
           id: true,
           name: true,
+          username: true,
           email: true,
           image: true,
           bio: true,
@@ -67,15 +68,34 @@ export async function PUT(request: Request) {
     }
 
     const {
-      name, bio, location, neighborhood, searchRadius, website, userClass,
+      name, username, bio, location, neighborhood, searchRadius, website, userClass,
       walletAddress, paymentAddress, refundAddress, cryptoCurrency,
       donationAddress, donationCurrency, acceptsDonations
     } = validation.data
+
+    if (username !== undefined && username !== null && username !== '') {
+      const normalized = username.toLowerCase().replace(/[^a-z0-9]/g, '')
+      if (normalized) {
+        const existing = await prisma.user.findFirst({
+          where: {
+            username: normalized,
+            id: { not: session.user.id }
+          }
+        })
+        if (existing) {
+          return NextResponse.json(
+            { error: 'Username already taken. Please choose a different username.' },
+            { status: 400 }
+          )
+        }
+      }
+    }
 
     const updated = await prisma.user.update({
       where: { id: session.user.id },
       data: {
         name: name || null,
+        username: username ? username.toLowerCase().replace(/[^a-z0-9]/g, '') : null,
         bio: bio || null,
         location: location || null,
         neighborhood: neighborhood || null,
@@ -93,6 +113,7 @@ export async function PUT(request: Request) {
       select: {
         id: true,
         name: true,
+        username: true,
         email: true,
         image: true,
         bio: true,

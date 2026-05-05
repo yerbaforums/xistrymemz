@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { slugify } from '@/lib/utils'
 
 export async function GET(
   request: Request,
@@ -16,6 +15,7 @@ export async function GET(
     const publicSelect = {
       id: true,
       name: true,
+      username: true,
       image: true,
       coverImage: true,
       bio: true,
@@ -51,31 +51,11 @@ export async function GET(
       }
     }
 
-    // Resolve param: try shopSlug first, then exact name match, then ID
+    // Resolve param: try username first, then ID
     let user = await prisma.user.findUnique({
-      where: { shopSlug: param },
+      where: { username: param },
       select: publicSelect
     })
-
-    if (!user) {
-      const slug = slugify(param)
-      if (slug) {
-        // Use exact match - users with the exact same slugified name
-        user = await prisma.user.findFirst({
-          where: {
-            name: {
-              equals: param,
-              mode: 'insensitive'
-            }
-          },
-          select: publicSelect
-        })
-        // Verify the found user's name actually slugifies to the param
-        if (user && slugify(user.name) !== slug) {
-          user = null
-        }
-      }
-    }
 
     if (!user) {
       user = await prisma.user.findUnique({
@@ -304,7 +284,26 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { name, bio, location, website, image, coverImage, userClass } = await request.json()
+    const { name, username, bio, location, website, image, coverImage, userClass } = await request.json()
+
+    if (username !== undefined && username !== null && username !== '') {
+      const normalized = username.toLowerCase().replace(/[^a-z0-9]/g, '')
+      if (normalized) {
+        const existingUsername = await prisma.user.findFirst({
+          where: {
+            username: normalized,
+            id: { not: id }
+          }
+        })
+
+        if (existingUsername) {
+          return NextResponse.json(
+            { error: 'Username already taken. Please choose a different username.' },
+            { status: 400 }
+          )
+        }
+      }
+    }
 
     if (name !== undefined && name !== null && name !== '') {
       const existingName = await prisma.user.findFirst({
@@ -322,20 +321,23 @@ export async function PUT(
       }
     }
 
+    const updateData: Record<string, unknown> = {}
+    if (name !== undefined) updateData.name = name || null
+    if (username !== undefined) updateData.username = (username || null) ? username.toLowerCase().replace(/[^a-z0-9]/g, '') : undefined
+    if (bio !== undefined) updateData.bio = bio || null
+    if (location !== undefined) updateData.location = location || null
+    if (website !== undefined) updateData.website = website || null
+    if (image !== undefined) updateData.image = image || null
+    if (coverImage !== undefined) updateData.coverImage = coverImage || null
+    if (userClass !== undefined) updateData.userClass = userClass || null
+
     const updated = await prisma.user.update({
       where: { id },
-      data: {
-        name: name !== undefined ? (name || null) : undefined,
-        bio: bio !== undefined ? (bio || null) : undefined,
-        location: location !== undefined ? (location || null) : undefined,
-        website: website !== undefined ? (website || null) : undefined,
-        image: image !== undefined ? (image || null) : undefined,
-        coverImage: coverImage !== undefined ? (coverImage || null) : undefined,
-        userClass: userClass !== undefined ? (userClass || null) : undefined
-      },
+      data: updateData,
       select: {
         id: true,
         name: true,
+        username: true,
         email: true,
         image: true,
         coverImage: true,

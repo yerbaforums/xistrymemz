@@ -7,7 +7,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import styles from './profile.module.css'
 import Rating from '@/components/Rating'
-import { getUserProfileUrl, slugify } from '@/lib/utils'
+import { getUserProfileUrl } from '@/lib/utils'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
@@ -48,6 +48,7 @@ interface UserLocation {
 interface ProfileUser {
   id: string
   name: string | null
+  username: string | null
   image: string | null
   coverImage: string | null
   bio: string | null
@@ -237,6 +238,7 @@ export default function ProfilePage() {
   const [editMode, setEditMode] = useState(false)
   const [editForm, setEditForm] = useState({
     name: '',
+    username: '',
     bio: '',
     location: '',
     website: '',
@@ -291,6 +293,7 @@ export default function ProfilePage() {
       setHasMorePosts((data.totalPostCount ?? 0) > (data.posts?.length ?? 0))
       setEditForm({
         name: data.user.name || '',
+        username: data.user.username || '',
         bio: data.user.bio || '',
         location: data.user.location || '',
         website: data.user.website || '',
@@ -319,10 +322,9 @@ export default function ProfilePage() {
       
       if (res.ok) {
         setEditMode(false)
-        const newName = editForm.name || ''
-        const newSlug = slugify(newName)
-        if (newSlug && newSlug !== params.username) {
-          router.push(`/profile/${newSlug}`)
+        const newUsername = editForm.username?.toLowerCase().replace(/[^a-z0-9]/g, '') || ''
+        if (newUsername && newUsername !== params.username) {
+          router.push(`/profile/${newUsername}`)
         } else {
           fetchProfile(getTargetId())
         }
@@ -505,22 +507,26 @@ export default function ProfilePage() {
              </div>
           
            <div className={styles.profileInfo}>
-             <div className={styles.nameRow}>
-               {editMode ? (
-                 <input
-                   type="text"
-                   value={editForm.name}
-                   onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                   className={styles.editInput}
-                   placeholder="Display name"
-                 />
-               ) : (
-                 <>
-                   <h1>{user.name || 'Anonymous User'}</h1>
-                   <RoleBadge role={user.role || 'USER'} />
-                 </>
-               )}
-             </div>
+              <div className={styles.nameRow}>
+                {editMode ? (
+                  <input
+                    type="text"
+                    value={editForm.name}
+                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                    className={styles.editInput}
+                    placeholder="Display name"
+                  />
+                ) : (
+                  <>
+                    <h1>{user.name || 'Anonymous User'}</h1>
+                    <RoleBadge role={user.role || 'USER'} />
+                  </>
+                )}
+              </div>
+              
+              {user.username && (
+                <div className={styles.username}>@{user.username}</div>
+              )}
              
              {userClasses.length > 0 && (
                <div className={styles.classes}>
@@ -1088,6 +1094,18 @@ export default function ProfilePage() {
             {editMode ? (
               <form onSubmit={handleUpdateProfile} className={styles.editForm}>
                 <div className={styles.formGroup}>
+                  <label>Username</label>
+                  <input
+                    type="text"
+                    value={editForm.username}
+                    onChange={(e) => setEditForm({ ...editForm, username: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '') })}
+                    placeholder="username"
+                    maxLength={50}
+                    pattern="[a-zA-Z0-9]+"
+                  />
+                  <small className={styles.formHint}>Profile URL: xistrymemz.xyz/profile/{editForm.username || 'username'}</small>
+                </div>
+                <div className={styles.formGroup}>
                   <label>Display Name</label>
                   <input
                     type="text"
@@ -1095,7 +1113,7 @@ export default function ProfilePage() {
                     onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                     placeholder="Your display name"
                   />
-                  <small className={styles.formHint}>This changes your profile URL to /profile/{slugify(editForm.name) || 'username'}</small>
+                  <small className={styles.formHint}>Shown on your profile and posts</small>
                 </div>
                 <div className={styles.formGroup}>
                   <label>Profile Picture URL</label>

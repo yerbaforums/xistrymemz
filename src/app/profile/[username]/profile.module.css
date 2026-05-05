@@ -118,6 +118,13 @@
   flex-wrap: wrap;
 }
 
+.username {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-top: 2px;
+  margin-bottom: 8px;
+}
+
 .email {
   color: var(--text-secondary);
   font-size: 0.95rem;

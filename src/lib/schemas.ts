@@ -154,6 +154,7 @@ export const postSchema = z.object({
 
 export const profileUpdateSchema = z.object({
   name: z.string().max(100).optional().nullable(),
+  username: z.string().max(50).optional().nullable(),
   bio: z.string().max(2000).optional().nullable(),
   location: z.string().max(200).optional().nullable(),
   neighborhood: z.string().max(200).optional().nullable(),

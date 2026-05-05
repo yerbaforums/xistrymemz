@@ -16,13 +16,34 @@ export async function POST(request: Request) {
       );
     }
 
-    const { email, password, name, inviteCode } = body
+    const { email, password, name, username, inviteCode } = body
 
     if (!email || !password) {
       return NextResponse.json(
         { error: 'Email and password are required' },
         { status: 400 }
       )
+    }
+
+    if (username) {
+      const normalized = username.toLowerCase().replace(/[^a-z0-9]/g, '')
+      if (!normalized || normalized.length < 2) {
+        return NextResponse.json(
+          { error: 'Username must be at least 2 characters (letters and numbers only).' },
+          { status: 400 }
+        )
+      }
+
+      const existingUsername = await prisma.user.findUnique({
+        where: { username: normalized }
+      })
+
+      if (existingUsername) {
+        return NextResponse.json(
+          { error: 'Username already taken. Please choose a different username.' },
+          { status: 400 }
+        )
+      }
     }
 
     if (inviteCode) {
@@ -70,26 +91,16 @@ export async function POST(request: Request) {
       )
     }
 
-    if (name) {
-      const existingName = await prisma.user.findFirst({
-        where: { name: { equals: name, mode: 'insensitive' } }
-      })
-
-      if (existingName) {
-        return NextResponse.json(
-          { error: 'Username already taken. Please choose a different display name.' },
-          { status: 400 }
-        )
-      }
-    }
-
     const hashedPassword = await bcrypt.hash(password, 10)
+
+    const normalizedUsername = username ? username.toLowerCase().replace(/[^a-z0-9]/g, '') : null
 
     const user = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
-        name
+        name,
+        username: normalizedUsername
       }
     })
 

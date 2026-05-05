@@ -48,10 +48,11 @@ export default function ProfileEditPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-  const [userData, setUserData] = useState<{ id: string; name: string | null; shopSlug: string | null } | null>(null)
+  const [userData, setUserData] = useState<{ id: string; name: string | null; username: string | null; shopSlug: string | null } | null>(null)
 
   // Profile fields
   const [name, setName] = useState('')
+  const [username, setUsername] = useState('')
   const [bio, setBio] = useState('')
   const [location, setLocation] = useState('')
   const [website, setWebsite] = useState('')
@@ -97,8 +98,9 @@ export default function ProfileEditPage() {
       const data = await res.json()
 
       const user = data.user
-      setUserData({ id: user.id, name: user.name, shopSlug: user.shopSlug })
+      setUserData({ id: user.id, name: user.name, username: user.username, shopSlug: user.shopSlug })
       setName(user.name || '')
+      setUsername(user.username || '')
       setBio(user.bio || '')
       setLocation(user.location || '')
       setWebsite(user.website || '')
@@ -134,7 +136,7 @@ export default function ProfileEditPage() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name, bio, location, website, userClass,
+          name, username, bio, location, website, userClass,
           walletAddress, paymentAddress, refundAddress, cryptoCurrency,
           acceptsDonations
         })
@@ -273,6 +275,12 @@ export default function ProfileEditPage() {
           {/* Basic Info */}
           <div style={{background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '24px', marginBottom: '20px'}}>
             <h2 style={{marginBottom: '20px'}}>Basic Information</h2>
+
+            <div style={{marginBottom: '16px'}}>
+              <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>Username</label>
+              <input type="text" value={username} onChange={e => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))} placeholder="username" maxLength={50} style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)'}} />
+              <small style={{color: 'var(--text-secondary)', fontSize: '0.75rem'}}>Letters and numbers only. Profile URL: xistrymemz.xyz/profile/{username || 'username'}</small>
+            </div>
 
             <div style={{marginBottom: '16px'}}>
               <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>Display Name</label>
