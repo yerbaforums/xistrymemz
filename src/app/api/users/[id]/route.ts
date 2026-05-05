@@ -262,7 +262,15 @@ export async function GET(
         connectionId,
         acceptsDonations: user.acceptsDonations || false,
         donationAddresses,
-        links
+        links,
+        userLocations: userLocations.map(loc => ({
+          id: loc.id,
+          name: loc.name,
+          location: loc.location,
+          latitude: loc.latitude,
+          longitude: loc.longitude,
+          isPrimary: loc.isPrimary
+        }))
       },
       plans,
       posts,
@@ -276,15 +284,7 @@ export async function GET(
         role: gm.role,
         joinedAt: gm.joinedAt
       })),
-      totalPostCount,
-      userLocations: userLocations.map(loc => ({
-        id: loc.id,
-        name: loc.name,
-        location: loc.location,
-        latitude: loc.latitude,
-        longitude: loc.longitude,
-        isPrimary: loc.isPrimary
-      }))
+      totalPostCount
     })
   } catch (error) {
     console.error('Error fetching user:', error)

@@ -82,8 +82,8 @@ interface ProfileUser {
   donationAddress: string | null
   donationCurrency: string | null
   donationAddresses: DonationAddr[]
-  links: UserLink[]
-  userLocations: UserLocation[]
+  links?: UserLink[]
+  userLocations?: UserLocation[]
 }
 
 interface Post {
