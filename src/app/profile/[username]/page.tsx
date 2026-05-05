@@ -222,6 +222,7 @@ function DonationCard({ donation }: { donation: DonationAddr }) {
 
 function CompactDonation({ donation }: { donation: DonationAddr }) {
   const [copied, setCopied] = useState(false)
+  const [qrOpen, setQrOpen] = useState(false)
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(donation.address)
@@ -229,15 +230,42 @@ function CompactDonation({ donation }: { donation: DonationAddr }) {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const shortAddr = donation.address.length > 8
+    ? donation.address.slice(0, 3) + '...' + donation.address.slice(-3)
+    : donation.address
+
   return (
-    <div className={styles.compactDonationCard}>
-      <img src={`/crypto-logos/${CRYPTO_LOGOS[donation.currency] || 'ethereum.png'}`} alt="" width={16} height={16} />
-      <span className={styles.compactDonationLabel}>{donation.label || donation.currency}</span>
-      <code className={styles.compactDonationAddr}>{donation.address}</code>
-      <button onClick={handleCopy} className={styles.compactCopyBtn}>
-        {copied ? '✓' : 'Copy'}
-      </button>
-    </div>
+    <>
+      <div className={styles.compactDonationCard}>
+        <img src={`/crypto-logos/${CRYPTO_LOGOS[donation.currency] || 'ethereum.png'}`} alt="" width={16} height={16} />
+        <span className={styles.compactDonationLabel}>{donation.label || donation.currency}</span>
+        <code className={styles.compactDonationAddr} title={donation.address}>{shortAddr}</code>
+        <div className={styles.compactDonationActions}>
+          <button onClick={() => setQrOpen(true)} className={styles.compactIconBtn} title="Show QR Code">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+              <rect x="3" y="14" width="7" height="7"/><rect x="17" y="17" width="4" height="4"/>
+              <line x1="17" y1="14" x2="17" y2="15"/><line x1="14" y1="17" x2="15" y2="17"/>
+            </svg>
+          </button>
+          <button onClick={handleCopy} className={styles.compactIconBtn} title="Copy address">
+            {copied ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+            ) : (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            )}
+          </button>
+        </div>
+      </div>
+      {qrOpen && (
+        <QRCodeModal
+          isOpen={true}
+          onClose={() => setQrOpen(false)}
+          currency={donation.label || donation.currency}
+          address={donation.address}
+        />
+      )}
+    </>
   )
 }
 
@@ -275,7 +303,7 @@ function LinkCard({ link, styles }: { link: UserLink; styles: Record<string, str
           rel="noopener noreferrer"
           className={styles.linkPill}
         >
-          {iconSrc.startsWith('http') ? (
+          {iconSrc.startsWith('/') ? (
             <img src={iconSrc} alt={link.label || link.type} width={16} height={16} />
           ) : (
             <span>{iconSrc}</span>

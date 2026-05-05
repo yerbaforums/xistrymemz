@@ -1953,18 +1953,29 @@
   white-space: nowrap;
 }
 
-.compactCopyBtn {
+.compactDonationActions {
+  display: flex;
+  gap: 3px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.compactIconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
   background: transparent;
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
-  padding: 2px 8px;
   border-radius: 4px;
-  font-size: 0.65rem;
   cursor: pointer;
   transition: var(--transition);
+  padding: 0;
 }
 
-.compactCopyBtn:hover {
+.compactIconBtn:hover {
   border-color: var(--accent-primary);
   color: var(--accent-primary);
 }
