@@ -63,7 +63,7 @@ export async function POST(
       where: { id: fid },
       data: { status: action },
       include: {
-        user: { select: { id: true, name: true, email: true, image: true, shopSlug: true } }
+        user: { select: { id: true, name: true, username: true, email: true, image: true, shopSlug: true } }
       }
     })
 

@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     const posts = await prisma.forumPost.findMany({
       where,
       include: {
-        author: { select: { id: true, name: true, email: true, image: true, shopSlug: true } },
+        author: { select: { id: true, name: true, username: true, email: true, image: true, shopSlug: true } },
         category: { select: { id: true, name: true, slug: true } },
         pollOptions: { select: { id: true, optionText: true, voteCount: true, sortOrder: true }, orderBy: { sortOrder: 'asc' } },
         _count: { select: { replies: true } }
@@ -71,7 +71,7 @@ export async function POST(req: Request) {
         pollEndsAt: pollEndsAt ? new Date(pollEndsAt) : null
       },
       include: {
-        author: { select: { id: true, name: true, email: true, image: true, shopSlug: true } },
+        author: { select: { id: true, name: true, username: true, email: true, image: true, shopSlug: true } },
         category: { select: { id: true, name: true, slug: true } }
       }
     })

@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     const replies = await prisma.forumReply.findMany({
       where: { postId },
       include: {
-        author: { select: { id: true, name: true, email: true, image: true, shopSlug: true } }
+        author: { select: { id: true, name: true, username: true, email: true, image: true, shopSlug: true } }
       },
       orderBy: { createdAt: 'asc' }
     })
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
         authorId: session.user.id
       },
       include: {
-        author: { select: { id: true, name: true, email: true, image: true, shopSlug: true } }
+        author: { select: { id: true, name: true, username: true, email: true, image: true, shopSlug: true } }
       }
     })
 

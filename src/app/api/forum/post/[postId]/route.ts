@@ -13,7 +13,7 @@ export async function GET(
     const post = await prisma.forumPost.findUnique({
       where: { id: postId },
       include: {
-        author: { select: { id: true, name: true, email: true, image: true, shopSlug: true } },
+        author: { select: { id: true, name: true, username: true, email: true, image: true, shopSlug: true } },
         category: { select: { id: true, name: true, slug: true } },
         pollOptions: { 
           select: { id: true, optionText: true, voteCount: true, sortOrder: true },

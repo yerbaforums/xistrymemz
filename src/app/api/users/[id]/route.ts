@@ -138,10 +138,10 @@ export async function GET(
         },
         include: {
           requester: {
-            select: { id: true, name: true, image: true, userClass: true, shopSlug: true }
+            select: { id: true, name: true, username: true, image: true, userClass: true, shopSlug: true }
           },
           receiver: {
-            select: { id: true, name: true, image: true, userClass: true, shopSlug: true }
+            select: { id: true, name: true, username: true, image: true, userClass: true, shopSlug: true }
           }
         },
         take: 12

@@ -11,6 +11,7 @@ import { getUserProfileUrl } from '@/lib/utils'
 interface Author {
   id: string
   name: string | null
+  username: string | null
   email: string
   image: string | null
   shopSlug: string | null

@@ -18,6 +18,7 @@ export async function GET() {
       select: {
         id: true,
         name: true,
+        username: true,
         email: true,
         image: true,
         bio: true,
@@ -77,10 +78,10 @@ export async function GET() {
       },
       include: {
         requester: {
-          select: { id: true, name: true, email: true, image: true, location: true, shopSlug: true }
+          select: { id: true, name: true, username: true, email: true, image: true, location: true, shopSlug: true }
         },
         receiver: {
-          select: { id: true, name: true, email: true, image: true, location: true, shopSlug: true }
+          select: { id: true, name: true, username: true, email: true, image: true, location: true, shopSlug: true }
         }
       }
     })
@@ -92,7 +93,7 @@ export async function GET() {
       },
       include: {
         requester: {
-          select: { id: true, name: true, email: true, image: true }
+          select: { id: true, name: true, username: true, email: true, image: true }
         }
       }
     })

@@ -45,14 +45,14 @@ export async function GET(
       include: {
         plan: {
           include: {
-            user: { select: { id: true, name: true, email: true, shopSlug: true } }
+            user: { select: { id: true, name: true, username: true, email: true, shopSlug: true } }
           }
         },
-        user: { select: { id: true, name: true, email: true, image: true, shopSlug: true } },
+        user: { select: { id: true, name: true, username: true, email: true, image: true, shopSlug: true } },
         product: { select: { id: true, title: true, price: true, imageUrl: true } },
         comments: {
           include: {
-            user: { select: { id: true, name: true, email: true, image: true, shopSlug: true } }
+            user: { select: { id: true, name: true, username: true, email: true, image: true, shopSlug: true } }
           },
           orderBy: { createdAt: 'asc' }
         },

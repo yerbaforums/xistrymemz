@@ -20,6 +20,7 @@ interface Member {
   location: string | null
   userClass: string | null
   role: string
+  username: string | null
   shopSlug: string | null
   createdAt: string
   planCount?: number

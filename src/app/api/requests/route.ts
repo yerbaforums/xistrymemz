@@ -65,7 +65,7 @@ export async function GET(request: Request) {
         schoolContent: { select: { id: true, title: true } },
         event: { select: { id: true, title: true } },
         user: {
-          select: { id: true, name: true, email: true, image: true, shopSlug: true }
+          select: { id: true, name: true, username: true, email: true, image: true, shopSlug: true }
         },
         _count: {
           select: { comments: true, fulfillments: true }
@@ -179,7 +179,7 @@ export async function POST(request: Request) {
         status: 'PENDING'
       },
       include: {
-        user: { select: { id: true, name: true, email: true, image: true, shopSlug: true } }
+        user: { select: { id: true, name: true, username: true, email: true, image: true, shopSlug: true } }
       }
     })
 
