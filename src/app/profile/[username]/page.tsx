@@ -427,21 +427,25 @@ export default function ProfilePage() {
   }
 
   const handleConnect = async () => {
+    if (!user) return
     setConnecting(true)
     try {
       const res = await fetch('/api/community/connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          receiverId: getTargetId(),
+          receiverId: user.id,
           message: connectMessage || undefined
         })
       })
       
+      const data = await res.json()
       if (res.ok) {
         setShowConnectModal(false)
         setConnectMessage('')
         fetchProfile(getTargetId())
+      } else {
+        console.error('Connect error:', data.error)
       }
     } catch (error) {
       console.error('Error connecting:', error)
