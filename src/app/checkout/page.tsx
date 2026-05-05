@@ -9,6 +9,7 @@ import { CartItem } from '@/context/CartContext'
 import Image from 'next/image'
 import { getCryptoInfo, CRYPTO_ICONS } from '@/lib/crypto-icons'
 import { useToast } from '@/context/ToastContext'
+import { useSiteSettings } from '@/hooks/useSiteSettings'
 
 interface Product {
   id: string
@@ -39,23 +40,17 @@ const CRYPTO_OPTIONS = [
   getCryptoInfo('BTC')
 ].filter(c => c !== undefined && c !== null)
 
-console.log('CRYPTO_ICONS:', CRYPTO_ICONS)
-console.log('CRYPTO_OPTIONS:', CRYPTO_OPTIONS)
-
 const PAYMENT_FEE = 0.02
-const DIRECT_FEE = 0.05
-const ESCROW_FEE = 0.10
 
 function CheckoutContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
   const { success, error, warning } = useToast()
+  const { settings: siteSettings } = useSiteSettings()
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [directProduct, setDirectProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
-
-  console.log('>>> CheckoutContent rendering, CRYPTO_OPTIONS:', CRYPTO_OPTIONS)
   const [processing, setProcessing] = useState(false)
   const [selectedCrypto, setSelectedCrypto] = useState(CRYPTO_OPTIONS[0] || CRYPTO_OPTIONS[1])
   const [paymentMethod, setPaymentMethod] = useState<'escrow' | 'direct'>('escrow')
@@ -135,8 +130,9 @@ function CheckoutContent() {
   }
 
   const getPaymentFee = () => {
+    const directFeePercent = Math.round((siteSettings.platformFeePercent || 10) / 2)
     if (paymentMethod === 'direct') {
-      return getSubtotal() * DIRECT_FEE
+      return getSubtotal() * (directFeePercent / 100)
     }
     return getSubtotal() * PAYMENT_FEE
   }
@@ -145,7 +141,7 @@ function CheckoutContent() {
     if (paymentMethod === 'direct') {
       return 0
     }
-    return getSubtotal() * ESCROW_FEE
+    return getSubtotal() * ((siteSettings.platformFeePercent || 10) / 100)
   }
 
   const getTotal = () => getSubtotal() + getCourierFee() + getPaymentFee() + getPlatformFee()
@@ -337,11 +333,11 @@ function CheckoutContent() {
                 <span>${getCourierFee().toFixed(2)}</span>
               </div>
               <div className={styles.summaryLine}>
-                <span>Payment Fee ({(paymentMethod === 'direct' ? DIRECT_FEE : PAYMENT_FEE) * 100}%)</span>
+                <span>Payment Fee ({paymentMethod === 'direct' ? Math.round((siteSettings.platformFeePercent || 10) / 2) : PAYMENT_FEE * 100}%)</span>
                 <span>${getPaymentFee().toFixed(2)}</span>
               </div>
               <div className={styles.summaryLine}>
-                <span>Platform Fee ({(paymentMethod === 'direct' ? 0 : ESCROW_FEE) * 100}%)</span>
+                <span>Platform Fee ({paymentMethod === 'direct' ? 0 : siteSettings.platformFeePercent || 10}%)</span>
                 <span>${getPlatformFee().toFixed(2)}</span>
               </div>
               <div className={`${styles.summaryLine} ${styles.total}`}>
@@ -364,7 +360,7 @@ function CheckoutContent() {
                   <span className={styles.optionIcon}>Escrow</span>
                   <div className={styles.optionInfo}>
                     <strong>Secure Escrow</strong>
-                    <small>Crypto held until delivery (10% fee)</small>
+                    <small>Crypto held until delivery ({siteSettings.platformFeePercent || 10}% fee)</small>
                   </div>
                 </button>
               )}
@@ -377,7 +373,7 @@ function CheckoutContent() {
                   <span className={styles.optionIcon}>Direct</span>
                   <div className={styles.optionInfo}>
                     <strong>Direct Payment</strong>
-                    <small>Pay directly (5% fee)</small>
+                    <small>Pay directly ({Math.round((siteSettings.platformFeePercent || 10) / 2)}% fee)</small>
                   </div>
                 </button>
               )}
@@ -400,10 +396,8 @@ function CheckoutContent() {
                               alt={crypto.symbol}
                               className={styles.cryptoIcon}
                               onError={(e) => {
-                                console.log('Icon failed for', crypto.symbol, '- showing fallback');
                                 (e.target as HTMLImageElement).style.display = 'none';
                               }}
-                              onLoad={(e) => console.log('Icon loaded for', crypto.symbol)}
                             />
                           ) : (
                             <span className={styles.cryptoIcon} style={{display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: '50%', background: crypto.color, color: '#fff', fontWeight: 700, fontSize: 12}}>
@@ -467,7 +461,7 @@ function CheckoutContent() {
                     <ol>
                       <li>Payment sent directly to seller</li>
                       <li>Faster: no escrow waiting</li>
-                      <li>5% fee (lower than escrow)</li>
+                      <li>{Math.round((siteSettings.platformFeePercent || 10) / 2)}% fee (lower than escrow)</li>
                     </ol>
                   </div>
                 )}

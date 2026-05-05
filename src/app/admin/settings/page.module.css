@@ -218,3 +218,101 @@
     align-self: flex-start;
   }
 }
+
+.feeEditor {
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+  padding: 16px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.feeInputs {
+  display: flex;
+  gap: 24px;
+  flex: 1;
+}
+
+.feeField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.feeLabel {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.feeInput {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-family: var(--font-mono, monospace);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.feeInput:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
+}
+
+.feeInput:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.feeInputDisabled {
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+}
+
+.feeSaveBtn {
+  padding: 10px 24px;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  min-width: 110px;
+}
+
+.feeSaveBtn:hover:not(:disabled) {
+  transform: scale(1.02);
+  box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+}
+
+.feeSaveBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .feeEditor {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .feeInputs {
+    flex-direction: column;
+  }
+  
+  .feeSaveBtn {
+    width: 100%;
+  }
+}

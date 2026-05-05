@@ -7,3 +7,7 @@ node_modules/
 *.log
 *.pem
 prisma/dev.db
+*.tar.gz
+prisma/schema_original.prisma
+prisma/seed-forum.ts.bak
+old sessions/

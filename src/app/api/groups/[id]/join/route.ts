@@ -14,10 +14,7 @@ export async function POST(
   }
 
   const userId = session.user.id as string
-  console.log('Extracted userId:', userId, 'type:', typeof userId)
   const { id: groupId } = await params
-  
-  console.log('Join API - userId:', userId, 'groupId:', groupId)
 
   const group = await prisma.group.findUnique({
     where: { id: groupId },

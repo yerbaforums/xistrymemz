@@ -7,6 +7,7 @@ import styles from './page.module.css'
 import { calculateDistance, geocodeLocation } from '@/lib/geocoding'
 import { useCart } from '@/context/CartContext'
 import { useToast } from '@/context/ToastContext'
+import { useSiteSettings } from '@/hooks/useSiteSettings'
 
 import dynamic from 'next/dynamic'
 
@@ -50,6 +51,7 @@ interface Product {
 export default function ProductsPage() {
   const { data: session } = useSession()
   const { warning, error, success } = useToast()
+  const { settings } = useSiteSettings()
   const [products, setProducts] = useState<Product[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [type, setType] = useState('ALL')
@@ -262,6 +264,12 @@ export default function ProductsPage() {
 
   const center = getMapCenter()
   const zoom = getMapZoom()
+
+  useEffect(() => {
+    if (mapRef.current) {
+      mapRef.current.setView(center, zoom, { animate: true })
+    }
+  }, [center, zoom])
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -829,8 +837,8 @@ export default function ProductsPage() {
                   <option value="DIRECT">Direct Payment Only</option>
                 </select>
                 <small style={{ color: 'var(--text-secondary)', marginTop: '4px', display: 'block' }}>
-                  {newProduct.paymentType === 'ESCROW' && 'Buyers pay with escrow protection (10% fee)'}
-                  {newProduct.paymentType === 'DIRECT' && 'Buyers pay directly to your wallet (5% fee)'}
+                  {newProduct.paymentType === 'ESCROW' && `Buyers pay with escrow protection (${settings.platformFeePercent || 10}% fee)`}
+                  {newProduct.paymentType === 'DIRECT' && `Buyers pay directly to your wallet (${Math.round((settings.platformFeePercent || 10) / 2)}% fee)`}
                   {newProduct.paymentType === 'BOTH' && 'Buyers can choose their preferred payment method'}
                 </small>
               </div>

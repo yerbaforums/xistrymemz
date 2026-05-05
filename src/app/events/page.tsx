@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
 import { calculateDistance, geocodeLocation } from '@/lib/geocoding'
@@ -76,6 +76,7 @@ export default function EventsPage() {
   const [joining, setJoining] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'map'>('list')
   const [currentMonth, setCurrentMonth] = useState(new Date())
+  const mapRef = useRef<L.Map | null>(null)
 
   const geocodeZipCode = useCallback(async () => {
     if (!zipCode.trim()) {
@@ -305,6 +306,12 @@ export default function EventsPage() {
   const center = getMapCenter()
   const zoom = getMapZoom()
 
+  useEffect(() => {
+    if (mapRef.current && viewMode !== 'calendar') {
+      mapRef.current.setView(center, zoom, { animate: true })
+    }
+  }, [center, zoom, viewMode])
+
   return (
     <div className={styles.page}>
       <div className={styles.header}>
@@ -446,7 +453,7 @@ export default function EventsPage() {
         </div>
       ) : viewMode === 'map' ? (
         <div style={{ height: '500px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)', marginBottom: '24px', position: 'relative', zIndex: 1 }}>
-          <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%' }}>
+          <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%' }} ref={mapRef}>
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -475,7 +482,7 @@ export default function EventsPage() {
       ) : (
         <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
           <div className={styles.mapSection} style={{ width: '350px', height: '350px', flexShrink: 0, position: 'relative', zIndex: 1 }}>
-            <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%', position: 'relative', zIndex: 1 }}>
+            <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%', position: 'relative', zIndex: 1 }} ref={mapRef}>
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

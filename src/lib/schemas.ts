@@ -104,11 +104,6 @@ export const shopSchema = z.object({
   description: z.string().max(2000).optional()
 })
 
-export const escrowSchema = z.object({
-  requestId: z.string().min(1, 'Request ID is required'),
-  amount: z.number().min(1, 'Amount must be greater than 0')
-})
-
 export const contactSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   email: z.string().email('Invalid email').max(200),

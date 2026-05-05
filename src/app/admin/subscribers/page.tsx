@@ -109,7 +109,6 @@ export default function SubscribersPage() {
     setSending(true)
     try {
       const emails = filteredSubscribers.map(s => s.email)
-      console.log('Sending email to:', emails, 'Subject:', emailSubject, 'Body:', emailBody)
       info(`Email feature ready! Would send to ${emails.length} subscribers.\n\nSubject: ${emailSubject}\n\nThis would integrate with an email service like SendGrid, Mailgun, or AWS SES.`)
       setShowEmailForm(false)
       setEmailSubject('')

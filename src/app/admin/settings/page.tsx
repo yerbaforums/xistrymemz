@@ -34,6 +34,10 @@ export default function AdminSettingsPage() {
   const [editingDonation, setEditingDonation] = useState<DonationAddr | null>(null)
   const [donationForm, setDonationForm] = useState({ currency: 'XTM', address: '', label: '', showQR: true })
 
+  const [feePercent, setFeePercent] = useState(10)
+  const [directFeePercent, setDirectFeePercent] = useState(5)
+  const [savingFee, setSavingFee] = useState(false)
+
   useEffect(() => {
     fetchSettings()
   }, [])
@@ -49,11 +53,34 @@ export default function AdminSettingsPage() {
           platformFeePercent: data.platformFeePercent,
           donationAddresses: data.donationAddresses || []
         })
+        setFeePercent(data.platformFeePercent || 10)
+        setDirectFeePercent(Math.round((data.platformFeePercent || 10) / 2))
       }
     } catch (error) {
       console.error('Failed to fetch settings:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleSaveFees = async () => {
+    setSavingFee(true)
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ platformFeePercent: feePercent })
+      })
+      if (res.ok) {
+        setSettings(prev => ({ ...prev, platformFeePercent: feePercent }))
+        setDirectFeePercent(Math.round(feePercent / 2))
+        setSaved(true)
+        setTimeout(() => setSaved(false), 2000)
+      }
+    } catch (error) {
+      console.error('Failed to save fee:', error)
+    } finally {
+      setSavingFee(false)
     }
   }
 
@@ -195,6 +222,48 @@ export default function AdminSettingsPage() {
               <span className={styles.toggleKnob} />
             </button>
           </div>
+        </div>
+      </div>
+
+      <div className={styles.section}>
+        <h2>Platform Fees</h2>
+        <p className={styles.description}>
+          Set the platform fee percentage for escrow transactions. Direct payment fees are automatically calculated at half the escrow rate.
+        </p>
+
+        <div className={styles.feeEditor}>
+          <div className={styles.feeInputs}>
+            <div className={styles.feeField}>
+              <label className={styles.feeLabel}>Escrow Fee (%)</label>
+              <input
+                type="number"
+                value={feePercent}
+                onChange={e => setFeePercent(Math.min(50, Math.max(0, parseFloat(e.target.value) || 0)))}
+                className={styles.feeInput}
+                min={0}
+                max={50}
+                step={0.5}
+                disabled={savingFee}
+              />
+            </div>
+            <div className={styles.feeField}>
+              <label className={styles.feeLabel}>Direct Fee (%)</label>
+              <input
+                type="text"
+                value={directFeePercent}
+                className={`${styles.feeInput} ${styles.feeInputDisabled}`}
+                disabled
+                title="Automatically calculated as half the escrow fee"
+              />
+            </div>
+          </div>
+          <button
+            onClick={handleSaveFees}
+            disabled={savingFee}
+            className={styles.feeSaveBtn}
+          >
+            {savingFee ? 'Saving...' : 'Save Fees'}
+          </button>
         </div>
       </div>
 

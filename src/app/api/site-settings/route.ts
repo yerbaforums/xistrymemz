@@ -19,7 +19,8 @@ export async function GET() {
 
     return NextResponse.json({
       enableCheckout: settings.enableCheckout,
-      enableWallet: settings.enableWallet
+      enableWallet: settings.enableWallet,
+      platformFeePercent: settings.platformFeePercent
     })
   } catch (error) {
     console.error('Error fetching site settings:', error)

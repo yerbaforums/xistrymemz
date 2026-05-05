@@ -34,7 +34,6 @@ export default function WalletPage() {
     { value: 'ZANO', label: 'Zano (ZANO)', network: 'Zano', icon: '/crypto-logos/zano.png', color: '#4A90D9' },
   ])
 
-console.log('CRYPTO_ICONS from wallet:', CRYPTO_ICONS)
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -54,10 +53,8 @@ console.log('CRYPTO_ICONS from wallet:', CRYPTO_ICONS)
         throw new Error('Failed to fetch wallet')
       }
       const data = await res.json()
-      console.log('Wallet data:', data)
       if (data.balance !== undefined) setBalance(data.balance)
       if (data.wallets) {
-        console.log('Wallets:', data.wallets)
         setWallets(data.wallets)
       }
       if (data.paymentAddress) setPaymentAddress(data.paymentAddress)
@@ -72,7 +69,6 @@ console.log('CRYPTO_ICONS from wallet:', CRYPTO_ICONS)
   }
 
   async function generateAddress(currency: string) {
-    console.log('Generating address for:', currency)
     setGenerating(true)
     try {
       const res = await fetch('/api/wallet', {
@@ -81,12 +77,9 @@ console.log('CRYPTO_ICONS from wallet:', CRYPTO_ICONS)
         body: JSON.stringify({ action: 'generateAddress', cryptoCurrency: currency })
       })
       const data = await res.json()
-      console.log('Generate address response:', data)
       if (data.success) {
         if (data.isNew) {
           success(`New address generated for ${data.cryptoCurrency}!`)
-        } else {
-          console.log('Existing address found')
         }
         fetchWallet()
         setSelectedCrypto(data.cryptoCurrency)
