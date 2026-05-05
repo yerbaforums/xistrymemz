@@ -136,3 +136,21 @@
   font-size: 0.875rem;
   padding: 8px 0;
 }
+
+.ownRating {
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  border-top: 1px solid var(--accent-primary);
+  margin-top: 4px;
+}
+
+.ownBadge {
+  font-size: 0.65rem;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  font-weight: 600;
+}

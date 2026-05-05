@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { getUserProfileUrl } from '@/lib/utils'
 
 interface ConnectionUser {
   id: string
@@ -12,6 +13,7 @@ interface ConnectionUser {
   image: string | null
   earthId: string | null
   verificationLevel: string
+  username: string | null
 }
 
 interface Connection {
@@ -137,7 +139,7 @@ export default function ConnectionsPage() {
                   borderRadius: '12px'
                 }}
               >
-                <Link href={`/profile/${conn.requester.id}`}>
+                <Link href={`getUserProfileUrl(conn.requester)`}>
                   <div style={{
                     width: '60px',
                     height: '60px',
@@ -163,7 +165,7 @@ export default function ConnectionsPage() {
                   </div>
                 </Link>
                 <div style={{ flex: 1 }}>
-                  <Link href={`/profile/${conn.requester.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                  <Link href={`getUserProfileUrl(conn.requester)`} style={{ color: 'inherit', textDecoration: 'none' }}>
                     <div style={{ fontWeight: '600', marginBottom: '4px' }}>
                       {conn.requester.name || 'Unknown'}
                     </div>
@@ -235,7 +237,7 @@ export default function ConnectionsPage() {
                   opacity: 0.7
                 }}
               >
-                <Link href={`/profile/${conn.receiver.id}`}>
+                <Link href={`getUserProfileUrl(conn.receiver)`}>
                   <div style={{
                     width: '50px',
                     height: '50px',
@@ -261,7 +263,7 @@ export default function ConnectionsPage() {
                   </div>
                 </Link>
                 <div style={{ flex: 1 }}>
-                  <Link href={`/profile/${conn.receiver.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                  <Link href={`getUserProfileUrl(conn.receiver)`} style={{ color: 'inherit', textDecoration: 'none' }}>
                     <div style={{ fontWeight: '500' }}>
                       {conn.receiver.name || 'Unknown'}
                     </div>

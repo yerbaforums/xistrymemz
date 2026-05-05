@@ -219,6 +219,27 @@ function DonationCard({ donation }: { donation: DonationAddr }) {
   )
 }
 
+function CompactDonation({ donation }: { donation: DonationAddr }) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(donation.address)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className={styles.compactDonationCard}>
+      <img src={`/crypto-logos/${CRYPTO_LOGOS[donation.currency] || 'ethereum.png'}`} alt="" width={16} height={16} />
+      <span className={styles.compactDonationLabel}>{donation.label || donation.currency}</span>
+      <code className={styles.compactDonationAddr}>{donation.address}</code>
+      <button onClick={handleCopy} className={styles.compactCopyBtn}>
+        {copied ? '✓' : 'Copy'}
+      </button>
+    </div>
+  )
+}
+
 function LinkCard({ link, styles }: { link: UserLink; styles: Record<string, string> }) {
   const [qrOpen, setQrOpen] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -295,7 +316,7 @@ export default function ProfilePage() {
   const [postsOffset, setPostsOffset] = useState(0)
   const [totalPostCount, setTotalPostCount] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'posts' | 'plans' | 'connections' | 'groups' | 'shop' | 'school' | 'about'>('posts')
+  const [activeTab, setActiveTab] = useState<'posts' | 'plans' | 'connections' | 'groups' | 'shop' | 'school' | 'reviews' | 'about'>('posts')
   const [editMode, setEditMode] = useState(false)
   const [editForm, setEditForm] = useState({
     name: '',
@@ -522,6 +543,23 @@ export default function ProfilePage() {
     }
   }
 
+  const handleDisconnect = async () => {
+    if (!user || !user.connectionId) return
+    if (!confirm('Disconnect from this user?')) return
+
+    try {
+      const res = await fetch(`/api/community/connect?connectionId=${user.connectionId}`, {
+        method: 'DELETE'
+      })
+      
+      if (res.ok) {
+        fetchProfile(getTargetId())
+      }
+    } catch (error) {
+      console.error('Error disconnecting:', error)
+    }
+  }
+
   if (status === 'loading' || loading) {
     return <div className={styles.container}><div className={styles.loading}>Loading profile...</div></div>
   }
@@ -587,118 +625,75 @@ export default function ProfilePage() {
                 <div className={styles.username}>@{user.username}</div>
               )}
              
-             {userClasses.length > 0 && (
-               <div className={styles.classes}>
-                 {userClasses.map(cls => (
-                   <span key={cls} className={styles.classBadge}>
-                     <span className={styles.classIcon}>{CLASS_ICONS[cls] || '👤'}</span>
-                     {cls}
-                   </span>
-                 ))}
-               </div>
-             )}
-            
-            <div className={styles.meta}>
-              {user.location && (
-                <span className={styles.metaItem}>
-                  <span>📍</span> {user.location}
-                </span>
-              )}
-              {user.website && (
-                <a href={user.website.startsWith('http') ? user.website : `https://${user.website}`} target="_blank" rel="noopener noreferrer" className={styles.metaItem}>
-                  <span>🔗</span> {user.website.replace(/^https?:\/\//, '')}
-                </a>
-              )}
-<span className={styles.metaItem}>
-                  <span>📅</span> Joined {new Date(user.createdAt).toLocaleDateString()}
-                </span>
-              </div>
-
-               <div className={styles.passportSection}>
-                <div className={styles.passportHeader}>
-                  <span className={styles.passportIcon}>🌍</span>
-                  <span className={styles.passportTitle}>Earth Passport</span>
-                  {(user.earthId || (user.verificationLevel && user.verificationLevel !== 'NONE')) && (
-                    <span className={`${styles.verificationBadge} ${styles[(user.verificationLevel || 'none').toLowerCase()]}`}>
-                      {user.verificationLevel}
+              {userClasses.length > 0 && (
+                <div className={styles.classes}>
+                  {userClasses.map(cls => (
+                    <span key={cls} className={styles.classBadge}>
+                      <span className={styles.classIcon}>{CLASS_ICONS[cls] || '👤'}</span>
+                      {cls}
                     </span>
-                  )}
+                  ))}
                 </div>
-                {user.earthId && (
-                  <div className={styles.passportId}>
-                    <span className={styles.passportIdLabel}>Passport ID</span>
-                    <span className={styles.passportIdValue}>{user.earthId}</span>
-                  </div>
-                )}
+              )}
+             
+             <div className={styles.meta}>
+               {user.location && (
+                 <span className={styles.metaItem}>
+                   <span>📍</span> {user.location}
+                 </span>
+               )}
+               {user.website && (
+                 <a href={user.website.startsWith('http') ? user.website : `https://${user.website}`} target="_blank" rel="noopener noreferrer" className={styles.metaItem}>
+                   <span>🔗</span> {user.website.replace(/^https?:\/\//, '')}
+                 </a>
+               )}
+<span className={styles.metaItem}>
+                   <span>📅</span> Joined {new Date(user.createdAt).toLocaleDateString()}
+                 </span>
+               </div>
+
+              <div className={styles.compactPassport}>
+                <span className={styles.passportIcon}>🌍</span>
                 {(user.location || user.neighborhood) && (
-                  <div className={styles.passportLocation}>
-                    <div className={styles.passportLocationRow}>
-                      <span className={styles.passportLocationIcon}>📍</span>
-                      <div>
-                        {user.location && <span className={styles.passportLocationText}>{user.location}</span>}
-                        {user.neighborhood && <span className={styles.passportNeighborhood}>{user.neighborhood}</span>}
-                      </div>
-                    </div>
-                    {user.searchRadius > 0 && (
-                      <span className={styles.searchRadius} title="Search radius">
-                        📡 {user.searchRadius}km
-                      </span>
-                    )}
-                  </div>
+                  <span className={styles.compactLocation}>
+                    {user.location}{user.neighborhood ? `, ${user.neighborhood}` : ''}
+                  </span>
                 )}
-                {user.latitude && user.longitude && (
-                  <div className={styles.passportCoords}>
-                    <span className={styles.coordLabel}>Coords</span>
-                    <span className={styles.coordValue}>{user.latitude.toFixed(4)}, {user.longitude.toFixed(4)}</span>
-                  </div>
-                )}
-                {user.userLocations && user.userLocations.length > 0 && (
-                  <div className={styles.userLocations}>
-                    <span className={styles.locationsLabel}>Locations</span>
-                    {user.userLocations.map(loc => (
-                      <div key={loc.id} className={styles.locationItem}>
-                        <span className={styles.locationName}>{loc.isPrimary ? '★' : '·'} {loc.name}</span>
-                        <span className={styles.locationText}>{loc.location}</span>
-                      </div>
-                    ))}
-                  </div>
+                {user.searchRadius > 0 && (
+                  <span className={styles.compactRadius}>📡{user.searchRadius}km</span>
                 )}
                 {user.reputationScore > 0 && (
-                  <div className={styles.reputationScore}>
-                    <span className={styles.reputationLabel}>Reputation</span>
-                    <div className={styles.reputationBar}>
-                      <div 
-                        className={styles.reputationFill} 
-                        style={{ width: `${Math.min(user.reputationScore, 100)}%` }}
-                      />
-                    </div>
-                    <span className={styles.reputationValue}>{user.reputationScore.toFixed(0)}</span>
-                  </div>
+                  <span className={styles.compactRep}>Rep: {user.reputationScore.toFixed(0)}</span>
                 )}
-                <div className={styles.verificationBadges}>
-                  {user.verifiedEmail && <span className={styles.vBadge}>✓ Email</span>}
-                  {user.verifiedPhone && <span className={styles.vBadge}>✓ Phone</span>}
-                  {user.verifiedIdentity && <span className={styles.vBadge}>✓ ID</span>}
-                  {user.verifiedAddress && <span className={styles.vBadge}>✓ Address</span>}
-                </div>
-                {user.latitude && user.longitude && (
-                  <div className={styles.passportMap}>
-                    <MapContainer center={[user.latitude, user.longitude]} zoom={10} style={{ height: '100%', width: '100%', position: 'relative', zIndex: 1 }}>
-                      <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      />
-                      <Marker position={[user.latitude, user.longitude]}>
-                        <Popup>
-                          <strong>{user.name || 'User'}</strong>
-                          <br />
-                          {user.location || 'Earth'}
-                        </Popup>
-                      </Marker>
-                    </MapContainer>
-                  </div>
-                )}
+                {user.verifiedEmail && <span className={styles.compactVBadge} title="Verified email">✓E</span>}
+                {user.verifiedPhone && <span className={styles.compactVBadge} title="Verified phone">✓P</span>}
+                {user.verifiedIdentity && <span className={styles.compactVBadge} title="Verified ID">✓ID</span>}
+                {user.verifiedAddress && <span className={styles.compactVBadge} title="Verified address">✓A</span>}
               </div>
+
+              {(user.links && user.links.length > 0) && (
+                <div className={styles.compactLinks}>
+                  {user.links.slice(0, 6).map((link: UserLink) => (
+                    <LinkCard key={link.id} link={link} styles={styles} />
+                  ))}
+                  {user.links.length > 6 && (
+                    <span className={styles.compactMore}>+{user.links.length - 6} more</span>
+                  )}
+                </div>
+              )}
+
+              {user.acceptsDonations && donationAddresses.length > 0 && (
+                <div className={styles.compactDonations}>
+                  {donationAddresses.slice(0, 2).map(da => (
+                    <CompactDonation key={da.id} donation={da} />
+                  ))}
+                  {donationAddresses.length > 2 && (
+                    <button className={styles.compactDonationMore} onClick={() => setActiveTab('about')}>
+                      +{donationAddresses.length - 2} more
+                    </button>
+                  )}
+                </div>
+              )}
 
               <div className={styles.stats}>
               <div className={styles.stat}>
@@ -717,51 +712,11 @@ export default function ProfilePage() {
                 <span className={styles.statValue}>{user.connectionCount}</span>
                 <span className={styles.statLabel}>Connections</span>
               </div>
-            </div>
-
-             {!isOwnProfile && (
-              <div className={styles.ratingSection}>
-                <Rating userId={user.id} type="SELLER" />
               </div>
-            )}
-            </div>
-
-            {/* Social & Business Links - Show on all profiles */}
-            {(user.links && user.links.length > 0) && (
-              <div className={styles.profileSections}>
-                <div className={styles.sectionSeparator} />
-                <div className={styles.linksSection}>
-                  <h3>Links</h3>
-                  <div className={styles.linksGrid}>
-                    {user.links.map((link: UserLink) => (
-                      <LinkCard key={link.id} link={link} styles={styles} />
-                    ))}
-                  </div>
-                </div>
               </div>
-            )}
 
-          {/* Donation Section */}
-          {user.acceptsDonations && (
-            <div className={styles.donationSection}>
-              <div className={styles.sectionSeparator} />
-              <h3>Support with Donations</h3>
-              <div className={styles.donationsList}>
-                {(donationAddresses.length > 0 ? donationAddresses : (user.donationAddress ? [{
-                  id: 'legacy',
-                  currency: user.donationCurrency || 'ETH',
-                  address: user.donationAddress,
-                  label: null,
-                  qrCodeUrl: null,
-                  showQR: true
-                }] : [])).map(da => (
-                  <DonationCard key={da.id} donation={da} />
-                ))}
-              </div>
-            </div>
-          )}
-          
-          <div className={styles.actions}>
+           
+           <div className={styles.actions}>
             <button onClick={handleShareProfile} className={styles.shareBtn}>
               {copiedShare ? 'Copied!' : 'Share'}
             </button>
@@ -774,16 +729,31 @@ export default function ProfilePage() {
               ) : (
                 <button onClick={() => { setEditMode(true); setActiveTab('about'); }} className={styles.editBtn}>Edit Profile</button>
               )
-            ) : status === 'authenticated' ? (
+            )             : status === 'authenticated' ? (
               <>
                 <Link href={`/messages?user=${user.id}`} className={styles.messageBtn}>Message</Link>
-                <button 
-                  onClick={() => setShowConnectModal(true)}
-                  disabled={user.isConnected || user.hasPendingRequest}
-                  className={`${styles.connectBtn} ${user.isConnected ? styles.connected : ''}`}
-                >
-                  {user.isConnected ? 'Connected' : user.hasPendingRequest ? 'Pending' : 'Connect'}
-                </button>
+                {user.isConnected ? (
+                  <button 
+                    onClick={handleDisconnect}
+                    className={styles.disconnectBtn}
+                  >
+                    Disconnect
+                  </button>
+                ) : user.hasPendingRequest ? (
+                  <button 
+                    disabled
+                    className={`${styles.connectBtn} ${styles.pending}`}
+                  >
+                    Pending
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => setShowConnectModal(true)}
+                    className={styles.connectBtn}
+                  >
+                    Connect
+                  </button>
+                )}
               </>
             ) : (
               <Link href="/auth/login" className={styles.loginToConnect}>Login to Connect</Link>
@@ -833,6 +803,12 @@ export default function ProfilePage() {
             School
           </button>
         )}
+        <button 
+          className={`${styles.tab} ${activeTab === 'reviews' ? styles.active : ''}`}
+          onClick={() => setActiveTab('reviews')}
+        >
+          Reviews
+        </button>
         <button 
           className={`${styles.tab} ${activeTab === 'about' ? styles.active : ''}`}
           onClick={() => setActiveTab('about')}
@@ -1094,6 +1070,12 @@ export default function ProfilePage() {
           </div>
         )}
 
+        {activeTab === 'reviews' && (
+          <div className={styles.reviewsSection}>
+            <Rating userId={user.id} type="SELLER" />
+          </div>
+        )}
+
         {activeTab === 'about' && (
           <div className={styles.aboutSection}>
             {editMode ? (
@@ -1248,6 +1230,97 @@ export default function ProfilePage() {
                     <dd>{new Date(user.createdAt).toLocaleDateString()}</dd>
                   </dl>
                 </div>
+
+                {user.earthId && (
+                  <div className={styles.aboutBlock}>
+                    <h3>Earth Passport</h3>
+                    <div className={styles.passportId}>
+                      <span className={styles.passportIdLabel}>Passport ID</span>
+                      <span className={styles.passportIdValue}>{user.earthId}</span>
+                    </div>
+                    {user.latitude && user.longitude && (
+                      <div className={styles.passportCoords}>
+                        <span className={styles.coordLabel}>Coords</span>
+                        <span className={styles.coordValue}>{user.latitude.toFixed(4)}, {user.longitude.toFixed(4)}</span>
+                      </div>
+                    )}
+                    {user.userLocations && user.userLocations.length > 0 && (
+                      <div className={styles.userLocations}>
+                        <span className={styles.locationsLabel}>Locations</span>
+                        {user.userLocations.map(loc => (
+                          <div key={loc.id} className={styles.locationItem}>
+                            <span className={styles.locationName}>{loc.isPrimary ? '★' : '·'} {loc.name}</span>
+                            <span className={styles.locationText}>{loc.location}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {user.reputationScore > 0 && (
+                      <div className={styles.reputationScore}>
+                        <span className={styles.reputationLabel}>Reputation</span>
+                        <div className={styles.reputationBar}>
+                          <div 
+                            className={styles.reputationFill} 
+                            style={{ width: `${Math.min(user.reputationScore, 100)}%` }}
+                          />
+                        </div>
+                        <span className={styles.reputationValue}>{user.reputationScore.toFixed(0)}</span>
+                      </div>
+                    )}
+                    <div className={styles.verificationBadges}>
+                      {user.verifiedEmail && <span className={styles.vBadge}>✓ Email</span>}
+                      {user.verifiedPhone && <span className={styles.vBadge}>✓ Phone</span>}
+                      {user.verifiedIdentity && <span className={styles.vBadge}>✓ ID</span>}
+                      {user.verifiedAddress && <span className={styles.vBadge}>✓ Address</span>}
+                    </div>
+                    {user.latitude && user.longitude && (
+                      <div className={styles.passportMap}>
+                        <MapContainer center={[user.latitude, user.longitude]} zoom={10} style={{ height: '100%', width: '100%', position: 'relative', zIndex: 1 }}>
+                          <TileLayer
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                          />
+                          <Marker position={[user.latitude, user.longitude]}>
+                            <Popup>
+                              <strong>{user.name || 'User'}</strong>
+                              <br />
+                              {user.location || 'Earth'}
+                            </Popup>
+                          </Marker>
+                        </MapContainer>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {(user.links && user.links.length > 0) && (
+                  <div className={styles.aboutBlock}>
+                    <h3>All Links</h3>
+                    <div className={styles.linksGrid}>
+                      {user.links.map((link: UserLink) => (
+                        <LinkCard key={link.id} link={link} styles={styles} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {user.acceptsDonations && (
+                  <div className={styles.aboutBlock}>
+                    <h3>Support with Donations</h3>
+                    <div className={styles.donationsList}>
+                      {(donationAddresses.length > 0 ? donationAddresses : (user.donationAddress ? [{
+                        id: 'legacy',
+                        currency: user.donationCurrency || 'ETH',
+                        address: user.donationAddress,
+                        label: null,
+                        qrCodeUrl: null,
+                        showQR: true
+                      }] : [])).map(da => (
+                        <DonationCard key={da.id} donation={da} />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </div>

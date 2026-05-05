@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import styles from './settings.module.css'
+import { getUserProfileUrl } from '@/lib/utils'
 
 export default async function ProfileSettingsPage() {
   const session = await getServerSession(authOptions)
@@ -21,7 +22,7 @@ export default async function ProfileSettingsPage() {
           </div>
 
           <div className={styles.grid}>
-            <Link href={`/profile/${session.user.id}`} className={styles.card}>
+            <Link href={getUserProfileUrl({ id: session.user.id, username: (session.user as { username?: string }).username })} className={styles.card}>
               <span className={styles.cardIcon}>👤</span>
               <h3>View My Profile</h3>
               <p>See how others view your profile</p>

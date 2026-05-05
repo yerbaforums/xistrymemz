@@ -11,7 +11,7 @@
 }
 
 .coverImage {
-  height: 120px;
+  height: 80px;
   background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
   background-size: cover;
   background-position: center;
@@ -29,30 +29,33 @@
 
 .profileHeader {
   position: relative;
-  margin-bottom: 24px;
-  padding-bottom: 20px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--border-color);
-  padding-top: 60px;
+  padding-top: 50px;
 }
 
 .profileContent {
   display: grid;
   grid-template-columns: auto 1fr auto;
-  gap: 20px;
+  gap: 16px;
   align-items: start;
+  position: relative;
+  z-index: 2;
 }
 
 .coverImage {
-  height: 120px;
+  height: 80px;
   background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
   background-size: cover;
   background-position: center;
   border-radius: 12px;
   margin: 0 -24px;
   position: absolute;
-  top: -40px;
+  top: 0;
   left: 24px;
   right: 24px;
+  z-index: 1;
 }
 
 .avatarSection {
@@ -120,9 +123,9 @@
 
 .username {
   color: var(--text-secondary);
-  font-size: 0.9rem;
-  margin-top: 2px;
-  margin-bottom: 8px;
+  font-size: 0.8rem;
+  margin-top: 1px;
+  margin-bottom: 6px;
 }
 
 .email {
@@ -134,16 +137,16 @@
 .meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 .metaItem {
   color: var(--text-secondary);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
 }
 
 .metaItem a {
@@ -157,7 +160,7 @@
 
 .stats {
   display: flex;
-  gap: 20px;
+  gap: 14px;
 }
 
 .stat {
@@ -166,13 +169,13 @@
 }
 
 .statValue {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .statLabel {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--text-secondary);
 }
 
@@ -214,9 +217,20 @@
   box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
 }
 
-.connectBtn:disabled, .connectBtn.connected {
+.connectBtn:disabled, .connectBtn.pending {
   background: var(--accent-success);
   cursor: default;
+}
+
+.disconnectBtn {
+  background: transparent;
+  border: 1px solid var(--accent-secondary);
+  color: var(--accent-secondary);
+}
+
+.disconnectBtn:hover {
+  background: var(--accent-secondary);
+  color: var(--bg-primary);
 }
 
 .saveBtn {
@@ -233,18 +247,19 @@
 
 .tabs {
   display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
+  gap: 6px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
 }
 
 .tab {
-  padding: 12px 20px;
+  padding: 8px 14px;
   background: transparent;
   border: 1px solid var(--border-color);
   border-radius: 8px;
   color: var(--text-secondary);
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   transition: all 0.2s;
 }
 
@@ -674,24 +689,24 @@
 .classes {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 6px;
+  margin-bottom: 8px;
 }
 
 .classBadge {
   background: linear-gradient(135deg, var(--accent-primary), var(--accent-success));
   color: var(--bg-primary);
-  padding: 4px 12px;
+  padding: 3px 10px;
   border-radius: 20px;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
 }
 
 .classIcon {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
 }
 
 .shopSection,
@@ -845,12 +860,12 @@
 
 @media (max-width: 768px) {
   .profileHeader {
-    padding-top: 120px;
+    padding-top: 60px;
   }
 
   .coverImage {
-    height: 150px;
-    top: -120px;
+    height: 100px;
+    top: 0;
   }
 
   .profileContent {
@@ -863,12 +878,12 @@
   }
   
   .avatar {
-    width: 120px;
-    height: 120px;
+    width: 80px;
+    height: 80px;
   }
   
   .avatar span {
-    font-size: 2.5rem;
+    font-size: 2rem;
   }
   
   .meta {
@@ -898,7 +913,19 @@
   }
   
   .coverImage {
-    height: 150px;
+    height: 100px;
+  }
+
+  .compactPassport {
+    justify-content: center;
+  }
+
+  .compactLinks {
+    justify-content: center;
+  }
+
+  .compactDonations {
+    justify-content: center;
   }
 }
 
@@ -1740,7 +1767,131 @@
   color: var(--accent-primary);
 }
 
+.reviewsSection {
+  max-width: 600px;
+  padding: 16px 0;
+}
+
 .loadMoreBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Compact header elements */
+.compactPassport {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+}
+
+.compactLocation {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.compactRadius {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  background: rgba(0, 0, 0, 0.1);
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+
+.compactRep {
+  font-size: 0.7rem;
+  color: var(--accent-success);
+  font-weight: 600;
+}
+
+.compactVBadge {
+  font-size: 0.6rem;
+  padding: 2px 5px;
+  background: rgba(127, 255, 127, 0.12);
+  color: #7fff7f;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+.compactLinks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.compactMore {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.compactDonations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.compactDonationCard {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 0.75rem;
+}
+
+.compactDonationLabel {
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+}
+
+.compactDonationAddr {
+  font-family: monospace;
+  font-size: 0.65rem;
+  color: var(--text-primary);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.compactCopyBtn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.compactCopyBtn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.compactDonationMore {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.compactDonationMore:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
 }

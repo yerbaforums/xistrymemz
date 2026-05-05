@@ -40,10 +40,29 @@ export async function GET(request: Request) {
       ? ratings.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / ratings.length
       : 0
 
+    let userRating = null
+    const session = await getServerSession(authOptions)
+    if (session?.user?.id && userId) {
+      userRating = await prisma.rating.findUnique({
+        where: {
+          raterId_userId: {
+            raterId: session.user.id,
+            userId
+          }
+        },
+        include: {
+          rater: {
+            select: { id: true, name: true, image: true }
+          }
+        }
+      })
+    }
+
     return NextResponse.json({
       ratings,
       averageRating: Math.round(avgRating * 10) / 10,
-      totalRatings: ratings.length
+      totalRatings: ratings.length,
+      userRating
     })
   } catch (error) {
     console.error('Error fetching ratings:', error)

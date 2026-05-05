@@ -8,7 +8,7 @@ import { useState, useEffect, useCallback } from 'react'
 import styles from './Header.module.css'
 import CartButton from './CartButton'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
-import { slugify } from '@/lib/utils'
+import { getUserProfileUrl } from '@/lib/utils'
 
 export default function Header() {
   const { data: session, status } = useSession()
@@ -227,7 +227,7 @@ export default function Header() {
                 )}
                 <Link href="/messages" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>💬 Messages</Link>
                 <Link href="/templates" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📋 Templates</Link>
-                <Link href={`/profile/${session?.user?.name ? slugify(session.user.name) : session?.user?.id || ''}`} className={styles.mobileLink} onClick={() => setMenuOpen(false)}>👤 Profile</Link>
+                <Link href={session?.user ? getUserProfileUrl({ id: session.user.id, username: (session.user as { username?: string }).username }) : '/auth/login'} className={styles.mobileLink} onClick={() => setMenuOpen(false)}>👤 Profile</Link>
                 <Link href="/profile/settings" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>⚙️ Settings</Link>
               </div>
 
@@ -379,7 +379,7 @@ export default function Header() {
                     <span className={styles.userEmail}>{session.user.email}</span>
                   </div>
                   <div className={styles.userLinks}>
-                    <Link href={`/profile/${session?.user?.name ? slugify(session.user.name) : session?.user?.id || ''}`} className={styles.userLink}>My Profile</Link>
+                    <Link href={session?.user ? getUserProfileUrl({ id: session.user.id, username: (session.user as { username?: string }).username }) : '/auth/login'} className={styles.userLink}>My Profile</Link>
                     <Link href="/profile/settings" className={styles.userLink}>Settings</Link>
                     <Link href="/dashboard/overview" className={styles.userLink}>Dashboard</Link>
                     {settings.enableWallet ? (

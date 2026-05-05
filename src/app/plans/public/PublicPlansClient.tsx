@@ -6,6 +6,7 @@ import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import styles from '../page.module.css'
 import { useToast } from '@/context/ToastContext'
+import { getUserProfileUrl } from '@/lib/utils'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
@@ -478,7 +479,7 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
                     )}
                   </div>
                   <div className={styles.authorInfo}>
-                    <Link href={`/profile/${plan.user.id}`} className={styles.authorName}>
+                    <Link href={getUserProfileUrl(plan.user)} className={styles.authorName}>
                       {plan.user.name || 'Anonymous'}
                     </Link>
                     <span className={styles.authorDate}>
@@ -489,7 +490,7 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
               </div>
 
               <div className={styles.quickActions}>
-                <Link href={`/profile/${plan.user.id}`} className={styles.quickActionBtn}>
+                <Link href={getUserProfileUrl(plan.user)} className={styles.quickActionBtn}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                     <circle cx="12" cy="7" r="4"/>

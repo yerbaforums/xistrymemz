@@ -5,11 +5,12 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
+import { getUserProfileUrl } from '@/lib/utils'
 
 interface Member {
   id: string
   role: string
-  user: { id: string; name: string | null; image: string | null; email: string }
+  user: { id: string; name: string | null; image: string | null; email: string; username: string | null }
 }
 
 interface ActivityItem {
@@ -369,7 +370,7 @@ function GroupDetailContent() {
             <h3>Members ({group._count.members})</h3>
             <div className={styles.membersList}>
               {group.members.map(member => (
-                <Link href={`/profile/${member.user.id}`} key={member.id} className={styles.memberItem}>
+                <Link href={getUserProfileUrl(member.user)} key={member.id} className={styles.memberItem}>
                   {member.user.image ? (
                     <img src={member.user.image} alt={member.user.name || ''} />
                   ) : (

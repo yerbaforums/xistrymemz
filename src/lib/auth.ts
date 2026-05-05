@@ -55,6 +55,7 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           image: user.image,
+          username: user.username,
           role: user.role as string,
           rememberMe: credentials.rememberMe === 'true'
         }
@@ -73,6 +74,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
+        token.username = (user as { username?: string }).username
         token.role = (user as { role?: string }).role || 'USER'
         if ('rememberMe' in user) {
           token.rememberMe = (user as { rememberMe?: boolean }).rememberMe
@@ -99,8 +101,9 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         const userId = (token.id as string) || (token.sub as string)
-        ;(session.user as typeof session.user & { id: string; role?: string }).id = userId
-        ;(session.user as typeof session.user & { id: string; role?: string }).role = (token.role as string) || 'USER'
+        ;(session.user as typeof session.user & { id: string; role?: string; username?: string }).id = userId
+        ;(session.user as typeof session.user & { id: string; role?: string; username?: string }).role = (token.role as string) || 'USER'
+        ;(session.user as typeof session.user & { id: string; role?: string; username?: string }).username = token.username as string | undefined
       }
       return session
     }

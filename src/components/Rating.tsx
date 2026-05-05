@@ -29,6 +29,7 @@ export default function RatingDisplay({ userId, productId, type = 'SELLER' }: Ra
   const [newRating, setNewRating] = useState(5)
   const [comment, setComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [userRating, setUserRating] = useState<RatingData | null>(null)
 
   useEffect(() => {
     fetchRatings()
@@ -47,12 +48,24 @@ export default function RatingDisplay({ userId, productId, type = 'SELLER' }: Ra
         setRatings(data.ratings || [])
         setAverageRating(data.averageRating || 0)
         setTotalRatings(data.totalRatings || 0)
+        setUserRating(data.userRating || null)
       }
     } catch (error) {
       console.error('Error fetching ratings:', error)
     } finally {
       setLoading(false)
     }
+  }
+
+  const openRatingForm = () => {
+    if (userRating) {
+      setNewRating(userRating.rating)
+      setComment(userRating.comment || '')
+    } else {
+      setNewRating(5)
+      setComment('')
+    }
+    setShowRatingForm(true)
   }
 
   const submitRating = async () => {
@@ -112,17 +125,17 @@ export default function RatingDisplay({ userId, productId, type = 'SELLER' }: Ra
 
       {canRate && !showRatingForm && (
         <button 
-          onClick={() => setShowRatingForm(true)} 
+          onClick={openRatingForm} 
           className={styles.rateBtn}
-          aria-label="Leave a review"
+          aria-label={userRating ? "Edit your review" : "Leave a review"}
         >
-          Leave a Review
+          {userRating ? 'Edit your review' : 'Leave a Review'}
         </button>
       )}
 
       {showRatingForm && (
         <div className={styles.ratingForm}>
-          <h4>Rate this {type.toLowerCase()}</h4>
+          <h4>{userRating ? 'Edit your review' : `Rate this ${type.toLowerCase()}`}</h4>
           <div className={styles.ratingInput}>
             {[1, 2, 3, 4, 5].map(star => (
               <button
@@ -156,7 +169,7 @@ export default function RatingDisplay({ userId, productId, type = 'SELLER' }: Ra
               className="btn-primary"
               disabled={submitting}
             >
-              {submitting ? 'Submitting...' : 'Submit Review'}
+              {submitting ? 'Submitting...' : (userRating ? 'Update Review' : 'Submit Review')}
             </button>
           </div>
         </div>
@@ -164,10 +177,12 @@ export default function RatingDisplay({ userId, productId, type = 'SELLER' }: Ra
 
       {ratings.length > 0 && (
         <div className={styles.ratingList}>
-          {ratings.slice(0, 5).map(rating => (
-            <div key={rating.id} className={styles.ratingItem}>
+          {ratings.slice(0, 5).map(rating => {
+            const isOwnRating = userRating && rating.id === userRating.id
+            return (
+            <div key={rating.id} className={`${styles.ratingItem} ${isOwnRating ? styles.ownRating : ''}`}>
               <div className={styles.ratingItemHeader}>
-                <span className={styles.ratingUser}>{rating.rater.name || 'Anonymous'}</span>
+                <span className={styles.ratingUser}>{rating.rater.name || 'Anonymous'}{isOwnRating && <span className={styles.ownBadge}>You</span>}</span>
                 <span className={styles.ratingStarsInline}>
                   {[1, 2, 3, 4, 5].map(star => (
                     <span key={star} style={{ color: star <= rating.rating ? '#FFD700' : '#ccc' }}>★</span>
@@ -179,7 +194,8 @@ export default function RatingDisplay({ userId, productId, type = 'SELLER' }: Ra
                 {new Date(rating.createdAt).toLocaleDateString()}
               </span>
             </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>

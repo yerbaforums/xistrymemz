@@ -17,7 +17,7 @@ export async function GET(
       include: {
         user: { select: { id: true, name: true, image: true } },
         members: {
-          include: { user: { select: { id: true, name: true, image: true, email: true } } }
+          include: { user: { select: { id: true, name: true, image: true, email: true, username: true } } }
         },
         posts: {
           orderBy: { createdAt: 'desc' },

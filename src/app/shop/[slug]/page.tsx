@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import styles from './page.module.css'
+import { getUserProfileUrl } from '@/lib/utils'
 
 interface ShopData {
   shopName: string
   shopAbout: string | null
   shopImage: string | null
-  user: { name: string | null; id: string }
+  user: { name: string | null; id: string; username: string | null }
 }
 
 interface Product {
@@ -68,7 +69,7 @@ export default function ShopPage() {
           <h1>{shop.shopName}</h1>
           {shop.shopAbout && <p className={styles.about}>{shop.shopAbout}</p>}
           <p className={styles.owner}>
-            by <Link href={`/profile/${shop.user.id}`} className={styles.ownerLink}>{shop.user.name || 'Unknown'}</Link>
+            by <Link href={getUserProfileUrl(shop.user)} className={styles.ownerLink}>{shop.user.name || 'Unknown'}</Link>
           </p>
         </div>
       </div>

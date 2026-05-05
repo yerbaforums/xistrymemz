@@ -11,7 +11,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
       shopAbout: true,
       shopImage: true,
       name: true,
-      id: true
+      id: true,
+      username: true
     }
   })
 
@@ -23,6 +24,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
     shopName: user.shopName,
     shopAbout: user.shopAbout,
     shopImage: user.shopImage,
-    user: { name: user.name, id: user.id }
+    user: { name: user.name, id: user.id, username: user.username }
   })
 }
