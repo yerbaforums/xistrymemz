@@ -28,7 +28,7 @@ export default async function PublicPlansPage() {
       longitude: true,
       createdAt: true,
       updatedAt: true,
-      user: { select: { id: true, name: true, image: true } },
+      user: { select: { id: true, name: true, username: true, image: true } },
       _count: { select: { requests: true, joiners: true } },
       events: {
         select: {

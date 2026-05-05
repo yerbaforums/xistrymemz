@@ -28,12 +28,12 @@ export default async function RequestDetailPage({
       plan: {
         include: {
           user: {
-            select: { id: true, name: true, email: true, shopSlug: true }
+            select: { id: true, name: true, username: true, email: true, shopSlug: true }
           }
         }
       },
       user: {
-        select: { id: true, name: true, email: true, shopSlug: true }
+        select: { id: true, name: true, username: true, email: true, shopSlug: true }
       },
       product: {
         select: { id: true, title: true, price: true, imageUrl: true }
@@ -41,7 +41,7 @@ export default async function RequestDetailPage({
       comments: {
         include: {
           user: {
-            select: { id: true, name: true, email: true, shopSlug: true }
+            select: { id: true, name: true, username: true, email: true, shopSlug: true }
           }
         },
         orderBy: { createdAt: 'asc' }

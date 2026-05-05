@@ -36,7 +36,7 @@ export default async function RequestsPage() {
       product: { select: { id: true, title: true } },
       schoolContent: { select: { id: true, title: true } },
       event: { select: { id: true, title: true } },
-      user: { select: { id: true, name: true, email: true, image: true, shopSlug: true } },
+      user: { select: { id: true, name: true, username: true, email: true, image: true, shopSlug: true } },
       _count: { select: { comments: true, fulfillments: true } }
     },
     orderBy: { createdAt: 'desc' }

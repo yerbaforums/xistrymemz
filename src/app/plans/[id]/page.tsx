@@ -19,12 +19,12 @@ export default async function PlanDetailPage({
   const plan = await prisma.plan.findUnique({
     where: { id },
     include: {
-      user: { select: { id: true, name: true, email: true } },
+      user: { select: { id: true, name: true, username: true, email: true } },
       editors: { select: { userId: true } },
       requests: {
         orderBy: { createdAt: 'desc' },
         include: {
-          user: { select: { id: true, name: true, email: true } },
+          user: { select: { id: true, name: true, username: true, email: true } },
           product: { select: { id: true, title: true, price: true, imageUrl: true } }
         }
       },
