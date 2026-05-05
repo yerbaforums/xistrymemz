@@ -51,7 +51,7 @@ export async function GET(
       }
     }
 
-    // Resolve param: try shopSlug first, then slugified name, then id
+    // Resolve param: try shopSlug first, then exact name match, then ID
     let user = await prisma.user.findUnique({
       where: { shopSlug: param },
       select: publicSelect
@@ -60,10 +60,11 @@ export async function GET(
     if (!user) {
       const slug = slugify(param)
       if (slug) {
+        // Use exact match - users with the exact same slugified name
         user = await prisma.user.findFirst({
           where: {
             name: {
-              contains: param,
+              equals: param,
               mode: 'insensitive'
             }
           },

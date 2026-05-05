@@ -268,17 +268,11 @@ export default function ProfilePage() {
   }
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/login')
-    }
-  }, [status, router])
-
-  useEffect(() => {
-    if (session?.user) {
-      const targetId = getTargetId()
+    const targetId = getTargetId()
+    if (targetId) {
       fetchProfile(targetId)
     }
-  }, [session, params.username])
+  }, [status, params.username])
 
   const fetchProfile = async (targetId: string) => {
     try {
@@ -286,7 +280,7 @@ export default function ProfilePage() {
       if (!res.ok) throw new Error('Failed to fetch profile')
       const data = await res.json()
       setUser(data.user)
-      setIsOwnProfile(data.user.id === session?.user?.id)
+      setIsOwnProfile(session?.user ? (data.user.id === session.user.id) : false)
       setPosts(data.posts || [])
       setPlans(data.plans || [])
       setProducts(data.products || [])
@@ -744,11 +738,9 @@ export default function ProfilePage() {
           )}
           
           <div className={styles.actions}>
-            {!isOwnProfile && (
-              <button onClick={handleShareProfile} className={styles.shareBtn}>
-                {copiedShare ? 'Copied!' : 'Share'}
-              </button>
-            )}
+            <button onClick={handleShareProfile} className={styles.shareBtn}>
+              {copiedShare ? 'Copied!' : 'Share'}
+            </button>
             {isOwnProfile ? (
               editMode ? (
                 <>
@@ -758,7 +750,7 @@ export default function ProfilePage() {
               ) : (
                 <button onClick={() => { setEditMode(true); setActiveTab('about'); }} className={styles.editBtn}>Edit Profile</button>
               )
-            ) : (
+            ) : status === 'authenticated' ? (
               <>
                 <Link href={`/messages?user=${user.id}`} className={styles.messageBtn}>Message</Link>
                 <button 
@@ -769,6 +761,8 @@ export default function ProfilePage() {
                   {user.isConnected ? 'Connected' : user.hasPendingRequest ? 'Pending' : 'Connect'}
                 </button>
               </>
+            ) : (
+              <Link href="/auth/login" className={styles.loginToConnect}>Login to Connect</Link>
             )}
           </div>
         </div>
