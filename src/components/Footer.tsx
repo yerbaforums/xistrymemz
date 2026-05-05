@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './Footer.module.css'
 import { QRCodeModal } from './QRCodeModal'
+import { DonationActions } from './DonationActions'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 
 const PACKAGE_VERSION = '0.7.0'
@@ -25,10 +26,6 @@ export default function Footer() {
       .then(data => { if (data?.addresses) setDonations(data.addresses) })
       .catch(() => {})
   }, [])
-
-  const copyAddress = async (addr: string) => {
-    await navigator.clipboard.writeText(addr)
-  }
 
   const openQr = (da: DonationAddr) => setQrOpen(da.id)
   const closeQr = () => setQrOpen(null)
@@ -70,17 +67,16 @@ export default function Footer() {
           <div className={styles.donations}>
             <h4>Support the Platform</h4>
             {donations.map(da => (
-              <p key={da.id} className={styles.donationRow}>
+              <div key={da.id} className={styles.donationRow}>
                 <img
                   src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'ethereum.png'}`}
                   alt={da.currency}
                   className={styles.donationIcon}
                 />
-                <span className={styles.donationLabel}>{da.label || da.currency}:</span>
-                <code className={styles.donationAddr}>{da.address}</code>
-                <button onClick={() => copyAddress(da.address)} className={styles.copyBtn}>Copy</button>
-                <button onClick={() => openQr(da)} className={styles.qrBtn}>QR</button>
-              </p>
+                <span className={styles.donationLabel}>{da.label || da.currency}</span>
+                <code className={styles.donationAddr} title={da.address}>{da.address}</code>
+                <DonationActions address={da.address} onQrClick={() => openQr(da)} size="sm" />
+              </div>
             ))}
           </div>
         )}

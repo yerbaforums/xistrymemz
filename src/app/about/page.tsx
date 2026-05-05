@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
 import { QRCodeModal } from '@/components/QRCodeModal'
+import { DonationActions } from '@/components/DonationActions'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 
 interface DonationAddr {
@@ -24,10 +25,6 @@ export default function About() {
       .then(data => { if (data?.addresses) setDonations(data.addresses) })
       .catch(() => {})
   }, [])
-
-  const copyAddress = async (addr: string) => {
-    await navigator.clipboard.writeText(addr)
-  }
 
   return (
     <div className={styles.page}>
@@ -69,9 +66,8 @@ export default function About() {
                     height={24}
                   />
                   <span className={styles.donationLabel}>{da.label || da.currency}</span>
-                  <code className={styles.donationAddr}>{da.address}</code>
-                  <button onClick={() => copyAddress(da.address)} className={styles.copyBtn}>Copy</button>
-                  <button onClick={() => setQrOpen(da)} className={styles.copyBtn}>QR</button>
+                  <code className={styles.donationAddr} title={da.address}>{da.address}</code>
+                  <DonationActions address={da.address} onQrClick={() => setQrOpen(da)} size="md" />
                 </div>
               ))}
             </div>

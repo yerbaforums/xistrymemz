@@ -5,15 +5,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: 1000;
 }
 
 .modal {
-  background: var(--bg-primary);
+  background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 24px;
-  max-width: 320px;
+  max-width: 340px;
   width: 90%;
   text-align: center;
 }
@@ -26,8 +26,9 @@
 }
 
 .header h3 {
+  font-size: 1rem;
   margin: 0;
-  font-size: 1.1rem;
+  color: var(--text-primary);
 }
 
 .closeBtn {
@@ -47,38 +48,46 @@
 .qrContainer {
   display: flex;
   justify-content: center;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .qrContainer img {
   border-radius: 8px;
-  border: 1px solid var(--border-color);
 }
 
 .address {
   display: block;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  word-break: break-all;
-  padding: 8px;
-  background: var(--bg-secondary);
+  font-family: monospace;
+  font-size: 0.7rem;
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  padding: 8px 12px;
   border-radius: 6px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  word-break: break-all;
+  line-height: 1.4;
 }
 
 .copyBtn {
-  padding: 10px 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
   background: var(--accent-primary);
   color: var(--bg-primary);
   border: none;
   border-radius: 8px;
   cursor: pointer;
+  font-size: 0.8rem;
   font-weight: 600;
-  font-size: 0.9rem;
   transition: all 0.2s;
 }
 
 .copyBtn:hover {
-  transform: scale(1.02);
-  box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(0, 217, 255, 0.3);
+}
+
+.copyBtn.copied {
+  background: #22c55e;
 }

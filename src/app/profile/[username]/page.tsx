@@ -9,6 +9,7 @@ import styles from './profile.module.css'
 import Rating from '@/components/Rating'
 import { getUserProfileUrl } from '@/lib/utils'
 import { QRCodeModal } from '@/components/QRCodeModal'
+import { DonationActions } from '@/components/DonationActions'
 import { ShareProfileModal } from '@/components/ShareProfileModal'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
@@ -178,14 +179,7 @@ const CLASS_ICONS: Record<string, string> = {
 }
 
 function DonationCard({ donation }: { donation: DonationAddr }) {
-  const [copied, setCopied] = useState(false)
   const [qrOpen, setQrOpen] = useState(false)
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(donation.address)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
 
   return (
     <>
@@ -199,14 +193,7 @@ function DonationCard({ donation }: { donation: DonationAddr }) {
             <code className={styles.donationAddress}>{donation.address}</code>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <button onClick={() => setQrOpen(true)} className={styles.toggleQRBtn}>
-            QR
-          </button>
-          <button onClick={handleCopy} className={styles.copyBtn}>
-            {copied ? 'Copied!' : 'Copy'}
-          </button>
-        </div>
+        <DonationActions address={donation.address} onQrClick={() => setQrOpen(true)} size="md" />
       </div>
       {qrOpen && (
         <QRCodeModal

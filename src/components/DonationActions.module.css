@@ -1,0 +1,38 @@
+.actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.actions.sm .iconBtn {
+  width: 24px;
+  height: 24px;
+}
+
+.actions.md .iconBtn {
+  width: 30px;
+  height: 30px;
+}
+
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--transition);
+  padding: 0;
+}
+
+.iconBtn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.iconBtn.copied {
+  border-color: #22c55e;
+  color: #22c55e;
+}

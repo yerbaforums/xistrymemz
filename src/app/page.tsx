@@ -1,7 +1,18 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
+import { QRCodeModal } from '@/components/QRCodeModal'
+import { DonationActions } from '@/components/DonationActions'
+import { CRYPTO_LOGOS } from '@/lib/constants'
+
+interface DonationAddr {
+  id: string
+  currency: string
+  address: string
+  label: string | null
+}
 
 const FEATURES = [
   { icon: '🌌', title: 'Cosmic Whitepages', desc: 'Your universal directory. One identity across the entire network — searchable, verifiable, yours.' },
@@ -23,6 +34,18 @@ const STEPS = [
 ]
 
 export default function Home() {
+  const [donations, setDonations] = useState<DonationAddr[]>([])
+  const [qrOpen, setQrOpen] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/site/donations')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { if (data?.addresses) setDonations(data.addresses) })
+      .catch(() => {})
+  }, [])
+
+  const activeQr = donations.find(d => d.id === qrOpen)
+
   return (
     <div className={styles.landing}>
       {/* Hero Section */}
@@ -118,16 +141,39 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Support CTA */}
-      <section className={styles.supportSection}>
-        <div className={styles.supportContent}>
-          <h2>Support XistrYmemZ</h2>
-          <p>Help us keep the platform free and independent. Crypto donation addresses are available in the footer.</p>
-          <Link href="/about" className={styles.btnSecondaryLarge}>
-            Learn More
-          </Link>
-        </div>
-      </section>
+      {/* Donation Section */}
+      {donations.length > 0 && (
+        <section className={styles.donationSection}>
+          <div className={styles.donationContent}>
+            <h2>Support XistrYmemZ</h2>
+            <p>Help us keep the platform free and independent. Every contribution counts.</p>
+            <div className={styles.donationGrid}>
+              {donations.map(da => (
+                <div key={da.id} className={styles.donationCard}>
+                  <div className={styles.donationHeader}>
+                    <img
+                      src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'ethereum.png'}`}
+                      alt={da.currency}
+                      className={styles.donationIcon}
+                    />
+                    <span className={styles.donationLabel}>{da.label || da.currency}</span>
+                  </div>
+                  <code className={styles.donationAddr} title={da.address}>{da.address}</code>
+                  <div className={styles.donationQr}>
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(da.address)}&bgcolor=0d0d0d&color=ffffff`}
+                      alt={`${da.currency} QR code`}
+                      width={150}
+                      height={150}
+                    />
+                  </div>
+                  <DonationActions address={da.address} onQrClick={() => setQrOpen(da.id)} size="md" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Footer Links */}
       <section className={styles.footerLinks}>
@@ -139,6 +185,15 @@ export default function Home() {
         </div>
         <p className={styles.copyright}>&copy; {new Date().getFullYear()} XistrYmemZ — Cosmic Whitepages Cooperative</p>
       </section>
+
+      {activeQr && (
+        <QRCodeModal
+          isOpen={true}
+          onClose={() => setQrOpen(null)}
+          currency={activeQr.label || activeQr.currency}
+          address={activeQr.address}
+        />
+      )}
     </div>
   )
 }
