@@ -230,6 +230,22 @@
   color: var(--text-muted);
 }
 
+.seeAllResults {
+  display: block;
+  padding: 10px 16px;
+  text-align: center;
+  color: var(--accent-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-top: 1px solid var(--border-color);
+  transition: var(--transition);
+}
+
+.seeAllResults:hover {
+  background: var(--bg-tertiary);
+}
+
 .notificationBtn {
   position: relative;
   display: flex;

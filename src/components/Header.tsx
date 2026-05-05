@@ -334,6 +334,9 @@ export default function Header() {
                             {(!searchResults.plans?.length && !searchResults.products?.length && !searchResults.users?.length && !searchResults.events?.length && !searchResults.requests?.length && !searchResults.groups?.length && !searchResults.schoolContent?.length) && (
                               <div className={styles.searchEmpty}>No results found for &quot;{searchQuery}&quot;</div>
                             )}
+                            <Link href={`/search?q=${encodeURIComponent(searchQuery)}`} className={styles.seeAllResults} onClick={() => setSearchOpen(false)}>
+                              See all results →
+                            </Link>
                           </>
                         ) : (
                           <div className={styles.searchEmpty}>Type to search...</div>
