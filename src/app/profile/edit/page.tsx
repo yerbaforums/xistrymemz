@@ -62,6 +62,14 @@ export default function ProfileEditPage() {
   const [refundAddress, setRefundAddress] = useState('')
   const [cryptoCurrency, setCryptoCurrency] = useState('ETH')
 
+  // Earth Passport fields
+  const [neighborhood, setNeighborhood] = useState('')
+  const [searchRadius, setSearchRadius] = useState(50)
+  const [latitude, setLatitude] = useState<number | null>(null)
+  const [longitude, setLongitude] = useState<number | null>(null)
+  const [traveling, setTraveling] = useState(false)
+  const [geoLoading, setGeoLoading] = useState(false)
+
   // Donation fields
   const [donationAddresses, setDonationAddresses] = useState<DonationAddr[]>([])
   const [showDonationForm, setShowDonationForm] = useState(false)
@@ -109,6 +117,11 @@ export default function ProfileEditPage() {
       setPaymentAddress(user.paymentAddress || '')
       setRefundAddress(user.refundAddress || '')
       setCryptoCurrency(user.cryptoCurrency || 'ETH')
+      setNeighborhood(user.neighborhood || '')
+      setSearchRadius(user.searchRadius || 50)
+      setLatitude(user.latitude || null)
+      setLongitude(user.longitude || null)
+      setTraveling(user.traveling || false)
       setAcceptsDonations(user.acceptsDonations || false)
       const [donationsRes] = await Promise.all([
         fetch('/api/users/donations')
@@ -126,6 +139,32 @@ export default function ProfileEditPage() {
     }
   }
 
+  const handleGeolocate = () => {
+    if (!navigator.geolocation) {
+      setError('Geolocation is not supported by your browser')
+      return
+    }
+    setGeoLoading(true)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLatitude(pos.coords.latitude)
+        setLongitude(pos.coords.longitude)
+        setGeoLoading(false)
+      },
+      (err) => {
+        console.error('Geolocation error:', err)
+        setError('Unable to get your location. Please allow location access.')
+        setGeoLoading(false)
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }
+
+  const handleClearLocation = () => {
+    setLatitude(null)
+    setLongitude(null)
+  }
+
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
@@ -138,7 +177,9 @@ export default function ProfileEditPage() {
         body: JSON.stringify({
           name, username, bio, location, website, userClass,
           walletAddress, paymentAddress, refundAddress, cryptoCurrency,
-          acceptsDonations
+          acceptsDonations, neighborhood, searchRadius,
+          latitude: latitude || null, longitude: longitude || null,
+          traveling
         })
       })
 
@@ -321,6 +362,79 @@ export default function ProfileEditPage() {
                 <option value="Explorer">Explorer</option>
                 <option value="Mentor">Mentor</option>
               </select>
+            </div>
+          </div>
+
+          {/* Earth Passport */}
+          <div style={{background: 'linear-gradient(135deg, #1a2a1a 0%, #0d1a0d 100%)', border: '1px solid #2a4a2a', borderRadius: '12px', padding: '24px', marginBottom: '20px'}}>
+            <h2 style={{marginBottom: '20px', color: '#7fff7f'}}>🌍 Earth Passport</h2>
+
+            <div style={{marginBottom: '16px'}}>
+              <label style={{display: 'block', marginBottom: '8px', color: '#88aa88'}}>Neighborhood / Area</label>
+              <input type="text" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} placeholder="Your local neighborhood or district" style={{width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a4a2a', borderRadius: '8px', color: '#c0e0c0'}} />
+            </div>
+
+            <div style={{marginBottom: '16px'}}>
+              <label style={{display: 'block', marginBottom: '8px', color: '#88aa88'}}>Search Radius</label>
+              <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
+                <input type="range" min="1" max="500" value={searchRadius} onChange={e => setSearchRadius(Number(e.target.value))} style={{flex: 1, accentColor: '#4ade80'}} />
+                <span style={{color: '#7fff7f', fontWeight: 600, minWidth: '50px', textAlign: 'right'}}>{searchRadius}km</span>
+              </div>
+            </div>
+
+            <div style={{marginBottom: '16px'}}>
+              <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: '#88aa88'}}>
+                <input
+                  type="checkbox"
+                  checked={traveling}
+                  onChange={e => setTraveling(e.target.checked)}
+                  style={{width: '18px', height: '18px', accentColor: '#4ade80'}}
+                />
+                <span>I'm currently traveling</span>
+              </label>
+            </div>
+
+            <div style={{marginBottom: '16px'}}>
+              <label style={{display: 'block', marginBottom: '8px', color: '#88aa88'}}>Coordinates</label>
+              <div style={{display: 'flex', gap: '8px', marginBottom: '8px'}}>
+                <button
+                  type="button"
+                  onClick={handleGeolocate}
+                  disabled={geoLoading}
+                  style={{padding: '8px 16px', background: '#4ade80', color: '#0d1a0d', border: 'none', borderRadius: '8px', cursor: geoLoading ? 'not-allowed' : 'pointer', fontWeight: 600, fontSize: '0.875rem'}}
+                >
+                  {geoLoading ? 'Locating...' : '📍 Use My Location'}
+                </button>
+                {latitude && longitude && (
+                  <button
+                    type="button"
+                    onClick={handleClearLocation}
+                    style={{padding: '8px 16px', background: 'transparent', border: '1px solid #ff6b6b', color: '#ff6b6b', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem'}}
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              {latitude && longitude && (
+                <div style={{display: 'flex', gap: '12px', padding: '10px', background: 'rgba(0,0,0,0.2)', borderRadius: '6px', marginBottom: '8px'}}>
+                  <div style={{flex: 1}}>
+                    <span style={{fontSize: '0.7rem', color: '#6a8a6a'}}>Latitude</span>
+                    <div style={{fontFamily: 'monospace', color: '#88bb88', fontSize: '0.875rem'}}>{latitude.toFixed(6)}</div>
+                  </div>
+                  <div style={{flex: 1}}>
+                    <span style={{fontSize: '0.7rem', color: '#6a8a6a'}}>Longitude</span>
+                    <div style={{fontFamily: 'monospace', color: '#88bb88', fontSize: '0.875rem'}}>{longitude.toFixed(6)}</div>
+                  </div>
+                </div>
+              )}
+              {!latitude && !longitude && (
+                <p style={{color: '#6a8a6a', fontSize: '0.8rem', margin: 0, padding: '8px 10px', background: 'rgba(0,0,0,0.15)', borderRadius: '6px'}}>No coordinates set. Use the button above to auto-detect your location.</p>
+              )}
+            </div>
+
+            <div>
+              <label style={{display: 'block', marginBottom: '8px', color: '#88aa88'}}>Location</label>
+              <input type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder="City, Country" style={{width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a4a2a', borderRadius: '8px', color: '#c0e0c0'}} />
             </div>
           </div>
 

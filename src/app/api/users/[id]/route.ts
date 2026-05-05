@@ -33,6 +33,7 @@ export async function GET(
       schoolSlug: true,
       createdAt: true,
       earthId: true,
+      traveling: true,
       verificationLevel: true,
       reputationScore: true,
       verifiedEmail: true,

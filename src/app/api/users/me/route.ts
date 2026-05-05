@@ -68,7 +68,7 @@ export async function PUT(request: Request) {
     }
 
     const {
-      name, username, bio, location, neighborhood, searchRadius, website, userClass,
+      name, username, bio, location, neighborhood, searchRadius, traveling, website, userClass,
       walletAddress, paymentAddress, refundAddress, cryptoCurrency,
       donationAddress, donationCurrency, acceptsDonations
     } = validation.data
@@ -100,6 +100,7 @@ export async function PUT(request: Request) {
         location: location || null,
         neighborhood: neighborhood || null,
         searchRadius: searchRadius || 50,
+        traveling: traveling || false,
         website: website || null,
         walletAddress: walletAddress || null,
         paymentAddress: paymentAddress || null,

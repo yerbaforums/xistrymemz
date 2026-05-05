@@ -382,6 +382,13 @@
   gap: 6px;
 }
 
+.aboutPassportHeader {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
 .coordCode {
   font-family: monospace;
   background: var(--bg-tertiary);
@@ -1778,15 +1785,97 @@
 }
 
 /* Compact header elements */
-.compactPassport {
+.earthPassport {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, rgba(26, 42, 26, 0.6) 0%, rgba(13, 26, 13, 0.4) 100%);
+  border: 1px solid rgba(42, 74, 42, 0.5);
+  border-radius: 8px;
+}
+
+.passportTopRow {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  margin-top: 6px;
-  padding: 6px 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.passportGlobe {
+  font-size: 14px;
+}
+
+.passportName {
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: #7fff7f;
+  letter-spacing: 0.5px;
+}
+
+.passportMode {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.passportMode.traveling {
+  background: rgba(255, 170, 0, 0.2);
+  color: #ffaa00;
+  border: 1px solid rgba(255, 170, 0, 0.3);
+}
+
+.passportMode.home {
+  background: rgba(0, 170, 255, 0.2);
+  color: #00aaff;
+  border: 1px solid rgba(0, 170, 255, 0.3);
+}
+
+.passportLocationRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.passportLocationIcon {
+  font-size: 12px;
+}
+
+.passportLocation {
+  font-size: 0.75rem;
+  color: #c0e0c0;
+  font-weight: 500;
+}
+
+.passportRadius {
+  font-size: 0.65rem;
+  color: #88aa88;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 2px 6px;
+  border-radius: 8px;
+  margin-left: auto;
+}
+
+.passportCoords {
+  font-family: monospace;
+  font-size: 0.65rem;
+  color: #88bb88;
   background: rgba(0, 0, 0, 0.15);
-  border-radius: 6px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  display: inline-block;
+}
+
+.passportBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
 }
 
 .compactLocation {

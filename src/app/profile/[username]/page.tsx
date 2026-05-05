@@ -67,6 +67,7 @@ interface ProfileUser {
   schoolSlug: string | null
   createdAt: string
   earthId: string | null
+  traveling: boolean
   verificationLevel: string
   reputationScore: number
   verifiedEmail: boolean
@@ -652,23 +653,44 @@ export default function ProfilePage() {
                  </span>
                </div>
 
-              <div className={styles.compactPassport}>
-                <span className={styles.passportIcon}>🌍</span>
+              <div className={styles.earthPassport}>
+                <div className={styles.passportTopRow}>
+                  <span className={styles.passportGlobe}>🌍</span>
+                  <span className={styles.passportName}>Earth Passport</span>
+                  <span className={`${styles.passportMode} ${user.traveling ? styles.traveling : styles.home}`}>
+                    {user.traveling ? 'Traveling' : 'Home'}
+                  </span>
+                  {(user.verificationLevel && user.verificationLevel !== 'NONE') && (
+                    <span className={`${styles.verificationBadge} ${styles[(user.verificationLevel || 'none').toLowerCase()]}`}>
+                      {user.verificationLevel}
+                    </span>
+                  )}
+                </div>
                 {(user.location || user.neighborhood) && (
-                  <span className={styles.compactLocation}>
-                    {user.location}{user.neighborhood ? `, ${user.neighborhood}` : ''}
+                  <div className={styles.passportLocationRow}>
+                    <span className={styles.passportLocationIcon}>📍</span>
+                    <span className={styles.passportLocation}>
+                      {user.location}{user.neighborhood ? `, ${user.neighborhood}` : ''}
+                    </span>
+                    {user.searchRadius > 0 && (
+                      <span className={styles.passportRadius}>📡{user.searchRadius}km</span>
+                    )}
+                  </div>
+                )}
+                {user.latitude && user.longitude && (
+                  <span className={styles.passportCoords}>
+                    {user.latitude.toFixed(4)}, {user.longitude.toFixed(4)}
                   </span>
                 )}
-                {user.searchRadius > 0 && (
-                  <span className={styles.compactRadius}>📡{user.searchRadius}km</span>
-                )}
-                {user.reputationScore > 0 && (
-                  <span className={styles.compactRep}>Rep: {user.reputationScore.toFixed(0)}</span>
-                )}
-                {user.verifiedEmail && <span className={styles.compactVBadge} title="Verified email">✓E</span>}
-                {user.verifiedPhone && <span className={styles.compactVBadge} title="Verified phone">✓P</span>}
-                {user.verifiedIdentity && <span className={styles.compactVBadge} title="Verified ID">✓ID</span>}
-                {user.verifiedAddress && <span className={styles.compactVBadge} title="Verified address">✓A</span>}
+                <div className={styles.passportBadges}>
+                  {user.reputationScore > 0 && (
+                    <span className={styles.compactRep}>Rep: {user.reputationScore.toFixed(0)}</span>
+                  )}
+                  {user.verifiedEmail && <span className={styles.compactVBadge} title="Verified email">✓E</span>}
+                  {user.verifiedPhone && <span className={styles.compactVBadge} title="Verified phone">✓P</span>}
+                  {user.verifiedIdentity && <span className={styles.compactVBadge} title="Verified ID">✓ID</span>}
+                  {user.verifiedAddress && <span className={styles.compactVBadge} title="Verified address">✓A</span>}
+                </div>
               </div>
 
               {(user.links && user.links.length > 0) && (
@@ -1231,13 +1253,24 @@ export default function ProfilePage() {
                   </dl>
                 </div>
 
-                {user.earthId && (
-                  <div className={styles.aboutBlock}>
-                    <h3>Earth Passport</h3>
+                <div className={styles.aboutBlock}>
+                  <h3>Earth Passport</h3>
+                  <div className={styles.aboutPassportHeader}>
+                    <span className={`${styles.passportMode} ${user.traveling ? styles.traveling : styles.home}`}>
+                      {user.traveling ? 'Traveling' : 'Home'}
+                    </span>
+                    {(user.verificationLevel && user.verificationLevel !== 'NONE') && (
+                      <span className={`${styles.verificationBadge} ${styles[(user.verificationLevel || 'none').toLowerCase()]}`}>
+                        {user.verificationLevel}
+                      </span>
+                    )}
+                  </div>
+                  {user.earthId && (
                     <div className={styles.passportId}>
                       <span className={styles.passportIdLabel}>Passport ID</span>
                       <span className={styles.passportIdValue}>{user.earthId}</span>
                     </div>
+                  )}
                     {user.latitude && user.longitude && (
                       <div className={styles.passportCoords}>
                         <span className={styles.coordLabel}>Coords</span>
@@ -1291,7 +1324,6 @@ export default function ProfilePage() {
                       </div>
                     )}
                   </div>
-                )}
 
                 {(user.links && user.links.length > 0) && (
                   <div className={styles.aboutBlock}>

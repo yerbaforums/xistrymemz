@@ -40,6 +40,7 @@ model User {
   
   // Passport & Identity
   earthId         String?   @unique  // Unique Earth Passport ID
+  traveling       Boolean   @default(false) // Traveling mode vs Home mode
   verificationLevel String @default("NONE") // NONE, BASIC, STANDARD, ADVANCED, PREMIUM
   reputationScore Float    @default(0)
   verifiedEmail   Boolean   @default(false)
