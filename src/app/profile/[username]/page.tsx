@@ -315,9 +315,19 @@ export default function ProfilePage() {
         body: JSON.stringify(editForm)
       })
       
+      const data = await res.json()
+      
       if (res.ok) {
         setEditMode(false)
-        fetchProfile(getTargetId())
+        const newName = editForm.name || ''
+        const newSlug = slugify(newName)
+        if (newSlug && newSlug !== params.username) {
+          router.push(`/profile/${newSlug}`)
+        } else {
+          fetchProfile(getTargetId())
+        }
+      } else {
+        console.error('Profile update failed:', data.error)
       }
     } catch (error) {
       console.error('Error updating profile:', error)
@@ -326,7 +336,7 @@ export default function ProfilePage() {
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newPost.trim()) return
+    if (!newPost.trim() || !user) return
 
     setPosting(true)
     try {
@@ -335,13 +345,16 @@ export default function ProfilePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           content: newPost,
-          targetUserId: isOwnProfile ? undefined : getTargetId()
+          targetUserId: isOwnProfile ? undefined : user.id
         })
       })
 
       if (res.ok) {
         setNewPost('')
         fetchProfile(getTargetId())
+      } else {
+        const err = await res.json()
+        console.error('Post creation failed:', err.error)
       }
     } catch (error) {
       console.error('Error creating post:', error)
@@ -387,11 +400,11 @@ export default function ProfilePage() {
   }
 
   const handleLoadMorePosts = async () => {
+    if (!user) return
     setLoadingMorePosts(true)
     try {
-      const targetId = getTargetId()
       const newOffset = postsOffset + 20
-      const res = await fetch(`/api/posts?targetUserId=${targetId}&limit=20&offset=${newOffset}`)
+      const res = await fetch(`/api/posts?targetUserId=${user.id}&limit=20&offset=${newOffset}`)
       if (res.ok) {
         const data = await res.json()
         setPosts(prev => [...prev, ...data.posts])
@@ -1074,6 +1087,16 @@ export default function ProfilePage() {
           <div className={styles.aboutSection}>
             {editMode ? (
               <form onSubmit={handleUpdateProfile} className={styles.editForm}>
+                <div className={styles.formGroup}>
+                  <label>Display Name</label>
+                  <input
+                    type="text"
+                    value={editForm.name}
+                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                    placeholder="Your display name"
+                  />
+                  <small className={styles.formHint}>This changes your profile URL to /profile/{slugify(editForm.name) || 'username'}</small>
+                </div>
                 <div className={styles.formGroup}>
                   <label>Profile Picture URL</label>
                   <input

@@ -306,6 +306,22 @@ export async function PUT(
 
     const { name, bio, location, website, image, coverImage, userClass } = await request.json()
 
+    if (name !== undefined && name !== null && name !== '') {
+      const existingName = await prisma.user.findFirst({
+        where: {
+          name: { equals: name, mode: 'insensitive' },
+          id: { not: id }
+        }
+      })
+
+      if (existingName) {
+        return NextResponse.json(
+          { error: 'Display name already taken. Please choose a different name.' },
+          { status: 400 }
+        )
+      }
+    }
+
     const updated = await prisma.user.update({
       where: { id },
       data: {

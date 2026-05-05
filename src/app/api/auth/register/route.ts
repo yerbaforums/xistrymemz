@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
-import { slugify } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -81,20 +80,6 @@ export async function POST(request: Request) {
           { error: 'Username already taken. Please choose a different display name.' },
           { status: 400 }
         )
-      }
-
-      const slug = slugify(name)
-      if (slug) {
-        const existingSlug = await prisma.user.findFirst({
-          where: { shopSlug: slug }
-        })
-
-        if (existingSlug) {
-          return NextResponse.json(
-            { error: 'A user with a similar name already exists. Please choose a different display name.' },
-            { status: 400 }
-          )
-        }
       }
     }
 

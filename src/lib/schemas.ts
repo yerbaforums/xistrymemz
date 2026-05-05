@@ -149,7 +149,7 @@ export const counterOfferSchema = z.object({
 export const postSchema = z.object({
   content: z.string().min(1, 'Content is required').max(2000),
   imageUrl: z.string().max(500).optional().nullable(),
-  targetUserId: z.string().uuid().optional().nullable()
+  targetUserId: z.string().min(1).optional().nullable()
 })
 
 export const profileUpdateSchema = z.object({
@@ -170,20 +170,20 @@ export const profileUpdateSchema = z.object({
 })
 
 export const ratingSchema = z.object({
-  userId: z.string().uuid('Valid user ID is required'),
+  userId: z.string().min(1, 'Valid user ID is required'),
   rating: z.number().int().min(1).max(5, 'Rating must be between 1 and 5'),
   comment: z.string().max(1000).optional().nullable(),
   type: z.enum(['SELLER', 'BUYER', 'GENERAL']).optional(),
-  productId: z.string().uuid().optional().nullable(),
+  productId: z.string().min(1).optional().nullable(),
   transactionId: z.string().optional().nullable()
 })
 
 export const connectionSchema = z.object({
-  receiverId: z.string().uuid('Valid user ID is required'),
+  receiverId: z.string().min(1, 'Valid user ID is required'),
   message: z.string().max(1000).optional()
 })
 
 export const replySchema = z.object({
   content: z.string().min(1, 'Content is required').max(10000),
-  postId: z.string().uuid('Valid post ID is required')
+  postId: z.string().min(1, 'Valid post ID is required')
 })
