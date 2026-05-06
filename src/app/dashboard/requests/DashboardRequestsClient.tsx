@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { getUserProfileUrl } from '@/lib/utils'
-import { getCryptoIcon, getCryptoName } from '@/lib/crypto-icons'
+import { getCryptoIcon, getCryptoColor } from '@/lib/crypto-icons'
 import { useToast } from '@/context/ToastContext'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import styles from './requests.module.css'
@@ -543,33 +543,27 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
                 {resolvedAddrs.length > 0 && (
                   <div className={styles.donationSection}>
                     <div className={styles.donationSectionTitle}>Donate</div>
-                    {resolvedAddrs.map(da => {
-                      const cryptoName = getCryptoName(da.currency)
-                      const iconUrl = getCryptoIcon(da.currency)
-                      return (
-                        <div key={da.id} className={styles.donationItem}>
-                          <div className={styles.donationIcon}>
+                    <div className={styles.cryptoButtons}>
+                      {resolvedAddrs.map(da => {
+                        const iconUrl = getCryptoIcon(da.currency)
+                        const color = getCryptoColor(da.currency)
+                        const initials = da.currency.substring(0, 2).toUpperCase()
+                        return (
+                          <button
+                            key={da.id}
+                            className={styles.cryptoButton}
+                            onClick={() => setQrModal({ open: true, currency: da.currency, address: da.address })}
+                          >
                             {iconUrl ? (
-                              <img src={iconUrl} alt="" width={16} height={16} />
+                              <img src={iconUrl} alt="" className={styles.cryptoButtonIcon} />
                             ) : (
-                              <span>{da.currency[0]}</span>
+                              <span className={styles.cryptoButtonFallback} style={{ background: color }}>{initials}</span>
                             )}
-                          </div>
-                          <div className={styles.donationInfo}>
-                            <span className={styles.donationLabel}>{da.label || cryptoName}</span>
-                            <span className={styles.donationAddr}>{truncateAddr(da.address)}</span>
-                          </div>
-                          <div className={styles.donationActions}>
-                            <button onClick={() => setQrModal({ open: true, currency: da.label || da.currency, address: da.address })} className={styles.donationBtn} title="View QR Code">
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z"/></svg>
-                            </button>
-                            <button onClick={() => { navigator.clipboard.writeText(da.address); success('Copied!') }} className={styles.donationBtn} title="Copy address">
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                            </button>
-                          </div>
-                        </div>
-                      )
-                    })}
+                            <span className={styles.cryptoButtonTicker}>{da.currency.toUpperCase()}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
                   </div>
                 )}
 
