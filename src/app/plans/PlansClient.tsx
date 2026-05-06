@@ -109,6 +109,9 @@ export default function PlansClient({ initialPlans }: PlansClientProps) {
           <h1>My Projects</h1>
           <p className={styles.subtitle}>Track your goals, collaborate, and get things done</p>
         </div>
+        <Link href="/plans/public" className={styles.createBtn} style={{ marginRight: '8px', textDecoration: 'none' }}>
+          🌍 Explore Projects
+        </Link>
         <button onClick={() => setShowModal(true)} className={styles.createBtn}>
           + New Project
         </button>
