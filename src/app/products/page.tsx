@@ -498,68 +498,57 @@ export default function ProductsPage() {
         </aside>
 
         <main className={styles.content}>
-          <div className={`${styles.mapSection} ${mapExpanded ? styles.mapExpanded : ''}`}>
-            <div className={styles.mapControls}>
-              <button 
-                className={styles.mapToggle}
-                onClick={() => setMapExpanded(!mapExpanded)}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  {mapExpanded ? (
-                    <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
-                  ) : (
-                    <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
-                  )}
-                </svg>
-                {mapExpanded ? 'Collapse' : 'Expand'}
-              </button>
-            </div>
-            <MapContainer 
-              center={center} 
-              zoom={zoom} 
-              style={{ height: '100%', width: '100%' }}
-              ref={mapRef}
-            >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              {productsWithCoords.map(product => (
-                <Marker 
-                  key={product.id} 
-                  position={product.isGlobal ? [39.8283, -98.5795] : [product.latitude!, product.longitude!]}
-                  eventHandlers={{
-                    click: () => setSelectedProduct(product),
-                  }}
+          {productsWithCoords.length > 0 && (
+            <div className={`${styles.miniMap} ${mapExpanded ? styles.miniMapExpanded : ''}`}>
+              <div className={styles.miniMapControls}>
+                <button 
+                  className={styles.miniMapToggle}
+                  onClick={() => setMapExpanded(!mapExpanded)}
+                  aria-label={mapExpanded ? 'Collapse map' : 'Expand map'}
                 >
-                  <Popup>
-                    <div style={{ minWidth: 180, padding: '4px' }}>
-                      <strong style={{ fontSize: '0.9rem' }}>{product.title}</strong>
-                      <br />
-                      {product.price && <span style={{ color: '#00d9ff', fontWeight: 600 }}>${product.price}</span>}
-                      <br />
-                      <span style={{ fontSize: '0.8rem', color: '#666' }}>
-                        {product.locationDetails || product.location || 'Global'}
-                      </span>
-                      <br />
-                      <Link 
-                        href={`/products/${product.id}`}
-                        style={{ 
-                          color: '#00d9ff', 
-                          fontSize: '0.8rem',
-                          textDecoration: 'none',
-                          display: 'inline-block',
-                          marginTop: '6px'
-                        }}
-                      >
-                        View Details →
-                      </Link>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
-            </MapContainer>
-          </div>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    {mapExpanded ? (
+                      <path d="M4 14h6v6H4zM14 4h6v6h-6zM4 4h6v6H4zM14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z"/>
+                    ) : (
+                      <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+                    )}
+                  </svg>
+                  <span>{mapExpanded ? 'Collapse' : 'Expand'}</span>
+                </button>
+              </div>
+              <MapContainer 
+                center={center} 
+                zoom={zoom} 
+                style={{ height: '100%', width: '100%', position: 'relative', zIndex: 1 }}
+                ref={mapRef}
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                {productsWithCoords.map(product => (
+                  <Marker 
+                    key={product.id} 
+                    position={product.isGlobal ? [39.8283, -98.5795] : [product.latitude!, product.longitude!]}
+                    eventHandlers={{
+                      click: () => setSelectedProduct(product),
+                    }}
+                  >
+                    <Popup>
+                      <div className={styles.mapPopupContent}>
+                        <h4>{product.title}</h4>
+                        {product.price && <p className={styles.popupPrice}>${product.price}</p>}
+                        <p className={styles.popupDetail}>📍 {product.locationDetails || product.location || 'Global'}</p>
+                        <div className={styles.popupActions}>
+                          <Link href={`/products/${product.id}`} className={styles.popupLink}>View Details →</Link>
+                        </div>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
+            </div>
+          )}
 
           <div className={styles.resultsHeader}>
             <span className={styles.resultsCount}>

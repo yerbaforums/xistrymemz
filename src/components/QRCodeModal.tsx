@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import styles from './QRCodeModal.module.css'
+import { getCryptoIcon, getCryptoName, getCryptoColor } from '@/lib/crypto-icons'
 
 interface QRCodeModalProps {
   isOpen: boolean
@@ -15,6 +16,11 @@ export function QRCodeModal({ isOpen, onClose, currency, address }: QRCodeModalP
 
   if (!isOpen) return null
 
+  const iconUrl = getCryptoIcon(currency)
+  const fullName = getCryptoName(currency)
+  const color = getCryptoColor(currency)
+  const initials = currency.substring(0, 2).toUpperCase()
+
   const handleCopy = async () => {
     await navigator.clipboard.writeText(address)
     setCopied(true)
@@ -25,13 +31,23 @@ export function QRCodeModal({ isOpen, onClose, currency, address }: QRCodeModalP
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={e => e.stopPropagation()}>
         <div className={styles.header}>
-          <h3>{currency} QR Code</h3>
+          <h3>{fullName} QR Code</h3>
           <button className={styles.closeBtn} onClick={onClose}>&times;</button>
+        </div>
+        <div className={styles.cryptoBadge}>
+          {iconUrl ? (
+            <img src={iconUrl} alt={fullName} className={styles.cryptoIconImg} />
+          ) : (
+            <span className={styles.cryptoIconFallback} style={{ background: color }}>
+              {initials}
+            </span>
+          )}
+          <span className={styles.cryptoTicker}>({currency.toUpperCase()})</span>
         </div>
         <div className={styles.qrContainer}>
           <img
             src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(address)}&bgcolor=0d0d0d&color=ffffff`}
-            alt={`${currency} QR code`}
+            alt={`${fullName} QR code`}
             width={200}
             height={200}
           />

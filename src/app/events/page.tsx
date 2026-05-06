@@ -76,6 +76,7 @@ export default function EventsPage() {
   const [joining, setJoining] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'map'>('list')
   const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [mapExpanded, setMapExpanded] = useState(false)
   const mapRef = useRef<L.Map | null>(null)
 
   const geocodeZipCode = useCallback(async () => {
@@ -452,37 +453,21 @@ export default function EventsPage() {
           </div>
         </div>
       ) : viewMode === 'map' ? (
-        <div style={{ height: '500px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)', marginBottom: '24px', position: 'relative', zIndex: 1 }}>
-          <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%' }} ref={mapRef}>
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            {eventsWithCoords.map(event => (
-              <Marker 
-                key={event.id} 
-                position={[event.latitude!, event.longitude!]}
-                eventHandlers={{
-                  click: () => setSelectedEvent(event),
-                }}
-              >
-                <Popup>
-                  <div style={{ minWidth: 200 }}>
-                    <strong>{event.title}</strong>
-                    <br />
-                    {event.eventDate && <span>{new Date(event.eventDate).toLocaleDateString()}</span>}
-                    <br />
-                    {event.location}
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
-          </MapContainer>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
-          <div className={styles.mapSection} style={{ width: '350px', height: '350px', flexShrink: 0, position: 'relative', zIndex: 1 }}>
-            <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%', position: 'relative', zIndex: 1 }} ref={mapRef}>
+        <div className={styles.fullMapView}>
+          <div className={styles.fullMapHeader}>
+            <button 
+              className={styles.backToListBtn}
+              onClick={() => setViewMode('list')}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+              </svg>
+              Back to List
+            </button>
+            <span className={styles.fullMapCount}>{eventsWithCoords.length} events on map</span>
+          </div>
+          <div style={{ height: '600px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)', marginBottom: '24px', position: 'relative', zIndex: 1 }}>
+            <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%' }} ref={mapRef}>
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -496,40 +481,46 @@ export default function EventsPage() {
                   }}
                 >
                   <Popup>
-                    <div style={{ minWidth: 200 }}>
-                      <strong style={{ fontSize: '14px' }}>{event.title}</strong>
-                      <br />
-                      {event.eventCategory && <span className={`badge badge-${event.eventCategory.toLowerCase()}`}>{event.eventCategory}</span>}
+                    <div className={styles.mapPopupContent}>
+                      <h4>{event.title}</h4>
+                      {event.eventCategory && (
+                        <span className={`badge badge-${event.eventCategory.toLowerCase()}`}>{event.eventCategory}</span>
+                      )}
                       {event.eventDate && (
-                        <p style={{ margin: '8px 0', fontSize: '12px' }}>
+                        <p className={styles.popupDetail}>
                           📅 {new Date(event.eventDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
                         </p>
                       )}
-                      {event.location && <p style={{ margin: '4px 0', fontSize: '12px' }}>📍 {event.location}</p>}
-                      {event.locationDetails && <p style={{ margin: '4px 0', fontSize: '11px', color: '#666' }}>{event.locationDetails}</p>}
-                      <p style={{ margin: '8px 0', fontSize: '12px' }}>👥 {(event.joiners || []).length}{event.maxJoiners > 0 ? `/${event.maxJoiners}` : ''} joined</p>
-                      {event.maxJoiners === 0 || (event.joiners || []).length < event.maxJoiners ? (
-                        <button 
-                          onClick={(e) => { 
-                            e.stopPropagation()
-                            if (event.joined) { handleLeave(event.id) } else { handleJoin(event.id) }
-                          }}
-                          disabled={joining === event.id}
-                          style={{ marginTop: '8px', padding: '6px 12px', background: event.joined ? '#666' : '#00d9ff', color: event.joined ? '#fff' : '#000', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
-                        >
-                          {joining === event.id ? '...' : event.joined ? 'Leave' : 'Join Event'}
-                        </button>
-                      ) : (
-                        <p style={{ marginTop: '8px', fontSize: '11px', color: '#e53e3e' }}>Event is full</p>
-                      )}
+                      {event.location && <p className={styles.popupDetail}>📍 {event.location}</p>}
+                      {event.locationDetails && <p className={styles.popupDetailSmall}>{event.locationDetails}</p>}
+                      <p className={styles.popupDetail}>👥 {(event.joiners || []).length}{event.maxJoiners > 0 ? `/${event.maxJoiners}` : ''} joined</p>
+                      <div className={styles.popupActions}>
+                        {event.maxJoiners === 0 || (event.joiners || []).length < event.maxJoiners ? (
+                          <button 
+                            onClick={(e) => { 
+                              e.stopPropagation()
+                              if (event.joined) { handleLeave(event.id) } else { handleJoin(event.id) }
+                            }}
+                            disabled={joining === event.id}
+                            className={event.joined ? "btn-secondary" : "btn-primary"}
+                          >
+                            {joining === event.id ? '...' : event.joined ? 'Leave' : 'Join Event'}
+                          </button>
+                        ) : (
+                          <span className="badge badge-full">Event Full</span>
+                        )}
+                        <Link href={`/events/${event.id}`} className={styles.popupLink}>View Details →</Link>
+                      </div>
                     </div>
                   </Popup>
                 </Marker>
               ))}
             </MapContainer>
           </div>
-
-          <div className={styles.listSection} style={{ flex: 1 }}>
+        </div>
+      ) : (
+        <>
+          <div className={styles.listSection}>
             {loading ? (
               <div className={styles.loading}>Loading events...</div>
             ) : filteredEvents.length === 0 ? (
@@ -546,7 +537,12 @@ export default function EventsPage() {
                 <div 
                   key={event.id} 
                   className={`${styles.eventCard} ${selectedEvent?.id === event.id ? styles.selected : ''}`}
-                  onClick={() => setSelectedEvent(event)}
+                  onClick={() => {
+                    setSelectedEvent(event)
+                    if (event.latitude && event.longitude && mapRef.current) {
+                      mapRef.current.setView([event.latitude, event.longitude], 15, { animate: true })
+                    }
+                  }}
                 >
                   <div className={styles.eventHeader}>
                     <span className={`badge badge-${event.eventCategory?.toLowerCase()}`}>
@@ -591,7 +587,63 @@ export default function EventsPage() {
               ))
             )}
           </div>
-        </div>
+
+          {eventsWithCoords.length > 0 && (
+            <div className={`${styles.miniMap} ${mapExpanded ? styles.miniMapExpanded : ''}`}>
+              <div className={styles.miniMapControls}>
+                <button 
+                  className={styles.miniMapToggle}
+                  onClick={() => setMapExpanded(!mapExpanded)}
+                  aria-label={mapExpanded ? 'Collapse map' : 'Expand map'}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    {mapExpanded ? (
+                      <path d="M4 14h6v6H4zM14 4h6v6h-6zM4 4h6v6H4zM14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z"/>
+                    ) : (
+                      <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+                    )}
+                  </svg>
+                  <span>{mapExpanded ? 'Collapse' : 'Expand'}</span>
+                </button>
+              </div>
+              <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%', position: 'relative', zIndex: 1 }} ref={mapRef}>
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                {eventsWithCoords.map(event => (
+                  <Marker 
+                    key={event.id} 
+                    position={[event.latitude!, event.longitude!]}
+                    eventHandlers={{
+                      click: () => setSelectedEvent(event),
+                    }}
+                  >
+                    <Popup>
+                      <div className={styles.mapPopupContent}>
+                        <h4>{event.title}</h4>
+                        {event.eventCategory && (
+                          <span className={`badge badge-${event.eventCategory.toLowerCase()}`}>{event.eventCategory}</span>
+                        )}
+                        {event.eventDate && (
+                          <p className={styles.popupDetail}>
+                            📅 {new Date(event.eventDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                          </p>
+                        )}
+                        {event.location && <p className={styles.popupDetail}>📍 {event.location}</p>}
+                        {event.locationDetails && <p className={styles.popupDetailSmall}>{event.locationDetails}</p>}
+                        <p className={styles.popupDetail}>👥 {(event.joiners || []).length}{event.maxJoiners > 0 ? `/${event.maxJoiners}` : ''} joined</p>
+                        <div className={styles.popupActions}>
+                          <Link href={`/events/${event.id}`} className={styles.popupLink}>View Details →</Link>
+                        </div>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
+            </div>
+          )}
+        </>
       )}
     </div>
   )

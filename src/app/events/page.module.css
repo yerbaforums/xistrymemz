@@ -182,6 +182,131 @@
   z-index: 1;
 }
 
+.miniMap {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  width: 300px;
+  height: 250px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 2px solid var(--border-color);
+  z-index: 100;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.miniMapExpanded {
+  width: 600px;
+  height: 500px;
+  bottom: 24px;
+  left: 24px;
+}
+
+.miniMapControls {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 110;
+}
+
+.miniMapToggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.miniMapToggle:hover {
+  background: var(--bg-secondary);
+  border-color: var(--accent-primary);
+  transform: scale(1.05);
+}
+
+.mapPopupContent {
+  min-width: 200px;
+}
+
+.mapPopupContent h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.popupDetail {
+  margin: 6px 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.popupDetailSmall {
+  margin: 4px 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.popupActions {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+}
+
+.popupLink {
+  color: var(--accent-primary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.popupLink:hover {
+  text-decoration: underline;
+}
+
+.fullMapView {
+  width: 100%;
+}
+
+.fullMapHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.backToListBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.backToListBtn:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--accent-primary);
+}
+
+.fullMapCount {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
 .map {
   height: 100%;
   background: var(--bg-secondary);
@@ -217,6 +342,8 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  width: 100%;
+  padding-bottom: 20px;
 }
 
 .eventCard {
@@ -341,6 +468,20 @@
   
   .mapSection {
     position: static;
+  }
+  
+  .miniMap {
+    width: 250px;
+    height: 200px;
+    bottom: 16px;
+    left: 16px;
+  }
+  
+  .miniMapExpanded {
+    width: calc(100vw - 32px);
+    height: 60vh;
+    bottom: 16px;
+    left: 16px;
   }
 }
 
