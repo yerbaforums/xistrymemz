@@ -1,21 +1,23 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { QRCodeModal } from '@/components/QRCodeModal'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import { MakeOfferModal } from '@/components/MakeOfferModal'
 import { getUserProfileUrl } from '@/lib/utils'
+import { getCryptoIcon, getCryptoName } from '@/lib/crypto-icons'
 
 const CATEGORIES = [
-  { value: 'GENERAL', label: 'General', icon: '📋' },
-  { value: 'HELP', label: 'Help Needed', icon: '🆘' },
-  { value: 'COLLABORATION', label: 'Collaboration', icon: '🤝' },
-  { value: 'SUPPORT', label: 'Support', icon: '💪' },
-  { value: 'RESOURCES', label: 'Resources', icon: '📦' },
-  { value: 'FEEDBACK', label: 'Feedback', icon: '💬' },
-  { value: 'IDEA', label: 'Idea', icon: '💡' },
-  { value: 'BUG', label: 'Bug Report', icon: '🐛' },
+  { value: 'GENERAL', label: 'General', icon: '\u{1F4CB}' },
+  { value: 'HELP', label: 'Help Needed', icon: '\u{1F198}' },
+  { value: 'COLLABORATION', label: 'Collaboration', icon: 'D83EDD1D' },
+  { value: 'SUPPORT', label: 'Support', icon: '\u{1F4AA}' },
+  { value: 'RESOURCES', label: 'Resources', icon: '\u{1F4E6}' },
+  { value: 'FEEDBACK', label: 'Feedback', icon: 'D83DDCAC' },
+  { value: 'IDEA', label: 'Idea', icon: '\u{1F4A1}' },
+  { value: 'BUG', label: 'Bug Report', icon: '\u{1F41B}' },
 ]
 
 const PRIORITIES = [
@@ -26,26 +28,21 @@ const PRIORITIES = [
 ]
 
 const STATUS_LABELS: Record<string, { label: string, icon: string }> = {
-  PENDING: { label: 'Pending', icon: '⏳' },
-  APPROVED: { label: 'Approved', icon: '✅' },
-  REJECTED: { label: 'Rejected', icon: '❌' },
-  COMPLETED: { label: 'Completed', icon: '🎉' },
+  PENDING: { label: 'Pending', icon: '\u23F3' },
+  APPROVED: { label: 'Approved', icon: '\u2705' },
+  REJECTED: { label: 'Rejected', icon: '\u274C' },
+  COMPLETED: { label: 'Completed', icon: '\u{1F389}' },
 }
 
-const CRYPTO_ICONS: Record<string, string> = {
-  BTC: '₿',
-  ETH: '⟐',
-  USDT: '₮',
-  USDC: '$',
-  XMR: 'ɱ',
-  XTM: 'XT',
-  ARRR: '☵',
-  DERO: 'Ð',
-  ZANO: 'Z',
-  OTHER: '◯',
+interface DonationAddr {
+  id: string
+  currency: string
+  address: string
+  label: string | null
+  qrCodeUrl: string | null
+  showQR: boolean
+  sortOrder: number
 }
-
-const getCryptoIcon = (currency: string) => CRYPTO_ICONS[currency] || '◯'
 
 interface Comment {
   id: string
@@ -90,6 +87,18 @@ interface Fulfillment {
   }
 }
 
+interface Supporter {
+  id: string
+  message: string | null
+  createdAt: string
+  user: {
+    id: string
+    name: string | null
+    username: string | null
+    image: string | null
+  }
+}
+
 interface Request {
   id: string
   title: string
@@ -99,9 +108,8 @@ interface Request {
   priority: string
   budget: number | null
   goalAmount: number | null
-  currentFunding: number | null
-  payoutAddress: string | null
-  payoutCurrency: string | null
+  currentFunding: number
+  showDonationAddress: boolean
   deadline: string | null
   location: string | null
   likes: number
@@ -126,11 +134,13 @@ interface Request {
     name: string | null
     username: string | null
     shopSlug: string | null
+    donationAddresses: DonationAddr[]
   }
   product?: Product | null
   comments: Comment[]
   statusHistory?: StatusChange[]
   fulfillments: Fulfillment[]
+  supportCount?: number
 }
 
 interface RequestDetailClientProps {
@@ -140,26 +150,32 @@ interface RequestDetailClientProps {
 }
 
 export default function RequestDetailClient({ request: initialRequest, userId, userRole = 'USER' }: RequestDetailClientProps) {
-  const { success, error } = useToast()
+  const { success, error: toastError, warning } = useToast()
   const [request, setRequest] = useState(initialRequest)
   const [comment, setComment] = useState('')
   const [loading, setLoading] = useState(false)
-  const [showPurchaseModal, setShowPurchaseModal] = useState(false)
   const [showCompleteModal, setShowCompleteModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showHistoryModal, setShowHistoryModal] = useState(false)
   const [selectedHistory, setSelectedHistory] = useState<StatusChange | null>(null)
-  const [purchaseMessage, setPurchaseMessage] = useState('')
   const [completeMessage, setCompleteMessage] = useState('')
   const [rollbackReason, setRollbackReason] = useState('')
   const [showContactModal, setShowContactModal] = useState(false)
   const [showOfferModal, setShowOfferModal] = useState(false)
   const [contactMessage, setContactMessage] = useState('')
-  const [copiedPayout, setCopiedPayout] = useState(false)
   const [showFulfillmentForm, setShowFulfillmentForm] = useState(false)
   const [fulfillmentForm, setFulfillmentForm] = useState({ title: '', content: '' })
   const [fulfillments, setFulfillments] = useState<Fulfillment[]>(initialRequest.fulfillments || [])
   const [allowFulfillments, setAllowFulfillments] = useState(initialRequest.allowFulfillments)
+  const [showDonationAddress, setShowDonationAddress] = useState(initialRequest.showDonationAddress)
+  const [fundingSlider, setFundingSlider] = useState(initialRequest.currentFunding || 0)
+  const [qrModal, setQrModal] = useState<{ open: boolean; currency: string; address: string }>({ open: false, currency: '', address: '' })
+  const [supportModalOpen, setSupportModalOpen] = useState(false)
+  const [supportMessage, setSupportMessage] = useState('')
+  const [supporting, setSupporting] = useState(false)
+  const [isSupporting, setIsSupporting] = useState(false)
+  const [supporters, setSupporters] = useState<Supporter[]>([])
+  const [supportCount, setSupportCount] = useState(initialRequest.supportCount || 0)
   const [editForm, setEditForm] = useState({
     title: initialRequest.title,
     description: initialRequest.description || '',
@@ -168,13 +184,12 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
     budget: initialRequest.budget?.toString() || '',
     deadline: initialRequest.deadline ? initialRequest.deadline.split('T')[0] : '',
     allowFulfillments: initialRequest.allowFulfillments,
+    showDonationAddress: initialRequest.showDonationAddress,
   })
 
   const isPlanOwner = request.plan?.user.id === userId
   const isOwnRequest = request.user.id === userId
-  const canPurchase = request.product && request.status === 'PENDING' && !isOwnRequest
-  const canPurchaseSelf = request.product && request.status === 'PENDING' && isOwnRequest
-  const canMarkPurchased = request.status === 'PENDING' && isOwnRequest && (request.goalAmount || 0) > 0
+  const isOwner = isOwnRequest || isPlanOwner
   const canHelpComplete = request.status === 'PENDING' && !isOwnRequest && !request.product
   const canContact = !isOwnRequest
   const canEdit = isOwnRequest && request.status === 'PENDING'
@@ -183,6 +198,33 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
   const canApprove = request.plan && request.status === 'PENDING'
   const category = CATEGORIES.find(c => c.value === request.category) || CATEGORIES[0]
   const priority = PRIORITIES.find(p => p.value === request.priority) || PRIORITIES[1]
+  const resolvedDonationAddrs = showDonationAddress ? (request.user?.donationAddresses || []) : []
+
+  useEffect(() => {
+    fetchSupporters()
+    if (userId) {
+      fetch(`/api/requests/${request.id}/support`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.supports) {
+            setIsSupporting(data.supports.some((s: Supporter) => s.user.id === userId))
+          }
+        })
+        .catch(() => {})
+    }
+  }, [])
+
+  const fetchSupporters = () => {
+    fetch(`/api/requests/${request.id}/support`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.supports) {
+          setSupporters(data.supports)
+          setSupportCount(data.supports.length)
+        }
+      })
+      .catch(() => {})
+  }
 
   const handleApprove = async () => {
     setLoading(true)
@@ -215,53 +257,6 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
     }
   }
 
-  const handlePurchase = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch(`/api/requests/${request.id}/purchase`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: purchaseMessage })
-      })
-      
-      if (res.ok) {
-        setShowPurchaseModal(false)
-        setPurchaseMessage('')
-        setRequest({ ...request, status: 'APPROVED' })
-        addToHistory('PENDING', 'APPROVED', 'Item purchased on behalf of requester')
-      }
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleSelfPurchase = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch(`/api/requests/${request.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'COMPLETED', completedBy: userId })
-      })
-      
-      if (res.ok) {
-        setRequest({ 
-          ...request, 
-          status: 'COMPLETED',
-          completedBy: userId,
-          completedAt: new Date().toISOString()
-        })
-        addToHistory(request.status, 'COMPLETED', 'Self-completed by requester')
-      }
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const handleComplete = async () => {
     setLoading(true)
     try {
@@ -270,12 +265,12 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: completeMessage, completedBy: userId })
       })
-      
+
       if (res.ok) {
         setShowCompleteModal(false)
         setCompleteMessage('')
-        setRequest({ 
-          ...request, 
+        setRequest({
+          ...request,
           status: 'COMPLETED',
           completedBy: userId,
           completedAt: new Date().toISOString()
@@ -296,12 +291,12 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
       const res = await fetch(`/api/requests/${request.id}/rollback`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           toStatus: selectedHistory.fromStatus,
           reason: rollbackReason
         })
       })
-      
+
       if (res.ok) {
         setShowHistoryModal(false)
         setSelectedHistory(null)
@@ -373,9 +368,10 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
           budget: editForm.budget ? parseFloat(editForm.budget) : null,
           deadline: editForm.deadline ? new Date(editForm.deadline).toISOString() : null,
           allowFulfillments: editForm.allowFulfillments,
+          showDonationAddress: editForm.showDonationAddress,
         })
       })
-      
+
       if (res.ok) {
         setShowEditModal(false)
         setRequest({
@@ -387,8 +383,10 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
           budget: editForm.budget ? parseFloat(editForm.budget) : null,
           deadline: editForm.deadline ? new Date(editForm.deadline).toISOString() : null,
           allowFulfillments: editForm.allowFulfillments,
+          showDonationAddress: editForm.showDonationAddress,
         })
         setAllowFulfillments(editForm.allowFulfillments)
+        setShowDonationAddress(editForm.showDonationAddress)
       }
     } catch (err) {
       console.error(err)
@@ -460,7 +458,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
       })
 
       if (res.ok) {
-        setFulfillments(fulfillments.map(f => 
+        setFulfillments(fulfillments.map(f =>
           f.id === fid ? { ...f, status: action } : f
         ))
         if (action === 'APPROVED' && autoComplete) {
@@ -499,15 +497,99 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
     }
   }
 
+  const handleToggleDonationAddress = async () => {
+    const newVal = !showDonationAddress
+    try {
+      const res = await fetch(`/api/requests/${request.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ showDonationAddress: newVal })
+      })
+      if (res.ok) {
+        setShowDonationAddress(newVal)
+        success(newVal ? 'Donation addresses now visible' : 'Donation addresses hidden')
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const handleSaveFunding = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/requests/${request.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentFunding: fundingSlider })
+      })
+      if (res.ok) {
+        setRequest({ ...request, currentFunding: fundingSlider })
+        success('Funding updated!')
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSupport = async () => {
+    if (!userId) {
+      warning('Please log in to support requests')
+      return
+    }
+    setSupportModalOpen(true)
+    setSupportMessage('')
+  }
+
+  const submitSupport = async () => {
+    setSupporting(true)
+    try {
+      const res = await fetch(`/api/requests/${request.id}/support`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: supportMessage.trim() || null })
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.removed) {
+          setIsSupporting(false)
+          success('Support removed')
+        } else {
+          setIsSupporting(true)
+          success('You supported this request!')
+        }
+        setSupportCount(data.count)
+        fetchSupporters()
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setSupporting(false)
+      setSupportModalOpen(false)
+    }
+  }
+
+  const truncateAddr = (addr: string, len = 8) => {
+    if (addr.length <= len * 2 + 3) return addr
+    return `${addr.slice(0, len)}...${addr.slice(-len)}`
+  }
+
+  const fundingPct = request.goalAmount && request.goalAmount > 0
+    ? Math.min(((request.currentFunding || 0) / (request.goalAmount || 1)) * 100, 100)
+    : 0
+
   return (
     <div className={styles.page}>
       <Link href="/requests" className={styles.backLink}>
-        ← Back to Requests
+        \u2190 Back to Requests
       </Link>
 
-      <div className={styles.content}>
-        <div className={styles.mainSection}>
-          <div className={styles.card}>
+      <div className={styles.detailLayout}>
+        {/* LEFT COLUMN */}
+        <div className={styles.detailMain}>
+          {/* INFO SECTION */}
+          <div className={styles.detailCard}>
             <div className={styles.header}>
               <div className={styles.badges}>
                 <span className={`badge badge-${request.status.toLowerCase()}`}>
@@ -523,7 +605,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               <div className={styles.headerActions}>
                 {canViewHistory && (
                   <button onClick={() => setShowHistoryModal(true)} className={styles.historyBtn}>
-                    📜 History
+                    D83DDCDC History
                   </button>
                 )}
                 <span className={styles.date}>
@@ -536,11 +618,11 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               <h1 className={styles.title}>{request.title}</h1>
               {canEdit && (
                 <button onClick={() => setShowEditModal(true)} className={styles.editBtn}>
-                  ✏️ Edit
+                  \u270F\uFE0F Edit
                 </button>
               )}
             </div>
-            
+
             {request.description && (
               <p className={styles.description}>{request.description}</p>
             )}
@@ -580,41 +662,6 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                   <span className={styles.metaValue}>${request.budget.toFixed(2)}</span>
                 </div>
               )}
-              {(request.goalAmount || 0) > 0 && (
-                <div className={styles.metaItem}>
-                  <span className={styles.metaLabel}>Funding</span>
-                  <div className={styles.fundingProgress}>
-                    <div className={styles.fundingBar}>
-                      <div 
-                        className={styles.fundingFill} 
-                        style={{ width: `${Math.min(((request.currentFunding || 0) / (request.goalAmount || 1)) * 100, 100)}%` }}
-                      />
-                    </div>
-                    <span className={styles.fundingText}>
-                      ${request.currentFunding || 0} raised of ${request.goalAmount} goal
-                    </span>
-                  </div>
-                </div>
-              )}
-              {request.payoutAddress && (
-                <div className={styles.metaItem}>
-                  <span className={styles.metaLabel}>Payout</span>
-                  <div className={styles.payoutDisplay}>
-                    <span className={styles.cryptoIcon}>{getCryptoIcon(request.payoutCurrency || 'ETH')}</span>
-                    <code className={styles.payoutAddress}>{request.payoutAddress}</code>
-                    <button 
-                      className={styles.copyBtn}
-                      onClick={() => {
-                        navigator.clipboard.writeText(request.payoutAddress || '')
-                        setCopiedPayout(true)
-                        setTimeout(() => setCopiedPayout(false), 2000)
-                      }}
-                    >
-                      {copiedPayout ? '✓' : 'Copy'}
-                    </button>
-                  </div>
-                </div>
-              )}
               {request.deadline && (
                 <div className={styles.metaItem}>
                   <span className={styles.metaLabel}>Deadline</span>
@@ -644,286 +691,364 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                 </div>
               )}
             </div>
+          </div>
 
-            {canApprove && (
+          {/* FUNDING & DONATIONS SECTION */}
+          {((request.goalAmount || 0) > 0 || resolvedDonationAddrs.length > 0 || isOwner) && (
+            <div className={styles.detailCard}>
+              <h2 className={styles.sectionTitle}>Funding & Donations</h2>
+
+              {isOwner && (
+                <div className={styles.fundingSliderSection}>
+                  <div className={styles.fundingSliderHeader}>
+                    <span className={styles.metaLabel}>Adjust Funding</span>
+                    <span className={styles.fundingSliderValue}>${fundingSlider}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={request.goalAmount || Math.max(fundingSlider * 2, 100)}
+                    step={1}
+                    value={fundingSlider}
+                    onChange={e => setFundingSlider(parseFloat(e.target.value))}
+                    className={styles.fundingSlider}
+                  />
+                  <button
+                    onClick={handleSaveFunding}
+                    disabled={loading || fundingSlider === request.currentFunding}
+                    className={styles.saveFundingBtn}
+                  >
+                    {loading ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+              )}
+
+              {(request.goalAmount || 0) > 0 && (
+                <div className={styles.fundingBarSection}>
+                  <div className={styles.fundingProgress}>
+                    <div className={styles.fundingBar}>
+                      <div
+                        className={styles.fundingFill}
+                        style={{ width: `${fundingPct}%` }}
+                      />
+                    </div>
+                    <span className={styles.fundingText}>
+                      ${request.currentFunding || 0} raised of ${request.goalAmount} goal ({Math.round(fundingPct)}%)
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {isOwner && (
+                <div className={styles.donationToggle}>
+                  <label className={styles.toggleLabel}>
+                    <input
+                      type="checkbox"
+                      checked={showDonationAddress}
+                      onChange={handleToggleDonationAddress}
+                    />
+                    <span className={styles.toggleText}>Show donation addresses on this request</span>
+                  </label>
+                </div>
+              )}
+
+              {resolvedDonationAddrs.length > 0 && (
+                <div className={styles.donationSection}>
+                  <div className={styles.donationSectionTitle}>Donate</div>
+                  {resolvedDonationAddrs.map(da => {
+                    const cryptoName = getCryptoName(da.currency)
+                    const iconUrl = getCryptoIcon(da.currency)
+                    return (
+                      <div key={da.id} className={styles.donationItem}>
+                        <div className={styles.donationIcon}>
+                          {iconUrl ? (
+                            <img src={iconUrl} alt="" width={16} height={16} />
+                          ) : (
+                            <span>{da.currency[0]}</span>
+                          )}
+                        </div>
+                        <div className={styles.donationInfo}>
+                          <span className={styles.donationLabel}>{da.label || cryptoName}</span>
+                          <span className={styles.donationAddr}>{truncateAddr(da.address)}</span>
+                        </div>
+                        <div className={styles.donationActions}>
+                          <button
+                            onClick={() => setQrModal({ open: true, currency: da.label || da.currency, address: da.address })}
+                            className={styles.donationBtn}
+                            title="View QR Code"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
+                          </button>
+                          <button
+                            onClick={() => { navigator.clipboard.writeText(da.address); success('Copied!') }}
+                            className={styles.donationBtn}
+                            title="Copy address"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
+              {resolvedDonationAddrs.length === 0 && isOwnRequest && (
+                <p className={styles.noDonationHint}>
+                  No donation addresses set. <Link href="/profile/edit">Manage them in profile settings</Link>
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* SUPPORTERS SECTION */}
+          <div className={styles.detailCard}>
+            <div className={styles.supportersHeader}>
+              <h2 className={styles.sectionTitle}>Supporters ({supportCount})</h2>
+              {request.status === 'PENDING' && !isOwnRequest && (
+                <button
+                  className={`${styles.supportBtn} ${isSupporting ? styles.supported : ''}`}
+                  onClick={handleSupport}
+                >
+                  D83DDC4D {isSupporting ? 'Supported' : 'Support'}
+                </button>
+              )}
+            </div>
+
+            {supporters.length > 0 ? (
+              <div className={styles.supportersList}>
+                {supporters.map(s => (
+                  <div key={s.id} className={styles.supporterItem}>
+                    <Link href={`/profile/${s.user.id}`} className={styles.supporterAuthor}>
+                      {s.user.name || s.user.username || 'Anonymous'}
+                    </Link>
+                    <span className={styles.supporterDate}>
+                      {new Date(s.createdAt).toLocaleDateString()}
+                    </span>
+                    {s.message && <p className={styles.supporterMessage}>{s.message}</p>}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className={styles.noSupporters}>No supporters yet. Be the first!</p>
+            )}
+          </div>
+
+          {/* MANAGE SECTION */}
+          {canApprove && (
+            <div className={styles.detailCard}>
+              <h2 className={styles.sectionTitle}>Manage Request</h2>
               <div className={styles.actions}>
-                <button 
-                  onClick={handleApprove} 
+                <button
+                  onClick={handleApprove}
                   className={styles.approveBtn}
                   disabled={loading}
                 >
-                  ✅ Approve
+                  \u2705 Approve
                 </button>
-                <button 
-                  onClick={handleReject} 
+                <button
+                  onClick={handleReject}
                   className={styles.rejectBtn}
                   disabled={loading}
                 >
-                  ❌ Reject
+                  \u274C Reject
                 </button>
               </div>
-            )}
-
-            {canPurchase && (
-              <div className={styles.actions}>
-                <button 
-                  onClick={() => setShowPurchaseModal(true)} 
-                  className={styles.approveBtn}
-                  disabled={loading}
-                >
-                  🛒 Purchase on Their Behalf
-                </button>
-              </div>
-            )}
-
-            {canPurchaseSelf && (
-              <div className={styles.actions}>
-                <button 
-                  onClick={handleSelfPurchase} 
-                  className={styles.completeBtn}
-                  disabled={loading}
-                >
-                  ✅ Mark as Purchased/Completed
-                </button>
-              </div>
-            )}
-
-            {canHelpComplete && (
-              <div className={styles.actions}>
-                <button 
-                  onClick={() => setShowCompleteModal(true)} 
-                  className={styles.helpBtn}
-                  disabled={loading}
-                >
-                  🤝 Help Complete This Request
-                </button>
-              </div>
-            )}
-
-            {canMarkPurchased && (request.goalAmount || 0) > 0 && (
-              <div className={styles.actions}>
-                <button 
-                  onClick={() => setShowCompleteModal(true)} 
-                  className={styles.primaryBtn}
-                  disabled={loading}
-                >
-                  ✅ Mark as Purchased
-                </button>
-              </div>
-            )}
-
-            {canContact && (
-              <div className={styles.actions}>
-                <button 
-                  onClick={() => setShowOfferModal(true)} 
-                  className={styles.contactBtn}
-                  disabled={loading}
-                >
-                  🤝 Make Offer
-                </button>
-                <button 
-                  onClick={() => setShowContactModal(true)} 
-                  className={styles.contactBtn}
-                  disabled={loading}
-                >
-                  💬 Contact Requestor
-                </button>
-              </div>
-            )}
-
-            {canRollback && (
-              <div className={styles.actions}>
-                <button 
-                  onClick={() => setShowHistoryModal(true)} 
-                  className={styles.rollbackBtn}
-                  disabled={loading}
-                >
-                  ↩️ Rollback Status
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className={styles.commentsSection}>
-          <h2>🤝 Offers ({fulfillments.length})</h2>
-
-          {canEdit && (
-            <div className={styles.fulfillmentToggle}>
-              <label className={styles.toggleLabel}>
-                <input
-                  type="checkbox"
-                  checked={allowFulfillments}
-                  onChange={handleToggleFulfillments}
-                  disabled={loading}
-                />
-                <span className={styles.toggleText}>
-                  {allowFulfillments ? 'Accepting offers' : 'Not accepting offers'}
-                </span>
-              </label>
             </div>
           )}
 
-          {allowFulfillments && !isOwnRequest && request.status === 'PENDING' && (
-            <button
-              onClick={() => setShowFulfillmentForm(!showFulfillmentForm)}
-              className={styles.fulfillmentFormToggle}
-            >
-              {showFulfillmentForm ? 'Cancel' : 'Make an Offer'}
-            </button>
-          )}
-
-          {showFulfillmentForm && (
-            <form onSubmit={handleCreateFulfillment} className={styles.fulfillmentForm}>
-              <div className="form-group">
-                <label>Title</label>
-                <input
-                  type="text"
-                  value={fulfillmentForm.title}
-                  onChange={e => setFulfillmentForm({ ...fulfillmentForm, title: e.target.value })}
-                  placeholder="Brief description of your offer"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Details</label>
-                <textarea
-                  value={fulfillmentForm.content}
-                  onChange={e => setFulfillmentForm({ ...fulfillmentForm, content: e.target.value })}
-                  placeholder="Explain how you can fulfill this request..."
-                  rows={4}
-                  required
-                />
-              </div>
-              <button type="submit" className="btn-primary" disabled={loading}>
-                Submit Offer
+          {/* QUICK ACTIONS */}
+          {canHelpComplete && (
+            <div className={styles.detailCard}>
+              <button
+                onClick={() => setShowCompleteModal(true)}
+                className={styles.helpBtn}
+                disabled={loading}
+              >
+                D83EDD1D Help Complete This Request
               </button>
-            </form>
+            </div>
           )}
 
-          <div className={styles.fulfillmentsList}>
-            {fulfillments.map(f => (
-              <div key={f.id} className={styles.fulfillmentItem}>
-                <div className={styles.fulfillmentHeader}>
-                  <div className={styles.fulfillmentAuthor}>
-                    <Link href={getUserProfileUrl(f.user)} className={styles.fulfillmentAuthorName}>
-                      {f.user.name || 'User'}
-                    </Link>
-                    <span className={styles.fulfillmentDate}>
-                      {new Date(f.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <span className={`${styles.fulfillmentStatus} ${styles[`status${f.status.toLowerCase()}`]}`}>
-                    {f.status}
-                  </span>
-                </div>
-                <h4 className={styles.fulfillmentTitle}>{f.title}</h4>
-                <p className={styles.fulfillmentContent}>{f.content}</p>
-                {isOwnRequest && f.status === 'PENDING' && (
-                  <div className={styles.fulfillmentActions}>
-                    <button
-                      onClick={() => handleRespondFulfillment(f.id, 'APPROVED')}
-                      className={styles.fulfillmentApproveBtn}
-                      disabled={loading}
-                    >
-                      ✓ Accept
-                    </button>
-                    <button
-                      onClick={() => handleRespondFulfillment(f.id, 'DECLINED')}
-                      className={styles.fulfillmentDeclineBtn}
-                      disabled={loading}
-                    >
-                      ✕ Decline
-                    </button>
-                    <label className={styles.autoCompleteLabel}>
-                      <input type="checkbox" id={`auto-${f.id}`} />
-                      <span>Auto-complete request</span>
-                    </label>
-                  </div>
-                )}
-              </div>
-            ))}
-            {fulfillments.length === 0 && (
-              <p className={styles.noFulfillments}>No offers yet.</p>
-            )}
-          </div>
+          {canContact && request.status === 'PENDING' && (
+            <div className={styles.quickActions}>
+              <button
+                onClick={() => setShowOfferModal(true)}
+                className={styles.actionBtn}
+                disabled={loading}
+              >
+                D83EDD1D Make Offer
+              </button>
+              <button
+                onClick={() => setShowContactModal(true)}
+                className={styles.actionBtn}
+                disabled={loading}
+              >
+                D83DDCAC Contact Requestor
+              </button>
+            </div>
+          )}
+
+          {canRollback && (
+            <div className={styles.quickActions}>
+              <button
+                onClick={() => setShowHistoryModal(true)}
+                className={styles.actionBtn}
+                disabled={loading}
+              >
+                \u21A9\uFE0F Rollback Status
+              </button>
+            </div>
+          )}
         </div>
 
-        <div className={styles.commentsSection}>
-          <h2>💬 Comments ({request.comments.length})</h2>
+        {/* RIGHT COLUMN - OFFERS & COMMENTS */}
+        <div className={styles.detailSidebar}>
+          {/* OFFERS */}
+          <div className={styles.sidebarCard}>
+            <h2>D83EDD1D Offers ({fulfillments.length})</h2>
 
-          <div className={styles.commentsList}>
-            {request.comments.map(c => (
-              <div key={c.id} className={styles.comment}>
-                <div className={styles.commentHeader}>
-                  <Link href={getUserProfileUrl(c.user)} className={styles.commentAuthor}>
-                    {c.user.name || 'User'}
-                  </Link>
-                  <span className={styles.commentDate}>
-                    {new Date(c.createdAt).toLocaleDateString()}
+            {canEdit && (
+              <div className={styles.fulfillmentToggle}>
+                <label className={styles.toggleLabel}>
+                  <input
+                    type="checkbox"
+                    checked={allowFulfillments}
+                    onChange={handleToggleFulfillments}
+                    disabled={loading}
+                  />
+                  <span className={styles.toggleText}>
+                    {allowFulfillments ? 'Accepting offers' : 'Not accepting offers'}
                   </span>
-                </div>
-                <p className={styles.commentContent}>{c.content}</p>
+                </label>
               </div>
-            ))}
+            )}
+
+            {allowFulfillments && !isOwnRequest && request.status === 'PENDING' && (
+              <button
+                onClick={() => setShowFulfillmentForm(!showFulfillmentForm)}
+                className={styles.fulfillmentFormToggle}
+              >
+                {showFulfillmentForm ? 'Cancel' : 'Make an Offer'}
+              </button>
+            )}
+
+            {showFulfillmentForm && (
+              <form onSubmit={handleCreateFulfillment} className={styles.fulfillmentForm}>
+                <div className="form-group">
+                  <label>Title</label>
+                  <input
+                    type="text"
+                    value={fulfillmentForm.title}
+                    onChange={e => setFulfillmentForm({ ...fulfillmentForm, title: e.target.value })}
+                    placeholder="Brief description of your offer"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Details</label>
+                  <textarea
+                    value={fulfillmentForm.content}
+                    onChange={e => setFulfillmentForm({ ...fulfillmentForm, content: e.target.value })}
+                    placeholder="Explain how you can fulfill this request..."
+                    rows={4}
+                    required
+                  />
+                </div>
+                <button type="submit" className="btn-primary" disabled={loading}>
+                  Submit Offer
+                </button>
+              </form>
+            )}
+
+            <div className={styles.fulfillmentsList}>
+              {fulfillments.map(f => (
+                <div key={f.id} className={styles.fulfillmentItem}>
+                  <div className={styles.fulfillmentHeader}>
+                    <div className={styles.fulfillmentAuthor}>
+                      <Link href={getUserProfileUrl(f.user)} className={styles.fulfillmentAuthorName}>
+                        {f.user.name || 'User'}
+                      </Link>
+                      <span className={styles.fulfillmentDate}>
+                        {new Date(f.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <span className={`${styles.fulfillmentStatus} ${styles[`status${f.status.toLowerCase()}`]}`}>
+                      {f.status}
+                    </span>
+                  </div>
+                  <h4 className={styles.fulfillmentTitle}>{f.title}</h4>
+                  <p className={styles.fulfillmentContent}>{f.content}</p>
+                  {isOwnRequest && f.status === 'PENDING' && (
+                    <div className={styles.fulfillmentActions}>
+                      <button
+                        onClick={() => handleRespondFulfillment(f.id, 'APPROVED')}
+                        className={styles.fulfillmentApproveBtn}
+                        disabled={loading}
+                      >
+                        \u2713 Accept
+                      </button>
+                      <button
+                        onClick={() => handleRespondFulfillment(f.id, 'DECLINED')}
+                        className={styles.fulfillmentDeclineBtn}
+                        disabled={loading}
+                      >
+                        \u2715 Decline
+                      </button>
+                      <label className={styles.autoCompleteLabel}>
+                        <input type="checkbox" id={`auto-${f.id}`} />
+                        <span>Auto-complete request</span>
+                      </label>
+                    </div>
+                  )}
+                </div>
+              ))}
+              {fulfillments.length === 0 && (
+                <p className={styles.noFulfillments}>No offers yet.</p>
+              )}
+            </div>
           </div>
 
-          <form onSubmit={handleAddComment} className={styles.commentForm}>
-            <textarea
-              value={comment}
-              onChange={e => setComment(e.target.value)}
-              placeholder="Add a comment or offer help..."
-              rows={3}
-            />
-            <button type="submit" className="btn-primary" disabled={loading || !comment.trim()}>
-              Add Comment
-            </button>
-          </form>
+          {/* COMMENTS */}
+          <div className={styles.sidebarCard}>
+            <h2>D83DDCAC Comments ({request.comments.length})</h2>
+
+            <div className={styles.commentsList}>
+              {request.comments.map(c => (
+                <div key={c.id} className={styles.comment}>
+                  <div className={styles.commentHeader}>
+                    <Link href={getUserProfileUrl(c.user)} className={styles.commentAuthor}>
+                      {c.user.name || 'User'}
+                    </Link>
+                    <span className={styles.commentDate}>
+                      {new Date(c.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className={styles.commentContent}>{c.content}</p>
+                </div>
+              ))}
+            </div>
+
+            <form onSubmit={handleAddComment} className={styles.commentForm}>
+              <textarea
+                value={comment}
+                onChange={e => setComment(e.target.value)}
+                placeholder="Add a comment..."
+                rows={3}
+              />
+              <button type="submit" className="btn-primary" disabled={loading || !comment.trim()}>
+                Add Comment
+              </button>
+            </form>
+          </div>
         </div>
       </div>
 
-      {showPurchaseModal && (
-        <div className="modal-overlay" onClick={() => setShowPurchaseModal(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <h2>🛒 Purchase on Their Behalf</h2>
-            <p className={styles.modalText}>
-              You are purchasing <strong>{request.product?.title}</strong> for {request.user.name || 'the requester'}.
-              This will approve the request and send them a message.
-            </p>
-            <div className="form-group">
-              <label>Message (optional)</label>
-              <textarea
-                value={purchaseMessage}
-                onChange={e => setPurchaseMessage(e.target.value)}
-                placeholder="Add a message to go along with your purchase..."
-                rows={3}
-              />
-            </div>
-            <div className={styles.modalActions}>
-              <button 
-                type="button" 
-                onClick={() => setShowPurchaseModal(false)}
-                className="btn-ghost"
-              >
-                Cancel
-              </button>
-              <button 
-                type="button" 
-                onClick={handlePurchase}
-                className="btn-primary"
-                disabled={loading}
-              >
-                {loading ? 'Processing...' : `Purchase $${request.product?.price?.toFixed(2) || '0.00'}`}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
+      {/* COMPLETE MODAL */}
       {showCompleteModal && (
         <div className="modal-overlay" onClick={() => setShowCompleteModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <h2>🤝 Help Complete This Request</h2>
+            <h2>D83EDD1D Help Complete This Request</h2>
             <p className={styles.modalText}>
               You are offering to help {request.user.name || 'this user'} with this request.
               Mark it as completed and send them a message.
@@ -938,15 +1063,15 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               />
             </div>
             <div className={styles.modalActions}>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => setShowCompleteModal(false)}
                 className="btn-ghost"
               >
                 Cancel
               </button>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={handleComplete}
                 className="btn-primary"
                 disabled={loading}
@@ -958,13 +1083,14 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
         </div>
       )}
 
+      {/* HISTORY / ROLLBACK MODAL */}
       {showHistoryModal && (
         <div className="modal-overlay" onClick={() => setShowHistoryModal(false)}>
           <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
-            <h2>📜 Request History</h2>
+            <h2>D83DDCDC Request History</h2>
             <div className={styles.historyList}>
               <div className={styles.historyItem}>
-                <span className={styles.historyIcon}>🕐</span>
+                <span className={styles.historyIcon}>D83DDD50</span>
                 <div className={styles.historyContent}>
                   <span className={styles.historyAction}>
                     Request created with status <strong>PENDING</strong>
@@ -976,11 +1102,11 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               </div>
               {request.statusHistory?.map((change) => (
                 <div key={change.id} className={styles.historyItem}>
-                  <span className={styles.historyIcon}>→</span>
+                  <span className={styles.historyIcon}>\u2192</span>
                   <div className={styles.historyContent}>
                     <span className={styles.historyAction}>
                       <span className={styles.historyStatus}>{STATUS_LABELS[change.fromStatus]?.icon} {STATUS_LABELS[change.fromStatus]?.label}</span>
-                      → 
+                      \u2192
                       <span className={styles.historyStatus}>{STATUS_LABELS[change.toStatus]?.icon} {STATUS_LABELS[change.toStatus]?.label}</span>
                       {change.reason && <span className={styles.historyReason}> - {change.reason}</span>}
                     </span>
@@ -1021,15 +1147,15 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                   </div>
                 )}
                 <div className={styles.modalActions}>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => { setShowHistoryModal(false); setSelectedHistory(null); }}
                     className="btn-ghost"
                   >
                     Cancel
                   </button>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={handleRollback}
                     className="btn-primary"
                     disabled={loading || !selectedHistory}
@@ -1040,56 +1166,58 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               </div>
             )}
           </div>
-</div>
-        )}
+        </div>
+      )}
 
-        {showContactModal && (
-          <div className="modal-overlay" onClick={() => setShowContactModal(false)}>
-            <div className="modal" onClick={e => e.stopPropagation()}>
-              <h2>💬 Contact Requestor</h2>
-              <p className={styles.modalText}>
-                Send a message to {request.user.name || 'this user'} about this request.
-              </p>
-              <div className="form-group">
-                <label>Message</label>
-                <textarea
-                  value={contactMessage}
-                  onChange={e => setContactMessage(e.target.value)}
-                  placeholder="Write your message..."
-                  rows={3}
-                />
-              </div>
-              <div className={styles.modalActions}>
-                <button 
-                  type="button" 
-                  onClick={() => setShowContactModal(false)}
-                  className="btn-ghost"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="button" 
-                  onClick={handleContactMessage}
-                  className="btn-primary"
-                  disabled={loading || !contactMessage.trim()}
-                >
-                  {loading ? 'Sending...' : 'Send Message'}
-                </button>
-              </div>
+      {/* CONTACT MODAL */}
+      {showContactModal && (
+        <div className="modal-overlay" onClick={() => setShowContactModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2>D83DDCAC Contact Requestor</h2>
+            <p className={styles.modalText}>
+              Send a message to {request.user.name || 'this user'} about this request.
+            </p>
+            <div className="form-group">
+              <label>Message</label>
+              <textarea
+                value={contactMessage}
+                onChange={e => setContactMessage(e.target.value)}
+                placeholder="Write your message..."
+                rows={3}
+              />
+            </div>
+            <div className={styles.modalActions}>
+              <button
+                type="button"
+                onClick={() => setShowContactModal(false)}
+                className="btn-ghost"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleContactMessage}
+                className="btn-primary"
+                disabled={loading || !contactMessage.trim()}
+              >
+                {loading ? 'Sending...' : 'Send Message'}
+              </button>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {showEditModal && (
+      {/* EDIT MODAL */}
+      {showEditModal && (
         <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
           <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
-            <h2>✏️ Edit Request</h2>
+            <h2>\u270F\uFE0F Edit Request</h2>
             <div className="form-group">
               <label>Title</label>
               <input
                 type="text"
                 value={editForm.title}
-                onChange={e => setEditForm({...editForm, title: e.target.value})}
+                onChange={e => setEditForm({ ...editForm, title: e.target.value })}
                 required
               />
             </div>
@@ -1097,7 +1225,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               <label>Description</label>
               <textarea
                 value={editForm.description}
-                onChange={e => setEditForm({...editForm, description: e.target.value})}
+                onChange={e => setEditForm({ ...editForm, description: e.target.value })}
                 rows={4}
               />
             </div>
@@ -1106,7 +1234,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                 <label>Category</label>
                 <select
                   value={editForm.category}
-                  onChange={e => setEditForm({...editForm, category: e.target.value})}
+                  onChange={e => setEditForm({ ...editForm, category: e.target.value })}
                 >
                   {CATEGORIES.map(cat => (
                     <option key={cat.value} value={cat.value}>{cat.icon} {cat.label}</option>
@@ -1117,7 +1245,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                 <label>Priority</label>
                 <select
                   value={editForm.priority}
-                  onChange={e => setEditForm({...editForm, priority: e.target.value})}
+                  onChange={e => setEditForm({ ...editForm, priority: e.target.value })}
                 >
                   {PRIORITIES.map(pri => (
                     <option key={pri.value} value={pri.value}>{pri.label}</option>
@@ -1131,7 +1259,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                 <input
                   type="number"
                   value={editForm.budget}
-                  onChange={e => setEditForm({...editForm, budget: e.target.value})}
+                  onChange={e => setEditForm({ ...editForm, budget: e.target.value })}
                   placeholder="0.00"
                   step="0.01"
                 />
@@ -1141,7 +1269,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                 <input
                   type="date"
                   value={editForm.deadline}
-                  onChange={e => setEditForm({...editForm, deadline: e.target.value})}
+                  onChange={e => setEditForm({ ...editForm, deadline: e.target.value })}
                 />
               </div>
             </div>
@@ -1150,21 +1278,31 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                 <input
                   type="checkbox"
                   checked={editForm.allowFulfillments}
-                  onChange={e => setEditForm({...editForm, allowFulfillments: e.target.checked})}
+                  onChange={e => setEditForm({ ...editForm, allowFulfillments: e.target.checked })}
                 />
                 <span className={styles.toggleText}>Allow others to make offers to fulfill this request</span>
               </label>
             </div>
+            <div className="form-group">
+              <label className={styles.toggleLabel}>
+                <input
+                  type="checkbox"
+                  checked={editForm.showDonationAddress}
+                  onChange={e => setEditForm({ ...editForm, showDonationAddress: e.target.checked })}
+                />
+                <span className={styles.toggleText}>Show donation addresses on this request</span>
+              </label>
+            </div>
             <div className={styles.modalActions}>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => setShowEditModal(false)}
                 className="btn-ghost"
               >
                 Cancel
               </button>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={handleEdit}
                 className="btn-primary"
                 disabled={loading}
@@ -1176,16 +1314,46 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
         </div>
       )}
 
-      {request && (
-        <MakeOfferModal
-          isOpen={showOfferModal}
-          onClose={() => setShowOfferModal(false)}
-          listingId={request.id}
-          listingTitle={request.title}
-          listingType="REQUEST"
-          listingOwnerName={request.user.name || undefined}
-        />
+      {/* QR CODE MODAL */}
+      <QRCodeModal
+        isOpen={qrModal.open}
+        onClose={() => setQrModal({ open: false, currency: '', address: '' })}
+        currency={qrModal.currency}
+        address={qrModal.address}
+      />
+
+      {/* SUPPORT MODAL */}
+      {supportModalOpen && (
+        <div className="modal-overlay" onClick={() => setSupportModalOpen(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2>D83DDC4D Support this Request</h2>
+            <p className={styles.modalText}>How can you help? (optional)</p>
+            <textarea
+              value={supportMessage}
+              onChange={e => setSupportMessage(e.target.value)}
+              placeholder="e.g., I can contribute $20, share this with my network, help with design..."
+              className={styles.textarea}
+              rows={4}
+            />
+            <div className={styles.formActions}>
+              <button onClick={submitSupport} disabled={supporting} className="btn-primary">
+                {supporting ? '...' : 'Support'}
+              </button>
+              <button onClick={() => setSupportModalOpen(false)} className="btn-ghost">Cancel</button>
+            </div>
+          </div>
+        </div>
       )}
+
+      {/* OFFER MODAL */}
+      <MakeOfferModal
+        isOpen={showOfferModal}
+        onClose={() => setShowOfferModal(false)}
+        listingId={request.id}
+        listingTitle={request.title}
+        listingType="REQUEST"
+        listingOwnerName={request.user.name || undefined}
+      />
     </div>
   )
 }

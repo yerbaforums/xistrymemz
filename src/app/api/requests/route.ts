@@ -65,10 +65,16 @@ export async function GET(request: Request) {
         schoolContent: { select: { id: true, title: true } },
         event: { select: { id: true, title: true } },
         user: {
-          select: { id: true, name: true, username: true, email: true, image: true, shopSlug: true }
+          select: {
+            id: true, name: true, username: true, email: true, image: true, shopSlug: true,
+            donationAddresses: {
+              where: { isPublic: true },
+              orderBy: { sortOrder: 'asc' }
+            }
+          }
         },
         _count: {
-          select: { comments: true, fulfillments: true }
+          select: { comments: true, fulfillments: true, supports: true, contributions: true }
         }
       },
       orderBy: { createdAt: 'desc' }
@@ -176,6 +182,7 @@ export async function POST(request: Request) {
         location: location || null,
         isPublic: isPublic || false,
         allowFulfillments: body.allowFulfillments !== undefined ? body.allowFulfillments : true,
+        showDonationAddress: body.showDonationAddress !== undefined ? body.showDonationAddress : true,
         status: 'PENDING'
       },
       include: {

@@ -48,7 +48,15 @@ export async function GET(
             user: { select: { id: true, name: true, username: true, email: true, shopSlug: true } }
           }
         },
-        user: { select: { id: true, name: true, username: true, email: true, image: true, shopSlug: true } },
+        user: {
+          select: {
+            id: true, name: true, username: true, email: true, image: true, shopSlug: true,
+            donationAddresses: {
+              where: { isPublic: true },
+              orderBy: { sortOrder: 'asc' }
+            }
+          }
+        },
         product: { select: { id: true, title: true, price: true, imageUrl: true } },
         comments: {
           include: {
@@ -117,7 +125,8 @@ export async function PUT(
         location: body.location !== undefined ? body.location : existingRequest.location,
         deadline: body.deadline ? new Date(body.deadline) : existingRequest.deadline,
         isPublic: body.isPublic !== undefined ? body.isPublic : existingRequest.isPublic,
-        allowFulfillments: body.allowFulfillments !== undefined ? body.allowFulfillments : existingRequest.allowFulfillments
+        allowFulfillments: body.allowFulfillments !== undefined ? body.allowFulfillments : existingRequest.allowFulfillments,
+        showDonationAddress: body.showDonationAddress !== undefined ? body.showDonationAddress : existingRequest.showDonationAddress
       }
     })
 

@@ -33,7 +33,7 @@ export default async function RequestDetailPage({
         }
       },
       user: {
-        select: { id: true, name: true, username: true, email: true, shopSlug: true }
+        select: { id: true, name: true, username: true, email: true, shopSlug: true, donationAddresses: { orderBy: { sortOrder: 'asc' } } }
       },
       product: {
         select: { id: true, title: true, price: true, imageUrl: true }
@@ -61,6 +61,9 @@ export default async function RequestDetailPage({
           }
         },
         orderBy: { createdAt: 'desc' }
+      },
+      _count: {
+        select: { supports: true }
       }
     }
   })
@@ -78,9 +81,8 @@ export default async function RequestDetailPage({
     priority: request.priority || 'MEDIUM',
     budget: request.budget,
     goalAmount: request.goalAmount,
-    currentFunding: request.currentFunding,
-    payoutAddress: request.payoutAddress,
-    payoutCurrency: request.payoutCurrency,
+    currentFunding: request.currentFunding || 0,
+    showDonationAddress: request.showDonationAddress,
     deadline: request.deadline?.toISOString() || null,
     location: request.location,
     likes: request.likes,
@@ -105,6 +107,15 @@ export default async function RequestDetailPage({
       name: request.user.name,
       username: request.user.username,
       shopSlug: request.user.shopSlug,
+      donationAddresses: (request.user as any).donationAddresses?.map((da: any) => ({
+        id: da.id,
+        currency: da.currency,
+        address: da.address,
+        label: da.label,
+        qrCodeUrl: da.qrCodeUrl,
+        showQR: da.showQR,
+        sortOrder: da.sortOrder,
+      })) || [],
     },
     product: request.product ? {
       id: request.product.id,
@@ -145,6 +156,7 @@ export default async function RequestDetailPage({
         shopSlug: f.user.shopSlug,
       },
     })),
+    supportCount: (request as any)._count?.supports || 0,
   }
 
   return <RequestDetailClient request={serializedRequest} userId={session?.user?.id || ''} userRole={userRole} />

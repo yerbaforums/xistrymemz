@@ -1,31 +1,22 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import dynamic from 'next/dynamic'
+import { QRCodeModal } from '@/components/QRCodeModal'
 import styles from './page.module.css'
 import { getUserProfileUrl } from '@/lib/utils'
-import { useSiteSettings } from '@/hooks/useSiteSettings'
+import { getCryptoIcon, getCryptoName } from '@/lib/crypto-icons'
 import { useToast } from '@/context/ToastContext'
 
-const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
-const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
-const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false })
-const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false })
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let L: any
-
-if (typeof window !== 'undefined') {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  L = require('leaflet')
-  delete L.Icon.Default.prototype._getIconUrl
-  L.Icon.Default.mergeOptions({
-    iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  })
+interface DonationAddr {
+  id: string
+  currency: string
+  address: string
+  label: string | null
+  qrCodeUrl: string | null
+  showQR: boolean
+  sortOrder: number
 }
 
 interface Request {
@@ -48,6 +39,7 @@ interface Request {
   reposts: number
   isPublic: boolean
   allowFulfillments: boolean
+  showDonationAddress: boolean
   createdAt: string
   plan: { id: string; title: string } | null
   group: { id: string; name: string } | null
@@ -60,9 +52,11 @@ interface Request {
     email: string
     image: string | null
     shopSlug: string | null
+    donationAddresses: DonationAddr[]
   }
   commentCount: number
   fulfillmentCount: number
+  supportCount: number
 }
 
 interface RequestsClientProps {
@@ -70,13 +64,6 @@ interface RequestsClientProps {
   userId: string
   userRole: string
   isAuthenticated: boolean
-}
-
-const STATUS_ICONS: Record<string, string> = {
-  PENDING: '⏳',
-  APPROVED: '✅',
-  REJECTED: '❌',
-  COMPLETED: '🎯'
 }
 
 const PRIORITY_COLORS: Record<string, string> = {
@@ -92,61 +79,64 @@ const CATEGORIES = [
 ]
 
 export default function RequestsClient({ initialRequests, userId, userRole, isAuthenticated }: RequestsClientProps) {
-  const { settings } = useSiteSettings()
   const { success, error: toastError, warning } = useToast()
   const [requests, setRequests] = useState(initialRequests)
-  const [tab, setTab] = useState<'all' | 'mine'>('all')
+  const [tab, setTab] = useState<'active' | 'mine'>('active')
   const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState('ALL')
   const [categoryFilter, setCategoryFilter] = useState('ALL')
-  const [priorityFilter, setPriorityFilter] = useState('ALL')
   const [sortBy, setSortBy] = useState('newest')
   const [showCreate, setShowCreate] = useState(false)
   const [editingRequest, setEditingRequest] = useState<Request | null>(null)
-  const [editForm, setEditForm] = useState({ title: '', description: '', category: 'GENERAL', priority: 'MEDIUM', budget: '', goalAmount: '', location: '', isPublic: true, allowFulfillments: true })
+  const [editForm, setEditForm] = useState({ title: '', description: '', category: 'GENERAL', priority: 'MEDIUM', budget: '', goalAmount: '', location: '', isPublic: true, allowFulfillments: true, showDonationAddress: true })
   const [saving, setSaving] = useState(false)
   const [newRequest, setNewRequest] = useState({
     title: '', description: '', category: 'GENERAL', priority: 'MEDIUM',
-    budget: '', goalAmount: '', payoutAddress: '', payoutCurrency: 'ETH',
-    location: '', isPublic: true, allowFulfillments: true
+    budget: '', goalAmount: '', location: '', isPublic: true, allowFulfillments: true, showDonationAddress: true
   })
   const [creating, setCreating] = useState(false)
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('list')
-  const [selectedRequest, setSelectedRequest] = useState<Request | null>(null)
-  const mapRef = useRef<L.Map | null>(null)
+  const [selectedDonation, setSelectedDonation] = useState<DonationAddr | null>(null)
+  const [qrModal, setQrModal] = useState<{ open: boolean; currency: string; address: string }>({ open: false, currency: '', address: '' })
+  const [supportModal, setSupportModal] = useState<{ open: boolean; reqId: string }>({ open: false, reqId: '' })
+  const [supportMessage, setSupportMessage] = useState('')
+  const [supporting, setSupporting] = useState(false)
+  const [supportingIds, setSupportingIds] = useState<Set<string>>(new Set())
+  const [donationSelector, setDonationSelector] = useState<{ open: boolean; mode: 'create' | 'edit'; selectedIds: string[] }>({ open: false, mode: 'create', selectedIds: [] })
+  const [userDonationAddrs, setUserDonationAddrs] = useState<DonationAddr[]>([])
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
 
   const isAdmin = userRole === 'ADMIN'
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetch('/api/users/donations')
+        .then(r => r.ok ? r.json() : null)
+        .then(data => { if (data?.addresses) setUserDonationAddrs(data.addresses) })
+        .catch(() => {})
+    }
+  }, [isAuthenticated])
 
   const filteredRequests = () => {
     let result = [...requests]
 
+    if (tab === 'active') {
+      result = result.filter(r => r.status === 'PENDING')
+    }
     if (tab === 'mine' && userId) {
-      result = result.filter(r => r.user.id === userId || r.plan?.id && requests.find(p => p.id === r.plan?.id && p.user?.id === userId))
-      result = result.filter(r => {
-        if (r.user.id === userId) return true
-        if (r.plan) {
-          const plan = requests.find(p => p.id === r.plan?.id)
-          if (plan && (plan as any).user?.id === userId) return true
-        }
-        return false
-      })
-      result = requests.filter(r => r.user.id === userId)
+      result = result.filter(r => r.user.id === userId)
     }
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase()
       result = result.filter(r => r.title.toLowerCase().includes(q) || r.description?.toLowerCase().includes(q))
     }
-
-    if (statusFilter !== 'ALL') result = result.filter(r => r.status === statusFilter)
     if (categoryFilter !== 'ALL') result = result.filter(r => r.category === categoryFilter)
-    if (priorityFilter !== 'ALL') result = result.filter(r => r.priority === priorityFilter)
 
     switch (sortBy) {
       case 'newest': result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); break
       case 'oldest': result.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()); break
       case 'mostComments': result.sort((a, b) => b.commentCount - a.commentCount); break
       case 'mostOffers': result.sort((a, b) => b.fulfillmentCount - a.fulfillmentCount); break
+      case 'mostSupported': result.sort((a, b) => (b.supportCount || 0) - (a.supportCount || 0)); break
     }
 
     return result
@@ -173,6 +163,16 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
   }
 
+  const truncateAddr = (addr: string, len = 8) => {
+    if (addr.length <= len * 2 + 3) return addr
+    return `${addr.slice(0, len)}...${addr.slice(-len)}`
+  }
+
+  const getResolvedDonationAddrs = (req: Request): DonationAddr[] => {
+    if (!req.showDonationAddress || !req.user?.donationAddresses) return []
+    return req.user.donationAddresses
+  }
+
   const handleCreate = async () => {
     if (!newRequest.title.trim()) { warning('Please enter a title'); return }
     setCreating(true)
@@ -181,19 +181,31 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...newRequest,
+          title: newRequest.title,
+          description: newRequest.description || null,
+          category: newRequest.category,
+          priority: newRequest.priority,
           budget: newRequest.budget ? parseFloat(newRequest.budget) : null,
           goalAmount: newRequest.goalAmount ? parseFloat(newRequest.goalAmount) : null,
-          payoutAddress: newRequest.payoutAddress || null,
-          payoutCurrency: newRequest.payoutCurrency || 'ETH'
+          location: newRequest.location || null,
+          isPublic: newRequest.isPublic,
+          allowFulfillments: newRequest.allowFulfillments,
+          showDonationAddress: newRequest.showDonationAddress
         })
       })
       if (res.ok) {
         const created = await res.json()
-        setRequests([{ ...created, user: { id: userId, name: null, email: '', image: null, shopSlug: null }, commentCount: 0, fulfillmentCount: 0 }, ...requests])
+        setRequests([{
+          ...created,
+          user: { id: userId, name: null, email: '', image: null, shopSlug: null, donationAddresses: [] },
+          commentCount: 0, fulfillmentCount: 0, supportCount: 0
+        }, ...requests])
         setShowCreate(false)
-        setNewRequest({ title: '', description: '', category: 'GENERAL', priority: 'MEDIUM', budget: '', goalAmount: '', payoutAddress: '', payoutCurrency: 'ETH', location: '', isPublic: true, allowFulfillments: true })
+        setNewRequest({ title: '', description: '', category: 'GENERAL', priority: 'MEDIUM', budget: '', goalAmount: '', location: '', isPublic: true, allowFulfillments: true, showDonationAddress: true })
         success('Request created!')
+      } else {
+        const err = await res.json()
+        toastError(err.error || 'Failed to create')
       }
     } catch (err) { console.error(err) } finally { setCreating(false) }
   }
@@ -214,7 +226,8 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
           goalAmount: editForm.goalAmount ? parseFloat(editForm.goalAmount) : null,
           location: editForm.location || null,
           isPublic: editForm.isPublic,
-          allowFulfillments: editForm.allowFulfillments
+          allowFulfillments: editForm.allowFulfillments,
+          showDonationAddress: editForm.showDonationAddress
         })
       })
       if (res.ok) {
@@ -228,20 +241,6 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
     } catch (err) { console.error(err) } finally { setSaving(false) }
   }
 
-  const handleApprove = async (id: string) => {
-    try {
-      const res = await fetch(`/api/requests/${id}/approve`, { method: 'POST' })
-      if (res.ok) { setRequests(requests.map(r => r.id === id ? { ...r, status: 'APPROVED' } : r)); success('Approved') }
-    } catch (err) { console.error(err) }
-  }
-
-  const handleReject = async (id: string) => {
-    try {
-      const res = await fetch(`/api/requests/${id}/reject`, { method: 'POST' })
-      if (res.ok) { setRequests(requests.map(r => r.id === id ? { ...r, status: 'REJECTED' } : r)); success('Rejected') }
-    } catch (err) { console.error(err) }
-  }
-
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this request?')) return
     try {
@@ -250,52 +249,58 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
     } catch (err) { console.error(err) }
   }
 
-  const copyPayout = async (addr: string) => {
-    await navigator.clipboard.writeText(addr)
-    success('Copied!')
+  const handleSupport = async (reqId: string) => {
+    if (!userId) { warning('Please log in to support requests'); return }
+    setSupportModal({ open: true, reqId })
+    setSupportMessage('')
+  }
+
+  const submitSupport = async () => {
+    if (!supportModal.reqId) return
+    setSupporting(true)
+    try {
+      const res = await fetch(`/api/requests/${supportModal.reqId}/support`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: supportMessage.trim() || null })
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.removed) {
+          setSupportingIds(prev => { const n = new Set(prev); n.delete(supportModal.reqId); return n })
+          success('Support removed')
+        } else {
+          setSupportingIds(prev => new Set(prev).add(supportModal.reqId))
+          success('You supported this request!')
+        }
+        setRequests(requests.map(r => r.id === supportModal.reqId ? { ...r, supportCount: data.count } : r))
+      }
+    } catch (err) { console.error(err) } finally {
+      setSupporting(false)
+      setSupportModal({ open: false, reqId: '' })
+    }
+  }
+
+  const handleDragStart = (index: number) => setDraggedIdx(index)
+  const handleDragOver = (e: React.DragEvent) => e.preventDefault()
+  const handleDrop = (targetIndex: number) => {
+    if (draggedIdx === null || draggedIdx === targetIndex) { setDraggedIdx(null); return }
+    const arr = [...donationSelector.selectedIds]
+    const [moved] = arr.splice(draggedIdx, 1)
+    arr.splice(targetIndex, 0, moved)
+    setDonationSelector(prev => ({ ...prev, selectedIds: arr }))
+    setDraggedIdx(null)
   }
 
   const filtered = filteredRequests()
-  const requestsWithCoords = filtered.filter(r => r.latitude != null && r.longitude != null)
-
-  const getMapCenter = (): [number, number] => {
-    if (requestsWithCoords.length === 0) return [34.8697, -111.7610]
-    if (requestsWithCoords.length === 1) {
-      return [requestsWithCoords[0].latitude!, requestsWithCoords[0].longitude!]
-    }
-    const lats = requestsWithCoords.map(r => r.latitude!)
-    const lons = requestsWithCoords.map(r => r.longitude!)
-    return [(Math.min(...lats) + Math.max(...lats)) / 2, (Math.min(...lons) + Math.max(...lons)) / 2]
-  }
-
-  const getMapZoom = (): number => {
-    if (requestsWithCoords.length === 0) return 4
-    if (requestsWithCoords.length === 1) return 13
-    const lats = requestsWithCoords.map(r => r.latitude!)
-    const lons = requestsWithCoords.map(r => r.longitude!)
-    const maxDiff = Math.max(Math.max(...lats) - Math.min(...lats), Math.max(...lons) - Math.min(...lons))
-    if (maxDiff < 0.1) return 13
-    if (maxDiff < 0.5) return 11
-    if (maxDiff < 1) return 10
-    if (maxDiff < 5) return 8
-    if (maxDiff < 10) return 6
-    return 4
-  }
-
-  const statusCounts = {
-    ALL: requests.length,
-    PENDING: requests.filter(r => r.status === 'PENDING').length,
-    APPROVED: requests.filter(r => r.status === 'APPROVED').length,
-    REJECTED: requests.filter(r => r.status === 'REJECTED').length,
-    COMPLETED: requests.filter(r => r.status === 'COMPLETED').length
-  }
   const mineCount = requests.filter(r => r.user.id === userId).length
+  const activeCount = requests.filter(r => r.status === 'PENDING').length
 
   if (!isAuthenticated) {
     return (
       <div className={styles.page}>
         <div className={styles.unauth}>
-          <h1>📝 Requests</h1>
+          <h1>Requests</h1>
           <p>Sign in to view, create, and manage requests.</p>
           <Link href="/auth/login?callbackUrl=/requests" className="btn-primary">Sign In</Link>
         </div>
@@ -306,40 +311,19 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <div>
-          <h1>Requests</h1>
-          <p className={styles.subtitle}>Create, manage, and fulfill community requests</p>
-        </div>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <div className={styles.viewToggle}>
-            <button
-              className={`${styles.toggleBtn} ${viewMode === 'list' ? styles.active : ''}`}
-              onClick={() => setViewMode('list')}
-            >
-              List
-            </button>
-            <button
-              className={`${styles.toggleBtn} ${viewMode === 'map' ? styles.active : ''}`}
-              onClick={() => setViewMode('map')}
-            >
-              Map
-            </button>
-          </div>
-          <button onClick={() => setShowCreate(true)} className="btn-primary">+ New Request</button>
-        </div>
+        <h1>Requests</h1>
+        <button onClick={() => setShowCreate(true)} className="btn-primary">+ New Request</button>
       </div>
 
-      {/* Tabs */}
       <div className={styles.tabs}>
-        <button className={`${styles.tab} ${tab === 'all' ? styles.active : ''}`} onClick={() => setTab('all')}>
-          All ({requests.length})
+        <button className={`${styles.tab} ${tab === 'active' ? styles.active : ''}`} onClick={() => setTab('active')}>
+          Active ({activeCount})
         </button>
         <button className={`${styles.tab} ${tab === 'mine' ? styles.active : ''}`} onClick={() => setTab('mine')}>
           My Requests ({mineCount})
         </button>
       </div>
 
-      {/* Create Form */}
       {showCreate && (
         <div className={styles.createForm}>
           <h3>Create New Request</h3>
@@ -357,13 +341,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
             <input type="number" placeholder="Budget (optional)" value={newRequest.budget} onChange={e => setNewRequest({ ...newRequest, budget: e.target.value })} className={styles.input} />
             <input type="number" placeholder="Goal Amount (optional)" value={newRequest.goalAmount} onChange={e => setNewRequest({ ...newRequest, goalAmount: e.target.value })} className={styles.input} />
           </div>
-          <div className={styles.formRow}>
-            <input type="text" placeholder="Location (optional)" value={newRequest.location} onChange={e => setNewRequest({ ...newRequest, location: e.target.value })} className={styles.input} />
-            <select value={newRequest.payoutCurrency} onChange={e => setNewRequest({ ...newRequest, payoutCurrency: e.target.value })} className={styles.select}>
-              {['BTC','ETH','USDT','USDC','XMR','XTM','ARRR','DERO','ZANO','OTHER'].map(c => (<option key={c} value={c}>{c}</option>))}
-            </select>
-          </div>
-          <input type="text" placeholder="Payout address (optional)" value={newRequest.payoutAddress} onChange={e => setNewRequest({ ...newRequest, payoutAddress: e.target.value })} className={styles.input} />
+          <input type="text" placeholder="Location (optional)" value={newRequest.location} onChange={e => setNewRequest({ ...newRequest, location: e.target.value })} className={styles.input} />
           <label className={styles.checkbox}>
             <input type="checkbox" checked={newRequest.isPublic} onChange={e => setNewRequest({ ...newRequest, isPublic: e.target.checked })} />
             Make public (visible to everyone)
@@ -372,6 +350,15 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
             <input type="checkbox" checked={newRequest.allowFulfillments} onChange={e => setNewRequest({ ...newRequest, allowFulfillments: e.target.checked })} />
             Allow others to offer to fulfill this request
           </label>
+          <label className={styles.checkbox}>
+            <input type="checkbox" checked={newRequest.showDonationAddress} onChange={e => setNewRequest({ ...newRequest, showDonationAddress: e.target.checked })} />
+            Show my donation addresses on this request
+          </label>
+          {userDonationAddrs.length === 0 && (
+            <p className={styles.formHint}>
+              You have no donation addresses set up yet. <Link href="/profile/edit">Manage them in profile settings</Link>
+            </p>
+          )}
           <div className={styles.formActions}>
             <button onClick={handleCreate} disabled={creating} className="btn-primary">{creating ? 'Creating...' : 'Create Request'}</button>
             <button onClick={() => setShowCreate(false)} className="btn-ghost">Cancel</button>
@@ -379,67 +366,18 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
         </div>
       )}
 
-      {/* Filters */}
       <div className={styles.filters}>
-        <div className={styles.searchBar}>
-          <input type="text" placeholder="Search requests..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className={styles.searchInput} />
-        </div>
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className={styles.filterSelect}>
-          <option value="ALL">All Status</option>
-          {['PENDING','APPROVED','REJECTED','COMPLETED'].map(s => (<option key={s} value={s}>{STATUS_ICONS[s]} {s}</option>))}
-        </select>
+        <input type="text" placeholder="Search..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className={styles.searchInput} />
         <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className={styles.filterSelect}>
           <option value="ALL">All Categories</option>
           {CATEGORIES.filter(c => c !== 'ALL').map(cat => (<option key={cat} value={cat}>{cat}</option>))}
         </select>
-        <select value={priorityFilter} onChange={e => setPriorityFilter(e.target.value)} className={styles.filterSelect}>
-          <option value="ALL">All Priorities</option>
-          {['LOW','MEDIUM','HIGH','URGENT'].map(p => (<option key={p} value={p}>{p}</option>))}
-        </select>
         <select value={sortBy} onChange={e => setSortBy(e.target.value)} className={styles.filterSelect}>
-          <option value="newest">Newest</option><option value="oldest">Oldest</option><option value="mostComments">Most Comments</option><option value="mostOffers">Most Offers</option>
+          <option value="newest">Newest</option><option value="oldest">Oldest</option><option value="mostSupported">Most Supported</option><option value="mostComments">Most Comments</option><option value="mostOffers">Most Offers</option>
         </select>
       </div>
 
-      <div className={styles.resultsInfo}>
-        Showing {filtered.length} {filtered.length === 1 ? 'request' : 'requests'}
-        {searchQuery && ` matching "${searchQuery}"`}
-      </div>
-
-      {viewMode === 'map' ? (
-        <div className={styles.mapContainer}>
-          <MapContainer center={getMapCenter()} zoom={getMapZoom()} style={{ height: '100%', width: '100%' }} ref={mapRef}>
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            {requestsWithCoords.map(req => (
-              <Marker
-                key={req.id}
-                position={[req.latitude!, req.longitude!]}
-                eventHandlers={{
-                  click: () => setSelectedRequest(req),
-                }}
-              >
-                <Popup>
-                  <div style={{ minWidth: 200 }}>
-                    <strong>{req.title}</strong>
-                    <br />
-                    <span className={`badge badge-${req.status.toLowerCase()}`} style={{ fontSize: '0.7rem', padding: '2px 6px' }}>{req.status}</span>
-                    {req.budget && <p style={{ margin: '6px 0', fontSize: '0.85rem' }}>💰 ${req.budget}</p>}
-                    {req.location && <p style={{ margin: '4px 0', fontSize: '0.8rem', color: '#666' }}>📍 {req.location}</p>}
-                    <Link href={`/requests/${req.id}`} style={{ color: '#00d9ff', fontSize: '0.8rem', display: 'inline-block', marginTop: '6px', textDecoration: 'none' }}>
-                      View Details →
-                    </Link>
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
-          </MapContainer>
-        </div>
-      ) : null}
-
-      {viewMode === 'list' && filtered.length === 0 ? (
+      {filtered.length === 0 ? (
         <div className={styles.emptyState}>
           <div className={styles.emptyIcon}>📝</div>
           <h3>No requests found</h3>
@@ -452,82 +390,78 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
             const isOwner = req.user.id === userId
             const link = getLinkInfo(req)
             const canManage = isOwner || isAdmin
+            const resolvedAddrs = getResolvedDonationAddrs(req)
+            const pct = req.goalAmount ? Math.min(((req.currentFunding || 0) / (req.goalAmount || 1)) * 100, 100) : 0
             return (
               <div key={req.id} className={styles.card}>
-                <div className={styles.cardHeader}>
-                  <div className={styles.badgeRow}>
-                    <span className={`badge badge-${req.status.toLowerCase()}`}>{STATUS_ICONS[req.status]} {req.status}</span>
-                    <span className={styles.priorityBadge} style={{ backgroundColor: PRIORITY_COLORS[req.priority] + '20', color: PRIORITY_COLORS[req.priority], borderColor: PRIORITY_COLORS[req.priority] + '40' }}>{req.priority}</span>
-                  </div>
-                  <div className={styles.cardActions}>
-                    {req.status === 'PENDING' && (isAdmin || !isOwner) && (
-                      <>
-                        <button onClick={() => handleApprove(req.id)} className={styles.approveBtn}>Approve</button>
-                        <button onClick={() => handleReject(req.id)} className={styles.rejectBtn}>Reject</button>
-                      </>
-                    )}
-                    {canManage && (
-                      <>
-                        <button onClick={() => { setEditingRequest(req); setEditForm({ title: req.title, description: req.description || '', category: req.category, priority: req.priority, budget: req.budget?.toString() || '', goalAmount: req.goalAmount?.toString() || '', location: req.location || '', isPublic: req.isPublic, allowFulfillments: req.allowFulfillments }) }} className={styles.editBtn}>Edit</button>
-                        <button onClick={() => handleDelete(req.id)} className={styles.deleteBtn}>Delete</button>
-                      </>
-                    )}
-                  </div>
+                <Link href={`/requests/${req.id}`} className={styles.cardTitle}>{req.title}</Link>
+                <div className={styles.cardTags}>
+                  <span className={styles.priorityDot} style={{ backgroundColor: PRIORITY_COLORS[req.priority] }} title={req.priority} />
+                  <span className={styles.categoryTag}>{req.category}</span>
+                  {link && (
+                    <Link href={link.href} className={styles.linkTag} style={{ backgroundColor: link.color + '18', color: link.color }}>{link.type}</Link>
+                  )}
                 </div>
 
-                <Link href={`/requests/${req.id}`} className={styles.cardTitle}>{req.title}</Link>
                 {req.description && <p className={styles.cardDesc}>{req.description}</p>}
 
-                {link && (
-                  <Link href={link.href} className={styles.linkBadge} style={{ backgroundColor: link.color + '20', color: link.color }}>{link.type}: {link.label}</Link>
-                )}
-                {!link && <span className={styles.standaloneBadge}>Standalone</span>}
-
                 {(req.goalAmount || 0) > 0 && (
-                  <div className={styles.fundingProgress}>
+                  <div className={styles.fundingSection}>
                     <div className={styles.fundingHeader}>
                       <span>💝 ${req.currentFunding || 0} raised</span>
                       <span>of ${req.goalAmount}</span>
                     </div>
                     <div className={styles.progressBar}>
-                      <div className={styles.progressFill} style={{ width: `${Math.min(((req.currentFunding || 0) / (req.goalAmount || 1)) * 100, 100)}%` }} />
-                    </div>
-                    {req.payoutAddress && (
-                      <div className={styles.payoutRow}>
-                        <span className={styles.payoutCrypto}>{req.payoutCurrency}:</span>
-                        <code className={styles.payoutAddr}>{req.payoutAddress.slice(0, 20)}...</code>
-                        <button onClick={() => copyPayout(req.payoutAddress || '')} className={styles.copyPayoutBtn}>Copy</button>
-          </div>
-      )}
-
-      {viewMode === 'map' && filtered.length === 0 ? (
-        <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>📝</div>
-          <h3>No requests with location data</h3>
-          <p>Try adjusting your filters or create a new request with a location.</p>
-          <button onClick={() => setShowCreate(true)} className="btn-primary">Create Request</button>
-        </div>
-      ) : null}
-                  </div>
-                )}
-
-                {!req.payoutAddress && req.goalAmount && req.goalAmount > 0 && (
-                  <div className={styles.fundingProgress}>
-                    <div className={styles.fundingHeader}>
-                      <span>💝 ${req.currentFunding || 0} raised</span>
-                      <span>of ${req.goalAmount}</span>
-                    </div>
-                    <div className={styles.progressBar}>
-                      <div className={styles.progressFill} style={{ width: `${Math.min(((req.currentFunding || 0) / (req.goalAmount || 1)) * 100, 100)}%` }} />
+                      <div className={styles.progressFill} style={{ width: `${pct}%` }} />
                     </div>
                   </div>
                 )}
+
+                {resolvedAddrs.length > 0 && (
+                  <div className={styles.donationSection}>
+                    <div className={styles.donationSectionTitle}>Donate</div>
+                    {resolvedAddrs.map(da => {
+                      const cryptoName = getCryptoName(da.currency)
+                      const iconUrl = getCryptoIcon(da.currency)
+                      return (
+                        <div key={da.id} className={styles.donationItem}>
+                          <div className={styles.donationIcon}>
+                            {iconUrl ? (
+                              <img src={iconUrl} alt="" width={16} height={16} />
+                            ) : (
+                              <span>{da.currency[0]}</span>
+                            )}
+                          </div>
+                          <div className={styles.donationInfo}>
+                            <span className={styles.donationLabel}>{da.label || cryptoName}</span>
+                            <span className={styles.donationAddr}>{truncateAddr(da.address)}</span>
+                          </div>
+                          <div className={styles.donationActions}>
+                            <button onClick={() => setQrModal({ open: true, currency: da.label || da.currency, address: da.address })} className={styles.donationBtn} title="View QR Code">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
+                            </button>
+                            <button onClick={() => { navigator.clipboard.writeText(da.address); success('Copied!') }} className={styles.donationBtn} title="Copy address">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+
+                <div className={styles.supportRow}>
+                  <button
+                    className={`${styles.supportBtn} ${supportingIds.has(req.id) ? styles.supported : ''}`}
+                    onClick={() => handleSupport(req.id)}
+                  >
+                    👍 {req.supportCount || 0}
+                  </button>
+                </div>
 
                 <div className={styles.cardMeta}>
-                  {req.fulfillmentCount > 0 && (
-                    <span className={styles.fulfillmentBadge}>💬 {req.fulfillmentCount} offer{req.fulfillmentCount > 1 ? 's' : ''}</span>
-                  )}
-                  {req.commentCount > 0 && <span className={styles.commentBadge}>📝 {req.commentCount}</span>}
+                  {req.fulfillmentCount > 0 && <span className={styles.badge}>💬 {req.fulfillmentCount} offer{req.fulfillmentCount > 1 ? 's' : ''}</span>}
+                  {req.commentCount > 0 && <span className={styles.badge}>📝 {req.commentCount}</span>}
                   {req.budget && <span>💰 ${req.budget}</span>}
                   {req.location && <span>📍 {req.location}</span>}
                   {req.isPublic && <span className={styles.publicBadge}>🌐 Public</span>}
@@ -545,7 +479,13 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
                   <span className={styles.cardDate}>{formatDate(req.createdAt)}</span>
                 </div>
 
-                <Link href={`/requests/${req.id}`} className={styles.viewDetailsBtn}>View Details →</Link>
+                <div className={styles.cardActions}>
+                  {canManage && (
+                    <button onClick={() => { setEditingRequest(req); setEditForm({ title: req.title, description: req.description || '', category: req.category, priority: req.priority, budget: req.budget?.toString() || '', goalAmount: req.goalAmount?.toString() || '', location: req.location || '', isPublic: req.isPublic, allowFulfillments: req.allowFulfillments, showDonationAddress: req.showDonationAddress }) }} className={styles.editBtn}>Edit</button>
+                  )}
+                  {canManage && <button onClick={() => handleDelete(req.id)} className={styles.deleteBtn}>Delete</button>}
+                  <Link href={`/requests/${req.id}`} className={styles.viewDetailsBtn}>View Details →</Link>
+                </div>
               </div>
             )
           })}
@@ -580,9 +520,49 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
               <input type="checkbox" checked={editForm.allowFulfillments} onChange={e => setEditForm({ ...editForm, allowFulfillments: e.target.checked })} />
               Allow fulfillment offers
             </label>
+            <label className={styles.checkbox}>
+              <input type="checkbox" checked={editForm.showDonationAddress} onChange={e => setEditForm({ ...editForm, showDonationAddress: e.target.checked })} />
+              Show donation addresses on this request
+            </label>
+            {userDonationAddrs.length === 0 && (
+              <p className={styles.formHint}>
+                No donation addresses set. <Link href="/profile/edit">Manage in profile settings</Link>
+              </p>
+            )}
             <div className={styles.formActions}>
               <button onClick={handleSaveEdit} disabled={saving} className="btn-primary">{saving ? 'Saving...' : 'Save Changes'}</button>
               <button onClick={() => setEditingRequest(null)} className="btn-ghost">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* QR Code Modal */}
+      <QRCodeModal
+        isOpen={qrModal.open}
+        onClose={() => setQrModal({ open: false, currency: '', address: '' })}
+        currency={qrModal.currency}
+        address={qrModal.address}
+      />
+
+      {/* Support Modal */}
+      {supportModal.open && (
+        <div className="modal-overlay" onClick={() => setSupportModal({ open: false, reqId: '' })}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2>👍 Support this Request</h2>
+            <p className={styles.modalText}>How can you help? (optional)</p>
+            <textarea
+              value={supportMessage}
+              onChange={e => setSupportMessage(e.target.value)}
+              placeholder="e.g., I can contribute $20, share this with my network, help with design..."
+              className={styles.textarea}
+              rows={4}
+            />
+            <div className={styles.formActions}>
+              <button onClick={submitSupport} disabled={supporting} className="btn-primary">
+                {supporting ? '...' : 'Support'}
+              </button>
+              <button onClick={() => setSupportModal({ open: false, reqId: '' })} className="btn-ghost">Cancel</button>
             </div>
           </div>
         </div>

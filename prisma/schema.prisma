@@ -313,13 +313,16 @@ model Request {
   comments       Comment[]
   statusHistory   RequestStatusHistory[]
   contributions  Contribution[]
+  requestSupports RequestSupport[]
   likes      Int       @default(0)
   reposts    Int       @default(0)
   isPublic   Boolean   @default(false)
   allowFulfillments Boolean @default(true)
+  showDonationAddress Boolean @default(true)
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
   fulfillments  RequestFulfillment[]
+  supports    RequestSupport[]
 
   @@index([status])
   @@index([category])
@@ -328,6 +331,20 @@ model Request {
   @@index([planId])
   @@index([groupId])
   @@index([productId])
+}
+
+model RequestSupport {
+  id        String   @id @default(cuid())
+  requestId String
+  request   Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   String?
+  createdAt DateTime @default(now())
+
+  @@unique([requestId, userId])
+  @@index([requestId])
+  @@index([userId])
 }
 
 model Contribution {

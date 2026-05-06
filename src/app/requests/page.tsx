@@ -36,8 +36,16 @@ export default async function RequestsPage() {
       product: { select: { id: true, title: true } },
       schoolContent: { select: { id: true, title: true } },
       event: { select: { id: true, title: true } },
-      user: { select: { id: true, name: true, username: true, email: true, image: true, shopSlug: true } },
-      _count: { select: { comments: true, fulfillments: true } }
+      user: {
+        select: {
+          id: true, name: true, username: true, email: true, image: true, shopSlug: true,
+          donationAddresses: {
+            where: { isPublic: true },
+            orderBy: { sortOrder: 'asc' }
+          }
+        }
+      },
+      _count: { select: { comments: true, fulfillments: true, supports: true, contributions: true } }
     },
     orderBy: { createdAt: 'desc' }
   })
@@ -62,6 +70,7 @@ export default async function RequestsPage() {
     reposts: req.reposts,
     isPublic: req.isPublic,
     allowFulfillments: req.allowFulfillments,
+    showDonationAddress: req.showDonationAddress,
     createdAt: req.createdAt.toISOString(),
     updatedAt: req.updatedAt.toISOString(),
     plan: req.plan,
@@ -71,7 +80,9 @@ export default async function RequestsPage() {
     event: req.event,
     user: req.user,
     commentCount: req._count.comments,
-    fulfillmentCount: req._count.fulfillments
+    fulfillmentCount: req._count.fulfillments,
+    supportCount: req._count.supports,
+    contributionCount: req._count.contributions
   }))
 
   return (
