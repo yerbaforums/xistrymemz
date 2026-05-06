@@ -33,7 +33,7 @@ export async function PUT(request: Request) {
   }
 
   const body = await request.json()
-  const { schoolName, schoolAbout, schoolImage } = body
+  const { schoolName, schoolAbout, schoolImage, schoolCoverImage } = body
 
   const slug = schoolName?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
@@ -43,6 +43,7 @@ export async function PUT(request: Request) {
       schoolName,
       schoolAbout,
       schoolImage,
+      schoolCoverImage,
       schoolSlug: slug
     }
   })
@@ -51,6 +52,7 @@ export async function PUT(request: Request) {
     schoolName: user.schoolName,
     schoolAbout: user.schoolAbout,
     schoolImage: user.schoolImage,
+    schoolCoverImage: user.schoolCoverImage,
     schoolSlug: user.schoolSlug
   })
 }

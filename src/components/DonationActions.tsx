@@ -5,7 +5,7 @@ import styles from './DonationActions.module.css'
 
 interface DonationActionsProps {
   address: string
-  onQrClick: () => void
+  onQrClick?: () => void
   size?: 'sm' | 'md'
 }
 
@@ -22,6 +22,7 @@ export function DonationActions({ address, onQrClick, size = 'md' }: DonationAct
 
   return (
     <div className={`${styles.actions} ${styles[size]}`}>
+      {onQrClick && (
       <button onClick={onQrClick} className={styles.iconBtn} title="Show QR Code">
         <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <rect x="3" y="3" width="7" height="7" />
@@ -32,6 +33,7 @@ export function DonationActions({ address, onQrClick, size = 'md' }: DonationAct
           <line x1="14" y1="17" x2="15" y2="17" />
         </svg>
       </button>
+      )}
       <button onClick={handleCopy} className={`${styles.iconBtn} ${copied ? styles.copied : ''}`} title="Copy address">
         {copied ? (
           <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

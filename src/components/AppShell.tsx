@@ -6,7 +6,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Header />
-      <main id="main-content">
+      <main id="main-content" style={{ paddingTop: 'var(--header-height)' }}>
         {children}
       </main>
     </>

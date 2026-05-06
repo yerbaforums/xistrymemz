@@ -8,7 +8,6 @@
   flex: 1;
   display: flex;
   gap: 24px;
-  padding-top: var(--header-height);
   max-width: 1400px;
   margin: 0 auto;
   padding-left: 24px;

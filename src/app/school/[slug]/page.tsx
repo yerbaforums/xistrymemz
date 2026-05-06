@@ -2,331 +2,601 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import styles from './page.module.css'
-import Breadcrumbs from '@/components/Breadcrumbs'
+import { useToast } from '@/context/ToastContext'
+import { getUserProfileUrl } from '@/lib/utils'
+import { QRCodeModal } from '@/components/QRCodeModal'
+import { DonationActions } from '@/components/DonationActions'
+import { CRYPTO_LOGOS } from '@/lib/constants'
+import RoleBadge from '@/components/RoleBadge'
+import Rating from '@/components/Rating'
 
-interface SchoolData {
-  schoolName: string
-  schoolAbout: string | null
-  schoolImage: string | null
-  user: { name: string | null; id: string }
+interface UserLink {
+  id: string
+  type: string
+  url: string
+  label?: string | null
+  icon?: string | null
+  sortOrder: number
 }
 
-interface Content {
+interface DonationAddr {
+  id: string
+  currency: string
+  address: string
+  label: string | null
+  qrCodeUrl: string | null
+  showQR: boolean
+}
+
+interface SchoolContent {
   id: string
   title: string
   content: string
   contentType: string
-  author: { name: string | null }
-  user: { schoolName: string | null; schoolSlug: string | null } | null
-  originalContent: {
-    title: string
-    content: string
-    contentType: string
-    author: { name: string | null }
-    user: { schoolName: string | null; schoolSlug: string | null } | null
-  } | null
+  price: number | null
+  isPaid: boolean
+  isSubscription: boolean
+  pinned: boolean
   createdAt: string
+  owner: {
+    id: string
+    name: string | null
+    image: string | null
+    schoolName: string | null
+    schoolSlug: string | null
+  }
 }
 
-export default function SchoolPage() {
-  const params = useParams()
-  const slug = params?.slug as string
+interface SchoolPost {
+  id: string
+  content: string
+  imageUrl: string | null
+  pinned: boolean
+  likes: number
+  createdAt: string
+  user: { id: string; name: string | null; image: string | null }
+}
+
+interface SchoolData {
+  schoolName: string | null
+  schoolAbout: string | null
+  schoolImage: string | null
+  schoolCoverImage: string | null
+  schoolSlug: string | null
+  user: {
+    id: string
+    name: string | null
+    username: string | null
+    image: string | null
+    userClass: string | null
+    location: string | null
+    website: string | null
+    createdAt: string
+    role: string
+  }
+  links: UserLink[]
+  donationAddresses: DonationAddr[]
+  contentCount: number
+  avgRating: number
+  ratingCount: number
+  schoolContents: SchoolContent[]
+  posts: SchoolPost[]
+}
+
+const CLASS_ICONS: Record<string, string> = {
+  Healer: '💚', Revealer: '👁️', Seer: '🔮', Teacher: '📚', Guide: '🧭',
+  Warrior: '⚔️', Guardian: '🛡️', Sage: '🦉', Mystic: '✨', Architect: '🏗️',
+  Artist: '🎨', Builder: '🔨', Explorer: '🌍', Mentor: '🌟'
+}
+
+const CONTENT_TYPE_ICONS: Record<string, string> = {
+  article: '📄', lesson: '📖', note: '📝', guide: '🗺️', course: '🎓', resource: '📦'
+}
+
+function LinkCard({ link }: { link: UserLink }) {
+  const socialType = ['twitter', 'github', 'instagram', 'linkedin', 'youtube', 'tiktok', 'discord', 'telegram'].includes(link.type)
+    ? link.type : 'website'
+  const iconMap: Record<string, string> = {
+    twitter: '/social-logos/twitter.svg', github: '/social-logos/github.svg',
+    instagram: '/social-logos/instagram.svg', linkedin: '/social-logos/linkedin.svg',
+    youtube: '/social-logos/youtube.svg', tiktok: '/social-logos/tiktok.svg',
+    discord: '/social-logos/discord.svg', telegram: '/social-logos/telegram.svg',
+    website: '🔗'
+  }
+  const iconSrc = link.icon || iconMap[socialType]
+  return (
+    <a href={link.url} target="_blank" rel="noopener noreferrer" className={styles.linkPill}>
+      {iconSrc.startsWith('/') ? (
+        <img src={iconSrc} alt={link.label || link.type} width={14} height={14} />
+      ) : (
+        <span>{iconSrc}</span>
+      )}
+      <span>{link.label || link.type}</span>
+    </a>
+  )
+}
+
+function CompactDonation({ donation }: { donation: DonationAddr }) {
+  const [qrOpen, setQrOpen] = useState(false)
+  const shortAddr = donation.address.length > 8
+    ? donation.address.slice(0, 3) + '...' + donation.address.slice(-3)
+    : donation.address
+  return (
+    <>
+      <div className={styles.compactDonationCard} onClick={() => setQrOpen(true)}>
+        <img src={`/crypto-logos/${CRYPTO_LOGOS[donation.currency] || 'ethereum.png'}`} alt="" width={14} height={14} />
+        <span className={styles.compactDonationLabel}>{donation.label || donation.currency}</span>
+        <code className={styles.compactDonationAddr} title={donation.address}>{shortAddr}</code>
+      </div>
+      {qrOpen && <QRCodeModal isOpen={true} onClose={() => setQrOpen(false)} currency={donation.label || donation.currency} address={donation.address} />}
+    </>
+  )
+}
+
+export default function SchoolDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { data: session } = useSession()
+  const { success, error } = useToast()
   const [school, setSchool] = useState<SchoolData | null>(null)
-  const [contents, setContents] = useState<Content[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [showCreateModal, setShowCreateModal] = useState(false)
-  const [showBrowseModal, setShowBrowseModal] = useState(false)
-  const [newTitle, setNewTitle] = useState('')
-  const [newContent, setNewContent] = useState('')
-  const [contentType, setContentType] = useState('article')
-  const [creating, setCreating] = useState(false)
-  const [selectedContent, setSelectedContent] = useState<Content | null>(null)
-  const [filterType, setFilterType] = useState('all')
-  const [availableContent, setAvailableContent] = useState<Content[]>([])
-  const [browsing, setBrowsing] = useState(false)
+  const [isOwner, setIsOwner] = useState(false)
+  const [activeTab, setActiveTab] = useState<'content' | 'posts' | 'reviews' | 'about'>('content')
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editForm, setEditForm] = useState({ schoolName: '', schoolAbout: '', schoolImage: '', schoolCoverImage: '' })
+  const [saving, setSaving] = useState(false)
+  const [newPost, setNewPost] = useState('')
+  const [posting, setPosting] = useState(false)
+  const [showContentForm, setShowContentForm] = useState(false)
+  const [contentForm, setContentForm] = useState({ title: '', content: '', contentType: 'article', price: '', isPaid: false })
+  const [creatingContent, setCreatingContent] = useState(false)
+  const [selectedContent, setSelectedContent] = useState<SchoolContent | null>(null)
+  const [resolvedSlug, setResolvedSlug] = useState<string | null>(null)
+
+  useEffect(() => { params.then(p => setResolvedSlug(p.slug)) }, [params])
 
   useEffect(() => {
-    if (!slug) return
-
-    fetch(`/api/school/${slug}`)
-      .then(res => {
-        if (!res.ok) throw new Error('School not found')
-        return res.json()
-      })
+    if (!resolvedSlug) return
+    fetch(`/api/school/${resolvedSlug}`)
+      .then(res => res.ok ? res.json() : Promise.reject())
       .then(data => {
         setSchool(data)
-        return fetch(`/api/school/${slug}/content`)
+        setIsOwner(session?.user?.id === data.user.id)
+        setEditForm({
+          schoolName: data.schoolName || '',
+          schoolAbout: data.schoolAbout || '',
+          schoolImage: data.schoolImage || '',
+          schoolCoverImage: data.schoolCoverImage || ''
+        })
       })
-      .then(res => res.json())
-      .then(data => {
-        setContents(data)
-        setLoading(false)
-      })
-      .catch(() => {
-        setError('School not found')
-        setLoading(false)
-      })
-  }, [slug])
+      .catch(() => error('Failed to load school'))
+      .finally(() => setLoading(false))
+  }, [resolvedSlug])
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleSaveSchool = async (e: React.FormEvent) => {
     e.preventDefault()
-    setCreating(true)
-
+    setSaving(true)
     try {
-      const res = await fetch(`/api/school/${slug}/content`, {
+      const res = await fetch('/api/school', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editForm)
+      })
+      if (res.ok) {
+        success('School updated!')
+        setShowEditModal(false)
+        if (resolvedSlug) fetch(`/api/school/${resolvedSlug}`).then(r => r.json()).then(data => setSchool(data))
+      } else {
+        const err = await res.json()
+        error(err.error || 'Failed to update')
+      }
+    } catch {
+      error('Failed to update')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleCreateContent = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!contentForm.title.trim() || !contentForm.content.trim() || !resolvedSlug) return
+    setCreatingContent(true)
+    try {
+      const res = await fetch(`/api/school/${resolvedSlug}/content`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: newTitle, content: newContent, contentType })
+        body: JSON.stringify(contentForm)
       })
-
       if (res.ok) {
-        const newContentItem = await res.json()
-        setContents([{ ...newContentItem, author: { name: school?.user.name }, user: null, originalContent: null }, ...contents])
-        setShowCreateModal(false)
-        setNewTitle('')
-        setNewContent('')
+        success('Content published!')
+        setShowContentForm(false)
+        setContentForm({ title: '', content: '', contentType: 'article', price: '', isPaid: false })
+        if (resolvedSlug) fetch(`/api/school/${resolvedSlug}`).then(r => r.json()).then(data => setSchool(data))
+      } else {
+        const err = await res.json()
+        error(err.error || 'Failed to create content')
       }
-    } catch (error) {
-      console.error('Failed to create:', error)
+    } catch {
+      error('Failed to create content')
     } finally {
-      setCreating(false)
+      setCreatingContent(false)
     }
   }
 
-  const handleBrowseContent = async () => {
-    setBrowsing(true)
+  const handleCreatePost = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newPost.trim()) return
+    setPosting(true)
     try {
-      const res = await fetch('/api/schools')
-      const schools = await res.json()
-      const allContent: Content[] = []
-      
-      for (const s of schools) {
-        if (s.schoolSlug === slug) continue
-        const contentRes = await fetch(`/api/school/${s.schoolSlug}/content`)
-        const contentData = await contentRes.json()
-        allContent.push(...contentData.map((c: Content) => ({
-          ...c,
-          user: { schoolName: s.schoolName, schoolSlug: s.schoolSlug }
-        })))
-      }
-      
-      setAvailableContent(allContent)
-    } catch (error) {
-      console.error('Failed to browse:', error)
-    } finally {
-      setBrowsing(false)
-    }
-  }
-
-  const handleRepost = async (content: Content) => {
-    setCreating(true)
-    try {
-      const res = await fetch(`/api/school/${slug}/content/${content.id}`, {
+      const res = await fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({})
+        body: JSON.stringify({ content: newPost })
       })
-
       if (res.ok) {
-        const newContentItem = await res.json()
-        setContents([newContentItem, ...contents])
-        setShowBrowseModal(false)
+        setNewPost('')
+        if (resolvedSlug) fetch(`/api/school/${resolvedSlug}`).then(r => r.json()).then(data => setSchool(data))
+        success('Post published!')
+      } else {
+        const err = await res.json()
+        error(err.error || 'Failed to post')
       }
-    } catch (error) {
-      console.error('Failed to repost:', error)
+    } catch {
+      error('Failed to post')
     } finally {
-      setCreating(false)
+      setPosting(false)
     }
   }
 
-  const filteredContents = filterType === 'all' 
-    ? contents 
-    : contents.filter(c => c.contentType === filterType)
+  const handleLikePost = async (postId: string, currentLikes: number) => {
+    try {
+      await fetch(`/api/posts/${postId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ likes: currentLikes + 1 })
+      })
+      if (resolvedSlug) fetch(`/api/school/${resolvedSlug}`).then(r => r.json()).then(data => setSchool(data))
+    } catch { /* ignore */ }
+  }
 
-  if (loading) return <div className={styles.loading}>Loading...</div>
-  if (error) return <div className={styles.error}>{error}</div>
+  const handlePin = async (type: string, id: string, currentPinned: boolean) => {
+    try {
+      const res = await fetch('/api/pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, id, pinned: !currentPinned })
+      })
+      if (res.ok && resolvedSlug) {
+        fetch(`/api/school/${resolvedSlug}`).then(r => r.json()).then(data => setSchool(data))
+      }
+    } catch { /* ignore */ }
+  }
+
+  if (loading) return <div className={styles.loading}>Loading school...</div>
   if (!school) return <div className={styles.error}>School not found</div>
+
+  const userClasses = school.user.userClass?.split(',').map(c => c.trim()).filter(Boolean) || []
 
   return (
     <div className={styles.page}>
-      <Breadcrumbs items={[
-        { label: 'Home', href: '/' },
-        { label: 'School', href: '/products' },
-        { label: school.schoolName }
-      ]} />
-      <div className={styles.header}>
-        {school.schoolImage && (
-          <img src={school.schoolImage} alt={school.schoolName} className={styles.schoolImage} />
-        )}
-        <div className={styles.schoolInfo}>
-          <h1>{school.schoolName}</h1>
-          {school.schoolAbout && <p className={styles.about}>{school.schoolAbout}</p>}
-          <p className={styles.owner}>by {school.user.name || 'Unknown'}</p>
+      <nav className="breadcrumbs">
+        <Link href="/" className="breadcrumb-link">Home</Link>
+        <span className="breadcrumb-sep"> / </span>
+        <Link href="/schools" className="breadcrumb-link">Schools</Link>
+        <span className="breadcrumb-sep"> / </span>
+        <span className="breadcrumb-current">{school.schoolName || 'School'}</span>
+      </nav>
+
+      <div className={styles.schoolHeader}>
+        <div
+          className={styles.coverImage}
+          style={{ backgroundImage: school.schoolCoverImage ? `url(${school.schoolCoverImage})` : undefined }}
+        >
+          {!school.schoolCoverImage && <div className={styles.coverGradient} />}
         </div>
-      </div>
-
-      <div className={styles.actions}>
-        <button onClick={() => setShowCreateModal(true)} className={styles.createBtn}>
-          + Create Content
-        </button>
-        <button onClick={() => { handleBrowseContent(); setShowBrowseModal(true); }} className={styles.browseBtn}>
-          + Browse & Repost
-        </button>
-      </div>
-
-      <div className={styles.filters}>
-        <select value={filterType} onChange={e => setFilterType(e.target.value)}>
-          <option value="all">All Types</option>
-          <option value="article">Articles</option>
-          <option value="lesson">Lessons</option>
-          <option value="note">Notes</option>
-          <option value="guide">Guides</option>
-        </select>
-      </div>
-
-      <div className={styles.contentGrid}>
-        <div className={styles.contentList}>
-          <h2>Wiki Content ({filteredContents.length})</h2>
-          {filteredContents.length === 0 ? (
-            <p className={styles.empty}>No content yet. Be the first to add!</p>
-          ) : (
-            filteredContents.map(item => (
-              <div 
-                key={item.id} 
-                className={`${styles.contentCard} ${selectedContent?.id === item.id ? styles.selected : ''}`}
-                onClick={() => setSelectedContent(item)}
-              >
-                {item.originalContent && (
-                  <span className={styles.repostBadge}>🔄 Reposted</span>
-                )}
-                <span className={`badge badge-${item.contentType}`}>{item.contentType}</span>
-                <h3>{item.title}</h3>
-                <p className={styles.meta}>
-                  by {item.author.name} 
-                  {item.user?.schoolSlug && <> from <Link href={`/school/${item.user.schoolSlug}`}>{item.user.schoolName}</Link></>}
-                  • {new Date(item.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-            ))
-          )}
-        </div>
-
-        <div className={styles.contentView}>
-          {selectedContent ? (
-            <div className={styles.contentDetail}>
-              {selectedContent.originalContent && (
-                <div className={styles.originalContent}>
-                  <p>🔄 Reposted from <Link href={`/school/${selectedContent.originalContent.user?.schoolSlug}`}>{selectedContent.originalContent.user?.schoolName}</Link> by {selectedContent.originalContent.author.name}</p>
-                </div>
+        <div className={styles.headerContent}>
+          <div className={styles.avatarSection}>
+            <div className={styles.avatar}>
+              {school.schoolImage ? (
+                <img src={school.schoolImage} alt={school.schoolName || 'School'} />
+              ) : (
+                <span>🎓</span>
               )}
-              <span className={`badge badge-${selectedContent.contentType}`}>{selectedContent.contentType}</span>
-              <h2>{selectedContent.title}</h2>
-              <p className={styles.meta}>
-                by {selectedContent.author.name} 
-                {selectedContent.user?.schoolSlug && <> from <Link href={`/school/${selectedContent.user.schoolSlug}`}>{selectedContent.user.schoolName}</Link></>}
-                • {new Date(selectedContent.createdAt).toLocaleDateString()}
-              </p>
-              <div className={styles.contentBody}>
-                {selectedContent.content.split('\n').map((line, i) => (
-                  <p key={i}>{line}</p>
-                ))}
-              </div>
             </div>
-          ) : (
-            <div className={styles.placeholder}>
-              <p>Select content to view</p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {showCreateModal && (
-        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <h2>Add Wiki Content</h2>
-            <form onSubmit={handleCreate}>
-              <div className="form-group">
-                <label>Title *</label>
-                <input
-                  type="text"
-                  value={newTitle}
-                  onChange={e => setNewTitle(e.target.value)}
-                  placeholder="Content title"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Content Type</label>
-                <select value={contentType} onChange={e => setContentType(e.target.value)}>
-                  <option value="article">Article</option>
-                  <option value="lesson">Lesson</option>
-                  <option value="note">Note</option>
-                  <option value="guide">Guide</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Content *</label>
-                <textarea
-                  value={newContent}
-                  onChange={e => setNewContent(e.target.value)}
-                  placeholder="Write your content here..."
-                  rows={10}
-                  required
-                />
-              </div>
-              <div className={styles.modalActions}>
-                <button type="button" onClick={() => setShowCreateModal(false)} className="btn-ghost">
-                  Cancel
-                </button>
-                <button type="submit" className="btn-primary" disabled={creating}>
-                  {creating ? 'Creating...' : 'Create'}
-                </button>
-              </div>
-            </form>
           </div>
-        </div>
-      )}
-
-      {showBrowseModal && (
-        <div className="modal-overlay" onClick={() => setShowBrowseModal(false)}>
-          <div className="modal modal-wide" onClick={e => e.stopPropagation()}>
-            <h2>Browse Content from Other Schools</h2>
-            {browsing ? (
-              <p>Loading...</p>
-            ) : availableContent.length === 0 ? (
-              <p className={styles.empty}>No content available from other schools</p>
-            ) : (
-              <div className={styles.browseList}>
-                {availableContent.map(item => (
-                  <div key={item.id} className={styles.browseCard}>
-                    <div className={styles.browseInfo}>
-                      <span className={`badge badge-${item.contentType}`}>{item.contentType}</span>
-                      <h3>{item.title}</h3>
-                      <p className={styles.meta}>
-                        by {item.author.name} from <Link href={`/school/${item.user?.schoolSlug}`}>{item.user?.schoolName}</Link>
-                      </p>
-                      <p className={styles.contentPreview}>
-                        {item.content.substring(0, 150)}...
-                      </p>
-                    </div>
-                    <button onClick={() => handleRepost(item)} className="btn-primary">
-                      Repost
-                    </button>
-                  </div>
+          <div className={styles.schoolInfo}>
+            <div className={styles.nameRow}>
+              <h1>{school.schoolName || 'Untitled School'}</h1>
+              <RoleBadge role={school.user.role} />
+            </div>
+            {userClasses.length > 0 && (
+              <div className={styles.classes}>
+                {userClasses.map(cls => (
+                  <span key={cls} className={styles.classBadge}>
+                    <span className={styles.classIcon}>{CLASS_ICONS[cls] || '👤'}</span>
+                    {cls}
+                  </span>
                 ))}
               </div>
             )}
-            <div className={styles.modalActions}>
-              <button type="button" onClick={() => setShowBrowseModal(false)} className="btn-ghost">
-                Close
-              </button>
+            <div className={styles.meta}>
+              {school.user.location && (
+                <span className={styles.metaItem}><span>📍</span> {school.user.location}</span>
+              )}
+              {school.user.website && (
+                <a href={school.user.website.startsWith('http') ? school.user.website : `https://${school.user.website}`} target="_blank" rel="noopener noreferrer" className={styles.metaItem}>
+                  <span>🔗</span> {school.user.website.replace(/^https?:\/\//, '')}
+                </a>
+              )}
+              <span className={styles.metaItem}><span>📅</span> Joined {new Date(school.user.createdAt).toLocaleDateString()}</span>
+            </div>
+            {(school.links && school.links.length > 0) && (
+              <div className={styles.compactLinks}>
+                {school.links.slice(0, 6).map(link => <LinkCard key={link.id} link={link} />)}
+                {school.links.length > 6 && <span className={styles.compactMore}>+{school.links.length - 6} more</span>}
+              </div>
+            )}
+            {school.donationAddresses.length > 0 && (
+              <div className={styles.compactDonations}>
+                {school.donationAddresses.slice(0, 2).map(da => <CompactDonation key={da.id} donation={da} />)}
+                {school.donationAddresses.length > 2 && (
+                  <button className={styles.compactDonationMore} onClick={() => setActiveTab('about')}>
+                    +{school.donationAddresses.length - 2} more
+                  </button>
+                )}
+              </div>
+            )}
+            <div className={styles.stats}>
+              <div className={styles.stat}>
+                <span className={styles.statValue}>{school.contentCount}</span>
+                <span className={styles.statLabel}>Content</span>
+              </div>
+              <div className={styles.stat}>
+                <span className={styles.statValue}>{school.ratingCount}</span>
+                <span className={styles.statLabel}>Reviews</span>
+              </div>
+              <div className={styles.stat}>
+                <span className={styles.statValue}>{school.avgRating > 0 ? school.avgRating.toFixed(1) : '—'}</span>
+                <span className={styles.statLabel}>Rating</span>
+              </div>
             </div>
           </div>
+          <div className={styles.actions}>
+            <Link href={getUserProfileUrl(school.user)} className={styles.viewOwnerBtn}>View Instructor</Link>
+            {isOwner && (
+              <button onClick={() => { setShowEditModal(true); setActiveTab('about'); }} className={styles.editBtn}>Edit School</button>
+            )}
+          </div>
         </div>
+      </div>
+
+      {school.schoolAbout && (
+        <div className={styles.aboutPreview}><p>{school.schoolAbout}</p></div>
       )}
+
+      <div className={styles.tabs}>
+        <button className={`${styles.tab} ${activeTab === 'content' ? styles.active : ''}`} onClick={() => setActiveTab('content')}>
+          Content ({school.schoolContents.length})
+        </button>
+        <button className={`${styles.tab} ${activeTab === 'posts' ? styles.active : ''}`} onClick={() => setActiveTab('posts')}>
+          Posts ({school.posts.length})
+        </button>
+        <button className={`${styles.tab} ${activeTab === 'reviews' ? styles.active : ''}`} onClick={() => setActiveTab('reviews')}>
+          Reviews
+        </button>
+        <button className={`${styles.tab} ${activeTab === 'about' ? styles.active : ''}`} onClick={() => setActiveTab('about')}>
+          About
+        </button>
+      </div>
+
+      <div className={styles.content}>
+        {activeTab === 'content' && (
+          <div className={styles.contentSection}>
+            {isOwner && (
+              <div className={styles.contentActions}>
+                <button onClick={() => setShowContentForm(!showContentForm)} className={styles.addContentBtn}>
+                  + Add Content
+                </button>
+              </div>
+            )}
+            {showContentForm && isOwner && (
+              <form onSubmit={handleCreateContent} className={styles.contentForm}>
+                <div className={styles.formGroup}>
+                  <label>Title</label>
+                  <input type="text" value={contentForm.title} onChange={e => setContentForm({ ...contentForm, title: e.target.value })} required />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Type</label>
+                  <select value={contentForm.contentType} onChange={e => setContentForm({ ...contentForm, contentType: e.target.value })}>
+                    <option value="article">Article</option>
+                    <option value="lesson">Lesson</option>
+                    <option value="note">Note</option>
+                    <option value="guide">Guide</option>
+                    <option value="course">Course</option>
+                    <option value="resource">Resource</option>
+                  </select>
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Content</label>
+                  <textarea value={contentForm.content} onChange={e => setContentForm({ ...contentForm, content: e.target.value })} rows={6} required />
+                </div>
+                <div className={styles.formRow}>
+                  <label className={styles.checkboxLabel}>
+                    <input type="checkbox" checked={contentForm.isPaid} onChange={e => setContentForm({ ...contentForm, isPaid: e.target.checked })} />
+                    Paid Content
+                  </label>
+                  {contentForm.isPaid && (
+                    <input type="number" value={contentForm.price} onChange={e => setContentForm({ ...contentForm, price: e.target.value })} placeholder="Price ($)" step="0.01" className={styles.priceInput} />
+                  )}
+                </div>
+                <div className={styles.formActions}>
+                  <button type="submit" className="btn-primary" disabled={creatingContent}>{creatingContent ? 'Publishing...' : 'Publish'}</button>
+                  <button type="button" className="btn-ghost" onClick={() => setShowContentForm(false)}>Cancel</button>
+                </div>
+              </form>
+            )}
+            {school.schoolContents.length > 0 ? (
+              <div className={styles.contentList}>
+                {school.schoolContents.map(item => (
+                  <div key={item.id} className={`${styles.contentCard} ${item.pinned ? styles.pinnedCard : ''}`}>
+                    <div className={styles.contentCardTop}>
+                      <span className={styles.contentTypeIcon}>{CONTENT_TYPE_ICONS[item.contentType] || '📄'}</span>
+                      <span className={`badge badge-${item.isPaid ? 'active' : 'draft'}`}>
+                        {item.isPaid ? `$${item.price || 0}` : 'Free'}
+                      </span>
+                      {item.pinned && <span className={styles.pinnedBadge}>📌</span>}
+                      {isOwner && (
+                        <button
+                          onClick={() => handlePin('schoolContent', item.id, item.pinned)}
+                          className={styles.pinBtn}
+                          title={item.pinned ? 'Unpin' : 'Pin to top'}
+                        >
+                          {item.pinned ? '📌' : '📍'}
+                        </button>
+                      )}
+                    </div>
+                    <h3 onClick={() => setSelectedContent(selectedContent?.id === item.id ? null : item)}>{item.title}</h3>
+                    {selectedContent?.id === item.id && (
+                      <div className={styles.contentBody}>
+                        {item.content.split('\n').map((line, i) => (
+                          <p key={i}>{line}</p>
+                        ))}
+                        <div className={styles.contentMeta}>
+                          <span>by {item.owner.name || 'Unknown'}</span>
+                          <span>{new Date(item.createdAt).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                    )}
+                    <p className={styles.contentPreview}>{item.content.slice(0, 120)}...</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className={styles.empty}><p>No content published yet</p></div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'posts' && (
+          <div className={styles.postsSection}>
+            {isOwner && (
+              <form onSubmit={handleCreatePost} className={styles.createPost}>
+                <textarea value={newPost} onChange={e => setNewPost(e.target.value)} placeholder="Share an announcement..." className={styles.postInput} rows={3} />
+                <div className={styles.postActions}>
+                  <span className={styles.charCount}>{newPost.length}/2000</span>
+                  <button type="submit" disabled={posting || !newPost.trim()} className={styles.postBtn}>{posting ? 'Posting...' : 'Post'}</button>
+                </div>
+              </form>
+            )}
+            {school.posts.length > 0 ? (
+              <div className={styles.postsList}>
+                {school.posts.map(post => (
+                  <div key={post.id} className={`${styles.postCard} ${post.pinned ? styles.pinnedCard : ''}`}>
+                    <div className={styles.postHeader}>
+                      <div className={styles.postAuthor}>
+                        <div className={styles.postAvatarSmall}>
+                          {post.user.image ? <img src={post.user.image} alt="" /> : <span>{post.user.name?.[0] || 'U'}</span>}
+                        </div>
+                        <div>
+                          <span className={styles.postAuthorName}>{post.user.name || 'School'}</span>
+                          <span className={styles.postDate}>{new Date(post.createdAt).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                        {isOwner && (
+                          <button
+                            onClick={() => handlePin('post', post.id, post.pinned)}
+                            className={`${styles.pinBtn} ${post.pinned ? styles.pinBtnActive : ''}`}
+                            title={post.pinned ? 'Unpin' : 'Pin to top'}
+                          >
+                            {post.pinned ? '📌' : '📍'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <p className={styles.postContent}>{post.content}</p>
+                    <div className={styles.postFooter}>
+                      <span className={styles.postLikes}>♥ {post.likes}</span>
+                      <button onClick={() => handleLikePost(post.id, post.likes)} className={styles.likeBtn}>Like</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className={styles.empty}><p>No posts yet</p></div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'reviews' && (
+          <div className={styles.reviewsSection}>
+            <Rating userId={school.user.id} type="SELLER" />
+          </div>
+        )}
+
+        {activeTab === 'about' && (
+          <div className={styles.aboutSection}>
+            {isOwner && showEditModal ? (
+              <form onSubmit={handleSaveSchool} className={styles.editForm}>
+                <div className={styles.formGroup}>
+                  <label>School Name</label>
+                  <input type="text" value={editForm.schoolName} onChange={e => setEditForm({ ...editForm, schoolName: e.target.value })} required />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>About</label>
+                  <textarea value={editForm.schoolAbout} onChange={e => setEditForm({ ...editForm, schoolAbout: e.target.value })} rows={4} />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>School Logo URL</label>
+                  <input type="url" value={editForm.schoolImage} onChange={e => setEditForm({ ...editForm, schoolImage: e.target.value })} placeholder="https://..." />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Cover Image URL</label>
+                  <input type="url" value={editForm.schoolCoverImage} onChange={e => setEditForm({ ...editForm, schoolCoverImage: e.target.value })} placeholder="https://..." />
+                </div>
+                <div className={styles.formActions}>
+                  <button type="submit" className="btn-primary" disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
+                  <button type="button" className="btn-ghost" onClick={() => setShowEditModal(false)}>Cancel</button>
+                </div>
+              </form>
+            ) : (
+              <>
+                {school.schoolAbout && (
+                  <div className={styles.aboutBlock}>
+                    <h3>About This School</h3>
+                    <p>{school.schoolAbout}</p>
+                  </div>
+                )}
+                <div className={styles.aboutBlock}>
+                  <h3>Instructor</h3>
+                  <Link href={getUserProfileUrl(school.user)} className={styles.ownerLink}>{school.user.name || 'Anonymous'}</Link>
+                  {school.user.location && <p className={styles.ownerMeta}>📍 {school.user.location}</p>}
+                  <p className={styles.ownerMeta}>Member since {new Date(school.user.createdAt).toLocaleDateString()}</p>
+                </div>
+                {school.donationAddresses.length > 0 && (
+                  <div className={styles.aboutBlock}>
+                    <h3>Support This School</h3>
+                    <div className={styles.donationsList}>
+                      {school.donationAddresses.map(da => (
+                        <div key={da.id} className={styles.donationCardFull}>
+                          <div className={styles.donationInfo}>
+                            <img src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'ethereum.png'}`} alt="" width={24} height={24} />
+                            <div>
+                              <div className={styles.donationLabel}>{da.label || da.currency}</div>
+                              <code className={styles.donationAddress} title={da.address}>{da.address.length > 20 ? da.address.slice(0, 10) + '...' + da.address.slice(-8) : da.address}</code>
+                            </div>
+                          </div>
+                          <DonationActions address={da.address} size="md" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

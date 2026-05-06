@@ -2,7 +2,7 @@
   min-height: 100vh;
   background: var(--bg-primary);
   padding: 24px;
-  padding-top: calc(var(--header-height) + 24px);
+  padding-top: 24px;
 }
 
 .container {

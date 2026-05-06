@@ -27,10 +27,12 @@ model User {
   shopName  String?
   shopAbout String?
   shopImage String?
+  shopCoverImage String?
   shopSlug  String?   @unique
   schoolName  String?
   schoolAbout String?
   schoolImage String?
+  schoolCoverImage String?
   schoolSlug  String?   @unique
   walletAddress String?
   paymentAddress String?
@@ -426,6 +428,7 @@ model SchoolContent {
   user        User     @relation("SchoolOwner", fields: [userId], references: [id], onDelete: Cascade)
   authorId    String
   author      User     @relation("SchoolAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  pinned      Boolean  @default(false)
   originalContentId String?
   originalContent   SchoolContent? @relation("RepostedContent", fields: [originalContentId], references: [id], onDelete: SetNull)
   reposts     SchoolContent[] @relation("RepostedContent")
@@ -542,6 +545,8 @@ model Group {
   name        String
   description String?
   imageUrl    String?
+  coverImage  String?
+  bannerColor String?
   isPrivate   Boolean  @default(false)
   // Location-based group support
   location       String?   // e.g., "San Francisco Bay Area"
@@ -577,6 +582,7 @@ model GroupPost {
   id        String   @id @default(cuid())
   content   String
   imageUrl  String?
+  pinned    Boolean  @default(false)
   productId String?
   product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
   userId    String

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
+import { useToast } from '@/context/ToastContext'
 
 interface Group {
   id: string
@@ -16,6 +17,7 @@ interface Group {
 }
 
 export default function GroupsPage() {
+  const { error, success } = useToast()
   const [groups, setGroups] = useState<Group[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -74,7 +76,7 @@ export default function GroupsPage() {
       const res = await fetch('/api/groups', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, description, isPrivate })
+        body: JSON.stringify({ name, description, privacy: isPrivate ? 'PRIVATE' : 'PUBLIC' })
       })
       
       if (res.ok) {
@@ -84,9 +86,14 @@ export default function GroupsPage() {
         setName('')
         setDescription('')
         setIsPrivate(false)
+        success('Group created!')
+      } else {
+        const err = await res.json()
+        error(err.error || 'Failed to create group')
       }
-    } catch (error) {
-      console.error('Failed to create group:', error)
+    } catch (err) {
+      console.error('Failed to create group:', err)
+      error('Failed to create group')
     } finally {
       setCreating(false)
     }

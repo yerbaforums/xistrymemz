@@ -33,7 +33,7 @@ export async function PUT(request: Request) {
   }
 
   const body = await request.json()
-  const { shopName, shopAbout, shopImage, shopSlug, email } = body
+  const { shopName, shopAbout, shopImage, shopCoverImage, shopSlug, email } = body
 
   const slug = shopSlug || shopName?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
@@ -43,6 +43,7 @@ export async function PUT(request: Request) {
       shopName,
       shopAbout,
       shopImage,
+      shopCoverImage,
       shopSlug: slug,
       email
     }
@@ -52,6 +53,7 @@ export async function PUT(request: Request) {
     shopName: user.shopName,
     shopAbout: user.shopAbout,
     shopImage: user.shopImage,
+    shopCoverImage: user.shopCoverImage,
     shopSlug: user.shopSlug,
     email: user.email
   })

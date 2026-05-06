@@ -6,7 +6,6 @@
 .container {
   display: flex;
   gap: 24px;
-  padding-top: var(--header-height);
   padding-left: 24px;
   padding-right: 24px;
 }

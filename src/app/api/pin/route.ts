@@ -72,6 +72,30 @@ export async function POST(request: NextRequest) {
         break
       }
       
+      case 'schoolContent': {
+        const sc = await prisma.schoolContent.findUnique({ where: { id } })
+        if (!sc) return NextResponse.json({ error: 'Content not found' }, { status: 404 })
+        if (sc.userId !== session.user.id) return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
+        
+        await prisma.schoolContent.update({
+          where: { id },
+          data: { pinned: isPinned }
+        })
+        break
+      }
+      
+      case 'groupPost': {
+        const gp = await prisma.groupPost.findUnique({ where: { id } })
+        if (!gp) return NextResponse.json({ error: 'Post not found' }, { status: 404 })
+        if (gp.userId !== session.user.id) return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
+        
+        await prisma.groupPost.update({
+          where: { id },
+          data: { pinned: isPinned }
+        })
+        break
+      }
+      
       default:
         return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
     }

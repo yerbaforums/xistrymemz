@@ -20,7 +20,7 @@ export async function GET(
           include: { user: { select: { id: true, name: true, image: true, email: true, username: true } } }
         },
         posts: {
-          orderBy: { createdAt: 'desc' },
+          orderBy: [{ pinned: 'desc' }, { createdAt: 'desc' }],
           take: 20,
           include: {
             user: { select: { id: true, name: true, image: true } }
@@ -56,7 +56,7 @@ export async function PUT(
     }
 
     const { id } = await params
-    const { name, description, imageUrl, isPrivate } = await request.json()
+    const { name, description, imageUrl, coverImage, bannerColor, isPrivate } = await request.json()
 
     const member = await prisma.groupMember.findFirst({
       where: { groupId: id, userId: session.user.id, role: 'ADMIN' }
@@ -66,9 +66,17 @@ export async function PUT(
       return NextResponse.json({ error: 'Only admins can update the group' }, { status: 403 })
     }
 
+    const data: Record<string, unknown> = {}
+    if (name !== undefined) data.name = name
+    if (description !== undefined) data.description = description
+    if (imageUrl !== undefined) data.imageUrl = imageUrl
+    if (coverImage !== undefined) data.coverImage = coverImage
+    if (bannerColor !== undefined) data.bannerColor = bannerColor
+    if (isPrivate !== undefined) data.isPrivate = isPrivate
+
     const group = await prisma.group.update({
       where: { id },
-      data: { name, description, imageUrl, isPrivate }
+      data
     })
 
     return NextResponse.json(group)
