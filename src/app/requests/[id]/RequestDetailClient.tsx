@@ -54,9 +54,10 @@ interface Comment {
   user: {
     id: string
     name: string | null
-    email: string
+    username: string | null
     shopSlug: string | null
   }
+}
 }
 
 interface Product {
@@ -85,7 +86,7 @@ interface Fulfillment {
   user: {
     id: string
     name: string | null
-    email: string
+    username: string | null
     shopSlug: string | null
   }
 }
@@ -117,14 +118,14 @@ interface Request {
     user: {
       id: string
       name: string | null
-      email: string
+      username: string | null
       shopSlug: string | null
     }
   } | null
   user: {
     id: string
     name: string | null
-    email: string
+    username: string | null
     shopSlug: string | null
   }
   product?: Product | null

@@ -220,6 +220,7 @@ export async function GET(
       return {
         id: otherUser.id,
         name: otherUser.name,
+        username: otherUser.username,
         image: otherUser.image,
         userClass: otherUser.userClass,
         shopSlug: otherUser.shopSlug

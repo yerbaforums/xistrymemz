@@ -129,7 +129,7 @@ interface Product {
 interface Connection {
   id: string
   name: string | null
-  email: string
+  username: string | null
   image: string | null
   userClass: string | null
   shopSlug: string | null

@@ -96,14 +96,14 @@ export default async function RequestDetailPage({
       user: {
         id: request.plan.user.id,
         name: request.plan.user.name,
-        email: request.plan.user.email,
+        username: request.plan.user.username,
         shopSlug: request.plan.user.shopSlug,
       },
     } : null,
     user: {
       id: request.user.id,
       name: request.user.name,
-      email: request.user.email,
+      username: request.user.username,
       shopSlug: request.user.shopSlug,
     },
     product: request.product ? {
@@ -119,7 +119,7 @@ export default async function RequestDetailPage({
       user: {
         id: comment.user.id,
         name: comment.user.name,
-        email: comment.user.email,
+        username: comment.user.username,
         shopSlug: comment.user.shopSlug,
       },
     })),
