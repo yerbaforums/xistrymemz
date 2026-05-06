@@ -402,6 +402,7 @@ model Product {
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   requests         Request[]
   groupPosts       GroupPost[]
+  groupProducts    GroupProduct[]
   ratings          Rating[]
   escrowTxns       EscrowTransaction[]
   createdAt        DateTime @default(now())
@@ -560,6 +561,7 @@ model Group {
   groupBuys  GroupBuy[]
   events     Event[]
   requests    Request[]
+  groupProducts GroupProduct[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
@@ -625,6 +627,20 @@ model GroupBuySupporter {
   joinedAt    DateTime  @default(now())
 
   @@unique([groupBuyId, userId])
+}
+
+model GroupProduct {
+  id        String   @id @default(cuid())
+  groupId   String
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  addedBy   String?
+  addedAt   DateTime @default(now())
+
+  @@unique([groupId, productId])
+  @@index([groupId])
+  @@index([productId])
 }
 
 model ContactMessage {

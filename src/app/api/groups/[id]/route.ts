@@ -26,6 +26,31 @@ export async function GET(
             user: { select: { id: true, name: true, image: true } }
           }
         },
+        groupBuys: {
+          include: {
+            organizer: { select: { id: true, name: true, image: true } },
+            _count: { select: { supporters: true } }
+          },
+          orderBy: { createdAt: 'desc' }
+        },
+        requests: {
+          orderBy: { createdAt: 'desc' },
+          take: 20,
+          include: {
+            user: { select: { id: true, name: true, image: true } },
+            _count: { select: { comments: true, fulfillments: true } }
+          }
+        },
+        groupProducts: {
+          include: {
+            product: {
+              include: {
+                user: { select: { id: true, name: true, image: true } }
+              }
+            }
+          },
+          orderBy: { addedAt: 'desc' }
+        },
         _count: { select: { members: true, posts: true } }
       }
     })
@@ -37,7 +62,14 @@ export async function GET(
     const isMember = userId ? group.members.some(m => m.userId === userId) : false
     const isAdmin = userId ? group.members.some(m => m.userId === userId && m.role === 'ADMIN') : false
 
-    return NextResponse.json({ ...group, isMember, isAdmin })
+    const marketplaceProducts = group.groupProducts.map(gp => ({
+      ...gp.product,
+      user: gp.product.user
+    }))
+
+    const { groupProducts, ...rest } = group
+
+    return NextResponse.json({ ...rest, marketplaceProducts, isMember, isAdmin })
   } catch (error) {
     console.error('GET /api/groups/[id]:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

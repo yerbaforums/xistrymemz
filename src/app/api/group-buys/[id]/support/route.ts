@@ -3,6 +3,32 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+export async function GET(request: Request, ctx: { params: Promise<{ id: string }> }) {
+  try {
+    const params = await ctx.params
+
+    const groupBuy = await prisma.groupBuy.findUnique({
+      where: { id: params.id }
+    })
+    if (!groupBuy) {
+      return NextResponse.json({ error: 'Group buy not found' }, { status: 404 })
+    }
+
+    const supporters = await prisma.groupBuySupporter.findMany({
+      where: { groupBuyId: params.id },
+      include: {
+        user: { select: { id: true, name: true, image: true, username: true } }
+      },
+      orderBy: { joinedAt: 'asc' }
+    })
+
+    return NextResponse.json({ supporters })
+  } catch (error) {
+    console.error('GET /api/group-buys/[id]/support:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
 export async function POST(request: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
     const params = await ctx.params

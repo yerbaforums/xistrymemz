@@ -42,6 +42,36 @@ interface GroupBuy {
   _count: { supporters: number }
 }
 
+interface GroupRequest {
+  id: string
+  title: string
+  description: string | null
+  category: string
+  priority: string
+  status: string
+  budget: number | null
+  goalAmount: number | null
+  currentFunding: number
+  isPublic: boolean
+  createdAt: string
+  user: { id: string; name: string | null; image: string | null }
+  _count: { comments: number; fulfillments: number }
+}
+
+interface MarketplaceProduct {
+  id: string
+  title: string
+  description: string | null
+  price: number | null
+  type: string
+  category: string | null
+  condition: string | null
+  imageUrl: string | null
+  published: boolean
+  createdAt: string
+  user: { id: string; name: string | null; image: string | null }
+}
+
 interface ActivityItem {
   id: string
   title: string
@@ -77,6 +107,8 @@ interface Group {
   members: Member[]
   posts: GroupPost[]
   groupBuys: GroupBuy[]
+  requests: GroupRequest[]
+  marketplaceProducts: MarketplaceProduct[]
   _count: { members: number; posts: number }
   isMember: boolean
   isAdmin: boolean
@@ -92,7 +124,7 @@ function GroupDetailContent() {
   const [postContent, setPostContent] = useState('')
   const [postImage, setPostImage] = useState('')
   const [posting, setPosting] = useState(false)
-  const [activeTab, setActiveTab] = useState<'posts' | 'buys' | 'activity'>('posts')
+  const [activeTab, setActiveTab] = useState<'posts' | 'buys' | 'requests' | 'marketplace' | 'activity'>('posts')
   const [activity, setActivity] = useState<Activity>({ projects: [], requests: [], products: [], events: [] })
   const [loadingActivity, setLoadingActivity] = useState(false)
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set())
@@ -100,10 +132,19 @@ function GroupDetailContent() {
   const [editForm, setEditForm] = useState({ name: '', description: '', imageUrl: '', coverImage: '', isPrivate: false })
   const [saving, setSaving] = useState(false)
   const [showBuyModal, setShowBuyModal] = useState(false)
-  const [buyForm, setBuyForm] = useState({ title: '', description: '', targetPrice: '', minSupporters: '5', productUrl: '', productImage: '' })
+  const [buyForm, setBuyForm] = useState({ title: '', description: '', targetPrice: '', minSupporters: '5', productUrl: '', productImage: '', linkedProductId: '' })
   const [creatingBuy, setCreatingBuy] = useState(false)
   const [supportingBuyId, setSupportingBuyId] = useState<string | null>(null)
   const [selectedBuy, setSelectedBuy] = useState<GroupBuy | null>(null)
+  const [showRequestModal, setShowRequestModal] = useState(false)
+  const [requestForm, setRequestForm] = useState({ title: '', description: '', category: 'FUNDING', priority: 'MEDIUM', budget: '', goalAmount: '', isPublic: true })
+  const [creatingRequest, setCreatingRequest] = useState(false)
+  const [showMarketplaceModal, setShowMarketplaceModal] = useState(false)
+  const [marketplaceSearch, setMarketplaceSearch] = useState('')
+  const [marketplaceResults, setMarketplaceResults] = useState<MarketplaceProduct[]>([])
+  const [linkingProduct, setLinkingProduct] = useState(false)
+  const [selectedBuySupporters, setSelectedBuySupporters] = useState<null | Array<{ id: string; user: { id: string; name: string | null; image: string | null; username: string | null }; createdAt: string }>>(null)
+  const [loadingSupporters, setLoadingSupporters] = useState(false)
 
   useEffect(() => {
     fetch(`/api/groups/${params.id}`)
@@ -132,6 +173,8 @@ function GroupDetailContent() {
         .finally(() => setLoadingActivity(false))
     }
   }, [activeTab, group?.isMember, params.id])
+
+  const refreshGroup = () => fetch(`/api/groups/${params.id}`).then(r => r.json()).then(data => setGroup(data))
 
   const handleJoin = async () => {
     if (!session?.user?.id) {
@@ -257,14 +300,15 @@ function GroupDetailContent() {
         body: JSON.stringify({
           ...buyForm,
           targetPrice: parseFloat(buyForm.targetPrice),
-          minSupporters: parseInt(buyForm.minSupporters)
+          minSupporters: parseInt(buyForm.minSupporters),
+          linkedProductId: buyForm.linkedProductId || null
         })
       })
       if (res.ok) {
         const newBuy = await res.json()
         setGroup(g => g ? { ...g, groupBuys: [newBuy, ...(g.groupBuys || [])] } : g)
         setShowBuyModal(false)
-        setBuyForm({ title: '', description: '', targetPrice: '', minSupporters: '5', productUrl: '', productImage: '' })
+        setBuyForm({ title: '', description: '', targetPrice: '', minSupporters: '5', productUrl: '', productImage: '', linkedProductId: '' })
         success('Group buy created!')
       } else {
         const err = await res.json()
@@ -303,6 +347,22 @@ function GroupDetailContent() {
     }
   }
 
+  const handleViewSupporters = async (buyId: string) => {
+    setLoadingSupporters(true)
+    setSelectedBuySupporters(null)
+    try {
+      const res = await fetch(`/api/group-buys/${buyId}/support`)
+      if (res.ok) {
+        const data = await res.json()
+        setSelectedBuySupporters(data.supporters)
+      }
+    } catch {
+      error('Failed to load supporters')
+    } finally {
+      setLoadingSupporters(false)
+    }
+  }
+
   const handleDeleteBuy = async (buyId: string) => {
     if (!confirm('Delete this group buy?')) return
     try {
@@ -313,6 +373,107 @@ function GroupDetailContent() {
       }
     } catch {
       error('Failed to delete')
+    }
+  }
+
+  const handleCreateRequest = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!requestForm.title.trim()) return
+    setCreatingRequest(true)
+    try {
+      const res = await fetch('/api/requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...requestForm,
+          groupId: params.id,
+          budget: requestForm.budget ? parseFloat(requestForm.budget) : null,
+          goalAmount: requestForm.goalAmount ? parseFloat(requestForm.goalAmount) : null
+        })
+      })
+      if (res.ok) {
+        const newReq = await res.json()
+        setGroup(g => g ? { ...g, requests: [newReq, ...(g.requests || [])] } : g)
+        setShowRequestModal(false)
+        setRequestForm({ title: '', description: '', category: 'FUNDING', priority: 'MEDIUM', budget: '', goalAmount: '', isPublic: true })
+        success('Request created!')
+      } else {
+        const err = await res.json()
+        error(err.error || 'Failed to create request')
+      }
+    } catch {
+      error('Failed to create request')
+    } finally {
+      setCreatingRequest(false)
+    }
+  }
+
+  const handleDeleteRequest = async (reqId: string) => {
+    if (!confirm('Delete this request?')) return
+    try {
+      const res = await fetch(`/api/requests/${reqId}`, { method: 'DELETE' })
+      if (res.ok) {
+        setGroup(g => g ? { ...g, requests: (g.requests || []).filter(r => r.id !== reqId) } : g)
+        success('Request deleted')
+      }
+    } catch {
+      error('Failed to delete request')
+    }
+  }
+
+  const searchMarketplace = async () => {
+    if (!marketplaceSearch.trim()) {
+      setMarketplaceResults([])
+      return
+    }
+    try {
+      const res = await fetch(`/api/products?q=${encodeURIComponent(marketplaceSearch)}&limit=10`)
+      if (res.ok) {
+        const data = await res.json()
+        setMarketplaceResults(data.slice(0, 10))
+      }
+    } catch {
+      error('Failed to search marketplace')
+    }
+  }
+
+  const handleLinkProduct = async (product: MarketplaceProduct) => {
+    if (!group?.isMember) return
+    setLinkingProduct(true)
+    try {
+      const res = await fetch(`/api/groups/${params.id}/marketplace`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: product.id })
+      })
+      if (res.ok) {
+        const updatedProduct = await res.json()
+        setGroup(g => g ? { ...g, marketplaceProducts: [updatedProduct, ...(g.marketplaceProducts || [])] } : g)
+        setShowMarketplaceModal(false)
+        setMarketplaceResults([])
+        setMarketplaceSearch('')
+        success('Product linked!')
+      } else {
+        const err = await res.json()
+        error(err.error || 'Failed to link product')
+      }
+    } catch {
+      error('Failed to link product')
+    } finally {
+      setLinkingProduct(false)
+    }
+  }
+
+  const handleUnlinkProduct = async (productId: string) => {
+    if (!confirm('Unlink this product?')) return
+    try {
+      const res = await fetch(`/api/groups/${params.id}/marketplace/${productId}`, { method: 'DELETE' })
+      if (res.ok) {
+        setGroup(g => g ? { ...g, marketplaceProducts: (g.marketplaceProducts || []).filter(p => p.id !== productId) } : g)
+        success('Product unlinked')
+      }
+    } catch {
+      error('Failed to unlink product')
     }
   }
 
@@ -340,7 +501,7 @@ function GroupDetailContent() {
         body: JSON.stringify({ type, id, pinned: !currentPinned })
       })
       if (res.ok) {
-        fetch(`/api/groups/${params.id}`).then(r => r.json()).then(data => setGroup(data))
+        refreshGroup()
       }
     } catch { /* ignore */ }
   }
@@ -359,6 +520,7 @@ function GroupDetailContent() {
   const myUserId = session?.user?.id || null
   const isPostOwner = (post: GroupPost) => myUserId === post.user.id
   const isBuyOwner = (buy: GroupBuy) => myUserId === buy.organizer.id
+  const isReqOwner = (req: GroupRequest) => myUserId === req.user.id
 
   return (
     <div className={styles.page}>
@@ -431,6 +593,12 @@ function GroupDetailContent() {
             </button>
             <button className={`${styles.tab} ${activeTab === 'buys' ? styles.active : ''}`} onClick={() => setActiveTab('buys')}>
               🛍️ Group Buys
+            </button>
+            <button className={`${styles.tab} ${activeTab === 'requests' ? styles.active : ''}`} onClick={() => setActiveTab('requests')}>
+              📝 Requests
+            </button>
+            <button className={`${styles.tab} ${activeTab === 'marketplace' ? styles.active : ''}`} onClick={() => setActiveTab('marketplace')}>
+              🏪 Marketplace
             </button>
             <button className={`${styles.tab} ${activeTab === 'activity' ? styles.active : ''}`} onClick={() => setActiveTab('activity')}>
               🚀 Activity
@@ -521,7 +689,35 @@ function GroupDetailContent() {
                     </div>
                   )}
 
-                  {selectedBuy && (
+                  {selectedBuySupporters && (
+                    <div className={styles.supportersModal}>
+                      <div className={styles.supportersHeader}>
+                        <h3>Supporters</h3>
+                        <button onClick={() => setSelectedBuySupporters(null)} className={styles.closeBtn}>×</button>
+                      </div>
+                      {loadingSupporters ? (
+                        <p className={styles.loadingSmall}>Loading supporters...</p>
+                      ) : selectedBuySupporters.length === 0 ? (
+                        <p className={styles.emptySmall}>No supporters yet</p>
+                      ) : (
+                        <div className={styles.supportersList}>
+                          {selectedBuySupporters.map(s => (
+                            <div key={s.id} className={styles.supporterItem}>
+                              <Link href={getUserProfileUrl(s.user)} className={styles.supporterAvatar}>
+                                {s.user.image ? <img src={s.user.image} alt="" /> : <span>{(s.user.name?.[0] || 'U').toUpperCase()}</span>}
+                              </Link>
+                              <div className={styles.supporterInfo}>
+                                <span>{s.user.name || 'Unknown'}</span>
+                                <span className={styles.supporterDate}>{new Date(s.createdAt).toLocaleDateString()}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {selectedBuy && !selectedBuySupporters && (
                     <div className={styles.buyDetail}>
                       <button onClick={() => setSelectedBuy(null)} className={styles.backBtn}>← Back to buys</button>
                       <h2>{selectedBuy.title}</h2>
@@ -552,13 +748,18 @@ function GroupDetailContent() {
                           View Product →
                         </a>
                       )}
+                      {selectedBuy.currentSupporters > 0 && (
+                        <button className={styles.viewSupportersBtn} onClick={() => handleViewSupporters(selectedBuy.id)}>
+                          View {selectedBuy.currentSupporters} supporter{selectedBuy.currentSupporters > 1 ? 's' : ''}
+                        </button>
+                      )}
                       <p className={styles.buyOrganizer}>
                         Organized by <Link href={getUserProfileUrl(selectedBuy.organizer)}>{selectedBuy.organizer.name || 'Unknown'}</Link>
                       </p>
                     </div>
                   )}
 
-                  {!selectedBuy && (
+                  {!selectedBuy && !selectedBuySupporters && (
                     <div className={styles.buysGrid}>
                       {group.groupBuys && group.groupBuys.length > 0 ? (
                         group.groupBuys.map(buy => (
@@ -598,6 +799,84 @@ function GroupDetailContent() {
                         <div className={styles.empty}><p>No group buys yet. Create one to pool resources!</p></div>
                       )}
                     </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'requests' && (
+                <div className={styles.requestsSection}>
+                  <div className={styles.requestsActions}>
+                    <button onClick={() => setShowRequestModal(true)} className={styles.createRequestBtn}>+ Create Request</button>
+                    <Link href={`/requests?groupId=${params.id}`} className={styles.viewAllRequestsBtn}>View All Requests</Link>
+                  </div>
+
+                  {group.requests && group.requests.length > 0 ? (
+                    <div className={styles.requestsList}>
+                      {group.requests.map(req => (
+                        <div key={req.id} className={styles.requestCard}>
+                          <div className={styles.requestCardHeader}>
+                            <Link href={`/requests/${req.id}`} className={styles.requestCardTitle}>{req.title}</Link>
+                            <div className={styles.requestCardActions}>
+                              <span className={`badge badge-${req.status.toLowerCase()}`}>{req.status}</span>
+                              <span className={`badge badge-${req.priority.toLowerCase()}`}>{req.priority}</span>
+                              {isReqOwner(req) && (
+                                <button onClick={() => handleDeleteRequest(req.id)} className={styles.deleteSmallBtn} title="Delete">×</button>
+                              )}
+                            </div>
+                          </div>
+                          {req.description && <p className={styles.requestCardDesc}>{req.description.slice(0, 150)}...</p>}
+                          <div className={styles.requestCardMeta}>
+                            <span>{req.category}</span>
+                            {req.goalAmount && <span>Goal: ${req.goalAmount}</span>}
+                            {req.currentFunding > 0 && <span>Funded: ${req.currentFunding}</span>}
+                            <span>💬 {req._count.comments}</span>
+                            <span>✓ {req._count.fulfillments}</span>
+                            <span className={styles.requestDate}>{new Date(req.createdAt).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className={styles.empty}><p>No requests yet. Create one to ask the group for help!</p></div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'marketplace' && (
+                <div className={styles.marketplaceSection}>
+                  <div className={styles.marketplaceActions}>
+                    <button onClick={() => setShowMarketplaceModal(true)} className={styles.linkProductBtn}>+ Link Marketplace Product</button>
+                  </div>
+
+                  {group.marketplaceProducts && group.marketplaceProducts.length > 0 ? (
+                    <div className={styles.marketplaceGrid}>
+                      {group.marketplaceProducts.map(product => (
+                        <Link key={product.id} href={`/products/${product.id}`} className={styles.marketplaceCard}>
+                          <div className={styles.marketplaceImage}>
+                            {product.imageUrl ? (
+                              <img src={product.imageUrl} alt={product.title} />
+                            ) : (
+                              <div className={styles.marketplacePlaceholder}>📦</div>
+                            )}
+                          </div>
+                          <div className={styles.marketplaceInfo}>
+                            <h3>{product.title}</h3>
+                            {product.price && <span className={styles.marketplacePrice}>${product.price}</span>}
+                            <div className={styles.marketplaceTags}>
+                              <span className={`badge badge-${product.type.toLowerCase()}`}>{product.type}</span>
+                              {product.condition && <span className={styles.marketplaceCondition}>{product.condition.replace('_', ' ')}</span>}
+                            </div>
+                          </div>
+                          <div className={styles.marketplaceActions}>
+                            {group.isAdmin && (
+                              <button onClick={(e) => { e.preventDefault(); handleUnlinkProduct(product.id); }} className={styles.unlinkBtn}>Unlink</button>
+                            )}
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className={styles.empty}><p>No marketplace products linked yet. Link products relevant to this group!</p></div>
                   )}
                 </div>
               )}
@@ -761,7 +1040,7 @@ function GroupDetailContent() {
                 </div>
               </div>
               <div className="form-group">
-                <label>Product URL</label>
+                <label>Product URL (external)</label>
                 <input type="url" value={buyForm.productUrl} onChange={e => setBuyForm({ ...buyForm, productUrl: e.target.value })} placeholder="https://..." />
               </div>
               <div className="form-group">
@@ -773,6 +1052,106 @@ function GroupDetailContent() {
                 <button type="button" className="btn-ghost" onClick={() => setShowBuyModal(false)}>Cancel</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Create Request Modal */}
+      {showRequestModal && (
+        <div className="modal-overlay" onClick={() => setShowRequestModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2>Create Request</h2>
+            <p className={styles.buyModalDesc}>Ask the group for help, funding, or collaboration on a project or need.</p>
+            <form onSubmit={handleCreateRequest}>
+              <div className="form-group">
+                <label>Title *</label>
+                <input type="text" value={requestForm.title} onChange={e => setRequestForm({ ...requestForm, title: e.target.value })} placeholder="e.g., Need funding for community garden" required />
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <textarea value={requestForm.description} onChange={e => setRequestForm({ ...requestForm, description: e.target.value })} rows={3} placeholder="Describe what you need..." />
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Category</label>
+                  <select value={requestForm.category} onChange={e => setRequestForm({ ...requestForm, category: e.target.value })}>
+                    <option value="FUNDING">Funding</option>
+                    <option value="COLLABORATION">Collaboration</option>
+                    <option value="HELP_NEEDED">Help Needed</option>
+                    <option value="RESOURCE">Resource</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Priority</label>
+                  <select value={requestForm.priority} onChange={e => setRequestForm({ ...requestForm, priority: e.target.value })}>
+                    <option value="LOW">Low</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="HIGH">High</option>
+                    <option value="URGENT">Urgent</option>
+                  </select>
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Budget ($)</label>
+                  <input type="number" value={requestForm.budget} onChange={e => setRequestForm({ ...requestForm, budget: e.target.value })} placeholder="Optional" step="0.01" />
+                </div>
+                <div className="form-group">
+                  <label>Goal Amount ($)</label>
+                  <input type="number" value={requestForm.goalAmount} onChange={e => setRequestForm({ ...requestForm, goalAmount: e.target.value })} placeholder="Funding goal" step="0.01" />
+                </div>
+              </div>
+              <div className="form-group">
+                <label className={styles.checkboxLabel}>
+                  <input type="checkbox" checked={requestForm.isPublic} onChange={e => setRequestForm({ ...requestForm, isPublic: e.target.checked })} />
+                  Make Public (visible outside this group)
+                </label>
+              </div>
+              <div className={styles.modalActions}>
+                <button type="submit" className="btn-primary" disabled={creatingRequest}>{creatingRequest ? 'Creating...' : 'Create Request'}</button>
+                <button type="button" className="btn-ghost" onClick={() => setShowRequestModal(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Marketplace Link Modal */}
+      {showMarketplaceModal && (
+        <div className="modal-overlay" onClick={() => setShowMarketplaceModal(false)}>
+          <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
+            <h2>Link Marketplace Product</h2>
+            <p className={styles.buyModalDesc}>Search for products on the marketplace to link to this group.</p>
+            <div className={styles.marketplaceSearchRow}>
+              <input
+                type="text"
+                value={marketplaceSearch}
+                onChange={e => setMarketplaceSearch(e.target.value)}
+                placeholder="Search products..."
+                className={styles.marketplaceSearchInput}
+                onKeyDown={e => { if (e.key === 'Enter') searchMarketplace() }}
+              />
+              <button onClick={searchMarketplace} className={styles.searchBtn}>Search</button>
+            </div>
+            {marketplaceResults.length > 0 && (
+              <div className={styles.marketplaceSearchResults}>
+                {marketplaceResults.map(product => (
+                  <div key={product.id} className={styles.marketplaceSearchResult}>
+                    <div className={styles.searchResultInfo}>
+                      <h4>{product.title}</h4>
+                      {product.price && <span className={styles.searchResultPrice}>${product.price}</span>}
+                      <span className={`badge badge-${product.type.toLowerCase()}`}>{product.type}</span>
+                    </div>
+                    <button onClick={() => handleLinkProduct(product)} disabled={linkingProduct} className={styles.linkBtn}>
+                      {linkingProduct ? '...' : 'Link'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className={styles.modalActions}>
+              <button type="button" className="btn-ghost" onClick={() => setShowMarketplaceModal(false)}>Close</button>
+            </div>
           </div>
         </div>
       )}
