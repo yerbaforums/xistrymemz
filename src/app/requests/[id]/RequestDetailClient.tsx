@@ -12,10 +12,10 @@ import { getCryptoIcon, getCryptoName } from '@/lib/crypto-icons'
 const CATEGORIES = [
   { value: 'GENERAL', label: 'General', icon: '\u{1F4CB}' },
   { value: 'HELP', label: 'Help Needed', icon: '\u{1F198}' },
-  { value: 'COLLABORATION', label: 'Collaboration', icon: 'D83EDD1D' },
+  { value: 'COLLABORATION', label: 'Collaboration', icon: '🤝' },
   { value: 'SUPPORT', label: 'Support', icon: '\u{1F4AA}' },
   { value: 'RESOURCES', label: 'Resources', icon: '\u{1F4E6}' },
-  { value: 'FEEDBACK', label: 'Feedback', icon: 'D83DDCAC' },
+  { value: 'FEEDBACK', label: 'Feedback', icon: '💬' },
   { value: 'IDEA', label: 'Idea', icon: '\u{1F4A1}' },
   { value: 'BUG', label: 'Bug Report', icon: '\u{1F41B}' },
 ]
@@ -605,7 +605,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               <div className={styles.headerActions}>
                 {canViewHistory && (
                   <button onClick={() => setShowHistoryModal(true)} className={styles.historyBtn}>
-                    D83DDCDC History
+                    📜 History
                   </button>
                 )}
                 <span className={styles.date}>
@@ -777,14 +777,14 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                             className={styles.donationBtn}
                             title="View QR Code"
                           >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" fill="none" /><rect x="14" y="3" width="7" height="7" fill="none" /><rect x="3" y="14" width="7" height="7" fill="none" /><rect x="14" y="14" width="7" height="7" fill="none" /></svg>
                           </button>
                           <button
                             onClick={() => { navigator.clipboard.writeText(da.address); success('Copied!') }}
                             className={styles.donationBtn}
                             title="Copy address"
                           >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" fill="none" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" fill="none" /></svg>
                           </button>
                         </div>
                       </div>
@@ -810,7 +810,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                   className={`${styles.supportBtn} ${isSupporting ? styles.supported : ''}`}
                   onClick={handleSupport}
                 >
-                  D83DDC4D {isSupporting ? 'Supported' : 'Support'}
+                  👍 {isSupporting ? 'Supported' : 'Support'}
                 </button>
               )}
             </div>
@@ -865,7 +865,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                 className={styles.helpBtn}
                 disabled={loading}
               >
-                D83EDD1D Help Complete This Request
+                🤝 Help Complete This Request
               </button>
             </div>
           )}
@@ -877,14 +877,14 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                 className={styles.actionBtn}
                 disabled={loading}
               >
-                D83EDD1D Make Offer
+                🤝 Make Offer
               </button>
               <button
                 onClick={() => setShowContactModal(true)}
                 className={styles.actionBtn}
                 disabled={loading}
               >
-                D83DDCAC Contact Requestor
+                💬 Contact Requestor
               </button>
             </div>
           )}
@@ -906,7 +906,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
         <div className={styles.detailSidebar}>
           {/* OFFERS */}
           <div className={styles.sidebarCard}>
-            <h2>D83EDD1D Offers ({fulfillments.length})</h2>
+            <h2>🤝 Offers ({fulfillments.length})</h2>
 
             {canEdit && (
               <div className={styles.fulfillmentToggle}>
@@ -1011,7 +1011,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
 
           {/* COMMENTS */}
           <div className={styles.sidebarCard}>
-            <h2>D83DDCAC Comments ({request.comments.length})</h2>
+            <h2>💬 Comments ({request.comments.length})</h2>
 
             <div className={styles.commentsList}>
               {request.comments.map(c => (
@@ -1048,7 +1048,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
       {showCompleteModal && (
         <div className="modal-overlay" onClick={() => setShowCompleteModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <h2>D83EDD1D Help Complete This Request</h2>
+            <h2>🤝 Help Complete This Request</h2>
             <p className={styles.modalText}>
               You are offering to help {request.user.name || 'this user'} with this request.
               Mark it as completed and send them a message.
@@ -1087,10 +1087,10 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
       {showHistoryModal && (
         <div className="modal-overlay" onClick={() => setShowHistoryModal(false)}>
           <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
-            <h2>D83DDCDC Request History</h2>
+            <h2>📜 Request History</h2>
             <div className={styles.historyList}>
               <div className={styles.historyItem}>
-                <span className={styles.historyIcon}>D83DDD50</span>
+                <span className={styles.historyIcon}>🕐</span>
                 <div className={styles.historyContent}>
                   <span className={styles.historyAction}>
                     Request created with status <strong>PENDING</strong>
@@ -1173,7 +1173,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
       {showContactModal && (
         <div className="modal-overlay" onClick={() => setShowContactModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <h2>D83DDCAC Contact Requestor</h2>
+            <h2>💬 Contact Requestor</h2>
             <p className={styles.modalText}>
               Send a message to {request.user.name || 'this user'} about this request.
             </p>
@@ -1326,7 +1326,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
       {supportModalOpen && (
         <div className="modal-overlay" onClick={() => setSupportModalOpen(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <h2>D83DDC4D Support this Request</h2>
+            <h2>👍 Support this Request</h2>
             <p className={styles.modalText}>How can you help? (optional)</p>
             <textarea
               value={supportMessage}
