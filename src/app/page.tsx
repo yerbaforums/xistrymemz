@@ -190,7 +190,7 @@ export default function Home() {
         <QRCodeModal
           isOpen={true}
           onClose={() => setQrOpen(null)}
-          currency={activeQr.label || activeQr.currency}
+          currency={activeQr.currency}
           address={activeQr.address}
         />
       )}

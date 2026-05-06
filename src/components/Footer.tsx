@@ -113,7 +113,7 @@ export default function Footer() {
         <QRCodeModal
           isOpen={true}
           onClose={closeQr}
-          currency={activeQr.label || activeQr.currency}
+          currency={activeQr.currency}
           address={activeQr.address}
         />
       )}
