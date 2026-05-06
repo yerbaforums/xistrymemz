@@ -17,9 +17,9 @@ export const requestSchema = z.object({
   description: z.string().max(5000).optional(),
   category: z.string().optional(),
   priority: z.string().optional(),
-  budget: z.number().optional(),
-  goalAmount: z.number().optional(),
-  currentFunding: z.number().optional(),
+  budget: z.number().optional().nullable(),
+  goalAmount: z.number().optional().nullable(),
+  currentFunding: z.number().optional().nullable(),
   location: z.string().optional(),
   isPublic: z.boolean().optional()
 })

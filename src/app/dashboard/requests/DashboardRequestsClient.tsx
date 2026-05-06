@@ -3,9 +3,22 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { QRCodeModal } from '@/components/QRCodeModal'
 import { getUserProfileUrl } from '@/lib/utils'
+import { getCryptoIcon, getCryptoName } from '@/lib/crypto-icons'
+import { useToast } from '@/context/ToastContext'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import styles from './requests.module.css'
+
+interface DonationAddr {
+  id: string
+  currency: string
+  address: string
+  label: string | null
+  qrCodeUrl: string | null
+  showQR: boolean
+  sortOrder: number
+}
 
 interface Request {
   id: string
@@ -15,6 +28,8 @@ interface Request {
   category: string
   priority: string
   budget: number | null
+  goalAmount: number | null
+  currentFunding: number | null
   deadline: string | null
   location: string | null
   latitude: number | null
@@ -22,6 +37,8 @@ interface Request {
   likes: number
   reposts: number
   isPublic: boolean
+  allowFulfillments: boolean
+  showDonationAddress: boolean
   createdAt: string
   updatedAt: string
   plan: { id: string; title: string } | null
@@ -29,8 +46,17 @@ interface Request {
   product: { id: string; title: string } | null
   schoolContent: { id: string; title: string } | null
   event: { id: string; title: string } | null
-  user: { id: string; name: string | null; email: string; image: string | null }
+  user: {
+    id: string
+    name: string | null
+    email: string
+    image: string | null
+    shopSlug: string | null
+    donationAddresses: DonationAddr[]
+  }
   commentCount: number
+  fulfillmentCount: number
+  supportCount: number
 }
 
 interface DashboardRequestsClientProps {
@@ -54,33 +80,51 @@ const PRIORITY_COLORS: Record<string, string> = {
 }
 
 const CATEGORIES = [
-  'GENERAL', 'HELP', 'COLLABORATION', 'SUPPORT', 'RESOURCES',
+  'ALL', 'FUNDING', 'GENERAL', 'HELP', 'COLLABORATION', 'SUPPORT', 'RESOURCES',
   'FEEDBACK', 'IDEA', 'PRODUCT', 'SERVICE'
 ]
 
-type SortOption = 'newest' | 'oldest' | 'mostComments'
+type SortOption = 'newest' | 'oldest' | 'mostComments' | 'mostSupported' | 'mostOffers'
 
 export default function DashboardRequestsClient({ initialRequests, userId, userRole }: DashboardRequestsClientProps) {
+  const { success, error: toastError, warning } = useToast()
   const [requests, setRequests] = useState(initialRequests)
+  const [tab, setTab] = useState<'active' | 'mine'>('active')
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('ALL')
   const [categoryFilter, setCategoryFilter] = useState('ALL')
   const [priorityFilter, setPriorityFilter] = useState('ALL')
   const [sortBy, setSortBy] = useState<SortOption>('newest')
   const [showCreate, setShowCreate] = useState(false)
+  const [qrModal, setQrModal] = useState<{ open: boolean; currency: string; address: string }>({ open: false, currency: '', address: '' })
+  const [supportModal, setSupportModal] = useState<{ open: boolean; reqId: string }>({ open: false, reqId: '' })
+  const [supportMessage, setSupportMessage] = useState('')
+  const [supporting, setSupporting] = useState(false)
   const [newRequest, setNewRequest] = useState({
     title: '',
     description: '',
-    category: 'GENERAL',
+    category: 'FUNDING',
     priority: 'MEDIUM',
     budget: '',
+    goalAmount: '',
     location: '',
-    isPublic: true
+    isPublic: true,
+    allowFulfillments: true,
+    showDonationAddress: true
   })
   const [creating, setCreating] = useState(false)
 
+  const isAdmin = userRole === 'ADMIN'
+
   const filteredRequests = useMemo(() => {
     let result = [...requests]
+
+    if (tab === 'active') {
+      result = result.filter(r => r.status === 'PENDING')
+    }
+    if (tab === 'mine') {
+      result = result.filter(r => r.user.id === userId)
+    }
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase()
@@ -112,51 +156,74 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
       case 'mostComments':
         result.sort((a, b) => b.commentCount - a.commentCount)
         break
+      case 'mostSupported':
+        result.sort((a, b) => b.supportCount - a.supportCount)
+        break
+      case 'mostOffers':
+        result.sort((a, b) => b.fulfillmentCount - a.fulfillmentCount)
+        break
     }
 
     return result
-  }, [requests, searchQuery, statusFilter, categoryFilter, priorityFilter, sortBy])
+  }, [requests, tab, userId, searchQuery, statusFilter, categoryFilter, priorityFilter, sortBy])
+
+  const getResolvedDonationAddrs = (req: Request): DonationAddr[] => {
+    if (!req.showDonationAddress || !req.user?.donationAddresses) return []
+    return req.user.donationAddresses
+  }
 
   const handleCreate = async () => {
-    if (!newRequest.title.trim()) return
+    if (!newRequest.title.trim()) { warning('Please enter a title'); return }
     setCreating(true)
     try {
       const res = await fetch('/api/requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...newRequest,
-          budget: newRequest.budget ? parseFloat(newRequest.budget) : null
+          title: newRequest.title,
+          description: newRequest.description || null,
+          category: newRequest.category,
+          priority: newRequest.priority,
+          budget: newRequest.budget ? parseFloat(newRequest.budget) : null,
+          goalAmount: newRequest.goalAmount ? parseFloat(newRequest.goalAmount) : null,
+          location: newRequest.location || null,
+          isPublic: newRequest.isPublic,
+          allowFulfillments: newRequest.allowFulfillments,
+          showDonationAddress: newRequest.showDonationAddress
         })
       })
       if (res.ok) {
         const created = await res.json()
-        setRequests([{ ...created, user: { id: userId, name: null, email: '', image: null }, commentCount: 0 }, ...requests])
+        setRequests([{
+          ...created,
+          user: {
+            id: userId,
+            name: null,
+            email: '',
+            image: null,
+            shopSlug: null,
+            donationAddresses: []
+          },
+          commentCount: 0,
+          fulfillmentCount: 0,
+          supportCount: 0
+        }, ...requests])
         setShowCreate(false)
-        setNewRequest({ title: '', description: '', category: 'GENERAL', priority: 'MEDIUM', budget: '', location: '', isPublic: true })
+        setNewRequest({
+          title: '', description: '', category: 'FUNDING', priority: 'MEDIUM',
+          budget: '', goalAmount: '', location: '',
+          isPublic: true, allowFulfillments: true, showDonationAddress: true
+        })
+        success('Request created!')
+      } else {
+        const err = await res.json()
+        toastError(err.error || 'Failed to create request')
       }
-    } catch (error) {
-      console.error('Failed to create:', error)
+    } catch (err) {
+      console.error('Failed to create:', err)
+      toastError('Failed to create request')
     } finally {
       setCreating(false)
-    }
-  }
-
-  const handleApprove = async (id: string) => {
-    try {
-      const res = await fetch(`/api/requests/${id}/approve`, { method: 'POST' })
-      if (res.ok) setRequests(requests.map(r => r.id === id ? { ...r, status: 'APPROVED' } : r))
-    } catch (error) {
-      console.error('Failed to approve:', error)
-    }
-  }
-
-  const handleReject = async (id: string) => {
-    try {
-      const res = await fetch(`/api/requests/${id}/reject`, { method: 'POST' })
-      if (res.ok) setRequests(requests.map(r => r.id === id ? { ...r, status: 'REJECTED' } : r))
-    } catch (error) {
-      console.error('Failed to reject:', error)
     }
   }
 
@@ -164,10 +231,50 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
     if (!confirm('Delete this request?')) return
     try {
       const res = await fetch(`/api/requests/${id}`, { method: 'DELETE' })
-      if (res.ok) setRequests(requests.filter(r => r.id !== id))
+      if (res.ok) {
+        setRequests(requests.filter(r => r.id !== id))
+        success('Deleted')
+      }
     } catch (error) {
       console.error('Failed to delete:', error)
     }
+  }
+
+  const handleSupport = async (reqId: string) => {
+    if (!userId) { warning('Please log in to support requests'); return }
+    setSupportModal({ open: true, reqId })
+    setSupportMessage('')
+  }
+
+  const submitSupport = async () => {
+    if (!supportModal.reqId) return
+    setSupporting(true)
+    try {
+      const res = await fetch(`/api/requests/${supportModal.reqId}/support`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: supportMessage.trim() || null })
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (!data.removed) {
+          success('You supported this request!')
+        } else {
+          success('Support removed')
+        }
+        setRequests(requests.map(r => r.id === supportModal.reqId ? { ...r, supportCount: data.count } : r))
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setSupporting(false)
+      setSupportModal({ open: false, reqId: '' })
+    }
+  }
+
+  const truncateAddr = (addr: string, len = 8) => {
+    if (addr.length <= len * 2 + 3) return addr
+    return `${addr.slice(0, len)}...${addr.slice(-len)}`
   }
 
   const getLinkInfo = (req: Request) => {
@@ -191,7 +298,6 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
   }
 
-  const isAdmin = userRole === 'ADMIN'
   const statusCounts = {
     ALL: requests.length,
     PENDING: requests.filter(r => r.status === 'PENDING').length,
@@ -199,6 +305,8 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
     REJECTED: requests.filter(r => r.status === 'REJECTED').length,
     COMPLETED: requests.filter(r => r.status === 'COMPLETED').length
   }
+  const activeCount = requests.filter(r => r.status === 'PENDING').length
+  const mineCount = requests.filter(r => r.user.id === userId).length
 
   return (
     <div className={styles.page}>
@@ -243,7 +351,7 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
               onChange={e => setNewRequest({ ...newRequest, category: e.target.value })}
               className={styles.select}
             >
-              {CATEGORIES.map(cat => (
+              {CATEGORIES.filter(c => c !== 'ALL').map(cat => (
                 <option key={cat} value={cat}>{cat.charAt(0) + cat.slice(1).toLowerCase()}</option>
               ))}
             </select>
@@ -267,13 +375,20 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
               className={styles.input}
             />
             <input
-              type="text"
-              placeholder="Location (optional)"
-              value={newRequest.location}
-              onChange={e => setNewRequest({ ...newRequest, location: e.target.value })}
+              type="number"
+              placeholder="Goal amount (optional)"
+              value={newRequest.goalAmount}
+              onChange={e => setNewRequest({ ...newRequest, goalAmount: e.target.value })}
               className={styles.input}
             />
           </div>
+          <input
+            type="text"
+            placeholder="Location (optional)"
+            value={newRequest.location}
+            onChange={e => setNewRequest({ ...newRequest, location: e.target.value })}
+            className={styles.input}
+          />
           <label className={styles.checkbox}>
             <input
               type="checkbox"
@@ -281,6 +396,22 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
               onChange={e => setNewRequest({ ...newRequest, isPublic: e.target.checked })}
             />
             Make public (visible to everyone)
+          </label>
+          <label className={styles.checkbox}>
+            <input
+              type="checkbox"
+              checked={newRequest.allowFulfillments}
+              onChange={e => setNewRequest({ ...newRequest, allowFulfillments: e.target.checked })}
+            />
+            Allow others to offer to fulfill this request
+          </label>
+          <label className={styles.checkbox}>
+            <input
+              type="checkbox"
+              checked={newRequest.showDonationAddress}
+              onChange={e => setNewRequest({ ...newRequest, showDonationAddress: e.target.checked })}
+            />
+            Show my donation addresses on this request
           </label>
           <div className={styles.formActions}>
             <button onClick={handleCreate} disabled={creating} className="btn-primary">
@@ -290,6 +421,15 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
           </div>
         </div>
       )}
+
+      <div className={styles.tabs}>
+        <button className={`${styles.tab} ${tab === 'active' ? styles.active : ''}`} onClick={() => setTab('active')}>
+          Active ({activeCount})
+        </button>
+        <button className={`${styles.tab} ${tab === 'mine' ? styles.active : ''}`} onClick={() => setTab('mine')}>
+          My Requests ({mineCount})
+        </button>
+      </div>
 
       <div className={styles.searchBar}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -320,7 +460,7 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
         <div className={styles.filterDropdowns}>
           <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className={styles.filterSelect}>
             <option value="ALL">All Categories</option>
-            {CATEGORIES.map(cat => (
+            {CATEGORIES.filter(c => c !== 'ALL').map(cat => (
               <option key={cat} value={cat}>{cat.charAt(0) + cat.slice(1).toLowerCase()}</option>
             ))}
           </select>
@@ -334,22 +474,18 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
           <select value={sortBy} onChange={e => setSortBy(e.target.value as SortOption)} className={styles.filterSelect}>
             <option value="newest">Newest First</option>
             <option value="oldest">Oldest First</option>
+            <option value="mostSupported">Most Supported</option>
             <option value="mostComments">Most Comments</option>
+            <option value="mostOffers">Most Offers</option>
           </select>
         </div>
-      </div>
-
-      <div className={styles.resultsInfo}>
-        Showing {filteredRequests.length} {filteredRequests.length === 1 ? 'request' : 'requests'}
-        {searchQuery && ` matching "${searchQuery}"`}
-        {statusFilter !== 'ALL' && ` (${statusFilter.toLowerCase()})`}
       </div>
 
       {filteredRequests.length === 0 ? (
         <div className={styles.emptyState}>
           <div className={styles.emptyIcon}>📝</div>
           <h3>No requests found</h3>
-          <p>Try adjusting your search or filters, or create a new request.</p>
+          <p>Try adjusting your filters, or create a new request.</p>
           <button onClick={() => setShowCreate(true)} className="btn-primary">Create Your First Request</button>
         </div>
       ) : (
@@ -357,6 +493,8 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
           {filteredRequests.map((req, index) => {
             const isOwner = req.user.id === userId
             const link = getLinkInfo(req)
+            const resolvedAddrs = getResolvedDonationAddrs(req)
+            const pct = req.goalAmount ? Math.min(((req.currentFunding || 0) / (req.goalAmount || 1)) * 100, 100) : 0
             return (
               <div
                 key={req.id}
@@ -374,15 +512,8 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
                     >
                       {req.priority}
                     </span>
-                    <span className={styles.categoryBadge}>{req.category}</span>
                   </div>
                   <div className={styles.cardActions}>
-                    {req.status === 'PENDING' && (isAdmin || !isOwner) && (
-                      <>
-                        <button onClick={() => handleApprove(req.id)} className={styles.approveBtn}>Approve</button>
-                        <button onClick={() => handleReject(req.id)} className={styles.rejectBtn}>Reject</button>
-                      </>
-                    )}
                     {isOwner && (
                       <button onClick={() => handleDelete(req.id)} className={styles.deleteBtn}>Delete</button>
                     )}
@@ -396,6 +527,60 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
                 {req.description && (
                   <p className={styles.cardDesc}>{req.description}</p>
                 )}
+
+                {(req.goalAmount || 0) > 0 && (
+                  <div className={styles.fundingSection}>
+                    <div className={styles.fundingHeader}>
+                      <span>💝 ${(req.currentFunding || 0).toFixed(0)} raised</span>
+                      <span>of ${req.goalAmount}</span>
+                    </div>
+                    <div className={styles.progressBar}>
+                      <div className={styles.progressFill} style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                )}
+
+                {resolvedAddrs.length > 0 && (
+                  <div className={styles.donationSection}>
+                    <div className={styles.donationSectionTitle}>Donate</div>
+                    {resolvedAddrs.map(da => {
+                      const cryptoName = getCryptoName(da.currency)
+                      const iconUrl = getCryptoIcon(da.currency)
+                      return (
+                        <div key={da.id} className={styles.donationItem}>
+                          <div className={styles.donationIcon}>
+                            {iconUrl ? (
+                              <img src={iconUrl} alt="" width={16} height={16} />
+                            ) : (
+                              <span>{da.currency[0]}</span>
+                            )}
+                          </div>
+                          <div className={styles.donationInfo}>
+                            <span className={styles.donationLabel}>{da.label || cryptoName}</span>
+                            <span className={styles.donationAddr}>{truncateAddr(da.address)}</span>
+                          </div>
+                          <div className={styles.donationActions}>
+                            <button onClick={() => setQrModal({ open: true, currency: da.label || da.currency, address: da.address })} className={styles.donationBtn} title="View QR Code">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z"/></svg>
+                            </button>
+                            <button onClick={() => { navigator.clipboard.writeText(da.address); success('Copied!') }} className={styles.donationBtn} title="Copy address">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+
+                <div className={styles.supportRow}>
+                  <button
+                    className={styles.supportBtn}
+                    onClick={() => handleSupport(req.id)}
+                  >
+                    👍 {req.supportCount || 0}
+                  </button>
+                </div>
 
                 {link && (
                   <Link href={link.href} className={styles.linkBadge} style={{ backgroundColor: link.color + '20', color: link.color }}>
@@ -421,12 +606,8 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
                       {req.location}
                     </span>
                   )}
-                  <span className={styles.metaItem}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/>
-                    </svg>
-                    {req.commentCount}
-                  </span>
+                  {req.fulfillmentCount > 0 && <span className={styles.badge}>💬 {req.fulfillmentCount} offer{req.fulfillmentCount > 1 ? 's' : ''}</span>}
+                  {req.commentCount > 0 && <span className={styles.badge}>📝 {req.commentCount}</span>}
                   {req.isPublic && <span className={styles.publicBadge}>🌐 Public</span>}
                 </div>
 
@@ -453,6 +634,35 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
               </div>
             )
           })}
+        </div>
+      )}
+
+      <QRCodeModal
+        isOpen={qrModal.open}
+        onClose={() => setQrModal({ open: false, currency: '', address: '' })}
+        currency={qrModal.currency}
+        address={qrModal.address}
+      />
+
+      {supportModal.open && (
+        <div className="modal-overlay" onClick={() => setSupportModal({ open: false, reqId: '' })}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2>👍 Support this Request</h2>
+            <p className={styles.modalText}>How can you help? (optional)</p>
+            <textarea
+              value={supportMessage}
+              onChange={e => setSupportMessage(e.target.value)}
+              placeholder="e.g., I can contribute $20, share this with my network, help with design..."
+              className={styles.textarea}
+              rows={4}
+            />
+            <div className={styles.formActions}>
+              <button onClick={submitSupport} disabled={supporting} className="btn-primary">
+                {supporting ? '...' : 'Support'}
+              </button>
+              <button onClick={() => setSupportModal({ open: false, reqId: '' })} className="btn-ghost">Cancel</button>
+            </div>
+          </div>
         </div>
       )}
     </div>

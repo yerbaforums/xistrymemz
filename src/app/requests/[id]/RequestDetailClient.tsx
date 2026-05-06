@@ -582,7 +582,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
   return (
     <div className={styles.page}>
       <Link href="/requests" className={styles.backLink}>
-        \u2190 Back to Requests
+        ← Back to Requests
       </Link>
 
       <div className={styles.detailLayout}>
@@ -618,7 +618,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               <h1 className={styles.title}>{request.title}</h1>
               {canEdit && (
                 <button onClick={() => setShowEditModal(true)} className={styles.editBtn}>
-                  \u270F\uFE0F Edit
+                  ✏️ Edit
                 </button>
               )}
             </div>
@@ -777,14 +777,14 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                             className={styles.donationBtn}
                             title="View QR Code"
                           >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" fill="none" /><rect x="14" y="3" width="7" height="7" fill="none" /><rect x="3" y="14" width="7" height="7" fill="none" /><rect x="14" y="14" width="7" height="7" fill="none" /></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z"/></svg>
                           </button>
                           <button
                             onClick={() => { navigator.clipboard.writeText(da.address); success('Copied!') }}
                             className={styles.donationBtn}
                             title="Copy address"
                           >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" fill="none" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" fill="none" /></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                           </button>
                         </div>
                       </div>
@@ -896,7 +896,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                 className={styles.actionBtn}
                 disabled={loading}
               >
-                \u21A9\uFE0F Rollback Status
+                ↩️ Rollback Status
               </button>
             </div>
           )}
@@ -1211,7 +1211,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
       {showEditModal && (
         <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
           <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
-            <h2>\u270F\uFE0F Edit Request</h2>
+            <h2>✏️ Edit Request</h2>
             <div className="form-group">
               <label>Title</label>
               <input
