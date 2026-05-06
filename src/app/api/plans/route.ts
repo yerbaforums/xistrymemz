@@ -59,7 +59,8 @@ export async function POST(request: Request) {
       mileposts,
       milepostStatus: '[]',
       userId: session.user.id,
-      status: 'DRAFT'
+      status: 'ACTIVE',
+      published: true
     }
   })
 
