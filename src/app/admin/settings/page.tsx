@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import styles from './page.module.css'
+import { QRCodeModal } from '@/components/QRCodeModal'
+import { CRYPTO_LOGOS } from '@/lib/constants'
 
 interface SiteSettings {
   enableCheckout: boolean
@@ -37,6 +39,7 @@ export default function AdminSettingsPage() {
   const [feePercent, setFeePercent] = useState(10)
   const [directFeePercent, setDirectFeePercent] = useState(5)
   const [savingFee, setSavingFee] = useState(false)
+  const [qrAddress, setQrAddress] = useState<string | null>(null)
 
   useEffect(() => {
     fetchSettings()
@@ -309,25 +312,33 @@ export default function AdminSettingsPage() {
           </p>
         )}
 
-        {settings.donationAddresses.map(da => (
-          <div key={da.id} style={{
-            display: 'flex', alignItems: 'center', gap: '12px', padding: '14px',
-            background: 'var(--bg-tertiary)', borderRadius: '10px', marginBottom: '8px',
-            border: '1px solid var(--border-color)'
-          }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{da.label || da.currency}</span>
-                {!da.showQR && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>(QR hidden)</span>}
+        {settings.donationAddresses.map(da => {
+          const shortAddr = da.address.length > 14
+            ? da.address.slice(0, 6) + '...' + da.address.slice(-4)
+            : da.address
+          const logoPath = `/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'ethereum.png'}`
+
+          return (
+            <div key={da.id} style={{
+              display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px',
+              background: 'var(--bg-tertiary)', borderRadius: '10px', marginBottom: '8px',
+              border: '1px solid var(--border-color)', cursor: 'pointer'
+            }} onClick={() => setQrAddress(da.address)}>
+              <img src={logoPath} alt={da.currency} width={20} height={20} style={{ borderRadius: '50%', flexShrink: 0 }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+                  <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{da.label || da.currency}</span>
+                  {!da.showQR && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>(QR hidden)</span>}
+                </div>
+                <code style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }} title={da.address}>{shortAddr}</code>
               </div>
-              <code style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', wordBreak: 'break-all' }}>{da.address}</code>
+              <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+                <button onClick={() => { setEditingDonation(da); setDonationForm({ currency: da.currency, address: da.address, label: da.label || '', showQR: da.showQR }); setShowDonationForm(true) }} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.8rem' }}>Edit</button>
+                <button onClick={() => handleDeleteDonation(da.id)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-secondary)', borderRadius: '6px', color: 'var(--accent-secondary)', cursor: 'pointer', fontSize: '0.8rem' }}>Delete</button>
+              </div>
             </div>
-            <div style={{ display: 'flex', gap: '6px' }}>
-              <button onClick={() => { setEditingDonation(da); setDonationForm({ currency: da.currency, address: da.address, label: da.label || '', showQR: da.showQR }); setShowDonationForm(true) }} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.8rem' }}>Edit</button>
-              <button onClick={() => handleDeleteDonation(da.id)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-secondary)', borderRadius: '6px', color: 'var(--accent-secondary)', cursor: 'pointer', fontSize: '0.8rem' }}>Delete</button>
-            </div>
-          </div>
-        ))}
+          )
+        })}
 
         {showDonationForm && (
           <form onSubmit={handleSaveDonation} style={{ marginTop: '16px', padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
@@ -387,6 +398,15 @@ export default function AdminSettingsPage() {
           </form>
         )}
       </div>
+
+      {qrAddress && (
+        <QRCodeModal
+          isOpen={true}
+          onClose={() => setQrAddress(null)}
+          currency="Donation"
+          address={qrAddress}
+        />
+      )}
     </div>
   )
 }
