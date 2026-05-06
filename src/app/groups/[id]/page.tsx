@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import styles from './page.module.css'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
 
@@ -187,6 +188,11 @@ function GroupDetailContent() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Groups', href: '/groups' },
+        { label: group.name }
+      ]} />
       <div className={styles.header}>
         <div className={styles.headerImage}>
           {group.imageUrl ? (

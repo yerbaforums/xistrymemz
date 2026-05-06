@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import styles from './page.module.css'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface SchoolData {
   schoolName: string
@@ -151,6 +152,11 @@ export default function SchoolPage() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'School', href: '/products' },
+        { label: school.schoolName }
+      ]} />
       <div className={styles.header}>
         {school.schoolImage && (
           <img src={school.schoolImage} alt={school.schoolName} className={styles.schoolImage} />

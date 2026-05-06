@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import styles from './page.module.css'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import { getUserProfileUrl } from '@/lib/utils'
 
 interface ShopData {
@@ -61,6 +62,11 @@ export default function ShopPage() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Shop', href: '/products' },
+        { label: shop.shopName }
+      ]} />
       <div className={styles.header}>
         {shop.shopImage && (
           <img src={shop.shopImage} alt={shop.shopName} className={styles.shopImage} />

@@ -76,6 +76,7 @@
 .productCard:hover {
   border-color: var(--accent-primary);
   box-shadow: var(--shadow-card);
+  transform: translateY(-2px);
 }
 
 .productImage {
