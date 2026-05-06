@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     },
     include: {
       plan: { select: { id: true, title: true } },
-      user: { select: { name: true, email: true } }
+      user: { select: { name: true, username: true } }
     },
     orderBy: { createdAt: 'desc' }
   })

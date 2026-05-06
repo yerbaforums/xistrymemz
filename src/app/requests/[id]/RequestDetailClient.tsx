@@ -856,9 +856,9 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
             {request.comments.map(c => (
               <div key={c.id} className={styles.comment}>
                 <div className={styles.commentHeader}>
-                  <span className={styles.commentAuthor}>
-                    {c.user.name || c.user.email}
-                  </span>
+                  <Link href={getUserProfileUrl(c.user)} className={styles.commentAuthor}>
+                    {c.user.name || 'User'}
+                  </Link>
                   <span className={styles.commentDate}>
                     {new Date(c.createdAt).toLocaleDateString()}
                   </span>
@@ -887,7 +887,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
           <div className="modal" onClick={e => e.stopPropagation()}>
             <h2>🛒 Purchase on Their Behalf</h2>
             <p className={styles.modalText}>
-              You are purchasing <strong>{request.product?.title}</strong> for {request.user.name || request.user.email}.
+              You are purchasing <strong>{request.product?.title}</strong> for {request.user.name || 'the requester'}.
               This will approve the request and send them a message.
             </p>
             <div className="form-group">
@@ -925,7 +925,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
           <div className="modal" onClick={e => e.stopPropagation()}>
             <h2>🤝 Help Complete This Request</h2>
             <p className={styles.modalText}>
-              You are offering to help {request.user.name || request.user.email} with this request.
+              You are offering to help {request.user.name || 'this user'} with this request.
               Mark it as completed and send them a message.
             </p>
             <div className="form-group">
@@ -1048,7 +1048,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
             <div className="modal" onClick={e => e.stopPropagation()}>
               <h2>💬 Contact Requestor</h2>
               <p className={styles.modalText}>
-                Send a message to {request.user.name || request.user.email} about this request.
+                Send a message to {request.user.name || 'this user'} about this request.
               </p>
               <div className="form-group">
                 <label>Message</label>

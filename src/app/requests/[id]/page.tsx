@@ -49,7 +49,7 @@ export default async function RequestDetailPage({
       statusHistory: {
         include: {
           changedBy: {
-            select: { id: true, name: true, email: true }
+            select: { id: true, name: true, username: true }
           }
         },
         orderBy: { createdAt: 'desc' }
@@ -57,7 +57,7 @@ export default async function RequestDetailPage({
       fulfillments: {
         include: {
           user: {
-            select: { id: true, name: true, email: true, shopSlug: true }
+            select: { id: true, name: true, username: true, shopSlug: true }
           }
         },
         orderBy: { createdAt: 'desc' }
@@ -128,7 +128,7 @@ export default async function RequestDetailPage({
       fromStatus: h.fromStatus,
       toStatus: h.toStatus,
       changedBy: h.changedById,
-      changedByName: h.changedBy.name || h.changedBy.email,
+      changedByName: h.changedBy.name || h.changedBy.username || 'Unknown',
       reason: h.reason,
       createdAt: h.createdAt.toISOString(),
     })),
@@ -141,7 +141,7 @@ export default async function RequestDetailPage({
       user: {
         id: f.user.id,
         name: f.user.name,
-        email: f.user.email,
+        username: f.user.username,
         shopSlug: f.user.shopSlug,
       },
     })),

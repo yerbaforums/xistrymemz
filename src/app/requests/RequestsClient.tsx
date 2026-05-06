@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import styles from './page.module.css'
+import { getUserProfileUrl } from '@/lib/utils'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { useToast } from '@/context/ToastContext'
 
@@ -533,14 +534,14 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
                 </div>
 
                 <div className={styles.cardFooter}>
-                  <div className={styles.authorInfo}>
+                  <Link href={getUserProfileUrl(req.user)} className={styles.authorInfo}>
                     {req.user.image ? (
                       <Image src={req.user.image} alt="" className={styles.authorAvatar} width={28} height={28} />
                     ) : (
-                      <span className={styles.authorAvatar}>{(req.user.name?.[0] || req.user.email[0]).toUpperCase()}</span>
+                      <span className={styles.authorAvatar}>{(req.user.name?.[0] || '?').toUpperCase()}</span>
                     )}
-                    <span className={styles.authorName}>{req.user.name || req.user.email.split('@')[0]}</span>
-                  </div>
+                    <span className={styles.authorName}>{req.user.name || 'Unknown'}</span>
+                  </Link>
                   <span className={styles.cardDate}>{formatDate(req.createdAt)}</span>
                 </div>
 
