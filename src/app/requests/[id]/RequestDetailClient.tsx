@@ -807,7 +807,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                 <div className={styles.fulfillmentHeader}>
                   <div className={styles.fulfillmentAuthor}>
                     <Link href={getUserProfileUrl(f.user)} className={styles.fulfillmentAuthorName}>
-                      {f.user.name || f.user.email}
+                      {f.user.name || 'User'}
                     </Link>
                     <span className={styles.fulfillmentDate}>
                       {new Date(f.createdAt).toLocaleDateString()}
