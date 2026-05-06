@@ -563,14 +563,14 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               <div className={styles.metaItem}>
                 <span className={styles.metaLabel}>Requested by</span>
                 <Link href={getUserProfileUrl(request.user)} className={styles.metaValue}>
-                  {request.user.name || request.user.email}
+                  {request.user.name || 'User'}
                 </Link>
               </div>
               {request.plan && (
                 <div className={styles.metaItem}>
                   <span className={styles.metaLabel}>Project owner</span>
                   <Link href={getUserProfileUrl(request.plan.user)} className={styles.metaValue}>
-                    {request.plan.user.name || request.plan.user.email}
+                    {request.plan.user.name || 'User'}
                   </Link>
                 </div>
               )}
