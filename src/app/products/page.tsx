@@ -7,6 +7,7 @@ import styles from './page.module.css'
 import { calculateDistance, geocodeLocation } from '@/lib/geocoding'
 import { useCart } from '@/context/CartContext'
 import { useToast } from '@/context/ToastContext'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 
 import dynamic from 'next/dynamic'
@@ -349,6 +350,10 @@ export default function ProductsPage() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Marketplace' }
+      ]} />
       <div className={styles.header}>
         <div>
           <h1>Marketplace</h1>

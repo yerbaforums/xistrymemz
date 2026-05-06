@@ -58,7 +58,6 @@ interface Comment {
     shopSlug: string | null
   }
 }
-}
 
 interface Product {
   id: string

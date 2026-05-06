@@ -11,6 +11,7 @@ import Rating from '@/components/Rating'
 import { getUserProfileUrl } from '@/lib/utils'
 import { MakeOfferModal } from '@/components/MakeOfferModal'
 import { ComingSoonModal } from '@/components/ComingSoonModal'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import RoleBadge from '@/components/RoleBadge'
 import dynamic from 'next/dynamic'
 
@@ -107,6 +108,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [copiedPayout, setCopiedPayout] = useState(false)
   const [showOfferModal, setShowOfferModal] = useState(false)
   const [showCartModal, setShowCartModal] = useState(false)
+  const [showEscrowComingSoon, setShowEscrowComingSoon] = useState(false)
 
   useEffect(() => {
     params.then(setResolvedParams)
@@ -310,6 +312,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   }
 
   const openEscrowModal = async () => {
+    if (!settings.enableCheckout) {
+      setShowEscrowComingSoon(true)
+      return
+    }
     if (!session?.user) {
       info('Please sign in to use escrow checkout')
       return
@@ -376,9 +382,11 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className={styles.page}>
-      <Link href="/products" className={styles.backLink}>
-        ← Back to Marketplace
-      </Link>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Marketplace', href: '/products' },
+        { label: product.title }
+      ]} />
 
       <div className={styles.content}>
         <div className={styles.main}>
@@ -943,6 +951,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         isOpen={showCartModal}
         onClose={() => setShowCartModal(false)}
         feature="Shopping cart"
+      />
+
+      <ComingSoonModal
+        isOpen={showEscrowComingSoon}
+        onClose={() => setShowEscrowComingSoon(false)}
+        feature="Escrow checkout"
       />
     </div>
   )
