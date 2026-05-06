@@ -313,7 +313,6 @@ model Request {
   comments       Comment[]
   statusHistory   RequestStatusHistory[]
   contributions  Contribution[]
-  requestSupports RequestSupport[]
   likes      Int       @default(0)
   reposts    Int       @default(0)
   isPublic   Boolean   @default(false)
