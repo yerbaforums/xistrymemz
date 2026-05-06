@@ -74,6 +74,7 @@ model User {
   wallPosts Post[] @relation("WallPostTarget")
   planUpdates PlanUpdate[]
   statusHistory RequestStatusHistory[]
+  requestSupports RequestSupport[]
   groupsCreated   Group[]
   groupMemberships GroupMember[]
   groupPosts      GroupPost[]
