@@ -35,7 +35,15 @@ export async function PUT(request: Request) {
   const body = await request.json()
   const { schoolName, schoolAbout, schoolImage, schoolCoverImage } = body
 
-  const slug = schoolName?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+  if (!schoolName?.trim()) {
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { schoolSlug: null, schoolName: null, schoolAbout: null, schoolImage: null, schoolCoverImage: null }
+    })
+    return NextResponse.json({ error: 'School name is required', unpublished: true }, { status: 400 })
+  }
+
+  const slug = schoolName?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || null
 
   const user = await prisma.user.update({
     where: { id: session.user.id },

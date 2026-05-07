@@ -35,7 +35,15 @@ export async function PUT(request: Request) {
   const body = await request.json()
   const { shopName, shopAbout, shopImage, shopCoverImage, shopSlug, email } = body
 
-  const slug = shopSlug || shopName?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+  if (!shopName?.trim()) {
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { shopSlug: null, shopName: null, shopAbout: null, shopImage: null, shopCoverImage: null }
+    })
+    return NextResponse.json({ error: 'Shop name is required', unpublished: true }, { status: 400 })
+  }
+
+  const slug = (shopSlug || shopName?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')) || null
 
   const user = await prisma.user.update({
     where: { id: session.user.id },

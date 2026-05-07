@@ -5,7 +5,8 @@ export async function GET() {
   try {
     const shops = await prisma.user.findMany({
       where: {
-        shopSlug: { not: null }
+        shopSlug: { not: null },
+        shopName: { not: '' }
       },
       select: {
         id: true,

@@ -53,7 +53,7 @@ export async function GET(request: Request) {
   })
 
   const schools = await prisma.user.findMany({
-    where: { schoolSlug: { not: null } },
+    where: { schoolSlug: { not: null }, schoolName: { not: '' } },
     select: {
       id: true,
       schoolName: true,
