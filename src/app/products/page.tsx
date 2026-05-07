@@ -229,7 +229,7 @@ export default function ProductsPage() {
   const locations = [...new Set(products.map(p => p.location).filter(Boolean))]
   const conditions = ['NEW', 'LIKE_NEW', 'GOOD', 'FAIR']
 
-  const productsWithCoords = filteredProducts.filter(p => p.isGlobal || (p.latitude != null && p.longitude != null))
+  const productsWithCoords = filteredProducts.filter(p => p.latitude != null && p.longitude != null)
 
   const getMapCenter = (): [number, number] => {
     if (userLocation) {
