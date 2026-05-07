@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import styles from './page.module.css'
 import { QRCodeModal } from '@/components/QRCodeModal'
-import { CRYPTO_LOGOS } from '@/lib/constants'
+import { getAllCryptos, getCryptoIcon, getCryptoName } from '@/lib/crypto-icons'
 
 interface SiteSettings {
   enableCheckout: boolean
@@ -19,6 +19,7 @@ interface DonationAddr {
   label: string | null
   qrUrl?: string | null
   showQR: boolean
+  sortOrder?: number
 }
 
 export default function AdminSettingsPage() {
@@ -34,12 +35,16 @@ export default function AdminSettingsPage() {
 
   const [showDonationForm, setShowDonationForm] = useState(false)
   const [editingDonation, setEditingDonation] = useState<DonationAddr | null>(null)
-  const [donationForm, setDonationForm] = useState({ currency: 'XTM', address: '', label: '', showQR: true })
+  const [donationForm, setDonationForm] = useState({ currency: 'ETH', address: '', label: '', showQR: true })
 
   const [feePercent, setFeePercent] = useState(10)
   const [directFeePercent, setDirectFeePercent] = useState(5)
   const [savingFee, setSavingFee] = useState(false)
   const [qrAddress, setQrAddress] = useState<string | null>(null)
+  const [qrDonationCurrency, setQrDonationCurrency] = useState<string | null>(null)
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
+
+  const allCryptos = getAllCryptos()
 
   useEffect(() => {
     fetchSettings()
@@ -121,7 +126,8 @@ export default function AdminSettingsPage() {
       currency: donationForm.currency,
       address: donationForm.address,
       label: donationForm.label || null,
-      showQR: donationForm.showQR
+      showQR: donationForm.showQR,
+      sortOrder: editingDonation?.sortOrder ?? settings.donationAddresses.length
     }
 
     const updated = editingDonation
@@ -147,7 +153,7 @@ export default function AdminSettingsPage() {
       setSaving(false)
       setShowDonationForm(false)
       setEditingDonation(null)
-      setDonationForm({ currency: 'XTM', address: '', label: '', showQR: true })
+      setDonationForm({ currency: 'ETH', address: '', label: '', showQR: true })
     }
   }
 
@@ -165,6 +171,25 @@ export default function AdminSettingsPage() {
       })
     } catch {
       console.error('Failed to delete donation address')
+      fetchSettings()
+    }
+  }
+
+  const handleReorderDonations = async (draggedIndex: number, targetIndex: number) => {
+    if (draggedIndex === null || draggedIndex === targetIndex) return
+    const newAddresses = [...settings.donationAddresses]
+    const [draggedItem] = newAddresses.splice(draggedIndex, 1)
+    newAddresses.splice(targetIndex, 0, draggedItem)
+    const reordered = newAddresses.map((da, i) => ({ ...da, sortOrder: i }))
+    setSettings(prev => ({ ...prev, donationAddresses: reordered }))
+    setDraggedIdx(null)
+    try {
+      await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ donationAddresses: reordered })
+      })
+    } catch {
       fetchSettings()
     }
   }
@@ -299,7 +324,7 @@ export default function AdminSettingsPage() {
           </div>
           <button
             type="button"
-            onClick={() => { setShowDonationForm(true); setEditingDonation(null); setDonationForm({ currency: 'XTM', address: '', label: '', showQR: true }) }}
+            onClick={() => { setShowDonationForm(true); setEditingDonation(null); setDonationForm({ currency: 'ETH', address: '', label: '', showQR: true }) }}
             className={styles.addBtn}
           >
             + Add Address
@@ -308,26 +333,45 @@ export default function AdminSettingsPage() {
 
         {settings.donationAddresses.length === 0 && !showDonationForm && (
           <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '24px' }}>
-            No donation addresses configured. Add XTM, XMR, or other crypto addresses.
+            No donation addresses configured. Add BTC, ETH, XMR, or other crypto addresses.
           </p>
         )}
 
-        {settings.donationAddresses.map(da => {
+        {settings.donationAddresses.map((da, idx) => {
+          const cryptoName = getCryptoName(da.currency)
+          const iconUrl = getCryptoIcon(da.currency)
           const shortAddr = da.address.length > 14
             ? da.address.slice(0, 6) + '...' + da.address.slice(-4)
             : da.address
-          const logoPath = `/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'ethereum.png'}`
 
           return (
-            <div key={da.id} style={{
-              display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px',
-              background: 'var(--bg-tertiary)', borderRadius: '10px', marginBottom: '8px',
-              border: '1px solid var(--border-color)', cursor: 'pointer'
-            }} onClick={() => setQrAddress(da.address)}>
-              <img src={logoPath} alt={da.currency} width={20} height={20} style={{ borderRadius: '50%', flexShrink: 0 }} />
+            <div key={da.id}
+              draggable
+              onDragStart={(e) => { e.dataTransfer.setData('text/plain', String(idx)); setDraggedIdx(idx) }}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault()
+                const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'))
+                handleReorderDonations(draggedIndex, idx)
+              }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px',
+                background: 'var(--bg-tertiary)', borderRadius: '10px', marginBottom: '8px',
+                border: '1px solid var(--border-color)', cursor: 'grab'
+              }}
+              onClick={() => { setQrAddress(da.address); setQrDonationCurrency(da.currency) }}
+            >
+              <div style={{ width: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '1.1rem', flexShrink: 0 }} title="Drag to reorder">
+                ⠿
+              </div>
+              {iconUrl ? (
+                <img src={iconUrl} alt={cryptoName} width={20} height={20} style={{ borderRadius: '50%', flexShrink: 0 }} />
+              ) : (
+                <span style={{ width: 20, height: 20, borderRadius: '50%', background: '#888', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 700, color: '#fff', flexShrink: 0 }}>{da.currency.substring(0, 2).toUpperCase()}</span>
+              )}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                  <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{da.label || da.currency}</span>
+                  <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{da.label || cryptoName}</span>
                   {!da.showQR && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>(QR hidden)</span>}
                 </div>
                 <code style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }} title={da.address}>{shortAddr}</code>
@@ -346,19 +390,30 @@ export default function AdminSettingsPage() {
 
             <div style={{ marginBottom: '12px' }}>
               <label style={{ display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Currency</label>
-              <select
-                value={donationForm.currency}
-                onChange={e => setDonationForm({ ...donationForm, currency: e.target.value })}
-                style={{ width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }}
-              >
-                <option value="XTM">XTM (Tari)</option>
-                <option value="XMR">XMR (Monero)</option>
-                <option value="ETH">ETH (Ethereum)</option>
-                <option value="BTC">BTC (Bitcoin)</option>
-                <option value="USDT">USDT</option>
-                <option value="USDC">USDC</option>
-                <option value="OTHER">Other</option>
-              </select>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '6px' }}>
+                {allCryptos.map(crypto => (
+                  <button
+                    key={crypto.id}
+                    type="button"
+                    onClick={() => setDonationForm({ ...donationForm, currency: crypto.id })}
+                    style={{
+                      padding: '6px 10px',
+                      background: donationForm.currency === crypto.id ? 'var(--accent-primary)' : 'var(--bg-secondary)',
+                      color: donationForm.currency === crypto.id ? 'var(--bg-primary)' : 'var(--text-primary)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '0.8rem'
+                    }}
+                  >
+                    {crypto.icon && <img src={crypto.icon} alt="" width={14} height={14} style={{ borderRadius: '50%' }} />}
+                    {crypto.symbol}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div style={{ marginBottom: '12px' }}>
@@ -402,8 +457,8 @@ export default function AdminSettingsPage() {
       {qrAddress && (
         <QRCodeModal
           isOpen={true}
-          onClose={() => setQrAddress(null)}
-          currency="Donation"
+          onClose={() => { setQrAddress(null); setQrDonationCurrency(null) }}
+          currency={qrDonationCurrency || 'Donation'}
           address={qrAddress}
         />
       )}

@@ -392,7 +392,7 @@
 
 .gridView {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 16px;
 }
 
@@ -743,6 +743,18 @@
   height: 1px;
   background: var(--border-color);
   margin: 16px 0;
+}
+
+@media (min-width: 1400px) {
+  .gridView {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+
+@media (min-width: 1800px) {
+  .gridView {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
 }
 
 @media (max-width: 1024px) {

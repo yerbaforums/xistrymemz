@@ -163,11 +163,6 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
   }
 
-  const truncateAddr = (addr: string, len = 8) => {
-    if (addr.length <= len * 2 + 3) return addr
-    return `${addr.slice(0, len)}...${addr.slice(-len)}`
-  }
-
   const getResolvedDonationAddrs = (req: Request): DonationAddr[] => {
     if (!req.showDonationAddress || !req.user?.donationAddresses) return []
     return req.user.donationAddresses
@@ -324,167 +319,207 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
         </button>
       </div>
 
-      {showCreate && (
-        <div className={styles.createForm}>
-          <h3>Create New Request</h3>
-          <input type="text" placeholder="Request title *" value={newRequest.title} onChange={e => setNewRequest({ ...newRequest, title: e.target.value })} className={styles.input} />
-          <textarea placeholder="Describe what you need..." value={newRequest.description} onChange={e => setNewRequest({ ...newRequest, description: e.target.value })} className={styles.textarea} rows={3} />
-          <div className={styles.formRow}>
-            <select value={newRequest.category} onChange={e => setNewRequest({ ...newRequest, category: e.target.value })} className={styles.select}>
-              {CATEGORIES.filter(c => c !== 'ALL').map(cat => (<option key={cat} value={cat}>{cat.charAt(0) + cat.slice(1).toLowerCase()}</option>))}
-            </select>
-            <select value={newRequest.priority} onChange={e => setNewRequest({ ...newRequest, priority: e.target.value })} className={styles.select}>
-              <option value="LOW">Low</option><option value="MEDIUM">Medium</option><option value="HIGH">High</option><option value="URGENT">Urgent</option>
+      <div className={styles.mainLayout}>
+        <aside className={styles.sidebar}>
+          <h2 className={styles.sidebarTitle}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+            </svg>
+            Filters
+          </h2>
+
+          <div className={styles.filterGroup}>
+            <label className={styles.filterLabel}>Search</label>
+            <input type="text" placeholder="Search requests..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className={styles.filterInput} />
+          </div>
+
+          <div className={styles.filterGroup}>
+            <label className={styles.filterLabel}>Category</label>
+            <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className={styles.filterSelect}>
+              <option value="ALL">All Categories</option>
+              {CATEGORIES.filter(c => c !== 'ALL').map(cat => (<option key={cat} value={cat}>{cat}</option>))}
             </select>
           </div>
-          <div className={styles.formRow}>
-            <input type="number" placeholder="Budget (optional)" value={newRequest.budget} onChange={e => setNewRequest({ ...newRequest, budget: e.target.value })} className={styles.input} />
-            <input type="number" placeholder="Goal Amount (optional)" value={newRequest.goalAmount} onChange={e => setNewRequest({ ...newRequest, goalAmount: e.target.value })} className={styles.input} />
+
+          <div className={styles.filterGroup}>
+            <label className={styles.filterLabel}>Sort</label>
+            <select value={sortBy} onChange={e => setSortBy(e.target.value)} className={styles.filterSelect}>
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="mostSupported">Most Supported</option>
+              <option value="mostComments">Most Comments</option>
+              <option value="mostOffers">Most Offers</option>
+            </select>
           </div>
-          <input type="text" placeholder="Location (optional)" value={newRequest.location} onChange={e => setNewRequest({ ...newRequest, location: e.target.value })} className={styles.input} />
-          <label className={styles.checkbox}>
-            <input type="checkbox" checked={newRequest.isPublic} onChange={e => setNewRequest({ ...newRequest, isPublic: e.target.checked })} />
-            Make public (visible to everyone)
-          </label>
-          <label className={styles.checkbox}>
-            <input type="checkbox" checked={newRequest.allowFulfillments} onChange={e => setNewRequest({ ...newRequest, allowFulfillments: e.target.checked })} />
-            Allow others to offer to fulfill this request
-          </label>
-          <label className={styles.checkbox}>
-            <input type="checkbox" checked={newRequest.showDonationAddress} onChange={e => setNewRequest({ ...newRequest, showDonationAddress: e.target.checked })} />
-            Show my donation addresses on this request
-          </label>
-          {userDonationAddrs.length === 0 && (
-            <p className={styles.formHint}>
-              You have no donation addresses set up yet. <Link href="/profile/edit">Manage them in profile settings</Link>
-            </p>
+
+          {(searchQuery || categoryFilter !== 'ALL' || sortBy !== 'newest') && (
+            <button onClick={() => { setSearchQuery(''); setCategoryFilter('ALL'); setSortBy('newest'); }} className={styles.clearBtn}>
+              Clear All Filters
+            </button>
           )}
-          <div className={styles.formActions}>
-            <button onClick={handleCreate} disabled={creating} className="btn-primary">{creating ? 'Creating...' : 'Create Request'}</button>
-            <button onClick={() => setShowCreate(false)} className="btn-ghost">Cancel</button>
-          </div>
-        </div>
-      )}
+        </aside>
 
-      <div className={styles.filters}>
-        <input type="text" placeholder="Search..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className={styles.searchInput} />
-        <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className={styles.filterSelect}>
-          <option value="ALL">All Categories</option>
-          {CATEGORIES.filter(c => c !== 'ALL').map(cat => (<option key={cat} value={cat}>{cat}</option>))}
-        </select>
-        <select value={sortBy} onChange={e => setSortBy(e.target.value)} className={styles.filterSelect}>
-          <option value="newest">Newest</option><option value="oldest">Oldest</option><option value="mostSupported">Most Supported</option><option value="mostComments">Most Comments</option><option value="mostOffers">Most Offers</option>
-        </select>
-      </div>
-
-      {filtered.length === 0 ? (
-        <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>📝</div>
-          <h3>No requests found</h3>
-          <p>Try adjusting your filters or create a new request.</p>
-          <button onClick={() => setShowCreate(true)} className="btn-primary">Create Request</button>
-        </div>
-      ) : (
-        <div className={styles.cardGrid}>
-          {filtered.map((req) => {
-            const isOwner = req.user.id === userId
-            const link = getLinkInfo(req)
-            const canManage = isOwner || isAdmin
-            const resolvedAddrs = getResolvedDonationAddrs(req)
-            const pct = req.goalAmount ? Math.min(((req.currentFunding || 0) / (req.goalAmount || 1)) * 100, 100) : 0
-            return (
-              <div key={req.id} className={styles.card}>
-                <Link href={`/requests/${req.id}`} className={styles.cardTitle}>{req.title}</Link>
-                <div className={styles.cardTags}>
-                  <span className={styles.priorityDot} style={{ backgroundColor: PRIORITY_COLORS[req.priority] }} title={req.priority} />
-                  <span className={styles.categoryTag}>{req.category}</span>
-                  {link && (
-                    <Link href={link.href} className={styles.linkTag} style={{ backgroundColor: link.color + '18', color: link.color }}>{link.type}</Link>
-                  )}
-                </div>
-
-                {req.description && <p className={styles.cardDesc}>{req.description}</p>}
-
-                {(req.goalAmount || 0) > 0 && (
-                  <div className={styles.fundingSection}>
-                    <div className={styles.fundingHeader}>
-                      <span>💝 ${req.currentFunding || 0} raised</span>
-                      <span>of ${req.goalAmount}</span>
-                    </div>
-                    <div className={styles.progressBar}>
-                      <div className={styles.progressFill} style={{ width: `${pct}%` }} />
-                    </div>
-                  </div>
-                )}
-
-                {resolvedAddrs.length > 0 && (
-                  <div className={styles.donationSection}>
-                    <div className={styles.donationSectionTitle}>Donate</div>
-                    <div className={styles.cryptoButtons}>
-                      {resolvedAddrs.map(da => {
-                        const iconUrl = getCryptoIcon(da.currency)
-                        const color = getCryptoColor(da.currency)
-                        const initials = da.currency.substring(0, 2).toUpperCase()
-                        return (
-                          <button
-                            key={da.id}
-                            className={styles.cryptoButton}
-                            onClick={() => setQrModal({ open: true, currency: da.currency, address: da.address })}
-                          >
-                            {iconUrl ? (
-                              <img src={iconUrl} alt="" className={styles.cryptoButtonIcon} />
-                            ) : (
-                              <span className={styles.cryptoButtonFallback} style={{ background: color }}>{initials}</span>
-                            )}
-                            <span className={styles.cryptoButtonTicker}>{da.currency.toUpperCase()}</span>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                <div className={styles.supportRow}>
-                  <button
-                    className={`${styles.supportBtn} ${supportingIds.has(req.id) ? styles.supported : ''}`}
-                    onClick={() => handleSupport(req.id)}
-                  >
-                    👍 {req.supportCount || 0}
-                  </button>
-                </div>
-
-                <div className={styles.cardMeta}>
-                  {req.fulfillmentCount > 0 && <span className={styles.badge}>💬 {req.fulfillmentCount} offer{req.fulfillmentCount > 1 ? 's' : ''}</span>}
-                  {req.commentCount > 0 && <span className={styles.badge}>📝 {req.commentCount}</span>}
-                  {req.budget && <span>💰 ${req.budget}</span>}
-                  {req.location && <span>📍 {req.location}</span>}
-                  {req.isPublic && <span className={styles.publicBadge}>🌐 Public</span>}
-                </div>
-
-                <div className={styles.cardFooter}>
-                  <Link href={getUserProfileUrl(req.user)} className={styles.authorInfo}>
-                    {req.user.image ? (
-                      <Image src={req.user.image} alt="" className={styles.authorAvatar} width={28} height={28} />
-                    ) : (
-                      <span className={styles.authorAvatar}>{(req.user.name?.[0] || '?').toUpperCase()}</span>
-                    )}
-                    <span className={styles.authorName}>{req.user.name || 'Unknown'}</span>
-                  </Link>
-                  <span className={styles.cardDate}>{formatDate(req.createdAt)}</span>
-                </div>
-
-                <div className={styles.cardActions}>
-                  {canManage && (
-                    <button onClick={() => { setEditingRequest(req); setEditForm({ title: req.title, description: req.description || '', category: req.category, priority: req.priority, budget: req.budget?.toString() || '', goalAmount: req.goalAmount?.toString() || '', location: req.location || '', isPublic: req.isPublic, allowFulfillments: req.allowFulfillments, showDonationAddress: req.showDonationAddress }) }} className={styles.editBtn}>Edit</button>
-                  )}
-                  {canManage && <button onClick={() => handleDelete(req.id)} className={styles.deleteBtn}>Delete</button>}
-                  <Link href={`/requests/${req.id}`} className={styles.viewDetailsBtn}>View Details →</Link>
-                </div>
+        <main className={styles.content}>
+          {showCreate && (
+            <div className={styles.createForm}>
+              <h3>Create New Request</h3>
+              <input type="text" placeholder="Request title *" value={newRequest.title} onChange={e => setNewRequest({ ...newRequest, title: e.target.value })} className={styles.input} />
+              <textarea placeholder="Describe what you need..." value={newRequest.description} onChange={e => setNewRequest({ ...newRequest, description: e.target.value })} className={styles.textarea} rows={3} />
+              <div className={styles.formRow}>
+                <select value={newRequest.category} onChange={e => setNewRequest({ ...newRequest, category: e.target.value })} className={styles.select}>
+                  {CATEGORIES.filter(c => c !== 'ALL').map(cat => (<option key={cat} value={cat}>{cat.charAt(0) + cat.slice(1).toLowerCase()}</option>))}
+                </select>
+                <select value={newRequest.priority} onChange={e => setNewRequest({ ...newRequest, priority: e.target.value })} className={styles.select}>
+                  <option value="LOW">Low</option><option value="MEDIUM">Medium</option><option value="HIGH">High</option><option value="URGENT">Urgent</option>
+                </select>
               </div>
-            )
-          })}
-        </div>
-      )}
+              <div className={styles.formRow}>
+                <input type="number" placeholder="Budget (optional)" value={newRequest.budget} onChange={e => setNewRequest({ ...newRequest, budget: e.target.value })} className={styles.input} />
+                <input type="number" placeholder="Goal Amount (optional)" value={newRequest.goalAmount} onChange={e => setNewRequest({ ...newRequest, goalAmount: e.target.value })} className={styles.input} />
+              </div>
+              <input type="text" placeholder="Location (optional)" value={newRequest.location} onChange={e => setNewRequest({ ...newRequest, location: e.target.value })} className={styles.input} />
+              <label className={styles.checkbox}>
+                <input type="checkbox" checked={newRequest.isPublic} onChange={e => setNewRequest({ ...newRequest, isPublic: e.target.checked })} />
+                Make public (visible to everyone)
+              </label>
+              <label className={styles.checkbox}>
+                <input type="checkbox" checked={newRequest.allowFulfillments} onChange={e => setNewRequest({ ...newRequest, allowFulfillments: e.target.checked })} />
+                Allow others to offer to fulfill this request
+              </label>
+              <label className={styles.checkbox}>
+                <input type="checkbox" checked={newRequest.showDonationAddress} onChange={e => setNewRequest({ ...newRequest, showDonationAddress: e.target.checked })} />
+                Show my donation addresses on this request
+              </label>
+              {userDonationAddrs.length === 0 && (
+                <p className={styles.formHint}>
+                  You have no donation addresses set up yet. <Link href="/profile/edit">Manage them in profile settings</Link>
+                </p>
+              )}
+              <div className={styles.formActions}>
+                <button onClick={handleCreate} disabled={creating} className="btn-primary">{creating ? 'Creating...' : 'Create Request'}</button>
+                <button onClick={() => setShowCreate(false)} className="btn-ghost">Cancel</button>
+              </div>
+            </div>
+          )}
+
+          {filtered.length === 0 ? (
+            <div className={styles.emptyState}>
+              <div className={styles.emptyIcon}>📝</div>
+              <h3>No requests found</h3>
+              <p>Try adjusting your filters or create a new request.</p>
+              <button onClick={() => setShowCreate(true)} className="btn-primary">Create Request</button>
+            </div>
+          ) : (
+            <>
+              <div className={styles.resultsHeader}>
+                <span className={styles.resultsCount}>
+                  <strong>{filtered.length}</strong> {filtered.length === 1 ? 'request' : 'requests'} found
+                </span>
+              </div>
+
+              <div className={styles.cardGrid}>
+                {filtered.map((req) => {
+                  const isOwner = req.user.id === userId
+                  const link = getLinkInfo(req)
+                  const canManage = isOwner || isAdmin
+                  const resolvedAddrs = getResolvedDonationAddrs(req)
+                  const pct = req.goalAmount ? Math.min(((req.currentFunding || 0) / (req.goalAmount || 1)) * 100, 100) : 0
+                  return (
+                    <div key={req.id} className={styles.card}>
+                      <Link href={`/requests/${req.id}`} className={styles.cardTitle}>{req.title}</Link>
+                      <div className={styles.cardTags}>
+                        <span className={styles.priorityDot} style={{ backgroundColor: PRIORITY_COLORS[req.priority] }} title={req.priority} />
+                        <span className={styles.categoryTag}>{req.category}</span>
+                        {link && (
+                          <Link href={link.href} className={styles.linkTag} style={{ backgroundColor: link.color + '18', color: link.color }}>{link.type}</Link>
+                        )}
+                      </div>
+
+                      {req.description && <p className={styles.cardDesc}>{req.description}</p>}
+
+                      {(req.goalAmount || 0) > 0 && (
+                        <div className={styles.fundingSection}>
+                          <div className={styles.fundingHeader}>
+                            <span>💝 ${req.currentFunding || 0} raised</span>
+                            <span>of ${req.goalAmount}</span>
+                          </div>
+                          <div className={styles.progressBar}>
+                            <div className={styles.progressFill} style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                      )}
+
+                      {resolvedAddrs.length > 0 && (
+                        <div className={styles.donationSection}>
+                          <div className={styles.donationSectionTitle}>Donate</div>
+                          <div className={styles.cryptoButtons}>
+                            {resolvedAddrs.map(da => {
+                              const iconUrl = getCryptoIcon(da.currency)
+                              const color = getCryptoColor(da.currency)
+                              const initials = da.currency.substring(0, 2).toUpperCase()
+                              return (
+                                <button
+                                  key={da.id}
+                                  className={styles.cryptoButton}
+                                  onClick={() => setQrModal({ open: true, currency: da.currency, address: da.address })}
+                                >
+                                  {iconUrl ? (
+                                    <img src={iconUrl} alt="" className={styles.cryptoButtonIcon} />
+                                  ) : (
+                                    <span className={styles.cryptoButtonFallback} style={{ background: color }}>{initials}</span>
+                                  )}
+                                  <span className={styles.cryptoButtonTicker}>{da.currency.toUpperCase()}</span>
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className={styles.supportRow}>
+                        <button
+                          className={`${styles.supportBtn} ${supportingIds.has(req.id) ? styles.supported : ''}`}
+                          onClick={() => handleSupport(req.id)}
+                        >
+                          👍 {req.supportCount || 0}
+                        </button>
+                      </div>
+
+                      <div className={styles.cardMeta}>
+                        {req.fulfillmentCount > 0 && <span className={styles.badge}>💬 {req.fulfillmentCount} offer{req.fulfillmentCount > 1 ? 's' : ''}</span>}
+                        {req.commentCount > 0 && <span className={styles.badge}>📝 {req.commentCount}</span>}
+                        {req.budget && <span>💰 ${req.budget}</span>}
+                        {req.location && <span>📍 {req.location}</span>}
+                        {req.isPublic && <span className={styles.publicBadge}>🌐 Public</span>}
+                      </div>
+
+                      <div className={styles.cardFooter}>
+                        <Link href={getUserProfileUrl(req.user)} className={styles.authorInfo}>
+                          {req.user.image ? (
+                            <Image src={req.user.image} alt="" className={styles.authorAvatar} width={28} height={28} />
+                          ) : (
+                            <span className={styles.authorAvatar}>{(req.user.name?.[0] || '?').toUpperCase()}</span>
+                          )}
+                          <span className={styles.authorName}>{req.user.name || 'Unknown'}</span>
+                        </Link>
+                        <span className={styles.cardDate}>{formatDate(req.createdAt)}</span>
+                      </div>
+
+                      <div className={styles.cardActions}>
+                        {canManage && (
+                          <button onClick={() => { setEditingRequest(req); setEditForm({ title: req.title, description: req.description || '', category: req.category, priority: req.priority, budget: req.budget?.toString() || '', goalAmount: req.goalAmount?.toString() || '', location: req.location || '', isPublic: req.isPublic, allowFulfillments: req.allowFulfillments, showDonationAddress: req.showDonationAddress }) }} className={styles.editBtn}>Edit</button>
+                        )}
+                        {canManage && <button onClick={() => handleDelete(req.id)} className={styles.deleteBtn}>Delete</button>}
+                        <Link href={`/requests/${req.id}`} className={styles.viewDetailsBtn}>View Details →</Link>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </>
+          )}
+        </main>
+      </div>
 
       {/* Edit Modal */}
       {editingRequest && (

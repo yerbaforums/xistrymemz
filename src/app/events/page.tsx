@@ -13,11 +13,9 @@ const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLaye
 const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false })
 const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false })
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let L: any
 
 if (typeof window !== 'undefined') {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   L = require('leaflet')
   delete L.Icon.Default.prototype._getIconUrl
   L.Icon.Default.mergeOptions({
@@ -84,7 +82,6 @@ export default function EventsPage() {
       setUserLocation(null)
       return
     }
-    
     setGeocodingLoading(true)
     try {
       const result = await geocodeLocation(zipCode)
@@ -313,6 +310,20 @@ export default function EventsPage() {
     }
   }, [center, zoom, viewMode])
 
+  const clearFilters = () => {
+    setCategory('ALL')
+    setLocation('ALL')
+    setSortBy('date')
+    setDateRange('')
+    setStartDate('')
+    setEndDate('')
+    setZipCode('')
+    setRadius('25')
+    setUserLocation(null)
+  }
+
+  const hasActiveFilters = category !== 'ALL' || location !== 'ALL' || sortBy !== 'date' || dateRange || zipCode
+
   return (
     <div className={styles.page}>
       <div className={styles.header}>
@@ -328,323 +339,216 @@ export default function EventsPage() {
               </Link>
             )}
             <div className={styles.viewToggle}>
-            <button 
-              className={`${styles.toggleBtn} ${viewMode === 'list' ? styles.active : ''}`}
-              onClick={() => setViewMode('list')}
-              aria-label="List view"
-            >
-              List
-            </button>
-            <button 
-              className={`${styles.toggleBtn} ${viewMode === 'calendar' ? styles.active : ''}`}
-              onClick={() => setViewMode('calendar')}
-              aria-label="Calendar view"
-            >
-              Calendar
-            </button>
-            <button 
-              className={`${styles.toggleBtn} ${viewMode === 'map' ? styles.active : ''}`}
-              onClick={() => setViewMode('map')}
-              aria-label="Map view"
-            >
-              Map
-            </button>
+              <button className={`${styles.toggleBtn} ${viewMode === 'list' ? styles.active : ''}`} onClick={() => setViewMode('list')} aria-label="List view">List</button>
+              <button className={`${styles.toggleBtn} ${viewMode === 'calendar' ? styles.active : ''}`} onClick={() => setViewMode('calendar')} aria-label="Calendar view">Calendar</button>
+              <button className={`${styles.toggleBtn} ${viewMode === 'map' ? styles.active : ''}`} onClick={() => setViewMode('map')} aria-label="Map view">Map</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-      <div className={styles.filters}>
-        <select value={category} onChange={e => setCategory(e.target.value)} className={styles.filterSelect}>
-          <option value="ALL">All Categories</option>
-          {categories.map(cat => (
-            <option key={cat} value={cat!}>{cat}</option>
-          ))}
-        </select>
-        <select value={location} onChange={e => setLocation(e.target.value)} className={styles.filterSelect}>
-          <option value="ALL">All Locations</option>
-          {locations.map(loc => (
-            <option key={loc} value={loc!}>{loc}</option>
-          ))}
-        </select>
-        <select value={sortBy} onChange={e => setSortBy(e.target.value)} className={styles.filterSelect}>
-          <option value="date">Date (Soonest)</option>
-          <option value="date-desc">Date (Latest)</option>
-        </select>
-        <select value={dateRange} onChange={e => {
-          setDateRange(e.target.value)
-          if (e.target.value !== 'custom') {
-            setStartDate('')
-            setEndDate('')
-          }
-        }} className={styles.filterSelect}>
-          <option value="">Any Time</option>
-          <option value="week">Next 7 Days</option>
-          <option value="month">Next 30 Days</option>
-          <option value="2months">Next 2 Months</option>
-          <option value="3months">Next 3 Months</option>
-          <option value="6months">Next 6 Months</option>
-          <option value="custom">Custom Range</option>
-        </select>
-        {dateRange === 'custom' && (
-          <div className={styles.dateRangeInputs}>
-            <input
-              type="date"
-              value={startDate}
-              onChange={e => setStartDate(e.target.value)}
-              className={styles.dateInput}
-            />
-            <span>to</span>
-            <input
-              type="date"
-              value={endDate}
-              onChange={e => setEndDate(e.target.value)}
-              className={styles.dateInput}
-            />
-          </div>
-        )}
-        <div className={styles.zipFilter}>
-          <input
-            type="text"
-            value={zipCode}
-            onChange={e => setZipCode(e.target.value)}
-            placeholder="Zip code"
-            className={styles.zipInput}
-            onKeyDown={e => e.key === 'Enter' && geocodeZipCode()}
-          />
-          <select 
-            value={radius} 
-            onChange={e => setRadius(e.target.value)} 
-            className={styles.radiusSelect}
-            disabled={!userLocation}
-          >
-            <option value="5">5 mi</option>
-            <option value="10">10 mi</option>
-            <option value="25">25 mi</option>
-            <option value="50">50 mi</option>
-            <option value="100">100 mi</option>
-          </select>
-          <button 
-            onClick={geocodeZipCode} 
-            className={styles.zipBtn}
-            disabled={geocodingLoading}
-          >
-            {geocodingLoading ? '...' : 'Go'}
-          </button>
-        </div>
-      </div>
+      <div className={styles.mainLayout}>
+        <aside className={styles.sidebar}>
+          <h2 className={styles.sidebarTitle}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+            </svg>
+            Filters
+          </h2>
 
-      {viewMode === 'calendar' ? (
-        <div className={styles.calendarView}>
-          <div className={styles.calendarHeader}>
-            <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))} className={styles.calendarNavBtn} aria-label="Previous month">
-              ←
-            </button>
-            <h2>{currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h2>
-            <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))} className={styles.calendarNavBtn} aria-label="Next month">
-              →
-            </button>
-          </div>
-          <div className={styles.calendarGrid}>
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-              <div key={day} className={styles.calendarDayHeader}>{day}</div>
-            ))}
-            {getCalendarDays()}
-          </div>
-        </div>
-      ) : viewMode === 'map' ? (
-        <div className={styles.fullMapView}>
-          <div className={styles.fullMapHeader}>
-            <button 
-              className={styles.backToListBtn}
-              onClick={() => setViewMode('list')}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M19 12H5M12 19l-7-7 7-7"/>
-              </svg>
-              Back to List
-            </button>
-            <span className={styles.fullMapCount}>{eventsWithCoords.length} events on map</span>
-          </div>
-          <div style={{ height: '600px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)', marginBottom: '24px', position: 'relative', zIndex: 1 }}>
-            <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%' }} ref={mapRef}>
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              {eventsWithCoords.map(event => (
-                <Marker 
-                  key={event.id} 
-                  position={[event.latitude!, event.longitude!]}
-                  eventHandlers={{
-                    click: () => setSelectedEvent(event),
-                  }}
-                >
-                  <Popup>
-                    <div className={styles.mapPopupContent}>
-                      <h4>{event.title}</h4>
-                      {event.eventCategory && (
-                        <span className={`badge badge-${event.eventCategory.toLowerCase()}`}>{event.eventCategory}</span>
-                      )}
-                      {event.eventDate && (
-                        <p className={styles.popupDetail}>
-                          📅 {new Date(event.eventDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
-                        </p>
-                      )}
-                      {event.location && <p className={styles.popupDetail}>📍 {event.location}</p>}
-                      {event.locationDetails && <p className={styles.popupDetailSmall}>{event.locationDetails}</p>}
-                      <p className={styles.popupDetail}>👥 {(event.joiners || []).length}{event.maxJoiners > 0 ? `/${event.maxJoiners}` : ''} joined</p>
-                      <div className={styles.popupActions}>
-                        {event.maxJoiners === 0 || (event.joiners || []).length < event.maxJoiners ? (
-                          <button 
-                            onClick={(e) => { 
-                              e.stopPropagation()
-                              if (event.joined) { handleLeave(event.id) } else { handleJoin(event.id) }
-                            }}
-                            disabled={joining === event.id}
-                            className={event.joined ? "btn-secondary" : "btn-primary"}
-                          >
-                            {joining === event.id ? '...' : event.joined ? 'Leave' : 'Join Event'}
-                          </button>
-                        ) : (
-                          <span className="badge badge-full">Event Full</span>
-                        )}
-                        <Link href={`/events/${event.id}`} className={styles.popupLink}>View Details →</Link>
-                      </div>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
-            </MapContainer>
-          </div>
-        </div>
-      ) : (
-        <>
-          <div className={styles.listSection}>
-            {loading ? (
-              <div className={styles.loading}>Loading events...</div>
-            ) : filteredEvents.length === 0 ? (
-              <div className={styles.empty}>
-                <p>No events found</p>
-                {userId && (
-                  <Link href="/dashboard?tab=events" className="btn-primary">
-                    Create Event
-                  </Link>
-                )}
-              </div>
-            ) : (
-              filteredEvents.map(event => (
-                <div 
-                  key={event.id} 
-                  className={`${styles.eventCard} ${selectedEvent?.id === event.id ? styles.selected : ''}`}
-                  onClick={() => {
-                    setSelectedEvent(event)
-                    if (event.latitude && event.longitude && mapRef.current) {
-                      mapRef.current.setView([event.latitude, event.longitude], 15, { animate: true })
-                    }
-                  }}
-                >
-                  <div className={styles.eventHeader}>
-                    <span className={`badge badge-${event.eventCategory?.toLowerCase()}`}>
-                      {event.eventCategory}
-                    </span>
-                    {event.eventDate && (
-                      <span className={styles.eventDate}>
-                        {new Date(event.eventDate).toLocaleDateString()}
-                      </span>
-                    )}
-                  </div>
-                  <h3>{event.title}</h3>
-                  {event.description && <p className={styles.eventDesc}>{event.description}</p>}
-                  <div className={styles.eventMeta}>
-                    <span>📍 {event.location}</span>
-                    {event.maxJoiners > 0 && (
-                      <span>👥 {(event.joiners || []).length}/{event.maxJoiners} joined</span>
-                    )}
-                    {event.userName && <span>👤 {event.userName}</span>}
-                  </div>
-                      <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                    {event.maxJoiners === 0 || (event.joiners || []).length < event.maxJoiners ? (
-                      <button 
-                        onClick={(e) => { 
-                          e.stopPropagation()
-                          if (event.joined) { handleLeave(event.id) } else { handleJoin(event.id) }
-                        }}
-                        disabled={joining === event.id}
-                        className={event.joined ? "btn-secondary" : "btn-primary"}
-                        style={{ flex: 1 }}
-                      >
-                        {joining === event.id ? '...' : event.joined ? 'Leave' : 'Join Event'}
-                      </button>
-                    ) : (
-                      <span className="badge badge-full" style={{ flex: 1, textAlign: 'center', padding: '8px' }}>Event Full</span>
-                    )}
-                    <Link href={`/events/${event.id}`} className={styles.viewBtn} onClick={e => e.stopPropagation()}>
-                      View Details
-                    </Link>
-                  </div>
-                </div>
-              ))
-            )}
+          <div className={styles.filterGroup}>
+            <label className={styles.filterLabel}>Category</label>
+            <select value={category} onChange={e => setCategory(e.target.value)} className={styles.filterSelect}>
+              <option value="ALL">All Categories</option>
+              {categories.map(cat => (<option key={cat} value={cat!}>{cat}</option>))}
+            </select>
           </div>
 
-          {eventsWithCoords.length > 0 && (
-            <div className={`${styles.miniMap} ${mapExpanded ? styles.miniMapExpanded : ''}`}>
-              <div className={styles.miniMapControls}>
-                <button 
-                  className={styles.miniMapToggle}
-                  onClick={() => setMapExpanded(!mapExpanded)}
-                  aria-label={mapExpanded ? 'Collapse map' : 'Expand map'}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    {mapExpanded ? (
-                      <path d="M4 14h6v6H4zM14 4h6v6h-6zM4 4h6v6H4zM14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z"/>
-                    ) : (
-                      <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
-                    )}
-                  </svg>
-                  <span>{mapExpanded ? 'Collapse' : 'Expand'}</span>
-                </button>
-              </div>
-              <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%', position: 'relative', zIndex: 1 }} ref={mapRef}>
-                <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                {eventsWithCoords.map(event => (
-                  <Marker 
-                    key={event.id} 
-                    position={[event.latitude!, event.longitude!]}
-                    eventHandlers={{
-                      click: () => setSelectedEvent(event),
-                    }}
-                  >
-                    <Popup>
-                      <div className={styles.mapPopupContent}>
-                        <h4>{event.title}</h4>
-                        {event.eventCategory && (
-                          <span className={`badge badge-${event.eventCategory.toLowerCase()}`}>{event.eventCategory}</span>
-                        )}
-                        {event.eventDate && (
-                          <p className={styles.popupDetail}>
-                            📅 {new Date(event.eventDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
-                          </p>
-                        )}
-                        {event.location && <p className={styles.popupDetail}>📍 {event.location}</p>}
-                        {event.locationDetails && <p className={styles.popupDetailSmall}>{event.locationDetails}</p>}
-                        <p className={styles.popupDetail}>👥 {(event.joiners || []).length}{event.maxJoiners > 0 ? `/${event.maxJoiners}` : ''} joined</p>
-                        <div className={styles.popupActions}>
-                          <Link href={`/events/${event.id}`} className={styles.popupLink}>View Details →</Link>
-                        </div>
-                      </div>
-                    </Popup>
-                  </Marker>
-                ))}
-              </MapContainer>
+          <div className={styles.filterGroup}>
+            <label className={styles.filterLabel}>Location</label>
+            <select value={location} onChange={e => setLocation(e.target.value)} className={styles.filterSelect}>
+              <option value="ALL">All Locations</option>
+              {locations.map(loc => (<option key={loc} value={loc!}>{loc}</option>))}
+            </select>
+          </div>
+
+          <div className={styles.filterGroup}>
+            <label className={styles.filterLabel}>Sort</label>
+            <select value={sortBy} onChange={e => setSortBy(e.target.value)} className={styles.filterSelect}>
+              <option value="date">Date (Soonest)</option>
+              <option value="date-desc">Date (Latest)</option>
+            </select>
+          </div>
+
+          <div className={styles.filterDivider} />
+
+          <div className={styles.filterGroup}>
+            <label className={styles.filterLabel}>Date Range</label>
+            <select value={dateRange} onChange={e => {
+              setDateRange(e.target.value)
+              if (e.target.value !== 'custom') {
+                setStartDate('')
+                setEndDate('')
+              }
+            }} className={styles.filterSelect}>
+              <option value="">Any Time</option>
+              <option value="week">Next 7 Days</option>
+              <option value="month">Next 30 Days</option>
+              <option value="2months">Next 2 Months</option>
+              <option value="3months">Next 3 Months</option>
+              <option value="6months">Next 6 Months</option>
+              <option value="custom">Custom Range</option>
+            </select>
+          </div>
+
+          {dateRange === 'custom' && (
+            <div className={styles.filterGroup}>
+              <label className={styles.filterLabel}>Start Date</label>
+              <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className={styles.filterInput} />
             </div>
           )}
-        </>
-      )}
+          {dateRange === 'custom' && (
+            <div className={styles.filterGroup}>
+              <label className={styles.filterLabel}>End Date</label>
+              <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className={styles.filterInput} />
+            </div>
+          )}
+
+          <div className={styles.filterDivider} />
+
+          <div className={styles.filterGroup}>
+            <label className={styles.filterLabel}>Distance from ZIP</label>
+            <div className={styles.zipFilter}>
+              <input type="text" value={zipCode} onChange={e => setZipCode(e.target.value)} placeholder="Enter ZIP code" className={styles.zipInput} onKeyDown={e => e.key === 'Enter' && geocodeZipCode()} />
+              <div className={styles.zipRow}>
+                <select value={radius} onChange={e => setRadius(e.target.value)} className={styles.filterSelect} disabled={!userLocation && !zipCode}>
+                  <option value="5">5 mi</option>
+                  <option value="10">10 mi</option>
+                  <option value="25">25 mi</option>
+                  <option value="50">50 mi</option>
+                  <option value="100">100 mi</option>
+                </select>
+                <button onClick={geocodeZipCode} className={styles.zipBtn} disabled={geocodingLoading || !zipCode.trim()}>
+                  {geocodingLoading ? '...' : 'Go'}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {hasActiveFilters && (
+            <button onClick={clearFilters} className={styles.clearBtn}>
+              Clear All Filters
+            </button>
+          )}
+        </aside>
+
+        <main className={styles.content}>
+          {viewMode === 'calendar' ? (
+            <div className={styles.calendarView}>
+              <div className={styles.calendarHeader}>
+                <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))} className={styles.calendarNavBtn} aria-label="Previous month">←</button>
+                <h2>{currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h2>
+                <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))} className={styles.calendarNavBtn} aria-label="Next month">→</button>
+              </div>
+              <div className={styles.calendarGrid}>
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                  <div key={day} className={styles.calendarDayHeader}>{day}</div>
+                ))}
+                {getCalendarDays()}
+              </div>
+            </div>
+          ) : viewMode === 'map' ? (
+            <div className={styles.fullMapView}>
+              <div className={styles.fullMapHeader}>
+                <button className={styles.backToListBtn} onClick={() => setViewMode('list')}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                  </svg>
+                  Back to List
+                </button>
+                <span className={styles.fullMapCount}>{eventsWithCoords.length} events on map</span>
+              </div>
+              <div style={{ height: '600px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)', marginBottom: '24px', position: 'relative', zIndex: 1 }}>
+                <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%' }} ref={mapRef}>
+                  <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                  {eventsWithCoords.map(event => (
+                    <Marker key={event.id} position={[event.latitude!, event.longitude!]} eventHandlers={{ click: () => setSelectedEvent(event) }}>
+                      <Popup>
+                        <div className={styles.mapPopupContent}>
+                          <h4>{event.title}</h4>
+                          {event.eventCategory && (<span className={`badge badge-${event.eventCategory.toLowerCase()}`}>{event.eventCategory}</span>)}
+                          {event.eventDate && (<p className={styles.popupDetail}>📅 {new Date(event.eventDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</p>)}
+                          {event.location && <p className={styles.popupDetail}>📍 {event.location}</p>}
+                          {event.locationDetails && <p className={styles.popupDetailSmall}>{event.locationDetails}</p>}
+                          <p className={styles.popupDetail}>👥 {(event.joiners || []).length}{event.maxJoiners > 0 ? `/${event.maxJoiners}` : ''} joined</p>
+                          <div className={styles.popupActions}>
+                            {event.maxJoiners === 0 || (event.joiners || []).length < event.maxJoiners ? (
+                              <button onClick={(e) => { e.stopPropagation(); if (event.joined) { handleLeave(event.id) } else { handleJoin(event.id) } }} disabled={joining === event.id} className={event.joined ? "btn-secondary" : "btn-primary"}>
+                                {joining === event.id ? '...' : event.joined ? 'Leave' : 'Join Event'}
+                              </button>
+                            ) : (<span className="badge badge-full">Event Full</span>)}
+                            <Link href={`/events/${event.id}`} className={styles.popupLink}>View Details →</Link>
+                          </div>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  ))}
+                </MapContainer>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className={styles.resultsHeader}>
+                <span className={styles.resultsCount}>
+                  <strong>{filteredEvents.length}</strong> {filteredEvents.length === 1 ? 'event' : 'events'} found
+                </span>
+              </div>
+
+              <div className={styles.gridView}>
+                {loading ? (
+                  <div className={styles.loading}>Loading events...</div>
+                ) : filteredEvents.length === 0 ? (
+                  <div className={styles.emptyState}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <circle cx="11" cy="11" r="8"/>
+                      <path d="M21 21l-4.35-4.35"/>
+                      <path d="M8 11h6"/>
+                    </svg>
+                    <h3>No events found</h3>
+                    <p>Try adjusting your filters or create a new event.</p>
+                    {userId && (<Link href="/dashboard?tab=events" className="btn-primary">Create Event</Link>)}
+                    <button onClick={clearFilters} className={styles.clearBtn} style={{ marginTop: '16px' }}>Clear Filters</button>
+                  </div>
+                ) : (
+                  filteredEvents.map(event => (
+                    <div key={event.id} className={`${styles.eventCard} ${selectedEvent?.id === event.id ? styles.selected : ''}`} onClick={() => { setSelectedEvent(event); if (event.latitude && event.longitude && mapRef.current) { mapRef.current.setView([event.latitude, event.longitude], 15, { animate: true }) } }}>
+                      <div className={styles.eventHeader}>
+                        <span className={`badge badge-${event.eventCategory?.toLowerCase()}`}>{event.eventCategory}</span>
+                        {event.eventDate && (<span className={styles.eventDate}>{new Date(event.eventDate).toLocaleDateString()}</span>)}
+                      </div>
+                      <h3>{event.title}</h3>
+                      {event.description && <p className={styles.eventDesc}>{event.description}</p>}
+                      <div className={styles.eventMeta}>
+                        <span>📍 {event.location}</span>
+                        {event.maxJoiners > 0 && (<span>👥 {(event.joiners || []).length}/{event.maxJoiners} joined</span>)}
+                        {event.userName && <span>👤 {event.userName}</span>}
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                        {event.maxJoiners === 0 || (event.joiners || []).length < event.maxJoiners ? (
+                          <button onClick={(e) => { e.stopPropagation(); if (event.joined) { handleLeave(event.id) } else { handleJoin(event.id) } }} disabled={joining === event.id} className={event.joined ? "btn-secondary" : "btn-primary"} style={{ flex: 1 }}>
+                            {joining === event.id ? '...' : event.joined ? 'Leave' : 'Join Event'}
+                          </button>
+                        ) : (<span className="badge badge-full" style={{ flex: 1, textAlign: 'center', padding: '8px' }}>Event Full</span>)}
+                        <Link href={`/events/${event.id}`} className={styles.viewBtn} onClick={e => e.stopPropagation()}>View Details</Link>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </>
+          )}
+        </main>
+      </div>
     </div>
   )
 
@@ -654,7 +558,7 @@ export default function EventsPage() {
     const firstDay = new Date(year, month, 1)
     const lastDay = new Date(year, month + 1, 0)
     const startPadding = firstDay.getDay()
-      const days: React.ReactNode[] = []
+    const days: React.ReactNode[] = []
     
     for (let i = 0; i < startPadding; i++) {
       days.push(<div key={`empty-${i}`} className={styles.calendarCellEmpty}></div>)
@@ -673,18 +577,12 @@ export default function EventsPage() {
           <span className={styles.calendarDayNumber}>{day}</span>
           <div className={styles.calendarEvents}>
             {eventsOnDay.slice(0, 3).map(event => (
-              <Link 
-                key={event.id} 
-                href={`/events/${event.id}`}
-                className={styles.calendarEventItem}
-              >
+              <Link key={event.id} href={`/events/${event.id}`} className={styles.calendarEventItem}>
                 <span className={styles.calendarEventIcon}>📅</span>
                 <span className={styles.calendarEventTitle}>{event.title}</span>
               </Link>
             ))}
-            {eventsOnDay.length > 3 && (
-              <span className={styles.moreEvents}>+{eventsOnDay.length - 3} more</span>
-            )}
+            {eventsOnDay.length > 3 && (<span className={styles.moreEvents}>+{eventsOnDay.length - 3} more</span>)}
           </div>
         </div>
       )
