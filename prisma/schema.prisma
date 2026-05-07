@@ -108,6 +108,10 @@ model User {
   passwordResetTokens PasswordResetToken[]
   verificationTokens VerificationToken[]
   userLinks         UserLink[]
+  files             File[]
+  backups           Backup[]
+  initiatedPacts    StoragePact[] @relation("PactInitiator")
+  receivedPacts     StoragePact[] @relation("PactPeer")
 
   // Donation settings (legacy single address)
   donationAddress  String?
