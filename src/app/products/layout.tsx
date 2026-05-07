@@ -1,6 +1,6 @@
-import styles from './page.module.css'
+import styles from './layout.module.css'
 
-export default async function ProductsLayout({
+export default function ProductsLayout({
   children,
 }: {
   children: React.ReactNode
