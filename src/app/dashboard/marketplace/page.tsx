@@ -258,6 +258,40 @@ function MarketplaceContent() {
     setShowProductForm(true)
   }
 
+  const handleUnpublishShop = async () => {
+    if (!confirm('Unpublish your shop? It will no longer appear in the directory. All products are preserved.')) return
+    try {
+      const res = await fetch('/api/shop?action=unpublish', { method: 'DELETE' })
+      if (res.ok) {
+        success('Shop unpublished')
+        setShowShopModal(false)
+        fetchAll()
+      } else {
+        error('Failed to unpublish shop')
+      }
+    } catch {
+      error('Failed to unpublish shop')
+    }
+  }
+
+  const handleDeleteShop = async () => {
+    if (!confirm('Permanently delete your shop? This removes your shop name, description, and image. Your products will remain but will no longer be linked to a shop.')) return
+    if (!confirm('Are you sure? This cannot be undone.')) return
+    try {
+      const res = await fetch('/api/shop?action=delete', { method: 'DELETE' })
+      if (res.ok) {
+        success('Shop deleted')
+        setShopSettings(null)
+        setShowShopModal(false)
+        fetchAll()
+      } else {
+        error('Failed to delete shop')
+      }
+    } catch {
+      error('Failed to delete shop')
+    }
+  }
+
   const handleShopSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
@@ -405,6 +439,21 @@ function MarketplaceContent() {
                 <button type="submit" className="btn-primary" disabled={saving}>{saving ? 'Saving...' : 'Save Settings'}</button>
               </div>
             </form>
+
+            {shopSettings?.shopSlug && (
+              <div className={styles.dangerZone}>
+                <h3>Danger Zone</h3>
+                <p>These actions affect your entire shop.</p>
+                <div className={styles.dangerActions}>
+                  <button onClick={handleUnpublishShop} className={styles.unpublishBtn}>
+                    Unpublish Shop
+                  </button>
+                  <button onClick={handleDeleteShop} className={styles.deleteShopBtn}>
+                    Delete Shop
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

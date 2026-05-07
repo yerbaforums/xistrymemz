@@ -58,3 +58,38 @@ export async function PUT(request: Request) {
     email: user.email
   })
 }
+
+export async function DELETE(request: Request) {
+  const session = await getServerSession(authOptions)
+
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const { searchParams } = new URL(request.url)
+  const action = searchParams.get('action')
+
+  if (action === 'unpublish') {
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { shopSlug: null }
+    })
+    return NextResponse.json({ success: true, action: 'unpublished' })
+  }
+
+  if (action === 'delete') {
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: {
+        shopSlug: null,
+        shopName: null,
+        shopAbout: null,
+        shopImage: null,
+        shopCoverImage: null
+      }
+    })
+    return NextResponse.json({ success: true, action: 'deleted' })
+  }
+
+  return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+}
