@@ -45,7 +45,7 @@ interface Product {
   longitude: number | null
   isGlobal: boolean
   imageUrl: string | null
-  user: { name: string | null }
+  user: { name: string | null; shopSlug?: string | null }
   pinned: boolean
 }
 
@@ -151,8 +151,9 @@ export default function ProductsPage() {
         return res.json()
       })
       .then(data => {
-        setProducts(data)
-        setFilteredProducts(data)
+        const items = Array.isArray(data) ? data : data?.products || []
+        setProducts(items)
+        setFilteredProducts(items)
         setLoading(false)
       })
       .catch(() => setLoading(false))

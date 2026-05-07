@@ -38,6 +38,18 @@ export function ShareProfileModal({ isOpen, onClose, username, displayName }: Sh
       url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`
     },
     {
+      id: 'reddit',
+      name: 'Reddit',
+      icon: '/social-logos/reddit.svg',
+      url: `https://www.reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(shareText)}`
+    },
+    {
+      id: 'pinterest',
+      name: 'Pinterest',
+      icon: '/social-logos/pinterest.svg',
+      url: `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(url)}&description=${encodeURIComponent(shareText)}`
+    },
+    {
       id: 'telegram',
       name: 'Telegram',
       icon: '/social-logos/telegram.svg',
@@ -48,6 +60,30 @@ export function ShareProfileModal({ isOpen, onClose, username, displayName }: Sh
       name: 'WhatsApp',
       icon: '/social-logos/whatsapp.svg',
       url: `https://wa.me/?text=${encodeURIComponent(shareText + ' ' + url)}`
+    },
+    {
+      id: 'instagram',
+      name: 'Instagram',
+      icon: '/social-logos/instagram.svg',
+      url: 'https://instagram.com'
+    },
+    {
+      id: 'mastodon',
+      name: 'Mastodon',
+      icon: '/social-logos/mastodon.svg',
+      url: `https://s2f.kytta.dev/?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(url)}`
+    },
+    {
+      id: 'email',
+      name: 'Email',
+      icon: '/social-logos/email.svg',
+      url: `mailto:?subject=${encodeURIComponent(shareText)}&body=${encodeURIComponent(url)}`
+    },
+    {
+      id: 'fediverse',
+      name: 'Fediverse',
+      icon: '/social-logos/fediverse.svg',
+      url: 'https://jointhefediverse.net'
     }
   ]
 

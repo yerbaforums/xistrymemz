@@ -1101,3 +1101,79 @@ model DonationAddress {
 
   @@index([userId])
 }
+
+// IPFS-backed file storage for user uploads
+model File {
+  id          String   @id @default(cuid())
+  cid         String   @unique  // IPFS CID (Qm... or bafy...)
+  fileName    String
+  mimeType    String
+  size        Int
+  gatewayUrl  String   // https://gateway.pinata.cloud/ipfs/{cid}
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  modelName   String   // "User", "Product", "Post", "GroupPost", etc.
+  modelId     String   // The ID of the record
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([cid])
+  @@index([modelName, modelId])
+}
+
+// Database backups with torrent seeding
+model Backup {
+  id           String   @id @default(cuid())
+  cid          String   @unique  // IPFS CID of backup file
+  magnetLink   String   // Full magnet URI with trackers + IPFS webseed
+  torrentFile  String   // Path to .torrent file in public/backups/
+  fileName     String   // backup-2026-05-06.sql.gz
+  fileSize     Int      // Bytes
+  dbSize       Int      // Original DB size before compression
+  createdById  String
+  createdBy    User     @relation(fields: [createdById], references: [id])
+  createdAt    DateTime @default(now())
+
+  @@index([createdById])
+  @@index([createdAt])
+}
+
+// PolySocial storage pacts (bilateral agreements)
+model StoragePact {
+  id           String   @id @default(cuid())
+  initiatorId  String
+  initiator    User     @relation("PactInitiator", fields: [initiatorId], references: [id])
+  peerId       String
+  peer         User     @relation("PactPeer", fields: [peerId], references: [id])
+  trustScore   Float    @default(1.0)
+  storageQuota Int      // MB
+  status       String   @default("ACTIVE")  // ACTIVE, PAUSED, TERMINATED
+  challengeNonce String // Base64 encoded
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([initiatorId])
+  @@index([peerId])
+  @@index([status])
+}
+
+// PolySocial events (account-scoped shards)
+model PolySocialEvent {
+  id           String   @id @default(cuid())
+  eventId      String   @unique  // blake3 hash
+  type         String   // post, follow, like, profile_update
+  authorDid    String
+  content      String   // Encrypted or plain text
+  replyTo      String?  // eventId of parent
+  tags         String[] // Hashtags
+  trustDistance Int      @default(1)
+  signature    String
+  ipfsCid      String?  // If large content
+  createdAt    DateTime @default(now())
+
+  @@index([authorDid])
+  @@index([eventId])
+  @@index([type])
+  @@index([createdAt])
+  @@index([trustDistance])
+}

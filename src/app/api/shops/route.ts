@@ -13,7 +13,13 @@ export async function GET() {
         shopAbout: true,
         shopImage: true,
         shopSlug: true,
-        name: true
+        name: true,
+        location: true,
+        latitude: true,
+        longitude: true,
+        _count: {
+          select: { products: true }
+        }
       },
       orderBy: { createdAt: 'desc' }
     })

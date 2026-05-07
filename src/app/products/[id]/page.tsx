@@ -13,6 +13,7 @@ import { MakeOfferModal } from '@/components/MakeOfferModal'
 import { ComingSoonModal } from '@/components/ComingSoonModal'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import RoleBadge from '@/components/RoleBadge'
+import { usdToCrypto } from '@/lib/prices'
 import dynamic from 'next/dynamic'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
@@ -109,6 +110,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [showOfferModal, setShowOfferModal] = useState(false)
   const [showCartModal, setShowCartModal] = useState(false)
   const [showEscrowComingSoon, setShowEscrowComingSoon] = useState(false)
+  const [showMessageModal, setShowMessageModal] = useState(false)
+  const [messageContent, setMessageContent] = useState('')
+  const [messageSending, setMessageSending] = useState(false)
+  const [mapExpanded, setMapExpanded] = useState(false)
 
   useEffect(() => {
     params.then(setResolvedParams)
@@ -372,6 +377,29 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     }
   }
 
+  const handleSendMessage = async () => {
+    if (!product || !messageContent.trim()) return
+    setMessageSending(true)
+    try {
+      const res = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receiverId: product.user.id, content: messageContent })
+      })
+      if (res.ok) {
+        success('Message sent!')
+        setShowMessageModal(false)
+        setMessageContent('')
+      } else {
+        error('Failed to send message')
+      }
+    } catch {
+      error('Failed to send message')
+    } finally {
+      setMessageSending(false)
+    }
+  }
+
   if (loading) {
     return <div className={styles.loading}>Loading...</div>
   }
@@ -588,6 +616,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 Visit {sellerShop.shopName || 'Shop'}
               </Link>
             )}
+            {session?.user && !isOwner && (
+              <button
+                className={styles.messageBtn}
+                onClick={() => setShowMessageModal(true)}
+              >
+                ✉️ Message Seller
+              </button>
+            )}
           </div>
 
           <div className={styles.locationCard}>
@@ -600,8 +636,16 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
           {!product.isGlobal && product.latitude && product.longitude && (
             <div className={styles.mapCard}>
-              <h3>📍 Product Location</h3>
-              <div className={styles.mapContainer}>
+              <div className={styles.mapCardHeader}>
+                <h3>📍 Product Location</h3>
+                <button
+                  className={styles.mapToggleBtn}
+                  onClick={() => setMapExpanded(!mapExpanded)}
+                >
+                  {mapExpanded ? 'Collapse' : 'Expand'}
+                </button>
+              </div>
+              <div className={`${styles.mapContainer} ${mapExpanded ? styles.mapExpanded : ''}`}>
                 <MapContainer center={[product.latitude, product.longitude]} zoom={13} style={{ height: '100%', width: '100%', position: 'relative', zIndex: 1 }}>
                   <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -643,6 +687,11 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           {product.price && (
             <div className={styles.priceCard}>
               <p className={styles.price}>${product.price}</p>
+              <div className={styles.cryptoConversions}>
+                <span className={styles.cryptoLabel}>≈ {usdToCrypto(product.price, 'BTC').toFixed(6)} BTC</span>
+                <span className={styles.cryptoLabel}>≈ {usdToCrypto(product.price, 'ETH').toFixed(4)} ETH</span>
+                <span className={styles.cryptoLabel}>≈ {usdToCrypto(product.price, 'XMR').toFixed(4)} XMR</span>
+              </div>
                <button 
                  className={styles.addToCartBtn}
                  onClick={() => setShowCartModal(true)}
@@ -930,6 +979,40 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 onClick={handleFundRequest}
               >
                 {fundingLoading ? 'Processing...' : 'Contribute'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showMessageModal && product && (
+        <div className="modal-overlay" onClick={() => { setShowMessageModal(false); setMessageContent('') }}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2>✉️ Message to {product.user.name || 'Seller'}</h2>
+            <div className="form-group">
+              <textarea
+                value={messageContent}
+                onChange={e => setMessageContent(e.target.value)}
+                placeholder={`Ask about ${product.title}...`}
+                rows={4}
+                style={{ width: '100%', padding: '12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: '0.95rem', resize: 'vertical' }}
+              />
+            </div>
+            <div className={styles.modalActions}>
+              <button
+                type="button"
+                onClick={() => { setShowMessageModal(false); setMessageContent('') }}
+                className="btn-ghost"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn-primary"
+                disabled={!messageContent.trim() || messageSending}
+                onClick={handleSendMessage}
+              >
+                {messageSending ? 'Sending...' : 'Send Message'}
               </button>
             </div>
           </div>

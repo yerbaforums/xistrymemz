@@ -50,6 +50,7 @@
   text-decoration: none;
   color: inherit;
   transition: transform 0.15s, box-shadow 0.15s;
+  animation: fadeInUp 0.3s ease both;
 }
 
 .shopCard:hover {
@@ -91,3 +92,221 @@
   font-size: 0.8125rem;
   color: var(--accent-primary);
 }
+
+/* Map Container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.mapWrapper {
+  margin-bottom: 24px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  position: relative;
+}
+
+.mapExpanded {
+  height: 500px;
+}
+
+.mapWrapper:not(.mapExpanded) {
+  height: 300px;
+}
+
+.mapToggle {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1000;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+}
+
+/* Results Header */
+.resultsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.resultsHeader span {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.viewToggle {
+  display: flex;
+  gap: 8px;
+}
+
+.viewToggle button {
+  padding: 6px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.viewToggle button.active {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border-color: var(--accent-primary);
+}
+
+/* Location and Product Count */
+.location {
+  display: inline-block;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 4px 0;
+}
+
+.productCount {
+  display: inline-block;
+  font-size: 0.8rem;
+  color: var(--accent-primary);
+  background: var(--bg-tertiary);
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 8px;
+}
+
+/* Selected Card */
+.selected {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px var(--accent-primary);
+}
+
+/* Encouragement Message */
+.encouragement {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+/* List View */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.list .shopCard {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+}
+
+.list .shopImage {
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+  margin-right: 16px;
+}
+
+/* Filter Bar */
+.filterBar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.filterSelect {
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* Category Badge */
+.categoryBadge {
+  display: inline-block;
+  font-size: 0.7rem;
+  padding: 2px 10px;
+  border-radius: 12px;
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.shopHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.shopHeader h3 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.shopFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  gap: 8px;
+}
+
+/* Card entrance animation */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.shopCard:nth-child(1) { animation-delay: 0.02s; }
+.shopCard:nth-child(2) { animation-delay: 0.04s; }
+.shopCard:nth-child(3) { animation-delay: 0.06s; }
+.shopCard:nth-child(4) { animation-delay: 0.08s; }
+.shopCard:nth-child(5) { animation-delay: 0.10s; }
+.shopCard:nth-child(6) { animation-delay: 0.12s; }
+.shopCard:nth-child(7) { animation-delay: 0.14s; }
+.shopCard:nth-child(8) { animation-delay: 0.16s; }
+.shopCard:nth-child(9) { animation-delay: 0.18s; }
+.shopCard:nth-child(10) { animation-delay: 0.20s; }

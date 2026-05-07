@@ -14,6 +14,43 @@ interface DonationAddr {
   label: string | null
 }
 
+interface PlatformStats {
+  members: number
+  shops: number
+  products: number
+  events: number
+}
+
+interface FeaturedShop {
+  id: string
+  shopName: string
+  shopImage: string | null
+  shopSlug: string
+  _count?: {
+    products: number
+  }
+}
+
+interface FeaturedProduct {
+  id: string
+  title: string
+  price: number | null
+  imageUrl: string | null
+  user: {
+    name: string | null
+    shopSlug: string | null
+  }
+}
+
+interface PublicRequest {
+  id: string
+  title: string
+  status: string
+  currentFunding: number | null
+  goalAmount: number | null
+  user: { name: string | null }
+}
+
 const FEATURES = [
   { icon: '🌌', title: 'Cosmic Whitepages', desc: 'Your universal directory. One identity across the entire network — searchable, verifiable, yours.' },
   { icon: '🤝', title: 'Cooperative Network', desc: 'Built by the community, for the community. Every member contributes, every voice matters, every connection counts.' },
@@ -36,11 +73,61 @@ const STEPS = [
 export default function Home() {
   const [donations, setDonations] = useState<DonationAddr[]>([])
   const [qrOpen, setQrOpen] = useState<string | null>(null)
+  const [stats, setStats] = useState<PlatformStats>({ members: 0, shops: 0, products: 0, events: 0 })
+  const [featuredShops, setFeaturedShops] = useState<FeaturedShop[]>([])
+  const [featuredProducts, setFeaturedProducts] = useState<FeaturedProduct[]>([])
+  const [recentRequests, setRecentRequests] = useState<PublicRequest[]>([])
+  const [animatedStats, setAnimatedStats] = useState<PlatformStats>({ members: 0, shops: 0, products: 0, events: 0 })
+
+  useEffect(() => {
+    if (stats.members > 0 && animatedStats.members !== stats.members) {
+      const duration = 1200
+      const steps = 30
+      const interval = duration / steps
+      let step = 0
+      const timer = setInterval(() => {
+        step++
+        setAnimatedStats({
+          members: Math.min(Math.round((stats.members / steps) * step), stats.members),
+          shops: Math.min(Math.round((stats.shops / steps) * step), stats.shops),
+          products: Math.min(Math.round((stats.products / steps) * step), stats.products),
+          events: Math.min(Math.round((stats.events / steps) * step), stats.events),
+        })
+        if (step >= steps) clearInterval(timer)
+      }, interval)
+      return () => clearInterval(timer)
+    } else if (stats.members === 0) {
+      setAnimatedStats(stats)
+    }
+  }, [stats])
 
   useEffect(() => {
     fetch('/api/site/donations')
       .then(res => res.ok ? res.json() : null)
       .then(data => { if (data?.addresses) setDonations(data.addresses) })
+      .catch(() => {})
+
+    fetch('/api/stats')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { if (data) setStats(data) })
+      .catch(() => {})
+
+    fetch('/api/shops')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { if (data?.shops) setFeaturedShops(data.shops.slice(0, 6)) })
+      .catch(() => {})
+
+    fetch('/api/products?pinned=true')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { if (data?.products) setFeaturedProducts(data.products.slice(0, 6)) })
+      .catch(() => {})
+
+    fetch('/api/requests?isPublic=true&take=4')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        const list = data?.requests || (Array.isArray(data) ? data : [])
+        if (Array.isArray(list)) setRecentRequests(list.slice(0, 4))
+      })
       .catch(() => {})
   }, [])
 
@@ -70,6 +157,9 @@ export default function Home() {
             <Link href="/auth/register" className={styles.btnPrimary}>
               Join the Coop →
             </Link>
+            <Link href="/shops" className={styles.btnSecondary}>
+              Browse Shops
+            </Link>
             <Link href="/about" className={styles.btnSecondary}>
               Learn More
             </Link>
@@ -92,6 +182,94 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Platform Stats */}
+      <section className={styles.statsSection}>
+        <div className={styles.statsGrid}>
+          <div className={styles.statCard}>
+            <span className={styles.statNumber}>{animatedStats.members}</span>
+            <span className={styles.statText}>Members</span>
+          </div>
+          <div className={styles.statCard}>
+            <span className={styles.statNumber}>{animatedStats.shops}</span>
+            <span className={styles.statText}>Shops</span>
+          </div>
+          <div className={styles.statCard}>
+            <span className={styles.statNumber}>{animatedStats.products}</span>
+            <span className={styles.statText}>Products</span>
+          </div>
+          <div className={styles.statCard}>
+            <span className={styles.statNumber}>{animatedStats.events}</span>
+            <span className={styles.statText}>Events</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Shops */}
+      {featuredShops.length > 0 && (
+        <section className={styles.featuredSection}>
+          <h2 className={styles.sectionTitle}>Featured Shops</h2>
+          <p className={styles.sectionSubtitle}>Discover unique shops from our community</p>
+          <div className={styles.horizontalScroll}>
+            {featuredShops.map(shop => (
+              <Link key={shop.id} href={`/shop/${shop.shopSlug}`} className={styles.featuredCard}>
+                {shop.shopImage && (
+                  <img src={shop.shopImage} alt={shop.shopName} className={styles.featuredImage} />
+                )}
+                <h3 className={styles.featuredTitle}>{shop.shopName}</h3>
+                {shop._count && (
+                  <span className={styles.featuredMeta}>{shop._count.products} products</span>
+                )}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Featured Products */}
+      {featuredProducts.length > 0 && (
+        <section className={styles.featuredSection}>
+          <h2 className={styles.sectionTitle}>Featured Products</h2>
+          <p className={styles.sectionSubtitle}>Check out these amazing products</p>
+          <div className={styles.horizontalScroll}>
+            {featuredProducts.map(product => (
+              <Link key={product.id} href={`/products/${product.id}`} className={styles.featuredCard}>
+                {product.imageUrl && (
+                  <img src={product.imageUrl} alt={product.title} className={styles.featuredImage} />
+                )}
+                <h3 className={styles.featuredTitle}>{product.title}</h3>
+                {product.price && <span className={styles.featuredPrice}>${product.price}</span>}
+                {product.user.shopSlug && (
+                  <span className={styles.featuredMeta}>by {product.user.name || 'Unknown'}</span>
+                )}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Recent Community Requests */}
+      {recentRequests.length > 0 && (
+        <section className={styles.featuredSection}>
+          <h2 className={styles.sectionTitle}>Community Requests</h2>
+          <p className={styles.sectionSubtitle}>Help fund community needs</p>
+          <div className={styles.horizontalScroll}>
+            {recentRequests.map(req => (
+              <Link key={req.id} href={`/requests/${req.id}`} className={styles.featuredCard}>
+                <h3 className={styles.featuredTitle}>{req.title}</h3>
+                <div className={styles.featuredMeta}>
+                  by {req.user?.name || 'Unknown'}
+                </div>
+                {req.goalAmount && (
+                  <span className={styles.featuredPrice}>
+                    ${req.currentFunding || 0} / ${req.goalAmount}
+                  </span>
+                )}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* How It Works */}
       <section className={styles.stepsSection}>
         <h2 className={styles.sectionTitle}>How It Works</h2>
@@ -112,13 +290,30 @@ export default function Home() {
         <h2 className={styles.sectionTitle}>What You Can Build</h2>
         <p className={styles.sectionSubtitle}>Everything you need to connect, create, and collaborate</p>
         <div className={styles.featuresGrid}>
-          {FEATURES.map((f, i) => (
-            <div key={i} className={styles.feature}>
-              <span className={styles.featureIcon}>{f.icon}</span>
-              <h3>{f.title}</h3>
-              <p>{f.desc}</p>
-            </div>
-          ))}
+          {FEATURES.map((f, i) => {
+            const isShop = f.icon === '🏪'
+            if (isShop) {
+              return (
+                <Link
+                  key={i}
+                  href="/shops"
+                  style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
+                  className={styles.feature}
+                >
+                  <span className={styles.featureIcon}>{f.icon}</span>
+                  <h3>{f.title}</h3>
+                  <p>{f.desc}</p>
+                </Link>
+              )
+            }
+            return (
+              <div key={i} className={styles.feature}>
+                <span className={styles.featureIcon}>{f.icon}</span>
+                <h3>{f.title}</h3>
+                <p>{f.desc}</p>
+              </div>
+            )
+          })}
         </div>
       </section>
 

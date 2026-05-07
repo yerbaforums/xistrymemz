@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
+import { ShopsClient } from './ShopsClient'
 
 interface Shop {
   id: string
@@ -11,6 +12,12 @@ interface Shop {
   shopImage: string | null
   shopSlug: string
   name: string | null
+  location: string | null
+  latitude: number | null
+  longitude: number | null
+  _count?: {
+    products: number
+  }
 }
 
 export default function ShopsPage() {
@@ -52,22 +59,7 @@ export default function ShopsPage() {
           </Link>
         </div>
       ) : (
-        <div className={styles.grid}>
-          {shops.map(shop => (
-            <Link key={shop.id} href={`/shop/${shop.shopSlug}`} className={styles.shopCard}>
-              {shop.shopImage && (
-                <div className={styles.shopImage}>
-                  <img src={shop.shopImage} alt={shop.shopName} />
-                </div>
-              )}
-              <div className={styles.shopInfo}>
-                <h3>{shop.shopName}</h3>
-                {shop.shopAbout && <p>{shop.shopAbout}</p>}
-                <span className={styles.shopOwner}>by {shop.name || 'Unknown'}</span>
-              </div>
-            </Link>
-          ))}
-        </div>
+        <ShopsClient initialShops={shops} />
       )}
     </div>
   )

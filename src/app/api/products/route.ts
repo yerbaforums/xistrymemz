@@ -17,6 +17,7 @@ export async function GET(request: Request) {
     const userLat = searchParams.get('lat')
     const userLng = searchParams.get('lng')
     const radius = searchParams.get('radius')
+    const pinned = searchParams.get('pinned')
 
     const session = await getServerSession(authOptions)
     let userLocation = null
@@ -34,7 +35,7 @@ export async function GET(request: Request) {
 
     const searchRadius = radius ? parseFloat(radius) : userRadius
 
-    const where: { published: boolean; category?: string; type?: string; location?: string; user?: { shopSlug: string }; userId?: string; OR?: Record<string, unknown>[] } = { published: true }
+    const where: { published: boolean; pinned?: boolean; category?: string; type?: string; location?: string; user?: { shopSlug: string }; userId?: string; OR?: Record<string, unknown>[] } = { published: true }
 
     if (category && category !== 'ALL') {
       where.category = category
@@ -51,11 +52,14 @@ export async function GET(request: Request) {
     if (userId) {
       where.userId = userId
     }
+    if (pinned === 'true') {
+      where.pinned = true
+    }
 
     const products = await prisma.product.findMany({
       where,
       include: {
-        user: { select: { name: true, location: true, neighborhood: true } }
+        user: { select: { name: true, location: true, neighborhood: true, shopSlug: true } }
       },
       orderBy: [
         { pinned: 'desc' },
@@ -78,7 +82,7 @@ export async function GET(request: Request) {
       }
     }
 
-    return NextResponse.json(filteredProducts)
+    return NextResponse.json({ products: filteredProducts })
   } catch (error) {
     console.error('GET /api/products:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

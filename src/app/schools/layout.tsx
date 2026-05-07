@@ -1,25 +1,16 @@
-import { redirect } from 'next/navigation'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import Link from 'next/link'
 
-export default async function SchoolsLayout({
+export default function SchoolsLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const session = await getServerSession(authOptions)
-  
-  if (!session) {
-    redirect('/auth/login')
-  }
-
   return (
     <>
       <nav className="breadcrumbs" style={{ marginBottom: '1rem', padding: '1rem 2rem', background: 'var(--bg-secondary)' }}>
-        <Link href="/dashboard" className="breadcrumb-link">Dashboard</Link>
+        <Link href="/" className="breadcrumb-link">Home</Link>
         <span className="breadcrumb-sep">/</span>
-        <Link href="/schools" className="breadcrumb-link">Learning</Link>
+        <span>Learning</span>
       </nav>
       {children}
     </>
