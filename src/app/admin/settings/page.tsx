@@ -121,10 +121,23 @@ export default function AdminSettingsPage() {
     if (!donationForm.address.trim()) return
 
     setSaving(true)
+
+    const existingAddr = settings.donationAddresses.find(
+      da => da.currency === donationForm.currency && 
+            da.address.trim() === donationForm.address.trim() &&
+            !editingDonation
+    )
+
+    if (existingAddr) {
+      setSaving(false)
+      alert(`This ${donationForm.currency} address already exists in your donation list.`)
+      return
+    }
+
     const newAddr: DonationAddr = {
-      id: editingDonation?.id || `da-${Date.now()}`,
+      id: editingDonation?.id || `da-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       currency: donationForm.currency,
-      address: donationForm.address,
+      address: donationForm.address.trim(),
       label: donationForm.label || null,
       showQR: donationForm.showQR,
       sortOrder: editingDonation?.sortOrder ?? settings.donationAddresses.length
@@ -135,7 +148,6 @@ export default function AdminSettingsPage() {
       : [...settings.donationAddresses, newAddr]
 
     setSettings(prev => ({ ...prev, donationAddresses: updated }))
-    setSaving(true)
 
     try {
       const res = await fetch('/api/admin/settings', {
@@ -144,11 +156,19 @@ export default function AdminSettingsPage() {
         body: JSON.stringify({ donationAddresses: updated })
       })
       if (res.ok) {
+        const data = await res.json()
+        setSettings(prev => ({ 
+          ...prev, 
+          donationAddresses: data.donationAddresses || updated 
+        }))
         setSaved(true)
         setTimeout(() => setSaved(false), 2000)
+      } else {
+        await fetchSettings()
       }
     } catch {
       console.error('Failed to save donation address')
+      await fetchSettings()
     } finally {
       setSaving(false)
       setShowDonationForm(false)
@@ -164,14 +184,16 @@ export default function AdminSettingsPage() {
     setSettings(prev => ({ ...prev, donationAddresses: updated }))
 
     try {
-      await fetch('/api/admin/settings', {
+      const res = await fetch('/api/admin/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ donationAddresses: updated })
       })
+      if (!res.ok) {
+        await fetchSettings()
+      }
     } catch {
-      console.error('Failed to delete donation address')
-      fetchSettings()
+      await fetchSettings()
     }
   }
 
@@ -184,13 +206,16 @@ export default function AdminSettingsPage() {
     setSettings(prev => ({ ...prev, donationAddresses: reordered }))
     setDraggedIdx(null)
     try {
-      await fetch('/api/admin/settings', {
+      const res = await fetch('/api/admin/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ donationAddresses: reordered })
       })
+      if (!res.ok) {
+        await fetchSettings()
+      }
     } catch {
-      fetchSettings()
+      await fetchSettings()
     }
   }
 

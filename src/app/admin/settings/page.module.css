@@ -316,3 +316,19 @@
     width: 100%;
   }
 }
+
+@media (max-width: 768px) {
+  .section {
+    padding: 16px;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .statusGrid {
+    grid-template-columns: 1fr;
+  }
+}
