@@ -259,6 +259,26 @@ export default function Header() {
             <button className={styles.mobileClose} onClick={() => setMenuOpen(false)} aria-label="Close menu">✕</button>
           </div>
 
+          <div className={styles.mobileSearchWrap}>
+            <form
+              onSubmit={e => {
+                e.preventDefault()
+                const q = (e.currentTarget.elements[0] as HTMLInputElement).value
+                if (q.trim().length >= 2) {
+                  setMenuOpen(false)
+                  window.location.href = `/search?q=${encodeURIComponent(q.trim())}`
+                }
+              }}
+            >
+              <input
+                type="search"
+                placeholder="Search the site..."
+                className={styles.mobileSearchInput}
+                aria-label="Search the site"
+              />
+            </form>
+          </div>
+
           <div className={styles.mobileSection}>
             <div className={styles.mobileSectionTitle}>Discover</div>
             <Link href="/" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🏠 Home</Link>

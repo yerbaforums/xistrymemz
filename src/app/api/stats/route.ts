@@ -5,11 +5,16 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    const members = await prisma.user.count()
-    const shops = await prisma.user.count({ where: { shopSlug: { not: null } } })
-    const products = await prisma.product.count()
+    const [members, shops, products, events] = await Promise.all([
+      prisma.user.count(),
+      prisma.user.count({ where: { shopSlug: { not: null } } }),
+      prisma.product.count({ where: { published: true } }),
+      prisma.event.count({
+        where: { eventDate: { gte: new Date() } }
+      })
+    ])
     
-    return NextResponse.json({ members, shops, products, events: 0 })
+    return NextResponse.json({ members, shops, products, events })
   } catch (error) {
     console.error('Error fetching stats:', error)
     return NextResponse.json({ members: 0, shops: 0, products: 0, events: 0 })

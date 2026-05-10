@@ -525,6 +525,31 @@
   padding: 4px;
 }
 
+.mobileSearchWrap {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.mobileSearchInput {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.mobileSearchInput:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(0, 217, 255, 0.15);
+}
+
+.mobileSearchInput::placeholder {
+  color: var(--text-muted);
+}
+
 .mobileSection {
   padding: 8px 0;
   border-bottom: 1px solid var(--border-color);
