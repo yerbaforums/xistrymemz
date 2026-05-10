@@ -165,10 +165,10 @@ export default function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Create a password"
               required
-              minLength={6}
+              minLength={8}
               aria-describedby="password-hint"
             />
-            <span id="password-hint" className={styles.fieldHint}>Minimum 6 characters</span>
+            <span id="password-hint" className={styles.fieldHint}>Minimum 8 characters</span>
           </div>
 
           <div className={styles.formGroup}>

@@ -114,10 +114,11 @@ export default function ForumPage() {
   const handleCreatePost = async () => {
     if (!newPostTitle.trim() || !newPostContent.trim()) return
     
+    const categoryObj = categories.find(c => c.slug === newPostCategory)
     const payload: Record<string, unknown> = { 
       title: newPostTitle, 
       content: newPostContent, 
-      category: newPostCategory 
+      categoryId: categoryObj?.id || ''
     }
     
     if (isPoll) {
@@ -128,7 +129,7 @@ export default function ForumPage() {
     
     setPosting(true)
     try {
-      const res = await fetch('/api/posts', {
+      const res = await fetch('/api/forum/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

@@ -17,6 +17,11 @@ export async function PUT(
     const { status } = await request.json()
     const { id } = await context.params
 
+    const validStatuses = ['PENDING', 'ACCEPTED', 'REJECTED']
+    if (!validStatuses.includes(status)) {
+      return NextResponse.json({ error: 'Invalid status. Must be PENDING, ACCEPTED, or REJECTED' }, { status: 400 })
+    }
+
     const connection = await prisma.connection.findUnique({
       where: { id }
     })

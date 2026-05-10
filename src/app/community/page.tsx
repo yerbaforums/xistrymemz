@@ -251,7 +251,7 @@ export default function CommunityPage() {
       const res = await fetch(`/api/community/connections/${connectionId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'CONNECTED' })
+        body: JSON.stringify({ status: 'ACCEPTED' })
       })
       
       if (res.ok) {

@@ -112,6 +112,9 @@ model User {
   backups           Backup[]
   initiatedPacts    StoragePact[] @relation("PactInitiator")
   receivedPacts     StoragePact[] @relation("PactPeer")
+  followsAsFollower Follow[]      @relation("Follower")
+  followsAsFollowed Follow[]      @relation("Followed")
+  outboxActivities  OutboxActivity[]
 
   // Donation settings (legacy single address)
   donationAddress  String?
@@ -124,6 +127,16 @@ model User {
   barterOffersMade   BarterOffer[] @relation("BarterOfferMaker")
   barterOffersReceived BarterOffer[] @relation("BarterOfferReceiver")
   notifications Notification[]
+  lastActiveAt DateTime?
+
+  // Fediverse
+  federatedUrl      String?   @unique
+  privateKey        String?
+  publicKey         String?
+  followersCount    Int       @default(0)
+  followingCount    Int       @default(0)
+  inboxUrl          String?
+  sharedInboxUrl    String?
 }
 
 // User-defined locations for filtering content
@@ -1159,6 +1172,55 @@ model StoragePact {
   @@index([initiatorId])
   @@index([peerId])
   @@index([status])
+}
+
+// Fediverse follow relationships
+model Follow {
+  id              String    @id @default(cuid())
+  followerId      String
+  follower        User      @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  followedId      String
+  followed        User?     @relation("Followed", fields: [followedId], references: [id], onDelete: SetNull)
+  remoteActorUrl  String?
+  remoteInboxUrl  String?
+  status          String    @default("PENDING")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([followerId, followedId])
+  @@index([followerId])
+  @@index([followedId])
+}
+
+// Outbound ActivityPub activities queue
+model OutboxActivity {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activityType    String
+  objectType      String?
+  objectId        String?
+  serialized      String
+  status          String    @default("PENDING")
+  retryCount      Int       @default(0)
+  lastError       String?
+  createdAt       DateTime  @default(now())
+  deliveredAt     DateTime?
+
+  @@index([status, createdAt])
+}
+
+// Incoming ActivityPub activities (dedup)
+model InboxActivity {
+  id              String    @id @default(cuid())
+  activityId      String    @unique
+  type            String
+  actor           String
+  objectId        String?
+  raw             String
+  processed       Boolean   @default(false)
+  processedAt     DateTime?
+  createdAt       DateTime  @default(now())
 }
 
 // PolySocial events (account-scoped shards)

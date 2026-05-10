@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { registerSchema, validateInput } from '@/lib/validation'
+import { generateActorKeys, getBaseUrl } from '@/lib/federation'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,26 +20,16 @@ export async function POST(request: Request) {
 
     const { email, password, name, username, inviteCode } = body
 
-    if (!email || !password) {
-      return NextResponse.json(
-        { error: 'Email and password are required' },
-        { status: 400 }
-      )
+    const validation = validateInput(registerSchema, { name, email, password, username, inviteCode })
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
     if (username) {
       const normalized = username.toLowerCase().replace(/[^a-z0-9]/g, '')
-      if (!normalized || normalized.length < 2) {
-        return NextResponse.json(
-          { error: 'Username must be at least 2 characters (letters and numbers only).' },
-          { status: 400 }
-        )
-      }
-
       const existingUsername = await prisma.user.findUnique({
         where: { username: normalized }
       })
-
       if (existingUsername) {
         return NextResponse.json(
           { error: 'Username already taken. Please choose a different username.' },
@@ -94,14 +86,23 @@ export async function POST(request: Request) {
     const hashedPassword = await bcrypt.hash(password, 10)
 
     const normalizedUsername = username ? username.toLowerCase().replace(/[^a-z0-9]/g, '') : null
+    const { publicKey, privateKey } = generateActorKeys()
 
     const user = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
         name,
-        username: normalizedUsername
+        username: normalizedUsername,
+        publicKey,
+        privateKey
       }
+    })
+
+    const fedUrl = `${getBaseUrl()}/api/fediverse/actor/${normalizedUsername || user.id}`
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { federatedUrl: fedUrl }
     })
 
     if (inviteCode) {
