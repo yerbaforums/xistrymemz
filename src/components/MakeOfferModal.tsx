@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useToast } from '@/context/ToastContext'
 import styles from './MakeOfferModal.module.css'
+import { useFocusTrap } from '@/hooks/useFocusTrap'
 
 interface MakeOfferModalProps {
   isOpen: boolean
@@ -15,6 +16,7 @@ interface MakeOfferModalProps {
 
 export function MakeOfferModal({ isOpen, onClose, listingId, listingTitle, listingType, listingOwnerName }: MakeOfferModalProps) {
   const { success, error, info } = useToast()
+  const modalRef = useFocusTrap(isOpen, onClose)
   const [offeredItem, setOfferedItem] = useState('')
   const [offeredValue, setOfferedValue] = useState('')
   const [message, setMessage] = useState('')
@@ -65,9 +67,9 @@ export function MakeOfferModal({ isOpen, onClose, listingId, listingTitle, listi
   if (!isOpen) return null
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={e => e.stopPropagation()}>
-        <h2>🤝 Make a Barter Offer</h2>
+    <div className="modal-overlay" onClick={onClose} onKeyDown={e => e.key === 'Escape' && onClose()}>
+      <div className="modal" onClick={e => e.stopPropagation()} ref={modalRef}>
+        <h2><span aria-hidden="true">🤝</span> Make a Barter Offer</h2>
         <p className={styles.desc}>
           Offer your item in exchange for this {listingType.toLowerCase()}
         </p>

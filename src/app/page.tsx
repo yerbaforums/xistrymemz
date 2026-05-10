@@ -6,6 +6,7 @@ import styles from './page.module.css'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { DonationActions } from '@/components/DonationActions'
 import { CRYPTO_LOGOS } from '@/lib/constants'
+import Skeleton from '@/components/Skeleton'
 
 interface DonationAddr {
   id: string
@@ -78,6 +79,9 @@ export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState<FeaturedProduct[]>([])
   const [recentRequests, setRecentRequests] = useState<PublicRequest[]>([])
   const [animatedStats, setAnimatedStats] = useState<PlatformStats>({ members: 0, shops: 0, products: 0, events: 0 })
+  const [loadingShops, setLoadingShops] = useState(true)
+  const [loadingProducts, setLoadingProducts] = useState(true)
+  const [loadingRequests, setLoadingRequests] = useState(true)
 
   useEffect(() => {
     if (stats.members > 0 && animatedStats.members !== stats.members) {
@@ -114,21 +118,21 @@ export default function Home() {
 
     fetch('/api/shops')
       .then(res => res.ok ? res.json() : null)
-      .then(data => { if (data?.shops) setFeaturedShops(data.shops.slice(0, 6)) })
-      .catch(() => {})
+      .then(data => { if (data?.shops) setFeaturedShops(data.shops.slice(0, 6)); setLoadingShops(false) })
+      .catch(() => setLoadingShops(false))
 
     fetch('/api/products?pinned=true')
       .then(res => res.ok ? res.json() : null)
-      .then(data => { if (data?.products) setFeaturedProducts(data.products.slice(0, 6)) })
-      .catch(() => {})
+      .then(data => { if (data?.products) setFeaturedProducts(data.products.slice(0, 6)); setLoadingProducts(false) })
+      .catch(() => setLoadingProducts(false))
 
     fetch('/api/requests?isPublic=true&take=4')
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         const list = data?.requests || (Array.isArray(data) ? data : [])
-        if (Array.isArray(list)) setRecentRequests(list.slice(0, 4))
+        if (Array.isArray(list)) setRecentRequests(list.slice(0, 4)); setLoadingRequests(false)
       })
-      .catch(() => {})
+      .catch(() => setLoadingRequests(false))
   }, [])
 
   const activeQr = donations.find(d => d.id === qrOpen)
@@ -205,10 +209,20 @@ export default function Home() {
       </section>
 
       {/* Featured Shops */}
-      {featuredShops.length > 0 && (
-        <section className={styles.featuredSection}>
-          <h2 className={styles.sectionTitle}>Featured Shops</h2>
-          <p className={styles.sectionSubtitle}>Discover unique shops from our community</p>
+      <section className={styles.featuredSection}>
+        <h2 className={styles.sectionTitle}>Featured Shops</h2>
+        <p className={styles.sectionSubtitle}>Discover unique shops from our community</p>
+        {loadingShops ? (
+          <div className={styles.horizontalScroll}>
+            {[1,2,3].map(i => (
+              <div key={i} className={styles.featuredCard}>
+                <Skeleton width="100%" height={120} borderRadius="8px" />
+                <Skeleton width="70%" height="1rem" className="mt-2" />
+                <Skeleton width="40%" height="0.75rem" className="mt-2" />
+              </div>
+            ))}
+          </div>
+        ) : featuredShops.length > 0 ? (
           <div className={styles.horizontalScroll}>
             {featuredShops.map(shop => (
               <Link key={shop.id} href={`/shop/${shop.shopSlug}`} className={styles.featuredCard}>
@@ -222,14 +236,24 @@ export default function Home() {
               </Link>
             ))}
           </div>
-        </section>
-      )}
+        ) : null}
+      </section>
 
       {/* Featured Products */}
-      {featuredProducts.length > 0 && (
-        <section className={styles.featuredSection}>
-          <h2 className={styles.sectionTitle}>Featured Products</h2>
-          <p className={styles.sectionSubtitle}>Check out these amazing products</p>
+      <section className={styles.featuredSection}>
+        <h2 className={styles.sectionTitle}>Featured Products</h2>
+        <p className={styles.sectionSubtitle}>Check out these amazing products</p>
+        {loadingProducts ? (
+          <div className={styles.horizontalScroll}>
+            {[1,2,3].map(i => (
+              <div key={i} className={styles.featuredCard}>
+                <Skeleton width="100%" height={120} borderRadius="8px" />
+                <Skeleton width="70%" height="1rem" className="mt-2" />
+                <Skeleton width="40%" height="0.75rem" className="mt-2" />
+              </div>
+            ))}
+          </div>
+        ) : featuredProducts.length > 0 ? (
           <div className={styles.horizontalScroll}>
             {featuredProducts.map(product => (
               <Link key={product.id} href={`/products/${product.id}`} className={styles.featuredCard}>
@@ -244,14 +268,24 @@ export default function Home() {
               </Link>
             ))}
           </div>
-        </section>
-      )}
+        ) : null}
+      </section>
 
       {/* Recent Community Requests */}
-      {recentRequests.length > 0 && (
-        <section className={styles.featuredSection}>
-          <h2 className={styles.sectionTitle}>Community Requests</h2>
-          <p className={styles.sectionSubtitle}>Help fund community needs</p>
+      <section className={styles.featuredSection}>
+        <h2 className={styles.sectionTitle}>Community Requests</h2>
+        <p className={styles.sectionSubtitle}>Help fund community needs</p>
+        {loadingRequests ? (
+          <div className={styles.horizontalScroll}>
+            {[1,2,3].map(i => (
+              <div key={i} className={styles.featuredCard}>
+                <Skeleton width="80%" height="1rem" />
+                <Skeleton width="50%" height="0.75rem" className="mt-2" />
+                <Skeleton width="60%" height="0.75rem" className="mt-2" />
+              </div>
+            ))}
+          </div>
+        ) : recentRequests.length > 0 ? (
           <div className={styles.horizontalScroll}>
             {recentRequests.map(req => (
               <Link key={req.id} href={`/requests/${req.id}`} className={styles.featuredCard}>
@@ -267,8 +301,8 @@ export default function Home() {
               </Link>
             ))}
           </div>
-        </section>
-      )}
+        ) : null}
+      </section>
 
       {/* How It Works */}
       <section className={styles.stepsSection}>

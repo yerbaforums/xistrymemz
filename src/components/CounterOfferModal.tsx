@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useToast } from '@/context/ToastContext'
 import styles from './MakeOfferModal.module.css'
+import { useFocusTrap } from '@/hooks/useFocusTrap'
 
 interface CounterOfferModalProps {
   isOpen: boolean
@@ -20,6 +21,7 @@ interface CounterOfferModalProps {
 
 export function CounterOfferModal({ isOpen, onClose, originalOffer, listingTitle, listingId, offerId }: CounterOfferModalProps) {
   const { success, error } = useToast()
+  const modalRef = useFocusTrap(isOpen, onClose)
   const [offeredItem, setOfferedItem] = useState('')
   const [offeredValue, setOfferedValue] = useState('')
   const [message, setMessage] = useState('')
@@ -67,9 +69,9 @@ export function CounterOfferModal({ isOpen, onClose, originalOffer, listingTitle
   if (!isOpen) return null
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={e => e.stopPropagation()}>
-        <h2>🔄 Counter Offer</h2>
+    <div className="modal-overlay" onClick={onClose} onKeyDown={e => e.key === 'Escape' && onClose()}>
+      <div className="modal" onClick={e => e.stopPropagation()} ref={modalRef}>
+        <h2><span aria-hidden="true">🔄</span> Counter Offer</h2>
         <p className={styles.desc}>
           Make a counter offer for {listingTitle}
         </p>

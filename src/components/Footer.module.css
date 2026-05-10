@@ -220,5 +220,13 @@
     width: 100%;
     order: 3;
     margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+  }
+
+  .donationAddr:hover {
+    color: var(--accent-primary);
   }
 }

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import styles from './ShareProfileModal.module.css'
+import { useFocusTrap } from '@/hooks/useFocusTrap'
 
 interface ShareProfileModalProps {
   isOpen: boolean
@@ -12,6 +13,7 @@ interface ShareProfileModalProps {
 
 export function ShareProfileModal({ isOpen, onClose, username, displayName }: ShareProfileModalProps) {
   const [copied, setCopied] = useState(false)
+  const modalRef = useFocusTrap(isOpen, onClose)
 
   if (!isOpen) return null
 
@@ -108,8 +110,8 @@ export function ShareProfileModal({ isOpen, onClose, username, displayName }: Sh
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className={`${styles.modal} modal`} onClick={e => e.stopPropagation()}>
+    <div className="modal-overlay" onClick={onClose} onKeyDown={e => e.key === 'Escape' && onClose()}>
+      <div className={`${styles.modal} modal`} onClick={e => e.stopPropagation()} ref={modalRef}>
         <div className={styles.header}>
           <h3>Share Profile</h3>
           <button onClick={onClose} className={styles.closeBtn}>&times;</button>

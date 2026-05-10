@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import styles from './QRCodeModal.module.css'
 import { getCryptoIcon, getCryptoName, getCryptoColor } from '@/lib/crypto-icons'
+import { useFocusTrap } from '@/hooks/useFocusTrap'
 
 interface QRCodeModalProps {
   isOpen: boolean
@@ -13,6 +14,7 @@ interface QRCodeModalProps {
 
 export function QRCodeModal({ isOpen, onClose, currency, address }: QRCodeModalProps) {
   const [copied, setCopied] = useState(false)
+  const modalRef = useFocusTrap(isOpen, onClose)
 
   if (!isOpen) return null
 
@@ -29,7 +31,7 @@ export function QRCodeModal({ isOpen, onClose, currency, address }: QRCodeModalP
 
   return (
     <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={e => e.stopPropagation()}>
+      <div className={styles.modal} onClick={e => e.stopPropagation()} ref={modalRef}>
         <div className={styles.header}>
           <h3>{fullName} QR Code</h3>
           <button className={styles.closeBtn} onClick={onClose}>&times;</button>

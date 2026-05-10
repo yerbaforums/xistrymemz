@@ -6,6 +6,7 @@ import { SiteSettingsProvider } from "@/hooks/useSiteSettings";
 import { ToastContainer } from "@/components/Toast";
 import AppShell from "@/components/AppShell";
 import Footer from "@/components/Footer";
+import BackToTop from "@/components/BackToTop";
 
 export const metadata: Metadata = {
   title: "XistrYmemZ - Plan. Request. Complete.",
@@ -61,6 +62,7 @@ export default function RootLayout({
               <AppShell>
                 {children}
                 <ToastContainer />
+                <BackToTop />
               </AppShell>
               <Footer />
             </TariWalletProvider>

@@ -19,6 +19,7 @@ interface DonationAddr {
 export default function Footer() {
   const [donations, setDonations] = useState<DonationAddr[]>([])
   const [qrOpen, setQrOpen] = useState<string | null>(null)
+  const [copiedAddr, setCopiedAddr] = useState<string | null>(null)
 
   useEffect(() => {
     fetch('/api/site/donations')
@@ -27,9 +28,23 @@ export default function Footer() {
       .catch(() => {})
   }, [])
 
+  useEffect(() => {
+    if (copiedAddr) {
+      const t = setTimeout(() => setCopiedAddr(null), 2000)
+      return () => clearTimeout(t)
+    }
+  }, [copiedAddr])
+
   const openQr = (da: DonationAddr) => setQrOpen(da.id)
   const closeQr = () => setQrOpen(null)
   const activeQr = donations.find(d => d.id === qrOpen)
+
+  const handleCopyAddress = async (address: string) => {
+    try {
+      await navigator.clipboard.writeText(address)
+      setCopiedAddr(address)
+    } catch { /* silently fail */ }
+  }
 
   return (
     <footer className={styles.footer}>
@@ -74,7 +89,17 @@ export default function Footer() {
                   className={styles.donationIcon}
                 />
                 <span className={styles.donationLabel}>{da.label || da.currency}</span>
-                <code className={styles.donationAddr} title={da.address}>{da.address}</code>
+                <code
+                  className={styles.donationAddr}
+                  title={da.address}
+                  onClick={() => handleCopyAddress(da.address)}
+                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCopyAddress(da.address) } }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Copy ${da.currency} address`}
+                >
+                  {copiedAddr === da.address ? 'Copied!' : da.address}
+                </code>
                 <DonationActions address={da.address} onQrClick={() => openQr(da)} size="sm" />
               </div>
             ))}

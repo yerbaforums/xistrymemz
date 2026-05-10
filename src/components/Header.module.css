@@ -125,6 +125,12 @@
   background: var(--bg-tertiary);
 }
 
+.navItem.dropdownVisible .navDropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
 .navLink.disabled {
   color: var(--text-muted);
   opacity: 0.5;
@@ -366,7 +372,8 @@
 }
 
 .userMenu:hover .userDropdown,
-.userMenu:focus-within .userDropdown {
+.userMenu:focus-within .userDropdown,
+.userMenu.userDropdownVisible .userDropdown {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
