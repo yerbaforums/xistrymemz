@@ -7,6 +7,7 @@ import { QRCodeModal } from '@/components/QRCodeModal'
 import { DonationActions } from '@/components/DonationActions'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import Skeleton from '@/components/Skeleton'
+import HomeMap from '@/components/HomeMap'
 
 interface DonationAddr {
   id: string
@@ -18,8 +19,11 @@ interface DonationAddr {
 interface PlatformStats {
   members: number
   shops: number
+  schools: number
   products: number
   events: number
+  plans: number
+  requests: number
 }
 
 interface FeaturedShop {
@@ -74,11 +78,11 @@ const STEPS = [
 export default function Home() {
   const [donations, setDonations] = useState<DonationAddr[]>([])
   const [qrOpen, setQrOpen] = useState<string | null>(null)
-  const [stats, setStats] = useState<PlatformStats>({ members: 0, shops: 0, products: 0, events: 0 })
+  const [stats, setStats] = useState<PlatformStats>({ members: 0, shops: 0, schools: 0, products: 0, events: 0, plans: 0, requests: 0 })
   const [featuredShops, setFeaturedShops] = useState<FeaturedShop[]>([])
   const [featuredProducts, setFeaturedProducts] = useState<FeaturedProduct[]>([])
   const [recentRequests, setRecentRequests] = useState<PublicRequest[]>([])
-  const [animatedStats, setAnimatedStats] = useState<PlatformStats>({ members: 0, shops: 0, products: 0, events: 0 })
+  const [animatedStats, setAnimatedStats] = useState<PlatformStats>({ members: 0, shops: 0, schools: 0, products: 0, events: 0, plans: 0, requests: 0 })
   const [loadingShops, setLoadingShops] = useState(true)
   const [loadingProducts, setLoadingProducts] = useState(true)
   const [loadingRequests, setLoadingRequests] = useState(true)
@@ -94,8 +98,11 @@ export default function Home() {
         setAnimatedStats({
           members: Math.min(Math.round((stats.members / steps) * step), stats.members),
           shops: Math.min(Math.round((stats.shops / steps) * step), stats.shops),
+          schools: Math.min(Math.round((stats.schools / steps) * step), stats.schools),
           products: Math.min(Math.round((stats.products / steps) * step), stats.products),
           events: Math.min(Math.round((stats.events / steps) * step), stats.events),
+          plans: Math.min(Math.round((stats.plans / steps) * step), stats.plans),
+          requests: Math.min(Math.round((stats.requests / steps) * step), stats.requests),
         })
         if (step >= steps) clearInterval(timer)
       }, interval)
@@ -198,12 +205,24 @@ export default function Home() {
             <span className={styles.statText}>Shops</span>
           </div>
           <div className={styles.statCard}>
+            <span className={styles.statNumber}>{animatedStats.schools}</span>
+            <span className={styles.statText}>Schools</span>
+          </div>
+          <div className={styles.statCard}>
             <span className={styles.statNumber}>{animatedStats.products}</span>
             <span className={styles.statText}>Products</span>
           </div>
           <div className={styles.statCard}>
             <span className={styles.statNumber}>{animatedStats.events}</span>
             <span className={styles.statText}>Events</span>
+          </div>
+          <div className={styles.statCard}>
+            <span className={styles.statNumber}>{animatedStats.plans}</span>
+            <span className={styles.statText}>Projects</span>
+          </div>
+          <div className={styles.statCard}>
+            <span className={styles.statNumber}>{animatedStats.requests}</span>
+            <span className={styles.statText}>Requests</span>
           </div>
         </div>
       </section>
@@ -369,6 +388,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <HomeMap />
 
       {/* Donation Section */}
       {donations.length > 0 && (

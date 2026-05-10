@@ -1,0 +1,93 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
+import styles from './HomeMap.module.css'
+
+const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
+const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
+const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false })
+const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false })
+
+interface MapItem {
+  id: string
+  type: string
+  title: string
+  lat: number
+  lng: number
+  url: string
+  image: string | null
+  meta: string | undefined
+}
+
+const TYPE_ICONS: Record<string, string> = {
+  product: '🛒',
+  event: '📅',
+  plan: '🚀',
+  request: '📝',
+  shop: '🏪',
+}
+
+function calculateCenter(items: MapItem[]): [number, number] {
+  if (items.length === 0) return [20, 0]
+  const lats = items.map(i => i.lat)
+  const lngs = items.map(i => i.lng)
+  return [
+    (Math.min(...lats) + Math.max(...lats)) / 2,
+    (Math.min(...lngs) + Math.max(...lngs)) / 2,
+  ]
+}
+
+export default function HomeMap() {
+  const [items, setItems] = useState<MapItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => { setMounted(true) }, [])
+
+  useEffect(() => {
+    fetch('/api/map-data')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { if (data?.items) setItems(data.items); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [])
+
+  const center = calculateCenter(items)
+
+  if (!mounted) return null
+
+  return (
+    <section className={styles.section}>
+      <h2 className={styles.title}>Global Activity Map</h2>
+      <p className={styles.subtitle}>Discover what&apos;s happening around the world</p>
+      <div className={styles.mapWrap}>
+        {loading ? (
+          <div className={styles.loading}>Loading map...</div>
+        ) : items.length === 0 ? (
+          <div className={styles.loading}>No locations yet</div>
+        ) : (
+          <MapContainer center={center} zoom={3} className={styles.map} scrollWheelZoom={false}>
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            {items.map(item => (
+              <Marker key={`${item.type}-${item.id}`} position={[item.lat, item.lng]}>
+                <Popup>
+                  <div className={styles.popup}>
+                    <span className={styles.popupIcon}>{TYPE_ICONS[item.type] || '📍'}</span>
+                    <a href={item.url} className={styles.popupTitle}>{item.title}</a>
+                    {item.meta && <span className={styles.popupMeta}>{item.meta}</span>}
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
+          </MapContainer>
+        )}
+      </div>
+      <p className={styles.footer}>
+        {items.length} pinned locations across Products, Events, Projects, Requests &amp; Shops
+      </p>
+    </section>
+  )
+}

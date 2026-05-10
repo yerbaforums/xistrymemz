@@ -668,7 +668,7 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 24px;
-  max-width: 900px;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
