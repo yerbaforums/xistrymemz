@@ -9,6 +9,7 @@ import { useCart } from '@/context/CartContext'
 import { useToast } from '@/context/ToastContext'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
+import { usePassportLocation } from '@/hooks/usePassportLocation'
 
 import dynamic from 'next/dynamic'
 
@@ -88,6 +89,7 @@ export default function ProductsPage() {
   const [priceMax, setPriceMax] = useState('')
 
   const mapRef = useRef<L.Map | null>(null)
+  const { location: passportLocation } = usePassportLocation()
 
   const [newProduct, setNewProduct] = useState({
     title: '',
@@ -110,7 +112,8 @@ export default function ProductsPage() {
     rentalDeposit: '',
     rentalMinDays: 1,
     rentalMaxDays: '',
-    rentalAvailable: true
+    rentalAvailable: true,
+    createGroup: false
   })
   const [creating, setCreating] = useState(false)
   const { addItem } = useCart()
@@ -142,6 +145,13 @@ export default function ProductsPage() {
     checkAuth()
     fetchProducts()
   }, [])
+
+  useEffect(() => {
+    if (passportLocation?.latitude && passportLocation?.longitude && !zipCode) {
+      setUserLocation({ lat: passportLocation.latitude, lon: passportLocation.longitude })
+      setRadius(String(passportLocation.searchRadius || 25))
+    }
+  }, [passportLocation])
 
   const checkAuth = async () => {
     try {
@@ -295,7 +305,7 @@ export default function ProductsPage() {
       const res = await fetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newProduct)
+        body: JSON.stringify({ ...newProduct, price: newProduct.price || null })
       })
 
       if (res.ok) {
@@ -321,7 +331,8 @@ export default function ProductsPage() {
           rentalDeposit: '',
           rentalMinDays: 1,
           rentalMaxDays: '',
-          rentalAvailable: true
+          rentalAvailable: true,
+          createGroup: false
         })
         fetchProducts()
       } else {
@@ -513,6 +524,19 @@ export default function ProductsPage() {
                 </button>
               </div>
             </div>
+            {passportLocation?.latitude && passportLocation?.longitude && (
+              <button
+                onClick={() => {
+                  setUserLocation({ lat: passportLocation.latitude!, lon: passportLocation.longitude! })
+                  setRadius(String(passportLocation.searchRadius || 25))
+                  setZipCode('')
+                }}
+                className={styles.zipBtn}
+                style={{ marginTop: '8px', width: '100%' }}
+              >
+                📍 Near Me
+              </button>
+            )}
           </div>
 
           <button onClick={clearFilters} className={styles.clearBtn}>
@@ -842,6 +866,16 @@ export default function ProductsPage() {
                     onChange={e => setNewProduct({...newProduct, isGlobal: e.target.checked})}
                   />
                   Available Globally (no location required)
+                </label>
+              </div>
+              <div className="form-group">
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={newProduct.createGroup}
+                    onChange={e => setNewProduct({...newProduct, createGroup: e.target.checked})}
+                  />
+                  Create a discussion group for this listing
                 </label>
               </div>
               {!newProduct.isGlobal && (

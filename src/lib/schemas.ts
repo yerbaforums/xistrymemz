@@ -21,7 +21,8 @@ export const requestSchema = z.object({
   goalAmount: z.number().optional().nullable(),
   currentFunding: z.number().optional().nullable(),
   location: z.string().optional(),
-  isPublic: z.boolean().optional()
+  isPublic: z.boolean().optional(),
+  createGroup: z.boolean().optional()
 })
 
 export const productSchema = z.object({
@@ -48,7 +49,8 @@ export const productSchema = z.object({
   rentalDeposit: z.coerce.number().min(0).optional().nullable(),
   rentalMinDays: z.coerce.number().int().min(1).optional(),
   rentalMaxDays: z.coerce.number().int().min(1).optional().nullable(),
-  rentalAvailable: z.boolean().optional()
+  rentalAvailable: z.boolean().optional(),
+  createGroup: z.boolean().optional()
 })
 
 export const groupSchema = z.object({

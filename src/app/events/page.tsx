@@ -5,6 +5,7 @@ import Link from 'next/link'
 import styles from './page.module.css'
 import { calculateDistance, geocodeLocation } from '@/lib/geocoding'
 import { useToast } from '@/context/ToastContext'
+import { usePassportLocation } from '@/hooks/usePassportLocation'
 
 import dynamic from 'next/dynamic'
 
@@ -76,6 +77,7 @@ export default function EventsPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [mapExpanded, setMapExpanded] = useState(false)
   const mapRef = useRef<L.Map | null>(null)
+  const { location: passportLocation } = usePassportLocation()
 
   const geocodeZipCode = useCallback(async () => {
     if (!zipCode.trim()) {
@@ -129,6 +131,13 @@ export default function EventsPage() {
       })
       .catch(() => {})
   }, [])
+
+  useEffect(() => {
+    if (passportLocation?.latitude && passportLocation?.longitude && !zipCode) {
+      setUserLocation({ lat: passportLocation.latitude, lon: passportLocation.longitude })
+      setRadius(String(passportLocation.searchRadius || 25))
+    }
+  }, [passportLocation])
 
   const handleJoin = async (eventId: string) => {
     if (!userId) {
@@ -433,6 +442,19 @@ export default function EventsPage() {
                 </button>
               </div>
             </div>
+            {passportLocation?.latitude && passportLocation?.longitude && (
+              <button
+                onClick={() => {
+                  setUserLocation({ lat: passportLocation.latitude!, lon: passportLocation.longitude! })
+                  setRadius(String(passportLocation.searchRadius || 25))
+                  setZipCode('')
+                }}
+                className={styles.zipBtn}
+                style={{ marginTop: '8px', width: '100%' }}
+              >
+                📍 Near Me
+              </button>
+            )}
           </div>
 
           {hasActiveFilters && (

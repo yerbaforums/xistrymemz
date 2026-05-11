@@ -341,11 +341,6 @@ export default function ProfileEditPage() {
             </div>
 
             <div style={{marginBottom: '16px'}}>
-              <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>Location</label>
-              <input type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder="City, Country" style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)'}} />
-            </div>
-
-            <div style={{marginBottom: '16px'}}>
               <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>Website</label>
               <input type="url" value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://example.com" style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)'}} />
             </div>
@@ -374,7 +369,34 @@ export default function ProfileEditPage() {
 
           {/* Earth Passport */}
           <div style={{background: 'linear-gradient(135deg, #1a2a1a 0%, #0d1a0d 100%)', border: '1px solid #2a4a2a', borderRadius: '12px', padding: '24px', marginBottom: '20px'}}>
-            <h2 style={{marginBottom: '20px', color: '#7fff7f'}}>🌍 Earth Passport</h2>
+            <h2 style={{marginBottom: '8px', color: '#7fff7f'}}>🌍 Earth Passport</h2>
+            <p style={{color: '#6a8a6a', fontSize: '0.8rem', marginBottom: '20px'}}>
+              Your Earth Passport shows your location on your profile. When <strong>traveling mode</strong> is off, your profile shows <span style={{color: '#00d9ff'}}>📍 Home: [location]</span>. 
+              When traveling mode is on, it shows <span style={{color: '#ffc107'}}>✈️ [location] traveling</span> — letting your community know you're on the move.
+            </p>
+
+            <div style={{marginBottom: '16px', padding: '12px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)'}}>
+              <label style={{display: 'block', marginBottom: '6px', color: '#88aa88', fontSize: '0.8rem'}}>Profile Display Preview</label>
+              <div style={{display: 'flex', gap: '8px', flexWrap: 'wrap'}}>
+                <span style={{display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, background: traveling ? 'rgba(255, 193, 7, 0.15)' : 'rgba(0, 217, 255, 0.1)', border: traveling ? '1px solid rgba(255, 193, 7, 0.3)' : '1px solid rgba(0, 217, 255, 0.2)', color: traveling ? '#ffc107' : '#00d9ff'}}>
+                  {traveling ? '✈️' : '📍'}
+                  <span>{location || 'Your City'}</span>
+                  {traveling && <span style={{opacity: 0.6}}>traveling</span>}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setTraveling(!traveling)}
+                  style={{padding: '4px 10px', background: 'transparent', border: '1px solid #4ade80', borderRadius: '20px', color: '#4ade80', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 600}}
+                >
+                  Switch to {traveling ? '📍 Home' : '✈️ Traveling'}
+                </button>
+              </div>
+            </div>
+
+            <div style={{marginBottom: '16px'}}>
+              <label style={{display: 'block', marginBottom: '8px', color: '#88aa88'}}>Your Location (City, Country)</label>
+              <input type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder="City, Country" style={{width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a4a2a', borderRadius: '8px', color: '#c0e0c0'}} />
+            </div>
 
             <div style={{marginBottom: '16px'}}>
               <label style={{display: 'block', marginBottom: '8px', color: '#88aa88'}}>Neighborhood / Area</label>
@@ -387,22 +409,28 @@ export default function ProfileEditPage() {
                 <input type="range" min="1" max="500" value={searchRadius} onChange={e => setSearchRadius(Number(e.target.value))} style={{flex: 1, accentColor: '#4ade80'}} />
                 <span style={{color: '#7fff7f', fontWeight: 600, minWidth: '50px', textAlign: 'right'}}>{searchRadius}km</span>
               </div>
+              <p style={{color: '#6a8a6a', fontSize: '0.75rem', margin: '4px 0 0'}}>Shows listings within this radius when using "Near Me" filters.</p>
             </div>
 
             <div style={{marginBottom: '16px'}}>
-              <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: '#88aa88'}}>
+              <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: traveling ? '#ffc107' : '#88aa88'}}>
                 <input
                   type="checkbox"
                   checked={traveling}
                   onChange={e => setTraveling(e.target.checked)}
-                  style={{width: '18px', height: '18px', accentColor: '#4ade80'}}
+                  style={{width: '18px', height: '18px', accentColor: '#ffc107'}}
                 />
-                <span>I'm currently traveling</span>
+                <span><strong>I'm currently traveling</strong></span>
               </label>
+              <p style={{color: '#6a8a6a', fontSize: '0.75rem', margin: '4px 0 0'}}>
+                {traveling
+                  ? 'Your profile shows you as traveling. Community members will see you\'re on the move and may reach out to connect.'
+                  : 'Your profile shows your home location. Toggle this on when you\'re traveling to let your community know.'}
+              </p>
             </div>
 
             <div style={{marginBottom: '16px'}}>
-              <label style={{display: 'block', marginBottom: '8px', color: '#88aa88'}}>Coordinates</label>
+              <label style={{display: 'block', marginBottom: '8px', color: '#88aa88'}}>GPS Coordinates</label>
               <div style={{display: 'flex', gap: '8px', marginBottom: '8px'}}>
                 <button
                   type="button"
@@ -410,7 +438,7 @@ export default function ProfileEditPage() {
                   disabled={geoLoading}
                   style={{padding: '8px 16px', background: '#4ade80', color: '#0d1a0d', border: 'none', borderRadius: '8px', cursor: geoLoading ? 'not-allowed' : 'pointer', fontWeight: 600, fontSize: '0.875rem'}}
                 >
-                  {geoLoading ? 'Locating...' : '📍 Use My Location'}
+                  {geoLoading ? 'Locating...' : '📍 Auto-Detect'}
                 </button>
                 {latitude && longitude && (
                   <button
@@ -435,13 +463,10 @@ export default function ProfileEditPage() {
                 </div>
               )}
               {!latitude && !longitude && (
-                <p style={{color: '#6a8a6a', fontSize: '0.8rem', margin: 0, padding: '8px 10px', background: 'rgba(0,0,0,0.15)', borderRadius: '6px'}}>No coordinates set. Use the button above to auto-detect your location.</p>
+                <p style={{color: '#6a8a6a', fontSize: '0.8rem', margin: 0, padding: '8px 10px', background: 'rgba(0,0,0,0.15)', borderRadius: '6px'}}>
+                  No coordinates set. Coordinates enable distance-based filtering for "Near Me" features. Use the button above to auto-detect, or they'll be derived from your location on save.
+                </p>
               )}
-            </div>
-
-            <div>
-              <label style={{display: 'block', marginBottom: '8px', color: '#88aa88'}}>Location</label>
-              <input type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder="City, Country" style={{width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a4a2a', borderRadius: '8px', color: '#c0e0c0'}} />
             </div>
           </div>
 

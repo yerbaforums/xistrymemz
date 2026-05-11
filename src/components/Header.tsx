@@ -9,6 +9,7 @@ import styles from './Header.module.css'
 import CartButton from './CartButton'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { getUserProfileUrl } from '@/lib/utils'
+import LocationStatus from './LocationStatus'
 
 export default function Header() {
   const { data: session, status } = useSession()
@@ -234,6 +235,9 @@ export default function Header() {
             </>
           )}
         </nav>
+
+        {/* Location Status */}
+        {isAuthenticated && <LocationStatus />}
 
         {/* Mobile hamburger */}
         <button

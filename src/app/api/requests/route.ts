@@ -108,7 +108,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { title, description, planId, productId, groupId, schoolContentId, eventId, category, priority, budget, goalAmount, currentFunding, location, isPublic } = validation.data
+    const { title, description, planId, productId, groupId, schoolContentId, eventId, category, priority, budget, goalAmount, currentFunding, location, isPublic, createGroup } = validation.data
 
     if (planId) {
       const plan = await prisma.plan.findFirst({
@@ -189,6 +189,30 @@ export async function POST(request: Request) {
         user: { select: { id: true, name: true, username: true, email: true, image: true, shopSlug: true } }
       }
     })
+
+    if (createGroup) {
+      const groupName = `${title} Discussion`
+      const group = await prisma.group.create({
+        data: {
+          name: groupName,
+          description: `Community discussion group for the request: ${title}. ${description || ''}`,
+          isLocationBased: !!location,
+          location: location || null,
+          userId: session.user.id,
+          members: {
+            create: {
+              userId: session.user.id,
+              role: 'ADMIN'
+            }
+          }
+        }
+      })
+      await prisma.request.update({
+        where: { id: req.id },
+        data: { groupId: group.id }
+      })
+      return NextResponse.json({ ...req, groupId: group.id, _group: group })
+    }
 
     return NextResponse.json(req)
   } catch (error) {

@@ -8,6 +8,8 @@ import styles from './page.module.css'
 import { getUserProfileUrl } from '@/lib/utils'
 import { getCryptoIcon, getCryptoColor } from '@/lib/crypto-icons'
 import { useToast } from '@/context/ToastContext'
+import { calculateDistance, geocodeLocation } from '@/lib/geocoding'
+import { usePassportLocation } from '@/hooks/usePassportLocation'
 
 interface DonationAddr {
   id: string
@@ -91,7 +93,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
   const [saving, setSaving] = useState(false)
   const [newRequest, setNewRequest] = useState({
     title: '', description: '', category: 'GENERAL', priority: 'MEDIUM',
-    budget: '', goalAmount: '', location: '', isPublic: true, allowFulfillments: true, showDonationAddress: true
+    budget: '', goalAmount: '', location: '', isPublic: true, allowFulfillments: true, showDonationAddress: true, createGroup: false
   })
   const [creating, setCreating] = useState(false)
   const [selectedDonation, setSelectedDonation] = useState<DonationAddr | null>(null)
@@ -105,6 +107,29 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
 
   const isAdmin = userRole === 'ADMIN'
+  const { location: passportLocation } = usePassportLocation()
+  const [userLocation, setUserLocation] = useState<{lat: number, lon: number} | null>(null)
+  const [zipCode, setZipCode] = useState('')
+  const [radius, setRadius] = useState('25')
+  const [geocodingLoading, setGeocodingLoading] = useState(false)
+
+  useEffect(() => {
+    if (passportLocation?.latitude && passportLocation?.longitude && !zipCode) {
+      setUserLocation({ lat: passportLocation.latitude, lon: passportLocation.longitude })
+      setRadius(String(passportLocation.searchRadius || 25))
+    }
+  }, [passportLocation])
+
+  const geocodeZipCode = async () => {
+    if (!zipCode.trim()) { setUserLocation(null); return }
+    setGeocodingLoading(true)
+    try {
+      const result = await geocodeLocation(zipCode)
+      if (result) setUserLocation({ lat: result.latitude, lon: result.longitude })
+      else setUserLocation(null)
+    } catch { setUserLocation(null) }
+    finally { setGeocodingLoading(false) }
+  }
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -130,6 +155,15 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
       result = result.filter(r => r.title.toLowerCase().includes(q) || r.description?.toLowerCase().includes(q))
     }
     if (categoryFilter !== 'ALL') result = result.filter(r => r.category === categoryFilter)
+
+    if (userLocation && radius) {
+      const radiusMiles = parseInt(radius)
+      result = result.filter(r => {
+        if (r.latitude == null || r.longitude == null) return false
+        const distance = calculateDistance(userLocation.lat, userLocation.lon, r.latitude, r.longitude)
+        return distance <= radiusMiles
+      })
+    }
 
     switch (sortBy) {
       case 'newest': result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); break
@@ -185,7 +219,8 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
           location: newRequest.location || null,
           isPublic: newRequest.isPublic,
           allowFulfillments: newRequest.allowFulfillments,
-          showDonationAddress: newRequest.showDonationAddress
+          showDonationAddress: newRequest.showDonationAddress,
+          createGroup: newRequest.createGroup
         })
       })
       if (res.ok) {
@@ -196,7 +231,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
           commentCount: 0, fulfillmentCount: 0, supportCount: 0
         }, ...requests])
         setShowCreate(false)
-        setNewRequest({ title: '', description: '', category: 'GENERAL', priority: 'MEDIUM', budget: '', goalAmount: '', location: '', isPublic: true, allowFulfillments: true, showDonationAddress: true })
+        setNewRequest({ title: '', description: '', category: 'GENERAL', priority: 'MEDIUM', budget: '', goalAmount: '', location: '', isPublic: true, allowFulfillments: true, showDonationAddress: true, createGroup: false })
         success('Request created!')
       } else {
         const err = await res.json()
@@ -352,8 +387,41 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
             </select>
           </div>
 
-          {(searchQuery || categoryFilter !== 'ALL' || sortBy !== 'newest') && (
-            <button onClick={() => { setSearchQuery(''); setCategoryFilter('ALL'); setSortBy('newest'); }} className={styles.clearBtn}>
+          <div style={{ borderTop: '1px solid var(--border-color)', margin: '12px 0' }} />
+
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Distance from ZIP</label>
+            <div>
+              <input type="text" value={zipCode} onChange={e => setZipCode(e.target.value)} placeholder="Enter ZIP code" style={{ width: '100%', padding: '8px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)', fontSize: '0.875rem', marginBottom: '8px' }} />
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <select value={radius} onChange={e => setRadius(e.target.value)} style={{ flex: 1, padding: '8px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)', fontSize: '0.875rem' }} disabled={!userLocation && !zipCode}>
+                  <option value="5">5 mi</option>
+                  <option value="10">10 mi</option>
+                  <option value="25">25 mi</option>
+                  <option value="50">50 mi</option>
+                  <option value="100">100 mi</option>
+                </select>
+                <button onClick={geocodeZipCode} disabled={geocodingLoading || !zipCode.trim()} style={{ padding: '8px 16px', background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500, fontSize: '0.875rem', opacity: geocodingLoading || !zipCode.trim() ? 0.5 : 1 }}>
+                  {geocodingLoading ? '...' : 'Go'}
+                </button>
+              </div>
+            </div>
+            {passportLocation?.latitude && passportLocation?.longitude && (
+              <button
+                onClick={() => {
+                  setUserLocation({ lat: passportLocation.latitude!, lon: passportLocation.longitude! })
+                  setRadius(String(passportLocation.searchRadius || 25))
+                  setZipCode('')
+                }}
+                style={{ marginTop: '8px', width: '100%', padding: '8px', background: 'var(--bg-secondary)', color: 'var(--accent-primary)', border: '1px solid var(--accent-primary)', borderRadius: '6px', cursor: 'pointer', fontWeight: 500, fontSize: '0.875rem' }}
+              >
+                📍 Near Me
+              </button>
+            )}
+          </div>
+
+          {(searchQuery || categoryFilter !== 'ALL' || sortBy !== 'newest' || userLocation) && (
+            <button onClick={() => { setSearchQuery(''); setCategoryFilter('ALL'); setSortBy('newest'); setUserLocation(null); setZipCode(''); }} className={styles.clearBtn}>
               Clear All Filters
             </button>
           )}
@@ -389,6 +457,10 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
               <label className={styles.checkbox}>
                 <input type="checkbox" checked={newRequest.showDonationAddress} onChange={e => setNewRequest({ ...newRequest, showDonationAddress: e.target.checked })} />
                 Show my donation addresses on this request
+              </label>
+              <label className={styles.checkbox}>
+                <input type="checkbox" checked={newRequest.createGroup} onChange={e => setNewRequest({ ...newRequest, createGroup: e.target.checked })} />
+                Create a discussion group for this request
               </label>
               {userDonationAddrs.length === 0 && (
                 <p className={styles.formHint}>

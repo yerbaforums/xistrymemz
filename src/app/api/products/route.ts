@@ -130,7 +130,8 @@ export async function POST(request: Request) {
       location, locationDetails, isGlobal, isRemote, imageUrl,
       paymentMethods, paymentType, acceptsRequests, acceptsOffers, requestPrice, published,
       rentalDaily, rentalWeekly, rentalMonthly, rentalDeposit,
-      rentalMinDays, rentalMaxDays, rentalAvailable
+      rentalMinDays, rentalMaxDays, rentalAvailable,
+      createGroup
     } = validation.data
 
     const paymentMethodsString = paymentMethods ? 
@@ -166,6 +167,33 @@ export async function POST(request: Request) {
         userId: session.user.id
       }
     })
+
+    if (createGroup) {
+      const groupName = `${title || 'Untitled'} Discussion`
+      const group = await prisma.group.create({
+        data: {
+          name: groupName,
+          description: `Community discussion group for: ${title || 'Untitled'}. ${description || ''}`,
+          isLocationBased: !!location,
+          location: location || null,
+          userId: session.user.id,
+          members: {
+            create: {
+              userId: session.user.id,
+              role: 'ADMIN'
+            }
+          }
+        }
+      })
+      await prisma.groupProduct.create({
+        data: {
+          groupId: group.id,
+          productId: product.id,
+          addedBy: session.user.id
+        }
+      })
+      return NextResponse.json({ ...product, _group: group })
+    }
 
     return NextResponse.json(product)
   } catch (error) {

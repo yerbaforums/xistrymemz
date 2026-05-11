@@ -120,7 +120,8 @@ export async function POST(request: NextRequest) {
       donationCurrency,
       needsVolunteers,
       volunteerRoles,
-      volunteerDescription
+      volunteerDescription,
+      createGroup
     } = body
 
     if (!title) {
@@ -189,6 +190,32 @@ export async function POST(request: NextRequest) {
         organizerId: session.user.id
       }
     })
+
+    if (createGroup) {
+      const groupName = `${title} Discussion`
+      const group = await prisma.group.create({
+        data: {
+          name: groupName,
+          description: `Community discussion group for the event: ${title}. ${description || ''}`,
+          isLocationBased: !!location,
+          location,
+          latitude,
+          longitude,
+          userId: session.user.id,
+          members: {
+            create: {
+              userId: session.user.id,
+              role: 'ADMIN'
+            }
+          }
+        }
+      })
+      await prisma.event.update({
+        where: { id: event.id },
+        data: { groupId: group.id }
+      })
+      return NextResponse.json({ ...event, groupId: group.id, _group: group })
+    }
 
     return NextResponse.json(event)
   } catch (error) {
