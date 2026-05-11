@@ -128,7 +128,9 @@ export async function POST(request: Request) {
     const { 
       title, description, price, type, category, condition,
       location, locationDetails, isGlobal, isRemote, imageUrl,
-      paymentMethods, paymentType, acceptsRequests, acceptsOffers, requestPrice, published
+      paymentMethods, paymentType, acceptsRequests, acceptsOffers, requestPrice, published,
+      rentalDaily, rentalWeekly, rentalMonthly, rentalDeposit,
+      rentalMinDays, rentalMaxDays, rentalAvailable
     } = validation.data
 
     const paymentMethodsString = paymentMethods ? 
@@ -154,6 +156,13 @@ export async function POST(request: Request) {
         acceptsOffers: acceptsOffers ?? true,
         requestPrice: requestPrice || null,
         published: published ?? true,
+        rentalDaily: rentalDaily || null,
+        rentalWeekly: rentalWeekly || null,
+        rentalMonthly: rentalMonthly || null,
+        rentalDeposit: rentalDeposit || null,
+        rentalMinDays: rentalMinDays ?? 1,
+        rentalMaxDays: rentalMaxDays || null,
+        rentalAvailable: rentalAvailable ?? true,
         userId: session.user.id
       }
     })

@@ -542,6 +542,11 @@
   color: var(--accent-secondary);
 }
 
+.badge-rental {
+  background: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+}
+
 .condition {
   font-size: 0.7rem;
   padding: 2px 8px;
@@ -743,6 +748,14 @@
   height: 1px;
   background: var(--border-color);
   margin: 16px 0;
+}
+
+.rentalPricing {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
 }
 
 @media (min-width: 1400px) {

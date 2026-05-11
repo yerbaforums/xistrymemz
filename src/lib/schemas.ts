@@ -28,7 +28,7 @@ export const productSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200),
   description: z.string().max(5000).optional().nullable(),
   price: z.coerce.number().min(0).optional().nullable(),
-  type: z.enum(['PRODUCT', 'SERVICE']).optional().nullable(),
+  type: z.enum(['PRODUCT', 'SERVICE', 'RENTAL']).optional().nullable(),
   category: z.string().optional().nullable(),
   condition: z.string().optional().nullable(),
   location: z.string().optional().nullable(),
@@ -41,7 +41,14 @@ export const productSchema = z.object({
   acceptsRequests: z.boolean().optional(),
   acceptsOffers: z.boolean().optional(),
   requestPrice: z.coerce.number().min(0).optional().nullable(),
-  published: z.boolean().optional()
+  published: z.boolean().optional(),
+  rentalDaily: z.coerce.number().min(0).optional().nullable(),
+  rentalWeekly: z.coerce.number().min(0).optional().nullable(),
+  rentalMonthly: z.coerce.number().min(0).optional().nullable(),
+  rentalDeposit: z.coerce.number().min(0).optional().nullable(),
+  rentalMinDays: z.coerce.number().int().min(1).optional(),
+  rentalMaxDays: z.coerce.number().int().min(1).optional().nullable(),
+  rentalAvailable: z.boolean().optional()
 })
 
 export const groupSchema = z.object({

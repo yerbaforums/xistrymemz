@@ -47,6 +47,13 @@ interface Product {
   imageUrl: string | null
   user: { name: string | null; shopSlug?: string | null }
   pinned: boolean
+  rentalDaily: number | null
+  rentalWeekly: number | null
+  rentalMonthly: number | null
+  rentalDeposit: number | null
+  rentalMinDays: number
+  rentalMaxDays: number | null
+  rentalAvailable: boolean
 }
 
 export default function ProductsPage() {
@@ -96,7 +103,14 @@ export default function ProductsPage() {
     paymentMethods: [] as string[],
     paymentType: 'BOTH',
     sellerPayoutAddress: '',
-    sellerCryptoCurrency: 'ETH'
+    sellerCryptoCurrency: 'ETH',
+    rentalDaily: '',
+    rentalWeekly: '',
+    rentalMonthly: '',
+    rentalDeposit: '',
+    rentalMinDays: 1,
+    rentalMaxDays: '',
+    rentalAvailable: true
   })
   const [creating, setCreating] = useState(false)
   const { addItem } = useCart()
@@ -300,7 +314,14 @@ export default function ProductsPage() {
           paymentMethods: [],
           paymentType: 'BOTH',
           sellerPayoutAddress: '',
-          sellerCryptoCurrency: 'ETH'
+          sellerCryptoCurrency: 'ETH',
+          rentalDaily: '',
+          rentalWeekly: '',
+          rentalMonthly: '',
+          rentalDeposit: '',
+          rentalMinDays: 1,
+          rentalMaxDays: '',
+          rentalAvailable: true
         })
         fetchProducts()
       } else {
@@ -389,6 +410,7 @@ export default function ProductsPage() {
               <option value="ALL">All Types</option>
               <option value="PRODUCT">Products</option>
               <option value="SERVICE">Services</option>
+              <option value="RENTAL">Rentals</option>
             </select>
           </div>
 
@@ -636,7 +658,7 @@ export default function ProductsPage() {
                       {product.pinned && (
                         <span className={styles.pinnedBadge}>📌 Featured</span>
                       )}
-                      <span className={`${styles.badge} ${product.type === 'PRODUCT' ? styles.badgeProduct : styles.badgeService}`}>
+                      <span className={`${styles.badge} ${product.type === 'PRODUCT' ? styles.badgeProduct : product.type === 'RENTAL' ? styles.badgeRental : styles.badgeService}`}>
                         {product.type}
                       </span>
                       {product.condition && (
@@ -656,7 +678,9 @@ export default function ProductsPage() {
                     </div>
                   </div>
                   <div className={styles.priceRow}>
-                    {product.price ? (
+                    {product.type === 'RENTAL' && product.rentalDaily ? (
+                      <p className={styles.price}>${product.rentalDaily}/day</p>
+                    ) : product.price ? (
                       <p className={styles.price}>${product.price}</p>
                     ) : (
                       <p className={styles.price}>Free</p>
@@ -727,26 +751,27 @@ export default function ProductsPage() {
               <div className="form-row">
                 <div className="form-group">
                   <label>Type</label>
-                  <select
-                    value={newProduct.type}
-                    onChange={e => setNewProduct({...newProduct, type: e.target.value})}
-                  >
-                    <option value="PRODUCT">Product</option>
-                    <option value="SERVICE">Service</option>
-                  </select>
+                    <select
+                      value={newProduct.type}
+                      onChange={e => setNewProduct({...newProduct, type: e.target.value})}
+                    >
+                      <option value="PRODUCT">Product</option>
+                      <option value="SERVICE">Service</option>
+                      <option value="RENTAL">Rental</option>
+                    </select>
                 </div>
-                <div className="form-group">
-                  <label>Price</label>
-                  <input
-                    type="number"
-                    value={newProduct.price}
-                    onChange={e => setNewProduct({...newProduct, price: e.target.value})}
-                    placeholder="0.00"
-                    step="0.01"
-                  />
-                </div>
-              </div>
-              <div className="form-row">
+                {newProduct.type !== 'RENTAL' && (
+                  <div className="form-group">
+                    <label>Price</label>
+                    <input
+                      type="number"
+                      value={newProduct.price}
+                      onChange={e => setNewProduct({...newProduct, price: e.target.value})}
+                      placeholder="0.00"
+                      step="0.01"
+                    />
+                  </div>
+                )}
                 <div className="form-group">
                   <label>Category</label>
                   <input
@@ -770,6 +795,45 @@ export default function ProductsPage() {
                   </select>
                 </div>
               </div>
+
+              {newProduct.type === 'RENTAL' && (
+                <div className={styles.rentalPricing}>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Daily Rate ($)</label>
+                      <input type="number" value={newProduct.rentalDaily} onChange={e => setNewProduct({...newProduct, rentalDaily: e.target.value})} placeholder="0.00" step="0.01" />
+                    </div>
+                    <div className="form-group">
+                      <label>Weekly Rate ($)</label>
+                      <input type="number" value={newProduct.rentalWeekly} onChange={e => setNewProduct({...newProduct, rentalWeekly: e.target.value})} placeholder="0.00" step="0.01" />
+                    </div>
+                    <div className="form-group">
+                      <label>Monthly Rate ($)</label>
+                      <input type="number" value={newProduct.rentalMonthly} onChange={e => setNewProduct({...newProduct, rentalMonthly: e.target.value})} placeholder="0.00" step="0.01" />
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Deposit ($)</label>
+                      <input type="number" value={newProduct.rentalDeposit} onChange={e => setNewProduct({...newProduct, rentalDeposit: e.target.value})} placeholder="0.00" step="0.01" />
+                    </div>
+                    <div className="form-group">
+                      <label>Min Days</label>
+                      <input type="number" value={newProduct.rentalMinDays} onChange={e => setNewProduct({...newProduct, rentalMinDays: parseInt(e.target.value) || 1})} min="1" />
+                    </div>
+                    <div className="form-group">
+                      <label>Max Days</label>
+                      <input type="number" value={newProduct.rentalMaxDays} onChange={e => setNewProduct({...newProduct, rentalMaxDays: e.target.value})} placeholder="Unlimited" min="1" />
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label className={styles.checkboxLabel}>
+                      <input type="checkbox" checked={newProduct.rentalAvailable} onChange={e => setNewProduct({...newProduct, rentalAvailable: e.target.checked})} />
+                      Available for Rent
+                    </label>
+                  </div>
+                </div>
+              )}
               <div className="form-group">
                 <label className={styles.checkboxLabel}>
                   <input

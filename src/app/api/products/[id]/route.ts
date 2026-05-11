@@ -49,7 +49,7 @@ export async function PUT(
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { title, description, price, type, category, condition, location, locationDetails, imageUrl, isGlobal, published, paymentMethods, paymentType, acceptsRequests, acceptsOffers, requestPrice, sellerPayoutAddress, sellerCryptoCurrency } = body
+    const { title, description, price, type, category, condition, location, locationDetails, imageUrl, isGlobal, published, paymentMethods, paymentType, acceptsRequests, acceptsOffers, requestPrice, sellerPayoutAddress, sellerCryptoCurrency, rentalDaily, rentalWeekly, rentalMonthly, rentalDeposit, rentalMinDays, rentalMaxDays, rentalAvailable } = body
 
     const existing = await prisma.product.findFirst({
       where: { id, userId: session.user.id }
@@ -100,7 +100,14 @@ export async function PUT(
         acceptsOffers: acceptsOffers ?? existing.acceptsOffers,
         requestPrice: requestPrice != null ? parseFloat(requestPrice) : existing.requestPrice,
         sellerPayoutAddress: sellerPayoutAddress ?? existing.sellerPayoutAddress,
-        sellerCryptoCurrency: sellerCryptoCurrency ?? existing.sellerCryptoCurrency
+        sellerCryptoCurrency: sellerCryptoCurrency ?? existing.sellerCryptoCurrency,
+        rentalDaily: rentalDaily != null ? parseFloat(rentalDaily) : existing.rentalDaily,
+        rentalWeekly: rentalWeekly != null ? parseFloat(rentalWeekly) : existing.rentalWeekly,
+        rentalMonthly: rentalMonthly != null ? parseFloat(rentalMonthly) : existing.rentalMonthly,
+        rentalDeposit: rentalDeposit != null ? parseFloat(rentalDeposit) : existing.rentalDeposit,
+        rentalMinDays: rentalMinDays != null ? parseInt(rentalMinDays) : existing.rentalMinDays,
+        rentalMaxDays: rentalMaxDays != null ? parseInt(rentalMaxDays) : existing.rentalMaxDays,
+        rentalAvailable: rentalAvailable ?? existing.rentalAvailable
       }
     })
 

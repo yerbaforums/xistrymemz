@@ -401,6 +401,39 @@
   color: var(--text-secondary);
 }
 
+.rentalPricingDisplay {
+  margin-bottom: 24px;
+}
+
+.rentalRates {
+  display: flex;
+  gap: 16px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.rentalDeposit {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.rentalTerms {
+  display: flex;
+  gap: 16px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+.rentalPricing {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 16px;
+}
+
 .loading,
 .error {
   text-align: center;

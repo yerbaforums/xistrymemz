@@ -139,6 +139,14 @@
   flex-wrap: wrap;
 }
 
+.rentalPricing {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
 .empty {
   text-align: center;
   padding: 60px 20px;

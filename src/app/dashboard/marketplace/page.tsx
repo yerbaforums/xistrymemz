@@ -24,6 +24,13 @@ interface Product {
   acceptsRequests: boolean
   acceptsOffers: boolean
   createdAt: string
+  rentalDaily: number | null
+  rentalWeekly: number | null
+  rentalMonthly: number | null
+  rentalDeposit: number | null
+  rentalMinDays: number
+  rentalMaxDays: number | null
+  rentalAvailable: boolean
 }
 
 interface ShopSettings {
@@ -46,7 +53,7 @@ function MarketplaceContent() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [filter, setFilter] = useState<'all' | 'published' | 'draft'>('all')
-  const [typeFilter, setTypeFilter] = useState<'all' | 'PRODUCT' | 'SERVICE'>('all')
+  const [typeFilter, setTypeFilter] = useState<'all' | 'PRODUCT' | 'SERVICE' | 'RENTAL'>('all')
   const [search, setSearch] = useState('')
   const [showProductForm, setShowProductForm] = useState(false)
   const [showShopModal, setShowShopModal] = useState(false)
@@ -66,7 +73,14 @@ function MarketplaceContent() {
     paymentType: 'BOTH',
     acceptsRequests: false,
     acceptsOffers: true,
-    published: true
+    published: true,
+    rentalDaily: '',
+    rentalWeekly: '',
+    rentalMonthly: '',
+    rentalDeposit: '',
+    rentalMinDays: 1,
+    rentalMaxDays: '',
+    rentalAvailable: true
   })
 
   const [shopForm, setShopForm] = useState({
@@ -108,7 +122,14 @@ function MarketplaceContent() {
           paymentType: product.paymentType || 'BOTH',
           acceptsRequests: product.acceptsRequests,
           acceptsOffers: product.acceptsOffers,
-          published: product.published
+          published: product.published,
+          rentalDaily: product.rentalDaily?.toString() || '',
+          rentalWeekly: product.rentalWeekly?.toString() || '',
+          rentalMonthly: product.rentalMonthly?.toString() || '',
+          rentalDeposit: product.rentalDeposit?.toString() || '',
+          rentalMinDays: product.rentalMinDays || 1,
+          rentalMaxDays: product.rentalMaxDays?.toString() || '',
+          rentalAvailable: product.rentalAvailable ?? true
         })
         setShowProductForm(true)
       }
@@ -163,7 +184,14 @@ function MarketplaceContent() {
       paymentType: 'BOTH',
       acceptsRequests: false,
       acceptsOffers: true,
-      published: true
+      published: true,
+      rentalDaily: '',
+      rentalWeekly: '',
+      rentalMonthly: '',
+      rentalDeposit: '',
+      rentalMinDays: 1,
+      rentalMaxDays: '',
+      rentalAvailable: true
     })
     setEditingProduct(null)
     setShowProductForm(false)
@@ -176,7 +204,14 @@ function MarketplaceContent() {
     const payload = {
       ...productForm,
       paymentMethods: productForm.paymentMethods.join(','),
-      price: productForm.price ? parseFloat(productForm.price) : null
+      price: productForm.price ? parseFloat(productForm.price) : null,
+      rentalDaily: productForm.rentalDaily ? parseFloat(productForm.rentalDaily) : null,
+      rentalWeekly: productForm.rentalWeekly ? parseFloat(productForm.rentalWeekly) : null,
+      rentalMonthly: productForm.rentalMonthly ? parseFloat(productForm.rentalMonthly) : null,
+      rentalDeposit: productForm.rentalDeposit ? parseFloat(productForm.rentalDeposit) : null,
+      rentalMinDays: productForm.rentalMinDays || 1,
+      rentalMaxDays: productForm.rentalMaxDays ? parseInt(productForm.rentalMaxDays) : null,
+      rentalAvailable: productForm.rentalAvailable
     }
 
     try {
@@ -253,7 +288,14 @@ function MarketplaceContent() {
       paymentType: product.paymentType || 'BOTH',
       acceptsRequests: product.acceptsRequests,
       acceptsOffers: product.acceptsOffers,
-      published: product.published
+      published: product.published,
+      rentalDaily: product.rentalDaily?.toString() || '',
+      rentalWeekly: product.rentalWeekly?.toString() || '',
+      rentalMonthly: product.rentalMonthly?.toString() || '',
+      rentalDeposit: product.rentalDeposit?.toString() || '',
+      rentalMinDays: product.rentalMinDays || 1,
+      rentalMaxDays: product.rentalMaxDays?.toString() || '',
+      rentalAvailable: product.rentalAvailable ?? true
     })
     setShowProductForm(true)
   }
@@ -364,6 +406,7 @@ function MarketplaceContent() {
           <option value="all">All Types</option>
           <option value="PRODUCT">Products</option>
           <option value="SERVICE">Services</option>
+          <option value="RENTAL">Rentals</option>
         </select>
         <span className={styles.filterCount}>{filteredProducts.length} items</span>
       </div>
@@ -391,7 +434,11 @@ function MarketplaceContent() {
                 <div className={styles.itemMeta}>
                   <span className={`badge badge-${product.type.toLowerCase()}`}>{product.type}</span>
                   {product.category && <span className="badge badge-category">{product.category}</span>}
-                  <span>{product.price ? `$${product.price}` : 'Free'}</span>
+                  {product.type === 'RENTAL' && product.rentalDaily ? (
+                    <span>${product.rentalDaily}/day</span>
+                  ) : (
+                    <span>{product.price ? `$${product.price}` : 'Free'}</span>
+                  )}
                   <span>{product.isGlobal ? '🌍 Global' : `📍 ${product.location || 'Local'}`}</span>
                 </div>
               </div>
@@ -473,10 +520,11 @@ function MarketplaceContent() {
                   <select value={productForm.type} onChange={e => setProductForm({...productForm, type: e.target.value})}>
                     <option value="PRODUCT">Product</option>
                     <option value="SERVICE">Service</option>
+                    <option value="RENTAL">Rental</option>
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Price</label>
+                  <label>{productForm.type === 'RENTAL' ? 'Price' : 'Price'}</label>
                   <input type="number" value={productForm.price} onChange={e => setProductForm({...productForm, price: e.target.value})} placeholder="0.00" step="0.01" />
                 </div>
                 <div className="form-group">
@@ -484,6 +532,45 @@ function MarketplaceContent() {
                   <input type="text" value={productForm.category} onChange={e => setProductForm({...productForm, category: e.target.value})} placeholder="e.g., Electronics" />
                 </div>
               </div>
+
+              {productForm.type === 'RENTAL' && (
+                <div className={styles.rentalPricing}>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Daily Rate ($)</label>
+                      <input type="number" value={productForm.rentalDaily} onChange={e => setProductForm({...productForm, rentalDaily: e.target.value})} placeholder="0.00" step="0.01" />
+                    </div>
+                    <div className="form-group">
+                      <label>Weekly Rate ($)</label>
+                      <input type="number" value={productForm.rentalWeekly} onChange={e => setProductForm({...productForm, rentalWeekly: e.target.value})} placeholder="0.00" step="0.01" />
+                    </div>
+                    <div className="form-group">
+                      <label>Monthly Rate ($)</label>
+                      <input type="number" value={productForm.rentalMonthly} onChange={e => setProductForm({...productForm, rentalMonthly: e.target.value})} placeholder="0.00" step="0.01" />
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Deposit ($)</label>
+                      <input type="number" value={productForm.rentalDeposit} onChange={e => setProductForm({...productForm, rentalDeposit: e.target.value})} placeholder="0.00" step="0.01" />
+                    </div>
+                    <div className="form-group">
+                      <label>Min Rental Days</label>
+                      <input type="number" value={productForm.rentalMinDays} onChange={e => setProductForm({...productForm, rentalMinDays: parseInt(e.target.value) || 1})} min="1" />
+                    </div>
+                    <div className="form-group">
+                      <label>Max Rental Days</label>
+                      <input type="number" value={productForm.rentalMaxDays} onChange={e => setProductForm({...productForm, rentalMaxDays: e.target.value})} placeholder="Unlimited" min="1" />
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label className={styles.checkboxLabel}>
+                      <input type="checkbox" checked={productForm.rentalAvailable} onChange={e => setProductForm({...productForm, rentalAvailable: e.target.checked})} />
+                      Available for Rent
+                    </label>
+                  </div>
+                </div>
+              )}
               <div className="form-group">
                 <label>Description</label>
                 <textarea value={productForm.description} onChange={e => setProductForm({...productForm, description: e.target.value})} rows={2} placeholder="Describe your product..." />

@@ -49,6 +49,13 @@ interface Product {
   requestPrice: number | null
   sellerPayoutAddress: string | null
   sellerCryptoCurrency: string | null
+  rentalDaily: number | null
+  rentalWeekly: number | null
+  rentalMonthly: number | null
+  rentalDeposit: number | null
+  rentalMinDays: number
+  rentalMaxDays: number | null
+  rentalAvailable: boolean
 }
 
 interface Plan {
@@ -84,7 +91,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     isGlobal: false,
     published: true,
     sellerPayoutAddress: '',
-    sellerCryptoCurrency: 'ETH'
+    sellerCryptoCurrency: 'ETH',
+    rentalDaily: '',
+    rentalWeekly: '',
+    rentalMonthly: '',
+    rentalDeposit: '',
+    rentalMinDays: 1,
+    rentalMaxDays: '',
+    rentalAvailable: true
   })
   const [saving, setSaving] = useState(false)
   const [resolvedParams, setResolvedParams] = useState<{ id: string } | null>(null)
@@ -145,7 +159,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           isGlobal: data.isGlobal,
           published: data.published,
           sellerPayoutAddress: data.sellerPayoutAddress || '',
-          sellerCryptoCurrency: data.sellerCryptoCurrency || 'ETH'
+          sellerCryptoCurrency: data.sellerCryptoCurrency || 'ETH',
+          rentalDaily: data.rentalDaily?.toString() || '',
+          rentalWeekly: data.rentalWeekly?.toString() || '',
+          rentalMonthly: data.rentalMonthly?.toString() || '',
+          rentalDeposit: data.rentalDeposit?.toString() || '',
+          rentalMinDays: data.rentalMinDays || 1,
+          rentalMaxDays: data.rentalMaxDays?.toString() || '',
+          rentalAvailable: data.rentalAvailable ?? true
         })
         fetch(`/api/user/shop?userId=${data.user.id}`)
           .then(r => {
@@ -451,17 +472,20 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   >
                     <option value="PRODUCT">Product</option>
                     <option value="SERVICE">Service</option>
+                    <option value="RENTAL">Rental</option>
                   </select>
                 </div>
-                <div className="form-group">
-                  <label>Price</label>
-                  <input
-                    type="number"
-                    value={editData.price}
-                    onChange={e => setEditData({...editData, price: e.target.value})}
-                    step="0.01"
-                  />
-                </div>
+                {editData.type !== 'RENTAL' && (
+                  <div className="form-group">
+                    <label>Price</label>
+                    <input
+                      type="number"
+                      value={editData.price}
+                      onChange={e => setEditData({...editData, price: e.target.value})}
+                      step="0.01"
+                    />
+                  </div>
+                )}
               </div>
               <div className="form-row">
                 <div className="form-group">
@@ -486,6 +510,44 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   </select>
                 </div>
               </div>
+              {editData.type === 'RENTAL' && (
+                <div className={styles.rentalPricing}>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Daily Rate ($)</label>
+                      <input type="number" value={editData.rentalDaily} onChange={e => setEditData({...editData, rentalDaily: e.target.value})} placeholder="0.00" step="0.01" />
+                    </div>
+                    <div className="form-group">
+                      <label>Weekly Rate ($)</label>
+                      <input type="number" value={editData.rentalWeekly} onChange={e => setEditData({...editData, rentalWeekly: e.target.value})} placeholder="0.00" step="0.01" />
+                    </div>
+                    <div className="form-group">
+                      <label>Monthly Rate ($)</label>
+                      <input type="number" value={editData.rentalMonthly} onChange={e => setEditData({...editData, rentalMonthly: e.target.value})} placeholder="0.00" step="0.01" />
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Deposit ($)</label>
+                      <input type="number" value={editData.rentalDeposit} onChange={e => setEditData({...editData, rentalDeposit: e.target.value})} placeholder="0.00" step="0.01" />
+                    </div>
+                    <div className="form-group">
+                      <label>Min Days</label>
+                      <input type="number" value={editData.rentalMinDays} onChange={e => setEditData({...editData, rentalMinDays: parseInt(e.target.value) || 1})} min="1" />
+                    </div>
+                    <div className="form-group">
+                      <label>Max Days</label>
+                      <input type="number" value={editData.rentalMaxDays} onChange={e => setEditData({...editData, rentalMaxDays: e.target.value})} placeholder="Unlimited" min="1" />
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label className={styles.checkboxLabel}>
+                      <input type="checkbox" checked={editData.rentalAvailable} onChange={e => setEditData({...editData, rentalAvailable: e.target.checked})} />
+                      Available for Rent
+                    </label>
+                  </div>
+                </div>
+              )}
               <div className="form-group">
                 <label className={styles.checkboxLabel}>
                   <input
@@ -575,8 +637,24 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
               <h1>{product.title}</h1>
               
-              {product.price && (
-                <p className={styles.price}>${product.price}</p>
+              {product.type === 'RENTAL' ? (
+                <div className={styles.rentalPricingDisplay}>
+                  <p className={styles.price}>
+                    {product.rentalDaily ? `$${product.rentalDaily}/day` : 'Contact for pricing'}
+                  </p>
+                  <div className={styles.rentalRates}>
+                    {product.rentalWeekly && <span>${product.rentalWeekly}/week</span>}
+                    {product.rentalMonthly && <span>${product.rentalMonthly}/month</span>}
+                  </div>
+                  {product.rentalDeposit && <p className={styles.rentalDeposit}>Deposit: ${product.rentalDeposit}</p>}
+                  <div className={styles.rentalTerms}>
+                    <span>Min: {product.rentalMinDays} day{product.rentalMinDays !== 1 ? 's' : ''}</span>
+                    {product.rentalMaxDays && <span>Max: {product.rentalMaxDays} days</span>}
+                    <span>{product.rentalAvailable ? '✅ Available' : '❌ Unavailable'}</span>
+                  </div>
+                </div>
+              ) : (
+                product.price && <p className={styles.price}>${product.price}</p>
               )}
 
               {product.description && (
