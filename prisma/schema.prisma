@@ -115,6 +115,8 @@ model User {
   followsAsFollower Follow[]      @relation("Follower")
   followsAsFollowed Follow[]      @relation("Followed")
   outboxActivities  OutboxActivity[]
+  oauthProviders    OAuthProvider[]
+  savedItems        SavedItem[]
 
   // Donation settings (legacy single address)
   donationAddress  String?
@@ -1086,6 +1088,34 @@ model VerificationToken {
 
   @@index([token])
   @@index([userId])
+}
+
+model OAuthProvider {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider          String   // google, github, discord
+  providerAccountId String
+  profile           String?  @db.Text // JSON blob of OAuth profile
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@index([provider, providerAccountId])
+}
+
+model SavedItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  itemType  String   // PLAN, PRODUCT, REQUEST, EVENT, FORUM_POST
+  itemId    String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, itemType, itemId])
+  @@index([userId])
+  @@index([itemType, itemId])
 }
 
 model UserLink {

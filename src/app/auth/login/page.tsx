@@ -7,6 +7,14 @@ import Link from 'next/link'
 import Image from 'next/image'
 import styles from './page.module.css'
 
+const OAUTH_PROVIDERS = [
+  { id: 'google', label: 'Google', icon: '/social-logos/google.svg' },
+  { id: 'github', label: 'GitHub', icon: '/social-logos/github.svg' },
+  { id: 'discord', label: 'Discord', icon: '/social-logos/discord.svg' },
+  { id: 'twitter', label: 'X (Twitter)', icon: '/social-logos/twitter.svg' },
+  { id: 'facebook', label: 'Facebook', icon: '/social-logos/facebook.svg' },
+] as const
+
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
@@ -14,6 +22,16 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [oauthLoading, setOauthLoading] = useState<string | null>(null)
+
+  const handleOAuthSignIn = async (provider: string) => {
+    setOauthLoading(provider)
+    try {
+      await signIn(provider, { callbackUrl: '/dashboard' })
+    } catch {
+      setOauthLoading(null)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -53,6 +71,25 @@ export default function LoginPage() {
 
         <h1 className={styles.title}>Welcome back</h1>
         <p className={styles.subtitle}>Sign in to your account</p>
+
+        <div className={styles.socialLogin}>
+          {OAUTH_PROVIDERS.map(p => (
+            <button
+              key={p.id}
+              type="button"
+              className={styles.socialBtn}
+              onClick={() => handleOAuthSignIn(p.id)}
+              disabled={oauthLoading === p.id}
+            >
+              <img src={p.icon} alt="" width={20} height={20} className={styles.socialIcon} />
+              {oauthLoading === p.id ? 'Connecting...' : `Sign in with ${p.label}`}
+            </button>
+          ))}
+        </div>
+
+        <div className={styles.divider}>
+          <span>or continue with email</span>
+        </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
           {error && <div className={styles.error} role="alert">⚠️ {error}</div>}

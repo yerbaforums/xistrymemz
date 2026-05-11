@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { randomBytes } from 'crypto'
 import { forgotPasswordSchema } from '@/lib/validation'
+import { sendPasswordResetEmail } from '@/lib/email'
 
 export const dynamic = 'force-dynamic'
 
@@ -59,9 +60,7 @@ export async function POST(request: NextRequest) {
       })
     ])
 
-    // TODO: Send email with reset link via Resend/SendGrid
-    const resetUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/reset-password?token=${token}`
-    console.log('Password reset link:', resetUrl)
+    await sendPasswordResetEmail(user.email, token).catch(e => console.error('Failed to send reset email:', e))
 
     return NextResponse.json({ success: true, message: 'If an account exists, a reset link has been sent' })
   } catch (error) {

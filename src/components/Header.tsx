@@ -485,6 +485,7 @@ export default function Header() {
                     )}
                     <Link href="/orders" className={styles.userLink} role="menuitem" onClick={closeDropdown}>Orders</Link>
                     <Link href="/messages" className={styles.userLink} role="menuitem" onClick={closeDropdown}>Messages</Link>
+                    <Link href="/saved" className={styles.userLink} role="menuitem" onClick={closeDropdown}>Saved</Link>
                     {isAdmin && (
                       <>
                         <div className={styles.adminDivider}>Admin</div>

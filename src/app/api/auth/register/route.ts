@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { randomBytes } from 'crypto'
 import { registerSchema, validateInput } from '@/lib/validation'
 import { generateActorKeys, getBaseUrl } from '@/lib/federation'
+import { sendWelcomeEmail, sendVerificationEmail } from '@/lib/email'
 
 export const dynamic = 'force-dynamic'
 
@@ -130,6 +132,15 @@ export async function POST(request: Request) {
         }
       })
     }
+
+    // Generate verification token and send emails
+    const verifyToken = randomBytes(32).toString('hex')
+    const verifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000)
+    prisma.verificationToken.create({
+      data: { token: verifyToken, userId: user.id, expiresAt: verifyExpires }
+    }).then(() => sendVerificationEmail(user.email, verifyToken)).catch(() => {})
+
+    sendWelcomeEmail(user.email, user.name || 'there').catch(() => {})
 
     return NextResponse.json({
       id: user.id,

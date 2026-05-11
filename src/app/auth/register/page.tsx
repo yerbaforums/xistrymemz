@@ -7,6 +7,14 @@ import Link from 'next/link'
 import Image from 'next/image'
 import styles from '../login/page.module.css'
 
+const OAUTH_PROVIDERS = [
+  { id: 'google', label: 'Google', icon: '/social-logos/google.svg' },
+  { id: 'github', label: 'GitHub', icon: '/social-logos/github.svg' },
+  { id: 'discord', label: 'Discord', icon: '/social-logos/discord.svg' },
+  { id: 'twitter', label: 'X (Twitter)', icon: '/social-logos/twitter.svg' },
+  { id: 'facebook', label: 'Facebook', icon: '/social-logos/facebook.svg' },
+] as const
+
 export default function RegisterPage() {
   const router = useRouter()
   const [name, setName] = useState('')
@@ -19,6 +27,16 @@ export default function RegisterPage() {
   const [subscribeNewsletter, setSubscribeNewsletter] = useState(true)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [oauthLoading, setOauthLoading] = useState<string | null>(null)
+
+  const handleOAuthSignUp = async (provider: string) => {
+    setOauthLoading(provider)
+    try {
+      await signIn(provider, { callbackUrl: '/onboarding' })
+    } catch {
+      setOauthLoading(null)
+    }
+  }
 
   const validateInviteCode = async (code: string) => {
     if (!code.trim()) {
@@ -113,6 +131,25 @@ export default function RegisterPage() {
 
         <h1 className={styles.title}>Create account</h1>
         <p className={styles.subtitle}>Get started with XistrYmemZ</p>
+
+        <div className={styles.socialLogin}>
+          {OAUTH_PROVIDERS.map(p => (
+            <button
+              key={p.id}
+              type="button"
+              className={styles.socialBtn}
+              onClick={() => handleOAuthSignUp(p.id)}
+              disabled={oauthLoading === p.id}
+            >
+              <img src={p.icon} alt="" width={20} height={20} className={styles.socialIcon} />
+              {oauthLoading === p.id ? 'Connecting...' : `Sign up with ${p.label}`}
+            </button>
+          ))}
+        </div>
+
+        <div className={styles.divider}>
+          <span>or continue with email</span>
+        </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
           {error && <div className={styles.error} role="alert">⚠️ {error}</div>}

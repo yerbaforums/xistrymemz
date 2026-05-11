@@ -1,5 +1,10 @@
 import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
+import GoogleProvider from 'next-auth/providers/google'
+import GitHubProvider from 'next-auth/providers/github'
+import DiscordProvider from 'next-auth/providers/discord'
+import TwitterProvider from 'next-auth/providers/twitter'
+import FacebookProvider from 'next-auth/providers/facebook'
 import { prisma } from './prisma'
 import bcrypt from 'bcryptjs'
 
@@ -9,6 +14,30 @@ if (!process.env.NEXTAUTH_SECRET) {
 
 export const authOptions: NextAuthOptions = {
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+      allowDangerousEmailAccountLinking: true,
+    }),
+    GitHubProvider({
+      clientId: process.env.GITHUB_CLIENT_ID || '',
+      clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
+      allowDangerousEmailAccountLinking: true,
+    }),
+    DiscordProvider({
+      clientId: process.env.DISCORD_CLIENT_ID || '',
+      clientSecret: process.env.DISCORD_CLIENT_SECRET || '',
+      allowDangerousEmailAccountLinking: true,
+    }),
+    TwitterProvider({
+      clientId: process.env.TWITTER_CLIENT_ID || '',
+      clientSecret: process.env.TWITTER_CLIENT_SECRET || '',
+    }),
+    FacebookProvider({
+      clientId: process.env.FACEBOOK_CLIENT_ID || '',
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET || '',
+      allowDangerousEmailAccountLinking: true,
+    }),
     CredentialsProvider({
       name: 'credentials',
       credentials: {
@@ -71,7 +100,99 @@ export const authOptions: NextAuthOptions = {
     error: '/auth/login'
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async signIn({ user, account, profile }) {
+      if (account?.provider === 'credentials') return true
+
+      // OAuth sign-in: find or create user by email
+      if (account && user.email) {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email }
+        })
+
+        if (existingUser) {
+          // Link OAuth provider to existing user
+          const existingLink = await prisma.oAuthProvider.findFirst({
+            where: {
+              userId: existingUser.id,
+              provider: account.provider,
+            }
+          })
+          if (!existingLink) {
+            await prisma.oAuthProvider.create({
+              data: {
+                userId: existingUser.id,
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+                profile: profile ? JSON.stringify(profile) : null,
+              }
+            })
+          }
+          return true
+        }
+
+        // Create new user from OAuth profile
+        const name = user.name || profile?.name || account.provider.split('-')[0]
+        const baseUsername = (name as string)?.toLowerCase().replace(/[^a-z0-9]/g, '') || `user_${Date.now()}`
+        let username = baseUsername
+        let counter = 1
+        while (await prisma.user.findUnique({ where: { username } })) {
+          username = `${baseUsername}${counter}`
+          counter++
+        }
+
+        const newUser = await prisma.user.create({
+          data: {
+            email: user.email,
+            name: name as string,
+            username,
+            password: '', // OAuth users have no password
+            image: user.image || null,
+            verifiedEmail: true,
+          }
+        })
+
+        // Auto-connect with founder
+        const founder = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { email: 'xb4zy@xistrymemz.xyz' },
+              { name: 'xb4zy' }
+            ]
+          }
+        })
+        if (founder && founder.id !== newUser.id) {
+          await prisma.connection.create({
+            data: {
+              requesterId: newUser.id,
+              receiverId: founder.id,
+              status: 'ACCEPTED'
+            }
+          }).catch(() => {})
+        }
+
+        // Link OAuth provider
+        await prisma.oAuthProvider.create({
+          data: {
+            userId: newUser.id,
+            provider: account.provider,
+            providerAccountId: account.providerAccountId,
+            profile: profile ? JSON.stringify(profile) : null,
+          }
+        })
+
+        // Subscribe to newsletter
+        await prisma.emailSubscriber.upsert({
+          where: { email: user.email },
+          update: {},
+          create: { email: user.email, name: name as string, source: 'oauth_registration' }
+        }).catch(() => {})
+
+        return true
+      }
+
+      return false
+    },
+    async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id
         token.username = (user as { username?: string }).username

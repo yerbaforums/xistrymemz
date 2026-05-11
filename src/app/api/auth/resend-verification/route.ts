@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { randomBytes } from 'crypto'
 import { resendVerificationSchema } from '@/lib/validation'
+import { sendVerificationEmail } from '@/lib/email'
 
 export const dynamic = 'force-dynamic'
 
@@ -59,9 +60,7 @@ export async function POST(request: NextRequest) {
       })
     ])
 
-    // TODO: Send verification email via Resend/SendGrid
-    const verifyUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/verify-email?token=${token}`
-    console.log('Email verification link:', verifyUrl)
+    await sendVerificationEmail(user.email, token).catch(e => console.error('Failed to send verification email:', e))
 
     return NextResponse.json({ success: true, message: 'If an account exists, a verification email has been sent' })
   } catch (error) {
