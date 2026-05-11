@@ -9,6 +9,17 @@ import { CRYPTO_LOGOS } from '@/lib/constants'
 
 const PACKAGE_VERSION = '0.7.0'
 
+const COINGECKO_IDS: Record<string, string> = {
+  BTC: 'bitcoin',
+  ETH: 'ethereum',
+  USDT: 'tether',
+  USDC: 'usd-coin',
+  XMR: 'monero',
+  ARRR: 'pirate-chain',
+  DERO: 'dero',
+  ZANO: 'zano'
+}
+
 interface DonationAddr {
   id: string
   currency: string
@@ -16,8 +27,16 @@ interface DonationAddr {
   label: string | null
 }
 
+function formatPrice(price: number, currency: string): string {
+  if (currency === 'USDT' || currency === 'USDC') return `$${price.toFixed(2)}`
+  if (price >= 1000) return `$${price.toLocaleString('en-US', { maximumFractionDigits: 2 })}`
+  if (price >= 1) return `$${price.toFixed(2)}`
+  return `$${price.toFixed(6)}`
+}
+
 export default function Footer() {
   const [donations, setDonations] = useState<DonationAddr[]>([])
+  const [prices, setPrices] = useState<Record<string, number>>({})
   const [qrOpen, setQrOpen] = useState<string | null>(null)
   const [copiedAddr, setCopiedAddr] = useState<string | null>(null)
 
@@ -27,6 +46,27 @@ export default function Footer() {
       .then(data => { if (data?.addresses) setDonations(data.addresses) })
       .catch(() => {})
   }, [])
+
+  useEffect(() => {
+    if (donations.length === 0) return
+    const ids = donations
+      .map(d => COINGECKO_IDS[d.currency])
+      .filter(Boolean)
+      .join(',')
+    if (!ids) return
+    fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (!data) return
+        const mapped: Record<string, number> = {}
+        for (const [coinId, usdId] of Object.entries(COINGECKO_IDS)) {
+          const price = data[usdId]?.usd
+          if (price != null) mapped[coinId] = price
+        }
+        setPrices(mapped)
+      })
+      .catch(() => {})
+  }, [donations])
 
   useEffect(() => {
     if (copiedAddr) {
@@ -81,28 +121,31 @@ export default function Footer() {
         {donations.length > 0 && (
           <div className={styles.donations}>
             <h4>Support the Platform</h4>
-            {donations.map(da => (
-              <div key={da.id} className={styles.donationRow}>
-                <img
-                  src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'ethereum.png'}`}
-                  alt={da.currency}
-                  className={styles.donationIcon}
-                />
-                <span className={styles.donationLabel}>{da.label || da.currency}</span>
-                <code
-                  className={styles.donationAddr}
-                  title={da.address}
-                  onClick={() => handleCopyAddress(da.address)}
-                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCopyAddress(da.address) } }}
-                  tabIndex={0}
-                  role="button"
-                  aria-label={`Copy ${da.currency} address`}
-                >
-                  {copiedAddr === da.address ? 'Copied!' : da.address}
-                </code>
-                <DonationActions address={da.address} onQrClick={() => openQr(da)} size="sm" />
-              </div>
-            ))}
+            {donations.map(da => {
+              const price = prices[da.currency]
+              return (
+                <div key={da.id} className={styles.donationRow}>
+                  <img
+                    src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'ethereum.png'}`}
+                    alt={da.currency}
+                    className={styles.donationIcon}
+                  />
+                  <span className={styles.donationLabel}>{da.label || da.currency}</span>
+                  <span
+                    className={styles.donationPrice}
+                    title={`${da.currency} — ${da.address}`}
+                    onClick={() => handleCopyAddress(da.address)}
+                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCopyAddress(da.address) } }}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`Copy ${da.currency} address`}
+                  >
+                    {copiedAddr === da.address ? 'Copied!' : (price != null ? formatPrice(price, da.currency) : `—`)}
+                  </span>
+                  <DonationActions address={da.address} onQrClick={() => openQr(da)} size="sm" />
+                </div>
+              )
+            })}
           </div>
         )}
         

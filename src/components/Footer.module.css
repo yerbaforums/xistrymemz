@@ -181,14 +181,18 @@
   flex-shrink: 0;
 }
 
-.donationAddr {
-  color: var(--text-primary);
-  font-family: monospace;
-  font-size: 0.75rem;
+.donationPrice {
+  color: var(--accent-primary);
+  font-weight: 700;
+  font-size: 0.9rem;
   flex: 1;
   min-width: 0;
-  word-break: break-all;
-  line-height: 1.4;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.donationPrice:hover {
+  color: var(--text-primary);
 }
 
 @media (max-width: 600px) {
@@ -216,17 +220,8 @@
     flex-wrap: wrap;
   }
 
-  .donationAddr {
-    width: 100%;
+  .donationPrice {
     order: 3;
     margin-top: 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    cursor: pointer;
-  }
-
-  .donationAddr:hover {
-    color: var(--accent-primary);
   }
 }
