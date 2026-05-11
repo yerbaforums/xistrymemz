@@ -29,6 +29,7 @@ export async function GET(
           select: {
             id: true,
             userId: true,
+            role: true,
             user: {
               select: { name: true, email: true, image: true, role: true, userClass: true }
             }
@@ -68,6 +69,9 @@ export async function GET(
       acceptsDonations: event.acceptsDonations,
       donationAddress: event.donationAddress,
       donationCurrency: event.donationCurrency,
+      needsVolunteers: event.needsVolunteers,
+      volunteerRoles: event.volunteerRoles ? JSON.parse(event.volunteerRoles) : [],
+      volunteerDescription: event.volunteerDescription,
       planId: event.planId,
       planTitle: linkedTitle,
       userId: event.organizerId,
@@ -77,6 +81,7 @@ export async function GET(
       joiners: event.eventJoiners.map(j => ({
         id: j.id,
         userId: j.userId,
+        role: j.role,
         user: j.user
       })),
       joined,
@@ -131,7 +136,10 @@ export async function PUT(
       currency,
       acceptsDonations,
       donationAddress,
-      donationCurrency
+      donationCurrency,
+      needsVolunteers,
+      volunteerRoles,
+      volunteerDescription
     } = body
 
     let latitude = event.latitude
@@ -163,7 +171,10 @@ export async function PUT(
         currency: currency ?? event.currency,
         acceptsDonations: acceptsDonations ?? event.acceptsDonations,
         donationAddress: donationAddress ?? event.donationAddress,
-        donationCurrency: donationCurrency ?? event.donationCurrency
+        donationCurrency: donationCurrency ?? event.donationCurrency,
+        needsVolunteers: needsVolunteers ?? event.needsVolunteers,
+        volunteerRoles: volunteerRoles ? JSON.stringify(volunteerRoles) : event.volunteerRoles,
+        volunteerDescription: volunteerDescription ?? event.volunteerDescription
       }
     })
 

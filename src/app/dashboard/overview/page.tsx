@@ -17,14 +17,17 @@ export default async function DashboardOverview() {
 
   const userId = session.user.id
 
-const [
+  const [
     _plans,
     _requests,
     products,
     groupMemberships,
     connectionCount,
     connectionActivity,
-    orderStats
+    orderStats,
+    rentalCount,
+    teachingEarnings,
+    sellerEarnings
   ] = await Promise.all([
     prisma.plan.findMany({ 
       where: { userId }, 
@@ -71,10 +74,24 @@ const [
         OR: [{ buyerId: userId }, { sellerId: userId }, { courierId: userId }]
       },
       select: { id: true, status: true, paymentType: true, deliveryStatus: true }
+    }),
+    prisma.product.count({ where: { userId, type: 'RENTAL' } }),
+    prisma.schoolPurchase.aggregate({
+      where: {
+        content: { userId },
+        status: 'COMPLETED'
+      },
+      _sum: { amount: true }
+    }),
+    prisma.escrowTransaction.aggregate({
+      where: {
+        sellerId: userId,
+        status: 'RELEASED'
+      },
+      _sum: { netAmount: true }
     })
   ])
 
-  // Used for display purposes - satisfy linter by using
   void products
   void groupMemberships
 
@@ -82,7 +99,7 @@ const [
     c.requesterId === userId ? c.receiverId : c.requesterId
   )
 
-  const [recentPlans, recentProducts] = await Promise.all([
+  const [recentPlans, recentProducts, eventJoinerCounts] = await Promise.all([
     prisma.plan.findMany({
       where: { userId: { in: connectedUserIds }, published: true },
       select: { id: true, title: true, status: true, createdAt: true, user: { select: { name: true } } },
@@ -94,6 +111,11 @@ const [
       select: { id: true, title: true, type: true, createdAt: true, user: { select: { name: true } } },
       orderBy: { createdAt: 'desc' },
       take: 5
+    }),
+    prisma.eventJoiner.groupBy({
+      by: ['role'],
+      where: { userId },
+      _count: true
     })
   ])
 
@@ -124,11 +146,13 @@ const [
   const plans = _plans
   const requests = _requests
 
-  // Use these to satisfy linter
   void products
   void groupMemberships
   
   const pendingRequests = requests.filter((r: { status: string }) => r.status === 'PENDING').length
+  const eventAttendeeCount = eventJoinerCounts.find(r => r.role === 'ATTENDEE')?._count ?? 0
+  const eventVolunteerCount = eventJoinerCounts.find(r => r.role === 'VOLUNTEER')?._count ?? 0
+  const totalEarnings = (sellerEarnings._sum.netAmount ?? 0) + (teachingEarnings._sum.amount ?? 0)
 
   return (
     <div className={styles.overview}>
@@ -158,6 +182,16 @@ const [
           <span className={styles.statValue}>{allStats[2]}</span>
           <span className={styles.statLabel}>Products</span>
         </Link>
+        <Link href="/dashboard/rentals" className={styles.statCard}>
+          <span className={styles.statIcon}>🏠</span>
+          <span className={styles.statValue}>{rentalCount}</span>
+          <span className={styles.statLabel}>Rentals</span>
+        </Link>
+        <Link href="/dashboard/teaching" className={styles.statCard}>
+          <span className={styles.statIcon}>🏫</span>
+          <span className={styles.statValue}>{allStats[5]}</span>
+          <span className={styles.statLabel}>Teachings</span>
+        </Link>
         <Link href="/dashboard/offers" className={styles.statCard}>
           <span className={styles.statIcon}>🤝</span>
           <span className={styles.statValue}>{offersReceived}</span>
@@ -180,14 +214,24 @@ const [
         </Link>
         <Link href="/dashboard/events" className={styles.statCard}>
           <span className={styles.statIcon}>📅</span>
-          <span className={styles.statValue}>{allStats[4]}</span>
+          <span className={styles.statValue}>{eventAttendeeCount}</span>
           <span className={styles.statLabel}>Events</span>
+        </Link>
+        <Link href="/dashboard/events" className={styles.statCard}>
+          <span className={styles.statIcon}>🙋</span>
+          <span className={styles.statValue}>{eventVolunteerCount}</span>
+          <span className={styles.statLabel}>Volunteer</span>
         </Link>
         <Link href="/orders" className={styles.statCard}>
           <span className={styles.statIcon}>📦</span>
           <span className={styles.statValue}>{orderStats.length}</span>
           <span className={styles.statLabel}>Orders</span>
         </Link>
+        <div className={styles.statCard} style={{ cursor: 'default' }}>
+          <span className={styles.statIcon}>💰</span>
+          <span className={styles.statValue}>${totalEarnings.toFixed(2)}</span>
+          <span className={styles.statLabel}>Earnings</span>
+        </div>
       </div>
 
         <div className={styles.quickActions}>
@@ -210,6 +254,12 @@ const [
             </Link>
             <Link href="/events/new" className={styles.actionBtn}>
               <span>📅</span> New Event
+            </Link>
+            <Link href="/products/new" className={styles.actionBtn}>
+              <span>🏠</span> List Rental
+            </Link>
+            <Link href="/school/setup" className={styles.actionBtn}>
+              <span>🏫</span> Create Course
             </Link>
             <Link href="/community" className={styles.actionBtn}>
               <span>💬</span> Community

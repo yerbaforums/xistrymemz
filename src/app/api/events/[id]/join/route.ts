@@ -15,12 +15,20 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    let body: { role?: string } = {}
+    try {
+      body = await request.json()
+    } catch {}
+
+    const role = body.role === 'VOLUNTEER' ? 'VOLUNTEER' : 'ATTENDEE'
+
     const event = await prisma.event.findUnique({
       where: { id },
       select: { 
         id: true, 
         maxJoiners: true,
         eventDate: true,
+        needsVolunteers: true,
         _count: { select: { eventJoiners: true } }
       }
     })
@@ -53,11 +61,12 @@ export async function POST(
     await prisma.eventJoiner.create({
       data: {
         eventId: id,
-        userId: session.user.id
+        userId: session.user.id,
+        role
       }
     })
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, role })
   } catch (error) {
     console.error('POST /api/events/[id]/join:', error)
     return NextResponse.json({ error: 'Failed to join event' }, { status: 500 })

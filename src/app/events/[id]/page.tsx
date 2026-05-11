@@ -16,6 +16,7 @@ const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ss
 interface Joiner {
   id: string
   userId: string
+  role: string
   user: { name: string | null; email: string; image?: string; role: string; userClass: string | null }
 }
 
@@ -44,6 +45,9 @@ interface Event {
   joined?: boolean
   isOrganizer?: boolean
   _count?: { eventJoiners: number }
+  needsVolunteers?: boolean
+  volunteerRoles?: string[]
+  volunteerDescription?: string | null
 }
 
 function EventDetailContent() {
@@ -57,6 +61,7 @@ function EventDetailContent() {
   const [bulkMessage, setBulkMessage] = useState('')
   const [sendingBulk, setSendingBulk] = useState(false)
   const [bulkSuccess, setBulkSuccess] = useState('')
+  const [joinRole, setJoinRole] = useState<'ATTENDEE' | 'VOLUNTEER'>('ATTENDEE')
 
   useEffect(() => {
     fetch('/api/auth/session')
@@ -91,19 +96,23 @@ function EventDetailContent() {
       .catch(() => setLoading(false))
   }, [params.id])
 
-  const handleJoin = async () => {
+  const handleJoin = async (role?: 'ATTENDEE' | 'VOLUNTEER') => {
     if (!userId || !event) {
       info('Please sign in to join events')
       return
     }
     setJoining(true)
     try {
-      const res = await fetch(`/api/events/${event.id}/join`, { method: 'POST' })
+      const res = await fetch(`/api/events/${event.id}/join`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: role || joinRole })
+      })
       if (res.ok) {
         setEvent({ 
           ...event, 
           joined: true, 
-          joiners: [...event.joiners, { id: '', userId, user: { name: null, email: '', role: 'USER', userClass: null } }],
+          joiners: [...event.joiners, { id: '', userId, role: role || joinRole, user: { name: null, email: '', role: 'USER', userClass: null } }],
           _count: event._count ? { eventJoiners: event._count.eventJoiners + 1 } : undefined
         })
       } else {
@@ -266,22 +275,56 @@ function EventDetailContent() {
             )}
 
             <div className={styles.joinActions}>
-              {!isOwner && (
+              {!isOwner && !event.joined && (
                 <>
                   {event.maxJoiners === 0 || joinerCount < event.maxJoiners ? (
-                    <button
-                      onClick={event.joined ? handleLeave : handleJoin}
-                      disabled={joining}
-                      className={event.joined ? styles.leaveBtn : styles.joinBtn}
-                    >
-                      {joining ? 'Processing...' : event.joined ? 'Leave Event' : (event.isTicketed ? 'Get Tickets' : 'RSVP Free')}
-                    </button>
+                    <div className={styles.joinButtonGroup}>
+                      <button
+                        onClick={() => handleJoin('ATTENDEE')}
+                        disabled={joining}
+                        className={styles.joinBtn}
+                      >
+                        {joining ? 'Processing...' : (event.isTicketed ? 'Get Tickets' : 'RSVP as Attendee')}
+                      </button>
+                      {event.needsVolunteers && (
+                        <button
+                          onClick={() => handleJoin('VOLUNTEER')}
+                          disabled={joining}
+                          className={styles.volunteerBtn}
+                        >
+                          🙋 Volunteer
+                        </button>
+                      )}
+                    </div>
                   ) : (
                     <span className={styles.fullBadge}>Event is Full</span>
                   )}
                 </>
               )}
+              {!isOwner && event.joined && (
+                <button
+                  onClick={handleLeave}
+                  disabled={joining}
+                  className={styles.leaveBtn}
+                >
+                  {joining ? 'Processing...' : 'Leave Event'}
+                </button>
+              )}
             </div>
+
+            {event.needsVolunteers && event.volunteerDescription && (
+              <div className={styles.volunteerSection}>
+                <h3>🙋 Volunteer Opportunities</h3>
+                <p>{event.volunteerDescription}</p>
+                {event.volunteerRoles && event.volunteerRoles.length > 0 && (
+                  <div className={styles.volunteerRoles}>
+                    {event.volunteerRoles.map((role, i) => (
+                      <span key={i} className={styles.volRoleBadge}>{role}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -310,6 +353,12 @@ function EventDetailContent() {
                 <span>${event.ticketPrice} {event.currency}</span>
               </div>
             )}
+            {event.needsVolunteers && (
+              <div className={styles.stat}>
+                <span>🙋 Volunteers</span>
+                <span>{event.joiners.filter(j => j.role === 'VOLUNTEER').length} signed up</span>
+              </div>
+            )}
           </div>
 
           {isOwner && joinerCount > 0 && (
@@ -330,6 +379,9 @@ function EventDetailContent() {
                         <span className={styles.joinerName}>
                           {j.user.name || j.user.email || `User ${i + 1}`}
                         </span>
+                        {j.role === 'VOLUNTEER' && (
+                          <span className={styles.volRoleBadgeSmall}>🙋</span>
+                        )}
                         {j.user.role && j.user.role !== 'USER' && (
                           <span className={styles.joinerRoleBadge}><RoleBadge role={j.user.role} /></span>
                         )}
@@ -378,6 +430,7 @@ function EventDetailContent() {
                   <Link key={`${j.id}-${i}`} href={`/profile/${j.userId}`} className={styles.joinerBadgeLink}>
                     <span className={styles.joinerBadge}>
                       {j.user.name || j.user.email || `User ${i + 1}`}
+                      {j.role === 'VOLUNTEER' && ' 🙋'}
                     </span>
                     {j.user.role && j.user.role !== 'USER' && (
                       <span className={styles.badgeDot} title={j.user.role}></span>

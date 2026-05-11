@@ -117,7 +117,10 @@ export async function POST(request: NextRequest) {
       groupId,
       acceptsDonations,
       donationAddress,
-      donationCurrency
+      donationCurrency,
+      needsVolunteers,
+      volunteerRoles,
+      volunteerDescription
     } = body
 
     if (!title) {
@@ -177,6 +180,9 @@ export async function POST(request: NextRequest) {
         acceptsDonations: acceptsDonations || false,
         donationAddress: donationAddress || null,
         donationCurrency: donationCurrency || 'ETH',
+        needsVolunteers: needsVolunteers || false,
+        volunteerRoles: volunteerRoles ? JSON.stringify(volunteerRoles) : null,
+        volunteerDescription: volunteerDescription || null,
         planId: planId || null,
         groupId: groupId || null,
         shopId: eventCategory === 'SHOP' ? session.user.id : undefined,
