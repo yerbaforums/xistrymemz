@@ -222,6 +222,16 @@
   text-decoration: none;
 }
 
+.tag {
+  display: inline-block;
+  padding: 4px 10px;
+  background: rgba(0, 217, 255, 0.1);
+  border: 1px solid rgba(0, 217, 255, 0.2);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  color: var(--accent-primary);
+}
+
 @media (max-width: 768px) {
   .templateGrid {
     grid-template-columns: 1fr;

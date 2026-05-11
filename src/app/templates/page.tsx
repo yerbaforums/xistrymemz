@@ -4,14 +4,36 @@ import { useState } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
 import { businessTemplates, getTemplatesByType, type BusinessTemplate } from '@/lib/templates'
+import { eventTemplates, type EventTemplate } from '@/lib/event-templates'
+
+type FilterType = 'ALL' | 'SHOP' | 'SCHOOL' | 'COURIER' | 'EVENTS'
 
 export default function TemplatesPage() {
-  const [activeFilter, setActiveFilter] = useState<'ALL' | 'SHOP' | 'SCHOOL' | 'COURIER'>('ALL')
-  const [selectedTemplate, setSelectedTemplate] = useState<BusinessTemplate | null>(null)
+  const [activeFilter, setActiveFilter] = useState<FilterType>('ALL')
+  const [selectedBusiness, setSelectedBusiness] = useState<BusinessTemplate | null>(null)
+  const [selectedEvent, setSelectedEvent] = useState<EventTemplate | null>(null)
 
-  const filteredTemplates = activeFilter === 'ALL' 
-    ? businessTemplates 
-    : getTemplatesByType(activeFilter)
+  const isEventFilter = activeFilter === 'EVENTS'
+
+  const filteredBusinesses = isEventFilter ? [] : (
+    activeFilter === 'ALL' 
+      ? businessTemplates 
+      : getTemplatesByType(activeFilter)
+  )
+
+  const filteredEvents = isEventFilter ? eventTemplates : (
+    activeFilter === 'ALL' ? eventTemplates : []
+  )
+
+  const selectBusiness = (t: BusinessTemplate) => {
+    setSelectedBusiness(t)
+    setSelectedEvent(null)
+  }
+
+  const selectEvent = (t: EventTemplate) => {
+    setSelectedEvent(t)
+    setSelectedBusiness(null)
+  }
 
   return (
     <div className={styles.page}>
@@ -19,30 +41,30 @@ export default function TemplatesPage() {
         <Link href="/dashboard" className={styles.backLink}>
           ← Back to Dashboard
         </Link>
-        <h1>Business Templates</h1>
+        <h1>Templates</h1>
         <p className={styles.subtitle}>
-          Choose a pre-built template to quickly set up your business with example data
+          Choose a pre-built template to quickly set up your business or event
         </p>
       </div>
 
       <div className={styles.filters}>
-        {(['ALL', 'SHOP', 'SCHOOL', 'COURIER'] as const).map(filter => (
+        {(['ALL', 'SHOP', 'SCHOOL', 'COURIER', 'EVENTS'] as const).map(filter => (
           <button
             key={filter}
             className={`${styles.filterBtn} ${activeFilter === filter ? styles.filterActive : ''}`}
-            onClick={() => setActiveFilter(filter)}
+            onClick={() => { setActiveFilter(filter); setSelectedBusiness(null); setSelectedEvent(null) }}
           >
-            {filter === 'ALL' ? 'All Templates' : filter.charAt(0) + filter.slice(1).toLowerCase() + 's'}
+            {filter === 'ALL' ? 'All Templates' : filter === 'EVENTS' ? 'Events' : filter.charAt(0) + filter.slice(1).toLowerCase() + 's'}
           </button>
         ))}
       </div>
 
       <div className={styles.templateGrid}>
-        {filteredTemplates.map(template => (
+        {filteredBusinesses.map(template => (
           <div 
             key={template.id} 
-            className={`${styles.templateCard} ${selectedTemplate?.id === template.id ? styles.selected : ''}`}
-            onClick={() => setSelectedTemplate(template)}
+            className={`${styles.templateCard} ${selectedBusiness?.id === template.id ? styles.selected : ''}`}
+            onClick={() => selectBusiness(template)}
           >
             <div className={styles.templateIcon}>{template.icon}</div>
             <div className={styles.templateInfo}>
@@ -61,54 +83,72 @@ export default function TemplatesPage() {
             </div>
           </div>
         ))}
+        {filteredEvents.map(template => (
+          <div 
+            key={template.id} 
+            className={`${styles.templateCard} ${selectedEvent?.id === template.id ? styles.selected : ''}`}
+            onClick={() => selectEvent(template)}
+          >
+            <div className={styles.templateIcon}>{template.icon}</div>
+            <div className={styles.templateInfo}>
+              <h3>{template.name}</h3>
+              <span className={styles.category}>{template.category}</span>
+              <p>{template.description}</p>
+              <div className={styles.templateMeta}>
+                <span>⏱️ {template.suggestedDuration}</span>
+                <span>👥 up to {template.suggestedMaxJoiners}</span>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
-      {selectedTemplate && (
+      {selectedBusiness && (
         <div className={styles.previewPanel}>
           <div className={styles.previewHeader}>
-            <h2>{selectedTemplate.icon} {selectedTemplate.name}</h2>
+            <h2>{selectedBusiness.icon} {selectedBusiness.name}</h2>
             <button 
               className={styles.closeBtn}
-              onClick={() => setSelectedTemplate(null)}
+              onClick={() => setSelectedBusiness(null)}
             >
               ✕
             </button>
           </div>
           
           <div className={styles.previewContent}>
-            <p><strong>Category:</strong> {selectedTemplate.category}</p>
-            <p><strong>Description:</strong> {selectedTemplate.description}</p>
+            <p><strong>Category:</strong> {selectedBusiness.category}</p>
+            <p><strong>Description:</strong> {selectedBusiness.description}</p>
             
-            {selectedTemplate.data.shopName && (
+            {selectedBusiness.data.shopName && (
               <div className={styles.previewSection}>
                 <h4>Shop Details</h4>
-                <p><strong>Name:</strong> {selectedTemplate.data.shopName}</p>
-                <p><strong>About:</strong> {selectedTemplate.data.shopAbout}</p>
+                <p><strong>Name:</strong> {selectedBusiness.data.shopName}</p>
+                <p><strong>About:</strong> {selectedBusiness.data.shopAbout}</p>
               </div>
             )}
             
-            {selectedTemplate.data.schoolName && (
+            {selectedBusiness.data.schoolName && (
               <div className={styles.previewSection}>
                 <h4>School Details</h4>
-                <p><strong>Name:</strong> {selectedTemplate.data.schoolName}</p>
-                <p><strong>About:</strong> {selectedTemplate.data.schoolAbout}</p>
+                <p><strong>Name:</strong> {selectedBusiness.data.schoolName}</p>
+                <p><strong>About:</strong> {selectedBusiness.data.schoolAbout}</p>
               </div>
             )}
             
-            {selectedTemplate.data.serviceName && (
+            {selectedBusiness.data.serviceName && (
               <div className={styles.previewSection}>
                 <h4>Service Details</h4>
-                <p><strong>Name:</strong> {selectedTemplate.data.serviceName}</p>
-                <p><strong>Type:</strong> {selectedTemplate.data.serviceType}</p>
-                <p><strong>Base Price:</strong> ${selectedTemplate.data.basePrice}</p>
-                <p><strong>Per Mile:</strong> ${selectedTemplate.data.pricePerMile}</p>
+                <p><strong>Name:</strong> {selectedBusiness.data.serviceName}</p>
+                <p><strong>Type:</strong> {selectedBusiness.data.serviceType}</p>
+                <p><strong>Base Price:</strong> ${selectedBusiness.data.basePrice}</p>
+                <p><strong>Per Mile:</strong> ${selectedBusiness.data.pricePerMile}</p>
               </div>
             )}
             
-            {selectedTemplate.sampleProducts && (
+            {selectedBusiness.sampleProducts && (
               <div className={styles.previewSection}>
-                <h4>Sample Products ({selectedTemplate.sampleProducts.length})</h4>
-                {selectedTemplate.sampleProducts.map((product, i) => (
+                <h4>Sample Products ({selectedBusiness.sampleProducts.length})</h4>
+                {selectedBusiness.sampleProducts.map((product, i) => (
                   <div key={i} className={styles.previewItem}>
                     <p><strong>{product.title}</strong> - ${product.price}</p>
                     <p className={styles.previewItemDesc}>{product.description}</p>
@@ -117,10 +157,10 @@ export default function TemplatesPage() {
               </div>
             )}
             
-            {selectedTemplate.sampleContent && (
+            {selectedBusiness.sampleContent && (
               <div className={styles.previewSection}>
-                <h4>Sample Content ({selectedTemplate.sampleContent.length})</h4>
-                {selectedTemplate.sampleContent.map((content, i) => (
+                <h4>Sample Content ({selectedBusiness.sampleContent.length})</h4>
+                {selectedBusiness.sampleContent.map((content, i) => (
                   <div key={i} className={styles.previewItem}>
                     <p><strong>{content.title}</strong> {content.price ? `- $${content.price}` : '- Free'}</p>
                     <p className={styles.previewItemDesc}>{content.description}</p>
@@ -132,23 +172,81 @@ export default function TemplatesPage() {
           
           <div className={styles.previewActions}>
             <Link 
-              href={`/shop/setup?template=${selectedTemplate.id}`}
+              href={`/shop/setup?template=${selectedBusiness.id}`}
               className="btn-primary"
-              style={{display: selectedTemplate.type === 'SHOP' ? 'inline-flex' : 'none'}}
+              style={{display: selectedBusiness.type === 'SHOP' ? 'inline-flex' : 'none'}}
             >
               Use This Template →
             </Link>
             <Link 
-              href={`/school/setup?template=${selectedTemplate.id}`}
+              href={`/school/setup?template=${selectedBusiness.id}`}
               className="btn-primary"
-              style={{display: selectedTemplate.type === 'SCHOOL' ? 'inline-flex' : 'none'}}
+              style={{display: selectedBusiness.type === 'SCHOOL' ? 'inline-flex' : 'none'}}
             >
               Use This Template →
             </Link>
             <Link 
-              href={`/courier/setup?template=${selectedTemplate.id}`}
+              href={`/courier/setup?template=${selectedBusiness.id}`}
               className="btn-primary"
-              style={{display: selectedTemplate.type === 'COURIER' ? 'inline-flex' : 'none'}}
+              style={{display: selectedBusiness.type === 'COURIER' ? 'inline-flex' : 'none'}}
+            >
+              Use This Template →
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {selectedEvent && (
+        <div className={styles.previewPanel}>
+          <div className={styles.previewHeader}>
+            <h2>{selectedEvent.icon} {selectedEvent.name}</h2>
+            <button 
+              className={styles.closeBtn}
+              onClick={() => setSelectedEvent(null)}
+            >
+              ✕
+            </button>
+          </div>
+          
+          <div className={styles.previewContent}>
+            <p><strong>Category:</strong> {selectedEvent.category}</p>
+            <p><strong>Duration:</strong> {selectedEvent.suggestedDuration}</p>
+            <p><strong>Max Attendees:</strong> {selectedEvent.suggestedMaxJoiners}</p>
+            <p><strong>Suggested Location:</strong> {selectedEvent.suggestedLocation || 'Any'}</p>
+            <p><strong>Description:</strong> {selectedEvent.description}</p>
+            
+            <div className={styles.previewSection}>
+              <h4>Suggested Description</h4>
+              <p className={styles.previewItemDesc}>{selectedEvent.suggestedDescription}</p>
+            </div>
+
+            {selectedEvent.tags.length > 0 && (
+              <div className={styles.previewSection}>
+                <h4>Tags</h4>
+                <div style={{display: 'flex', flexWrap: 'wrap', gap: '6px'}}>
+                  {selectedEvent.tags.map(tag => (
+                    <span key={tag} className={styles.tag}>{tag}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {selectedEvent.suggestedVolunteerRoles.length > 0 && (
+              <div className={styles.previewSection}>
+                <h4>Suggested Volunteer Roles ({selectedEvent.suggestedVolunteerRoles.length})</h4>
+                <div style={{display: 'flex', flexWrap: 'wrap', gap: '6px'}}>
+                  {selectedEvent.suggestedVolunteerRoles.map((role, i) => (
+                    <span key={i} className={styles.tag}>🙋 {role}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <div className={styles.previewActions}>
+            <Link 
+              href={`/events/new?template=${selectedEvent.id}`}
+              className="btn-primary"
             >
               Use This Template →
             </Link>

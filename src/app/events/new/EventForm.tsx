@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
+import { getEventTemplateById } from '@/lib/event-templates'
 
 const CATEGORIES = [
   { value: 'GENERAL', label: 'General' },
@@ -15,11 +16,17 @@ const CATEGORIES = [
   { value: 'CONCERT', label: 'Concert' },
   { value: 'SPORTS', label: 'Sports' },
   { value: 'SHOP', label: 'Shop Event' },
+  { value: 'OUTDOOR', label: 'Outdoor' },
+  { value: 'RETREAT', label: 'Retreat' },
+  { value: 'CEREMONY', label: 'Ceremony' },
+  { value: 'WELLNESS', label: 'Wellness' },
+  { value: 'COMMUNITY', label: 'Community' },
   { value: 'OTHER', label: 'Other' }
 ]
 
 export function EventForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { success, error } = useToast()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -35,8 +42,31 @@ export function EventForm() {
     ticketPrice: 0,
     currency: 'USD',
     visibility: 'PUBLIC',
-    eventType: 'public'
+    eventType: 'public',
+    needsVolunteers: false,
+    volunteerRoles: '',
+    volunteerDescription: ''
   })
+
+  useEffect(() => {
+    const templateId = searchParams.get('template')
+    if (templateId) {
+      const template = getEventTemplateById(templateId)
+      if (template) {
+        setFormData(prev => ({
+          ...prev,
+          title: template.name,
+          description: template.suggestedDescription,
+          eventCategory: template.category,
+          maxJoiners: template.suggestedMaxJoiners,
+          location: template.suggestedLocation || prev.location,
+          needsVolunteers: template.suggestedVolunteerRoles.length > 0,
+          volunteerRoles: JSON.stringify(template.suggestedVolunteerRoles),
+          volunteerDescription: `Volunteer roles available: ${template.suggestedVolunteerRoles.join(', ')}`
+        }))
+      }
+    }
+  }, [searchParams])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
@@ -56,11 +86,19 @@ export function EventForm() {
 
     setLoading(true)
     try {
+      let volunteerRoles = formData.volunteerRoles
+      if (formData.needsVolunteers && volunteerRoles) {
+        try { JSON.parse(volunteerRoles) } catch {
+          volunteerRoles = JSON.stringify(volunteerRoles.split(',').map(r => r.trim()).filter(Boolean))
+        }
+      }
+
       const res = await fetch('/api/events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          volunteerRoles,
           maxJoiners: formData.maxJoiners ? parseInt(String(formData.maxJoiners)) : 0,
           ticketPrice: formData.ticketPrice ? parseFloat(String(formData.ticketPrice)) : 0
         })
@@ -236,6 +274,75 @@ export function EventForm() {
           </div>
         )}
       </div>
+
+      <div className={styles.volunteering}>
+        <div className={styles.checkboxField}>
+          <input
+            type="checkbox"
+            id="needsVolunteers"
+            name="needsVolunteers"
+            checked={formData.needsVolunteers}
+            onChange={handleChange}
+          />
+          <label htmlFor="needsVolunteers">Recruit Volunteers</label>
+        </div>
+
+        {formData.needsVolunteers && (
+          <>
+            <div className={styles.field}>
+              <label htmlFor="volunteerRoles">Volunteer Roles (comma separated)</label>
+              <input
+                type="text"
+                id="volunteerRoles"
+                name="volunteerRoles"
+                value={formData.volunteerRoles}
+                onChange={handleChange}
+                placeholder="e.g., Setup, Cleanup, Photography"
+              />
+            </div>
+            <div className={styles.field}>
+              <label htmlFor="volunteerDescription">Volunteer Description</label>
+              <textarea
+                id="volunteerDescription"
+                name="volunteerDescription"
+                value={formData.volunteerDescription}
+                onChange={handleChange}
+                placeholder="Describe what volunteers will do..."
+                rows={2}
+              />
+            </div>
+          </>
+        )}
+      </div>
+
+      {searchParams.get('template') && (
+        <div className={styles.templateNotice}>
+          <span>📋 Template applied — fields pre-filled from &quot;{getEventTemplateById(searchParams.get('template') || '')?.name || 'template'}&quot;</span>
+          <button type="button" onClick={() => {
+            router.replace('/events/new')
+            setFormData({
+              title: '',
+              description: '',
+              eventCategory: 'GENERAL',
+              eventDate: '',
+              endDate: '',
+              location: '',
+              locationDetails: '',
+              maxJoiners: 0,
+              isTicketed: false,
+              ticketPrice: 0,
+              currency: 'USD',
+              visibility: 'PUBLIC',
+              eventType: 'public',
+              needsVolunteers: false,
+              volunteerRoles: '',
+              volunteerDescription: ''
+            })
+          }}>
+            Clear Template
+          </button>
+        </div>
+      )}
 
       <div className={styles.actions}>
         <button type="button" onClick={() => router.back()} className="btn-secondary">
