@@ -19,8 +19,6 @@ export default async function GroupsLayout({
     <div className={styles.layout}>
       <div className={styles.container}>
         <nav className="breadcrumbs" style={{ marginBottom: '1rem' }}>
-          <Link href="/dashboard" className="breadcrumb-link">Dashboard</Link>
-          <span className="breadcrumb-sep">/</span>
           <Link href="/groups" className="breadcrumb-link">Groups</Link>
         </nav>
         <main className={styles.main}>

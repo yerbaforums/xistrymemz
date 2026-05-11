@@ -17,8 +17,6 @@ export default async function WalletLayout({
   return (
     <>
       <nav className="breadcrumbs" style={{ marginBottom: '1rem', padding: '1rem 2rem', background: 'var(--bg-secondary)' }}>
-        <Link href="/dashboard" className="breadcrumb-link">Dashboard</Link>
-        <span className="breadcrumb-sep">/</span>
         <Link href="/wallet" className="breadcrumb-link">Wallet</Link>
       </nav>
       {children}

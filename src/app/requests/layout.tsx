@@ -11,8 +11,6 @@ export default async function RequestsLayout({
     <div className={styles.layout}>
       <div className={styles.container}>
         <nav className="breadcrumbs" style={{ marginBottom: '1rem' }}>
-          <Link href="/dashboard" className="breadcrumb-link">Dashboard</Link>
-          <span className="breadcrumb-sep">/</span>
           <Link href="/requests" className="breadcrumb-link">Requests</Link>
         </nav>
         <main className={styles.main}>
