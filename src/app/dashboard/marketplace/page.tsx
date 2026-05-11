@@ -3,7 +3,6 @@
 import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import Breadcrumbs from '@/components/Breadcrumbs'
 import { useToast } from '@/context/ToastContext'
 import styles from './marketplace.module.css'
 
@@ -366,11 +365,6 @@ function MarketplaceContent() {
 
   return (
     <div className={styles.page}>
-      <Breadcrumbs items={[
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Marketplace' }
-      ]} />
-      
       <div className={styles.header}>
         <div>
           <h1>🛒 My Marketplace</h1>

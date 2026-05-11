@@ -3,7 +3,6 @@ import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
-import Breadcrumbs from '@/components/Breadcrumbs'
 import styles from '../page.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -53,11 +52,6 @@ export default async function DashboardOffers() {
 
   return (
     <div className={styles.container}>
-      <Breadcrumbs items={[
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Offers' }
-      ]} />
-
       <h1>🤝 Barter Offers</h1>
 
       <div className={styles.statsGrid}>

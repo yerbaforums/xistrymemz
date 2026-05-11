@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import Breadcrumbs from '@/components/Breadcrumbs'
 import { useToast } from '@/context/ToastContext'
 import styles from './events.module.css'
 
@@ -198,11 +197,6 @@ export default function DashboardEvents() {
 
   return (
     <div className={styles.page}>
-      <Breadcrumbs items={[
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'My Events' }
-      ]} />
-      
       <div className={styles.header}>
         <div>
           <h1>My Events</h1>

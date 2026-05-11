@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import Breadcrumbs from '@/components/Breadcrumbs'
 import { useToast } from '@/context/ToastContext'
 import styles from './rentals.module.css'
 
@@ -164,7 +163,6 @@ export default function RentalsPage() {
 
   return (
     <div className={styles.page}>
-      <Breadcrumbs items={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Rentals' }]} />
       <div className={styles.header}>
         <div>
           <h1>🏠 Rentals</h1>

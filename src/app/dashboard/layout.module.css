@@ -19,6 +19,34 @@
   min-width: 0;
 }
 
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  font-size: 0.8125rem;
+  margin-bottom: 1rem;
+  color: var(--text-secondary);
+}
+
+.breadcrumbLink {
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+
+.breadcrumbLink:hover {
+  text-decoration: underline;
+}
+
+.breadcrumbCurrent {
+  color: var(--text-primary);
+}
+
+.breadcrumbSep {
+  color: var(--text-muted);
+  margin: 0 0.25rem;
+}
+
 @media (max-width: 768px) {
   .main {
     padding: 20px;

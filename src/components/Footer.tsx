@@ -17,7 +17,8 @@ const COINGECKO_IDS: Record<string, string> = {
   XMR: 'monero',
   ARRR: 'pirate-chain',
   DERO: 'dero',
-  ZANO: 'zano'
+  ZANO: 'zano',
+  XTM: 'minotari'
 }
 
 interface DonationAddr {

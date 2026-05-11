@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import Breadcrumbs from '@/components/Breadcrumbs'
 import { useToast } from '@/context/ToastContext'
 import styles from './teaching.module.css'
 
@@ -118,7 +117,6 @@ export default function TeachingPage() {
 
   return (
     <div className={styles.page}>
-      <Breadcrumbs items={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Teaching' }]} />
       <div className={styles.header}>
         <div>
           <h1>🏫 Teaching</h1>

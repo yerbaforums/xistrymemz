@@ -7,6 +7,17 @@ import Link from 'next/link'
 import styles from './layout.module.css'
 import sidebarStyles from './layout-sidebar.module.css'
 
+const BREADCRUMB_LABELS: Record<string, string> = {
+  overview: 'Overview',
+  projects: 'Projects',
+  requests: 'Requests',
+  marketplace: 'Marketplace',
+  rentals: 'Rentals',
+  teaching: 'Teaching',
+  offers: 'Offers',
+  events: 'Events',
+}
+
 function DashboardNav() {
   const pathname = usePathname()
   
@@ -93,11 +104,24 @@ export default function DashboardLayout({
     return null
   }
 
+  const pathname = usePathname()
+  const segments = pathname.split('/').filter(Boolean)
+  const pageLabel = BREADCRUMB_LABELS[segments[1]] || segments[1]?.replace(/^./, c => c.toUpperCase()) || 'Dashboard'
+
   return (
     <div className={styles.layout}>
       <div className={styles.container}>
         <DashboardNav />
         <main className={styles.main}>
+          <nav className={styles.breadcrumbs}>
+            <Link href="/dashboard" className={styles.breadcrumbLink}>Dashboard</Link>
+            {pageLabel !== 'Dashboard' && (
+              <>
+                <span className={styles.breadcrumbSep}> / </span>
+                <span className={styles.breadcrumbCurrent}>{pageLabel}</span>
+              </>
+            )}
+          </nav>
           <ErrorBoundary>{children}</ErrorBoundary>
         </main>
       </div>

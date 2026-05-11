@@ -7,7 +7,6 @@ import { QRCodeModal } from '@/components/QRCodeModal'
 import { getUserProfileUrl } from '@/lib/utils'
 import { getCryptoIcon, getCryptoColor } from '@/lib/crypto-icons'
 import { useToast } from '@/context/ToastContext'
-import Breadcrumbs from '@/components/Breadcrumbs'
 import styles from './requests.module.css'
 
 interface DonationAddr {
@@ -310,11 +309,6 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
 
   return (
     <div className={styles.page}>
-      <Breadcrumbs items={[
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'My Requests' }
-      ]} />
-      
       <div className={styles.header}>
         <div>
           <h1>My Requests</h1>
