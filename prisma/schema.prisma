@@ -432,6 +432,16 @@ model Product {
   acceptsRequests  Boolean  @default(false)
   acceptsOffers  Boolean  @default(true)
   requestPrice     Float?
+
+  // Rental-specific fields
+  rentalDaily    Float?
+  rentalWeekly   Float?
+  rentalMonthly  Float?
+  rentalDeposit  Float?
+  rentalMinDays  Int      @default(1)
+  rentalMaxDays  Int?
+  rentalAvailable Boolean @default(true)
+
   sellerPayoutAddress String?  // Crypto address for direct payouts
   sellerCryptoCurrency String? // BTC, ETH, USDT, USDC, XMR, XTM, ARRR, DERO, ZANO, OTHER
   userId           String

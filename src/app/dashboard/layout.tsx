@@ -15,8 +15,11 @@ function DashboardNav() {
     { href: '/dashboard/projects', icon: '🚀', label: 'Projects' },
     { href: '/dashboard/requests', icon: '📝', label: 'Requests' },
     { href: '/dashboard/marketplace', icon: '🛒', label: 'Marketplace' },
+    { href: '/dashboard/rentals', icon: '🏠', label: 'Rentals' },
+    { href: '/dashboard/teaching', icon: '🏫', label: 'Teaching' },
     { href: '/dashboard/offers', icon: '🤝', label: 'Offers' },
     { href: '/dashboard/events', icon: '📅', label: 'Events' },
+    { href: '/saved', icon: '⭐', label: 'Saved' },
   ]
 
   return (
