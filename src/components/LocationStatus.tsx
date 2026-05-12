@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useToast } from '@/context/ToastContext'
 
 interface LocationData {
   location: string | null
@@ -15,6 +16,7 @@ interface LocationData {
 export default function LocationStatus() {
   const [loc, setLoc] = useState<LocationData | null>(null)
   const [loading, setLoading] = useState(true)
+  const { error: toastError } = useToast()
 
   useEffect(() => {
     fetch('/api/users/me')
@@ -31,11 +33,32 @@ export default function LocationStatus() {
           })
         }
       })
-      .catch(() => {})
+      .catch(() => { toastError('Failed to load location') })
       .finally(() => setLoading(false))
   }, [])
 
-  if (loading || !loc) return null
+  if (loading) {
+    return (
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '5px',
+          padding: '4px 10px',
+          borderRadius: '20px',
+          fontSize: '0.75rem',
+          background: 'var(--bg-tertiary)',
+          color: 'var(--text-tertiary)',
+          minWidth: '60px',
+          height: '26px',
+        }}
+      >
+        <span style={{ opacity: 0.5 }}>---</span>
+      </span>
+    )
+  }
+
+  if (!loc) return null
 
   const displayLocation = loc.location || loc.neighborhood || null
   if (!displayLocation) return null

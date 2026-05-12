@@ -11,9 +11,10 @@ import Rating from '@/components/Rating'
 import { getUserProfileUrl } from '@/lib/utils'
 import { MakeOfferModal } from '@/components/MakeOfferModal'
 import { ComingSoonModal } from '@/components/ComingSoonModal'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import RoleBadge from '@/components/RoleBadge'
-import { usdToCrypto } from '@/lib/prices'
+import { getCryptoPrices } from '@/lib/prices'
 import dynamic from 'next/dynamic'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
@@ -128,6 +129,16 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [messageContent, setMessageContent] = useState('')
   const [messageSending, setMessageSending] = useState(false)
   const [mapExpanded, setMapExpanded] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [cryptoPrices, setCryptoPrices] = useState<Record<string, number>>({})
+
+  useEffect(() => {
+    getCryptoPrices().then(prices => {
+      const map: Record<string, number> = {}
+      for (const p of prices) map[p.symbol] = p.price
+      setCryptoPrices(map)
+    }).catch(() => {})
+  }, [])
 
   useEffect(() => {
     params.then(setResolvedParams)
@@ -384,8 +395,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   }
 
   const handleDelete = async () => {
-    if (!product || !confirm('Are you sure you want to delete this listing?')) return
-
+    if (!product) return
     try {
       const res = await fetch(`/api/products/${product.id}`, { method: 'DELETE' })
       if (res.ok) {
@@ -393,8 +403,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       } else {
         error('Failed to delete')
       }
-    } catch (err) {
-      console.error(err)
+    } catch {
+      error('Failed to delete')
     }
   }
 
@@ -628,7 +638,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     <button onClick={() => setIsEditing(true)} className={styles.editBtn}>
                       Edit
                     </button>
-                    <button onClick={handleDelete} className={styles.deleteBtn}>
+                    <button onClick={() => setConfirmDelete(true)} className={styles.deleteBtn}>
                       Delete
                     </button>
                   </div>
@@ -766,9 +776,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <div className={styles.priceCard}>
               <p className={styles.price}>${product.price}</p>
               <div className={styles.cryptoConversions}>
-                <span className={styles.cryptoLabel}>≈ {usdToCrypto(product.price, 'BTC').toFixed(6)} BTC</span>
-                <span className={styles.cryptoLabel}>≈ {usdToCrypto(product.price, 'ETH').toFixed(4)} ETH</span>
-                <span className={styles.cryptoLabel}>≈ {usdToCrypto(product.price, 'XMR').toFixed(4)} XMR</span>
+                <span className={styles.cryptoLabel}>≈ {(product.price / (cryptoPrices['BTC'] || 68500)).toFixed(6)} BTC</span>
+                <span className={styles.cryptoLabel}>≈ {(product.price / (cryptoPrices['ETH'] || 3450)).toFixed(4)} ETH</span>
+                <span className={styles.cryptoLabel}>≈ {(product.price / (cryptoPrices['XMR'] || 165)).toFixed(4)} XMR</span>
+                <span className={styles.cryptoLabel}>≈ {(product.price / (cryptoPrices['FIRO'] || 1.20)).toFixed(2)} FIRO</span>
               </div>
                <button 
                  className={styles.addToCartBtn}
@@ -1118,6 +1129,16 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         isOpen={showEscrowComingSoon}
         onClose={() => setShowEscrowComingSoon(false)}
         feature="Escrow checkout"
+      />
+
+      <ConfirmDialog
+        isOpen={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        onConfirm={handleDelete}
+        title="Delete Listing"
+        message="Are you sure you want to delete this listing? This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
       />
     </div>
   )

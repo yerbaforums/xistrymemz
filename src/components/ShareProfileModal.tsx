@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import styles from './ShareProfileModal.module.css'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
+import { useToast } from '@/context/ToastContext'
 
 interface ShareProfileModalProps {
   isOpen: boolean
@@ -14,6 +15,7 @@ interface ShareProfileModalProps {
 export function ShareProfileModal({ isOpen, onClose, username, displayName }: ShareProfileModalProps) {
   const [copied, setCopied] = useState(false)
   const modalRef = useFocusTrap(isOpen, onClose)
+  const { error: toastError } = useToast()
 
   if (!isOpen) return null
 
@@ -104,7 +106,7 @@ export function ShareProfileModal({ isOpen, onClose, username, displayName }: Sh
           url
         })
       } catch {
-        // User cancelled or share failed
+        toastError('Share failed')
       }
     }
   }

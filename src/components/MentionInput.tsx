@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { getSelectionAfterAt } from '@/lib/mentions'
+import { useToast } from '@/context/ToastContext'
 
 interface UserResult {
   id: string
@@ -32,6 +33,7 @@ export default function MentionInput({
   const [showSuggestions, setShowSuggestions] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const { error: toastError } = useToast()
 
   const fetchUsers = useCallback(async (query: string) => {
     if (query.length < 1) {
@@ -50,6 +52,7 @@ export default function MentionInput({
     } catch {
       setSuggestions([])
       setShowSuggestions(false)
+      toastError('Failed to search users')
     }
   }, [])
 

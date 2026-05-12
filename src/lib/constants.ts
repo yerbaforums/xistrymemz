@@ -8,4 +8,5 @@ export const CRYPTO_LOGOS: Record<string, string> = {
   ARRR: 'pirate-chain.png',
   DERO: 'dero.png',
   ZANO: 'zano.png',
+  FIRO: 'firo.png',
 }

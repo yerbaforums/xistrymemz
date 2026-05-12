@@ -457,11 +457,16 @@
 .menuBtn {
   display: none;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
   gap: 5px;
-  padding: 8px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
   background: transparent;
   border: none;
   cursor: pointer;
+  position: relative;
 }
 
 .menuBtn span {
@@ -470,7 +475,21 @@
   height: 2px;
   background: var(--text-secondary);
   border-radius: 1px;
-  transition: var(--transition);
+  transition: all 0.25s ease;
+  transform-origin: center;
+}
+
+.menuBtnOpen span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.menuBtnOpen span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.menuBtnOpen span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
 }
 
 /* Mobile Overlay */

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { useToast } from '@/context/ToastContext'
 
 type ItemType = 'PLAN' | 'PRODUCT' | 'REQUEST' | 'EVENT' | 'FORUM_POST'
 
@@ -15,6 +16,7 @@ interface SaveButtonProps {
 export default function SaveButton({ itemType, itemId, size = 'sm' }: SaveButtonProps) {
   const { status } = useSession()
   const router = useRouter()
+  const { error: toastError } = useToast()
   const [saved, setSaved] = useState(false)
   const [savedId, setSavedId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -35,7 +37,7 @@ export default function SaveButton({ itemType, itemId, size = 'sm' }: SaveButton
           }
         }
       })
-      .catch(() => {})
+      .catch(() => { toastError('Failed to load saved status') })
   }, [status, itemType, itemId])
 
   const toggle = async () => {
@@ -65,6 +67,7 @@ export default function SaveButton({ itemType, itemId, size = 'sm' }: SaveButton
         }
       }
     } catch {
+      toastError('Failed to save. Please try again.')
     } finally {
       setLoading(false)
     }

@@ -16,6 +16,7 @@ const LOGO_URLS: Record<string, string> = {
   ARRR: '/crypto-logos/pirate-chain.png',
   DERO: '/crypto-logos/dero.png',
   ZANO: '/crypto-logos/zano.png',
+  FIRO: '/crypto-logos/firo.png',
 }
 
 export const CRYPTO_ICONS: Record<string, CryptoInfo> = {
@@ -81,6 +82,13 @@ export const CRYPTO_ICONS: Record<string, CryptoInfo> = {
     name: 'Zano',
     icon: LOGO_URLS.ZANO,
     color: '#4A90D9'
+  },
+  FIRO: {
+    id: 'FIRO',
+    symbol: 'FIRO',
+    name: 'Firo',
+    icon: LOGO_URLS.FIRO,
+    color: '#2472C8'
   }
 }
 

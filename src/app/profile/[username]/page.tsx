@@ -16,6 +16,8 @@ import RoleBadge from '@/components/RoleBadge'
 import { linkHashtags } from '@/lib/hashtags'
 import { renderMentions } from '@/lib/mentions'
 import MentionInput from '@/components/MentionInput'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
+import { useToast } from '@/context/ToastContext'
 import dynamic from 'next/dynamic'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
@@ -312,6 +314,9 @@ export default function ProfilePage() {
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set())
   const [copiedShare, setCopiedShare] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
+  const [confirmDeletePost, setConfirmDeletePost] = useState<string | null>(null)
+  const [confirmDisconnect, setConfirmDisconnect] = useState(false)
+  const { error: toastError } = useToast()
 
   const handleShareProfile = async () => {
     setShowShareModal(true)
@@ -421,15 +426,15 @@ export default function ProfilePage() {
   }
 
   const handleDeletePost = async (postId: string) => {
-    if (!confirm('Delete this post?')) return
-
     try {
       const res = await fetch(`/api/posts/${postId}`, { method: 'DELETE' })
       if (res.ok) {
         fetchProfile(getTargetId())
+      } else {
+        toastError('Failed to delete post')
       }
-    } catch (error) {
-      console.error('Error deleting post:', error)
+    } catch {
+      toastError('Failed to delete post')
     }
   }
 
@@ -520,7 +525,6 @@ export default function ProfilePage() {
 
   const handleDisconnect = async () => {
     if (!user || !user.connectionId) return
-    if (!confirm('Disconnect from this user?')) return
 
     try {
       const res = await fetch(`/api/community/connect?connectionId=${user.connectionId}`, {
@@ -529,9 +533,11 @@ export default function ProfilePage() {
       
       if (res.ok) {
         fetchProfile(getTargetId())
+      } else {
+        toastError('Failed to disconnect')
       }
-    } catch (error) {
-      console.error('Error disconnecting:', error)
+    } catch {
+      toastError('Failed to disconnect')
     }
   }
 
@@ -737,8 +743,8 @@ export default function ProfilePage() {
                 <Link href={`/messages?user=${user.id}`} className={styles.messageBtn}>Message</Link>
                 {user.isConnected ? (
                   <button 
-                    onClick={handleDisconnect}
-                    className={styles.disconnectBtn}
+                  onClick={() => setConfirmDisconnect(true)}
+                  className={styles.disconnectBtn}
                   >
                     Disconnect
                   </button>
@@ -887,7 +893,7 @@ export default function ProfilePage() {
                                 {post.pinned ? '📌' : '📍'}
                               </button>
                             )}
-                            <button onClick={() => handleDeletePost(post.id)} className={styles.deletePost}>
+                            <button onClick={() => setConfirmDeletePost(post.id)} className={styles.deletePost}>
                               ×
                             </button>
                           </div>
@@ -1371,6 +1377,26 @@ export default function ProfilePage() {
         onClose={() => setShowShareModal(false)}
         username={user.username || ''}
         displayName={user.name || 'User'}
+      />
+
+      <ConfirmDialog
+        isOpen={confirmDeletePost !== null}
+        onClose={() => setConfirmDeletePost(null)}
+        onConfirm={() => { if (confirmDeletePost) handleDeletePost(confirmDeletePost); setConfirmDeletePost(null) }}
+        title="Delete Post"
+        message="Delete this post? This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+      />
+
+      <ConfirmDialog
+        isOpen={confirmDisconnect}
+        onClose={() => setConfirmDisconnect(false)}
+        onConfirm={() => { handleDisconnect(); setConfirmDisconnect(false) }}
+        title="Disconnect"
+        message="Disconnect from this user?"
+        confirmLabel="Disconnect"
+        variant="warning"
       />
     </div>
   )

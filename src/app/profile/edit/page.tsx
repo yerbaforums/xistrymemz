@@ -7,6 +7,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getAllCryptos, getCryptoIcon, getCryptoName } from '@/lib/crypto-icons'
 import { getUserProfileUrl } from '@/lib/utils'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
+import { useToast } from '@/context/ToastContext'
 import styles from '../[username]/profile.module.css'
 
 interface UserLink {
@@ -84,6 +86,9 @@ export default function ProfileEditPage() {
   const [editingLink, setEditingLink] = useState<UserLink | null>(null)
   const [linkForm, setLinkForm] = useState({ type: 'website', url: '', label: '', icon: '' })
   const [linkSaving, setLinkSaving] = useState(false)
+  const [confirmDeleteLink, setConfirmDeleteLink] = useState<string | null>(null)
+  const [confirmDeleteDonation, setConfirmDeleteDonation] = useState<string | null>(null)
+  const { success: toastSuccess, error: toastError } = useToast()
 
   const allCryptos = getAllCryptos()
 
@@ -190,11 +195,10 @@ export default function ProfileEditPage() {
       if (newUsername && newUsername !== oldUsername) {
         router.push(`/profile/${newUsername}`)
       } else {
-        alert('Profile updated successfully!')
+        toastSuccess('Profile updated successfully!')
       }
-    } catch (err) {
-      console.error('Error updating profile:', err)
-      setError('Failed to update profile')
+    } catch {
+      toastError('Failed to update profile')
     } finally {
       setSaving(false)
     }
@@ -222,22 +226,20 @@ export default function ProfileEditPage() {
       setEditingLink(null)
       setLinkForm({ type: 'website', url: '', label: '', icon: '' })
       fetchData()
-    } catch (err) {
-      console.error('Error saving link:', err)
-      alert('Failed to save link')
+    } catch {
+      toastError('Failed to save link')
     } finally {
       setLinkSaving(false)
     }
   }
 
   const handleDeleteLink = async (id: string) => {
-    if (!confirm('Delete this link?')) return
-
     try {
-      await fetch(`/api/users/links/${id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/users/links/${id}`, { method: 'DELETE' })
+      if (!res.ok) toastError('Failed to delete link')
       fetchData()
-    } catch (err) {
-      console.error('Error deleting link:', err)
+    } catch {
+      toastError('Failed to delete link')
     }
   }
 
@@ -264,21 +266,20 @@ export default function ProfileEditPage() {
       setEditingDonation(null)
       setDonationForm({ currency: 'ETH', address: '', label: '', showQR: true })
       fetchData()
-    } catch (err) {
-      console.error('Error saving donation address:', err)
-      alert('Failed to save donation address')
+    } catch {
+      toastError('Failed to save donation address')
     } finally {
       setDonationSaving(false)
     }
   }
 
   const handleDeleteDonation = async (id: string) => {
-    if (!confirm('Delete this donation address?')) return
     try {
-      await fetch(`/api/users/donations/${id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/users/donations/${id}`, { method: 'DELETE' })
+      if (!res.ok) toastError('Failed to delete donation address')
       fetchData()
-    } catch (err) {
-      console.error('Error deleting donation address:', err)
+    } catch {
+      toastError('Failed to delete donation address')
     }
   }
 
@@ -577,7 +578,7 @@ export default function ProfileEditPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleDeleteDonation(da.id)}
+                    onClick={() => setConfirmDeleteDonation(da.id)}
                     style={{padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-secondary)', borderRadius: '6px', color: 'var(--accent-secondary)', cursor: 'pointer', fontSize: '0.8rem'}}
                   >
                     Delete
@@ -736,7 +737,7 @@ export default function ProfileEditPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleDeleteLink(link.id)}
+                    onClick={() => setConfirmDeleteLink(link.id)}
                     style={{padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-secondary)', borderRadius: '6px', color: 'var(--accent-secondary)', cursor: 'pointer', fontSize: '0.875rem'}}
                   >
                     Delete
@@ -823,6 +824,26 @@ export default function ProfileEditPage() {
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={confirmDeleteLink !== null}
+        onClose={() => setConfirmDeleteLink(null)}
+        onConfirm={() => { if (confirmDeleteLink) handleDeleteLink(confirmDeleteLink) }}
+        title="Delete Link"
+        message="Delete this link?"
+        confirmLabel="Delete"
+        variant="danger"
+      />
+
+      <ConfirmDialog
+        isOpen={confirmDeleteDonation !== null}
+        onClose={() => setConfirmDeleteDonation(null)}
+        onConfirm={() => { if (confirmDeleteDonation) handleDeleteDonation(confirmDeleteDonation) }}
+        title="Delete Donation Address"
+        message="Delete this donation address?"
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   )
 }

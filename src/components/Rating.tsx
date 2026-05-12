@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import styles from './Rating.module.css'
+import { useToast } from '@/context/ToastContext'
 
 interface RatingData {
   id: string
@@ -30,6 +31,7 @@ export default function RatingDisplay({ userId, productId, type = 'SELLER' }: Ra
   const [comment, setComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [userRating, setUserRating] = useState<RatingData | null>(null)
+  const { error: toastError, success: toastSuccess } = useToast()
 
   useEffect(() => {
     fetchRatings()
@@ -50,8 +52,8 @@ export default function RatingDisplay({ userId, productId, type = 'SELLER' }: Ra
         setTotalRatings(data.totalRatings || 0)
         setUserRating(data.userRating || null)
       }
-    } catch (error) {
-      console.error('Error fetching ratings:', error)
+    } catch {
+      toastError('Failed to load ratings')
     } finally {
       setLoading(false)
     }
@@ -90,9 +92,12 @@ export default function RatingDisplay({ userId, productId, type = 'SELLER' }: Ra
         setComment('')
         setNewRating(5)
         fetchRatings()
+        toastSuccess('Rating submitted')
+      } else {
+        toastError('Failed to submit rating')
       }
-    } catch (error) {
-      console.error('Error submitting rating:', error)
+    } catch {
+      toastError('Failed to submit rating')
     } finally {
       setSubmitting(false)
     }
@@ -101,7 +106,14 @@ export default function RatingDisplay({ userId, productId, type = 'SELLER' }: Ra
   const canRate = session?.user && session.user.id !== userId
 
   if (loading) {
-    return <div className="rating-loading">Loading ratings...</div>
+    return (
+      <div className="rating-loading" style={{ padding: '12px 0' }}>
+        <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
+          {[1,2,3,4,5].map(i => <span key={i} style={{ color: 'var(--bg-tertiary)' }}>★</span>)}
+        </div>
+        <div style={{ width: '120px', height: '14px', background: 'var(--bg-tertiary)', borderRadius: '4px' }} />
+      </div>
+    )
   }
 
   return (

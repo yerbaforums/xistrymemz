@@ -241,7 +241,7 @@ export default function Header() {
 
         {/* Mobile hamburger */}
         <button
-          className={styles.menuBtn}
+          className={`${styles.menuBtn} ${menuOpen ? styles.menuBtnOpen : ''}`}
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Toggle menu"
           aria-expanded={menuOpen}

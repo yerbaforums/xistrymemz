@@ -5,20 +5,9 @@ import Link from 'next/link'
 import styles from './Footer.module.css'
 import { QRCodeModal } from './QRCodeModal'
 import { CRYPTO_LOGOS } from '@/lib/constants'
+import { getCryptoPrices } from '@/lib/prices'
 
 const PACKAGE_VERSION = '0.7.0'
-
-const COINGECKO_IDS: Record<string, string> = {
-  BTC: 'bitcoin',
-  ETH: 'ethereum',
-  USDT: 'tether',
-  USDC: 'usd-coin',
-  XMR: 'monero',
-  ARRR: 'pirate-chain',
-  DERO: 'dero',
-  ZANO: 'zano',
-  XTM: 'minotari'
-}
 
 interface DonationAddr {
   id: string
@@ -48,23 +37,11 @@ export default function Footer() {
 
   useEffect(() => {
     if (donations.length === 0) return
-    const ids = donations
-      .map(d => COINGECKO_IDS[d.currency])
-      .filter(Boolean)
-      .join(',')
-    if (!ids) return
-    fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`)
-      .then(res => res.ok ? res.json() : null)
-      .then(data => {
-        if (!data) return
-        const mapped: Record<string, number> = {}
-        for (const [coinId, usdId] of Object.entries(COINGECKO_IDS)) {
-          const price = data[usdId]?.usd
-          if (price != null) mapped[coinId] = price
-        }
-        setPrices(mapped)
-      })
-      .catch(() => {})
+    getCryptoPrices().then(prices => {
+      const mapped: Record<string, number> = {}
+      for (const p of prices) mapped[p.symbol] = p.price
+      setPrices(mapped)
+    }).catch(() => {})
   }, [donations])
 
   const openQr = (da: DonationAddr) => setQrOpen(da.id)

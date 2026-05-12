@@ -1,0 +1,134 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+
+.modal {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 28px 24px 20px;
+  max-width: 380px;
+  width: 90%;
+  text-align: center;
+}
+
+.iconWrap {
+  margin-bottom: 12px;
+}
+
+.dangerIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 51, 102, 0.15);
+  color: #ff3366;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.warningIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.defaultIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 217, 255, 0.1);
+  color: var(--accent-primary);
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.title {
+  font-size: 1rem;
+  margin: 0 0 8px;
+  color: var(--text-primary);
+}
+
+.message {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.cancelBtn {
+  flex: 1;
+  padding: 10px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.cancelBtn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.confirmBtn {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: var(--transition);
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+}
+
+.confirmBtn:hover {
+  box-shadow: 0 0 12px rgba(0, 217, 255, 0.3);
+}
+
+.confirmDanger {
+  background: #ff3366;
+  color: #fff;
+}
+
+.confirmDanger:hover {
+  box-shadow: 0 0 12px rgba(255, 51, 102, 0.4);
+}
+
+.confirmWarning {
+  background: #ffc107;
+  color: #1a1a1a;
+}
+
+.confirmWarning:hover {
+  box-shadow: 0 0 12px rgba(255, 193, 7, 0.4);
+}

@@ -4,39 +4,90 @@ export interface CryptoPrice {
   change24h: number
 }
 
-export const PRICES: Record<string, number> = {
-  ETH: 3450.00,
-  BTC: 68500.00,
-  USDT: 1.00,
-  USDC: 1.00,
-  XMR: 165.00,
-  XTM: 0.008,
-  ARRR: 0.18,
-  DERO: 2.15,
-  ZANO: 9.88
+const COINGECKO_IDS: Record<string, string> = {
+  BTC: 'bitcoin',
+  ETH: 'ethereum',
+  USDT: 'tether',
+  USDC: 'usd-coin',
+  XMR: 'monero',
+  XTM: 'minotari',
+  ARRR: 'pirate-chain',
+  DERO: 'dero',
+  ZANO: 'zano',
+  FIRO: 'firo',
+}
+
+const SYMBOLS = Object.keys(COINGECKO_IDS) as (keyof typeof COINGECKO_IDS)[]
+
+let cache: { prices: Record<string, number>; changes: Record<string, number>; ts: number } | null = null
+const CACHE_TTL = 60_000
+
+async function fetchPrices(): Promise<void> {
+  const ids = Object.values(COINGECKO_IDS).join(',')
+  const res = await fetch(
+    `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`
+  )
+  if (!res.ok) throw new Error(`CoinGecko returned ${res.status}`)
+  const data: Record<string, { usd: number; usd_24h_change?: number }> = await res.json()
+
+  const prices: Record<string, number> = {}
+  const changes: Record<string, number> = {}
+  for (const symbol of SYMBOLS) {
+    const entry = data[COINGECKO_IDS[symbol]]
+    if (entry?.usd != null) {
+      prices[symbol] = entry.usd
+      changes[symbol] = entry.usd_24h_change ?? 0
+    }
+  }
+
+  cache = { prices, changes, ts: Date.now() }
+}
+
+function getCached(): { prices: Record<string, number>; changes: Record<string, number> } | null {
+  if (!cache || Date.now() - cache.ts > CACHE_TTL) return null
+  return { prices: cache.prices, changes: cache.changes }
 }
 
 export async function getCryptoPrices(): Promise<CryptoPrice[]> {
-  // In production, fetch from CoinGecko API
-  // For now, return mock prices
-  return Object.entries(PRICES).map(([symbol, price]) => ({
+  let data = getCached()
+  if (!data) {
+    try {
+      await fetchPrices()
+      data = getCached()
+    } catch {
+      // return stale cache if available
+      if (cache) data = { prices: cache.prices, changes: cache.changes }
+      else data = { prices: {}, changes: {} }
+    }
+  }
+  return SYMBOLS.filter(s => data!.prices[s] != null).map(symbol => ({
     symbol,
-    price,
-    change24h: Math.random() * 10 - 5 // -5% to +5%
+    price: data!.prices[symbol],
+    change24h: data!.changes[symbol] ?? 0,
   }))
 }
 
-export function getCryptoPrice(symbol: string): number {
-  return PRICES[symbol.toUpperCase()] || 0
+export async function getCryptoPrice(symbol: string): Promise<number> {
+  let data = getCached()
+  if (!data) {
+    try {
+      await fetchPrices()
+      data = getCached()
+    } catch {
+      if (cache) data = { prices: cache.prices, changes: cache.changes }
+      else return 0
+    }
+  }
+  return data!.prices[symbol.toUpperCase()] ?? 0
 }
 
-export function usdToCrypto(usdAmount: number, cryptoSymbol: string): number {
-  const price = getCryptoPrice(cryptoSymbol)
+export async function usdToCrypto(usdAmount: number, cryptoSymbol: string): Promise<number> {
+  const price = await getCryptoPrice(cryptoSymbol)
   if (price === 0) return 0
   return usdAmount / price
 }
 
-export function cryptoToUsd(cryptoAmount: number, cryptoSymbol: string): number {
-  const price = getCryptoPrice(cryptoSymbol)
+export async function cryptoToUsd(cryptoAmount: number, cryptoSymbol: string): Promise<number> {
+  const price = await getCryptoPrice(cryptoSymbol)
   return cryptoAmount * price
 }
