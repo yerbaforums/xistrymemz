@@ -3,24 +3,16 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
-import { QRCodeModal } from '@/components/QRCodeModal'
-import { DonationActions } from '@/components/DonationActions'
-import { CRYPTO_LOGOS } from '@/lib/constants'
 import Skeleton from '@/components/Skeleton'
 import HomeMap from '@/components/HomeMap'
-
-interface DonationAddr {
-  id: string
-  currency: string
-  address: string
-  label: string | null
-}
 
 interface PlatformStats {
   members: number
   shops: number
   schools: number
   products: number
+  services: number
+  rentals: number
   events: number
   plans: number
   requests: number
@@ -76,16 +68,15 @@ const STEPS = [
 ]
 
 export default function Home() {
-  const [donations, setDonations] = useState<DonationAddr[]>([])
-  const [qrOpen, setQrOpen] = useState<string | null>(null)
-  const [stats, setStats] = useState<PlatformStats>({ members: 0, shops: 0, schools: 0, products: 0, events: 0, plans: 0, requests: 0 })
+  const [stats, setStats] = useState<PlatformStats>({ members: 0, shops: 0, schools: 0, products: 0, services: 0, rentals: 0, events: 0, plans: 0, requests: 0 })
   const [featuredShops, setFeaturedShops] = useState<FeaturedShop[]>([])
   const [featuredProducts, setFeaturedProducts] = useState<FeaturedProduct[]>([])
   const [recentRequests, setRecentRequests] = useState<PublicRequest[]>([])
-  const [animatedStats, setAnimatedStats] = useState<PlatformStats>({ members: 0, shops: 0, schools: 0, products: 0, events: 0, plans: 0, requests: 0 })
+  const [animatedStats, setAnimatedStats] = useState<PlatformStats>({ members: 0, shops: 0, schools: 0, products: 0, services: 0, rentals: 0, events: 0, plans: 0, requests: 0 })
   const [loadingShops, setLoadingShops] = useState(true)
   const [loadingProducts, setLoadingProducts] = useState(true)
   const [loadingRequests, setLoadingRequests] = useState(true)
+  const [featuredType, setFeaturedType] = useState<string>('all')
 
   useEffect(() => {
     if (stats.members > 0 && animatedStats.members !== stats.members) {
@@ -100,6 +91,8 @@ export default function Home() {
           shops: Math.min(Math.round((stats.shops / steps) * step), stats.shops),
           schools: Math.min(Math.round((stats.schools / steps) * step), stats.schools),
           products: Math.min(Math.round((stats.products / steps) * step), stats.products),
+          services: Math.min(Math.round((stats.services / steps) * step), stats.services),
+          rentals: Math.min(Math.round((stats.rentals / steps) * step), stats.rentals),
           events: Math.min(Math.round((stats.events / steps) * step), stats.events),
           plans: Math.min(Math.round((stats.plans / steps) * step), stats.plans),
           requests: Math.min(Math.round((stats.requests / steps) * step), stats.requests),
@@ -113,11 +106,6 @@ export default function Home() {
   }, [stats])
 
   useEffect(() => {
-    fetch('/api/site/donations')
-      .then(res => res.ok ? res.json() : null)
-      .then(data => { if (data?.addresses) setDonations(data.addresses) })
-      .catch(() => {})
-
     fetch('/api/stats')
       .then(res => res.ok ? res.json() : null)
       .then(data => { if (data) setStats(data) })
@@ -128,10 +116,7 @@ export default function Home() {
       .then(data => { if (data?.shops) setFeaturedShops(data.shops.slice(0, 6)); setLoadingShops(false) })
       .catch(() => setLoadingShops(false))
 
-    fetch('/api/products?pinned=true')
-      .then(res => res.ok ? res.json() : null)
-      .then(data => { if (data?.products) setFeaturedProducts(data.products.slice(0, 6)); setLoadingProducts(false) })
-      .catch(() => setLoadingProducts(false))
+    fetchProducts('all')
 
     fetch('/api/requests?isPublic=true&take=4')
       .then(res => res.ok ? res.json() : null)
@@ -142,7 +127,23 @@ export default function Home() {
       .catch(() => setLoadingRequests(false))
   }, [])
 
-  const activeQr = donations.find(d => d.id === qrOpen)
+  useEffect(() => {
+    if (featuredType) fetchProducts(featuredType)
+  }, [featuredType])
+
+  async function fetchProducts(type: string) {
+    setLoadingProducts(true)
+    try {
+      const params = type === 'all' ? 'pinned=true' : `pinned=true&type=${type}`
+      const res = await fetch(`/api/products?${params}`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data?.products) setFeaturedProducts(data.products.slice(0, 6))
+      }
+    } catch { } finally {
+      setLoadingProducts(false)
+    }
+  }
 
   return (
     <div className={styles.landing}>
@@ -195,35 +196,53 @@ export default function Home() {
 
       {/* Platform Stats */}
       <section className={styles.statsSection}>
+        <h2 className={styles.statsHeading}>Platform Stats</h2>
         <div className={styles.statsGrid}>
-          <div className={styles.statCard}>
-            <span className={styles.statNumber}>{animatedStats.members}</span>
-            <span className={styles.statText}>Members</span>
-          </div>
-          <div className={styles.statCard}>
-            <span className={styles.statNumber}>{animatedStats.shops}</span>
-            <span className={styles.statText}>Shops</span>
-          </div>
-          <div className={styles.statCard}>
-            <span className={styles.statNumber}>{animatedStats.schools}</span>
-            <span className={styles.statText}>Schools</span>
-          </div>
-          <div className={styles.statCard}>
-            <span className={styles.statNumber}>{animatedStats.products}</span>
-            <span className={styles.statText}>Products</span>
-          </div>
-          <div className={styles.statCard}>
-            <span className={styles.statNumber}>{animatedStats.events}</span>
-            <span className={styles.statText}>Events</span>
-          </div>
-          <div className={styles.statCard}>
-            <span className={styles.statNumber}>{animatedStats.plans}</span>
-            <span className={styles.statText}>Projects</span>
-          </div>
-          <div className={styles.statCard}>
-            <span className={styles.statNumber}>{animatedStats.requests}</span>
-            <span className={styles.statText}>Requests</span>
-          </div>
+          <Link href="/community" className={styles.statCard}>
+            <span className={styles.statIcon}>👥</span>
+            <span className={styles.statValue}>{animatedStats.members}</span>
+            <span className={styles.statLabel}>Members</span>
+          </Link>
+          <Link href="/shops" className={styles.statCard}>
+            <span className={styles.statIcon}>🏪</span>
+            <span className={styles.statValue}>{animatedStats.shops}</span>
+            <span className={styles.statLabel}>Shops</span>
+          </Link>
+          <Link href="/schools" className={styles.statCard}>
+            <span className={styles.statIcon}>🏫</span>
+            <span className={styles.statValue}>{animatedStats.schools}</span>
+            <span className={styles.statLabel}>Schools</span>
+          </Link>
+          <Link href="/products" className={styles.statCard}>
+            <span className={styles.statIcon}>🛒</span>
+            <span className={styles.statValue}>{animatedStats.products}</span>
+            <span className={styles.statLabel}>Products</span>
+          </Link>
+          <Link href="/products?type=SERVICE" className={styles.statCard}>
+            <span className={styles.statIcon}>🔧</span>
+            <span className={styles.statValue}>{animatedStats.services}</span>
+            <span className={styles.statLabel}>Services</span>
+          </Link>
+          <Link href="/products?type=RENTAL" className={styles.statCard}>
+            <span className={styles.statIcon}>🏠</span>
+            <span className={styles.statValue}>{animatedStats.rentals}</span>
+            <span className={styles.statLabel}>Rentals</span>
+          </Link>
+          <Link href="/events" className={styles.statCard}>
+            <span className={styles.statIcon}>📅</span>
+            <span className={styles.statValue}>{animatedStats.events}</span>
+            <span className={styles.statLabel}>Events</span>
+          </Link>
+          <Link href="/plans/public" className={styles.statCard}>
+            <span className={styles.statIcon}>🚀</span>
+            <span className={styles.statValue}>{animatedStats.plans}</span>
+            <span className={styles.statLabel}>Projects</span>
+          </Link>
+          <Link href="/requests" className={styles.statCard}>
+            <span className={styles.statIcon}>📝</span>
+            <span className={styles.statValue}>{animatedStats.requests}</span>
+            <span className={styles.statLabel}>Requests</span>
+          </Link>
         </div>
       </section>
 
@@ -260,8 +279,24 @@ export default function Home() {
 
       {/* Featured Products */}
       <section className={styles.featuredSection}>
-        <h2 className={styles.sectionTitle}>Featured Products</h2>
-        <p className={styles.sectionSubtitle}>Check out these amazing products</p>
+        <h2 className={styles.sectionTitle}>Marketplace</h2>
+        <p className={styles.sectionSubtitle}>Discover products, services, and rentals from the community</p>
+        <div className={styles.typeTabs}>
+          {[
+            { key: 'all', label: 'All', icon: '📦' },
+            { key: 'PRODUCT', label: 'Products', icon: '🛒' },
+            { key: 'SERVICE', label: 'Services', icon: '🔧' },
+            { key: 'RENTAL', label: 'Rentals', icon: '🏠' },
+          ].map(tab => (
+            <button
+              key={tab.key}
+              className={`${styles.typeTab} ${featuredType === tab.key ? styles.typeTabActive : ''}`}
+              onClick={() => setFeaturedType(tab.key)}
+            >
+              <span>{tab.icon}</span> {tab.label}
+            </button>
+          ))}
+        </div>
         {loadingProducts ? (
           <div className={styles.horizontalScroll}>
             {[1,2,3].map(i => (
@@ -391,40 +426,6 @@ export default function Home() {
 
       <HomeMap />
 
-      {/* Donation Section */}
-      {donations.length > 0 && (
-        <section className={styles.donationSection}>
-          <div className={styles.donationContent}>
-            <h2>Support XistrYmemZ</h2>
-            <p>Help us keep the platform free and independent. Every contribution counts.</p>
-            <div className={styles.donationGrid}>
-              {donations.map(da => (
-                <div key={da.id} className={styles.donationCard}>
-                  <div className={styles.donationHeader}>
-                    <img
-                      src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'ethereum.png'}`}
-                      alt={da.currency}
-                      className={styles.donationIcon}
-                    />
-                    <span className={styles.donationLabel}>{da.label || da.currency}</span>
-                  </div>
-                  <code className={styles.donationAddr} title={da.address}>{da.address}</code>
-                  <div className={styles.donationQr}>
-                    <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(da.address)}&bgcolor=0d0d0d&color=ffffff`}
-                      alt={`${da.currency} QR code`}
-                      width={150}
-                      height={150}
-                    />
-                  </div>
-                  <DonationActions address={da.address} onQrClick={() => setQrOpen(da.id)} size="md" />
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* Footer Links */}
       <section className={styles.footerLinks}>
         <div className={styles.ctaLinks}>
@@ -435,15 +436,6 @@ export default function Home() {
         </div>
         <p className={styles.copyright}>&copy; {new Date().getFullYear()} XistrYmemZ — Cosmic Whitepages Cooperative</p>
       </section>
-
-      {activeQr && (
-        <QRCodeModal
-          isOpen={true}
-          onClose={() => setQrOpen(null)}
-          currency={activeQr.currency}
-          address={activeQr.address}
-        />
-      )}
     </div>
   )
 }

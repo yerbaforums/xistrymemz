@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './Footer.module.css'
 import { QRCodeModal } from './QRCodeModal'
-import { DonationActions } from './DonationActions'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 
 const PACKAGE_VERSION = '0.7.0'
@@ -39,7 +38,6 @@ export default function Footer() {
   const [donations, setDonations] = useState<DonationAddr[]>([])
   const [prices, setPrices] = useState<Record<string, number>>({})
   const [qrOpen, setQrOpen] = useState<string | null>(null)
-  const [copiedAddr, setCopiedAddr] = useState<string | null>(null)
 
   useEffect(() => {
     fetch('/api/site/donations')
@@ -69,23 +67,9 @@ export default function Footer() {
       .catch(() => {})
   }, [donations])
 
-  useEffect(() => {
-    if (copiedAddr) {
-      const t = setTimeout(() => setCopiedAddr(null), 2000)
-      return () => clearTimeout(t)
-    }
-  }, [copiedAddr])
-
   const openQr = (da: DonationAddr) => setQrOpen(da.id)
   const closeQr = () => setQrOpen(null)
   const activeQr = donations.find(d => d.id === qrOpen)
-
-  const handleCopyAddress = async (address: string) => {
-    try {
-      await navigator.clipboard.writeText(address)
-      setCopiedAddr(address)
-    } catch { /* silently fail */ }
-  }
 
   return (
     <footer className={styles.footer}>
@@ -122,31 +106,27 @@ export default function Footer() {
         {donations.length > 0 && (
           <div className={styles.donations}>
             <h4>Support the Platform</h4>
-            {donations.map(da => {
-              const price = prices[da.currency]
-              return (
-                <div key={da.id} className={styles.donationRow}>
-                  <img
-                    src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'ethereum.png'}`}
-                    alt={da.currency}
-                    className={styles.donationIcon}
-                  />
-                  <span className={styles.donationLabel}>{da.label || da.currency}</span>
-                  <span
-                    className={styles.donationPrice}
-                    title={`${da.currency} — ${da.address}`}
-                    onClick={() => handleCopyAddress(da.address)}
-                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCopyAddress(da.address) } }}
-                    tabIndex={0}
-                    role="button"
-                    aria-label={`Copy ${da.currency} address`}
+            <div className={styles.donationPills}>
+              {donations.map(da => {
+                const price = prices[da.currency]
+                return (
+                  <button
+                    key={da.id}
+                    className={styles.donationPill}
+                    onClick={() => openQr(da)}
+                    aria-label={`Donate ${da.currency}`}
                   >
-                    {copiedAddr === da.address ? 'Copied!' : (price != null ? formatPrice(price, da.currency) : `—`)}
-                  </span>
-                  <DonationActions address={da.address} onQrClick={() => openQr(da)} size="sm" />
-                </div>
-              )
-            })}
+                    <img
+                      src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'ethereum.png'}`}
+                      alt={da.currency}
+                      className={styles.pillIcon}
+                    />
+                    <span className={styles.pillLabel}>{da.currency}</span>
+                    {price != null && <span className={styles.pillPrice}>· {formatPrice(price, da.currency)}</span>}
+                  </button>
+                )
+              })}
+            </div>
           </div>
         )}
         

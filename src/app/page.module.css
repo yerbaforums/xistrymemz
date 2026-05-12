@@ -329,140 +329,6 @@
   text-decoration: none;
 }
 
-/* Support CTA */
-.supportSection {
-  padding: 64px 24px;
-  text-align: center;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.supportContent {
-  max-width: 500px;
-  margin: 0 auto;
-}
-
-.supportContent h2 {
-  font-size: 1.5rem;
-  color: var(--text-primary);
-  margin-bottom: 12px;
-}
-
-.supportContent p {
-  color: var(--text-secondary);
-  margin-bottom: 24px;
-  font-size: 0.95rem;
-  line-height: 1.6;
-}
-
-/* Donations (legacy - unused on home page) */
-.copyBtn {
-  padding: 6px 14px;
-  background: transparent;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  color: var(--text-secondary);
-  cursor: pointer;
-  font-size: 0.8rem;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-.copyBtn:hover {
-  border-color: var(--accent-primary);
-  color: var(--accent-primary);
-}
-
-.cryptoAddr {
-  display: block;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  word-break: break-all;
-  font-family: monospace;
-  background: var(--bg-tertiary);
-  padding: 10px 12px;
-  border-radius: 8px;
-  margin-bottom: 12px;
-}
-
-.cryptoItem {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 20px;
-  text-align: left;
-}
-
-.cryptoItemHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  gap: 8px;
-}
-
-.cryptoIcon {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.cryptoLabel {
-  font-weight: 600;
-  color: var(--text-primary);
-  font-size: 0.95rem;
-  white-space: nowrap;
-}
-
-.cryptoAddresses {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  max-width: 700px;
-  margin: 0 auto;
-}
-
-.copyBtn {
-  padding: 6px 14px;
-  background: transparent;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  color: var(--text-secondary);
-  cursor: pointer;
-  font-size: 0.8rem;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-.copyBtn:hover {
-  border-color: var(--accent-primary);
-  color: var(--accent-primary);
-}
-
-.cryptoAddr {
-  display: block;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  word-break: break-all;
-  font-family: monospace;
-  background: var(--bg-tertiary);
-  padding: 10px 12px;
-  border-radius: 8px;
-  margin-bottom: 12px;
-}
-
-.qrCode {
-  display: flex;
-  justify-content: center;
-  padding-top: 12px;
-  border-top: 1px solid var(--border-color);
-}
-
-.qrCode img {
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-}
-
 /* Footer Links */
 .footerLinks {
   padding: 32px 24px;
@@ -490,94 +356,6 @@
 .copyright {
   color: var(--text-muted);
   font-size: 0.8rem;
-}
-
-/* Donation Section */
-.donationSection {
-  padding: 48px 24px;
-}
-
-.donationContent {
-  max-width: 1100px;
-  margin: 0 auto;
-  text-align: center;
-}
-
-.donationContent h2 {
-  font-size: 1.75rem;
-  margin-bottom: 8px;
-  color: var(--text-primary);
-}
-
-.donationContent > p {
-  color: var(--text-secondary);
-  margin-bottom: 32px;
-  font-size: 1rem;
-}
-
-.donationGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
-}
-
-.donationCard {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 20px;
-  text-align: left;
-  transition: var(--transition);
-}
-
-.donationCard:hover {
-  border-color: var(--accent-primary);
-  transform: translateY(-2px);
-}
-
-.donationHeader {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.donationIcon {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-}
-
-.donationLabel {
-  font-weight: 600;
-  color: var(--text-primary);
-  font-size: 0.9rem;
-}
-
-.donationAddr {
-  display: block;
-  font-family: monospace;
-  font-size: 0.7rem;
-  color: var(--text-secondary);
-  background: var(--bg-tertiary);
-  padding: 8px 10px;
-  border-radius: 6px;
-  margin-bottom: 12px;
-  word-break: break-all;
-  line-height: 1.4;
-}
-
-.donationQr {
-  display: flex;
-  justify-content: center;
-  padding: 12px 0;
-  margin-bottom: 12px;
-  border-top: 1px solid var(--border-color);
-  border-bottom: 1px solid var(--border-color);
-}
-
-.donationQr img {
-  border-radius: 8px;
 }
 
 /* Responsive */
@@ -664,35 +442,88 @@
   background: var(--bg-secondary);
 }
 
+.statsHeading {
+  text-align: center;
+  font-size: 1.5rem;
+  margin-bottom: 32px;
+  color: var(--text-primary);
+}
+
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 16px;
   max-width: 1000px;
   margin: 0 auto;
 }
 
 .statCard {
-  text-align: center;
-  padding: 24px;
-  background: var(--bg-tertiary);
-  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background: var(--bg-secondary);
   border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  transition: var(--transition);
 }
 
-.statNumber {
-  display: block;
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--accent-primary);
+.statCard:hover {
+  border-color: var(--accent-primary);
+  transform: translateY(-2px);
+}
+
+.statIcon {
+  font-size: 1.8rem;
   margin-bottom: 8px;
 }
 
-.statText {
-  font-size: 0.9rem;
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.statLabel {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Type Tabs */
+.typeTabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.typeTab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
   color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.typeTab:hover {
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+}
+
+.typeTabActive {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border-color: var(--accent-primary);
 }
 
 /* Featured Sections */
@@ -762,8 +593,31 @@
   .statsGrid {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .horizontalScroll > a {
     flex: 0 0 200px;
+  }
+
+  .typeTabs {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .statCard {
+    padding: 14px;
+  }
+
+  .statIcon {
+    font-size: 1.4rem;
+  }
+
+  .statValue {
+    font-size: 1.2rem;
   }
 }
