@@ -5,6 +5,8 @@ import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { existsSync } from 'fs'
 import { randomUUID } from 'crypto'
+import { uploadToIPFSBackground } from '@/lib/ipfs'
+import { prisma } from '@/lib/prisma'
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm']
@@ -72,64 +74,76 @@ export async function POST(request: Request) {
 
   try {
     const formData = await request.formData()
+    const files = formData.getAll('file') as File[]
     const file = formData.get('file') as File | null
 
-    if (!file) {
+    if (!file && files.length === 0) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
-    const mimeType = file.type.toLowerCase()
-    const ext = file.name.split('.').pop()?.toLowerCase() || ''
+    const toUpload = file ? [file] : files
 
-    if (!isValidMimeType(mimeType)) {
-      return NextResponse.json(
-        { error: 'Invalid file type. Allowed: JPEG, PNG, WebP, GIF, MP4, WebM' },
-        { status: 400 }
-      )
-    }
+    const uploads = await Promise.all(toUpload.map(async (f) => {
+      const mimeType = f.type.toLowerCase()
+      const ext = f.name.split('.').pop()?.toLowerCase() || ''
 
-    if (isDangerousExtension(ext)) {
-      return NextResponse.json(
-        { error: 'File extension not allowed' },
-        { status: 400 }
-      )
-    }
+      if (!isValidMimeType(mimeType)) {
+        throw new Error(`Invalid file type: ${mimeType}`)
+      }
 
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    const fileSize = buffer.length
-    const maxSize = getMaxSize(mimeType)
+      if (isDangerousExtension(ext)) {
+        throw new Error('File extension not allowed')
+      }
 
-    if (fileSize > maxSize) {
-      return NextResponse.json(
-        { error: `File too large. Max size: ${maxSize / (1024 * 1024)}MB` },
-        { status: 400 }
-      )
-    }
+      const bytes = await f.arrayBuffer()
+      const buffer = Buffer.from(bytes)
+      const fileSize = buffer.length
+      const maxSize = getMaxSize(mimeType)
 
-    if (!validateMagicBytes(buffer, mimeType)) {
-      return NextResponse.json(
-        { error: 'Invalid file content. File type mismatch detected.' },
-        { status: 400 }
-      )
-    }
+      if (fileSize > maxSize) {
+        throw new Error(`File too large. Max: ${maxSize / (1024 * 1024)}MB`)
+      }
 
-    const uploadDir = join(process.cwd(), 'public', 'uploads', session.user.id)
-    
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true })
-    }
+      if (!validateMagicBytes(buffer, mimeType)) {
+        throw new Error('Invalid file content')
+      }
 
-    const safeFilename = `${randomUUID()}.${TYPE_EXTENSIONS[mimeType as keyof typeof TYPE_EXTENSIONS]}`
-    const filepath = join(uploadDir, safeFilename)
+      const uploadDir = join(process.cwd(), 'public', 'uploads', session.user.id)
+      if (!existsSync(uploadDir)) {
+        await mkdir(uploadDir, { recursive: true })
+      }
 
-    await writeFile(filepath, buffer)
+      const safeFilename = `${randomUUID()}.${TYPE_EXTENSIONS[mimeType as keyof typeof TYPE_EXTENSIONS]}`
+      const filepath = join(uploadDir, safeFilename)
+      await writeFile(filepath, buffer)
+      const url = `/uploads/${session.user.id}/${safeFilename}`
 
-    const url = `/uploads/${session.user.id}/${safeFilename}`
+      // Async IPFS upload (non-blocking)
+      uploadToIPFSBackground(buffer, safeFilename)
+        .then(async (ipfs) => {
+          try {
+            await prisma.file.create({
+              data: {
+                cid: ipfs.cid,
+                fileName: safeFilename,
+                mimeType,
+                size: fileSize,
+                gatewayUrl: ipfs.gatewayUrl,
+                userId: session.user.id,
+                modelName: 'Upload',
+                modelId: safeFilename
+              }
+            })
+          } catch {}
+        })
+        .catch(() => {})
 
-    return NextResponse.json({ url })
+      return { url, mimeType, size: fileSize }
+    }))
+
+    return NextResponse.json({ uploads, url: uploads[0].url })
   } catch (error) {
     console.error('Upload error:', error)
-    return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Upload failed' }, { status: 500 })
   }
 }

@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import FeedItem from '@/components/FeedItem'
 import styles from '../page.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -98,7 +99,7 @@ export default async function DashboardOverview() {
     c.requesterId === userId ? c.receiverId : c.requesterId
   )
 
-  const [recentPlans, recentProducts, eventJoinerCounts] = await Promise.all([
+  const [recentPlans, recentProducts, recentFeedPosts, eventJoinerCounts] = await Promise.all([
     prisma.plan.findMany({
       where: { userId: { in: connectedUserIds }, published: true },
       select: { id: true, title: true, status: true, createdAt: true, user: { select: { name: true } } },
@@ -110,6 +111,14 @@ export default async function DashboardOverview() {
       select: { id: true, title: true, type: true, createdAt: true, user: { select: { name: true } } },
       orderBy: { createdAt: 'desc' },
       take: 5
+    }),
+    prisma.post.findMany({
+      where: { userId: { in: [...connectedUserIds, userId] } },
+      include: {
+        user: { select: { id: true, name: true, image: true } }
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 10
     }),
     prisma.eventJoiner.groupBy({
       by: ['role'],
@@ -315,6 +324,29 @@ export default async function DashboardOverview() {
           </div>
         )}
       </div>
+
+      {recentFeedPosts.length > 0 && (
+        <div className={styles.activityGrid} style={{ marginTop: '32px' }}>
+          <div className={styles.activitySection} style={{ gridColumn: '1 / -1' }}>
+            <div className={styles.sectionHeader}>
+              <h3>Your Feed</h3>
+              <Link href="/dashboard/feed" className={styles.viewAll}>View all →</Link>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {recentFeedPosts.map(post => (
+                <FeedItem key={post.id} post={{
+                  id: post.id,
+                  content: post.content,
+                  images: post.images,
+                  createdAt: post.createdAt.toISOString(),
+                  user: post.user,
+                  sourceType: 'POST'
+                }} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* My Wallet Addresses */}
       {user && (user.walletAddress || user.paymentAddress || user.refundAddress || (user.acceptsDonations && user.donationAddress)) && (

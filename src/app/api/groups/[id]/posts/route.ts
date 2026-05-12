@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { parseMentions } from '@/lib/mentions'
+import { extractHashtags } from '@/lib/hashtags'
 
 export async function GET(
   request: Request,
@@ -56,6 +58,46 @@ export async function POST(
       user: { select: { id: true, name: true, image: true } }
     }
   })
+
+  // Extract and process mentions
+  const mentionedUsernames = parseMentions(content)
+  if (mentionedUsernames.length > 0) {
+    const mentionedUsers = await prisma.user.findMany({
+      where: { username: { in: mentionedUsernames } },
+      select: { id: true, username: true }
+    })
+    if (mentionedUsers.length > 0) {
+      await prisma.notification.createMany({
+        data: mentionedUsers
+          .filter(u => u.id !== session.user.id)
+          .map(u => ({
+            userId: u.id,
+            type: 'MENTION',
+            title: 'New Mention',
+            message: `${session.user.name || 'Someone'} mentioned you in a group post`,
+            link: `/groups/${groupId}`,
+            relatedId: post.id
+          }))
+      })
+    }
+  }
+
+  // Extract and process hashtags
+  const hashtags = extractHashtags(content)
+  for (const tag of hashtags) {
+    await prisma.hashtag.upsert({
+      where: { tag },
+      update: { postCount: { increment: 1 } },
+      create: { tag, postCount: 1 }
+    })
+    await prisma.postHashtag.create({
+      data: {
+        postId: post.id,
+        hashtagId: (await prisma.hashtag.findUnique({ where: { tag } }))!.id,
+        sourceType: 'GROUPPOST'
+      }
+    }).catch(() => {})
+  }
 
   return NextResponse.json(post)
 }

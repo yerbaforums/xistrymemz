@@ -1,63 +1,49 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
 import Skeleton from '@/components/Skeleton'
 import HomeMap from '@/components/HomeMap'
 
 interface PlatformStats {
-  members: number
-  shops: number
-  schools: number
-  products: number
-  services: number
-  rentals: number
-  events: number
-  plans: number
-  requests: number
+  members: number; shops: number; schools: number
+  products: number; services: number; rentals: number
+  events: number; plans: number; requests: number
+  forumPosts: number; forumReplies: number
 }
 
 interface FeaturedShop {
-  id: string
-  shopName: string
-  shopImage: string | null
-  shopSlug: string
-  _count?: {
-    products: number
-  }
+  id: string; shopName: string; shopImage: string | null; shopSlug: string
+  _count?: { products: number }
 }
 
 interface FeaturedProduct {
-  id: string
-  title: string
-  price: number | null
-  imageUrl: string | null
-  user: {
-    name: string | null
-    shopSlug: string | null
-  }
+  id: string; title: string; price: number | null; imageUrl: string | null
+  user: { name: string | null; shopSlug: string | null }
 }
 
 interface PublicRequest {
-  id: string
-  title: string
-  status: string
-  currentFunding: number | null
-  goalAmount: number | null
+  id: string; title: string; status: string
+  currentFunding: number | null; goalAmount: number | null
   user: { name: string | null }
 }
 
+const ZERO_STATS: PlatformStats = {
+  members: 0, shops: 0, schools: 0, products: 0, services: 0,
+  rentals: 0, events: 0, plans: 0, requests: 0, forumPosts: 0, forumReplies: 0
+}
+
 const FEATURES = [
-  { icon: '🌌', title: 'Cosmic Whitepages', desc: 'Your universal directory. One identity across the entire network — searchable, verifiable, yours.' },
-  { icon: '🤝', title: 'Cooperative Network', desc: 'Built by the community, for the community. Every member contributes, every voice matters, every connection counts.' },
-  { icon: '🚀', title: 'Launch Projects', desc: 'Create plans with goals, milestones, and track progress. Rally helpers and build something extraordinary together.' },
-  { icon: '📋', title: 'Request & Fulfill', desc: 'Need help? Post a request. Have skills? Step up and fulfill. Simple coordination for complex collaboration.' },
-  { icon: '🏪', title: 'Shop & School', desc: 'Sell products, teach courses, accept payments. Build your business and share your expertise with the world.' },
-  { icon: '🌍', title: 'Earth Passport', desc: 'Verified identity, reputation scores, and trust badges. Your digital passport for the cooperative economy.' },
-  { icon: '💰', title: 'Crypto Native', desc: 'Donations, barter offers, escrow, and direct payments. Privacy-respecting financial tools built in.' },
-  { icon: '👥', title: 'Community Groups', desc: 'Find your people. Join groups, coordinate efforts, and build networks that span neighborhoods and continents.' },
-  { icon: '🔗', title: 'Open & Connected', desc: 'Link your profiles, shops, and social presence. Everything interconnected, nothing siloed.' },
+  { icon: '🌌', title: 'Cosmic Whitepages', desc: 'Your universal directory. One identity across the entire network — searchable, verifiable, yours.', href: '/community' },
+  { icon: '🤝', title: 'Cooperative Network', desc: 'Built by the community, for the community. Every member contributes, every voice matters, every connection counts.', href: '/community' },
+  { icon: '🚀', title: 'Launch Projects', desc: 'Create plans with goals, milestones, and track progress. Rally helpers and build something extraordinary together.', href: '/plans/public' },
+  { icon: '📋', title: 'Request & Fulfill', desc: 'Need help? Post a request. Have skills? Step up and fulfill. Simple coordination for complex collaboration.', href: '/requests' },
+  { icon: '🏪', title: 'Shop & School', desc: 'Sell products, teach courses, accept payments. Build your business and share your expertise with the world.', href: '/shops' },
+  { icon: '🌍', title: 'Earth Passport', desc: 'Verified identity, reputation scores, and trust badges. Your digital passport for the cooperative economy.', href: '/about' },
+  { icon: '💰', title: 'Crypto Native', desc: 'Donations, barter offers, escrow, and direct payments. Privacy-respecting financial tools built in.', href: '/wallet' },
+  { icon: '👥', title: 'Community Groups', desc: 'Find your people. Join groups, coordinate efforts, and build networks that span neighborhoods and continents.', href: '/groups' },
+  { icon: '🔗', title: 'Open & Connected', desc: 'Link your profiles, shops, and social presence. Everything interconnected, nothing siloed.', href: '/profile/settings' },
 ]
 
 const STEPS = [
@@ -67,87 +53,141 @@ const STEPS = [
   { num: '04', title: 'Grow Together', desc: 'Build reputation, earn trust, expand your reach. The coop grows with you.' },
 ]
 
+const STAT_CARDS = [
+  { key: 'members' as const, icon: '👥', label: 'Members', href: '/community' },
+  { key: 'shops' as const, icon: '🏪', label: 'Shops', href: '/shops' },
+  { key: 'schools' as const, icon: '🏫', label: 'Schools', href: '/schools' },
+  { key: 'products' as const, icon: '🛒', label: 'Products', href: '/products' },
+  { key: 'services' as const, icon: '🔧', label: 'Services', href: '/products?type=SERVICE' },
+  { key: 'rentals' as const, icon: '🏠', label: 'Rentals', href: '/products?type=RENTAL' },
+  { key: 'forumPosts' as const, icon: '📣', label: 'Forum Posts', href: '/community/forum' },
+  { key: 'forumReplies' as const, icon: '💬', label: 'Forum Replies', href: '/community/forum' },
+  { key: 'events' as const, icon: '📅', label: 'Events', href: '/events' },
+  { key: 'plans' as const, icon: '🚀', label: 'Projects', href: '/plans/public' },
+  { key: 'requests' as const, icon: '📝', label: 'Requests', href: '/requests' },
+]
+
+function easeOutCubic(t: number): number {
+  return 1 - Math.pow(1 - t, 3)
+}
+
+function useCountUp(target: PlatformStats): PlatformStats {
+  const [current, setCurrent] = useState<PlatformStats>(ZERO_STATS)
+  const prevTarget = useRef<PlatformStats>(ZERO_STATS)
+  const rafId = useRef<number>(0)
+
+  useEffect(() => {
+    if (target.members === 0) { setCurrent(ZERO_STATS); return }
+
+    const startTime = performance.now()
+    const duration = 1400
+    const from = prevTarget.current
+    const to = target
+    const keys = Object.keys(to) as (keyof PlatformStats)[]
+
+    function tick(now: number) {
+      const t = Math.min((now - startTime) / duration, 1)
+      const eased = easeOutCubic(t)
+      const next = { ...ZERO_STATS } as PlatformStats
+      for (const key of keys) {
+        const startVal = from[key]
+        const endVal = to[key]
+        next[key] = Math.round(startVal + (endVal - startVal) * eased)
+      }
+      setCurrent(next)
+      if (t < 1) rafId.current = requestAnimationFrame(tick)
+    }
+
+    rafId.current = requestAnimationFrame(tick)
+    prevTarget.current = to
+    return () => cancelAnimationFrame(rafId.current)
+  }, [target])
+
+  return current
+}
+
+function useIntersect(ref: React.RefObject<HTMLElement | null>): boolean {
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect() } },
+      { threshold: 0.1 }
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [ref])
+
+  return visible
+}
+
+type SectionRef = HTMLDivElement
+
 export default function Home() {
-  const [stats, setStats] = useState<PlatformStats>({ members: 0, shops: 0, schools: 0, products: 0, services: 0, rentals: 0, events: 0, plans: 0, requests: 0 })
-  const [featuredShops, setFeaturedShops] = useState<FeaturedShop[]>([])
-  const [featuredProducts, setFeaturedProducts] = useState<FeaturedProduct[]>([])
-  const [recentRequests, setRecentRequests] = useState<PublicRequest[]>([])
-  const [animatedStats, setAnimatedStats] = useState<PlatformStats>({ members: 0, shops: 0, schools: 0, products: 0, services: 0, rentals: 0, events: 0, plans: 0, requests: 0 })
+  const [stats, setStats] = useState<PlatformStats>(ZERO_STATS)
+  const [shops, setShops] = useState<FeaturedShop[]>([])
+  const [products, setProducts] = useState<FeaturedProduct[]>([])
+  const [requests, setRequests] = useState<PublicRequest[]>([])
   const [loadingShops, setLoadingShops] = useState(true)
   const [loadingProducts, setLoadingProducts] = useState(true)
   const [loadingRequests, setLoadingRequests] = useState(true)
-  const [featuredType, setFeaturedType] = useState<string>('all')
+  const [trendingTags, setTrendingTags] = useState<{ tag: string; postCount: number }[]>([])
+  const animatedStats = useCountUp(stats)
 
-  useEffect(() => {
-    if (stats.members > 0 && animatedStats.members !== stats.members) {
-      const duration = 1200
-      const steps = 30
-      const interval = duration / steps
-      let step = 0
-      const timer = setInterval(() => {
-        step++
-        setAnimatedStats({
-          members: Math.min(Math.round((stats.members / steps) * step), stats.members),
-          shops: Math.min(Math.round((stats.shops / steps) * step), stats.shops),
-          schools: Math.min(Math.round((stats.schools / steps) * step), stats.schools),
-          products: Math.min(Math.round((stats.products / steps) * step), stats.products),
-          services: Math.min(Math.round((stats.services / steps) * step), stats.services),
-          rentals: Math.min(Math.round((stats.rentals / steps) * step), stats.rentals),
-          events: Math.min(Math.round((stats.events / steps) * step), stats.events),
-          plans: Math.min(Math.round((stats.plans / steps) * step), stats.plans),
-          requests: Math.min(Math.round((stats.requests / steps) * step), stats.requests),
-        })
-        if (step >= steps) clearInterval(timer)
-      }, interval)
-      return () => clearInterval(timer)
-    } else if (stats.members === 0) {
-      setAnimatedStats(stats)
-    }
-  }, [stats])
+  const pulseRef = useRef<SectionRef>(null)
+  const stepsRef = useRef<SectionRef>(null)
+  const featuresRef = useRef<SectionRef>(null)
+  const ctaRef = useRef<SectionRef>(null)
+  const pulseVisible = useIntersect(pulseRef)
+  const stepsVisible = useIntersect(stepsRef)
+  const featuresVisible = useIntersect(featuresRef)
+  const ctaVisible = useIntersect(ctaRef)
+
+  const fetchProducts = useCallback(async (type?: string) => {
+    setLoadingProducts(true)
+    try {
+      const params = !type || type === 'all' ? 'pinned=true' : `pinned=true&type=${type}`
+      const res = await fetch(`/api/products?${params}`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data?.products) setProducts(data.products.slice(0, 6))
+      }
+    } catch { } finally { setLoadingProducts(false) }
+  }, [])
 
   useEffect(() => {
     fetch('/api/stats')
-      .then(res => res.ok ? res.json() : null)
-      .then(data => { if (data) setStats(data) })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setStats(d) })
       .catch(() => {})
 
     fetch('/api/shops')
-      .then(res => res.ok ? res.json() : null)
-      .then(data => { if (data?.shops) setFeaturedShops(data.shops.slice(0, 6)); setLoadingShops(false) })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.shops) setShops(d.shops.slice(0, 4)); setLoadingShops(false) })
       .catch(() => setLoadingShops(false))
 
     fetchProducts('all')
 
     fetch('/api/requests?isPublic=true&take=4')
-      .then(res => res.ok ? res.json() : null)
-      .then(data => {
-        const list = data?.requests || (Array.isArray(data) ? data : [])
-        if (Array.isArray(list)) setRecentRequests(list.slice(0, 4)); setLoadingRequests(false)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        const list = d?.requests || (Array.isArray(d) ? d : [])
+        if (Array.isArray(list)) setRequests(list.slice(0, 4))
+        setLoadingRequests(false)
       })
       .catch(() => setLoadingRequests(false))
-  }, [])
 
-  useEffect(() => {
-    if (featuredType) fetchProducts(featuredType)
-  }, [featuredType])
-
-  async function fetchProducts(type: string) {
-    setLoadingProducts(true)
-    try {
-      const params = type === 'all' ? 'pinned=true' : `pinned=true&type=${type}`
-      const res = await fetch(`/api/products?${params}`)
-      if (res.ok) {
-        const data = await res.json()
-        if (data?.products) setFeaturedProducts(data.products.slice(0, 6))
-      }
-    } catch { } finally {
-      setLoadingProducts(false)
-    }
-  }
+    fetch('/api/hashtags?mode=trending&limit=12')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.hashtags) setTrendingTags(d.hashtags.filter((h: { postCount: number }) => h.postCount > 0)) })
+      .catch(() => {})
+  }, [fetchProducts])
 
   return (
     <div className={styles.landing}>
-      {/* Hero Section */}
+      {/* Hero */}
       <section className={styles.hero}>
         <div className={styles.stars} />
         <div className={styles.heroContent}>
@@ -155,16 +195,13 @@ export default function Home() {
             <img src="/logo.png" alt="XistrYmemZ" />
             <span>XistrYmemZ</span>
           </div>
-          
           <h1 className={styles.title}>
             The <span className={styles.accent}>Cosmic Whitepages</span> Cooperative
           </h1>
-          
           <p className={styles.subtitle}>
             Your universal identity, projects, and connections — all in one open network.
             Sign up and start building something extraordinary with the community.
           </p>
-          
           <div className={styles.actions}>
             <Link href="/auth/register" className={styles.btnPrimary}>
               Join the Coop →
@@ -176,7 +213,18 @@ export default function Home() {
               Learn More
             </Link>
           </div>
-
+          <div className={styles.searchWrap}>
+            <span className={styles.searchIcon}>🔍</span>
+            <input
+              className={styles.searchInput}
+              placeholder="Search members, shops, projects..."
+              onKeyDown={e => {
+                if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
+                  window.location.href = `/search?q=${encodeURIComponent((e.target as HTMLInputElement).value.trim())}`
+                }
+              }}
+            />
+          </div>
           <div className={styles.heroStats}>
             <div className={styles.stat}>
               <span className={styles.statValue}>Open</span>
@@ -192,174 +240,121 @@ export default function Home() {
             </div>
           </div>
         </div>
+        <div className={styles.heroGradient} />
       </section>
 
       {/* Platform Stats */}
       <section className={styles.statsSection}>
         <h2 className={styles.statsHeading}>Platform Stats</h2>
         <div className={styles.statsGrid}>
-          <Link href="/community" className={styles.statCard}>
-            <span className={styles.statIcon}>👥</span>
-            <span className={styles.statValue}>{animatedStats.members}</span>
-            <span className={styles.statLabel}>Members</span>
-          </Link>
-          <Link href="/shops" className={styles.statCard}>
-            <span className={styles.statIcon}>🏪</span>
-            <span className={styles.statValue}>{animatedStats.shops}</span>
-            <span className={styles.statLabel}>Shops</span>
-          </Link>
-          <Link href="/schools" className={styles.statCard}>
-            <span className={styles.statIcon}>🏫</span>
-            <span className={styles.statValue}>{animatedStats.schools}</span>
-            <span className={styles.statLabel}>Schools</span>
-          </Link>
-          <Link href="/products" className={styles.statCard}>
-            <span className={styles.statIcon}>🛒</span>
-            <span className={styles.statValue}>{animatedStats.products}</span>
-            <span className={styles.statLabel}>Products</span>
-          </Link>
-          <Link href="/products?type=SERVICE" className={styles.statCard}>
-            <span className={styles.statIcon}>🔧</span>
-            <span className={styles.statValue}>{animatedStats.services}</span>
-            <span className={styles.statLabel}>Services</span>
-          </Link>
-          <Link href="/products?type=RENTAL" className={styles.statCard}>
-            <span className={styles.statIcon}>🏠</span>
-            <span className={styles.statValue}>{animatedStats.rentals}</span>
-            <span className={styles.statLabel}>Rentals</span>
-          </Link>
-          <Link href="/events" className={styles.statCard}>
-            <span className={styles.statIcon}>📅</span>
-            <span className={styles.statValue}>{animatedStats.events}</span>
-            <span className={styles.statLabel}>Events</span>
-          </Link>
-          <Link href="/plans/public" className={styles.statCard}>
-            <span className={styles.statIcon}>🚀</span>
-            <span className={styles.statValue}>{animatedStats.plans}</span>
-            <span className={styles.statLabel}>Projects</span>
-          </Link>
-          <Link href="/requests" className={styles.statCard}>
-            <span className={styles.statIcon}>📝</span>
-            <span className={styles.statValue}>{animatedStats.requests}</span>
-            <span className={styles.statLabel}>Requests</span>
-          </Link>
-        </div>
-      </section>
-
-      {/* Featured Shops */}
-      <section className={styles.featuredSection}>
-        <h2 className={styles.sectionTitle}>Featured Shops</h2>
-        <p className={styles.sectionSubtitle}>Discover unique shops from our community</p>
-        {loadingShops ? (
-          <div className={styles.horizontalScroll}>
-            {[1,2,3].map(i => (
-              <div key={i} className={styles.featuredCard}>
-                <Skeleton width="100%" height={120} borderRadius="8px" />
-                <Skeleton width="70%" height="1rem" className="mt-2" />
-                <Skeleton width="40%" height="0.75rem" className="mt-2" />
-              </div>
-            ))}
-          </div>
-        ) : featuredShops.length > 0 ? (
-          <div className={styles.horizontalScroll}>
-            {featuredShops.map(shop => (
-              <Link key={shop.id} href={`/shop/${shop.shopSlug}`} className={styles.featuredCard}>
-                {shop.shopImage && (
-                  <img src={shop.shopImage} alt={shop.shopName} className={styles.featuredImage} />
-                )}
-                <h3 className={styles.featuredTitle}>{shop.shopName}</h3>
-                {shop._count && (
-                  <span className={styles.featuredMeta}>{shop._count.products} products</span>
-                )}
-              </Link>
-            ))}
-          </div>
-        ) : null}
-      </section>
-
-      {/* Featured Products */}
-      <section className={styles.featuredSection}>
-        <h2 className={styles.sectionTitle}>Marketplace</h2>
-        <p className={styles.sectionSubtitle}>Discover products, services, and rentals from the community</p>
-        <div className={styles.typeTabs}>
-          {[
-            { key: 'all', label: 'All', icon: '📦' },
-            { key: 'PRODUCT', label: 'Products', icon: '🛒' },
-            { key: 'SERVICE', label: 'Services', icon: '🔧' },
-            { key: 'RENTAL', label: 'Rentals', icon: '🏠' },
-          ].map(tab => (
-            <button
-              key={tab.key}
-              className={`${styles.typeTab} ${featuredType === tab.key ? styles.typeTabActive : ''}`}
-              onClick={() => setFeaturedType(tab.key)}
-            >
-              <span>{tab.icon}</span> {tab.label}
-            </button>
+          {STAT_CARDS.map(card => (
+            <Link key={card.key} href={card.href} className={styles.statCard}>
+              <span className={styles.statIcon}>{card.icon}</span>
+              <span className={styles.statValue}>{animatedStats[card.key]}</span>
+              <span className={styles.statLabel}>{card.label}</span>
+            </Link>
           ))}
         </div>
-        {loadingProducts ? (
-          <div className={styles.horizontalScroll}>
-            {[1,2,3].map(i => (
-              <div key={i} className={styles.featuredCard}>
-                <Skeleton width="100%" height={120} borderRadius="8px" />
-                <Skeleton width="70%" height="1rem" className="mt-2" />
-                <Skeleton width="40%" height="0.75rem" className="mt-2" />
-              </div>
-            ))}
-          </div>
-        ) : featuredProducts.length > 0 ? (
-          <div className={styles.horizontalScroll}>
-            {featuredProducts.map(product => (
-              <Link key={product.id} href={`/products/${product.id}`} className={styles.featuredCard}>
-                {product.imageUrl && (
-                  <img src={product.imageUrl} alt={product.title} className={styles.featuredImage} />
-                )}
-                <h3 className={styles.featuredTitle}>{product.title}</h3>
-                {product.price && <span className={styles.featuredPrice}>${product.price}</span>}
-                {product.user.shopSlug && (
-                  <span className={styles.featuredMeta}>by {product.user.name || 'Unknown'}</span>
-                )}
-              </Link>
-            ))}
-          </div>
-        ) : null}
       </section>
 
-      {/* Recent Community Requests */}
-      <section className={styles.featuredSection}>
-        <h2 className={styles.sectionTitle}>Community Requests</h2>
-        <p className={styles.sectionSubtitle}>Help fund community needs</p>
-        {loadingRequests ? (
-          <div className={styles.horizontalScroll}>
-            {[1,2,3].map(i => (
-              <div key={i} className={styles.featuredCard}>
-                <Skeleton width="80%" height="1rem" />
-                <Skeleton width="50%" height="0.75rem" className="mt-2" />
-                <Skeleton width="60%" height="0.75rem" className="mt-2" />
-              </div>
-            ))}
-          </div>
-        ) : recentRequests.length > 0 ? (
-          <div className={styles.horizontalScroll}>
-            {recentRequests.map(req => (
-              <Link key={req.id} href={`/requests/${req.id}`} className={styles.featuredCard}>
-                <h3 className={styles.featuredTitle}>{req.title}</h3>
-                <div className={styles.featuredMeta}>
-                  by {req.user?.name || 'Unknown'}
-                </div>
-                {req.goalAmount && (
-                  <span className={styles.featuredPrice}>
-                    ${req.currentFunding || 0} / ${req.goalAmount}
-                  </span>
-                )}
+      {trendingTags.length > 0 && (
+        <section className={styles.hashtagSection}>
+          <h2 className={styles.statsHeading}>Trending Hashtags</h2>
+          <div className={styles.hashtagCloud}>
+            {trendingTags.map(h => (
+              <Link key={h.tag} href={`/hashtag/${h.tag}`} className={styles.hashtagPill}>
+                <span>#{h.tag}</span>
+                <span className={styles.hashtagCount}>{h.postCount}</span>
               </Link>
             ))}
           </div>
-        ) : null}
+        </section>
+      )}
+
+      {/* Community Pulse */}
+      <section ref={pulseRef} className={`${styles.pulseSection} ${pulseVisible ? styles.visible : ''}`}>
+        <h2 className={styles.sectionTitle}>Community Pulse</h2>
+        <p className={styles.sectionSubtitle}>What&apos;s happening right now in the cooperative</p>
+        <div className={styles.pulseGrid}>
+          <div className={styles.pulseCard}>
+            <div className={styles.pulseHeader}>
+              <span className={styles.pulseIcon}>🏪</span>
+              <h3>Latest Shops</h3>
+            </div>
+            {loadingShops ? (
+              <div className={styles.pulseList}>{[1,2,3].map(i => <Skeleton key={i} width="100%" height="2.5rem" />)}</div>
+            ) : shops.length > 0 ? (
+              <div className={styles.pulseList}>
+                {shops.map(shop => (
+                  <Link key={shop.id} href={`/shop/${shop.shopSlug}`} className={styles.pulseItem}>
+                    <span className={styles.pulseItemIcon}>
+                      {shop.shopImage ? <img src={shop.shopImage} alt="" /> : '🏪'}
+                    </span>
+                    <span className={styles.pulseItemTitle}>{shop.shopName}</span>
+                    {shop._count && <span className={styles.pulseItemMeta}>{shop._count.products}</span>}
+                  </Link>
+                ))}
+              </div>
+            ) : <p className={styles.pulseEmpty}>No shops yet</p>}
+            <Link href="/shops" className={styles.pulseViewAll}>View all shops →</Link>
+          </div>
+          <div className={styles.pulseCard}>
+            <div className={styles.pulseHeader}>
+              <span className={styles.pulseIcon}>🛒</span>
+              <h3>Featured Products</h3>
+            </div>
+            {loadingProducts ? (
+              <div className={styles.pulseList}>{[1,2,3].map(i => <Skeleton key={i} width="100%" height="2.5rem" />)}</div>
+            ) : products.length > 0 ? (
+              <div className={styles.pulseList}>
+                {products.slice(0, 4).map(product => (
+                  <Link key={product.id} href={`/products/${product.id}`} className={styles.pulseItem}>
+                    <span className={styles.pulseItemIcon}>
+                      {product.imageUrl ? <img src={product.imageUrl} alt="" /> : '🛒'}
+                    </span>
+                    <div className={styles.pulseItemCol}>
+                      <span className={styles.pulseItemTitle}>{product.title}</span>
+                      <span className={styles.pulseItemMeta}>by {product.user.name || 'Unknown'}</span>
+                    </div>
+                    {product.price && <span className={styles.pulseItemPrice}>${product.price}</span>}
+                  </Link>
+                ))}
+              </div>
+            ) : <p className={styles.pulseEmpty}>No products yet</p>}
+            <Link href="/products" className={styles.pulseViewAll}>View all products →</Link>
+          </div>
+          <div className={styles.pulseCard}>
+            <div className={styles.pulseHeader}>
+              <span className={styles.pulseIcon}>📝</span>
+              <h3>Community Requests</h3>
+            </div>
+            {loadingRequests ? (
+              <div className={styles.pulseList}>{[1,2,3].map(i => <Skeleton key={i} width="100%" height="2.5rem" />)}</div>
+            ) : requests.length > 0 ? (
+              <div className={styles.pulseList}>
+                {requests.map(req => (
+                  <Link key={req.id} href={`/requests/${req.id}`} className={styles.pulseItem}>
+                    <span className={styles.pulseItemIcon}>📝</span>
+                    <div className={styles.pulseItemCol}>
+                      <span className={styles.pulseItemTitle}>{req.title}</span>
+                      <span className={styles.pulseItemMeta}>by {req.user?.name || 'Unknown'}</span>
+                    </div>
+                    {req.goalAmount && (
+                      <span className={styles.pulseItemPrice}>
+                        ${req.currentFunding || 0}/${req.goalAmount}
+                      </span>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            ) : <p className={styles.pulseEmpty}>No requests yet</p>}
+            <Link href="/requests" className={styles.pulseViewAll}>View all requests →</Link>
+          </div>
+        </div>
       </section>
 
       {/* How It Works */}
-      <section className={styles.stepsSection}>
+      <section ref={stepsRef} className={`${styles.stepsSection} ${stepsVisible ? styles.visible : ''}`}>
         <h2 className={styles.sectionTitle}>How It Works</h2>
         <p className={styles.sectionSubtitle}>Four steps to join the cooperative</p>
         <div className={styles.stepsGrid}>
@@ -374,43 +369,30 @@ export default function Home() {
       </section>
 
       {/* Features */}
-      <section className={styles.features}>
+      <section ref={featuresRef} className={`${styles.features} ${featuresVisible ? styles.visible : ''}`}>
         <h2 className={styles.sectionTitle}>What You Can Build</h2>
         <p className={styles.sectionSubtitle}>Everything you need to connect, create, and collaborate</p>
         <div className={styles.featuresGrid}>
-          {FEATURES.map((f, i) => {
-            const isShop = f.icon === '🏪'
-            if (isShop) {
-              return (
-                <Link
-                  key={i}
-                  href="/shops"
-                  style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
-                  className={styles.feature}
-                >
-                  <span className={styles.featureIcon}>{f.icon}</span>
-                  <h3>{f.title}</h3>
-                  <p>{f.desc}</p>
-                </Link>
-              )
-            }
-            return (
-              <div key={i} className={styles.feature}>
-                <span className={styles.featureIcon}>{f.icon}</span>
-                <h3>{f.title}</h3>
-                <p>{f.desc}</p>
-              </div>
-            )
-          })}
+          {FEATURES.map((f, i) => (
+            <Link key={i} href={f.href} className={styles.feature}>
+              <span className={styles.featureIcon}>{f.icon}</span>
+              <h3>{f.title}</h3>
+              <p>{f.desc}</p>
+            </Link>
+          ))}
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className={styles.ctaSection}>
+      {/* Global Activity Map */}
+      <HomeMap />
+
+      {/* CTA */}
+      <section ref={ctaRef} className={`${styles.ctaSection} ${ctaVisible ? styles.visible : ''}`}>
         <div className={styles.ctaContent}>
           <h2>Ready to Claim Your Place?</h2>
           <p>
-            Join the cosmic whitepages cooperative. Create your profile, launch your first project,
+            Join <strong className={styles.ctaCount}>{animatedStats.members.toLocaleString()}</strong> other members
+            on the cosmic whitepages cooperative. Create your profile, launch your first project,
             and start connecting with people who share your vision.
           </p>
           <div className={styles.ctaActions}>
@@ -424,15 +406,16 @@ export default function Home() {
         </div>
       </section>
 
-      <HomeMap />
-
-      {/* Footer Links */}
+      {/* Footer */}
       <section className={styles.footerLinks}>
         <div className={styles.ctaLinks}>
           <Link href="/about">About</Link>
           <Link href="/help">Help</Link>
           <Link href="/community">Community</Link>
+          <Link href="/community/forum">Forum</Link>
           <Link href="/requests">Requests</Link>
+          <Link href="/privacy">Privacy</Link>
+          <Link href="/terms">Terms</Link>
         </div>
         <p className={styles.copyright}>&copy; {new Date().getFullYear()} XistrYmemZ — Cosmic Whitepages Cooperative</p>
       </section>

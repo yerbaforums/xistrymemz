@@ -21,6 +21,7 @@ const TYPE_ICONS: Record<string, string> = {
   OFFER_ACCEPTED: '✅',
   OFFER_REJECTED: '❌',
   OFFER_WITHDRAWN: '↩️',
+  MENTION: '📣',
 }
 
 export default function NotificationsPage() {

@@ -581,6 +581,9 @@ model Post {
   content       String
   imageUrl      String?
   pinned        Boolean  @default(false)
+  context       String   @default("PROFILE") // PROFILE | SHOP | SCHOOL | WALL
+  images        String?  // JSON array of URLs
+  mentions      String?  // JSON array of mentioned user IDs
   userId        String
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   targetUserId  String?
@@ -588,9 +591,36 @@ model Post {
   likes         Int      @default(0)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  hashtags      PostHashtag[]
 
   @@index([userId])
   @@index([targetUserId])
+  @@index([context])
+}
+
+model Hashtag {
+  id        String        @id @default(cuid())
+  tag       String        @unique
+  postCount Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  posts     PostHashtag[]
+
+  @@index([postCount])
+  @@index([tag])
+}
+
+model PostHashtag {
+  id         String   @id @default(cuid())
+  postId     String
+  post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  hashtagId  String
+  hashtag    Hashtag  @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+  sourceType String   @default("POST") // POST | GROUPPOST | FORUMPOST
+  createdAt  DateTime @default(now())
+
+  @@unique([postId, hashtagId])
+  @@index([hashtagId])
 }
 
 model Group {

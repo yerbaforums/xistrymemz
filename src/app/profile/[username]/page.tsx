@@ -13,6 +13,9 @@ import { DonationActions } from '@/components/DonationActions'
 import { ShareProfileModal } from '@/components/ShareProfileModal'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
+import { linkHashtags } from '@/lib/hashtags'
+import { renderMentions } from '@/lib/mentions'
+import MentionInput from '@/components/MentionInput'
 import dynamic from 'next/dynamic'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
@@ -94,6 +97,7 @@ interface Post {
   id: string
   content: string
   imageUrl: string | null
+  images: string | null
   pinned: boolean
   userId: string
   targetUserId: string | null
@@ -829,9 +833,9 @@ export default function ProfilePage() {
                       <span>{session?.user?.name?.[0] || 'U'}</span>
                     )}
                   </div>
-                  <textarea
+                  <MentionInput
                     value={newPost}
-                    onChange={(e) => setNewPost(e.target.value)}
+                    onChange={setNewPost}
                     placeholder={isOwnProfile ? "What's on your mind?" : `Write on ${user.name || 'this user'}'s wall...`}
                     className={styles.postInput}
                     rows={3}
@@ -888,7 +892,9 @@ export default function ProfilePage() {
                             </button>
                           </div>
                         </div>
-                        <p className={styles.postContent}>{post.content}</p>
+                        <p className={styles.postContent} dangerouslySetInnerHTML={{
+                          __html: renderMentions(linkHashtags(post.content), new Map())
+                        }} />
                         <div className={styles.postFooter}>
                           <span className={styles.postLikes}>♥ {post.likes}</span>
                           <button onClick={() => handleLikePost(post.id, post.likes)} className={styles.likeBtn}>

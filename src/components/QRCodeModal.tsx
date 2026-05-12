@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import QRCode from 'qrcode'
 import styles from './QRCodeModal.module.css'
 import { getCryptoIcon, getCryptoName, getCryptoColor } from '@/lib/crypto-icons'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
@@ -14,7 +15,20 @@ interface QRCodeModalProps {
 
 export function QRCodeModal({ isOpen, onClose, currency, address }: QRCodeModalProps) {
   const [copied, setCopied] = useState(false)
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
   const modalRef = useFocusTrap(isOpen, onClose)
+
+  useEffect(() => {
+    if (!isOpen) return
+    QRCode.toDataURL(address, {
+      width: 280,
+      margin: 1,
+      color: {
+        dark: '#ffffff',
+        light: '#0d0d0d'
+      }
+    }).then(setQrDataUrl).catch(() => setQrDataUrl(null))
+  }, [isOpen, address])
 
   if (!isOpen) return null
 
@@ -47,12 +61,16 @@ export function QRCodeModal({ isOpen, onClose, currency, address }: QRCodeModalP
           <span className={styles.cryptoTicker}>({currency.toUpperCase()})</span>
         </div>
         <div className={styles.qrContainer}>
-          <img
-            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(address)}&bgcolor=0d0d0d&color=ffffff`}
-            alt={`${fullName} QR code`}
-            width={200}
-            height={200}
-          />
+          {qrDataUrl ? (
+            <img
+              src={qrDataUrl}
+              alt={`${fullName} QR code`}
+              width={280}
+              height={280}
+            />
+          ) : (
+            <div className={styles.qrLoading}>Generating QR...</div>
+          )}
         </div>
         <code className={styles.address}>{address}</code>
         <button
