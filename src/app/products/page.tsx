@@ -180,7 +180,10 @@ export default function ProductsPage() {
         setFilteredProducts(items)
         setLoading(false)
       })
-      .catch(() => setLoading(false))
+      .catch((err) => {
+        error(err instanceof Error ? err.message : 'Failed to load marketplace')
+        setLoading(false)
+      })
   }
 
   useEffect(() => {

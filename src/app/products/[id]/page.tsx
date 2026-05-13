@@ -122,6 +122,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [fundingLoading, setFundingLoading] = useState(false)
   const [currentFunding, setCurrentFunding] = useState(0)
   const [copiedPayout, setCopiedPayout] = useState(false)
+  const [fetchError, setFetchError] = useState<string | null>(null)
   const [showOfferModal, setShowOfferModal] = useState(false)
   const [showCartModal, setShowCartModal] = useState(false)
   const [showEscrowComingSoon, setShowEscrowComingSoon] = useState(false)
@@ -146,9 +147,13 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
   useEffect(() => {
     if (!resolvedParams) return
+    setFetchError(null)
     
     fetch(`/api/products/${resolvedParams.id}`)
       .then(res => {
+        if (res.status === 404) {
+          throw new Error('not-found')
+        }
         if (!res.ok) {
           return res.json().catch(() => ({ error: 'Failed to fetch product' })).then(data => {
             throw new Error(data.error || 'Request failed')
@@ -187,7 +192,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           .then(shop => setSellerShop(shop))
         setLoading(false)
       })
-      .catch(() => setLoading(false))
+      .catch((err) => {
+        if (err.message === 'not-found') {
+          setFetchError('Product not found')
+        } else {
+          setFetchError(err instanceof Error ? err.message : 'Failed to load product')
+        }
+        setLoading(false)
+      })
   }, [resolvedParams])
 
   useEffect(() => {
@@ -433,6 +445,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
   if (loading) {
     return <div className={styles.loading}>Loading...</div>
+  }
+
+  if (fetchError) {
+    return <div className={styles.error}>{fetchError}</div>
   }
 
   if (!product) {

@@ -50,6 +50,8 @@ export const productSchema = z.object({
   rentalMinDays: z.coerce.number().int().min(1).optional(),
   rentalMaxDays: z.coerce.number().int().min(1).optional().nullable(),
   rentalAvailable: z.boolean().optional(),
+  sellerPayoutAddress: z.string().optional().nullable(),
+  sellerCryptoCurrency: z.string().optional().nullable(),
   createGroup: z.boolean().optional()
 })
 
