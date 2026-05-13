@@ -2,12 +2,14 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import styles from './page.module.css'
 import PlanGoals from './PlanGoals'
 import PlanMilestones from './PlanMilestones'
 import PlanResources from './PlanResources'
 import PlanSupport from './PlanSupport'
 import { parseGoals, parseMilestones, parseResources, stringifyGoals, stringifyMilestones, stringifyResources } from '@/lib/plan-utils'
+import { getUserProfileUrl } from '@/lib/utils'
 import type { PlanGoal, PlanMilestone, PlanResource, PlanContribution, PlanJoiner } from '@/lib/plan-utils'
 
 interface Request {
@@ -41,6 +43,7 @@ interface Plan {
   acceptsDonations: boolean; donationDescription: string | null
   needsVolunteers: boolean; volunteerRoles: string | null; volunteerDescription: string | null
   joiners: PlanJoiner[]; contributions: PlanContribution[]
+  user: { id: string; name: string | null; username: string | null; image?: string | null }
 }
 
 interface Product { id: string; title: string; price: number | null; imageUrl: string | null; type: string }
@@ -382,9 +385,20 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
 
   return (
     <div className={styles.page}>
-      <Link href="/plans" className={styles.backLink}>← Back to Projects</Link>
+        <Link href="/plans" className={styles.backLink}>← Back to Projects</Link>
 
-      <div className={styles.content}>
+        <div className={styles.creatorInfo}>
+          <Link href={getUserProfileUrl(plan.user)} className={styles.creatorLink}>
+            {plan.user.image ? (
+              <Image src={plan.user.image} alt="" width={32} height={32} className={styles.creatorAvatar} />
+            ) : (
+              <span className={styles.creatorAvatarPlaceholder}>{plan.user.name?.[0] || 'U'}</span>
+            )}
+            <span className={styles.creatorName}>{plan.user.name || 'Anonymous'}</span>
+          </Link>
+        </div>
+
+        <div className={styles.content}>
         <div className={styles.mainSection}>
           {saveError && (
             <div className={styles.errorBanner}>

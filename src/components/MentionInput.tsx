@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react'
 import { getSelectionAfterAt } from '@/lib/mentions'
 import { useToast } from '@/context/ToastContext'
 
@@ -19,14 +19,18 @@ interface MentionInputProps {
   className?: string
 }
 
-export default function MentionInput({
+export interface MentionInputHandle {
+  insertAtCursor: (text: string) => void
+}
+
+const MentionInput = forwardRef<MentionInputHandle, MentionInputProps>(function MentionInput({
   value,
   onChange,
   placeholder = '',
   rows = 3,
   maxLength = 2000,
   className = ''
-}: MentionInputProps) {
+}: MentionInputProps, ref) {
   const [suggestions, setSuggestions] = useState<UserResult[]>([])
   const [mentionStart, setMentionStart] = useState<number | null>(null)
   const [activeIndex, setActiveIndex] = useState(0)
@@ -34,6 +38,22 @@ export default function MentionInput({
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const { error: toastError } = useToast()
+
+  useImperativeHandle(ref, () => ({
+    insertAtCursor(text: string) {
+      const el = textareaRef.current
+      if (!el) return
+      const start = el.selectionStart
+      const end = el.selectionEnd
+      const newValue = value.slice(0, start) + text + value.slice(end)
+      onChange(newValue)
+      requestAnimationFrame(() => {
+        el.focus()
+        const pos = start + text.length
+        el.setSelectionRange(pos, pos)
+      })
+    }
+  }))
 
   const fetchUsers = useCallback(async (query: string) => {
     if (query.length < 1) {
@@ -192,4 +212,6 @@ export default function MentionInput({
       )}
     </div>
   )
-}
+})
+
+export default MentionInput

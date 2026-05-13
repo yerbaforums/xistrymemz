@@ -9,6 +9,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type') || 'public'
     const planId = searchParams.get('planId')
+    const organizerId = searchParams.get('organizerId')
 
     if (type === 'personal') {
       const session = await getServerSession(authOptions)
@@ -30,6 +31,10 @@ export async function GET(request: Request) {
     
     if (planId) {
       where.planId = planId
+    }
+
+    if (organizerId) {
+      where.organizerId = organizerId
     }
 
     const events = await prisma.event.findMany({

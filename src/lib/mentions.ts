@@ -24,6 +24,10 @@ export function renderMentions(text: string, userMap: Map<string, string>): stri
   })
 }
 
+export function linkMentions(text: string): string {
+  return text.replace(MENTION_REGEX, '<a href="/profile/$1" class="mention-link">@$1</a>')
+}
+
 export function getSelectionAfterAt(
   element: HTMLTextAreaElement
 ): { start: number; query: string } | null {

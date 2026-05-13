@@ -20,6 +20,15 @@ interface UserLink {
   sortOrder: number
 }
 
+interface UserLocation {
+  id: string
+  name: string
+  location: string
+  latitude: number | null
+  longitude: number | null
+  isPrimary: boolean
+}
+
 interface DonationAddr {
   id: string
   currency: string
@@ -90,6 +99,12 @@ export default function ProfileEditPage() {
   const [confirmDeleteDonation, setConfirmDeleteDonation] = useState<string | null>(null)
   const { success: toastSuccess, error: toastError } = useToast()
 
+  // Locations
+  const [savedLocations, setSavedLocations] = useState<UserLocation[]>([])
+  const [showLocationForm, setShowLocationForm] = useState(false)
+  const [locationForm, setLocationForm] = useState({ name: '', location: '', latitude: '', longitude: '' })
+  const [locationSaving, setLocationSaving] = useState(false)
+
   const allCryptos = getAllCryptos()
 
   useEffect(() => {
@@ -128,12 +143,17 @@ export default function ProfileEditPage() {
       setLongitude(user.longitude || null)
       setTraveling(user.traveling || false)
       setAcceptsDonations(user.acceptsDonations || false)
-      const [donationsRes] = await Promise.all([
-        fetch('/api/users/donations')
+      const [donationsRes, locationsRes] = await Promise.all([
+        fetch('/api/users/donations'),
+        fetch('/api/users/locations')
       ])
       if (donationsRes.ok) {
         const donationsData = await donationsRes.json()
         setDonationAddresses(donationsData.addresses || [])
+      }
+      if (locationsRes.ok) {
+        const locationsData = await locationsRes.json()
+        setSavedLocations(locationsData || [])
       }
       setLinks(data.links || [])
     } catch (err) {
@@ -168,6 +188,74 @@ export default function ProfileEditPage() {
   const handleClearLocation = () => {
     setLatitude(null)
     setLongitude(null)
+  }
+
+  // Location CRUD
+  const handleAddLocation = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!locationForm.name.trim() || !locationForm.location.trim()) return
+    setLocationSaving(true)
+    try {
+      const res = await fetch('/api/users/locations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: locationForm.name,
+          location: locationForm.location,
+          latitude: locationForm.latitude ? parseFloat(locationForm.latitude) : null,
+          longitude: locationForm.longitude ? parseFloat(locationForm.longitude) : null
+        })
+      })
+      if (res.ok) {
+        const newLoc = await res.json()
+        setSavedLocations(prev => [...prev, newLoc])
+        setLocationForm({ name: '', location: '', latitude: '', longitude: '' })
+        setShowLocationForm(false)
+        toastSuccess('Location added')
+      } else {
+        const data = await res.json()
+        toastError(data.error || 'Failed to add location')
+      }
+    } catch {
+      toastError('Failed to add location')
+    } finally {
+      setLocationSaving(false)
+    }
+  }
+
+  const handleSetPrimaryLocation = async (locId: string) => {
+    try {
+      const res = await fetch(`/api/users/locations/${locId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+      })
+      if (res.ok) {
+        setSavedLocations(prev => prev.map(l => ({ ...l, isPrimary: l.id === locId })))
+        toastSuccess('Primary location updated')
+      } else {
+        const data = await res.json()
+        toastError(data.error || 'Failed to update')
+      }
+    } catch {
+      toastError('Failed to update location')
+    }
+  }
+
+  const handleDeleteLocation = async (locId: string) => {
+    if (!confirm('Delete this location?')) return
+    try {
+      const res = await fetch(`/api/users/locations/${locId}`, { method: 'DELETE' })
+      if (res.ok) {
+        setSavedLocations(prev => prev.filter(l => l.id !== locId))
+        toastSuccess('Location deleted')
+      } else {
+        const data = await res.json()
+        toastError(data.error || 'Failed to delete')
+      }
+    } catch {
+      toastError('Failed to delete location')
+    }
   }
 
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -469,6 +557,133 @@ export default function ProfileEditPage() {
                 </p>
               )}
             </div>
+          </div>
+
+          {/* Saved Locations */}
+          <div style={{background: 'linear-gradient(135deg, #1a1a2a 0%, #0d0d1a 100%)', border: '1px solid #2a2a4a', borderRadius: '12px', padding: '24px', marginBottom: '20px'}}>
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+              <h2 style={{margin: 0, color: '#7f7fff'}}>📍 Saved Locations</h2>
+              <button
+                type="button"
+                onClick={() => { setShowLocationForm(true); setLocationForm({ name: '', location: '', latitude: '', longitude: '' }) }}
+                style={{padding: '8px 16px', background: '#7f7fff', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500}}
+              >
+                + Add Location
+              </button>
+            </div>
+
+            {savedLocations.length === 0 && !showLocationForm && (
+              <p style={{color: 'var(--text-secondary)', textAlign: 'center', padding: '20px', fontSize: '0.875rem'}}>
+                No saved locations yet. Add places you frequent to help your community find you.
+              </p>
+            )}
+
+            {savedLocations.map(loc => (
+              <div key={loc.id} style={{display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', marginBottom: '8px', border: loc.isPrimary ? '1px solid #7f7fff' : '1px solid rgba(255,255,255,0.05)'}}>
+                <div style={{flex: 1}}>
+                  <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px'}}>
+                    <span style={{fontWeight: 600, fontSize: '0.9rem', color: '#c0c0ff'}}>{loc.name}</span>
+                    {loc.isPrimary && <span style={{fontSize: '0.7rem', padding: '2px 8px', background: '#7f7fff', color: '#fff', borderRadius: '10px', fontWeight: 600}}>Primary</span>}
+                  </div>
+                  <div style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>{loc.location}</div>
+                  {loc.latitude && loc.longitude && (
+                    <div style={{fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: '2px'}}>
+                      {loc.latitude.toFixed(4)}, {loc.longitude.toFixed(4)}
+                    </div>
+                  )}
+                </div>
+                <div style={{display: 'flex', gap: '6px'}}>
+                  {!loc.isPrimary && (
+                    <button
+                      type="button"
+                      onClick={() => handleSetPrimaryLocation(loc.id)}
+                      style={{padding: '6px 12px', background: 'transparent', border: '1px solid #7f7fff', borderRadius: '6px', color: '#7f7fff', cursor: 'pointer', fontSize: '0.8rem'}}
+                    >
+                      Set Primary
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteLocation(loc.id)}
+                    style={{padding: '6px 12px', background: 'transparent', border: '1px solid #ff6b6b', borderRadius: '6px', color: '#ff6b6b', cursor: 'pointer', fontSize: '0.8rem'}}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            {showLocationForm && (
+              <form onSubmit={handleAddLocation} style={{marginTop: '16px', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)'}}>
+                <h3 style={{marginTop: 0, fontSize: '1rem', color: '#c0c0ff'}}>Add New Location</h3>
+
+                <div style={{marginBottom: '12px'}}>
+                  <label style={{display: 'block', marginBottom: '6px', color: '#8888aa', fontSize: '0.875rem'}}>Location Name</label>
+                  <input
+                    type="text"
+                    value={locationForm.name}
+                    onChange={e => setLocationForm({...locationForm, name: e.target.value})}
+                    placeholder="e.g., Home, Office, Favorite Cafe..."
+                    required
+                    style={{width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a2a4a', borderRadius: '8px', color: '#c0c0ff', fontSize: '0.875rem'}}
+                  />
+                </div>
+
+                <div style={{marginBottom: '12px'}}>
+                  <label style={{display: 'block', marginBottom: '6px', color: '#8888aa', fontSize: '0.875rem'}}>Address / Description</label>
+                  <input
+                    type="text"
+                    value={locationForm.location}
+                    onChange={e => setLocationForm({...locationForm, location: e.target.value})}
+                    placeholder="e.g., 123 Main St, City, Country"
+                    required
+                    style={{width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a2a4a', borderRadius: '8px', color: '#c0c0ff', fontSize: '0.875rem'}}
+                  />
+                </div>
+
+                <div style={{display: 'flex', gap: '12px', marginBottom: '12px'}}>
+                  <div style={{flex: 1}}>
+                    <label style={{display: 'block', marginBottom: '6px', color: '#8888aa', fontSize: '0.875rem'}}>Latitude (optional)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={locationForm.latitude}
+                      onChange={e => setLocationForm({...locationForm, latitude: e.target.value})}
+                      placeholder="51.5074"
+                      style={{width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a2a4a', borderRadius: '8px', color: '#c0c0ff', fontSize: '0.875rem'}}
+                    />
+                  </div>
+                  <div style={{flex: 1}}>
+                    <label style={{display: 'block', marginBottom: '6px', color: '#8888aa', fontSize: '0.875rem'}}>Longitude (optional)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={locationForm.longitude}
+                      onChange={e => setLocationForm({...locationForm, longitude: e.target.value})}
+                      placeholder="-0.1278"
+                      style={{width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a2a4a', borderRadius: '8px', color: '#c0c0ff', fontSize: '0.875rem'}}
+                    />
+                  </div>
+                </div>
+
+                <div style={{display: 'flex', gap: '8px', justifyContent: 'flex-end'}}>
+                  <button
+                    type="button"
+                    onClick={() => { setShowLocationForm(false); setLocationForm({ name: '', location: '', latitude: '', longitude: '' }) }}
+                    style={{padding: '8px 16px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem'}}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={locationSaving}
+                    style={{padding: '8px 16px', background: '#7f7fff', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500, fontSize: '0.875rem'}}
+                  >
+                    {locationSaving ? 'Saving...' : 'Save Location'}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
 
           {/* Wallet Addresses - DISABLED until wallet features enabled */}

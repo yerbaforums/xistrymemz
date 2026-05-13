@@ -3,15 +3,20 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { forumPostSchema, validateBody } from '@/lib/schemas'
+import { parseMentions } from '@/lib/mentions'
+import { extractHashtags } from '@/lib/hashtags'
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const categoryId = searchParams.get('categoryId')
+    const authorId = searchParams.get('authorId')
     const limit = parseInt(searchParams.get('limit') || '20')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    const where = categoryId ? { categoryId } : {}
+    const where: Record<string, unknown> = {}
+    if (categoryId) where.categoryId = categoryId
+    if (authorId) where.authorId = authorId
 
     const posts = await prisma.forumPost.findMany({
       where,
@@ -84,6 +89,46 @@ export async function POST(req: Request) {
           postId: post.id
         }))
       })
+    }
+
+    // Process mentions
+    const mentionedUsernames = parseMentions(content)
+    if (mentionedUsernames.length > 0) {
+      const mentionedUsers = await prisma.user.findMany({
+        where: { username: { in: mentionedUsernames } },
+        select: { id: true, username: true }
+      })
+      if (mentionedUsers.length > 0) {
+        await prisma.notification.createMany({
+          data: mentionedUsers
+            .filter(u => u.id !== session.user.id)
+            .map(u => ({
+              userId: u.id,
+              type: 'MENTION',
+              title: 'New Mention',
+              message: `${session.user.name || 'Someone'} mentioned you in a forum post`,
+              link: `/community/forum/${post.id}`,
+              relatedId: post.id
+            }))
+        })
+      }
+    }
+
+    // Process hashtags
+    const hashtags = extractHashtags(content)
+    for (const tag of hashtags) {
+      await prisma.hashtag.upsert({
+        where: { tag },
+        update: { postCount: { increment: 1 } },
+        create: { tag, postCount: 1 }
+      })
+      await prisma.postHashtag.create({
+        data: {
+          postId: post.id,
+          hashtagId: (await prisma.hashtag.findUnique({ where: { tag } }))!.id,
+          sourceType: 'POST'
+        }
+      }).catch(() => {})
     }
 
     return NextResponse.json(post)

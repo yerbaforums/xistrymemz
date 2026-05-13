@@ -57,6 +57,16 @@ interface Product {
   rentalAvailable: boolean
 }
 
+interface DonationAddr {
+  id: string
+  currency: string
+  address: string
+  label: string | null
+  qrCodeUrl: string | null
+  showQR: boolean
+  sortOrder: number
+}
+
 export default function ProductsPage() {
   const { data: session } = useSession()
   const { warning, error, success } = useToast()
@@ -115,6 +125,7 @@ export default function ProductsPage() {
     rentalAvailable: true,
     createGroup: false
   })
+  const [userDonationAddrs, setUserDonationAddrs] = useState<DonationAddr[]>([])
   const [creating, setCreating] = useState(false)
   const { addItem } = useCart()
 
@@ -145,6 +156,15 @@ export default function ProductsPage() {
     checkAuth()
     fetchProducts()
   }, [])
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetch('/api/users/donations')
+        .then(r => r.ok ? r.json() : null)
+        .then(data => { if (data?.addresses) setUserDonationAddrs(data.addresses) })
+        .catch(() => {})
+    }
+  }, [isLoggedIn])
 
   useEffect(() => {
     if (passportLocation?.latitude && passportLocation?.longitude && !zipCode) {
@@ -308,7 +328,16 @@ export default function ProductsPage() {
       const res = await fetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...newProduct, price: newProduct.price || null })
+        body: JSON.stringify({
+          ...newProduct,
+          price: newProduct.price || null,
+          paymentMethods: Array.isArray(newProduct.paymentMethods) ? newProduct.paymentMethods.join(',') : newProduct.paymentMethods,
+          rentalMaxDays: newProduct.rentalMaxDays || null,
+          rentalDaily: newProduct.rentalDaily || null,
+          rentalWeekly: newProduct.rentalWeekly || null,
+          rentalMonthly: newProduct.rentalMonthly || null,
+          rentalDeposit: newProduct.rentalDeposit || null
+        })
       })
 
       if (res.ok) {
@@ -938,41 +967,62 @@ export default function ProductsPage() {
                   {newProduct.paymentType === 'BOTH' && 'Buyers can choose their preferred payment method'}
                 </small>
               </div>
-              {(newProduct.paymentType === 'DIRECT' || newProduct.paymentType === 'BOTH') && (
+              {isLoggedIn && (newProduct.paymentType === 'DIRECT' || newProduct.paymentType === 'BOTH') && (
                 <div className="form-group">
-                  <label>Payout Settings</label>
+                  <label>Donation Address for Payments</label>
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-                    Set your crypto address for direct payments. Displayed to buyers when checkout is disabled.
+                    Select a saved donation address for receiving direct payments. Buyers will see this address at checkout.
                   </p>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Crypto</label>
-                      <select
-                        value={newProduct.sellerCryptoCurrency}
-                        onChange={e => setNewProduct({...newProduct, sellerCryptoCurrency: e.target.value})}
-                      >
-                        <option value="ETH">ETH (Ethereum)</option>
-                        <option value="BTC">BTC (Bitcoin)</option>
-                        <option value="USDT">USDT (Tether)</option>
-                        <option value="USDC">USDC (USD Coin)</option>
-                        <option value="XMR">XMR (Monero)</option>
-                        <option value="XTM">XTM (Tari)</option>
-                        <option value="ARRR">ARRR (Pirate)</option>
-                        <option value="DERO">DERO (Dero)</option>
-                        <option value="ZANO">ZANO (Zano)</option>
-                        <option value="OTHER">OTHER</option>
-                      </select>
+                  {userDonationAddrs.length === 0 ? (
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', padding: '12px', background: 'var(--bg-secondary)', borderRadius: '8px' }}>
+                      No donation addresses saved. <Link href="/profile/edit" style={{ color: 'var(--accent-primary)' }}>Add one in your profile settings</Link>
+                    </p>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {userDonationAddrs.map(da => (
+                        <label
+                          key={da.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            padding: '10px 14px',
+                            background: newProduct.sellerPayoutAddress === da.address && newProduct.sellerCryptoCurrency === da.currency ? 'var(--bg-tertiary)' : 'var(--bg-secondary)',
+                            border: newProduct.sellerPayoutAddress === da.address && newProduct.sellerCryptoCurrency === da.currency ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s'
+                          }}
+                        >
+                          <input
+                            type="radio"
+                            name="donationAddr"
+                            checked={newProduct.sellerPayoutAddress === da.address && newProduct.sellerCryptoCurrency === da.currency}
+                            onChange={() => setNewProduct({...newProduct, sellerPayoutAddress: da.address, sellerCryptoCurrency: da.currency})}
+                            style={{ accentColor: 'var(--accent-primary)' }}
+                          />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                              <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-primary)' }}>
+                                {da.label || da.currency}
+                              </span>
+                              <span style={{ fontSize: '0.7rem', padding: '2px 6px', background: 'rgba(0,217,255,0.1)', color: 'var(--accent-primary)', borderRadius: '4px', fontWeight: 600 }}>
+                                {da.currency}
+                              </span>
+                            </div>
+                            <code style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', wordBreak: 'break-all' }}>
+                              {da.address.length > 30 ? da.address.slice(0, 14) + '...' + da.address.slice(-8) : da.address}
+                            </code>
+                          </div>
+                        </label>
+                      ))}
+                      {!newProduct.sellerPayoutAddress && userDonationAddrs.length > 0 && (
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', margin: '4px 0 0' }}>
+                          Select a donation address for payouts
+                        </p>
+                      )}
                     </div>
-                    <div className="form-group">
-                      <label>Payout Address</label>
-                      <input
-                        type="text"
-                        value={newProduct.sellerPayoutAddress}
-                        onChange={e => setNewProduct({...newProduct, sellerPayoutAddress: e.target.value})}
-                        placeholder="Your crypto wallet address"
-                      />
-                    </div>
-                  </div>
+                  )}
                 </div>
               )}
               <div className={styles.modalActions}>

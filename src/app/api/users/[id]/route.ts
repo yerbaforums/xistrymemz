@@ -79,7 +79,10 @@ export async function GET(
     const userId = user.id
 
     const postsTake = 20
-    const [plans, posts, products, connections, groupMemberships, totalPostCount, userLocations] = await Promise.all([
+    const [plans, posts, products, connections, groupMemberships, totalPostCount, userLocations,
+      eventVolunteerCount, planVolunteerCount, eventAttendeeCount, forumPostCount, forumReplyCount,
+      badgeCount, barterOfferSentCount, barterOfferReceivedCount, escrowCount, requestCount
+    ] = await Promise.all([
       prisma.plan.findMany({
         where: { userId },
         select: {
@@ -181,7 +184,17 @@ export async function GET(
         where: { userId },
         orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }],
         take: 10
-      })
+      }),
+      prisma.eventJoiner.count({ where: { userId, role: 'VOLUNTEER' } }),
+      prisma.planJoiner.count({ where: { userId, role: 'VOLUNTEER' } }),
+      prisma.eventJoiner.count({ where: { userId, role: 'ATTENDEE' } }),
+      prisma.forumPost.count({ where: { authorId: userId } }),
+      prisma.forumReply.count({ where: { authorId: userId } }),
+      prisma.badge.count({ where: { userId } }),
+      prisma.barterOffer.count({ where: { makerId: userId } }),
+      prisma.barterOffer.count({ where: { receiverId: userId, status: 'ACCEPTED' } }),
+      prisma.escrowTransaction.count({ where: { OR: [{ sellerId: userId }, { buyerId: userId }] } }),
+      prisma.request.count({ where: { userId } })
     ])
 
     let isConnected = false
@@ -227,8 +240,8 @@ export async function GET(
       }
     })
 
-    // Fetch user links and donation info if public
-    const [links, donationAddresses] = await Promise.all([
+    // Fetch user links, donation info, and badges
+    const [links, donationAddresses, badges] = await Promise.all([
       prisma.userLink.findMany({
         where: { userId: user.id },
         orderBy: { sortOrder: 'asc' }
@@ -236,7 +249,12 @@ export async function GET(
       user.acceptsDonations ? prisma.donationAddress.findMany({
         where: { userId: user.id, isPublic: true },
         orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }]
-      }) : Promise.resolve([])
+      }) : Promise.resolve([]),
+      prisma.badge.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: 'desc' },
+        take: 20
+      })
     ])
 
     return NextResponse.json({
@@ -252,6 +270,15 @@ export async function GET(
         acceptsDonations: user.acceptsDonations || false,
         donationAddresses,
         links,
+        volunteerCount: eventVolunteerCount + planVolunteerCount,
+        eventCount: eventAttendeeCount + eventVolunteerCount,
+        forumPostCount,
+        forumReplyCount,
+        badgeCount,
+        dealsCount: barterOfferSentCount + barterOfferReceivedCount + escrowCount,
+        requestCount,
+        groupCount: groupMemberships.length,
+        badges,
         userLocations: userLocations.map(loc => ({
           id: loc.id,
           name: loc.name,

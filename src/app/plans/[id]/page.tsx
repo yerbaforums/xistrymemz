@@ -24,7 +24,7 @@ export default async function PlanDetailPage({
       requests: {
         orderBy: { createdAt: 'desc' },
         include: {
-          user: { select: { id: true, name: true, username: true, email: true } },
+      user: { select: { id: true, name: true, username: true, email: true, image: true } },
           product: { select: { id: true, title: true, price: true, imageUrl: true } }
         }
       },

@@ -1,9 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
+import MentionInput, { type MentionInputHandle } from '@/components/MentionInput'
+import { linkMentions } from '@/lib/mentions'
+import { linkHashtags } from '@/lib/hashtags'
 import styles from '../../community.module.css'
 import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
@@ -75,6 +78,7 @@ export default function ForumThreadPage() {
   const [editingReply, setEditingReply] = useState<string | null>(null)
   const [editReplyContent, setEditReplyContent] = useState('')
   const [deleting, setDeleting] = useState(false)
+  const replyMentionRef = useRef<MentionInputHandle>(null)
   const [pollOptions, setPollOptions] = useState<PollOption[]>([])
   const [totalVotes, setTotalVotes] = useState(0)
   const [userVoted, setUserVoted] = useState(false)
@@ -410,7 +414,7 @@ export default function ForumThreadPage() {
               </div>
             </div>
           ) : (
-            post.content
+            <div dangerouslySetInnerHTML={{ __html: linkHashtags(linkMentions(post.content)) }} />
           )}
         </div>
 
@@ -547,7 +551,7 @@ export default function ForumThreadPage() {
                       </div>
                     </div>
                   ) : (
-                    reply.content
+                    <div dangerouslySetInnerHTML={{ __html: linkHashtags(linkMentions(reply.content)) }} />
                   )}
                 </div>
                 
@@ -580,13 +584,24 @@ export default function ForumThreadPage() {
 
       <div className={styles.replyForm}>
         <h3>Post a Reply</h3>
-        <textarea
-          value={replyContent}
-          onChange={(e) => setReplyContent(e.target.value)}
-          placeholder="Write your reply..."
-          rows={5}
-          className={styles.replyTextarea}
-        />
+        <div className={styles.mentionInputWrapper}>
+          <MentionInput
+            ref={replyMentionRef}
+            value={replyContent}
+            onChange={setReplyContent}
+            placeholder="Write your reply..."
+            rows={5}
+            className={styles.replyTextarea}
+          />
+          <button
+            type="button"
+            onClick={() => replyMentionRef.current?.insertAtCursor('@')}
+            className={styles.mentionBtn}
+            title="Mention someone"
+          >
+            @
+          </button>
+        </div>
         <button
           onClick={handleSubmitReply}
           disabled={submitting || !replyContent.trim()}

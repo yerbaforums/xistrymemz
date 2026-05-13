@@ -468,7 +468,56 @@
 .empty {
   text-align: center;
   padding: 48px;
+  color: var(--text-muted);
+}
+
+.forumSection, .eventsSection, .requestsSection {
+  min-height: 200px;
+}
+
+.forumPostCard {
+  display: block;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-bottom: 12px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.forumPostCard:hover {
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+}
+
+.forumPostCard h4 {
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.forumPostCard p {
+  font-size: 0.85rem;
   color: var(--text-secondary);
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
+
+.forumPostCategory {
+  display: inline-block;
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  background: rgba(0, 217, 255, 0.1);
+  color: var(--accent-primary);
+  border-radius: 4px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.forumPostMeta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
 }
 
 .loading, .notFound {
@@ -1886,6 +1935,78 @@
   color: var(--accent-success);
   font-weight: 600;
 }
+
+.repRing {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(127, 255, 127, 0.08);
+  padding: 2px 6px 2px 4px;
+  border-radius: 12px;
+}
+
+.badgesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+}
+
+.badgeCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  transition: all 0.2s;
+}
+
+.badgeCard:hover {
+  border-color: var(--accent-primary);
+}
+
+.badgeIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badgeInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.badgeName {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.badgeDesc {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+.badgeTier {
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tierBRONZE .badgeTier { color: #cd7f32; }
+.tierSILVER .badgeTier { color: #c0c0c0; }
+.tierGOLD .badgeTier { color: #ffd700; }
+.tierPLATINUM .badgeTier { color: #e5e4e2; }
+.tierDIAMOND .badgeTier { color: #b9f2ff; }
 
 .compactVBadge {
   font-size: 0.6rem;

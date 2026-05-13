@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { replySchema, validateBody } from '@/lib/schemas'
+import { parseMentions } from '@/lib/mentions'
 
 export async function GET(request: Request) {
   try {
@@ -58,6 +59,29 @@ export async function POST(req: Request) {
       where: { id: postId },
       data: { replyCount: { increment: 1 } }
     })
+
+    // Process mentions
+    const mentionedUsernames = parseMentions(content)
+    if (mentionedUsernames.length > 0) {
+      const mentionedUsers = await prisma.user.findMany({
+        where: { username: { in: mentionedUsernames } },
+        select: { id: true, username: true }
+      })
+      if (mentionedUsers.length > 0) {
+        await prisma.notification.createMany({
+          data: mentionedUsers
+            .filter(u => u.id !== session.user.id)
+            .map(u => ({
+              userId: u.id,
+              type: 'MENTION',
+              title: 'New Mention',
+              message: `${session.user.name || 'Someone'} mentioned you in a forum reply`,
+              link: `/community/forum/${postId}`,
+              relatedId: reply.id
+            }))
+        })
+      }
+    }
 
     return NextResponse.json(reply)
   } catch (error) {

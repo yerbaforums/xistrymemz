@@ -1,15 +1,19 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
+import MentionInput, { type MentionInputHandle } from '@/components/MentionInput'
+import { getUserProfileUrl } from '@/lib/utils'
+import { linkMentions } from '@/lib/mentions'
+import { linkHashtags } from '@/lib/hashtags'
 import styles from './forum.module.css'
 
 interface Post {
   id: string
   title: string
   content: string
-  author: { id: string; name: string | null; email: string; image: string | null }
+  author: { id: string; name: string | null; username: string | null; email: string; image: string | null; shopSlug: string | null }
   category: { name: string; slug: string }
   isPoll: boolean
   pollType: string
@@ -47,6 +51,7 @@ export default function ForumPage() {
   const [error, setError] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('newest')
+  const mentionRef = useRef<MentionInputHandle>(null)
 
   const fetchForumData = async () => {
     setLoading(true)
@@ -213,13 +218,24 @@ export default function ForumPage() {
               onChange={e => setNewPostTitle(e.target.value)}
               className={styles.postInput}
             />
-            <textarea
-              placeholder="What's on your mind?"
-              value={newPostContent}
-              onChange={e => setNewPostContent(e.target.value)}
-              className={styles.postTextarea}
-              rows={isPoll ? 2 : 3}
-            />
+            <div className={styles.mentionInputWrapper}>
+              <MentionInput
+                ref={mentionRef}
+                value={newPostContent}
+                onChange={setNewPostContent}
+                placeholder="What's on your mind?"
+                rows={isPoll ? 2 : 3}
+                className={styles.postTextarea}
+              />
+              <button
+                type="button"
+                onClick={() => mentionRef.current?.insertAtCursor('@')}
+                className={styles.mentionBtn}
+                title="Mention someone"
+              >
+                @
+              </button>
+            </div>
             
             <div className={styles.postActions}>
               <label className={styles.pollToggle}>
@@ -322,11 +338,16 @@ export default function ForumPage() {
                     </span>
                   </div>
                   <h3>{post.title}</h3>
-                  <p className={styles.postPreview}>
-                    {post.content.length > 150 ? post.content.substring(0, 150) + '...' : post.content}
-                  </p>
+                  <p
+                    className={styles.postPreview}
+                    dangerouslySetInnerHTML={{
+                      __html: linkHashtags(linkMentions(post.content.length > 150 ? post.content.substring(0, 150) + '...' : post.content))
+                    }}
+                  />
                   <div className={styles.postMeta}>
-                    <span>👤 {post.author.name || 'Anonymous'}</span>
+                    <Link href={getUserProfileUrl(post.author)} onClick={e => e.stopPropagation()}>
+                      👤 {post.author.name || 'Anonymous'}
+                    </Link>
                     {post.isPoll ? (
                       <>
                         <span>📊 {post.totalVotes || 0} votes</span>

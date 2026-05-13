@@ -93,6 +93,23 @@ interface ProfileUser {
   donationAddresses: DonationAddr[]
   links?: UserLink[]
   userLocations?: UserLocation[]
+  volunteerCount?: number
+  eventCount?: number
+  forumPostCount?: number
+  forumReplyCount?: number
+  badgeCount?: number
+  dealsCount?: number
+  requestCount?: number
+  groupCount?: number
+  badges?: Badge[]
+}
+
+interface Badge {
+  id: string
+  name: string
+  description: string | null
+  imageUrl: string | null
+  tier: string
 }
 
 interface Post {
@@ -148,6 +165,34 @@ interface UserGroup {
   memberCount: number
   role: string
   joinedAt: string
+}
+
+interface ForumPostEntry {
+  id: string
+  title: string
+  content: string
+  category: { name: string; slug: string }
+  replyCount: number
+  createdAt: string
+}
+
+interface UserEventEntry {
+  id: string
+  title: string
+  eventCategory: string | null
+  eventDate: string | null
+  location: string | null
+  userName: string | null
+  _count: { eventJoiners: number }
+}
+
+interface UserRequestEntry {
+  id: string
+  title: string
+  description: string | null
+  status: string
+  category: string | null
+  createdAt: string
 }
 
   const USER_CLASSES = [
@@ -293,7 +338,13 @@ export default function ProfilePage() {
   const [postsOffset, setPostsOffset] = useState(0)
   const [totalPostCount, setTotalPostCount] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'posts' | 'plans' | 'connections' | 'groups' | 'shop' | 'school' | 'reviews' | 'about'>('posts')
+  const [activeTab, setActiveTab] = useState<'posts' | 'plans' | 'connections' | 'groups' | 'forum' | 'events' | 'requests' | 'shop' | 'school' | 'reviews' | 'about'>('posts')
+  const [forumPosts, setForumPosts] = useState<ForumPostEntry[]>([])
+  const [userEvents, setUserEvents] = useState<UserEventEntry[]>([])
+  const [userRequests, setUserRequests] = useState<UserRequestEntry[]>([])
+  const [loadingForum, setLoadingForum] = useState(false)
+  const [loadingEvents, setLoadingEvents] = useState(false)
+  const [loadingRequests, setLoadingRequests] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [editForm, setEditForm] = useState({
     name: '',
@@ -367,6 +418,66 @@ export default function ProfilePage() {
       setLoading(false)
     }
   }
+
+  // Fetch forum posts when tab is active
+  useEffect(() => {
+    if (activeTab !== 'forum' || !user) return
+    const fetchForumPosts = async () => {
+      setLoadingForum(true)
+      try {
+        const res = await fetch(`/api/forum/posts?authorId=${user.id}&limit=20`)
+        if (res.ok) {
+          const data = await res.json()
+          setForumPosts(data || [])
+        }
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setLoadingForum(false)
+      }
+    }
+    fetchForumPosts()
+  }, [activeTab, user?.id])
+
+  // Fetch events when tab is active
+  useEffect(() => {
+    if (activeTab !== 'events' || !user) return
+    const fetchEvents = async () => {
+      setLoadingEvents(true)
+      try {
+        const res = await fetch(`/api/events?organizerId=${user.id}`)
+        if (res.ok) {
+          const data = await res.json()
+          setUserEvents(data || [])
+        }
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setLoadingEvents(false)
+      }
+    }
+    fetchEvents()
+  }, [activeTab, user?.id])
+
+  // Fetch requests when tab is active
+  useEffect(() => {
+    if (activeTab !== 'requests' || !user) return
+    const fetchRequests = async () => {
+      setLoadingRequests(true)
+      try {
+        const res = await fetch(`/api/requests?userId=${user.id}&limit=20`)
+        if (res.ok) {
+          const data = await res.json()
+          setUserRequests(data || [])
+        }
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setLoadingRequests(false)
+      }
+    }
+    fetchRequests()
+  }, [activeTab, user?.id])
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -664,7 +775,18 @@ export default function ProfilePage() {
                 )}
                 <div className={styles.passportBadges}>
                   {user.reputationScore > 0 && (
-                    <span className={styles.compactRep}>Rep: {user.reputationScore.toFixed(0)}</span>
+                    <div className={styles.repRing} title={`Reputation: ${user.reputationScore.toFixed(0)}`}>
+                      <svg width="24" height="24" viewBox="0 0 36 36">
+                        <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--bg-tertiary)" strokeWidth="3"/>
+                        <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--accent-primary)" strokeWidth="3"
+                          strokeDasharray={`${Math.min(user.reputationScore, 100)} 100`}
+                          strokeLinecap="round" transform="rotate(-90 18 18)"/>
+                      </svg>
+                      <span className={styles.compactRep}>{user.reputationScore.toFixed(0)}</span>
+                    </div>
+                  )}
+                  {(user.volunteerCount ?? 0) > 0 && (
+                    <span className={styles.compactVBadge} title={`${user.volunteerCount} volunteer activities`}>🙋V</span>
                   )}
                   {user.verifiedEmail && <span className={styles.compactVBadge} title="Verified email">✓E</span>}
                   {user.verifiedPhone && <span className={styles.compactVBadge} title="Verified phone">✓P</span>}
@@ -714,6 +836,30 @@ export default function ProfilePage() {
                 <span className={styles.statValue}>{user.connectionCount}</span>
                 <span className={styles.statLabel}>Connections</span>
               </div>
+              {user.volunteerCount !== undefined && user.volunteerCount > 0 && (
+                <div className={styles.stat}>
+                  <span className={styles.statValue}>{user.volunteerCount}</span>
+                  <span className={styles.statLabel}>Volunteer</span>
+                </div>
+              )}
+              {user.dealsCount !== undefined && user.dealsCount > 0 && (
+                <div className={styles.stat}>
+                  <span className={styles.statValue}>{user.dealsCount}</span>
+                  <span className={styles.statLabel}>Deals</span>
+                </div>
+              )}
+              {user.eventCount !== undefined && user.eventCount > 0 && (
+                <div className={styles.stat}>
+                  <span className={styles.statValue}>{user.eventCount}</span>
+                  <span className={styles.statLabel}>Events</span>
+                </div>
+              )}
+              {user.forumPostCount !== undefined && (user.forumPostCount > 0 || (user.forumReplyCount ?? 0) > 0) && (
+                <div className={styles.stat}>
+                  <span className={styles.statValue}>{user.forumPostCount! + (user.forumReplyCount ?? 0)}</span>
+                  <span className={styles.statLabel}>Forum</span>
+                </div>
+              )}
               </div>
               </div>
 
@@ -795,6 +941,24 @@ export default function ProfilePage() {
           onClick={() => setActiveTab('groups')}
         >
           Groups ({groups.length})
+        </button>
+        <button 
+          className={`${styles.tab} ${activeTab === 'forum' ? styles.active : ''}`}
+          onClick={() => setActiveTab('forum')}
+        >
+          Forum {(user.forumPostCount ?? 0) > 0 ? `(${user.forumPostCount! + (user.forumReplyCount ?? 0)})` : ''}
+        </button>
+        <button 
+          className={`${styles.tab} ${activeTab === 'events' ? styles.active : ''}`}
+          onClick={() => setActiveTab('events')}
+        >
+          Events {(user.eventCount ?? 0) > 0 ? `(${user.eventCount})` : ''}
+        </button>
+        <button 
+          className={`${styles.tab} ${activeTab === 'requests' ? styles.active : ''}`}
+          onClick={() => setActiveTab('requests')}
+        >
+          Requests {(user.requestCount ?? 0) > 0 ? `(${user.requestCount})` : ''}
         </button>
         {products.length > 0 && (
           <button 
@@ -1021,6 +1185,74 @@ export default function ProfilePage() {
                   </Link>
                 )}
               </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'forum' && (
+          <div className={styles.forumSection}>
+            <h3>Forum Posts</h3>
+            {loadingForum ? (
+              <div className={styles.empty}><p>Loading...</p></div>
+            ) : forumPosts.length > 0 ? (
+              <div className={styles.postsList}>
+                {forumPosts.map(fp => (
+                  <Link key={fp.id} href={`/community/forum/${fp.id}`} className={styles.forumPostCard}>
+                    <span className={styles.forumPostCategory}>{fp.category.name}</span>
+                    <h4>{fp.title}</h4>
+                    <p>{fp.content.length > 120 ? fp.content.substring(0, 120) + '...' : fp.content}</p>
+                    <span className={styles.forumPostMeta}>
+                      💬 {fp.replyCount} · {new Date(fp.createdAt).toLocaleDateString()}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className={styles.empty}><p>No forum posts yet</p></div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'events' && (
+          <div className={styles.eventsSection}>
+            <h3>Events</h3>
+            {loadingEvents ? (
+              <div className={styles.empty}><p>Loading...</p></div>
+            ) : userEvents.length > 0 ? (
+              <div className={styles.postsList}>
+                {userEvents.map(ev => (
+                  <Link key={ev.id} href={`/events/${ev.id}`} className={styles.forumPostCard}>
+                    <span className={styles.forumPostCategory}>{ev.eventCategory || 'Event'}</span>
+                    <h4>{ev.title}</h4>
+                    {ev.eventDate && <p>{new Date(ev.eventDate).toLocaleDateString()}{ev.location ? ` · ${ev.location}` : ''}</p>}
+                    <span className={styles.forumPostMeta}>👥 {ev._count?.eventJoiners ?? 0} attendees</span>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className={styles.empty}><p>No events yet</p></div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'requests' && (
+          <div className={styles.requestsSection}>
+            <h3>Requests</h3>
+            {loadingRequests ? (
+              <div className={styles.empty}><p>Loading...</p></div>
+            ) : userRequests.length > 0 ? (
+              <div className={styles.postsList}>
+                {userRequests.map(r => (
+                  <Link key={r.id} href={`/requests/${r.id}`} className={styles.forumPostCard}>
+                    <span className={`badge badge-${r.status.toLowerCase()}`}>{r.status}</span>
+                    <h4>{r.title}</h4>
+                    {r.description && <p>{r.description.length > 120 ? r.description.substring(0, 120) + '...' : r.description}</p>}
+                    <span className={styles.forumPostMeta}>{r.category || 'General'} · {new Date(r.createdAt).toLocaleDateString()}</span>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className={styles.empty}><p>No requests yet</p></div>
             )}
           </div>
         )}
@@ -1313,6 +1545,28 @@ export default function ProfilePage() {
                       </div>
                     )}
                   </div>
+
+                {user.badges && user.badges.length > 0 && (
+                  <div className={styles.aboutBlock}>
+                    <h3>Badges ({user.badges.length})</h3>
+                    <div className={styles.badgesGrid}>
+                      {user.badges.map(b => (
+                        <div key={b.id} className={`${styles.badgeCard} ${styles[`tier${b.tier}`] || ''}`}>
+                          {b.imageUrl ? (
+                            <img src={b.imageUrl} alt={b.name} className={styles.badgeIcon} />
+                          ) : (
+                            <span className={styles.badgeIcon}>🏅</span>
+                          )}
+                          <div className={styles.badgeInfo}>
+                            <span className={styles.badgeName}>{b.name}</span>
+                            {b.description && <span className={styles.badgeDesc}>{b.description}</span>}
+                            <span className={styles.badgeTier}>{b.tier}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {(user.links && user.links.length > 0) && (
                   <div className={styles.aboutBlock}>

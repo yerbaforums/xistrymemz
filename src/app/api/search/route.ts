@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ results: {} })
   }
 
-  const [plans, products, users, groups, events, requests, schoolContent] = await Promise.all([
+  const [plans, products, users, groups, events, requests, schoolContent, forumPosts] = await Promise.all([
     prisma.plan.findMany({
       where: {
         OR: [
@@ -84,6 +84,16 @@ export async function GET(request: Request) {
       },
       select: { id: true, title: true, contentType: true, price: true },
       take: limit
+    }),
+    prisma.forumPost.findMany({
+      where: {
+        OR: [
+          { title: { contains: query } },
+          { content: { contains: query } },
+        ]
+      },
+      select: { id: true, title: true, content: true, createdAt: true, authorId: true },
+      take: limit
     })
   ])
 
@@ -94,7 +104,8 @@ export async function GET(request: Request) {
     groups: groups.map(g => ({ ...g, type: 'group', url: `/groups/${g.id}`, memberCount: g._count.members })),
     events: events.map(e => ({ ...e, type: 'event', url: `/events/${e.id}` })),
     requests: requests.map(r => ({ ...r, type: 'request', url: `/requests/${r.id}` })),
-    schoolContent: schoolContent.map(s => ({ ...s, type: 'school', url: `/schools` }))
+    schoolContent: schoolContent.map(s => ({ ...s, type: 'school', url: `/schools` })),
+    forumPosts: forumPosts.map(p => ({ ...p, type: 'forumPost', url: `/community/forum/${p.id}` }))
   }
 
   return NextResponse.json({ results, query })

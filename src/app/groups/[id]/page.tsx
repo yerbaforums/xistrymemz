@@ -1,9 +1,12 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, useRef } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import MentionInput, { type MentionInputHandle } from '@/components/MentionInput'
+import { linkMentions } from '@/lib/mentions'
+import { linkHashtags } from '@/lib/hashtags'
 import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import { useToast } from '@/context/ToastContext'
@@ -124,6 +127,7 @@ function GroupDetailContent() {
   const [postContent, setPostContent] = useState('')
   const [postImage, setPostImage] = useState('')
   const [posting, setPosting] = useState(false)
+  const groupMentionRef = useRef<MentionInputHandle>(null)
   const [activeTab, setActiveTab] = useState<'posts' | 'buys' | 'requests' | 'marketplace' | 'activity'>('posts')
   const [activity, setActivity] = useState<Activity>({ projects: [], requests: [], products: [], events: [] })
   const [loadingActivity, setLoadingActivity] = useState(false)
@@ -611,12 +615,24 @@ function GroupDetailContent() {
                 <>
                   <div className={styles.postForm}>
                     <form onSubmit={handlePost}>
-                      <textarea
-                        value={postContent}
-                        onChange={e => setPostContent(e.target.value)}
-                        placeholder="Share something with the group..."
-                        rows={3}
-                      />
+                      <div className={styles.mentionInputWrapper}>
+                        <MentionInput
+                          ref={groupMentionRef}
+                          value={postContent}
+                          onChange={setPostContent}
+                          placeholder="Share something with the group..."
+                          rows={3}
+                          className={styles.groupPostTextarea}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => groupMentionRef.current?.insertAtCursor('@')}
+                          className={styles.mentionBtn}
+                          title="Mention someone"
+                        >
+                          @
+                        </button>
+                      </div>
                       <div className={styles.postFormRow}>
                         <input
                           type="url"
@@ -663,7 +679,7 @@ function GroupDetailContent() {
                               )}
                             </div>
                           </div>
-                          <p className={styles.postContent}>{post.content}</p>
+                          <p className={styles.postContent} dangerouslySetInnerHTML={{ __html: linkHashtags(linkMentions(post.content)) }} />
                           {post.imageUrl && (
                             <div className={styles.postImage}>
                               <img src={post.imageUrl} alt="Post attachment" />

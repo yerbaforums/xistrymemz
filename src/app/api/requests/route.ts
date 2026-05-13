@@ -17,6 +17,7 @@ export async function GET(request: Request) {
     const category = searchParams.get('category')
     const priority = searchParams.get('priority')
     const status = searchParams.get('status')
+    const userId = searchParams.get('userId')
     const q = searchParams.get('q')
 
     const where: Record<string, unknown> = {}
@@ -48,6 +49,7 @@ export async function GET(request: Request) {
     if (category) where.category = category
     if (priority) where.priority = priority
     if (status) where.status = status
+    if (userId) where.userId = userId
     if (q) {
       where.OR = [
         ...(where.OR as Record<string, unknown>[]),
