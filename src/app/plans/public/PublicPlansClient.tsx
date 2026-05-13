@@ -45,9 +45,11 @@ interface Plan {
   locationDetails: string | null
   latitude: number | null
   longitude: number | null
+  goalAmount: number | null
+  currentFunding: number | null
   createdAt: string
   updatedAt: string
-  user: { id: string; name: string | null; image: string | null }
+  user: { id: string; name: string | null; image: string | null; username: string | null }
   _count: { requests: number; joiners: number }
   events: PlanEvent[]
   requests: PlanRequest[]
@@ -84,8 +86,45 @@ const CATEGORIES = [
   'OTHER'
 ]
 
+const CATEGORY_COLORS: Record<string, string> = {
+  TECHNOLOGY: '#00d9ff',
+  CREATIVE: '#ff3366',
+  EDUCATION: '#00ff88',
+  ENVIRONMENT: '#22c55e',
+  SOCIAL: '#f59e0b',
+  BUSINESS: '#8b5cf6',
+  HEALTH: '#ef4444',
+  ENTERTAINMENT: '#ec4899',
+  SPORTS: '#f97316',
+  OTHER: '#888888'
+}
+
+const CATEGORY_ICONS: Record<string, string> = {
+  TECHNOLOGY: '💻',
+  CREATIVE: '🎨',
+  EDUCATION: '📚',
+  ENVIRONMENT: '🌿',
+  SOCIAL: '🤝',
+  BUSINESS: '💼',
+  HEALTH: '❤️',
+  ENTERTAINMENT: '🎭',
+  SPORTS: '⚽',
+  OTHER: '📌'
+}
+
 type SortOption = 'newest' | 'oldest' | 'mostActive' | 'mostPopular'
 type ViewMode = 'grid' | 'map'
+type NearbyMode = 'ALL' | 'NEARBY'
+
+function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 3959
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLon = (lon2 - lon1) * Math.PI / 180
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
 
 export default function PublicPlansClient({ initialPlans }: PublicPlansClientProps) {
   const { warning } = useToast()
@@ -95,28 +134,16 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<SortOption>('newest')
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
-  const [nearbyMode, setNearbyMode] = useState<'ALL' | 'NEARBY'>('ALL')
-  const [userLocation, setUserLocation] = useState<{lat: number; lng: number; radius: number} | null>(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [nearbyMode, setNearbyMode] = useState<NearbyMode>('ALL')
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; radius: number } | null>(null)
   const [loadingLocation, setLoadingLocation] = useState(false)
 
-  // Haversine formula to calculate distance
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const R = 3959 // Earth's radius in miles
-    const dLat = (lat2 - lat1) * Math.PI / 180
-    const dLon = (lon2 - lon1) * Math.PI / 180
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLon/2) * Math.sin(dLon/2)
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
-    return R * c
-  }
-
-  // Load user location when switching to nearby mode
-  const handleNearbyToggle = async (mode: 'ALL' | 'NEARBY') => {
+  const handleNearbyToggle = async (mode: NearbyMode) => {
     if (mode === 'NEARBY' && !userLocation) {
       setLoadingLocation(true)
       try {
-        // Fetch user's primary location
         const res = await fetch('/api/users/me')
         if (res.ok) {
           const user = await res.json()
@@ -127,12 +154,12 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
               radius: user.searchRadius || 50
             })
           } else {
-            warning('Please set your location in your profile to use nearby filtering')
+            warning('Set your location in profile to use nearby filtering')
             return
           }
         }
-      } catch (e) {
-        console.error(e)
+      } catch {
+        warning('Could not load location')
       } finally {
         setLoadingLocation(false)
       }
@@ -151,30 +178,24 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
       result = result.filter(p => p.category === category)
     }
 
-    // Filter by nearby distance
-    if (nearbyMode === 'NEARBY' && userLocation && userLocation.lat && userLocation.lng) {
-      result = result.filter(p => {
-        if (!p.latitude || !p.longitude) return false
-        const distance = calculateDistance(
-          userLocation.lat,
-          userLocation.lng,
-          p.latitude,
-          p.longitude
-        )
-        return distance <= userLocation.radius
-      })
-    }
-
     if (showPinned !== null) {
       result = result.filter(p => p.pinned === showPinned)
     }
 
+    if (nearbyMode === 'NEARBY' && userLocation) {
+      result = result.filter(p => {
+        if (!p.latitude || !p.longitude) return false
+        const dist = haversineDistance(userLocation.lat, userLocation.lng, p.latitude, p.longitude)
+        return dist <= userLocation.radius
+      })
+    }
+
     if (searchQuery) {
-      const query = searchQuery.toLowerCase()
-      result = result.filter(p => 
-        p.title.toLowerCase().includes(query) ||
-        p.description?.toLowerCase().includes(query) ||
-        p.goals?.toLowerCase().includes(query)
+      const q = searchQuery.toLowerCase()
+      result = result.filter(p =>
+        p.title.toLowerCase().includes(q) ||
+        p.description?.toLowerCase().includes(q) ||
+        p.goals?.toLowerCase().includes(q)
       )
     }
 
@@ -194,325 +215,444 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
     }
 
     return result
-  }, [initialPlans, filter, category, showPinned, searchQuery, sortBy])
+  }, [initialPlans, filter, category, showPinned, searchQuery, sortBy, nearbyMode, userLocation])
 
   const mapLocations = useMemo(() => {
-    const locations: { lat: number; lng: number; title: string; type: 'plan' | 'event' | 'request'; id: string; info: string }[] = []
-
+    const locations: { lat: number; lng: number; title: string; type: string; id: string; info: string }[] = []
     filteredPlans.forEach(plan => {
       if (plan.latitude && plan.longitude) {
-        locations.push({
-          lat: plan.latitude,
-          lng: plan.longitude,
-          title: plan.title,
-          type: 'plan',
-          id: plan.id,
-          info: plan.location || 'Project Location'
-        })
+        locations.push({ lat: plan.latitude, lng: plan.longitude, title: plan.title, type: 'plan', id: plan.id, info: plan.location || 'Project Location' })
       }
-
       plan.events.forEach(event => {
         if (event.latitude && event.longitude) {
           locations.push({
-            lat: event.latitude,
-            lng: event.longitude,
-            title: event.title,
-            type: 'event',
-            id: plan.id,
+            lat: event.latitude, lng: event.longitude, title: event.title, type: 'event', id: plan.id,
             info: `${event.location || 'Event'} - ${event.eventDate ? new Date(event.eventDate).toLocaleDateString() : 'TBD'}`
           })
         }
       })
-
-      plan.requests.forEach(req => {
-        if (!locations.find(l => l.title === req.title && l.type === 'request')) {
-          locations.push({
-            lat: 0,
-            lng: 0,
-            title: req.title,
-            type: 'request',
-            id: plan.id,
-            info: `${req.category} - ${req.budget ? `$${req.budget}` : 'Open budget'}`
-          })
-        }
-      })
     })
-
     return locations.filter(l => l.lat !== 0 || l.lng !== 0)
   }, [filteredPlans])
 
-  const defaultCenter: [number, number] = mapLocations.length > 0 
+  const defaultCenter: [number, number] = mapLocations.length > 0
     ? [mapLocations[0].lat, mapLocations[0].lng]
     : [34.8697, -111.7610]
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     const now = new Date()
-    const diffMs = now.getTime() - date.getTime()
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-    
+    const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
     if (diffDays === 0) return 'Today'
     if (diffDays === 1) return 'Yesterday'
-    if (diffDays < 7) return `${diffDays} days ago`
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`
+    if (diffDays < 7) return `${diffDays}d ago`
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  }
+
+  const parseGoalsList = (goals: string | null): string[] => {
+    if (!goals) return []
+    const trimmed = goals.trim()
+    if (trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(trimmed)
+        if (Array.isArray(parsed)) return parsed.map((g: { text?: string }) => g.text || '').filter(Boolean)
+      } catch {}
+    }
+    return trimmed.split('\n').filter(g => g.trim()).slice(0, 3)
+  }
+
+  const nextEvent = (events: PlanEvent[]) => {
+    const upcoming = events
+      .filter(e => e.eventDate && new Date(e.eventDate) > new Date())
+      .sort((a, b) => new Date(a.eventDate!).getTime() - new Date(b.eventDate!).getTime())
+    return upcoming[0] || null
+  }
+
+  const getPlanDistance = (plan: Plan): number | null => {
+    if (!userLocation || !plan.latitude || !plan.longitude) return null
+    return Math.round(haversineDistance(userLocation.lat, userLocation.lng, plan.latitude, plan.longitude))
+  }
+
+  const sidebarContent = (
+    <div className={styles.sidebar}>
+      <div className={styles.sidebarHeader}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/>
+        </svg>
+        <span>Filters</span>
+        <button className={styles.sidebarClose} onClick={() => setSidebarOpen(false)}>✕</button>
+      </div>
+
+      <div className={styles.filterGroup}>
+        <label className={styles.filterLabel}>Status</label>
+        <div className={styles.filterRadios}>
+          {(['ALL', 'ACTIVE', 'COMPLETED'] as const).map(s => (
+            <button
+              key={s}
+              className={`${styles.filterRadio} ${filter === s ? styles.filterRadioActive : ''}`}
+              onClick={() => setFilter(s)}
+            >
+              {s === 'ALL' ? '🌟 All' : `${STATUS_ICONS[s]} ${STATUS_LABELS[s]}`}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className={styles.filterDivider} />
+
+      <div className={styles.filterGroup}>
+        <label className={styles.filterLabel}>Category</label>
+        <select className={styles.filterSelect} value={category} onChange={e => setCategory(e.target.value)}>
+          <option value="ALL">All Categories</option>
+          {CATEGORIES.map(cat => (
+            <option key={cat} value={cat}>{CATEGORY_ICONS[cat]} {cat.charAt(0) + cat.slice(1).toLowerCase()}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className={styles.filterDivider} />
+
+      <div className={styles.filterGroup}>
+        <label className={styles.filterLabel}>Search</label>
+        <div className={styles.sidebarSearch}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input
+            type="text" placeholder="Search projects..."
+            value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+            className={styles.sidebarSearchInput}
+          />
+          {searchQuery && <button className={styles.sidebarClear} onClick={() => setSearchQuery('')}>✕</button>}
+        </div>
+      </div>
+
+      <div className={styles.filterDivider} />
+
+      <div className={styles.filterGroup}>
+        <label className={styles.filterLabel}>Sort By</label>
+        <select className={styles.filterSelect} value={sortBy} onChange={e => setSortBy(e.target.value as SortOption)}>
+          <option value="newest">🕐 Newest</option>
+          <option value="oldest">🕐 Oldest</option>
+          <option value="mostActive">📋 Most Active</option>
+          <option value="mostPopular">👥 Most Popular</option>
+        </select>
+      </div>
+
+      <div className={styles.filterDivider} />
+
+      <div className={styles.filterGroup}>
+        <label className={styles.filterLabel}>Location</label>
+        <div className={styles.filterToggles}>
+          <button
+            className={`${styles.filterToggle} ${nearbyMode === 'ALL' ? styles.filterToggleActive : ''}`}
+            onClick={() => { setNearbyMode('ALL'); setUserLocation(null) }}
+          >
+            🌍 Global
+          </button>
+          <button
+            className={`${styles.filterToggle} ${nearbyMode === 'NEARBY' ? styles.filterToggleActive : ''}`}
+            onClick={() => handleNearbyToggle(nearbyMode === 'NEARBY' ? 'ALL' : 'NEARBY')}
+            disabled={loadingLocation}
+          >
+            {loadingLocation ? '⏳' : '📍'} Near Me
+          </button>
+        </div>
+        {nearbyMode === 'NEARBY' && userLocation && (
+          <span className={styles.locationInfo}>Within {userLocation.radius} miles</span>
+        )}
+      </div>
+
+      <div className={styles.filterDivider} />
+
+      <div className={styles.filterGroup}>
+        <label className={styles.filterLabel}>Features</label>
+        <div className={styles.filterToggles}>
+          <button
+            className={`${styles.filterToggle} ${showPinned === true ? styles.filterToggleActive : ''}`}
+            onClick={() => setShowPinned(showPinned === true ? null : true)}
+          >
+            📌 Featured
+          </button>
+        </div>
+      </div>
+
+      <div className={styles.filterDivider} />
+
+      <div className={styles.filterGroup}>
+        <label className={styles.filterLabel}>View</label>
+        <div className={styles.filterViewToggle}>
+          <button className={`${styles.filterViewBtn} ${viewMode === 'grid' ? styles.filterViewBtnActive : ''}`} onClick={() => setViewMode('grid')}>⊞ Grid</button>
+          <button className={`${styles.filterViewBtn} ${viewMode === 'map' ? styles.filterViewBtnActive : ''}`} onClick={() => setViewMode('map')}>🗺️ Map</button>
+        </div>
+      </div>
+
+      {(filter !== 'ALL' || category !== 'ALL' || showPinned !== null || searchQuery || nearbyMode !== 'ALL') && (
+        <>
+          <div className={styles.filterDivider} />
+          <button className={styles.clearBtn} onClick={() => { setFilter('ALL'); setCategory('ALL'); setShowPinned(null); setSearchQuery(''); setSortBy('newest'); setNearbyMode('ALL'); setUserLocation(null) }}>
+            Clear All Filters
+          </button>
+        </>
+      )}
+    </div>
+  )
+
+  const fundingProgress = (plan: Plan) => {
+    const goal = plan.goalAmount || 0
+    const funded = plan.currentFunding || 0
+    if (goal <= 0) return null
+    const pct = Math.min(Math.round((funded / goal) * 100), 100)
+    return (
+      <div className={styles.cardFunding}>
+        <div className={styles.cardFundingBar}>
+          <div className={styles.cardFundingFill} style={{ width: `${pct}%` }} />
+        </div>
+        <span className={styles.cardFundingLabel}>{funded}/{goal} raised</span>
+      </div>
+    )
   }
 
   return (
     <div className={styles.page}>
       <div className={styles.publicHeader}>
-        <h1>Explore Projects</h1>
-        <p className={styles.publicSubtitle}>
-          Discover amazing projects from our community. Get inspired, join forces, or contribute to ongoing work.
-        </p>
-        
-        <div className={styles.searchBar}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8"/>
-            <path d="m21 21-4.35-4.35"/>
-          </svg>
-          <input
-            type="text"
-            placeholder="Search projects by title, description, or goals..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className={styles.searchInput}
-          />
+        <div className={styles.publicHeaderContent}>
+          <h1>Explore Projects</h1>
+          <p className={styles.publicSubtitle}>
+            Discover amazing projects from our community. Get inspired, join forces, or contribute to ongoing work.
+          </p>
+        </div>
+        <div className={styles.publicHeaderMeta}>
+          <span className={styles.totalCount}>{initialPlans.length} projects</span>
+          <Link href="/plans" className={styles.createPlanBtn}>+ New Project</Link>
         </div>
       </div>
 
-      <div className={styles.controls}>
-        <div className={styles.filters}>
-          <button 
-            className={`${styles.filterBtn} ${filter === 'ALL' ? styles.active : ''}`}
-            onClick={() => setFilter('ALL')}
-          >
-            🌟 All ({initialPlans.length})
-          </button>
-          <button 
-            className={`${styles.filterBtn} ${filter === 'ACTIVE' ? styles.active : ''}`}
-            onClick={() => setFilter('ACTIVE')}
-          >
-            🚀 Active ({initialPlans.filter(p => p.status === 'ACTIVE').length})
-          </button>
-          <button 
-            className={`${styles.filterBtn} ${filter === 'COMPLETED' ? styles.active : ''}`}
-            onClick={() => setFilter('COMPLETED')}
-          >
-            ✅ Completed ({initialPlans.filter(p => p.status === 'COMPLETED').length})
-          </button>
+      <button className={styles.mobileFilterBtn} onClick={() => setSidebarOpen(true)}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/>
+        </svg>
+        Filters & Sort
+      </button>
+
+      {sidebarOpen && (
+        <div className={styles.sidebarOverlay} onClick={() => setSidebarOpen(false)}>
+          <div className={styles.sidebarOverlayContent} onClick={e => e.stopPropagation()}>
+            {sidebarContent}
+          </div>
+        </div>
+      )}
+
+      <div className={`${styles.mainLayout} ${sidebarCollapsed ? styles.mainLayoutCollapsed : ''}`}>
+        <div className={styles.sidebarDesktop}>
+          {sidebarContent}
         </div>
 
-        <select 
-          className={styles.filterSelect}
-          value={category}
-          onChange={e => setCategory(e.target.value)}
-        >
-          <option value="ALL">All Categories</option>
-          {CATEGORIES.map(cat => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
-        </select>
+        <div className={styles.content}>
+          <div className={styles.resultsHeader}>
+            <div className={styles.resultsHeaderLeft}>
+              <button
+                className={styles.sidebarToggle}
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                title={sidebarCollapsed ? 'Show filters' : 'Hide filters'}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  {sidebarCollapsed ? (
+                    <><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></>
+                  ) : (
+                    <><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="15" y1="3" x2="15" y2="21"/></>
+                  )}
+                </svg>
+              </button>
+              <span className={styles.resultsCount}>
+                Showing <strong>{filteredPlans.length}</strong> {filteredPlans.length === 1 ? 'project' : 'projects'}
+                {searchQuery && <> matching &ldquo;{searchQuery}&rdquo;</>}
+              </span>
+            </div>
+            <div className={styles.resultsHeaderRight}>
+              {nearbyMode === 'NEARBY' && userLocation && (
+                <span className={styles.nearbyBadge}>📍 Within {userLocation.radius}mi</span>
+              )}
+              {viewMode === 'grid' && filteredPlans.length > 0 && (
+                <span className={styles.resultsActive}>{filteredPlans.filter(p => p.status === 'ACTIVE').length} active</span>
+              )}
+            </div>
+          </div>
 
-        <div className={styles.filters}>
-          <button 
-            className={`${styles.filterBtn} ${showPinned === true ? styles.active : ''}`}
-            onClick={() => setShowPinned(showPinned === true ? null : true)}
-          >
-            📌 Featured
-          </button>
-          <button 
-            className={`${styles.filterBtn} ${nearbyMode === 'NEARBY' ? styles.active : ''}`}
-            onClick={() => handleNearbyToggle(nearbyMode === 'NEARBY' ? 'ALL' : 'NEARBY')}
-            disabled={loadingLocation}
-          >
-            {loadingLocation ? '⏳' : '📍'} {nearbyMode === 'NEARBY' ? 'Nearby' : 'All'}
-          </button>
-        </div>
+          {viewMode === 'map' ? (
+            <div className={styles.mapContainer}>
+              <MapContainer center={defaultCenter} zoom={4} style={{ height: '100%', width: '100%' }}>
+                <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                {mapLocations.map((loc, i) => (
+                  <Marker key={`${loc.id}-${i}`} position={[loc.lat, loc.lng]}>
+                    <Popup>
+                      <div style={{ minWidth: 150 }}>
+                        <strong>{loc.title}</strong><br />
+                        <span style={{ fontSize: '12px', color: '#666' }}>
+                          {loc.type === 'plan' ? '📍 Project' : '📅 Event'}
+                        </span><br />
+                        <span style={{ fontSize: '11px' }}>{loc.info}</span><br />
+                        <Link href={`/plans/${loc.id}`} style={{ color: '#00d9ff', fontSize: '12px' }}>View Project →</Link>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
+              {mapLocations.length === 0 && (
+                <div className={styles.mapEmpty}><p>No locations to display. Add location to your projects to see them on the map.</p></div>
+              )}
+            </div>
+          ) : filteredPlans.length === 0 ? (
+            <div className={styles.empty}>
+              <div className={styles.emptyIllustration}>
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                </svg>
+              </div>
+              <h3>No projects found</h3>
+              <p>Try adjusting your search or filters</p>
+              <button className={styles.emptyReset} onClick={() => { setFilter('ALL'); setCategory('ALL'); setShowPinned(null); setSearchQuery(''); setNearbyMode('ALL'); setUserLocation(null) }}>
+                Clear all filters
+              </button>
+            </div>
+          ) : (
+            <div className={styles.publicGrid}>
+              {filteredPlans.map((plan, index) => {
+                const next = nextEvent(plan.events)
+                const goalsList = parseGoalsList(plan.goals)
+                const catColor = CATEGORY_COLORS[plan.category || 'OTHER'] || '#888'
+                const catIcon = CATEGORY_ICONS[plan.category || 'OTHER'] || '📌'
+                const distance = getPlanDistance(plan)
 
-        <select 
-          className={styles.sortSelect}
-          value={sortBy}
-          onChange={e => setSortBy(e.target.value as SortOption)}
-        >
-          <option value="newest">Newest First</option>
-          <option value="oldest">Oldest First</option>
-          <option value="mostActive">Most Active</option>
-          <option value="mostPopular">Most Popular</option>
-        </select>
+                return (
+                  <div key={plan.id} className={`${styles.publicCard} ${plan.pinned ? styles.pinnedCard : ''}`} style={{ animationDelay: `${index * 60}ms` }}>
+                    {plan.pinned && (
+                      <div className={styles.pinnedBadge}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/>
+                        </svg>
+                        Featured
+                      </div>
+                    )}
 
-        <div className={styles.viewToggle}>
-          <button 
-            className={`${styles.viewBtn} ${viewMode === 'grid' ? styles.active : ''}`}
-            onClick={() => setViewMode('grid')}
-          >
-            ⊞ Grid
-          </button>
-          <button 
-            className={`${styles.viewBtn} ${viewMode === 'map' ? styles.active : ''}`}
-            onClick={() => setViewMode('map')}
-          >
-            🗺️ Map
-          </button>
-        </div>
-      </div>
+                    {distance !== null && (
+                      <div className={styles.distanceBadge}>📍 {distance}mi</div>
+                    )}
 
-      <div className={styles.resultsInfo}>
-        Showing {filteredPlans.length} {filteredPlans.length === 1 ? 'project' : 'projects'}
-        {searchQuery && ` matching "${searchQuery}"`}
-        {filter !== 'ALL' && ` (${STATUS_LABELS[filter].toLowerCase()})`}
-        {category !== 'ALL' && ` in ${category.toLowerCase()}`}
-      </div>
+                    <div className={styles.cardAccent} style={{ background: catColor }} />
 
-      {viewMode === 'map' ? (
-        <div className={styles.mapContainer}>
-          <MapContainer center={defaultCenter} zoom={4} style={{ height: '100%', width: '100%' }}>
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            {mapLocations.map((loc, i) => (
-              <Marker key={`${loc.id}-${i}`} position={[loc.lat, loc.lng]}>
-                <Popup>
-                  <div style={{ minWidth: 150 }}>
-                    <strong>{loc.title}</strong>
-                    <br />
-                    <span style={{ fontSize: '12px', color: '#666' }}>
-                      {loc.type === 'plan' && '📍 Project'}
-                      {loc.type === 'event' && '📅 Event'}
-                      {loc.type === 'request' && '📝 Request'}
-                    </span>
-                    <br />
-                    <span style={{ fontSize: '11px' }}>{loc.info}</span>
-                    <br />
-                    <Link href={`/plans/${loc.id}`} style={{ color: '#00d9ff', fontSize: '12px' }}>
-                      View Project →
-                    </Link>
+                    <div className={styles.publicCardHeader}>
+                      <div className={styles.headerLeft}>
+                        <span className={`${styles.statusBadge} ${styles[plan.status.toLowerCase()]}`}>
+                          {STATUS_ICONS[plan.status]} {STATUS_LABELS[plan.status]}
+                        </span>
+                        {plan.category && (
+                          <span className={styles.cardCategory} style={{ color: catColor }}>
+                            {catIcon} {plan.category.charAt(0) + plan.category.slice(1).toLowerCase()}
+                          </span>
+                        )}
+                      </div>
+                      <div className={styles.publicStats}>
+                        <span title="Members">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                          </svg>
+                          {plan._count.joiners}
+                        </span>
+                        <span title="Requests">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+                          </svg>
+                          {plan._count.requests}
+                        </span>
+                        {plan.goalAmount && plan.goalAmount > 0 && (
+                          <span title="Funding">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                            </svg>
+                            {plan.currentFunding || 0}/{plan.goalAmount}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <h3 className={styles.publicCardTitle}>
+                      <Link href={`/plans/${plan.id}`} className={styles.cardTitleLink}>{plan.title}</Link>
+                    </h3>
+
+                    {plan.description && <p className={styles.publicCardDesc}>{plan.description}</p>}
+
+                    {fundingProgress(plan)}
+
+                    {goalsList.length > 0 && (
+                      <div className={styles.publicGoals}>
+                        <div className={styles.goalsHeader}>
+                          <span className={styles.goalsIcon}>🎯</span>
+                          <span className={styles.goalsCount}>{goalsList.length} goal{goalsList.length !== 1 ? 's' : ''}</span>
+                        </div>
+                        <ul>{goalsList.map((goal, i) => <li key={i}>{goal}</li>)}</ul>
+                      </div>
+                    )}
+
+                    {next && (
+                      <div className={styles.nextEvent}>
+                        <span className={styles.nextEventIcon}>📅</span>
+                        <div className={styles.nextEventInfo}>
+                          <span className={styles.nextEventTitle}>{next.title}</span>
+                          <span className={styles.nextEventDate}>
+                            {next.eventDate ? new Date(next.eventDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'TBD'}
+                            {next.location && ` · ${next.location}`}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {plan.events.length > 0 && !next && (
+                      <div className={styles.eventCount}>📅 {plan.events.length} event{plan.events.length !== 1 ? 's' : ''}</div>
+                    )}
+
+                    {plan.location && !distance && (
+                      <div className={styles.cardLocation}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        {plan.location}
+                      </div>
+                    )}
+
+                    <div className={styles.publicCardFooter}>
+                      <div className={styles.publicAuthor}>
+                        <div className={styles.authorAvatar}>
+                          {plan.user.image ? (
+                            <Image src={plan.user.image} alt={plan.user.name || 'User'} fill sizes="32px" />
+                          ) : (
+                            <span>{(plan.user.name?.[0] || 'U').toUpperCase()}</span>
+                          )}
+                        </div>
+                        <div className={styles.authorInfo}>
+                          <Link href={getUserProfileUrl(plan.user)} className={styles.authorName}>
+                            {plan.user.name || 'Anonymous'}
+                          </Link>
+                          <span className={styles.authorDate}>{formatDate(plan.createdAt)}</span>
+                        </div>
+                      </div>
+                      <div className={styles.activityIndicator}>
+                        <span className={styles.activityDot} />
+                        <span className={styles.activityTime}>{formatDate(plan.updatedAt)}</span>
+                      </div>
+                    </div>
+
+                    <Link href={`/plans/${plan.id}`} className={styles.viewProjectBtn}>View Project →</Link>
                   </div>
-                </Popup>
-              </Marker>
-            ))}
-          </MapContainer>
-          {mapLocations.length === 0 && (
-            <div className={styles.mapEmpty}>
-              <p>No locations to display. Add location to your projects to see them on the map.</p>
+                )
+              })}
             </div>
           )}
         </div>
-      ) : filteredPlans.length === 0 ? (
-        <div className={styles.empty}>
-          <div className={styles.emptyIcon}>🔍</div>
-          <h3>No projects found</h3>
-          <p>Try adjusting your search or filters</p>
-          <span>Clear filters to see all projects</span>
-        </div>
-      ) : (
-        <div className={styles.publicGrid}>
-          {filteredPlans.map((plan, index) => (
-            <div 
-              key={plan.id} 
-              className={`${styles.publicCard} ${plan.pinned ? styles.pinnedCard : ''}`}
-              style={{ animationDelay: `${index * 50}ms` }}
-            >
-              {plan.pinned && (
-                <div className={styles.pinnedBanner}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/>
-                  </svg>
-                  Featured
-                </div>
-              )}
-              
-              <div className={styles.publicCardHeader}>
-                <span className={`${styles.statusBadge} ${styles[plan.status.toLowerCase()]}`}>
-                  {STATUS_ICONS[plan.status]} {STATUS_LABELS[plan.status]}
-                </span>
-                {plan.category && (
-                  <span className={styles.categoryBadge}>{plan.category}</span>
-                )}
-                <div className={styles.publicStats}>
-                  <span title="Requests">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                      <polyline points="14,2 14,8 20,8"/>
-                      <line x1="16" y1="13" x2="8" y2="13"/>
-                      <line x1="16" y1="17" x2="8" y2="17"/>
-                    </svg>
-                    {plan._count.requests}
-                  </span>
-                  <span title="Members">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                      <circle cx="9" cy="7" r="4"/>
-                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                    </svg>
-                    {plan._count.joiners}
-                  </span>
-                </div>
-              </div>
-              
-              <h3 className={styles.publicCardTitle}>{plan.title}</h3>
-              
-              {plan.description && (
-                <p className={styles.publicCardDesc}>{plan.description}</p>
-              )}
-              
-              {plan.goals && (
-                <div className={styles.publicGoals}>
-                  <strong>Goals</strong>
-                  <ul>
-                    {plan.goals.split('\n').filter(g => g.trim()).slice(0, 3).map((goal, i) => (
-                      <li key={i}>{goal.replace(/^[-•]\s*/, '')}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              
-              <div className={styles.publicCardFooter}>
-                <div className={styles.publicAuthor}>
-                  <div className={styles.authorAvatar}>
-                    {plan.user.image ? (
-                      <Image src={plan.user.image} alt={plan.user.name || 'User'} fill sizes="32px" />
-                    ) : (
-                      <span>{(plan.user.name?.[0] || 'U').toUpperCase()}</span>
-                    )}
-                  </div>
-                  <div className={styles.authorInfo}>
-                    <Link href={getUserProfileUrl(plan.user)} className={styles.authorName}>
-                      {plan.user.name || 'Anonymous'}
-                    </Link>
-                    <span className={styles.authorDate}>
-                      {formatDate(plan.createdAt)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles.quickActions}>
-                <Link href={getUserProfileUrl(plan.user)} className={styles.quickActionBtn}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
-                  </svg>
-                  Creator
-                </Link>
-                <Link href={`/plans/${plan.id}`} className={styles.quickActionBtn} style={{ background: 'rgba(0, 217, 255, 0.1)', borderColor: 'var(--accent-primary)', color: 'var(--accent-primary)' }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                    <circle cx="12" cy="12" r="3"/>
-                  </svg>
-                  View Details
-                </Link>
-              </div>
-              
-              <Link href={`/plans/${plan.id}`} className={styles.viewProjectBtn}>
-                Open Project →
-              </Link>
-            </div>
-          ))}
-        </div>
-      )}
+      </div>
     </div>
   )
 }
