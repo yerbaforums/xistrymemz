@@ -35,6 +35,13 @@ export default async function PlanDetailPage({
             include: { user: { select: { id: true, name: true, email: true } } }
           }
         }
+      },
+      joiners: {
+        include: { user: { select: { id: true, name: true, email: true } } }
+      },
+      contributions: {
+        orderBy: { createdAt: 'desc' },
+        include: { user: { select: { id: true, name: true, email: true } } }
       }
     }
   })
@@ -64,6 +71,16 @@ export default async function PlanDetailPage({
     })),
     isOwner,
     isEditor: canEdit,
+    joiners: plan.joiners.map(j => ({
+      ...j,
+      joinedAt: j.joinedAt.toISOString(),
+      user: { id: j.user.id, name: j.user.name, email: j.user.email }
+    })),
+    contributions: plan.contributions.map(c => ({
+      ...c,
+      createdAt: c.createdAt.toISOString(),
+      user: { id: c.user.id, name: c.user.name, email: c.user.email }
+    })),
     events: plan.events.map(event => ({
       ...event,
       createdAt: event.createdAt.toISOString(),

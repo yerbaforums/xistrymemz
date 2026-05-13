@@ -59,6 +59,7 @@ model User {
   
   plans     Plan[]
   planEditors PlanEditor[]
+  planContributions PlanContribution[]
   requests  Request[]
   fulfillments  RequestFulfillment[]
   comments  Comment[]
@@ -165,6 +166,7 @@ model Plan {
   goals          String?
   mileposts      String?
   milepostStatus String?   @default("[]")
+  resources      String?   @default("[]")
   status         String     @default("DRAFT")
   published      Boolean    @default(false)
   pinned         Boolean    @default(false)
@@ -174,11 +176,26 @@ model Plan {
   longitude      Float?
   schoolId       String?
   shopId        String?
+
+  // Donations & Funding
+  goalAmount        Float?   @default(0)
+  currentFunding    Float?   @default(0)
+  donationAddress   String?
+  donationCurrency  String   @default("ETH")
+  acceptsDonations  Boolean  @default(false)
+  donationDescription String?
+
+  // Volunteering
+  needsVolunteers      Boolean @default(false)
+  volunteerRoles       String?  // JSON array: ["Setup","Cleanup","Photography"]
+  volunteerDescription String?
+
   userId         String
   user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   editors        PlanEditor[]
   requests       Request[]
   joiners        PlanJoiner[]
+  contributions  PlanContribution[]
   events         Event[]
   updates        PlanUpdate[]
   statusHistory  PlanStatusHistory[]
@@ -301,9 +318,24 @@ model PlanJoiner {
   plan      Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String   @default("ATTENDEE")  // ATTENDEE or VOLUNTEER
   joinedAt  DateTime @default(now())
 
   @@unique([planId, userId])
+}
+
+model PlanContribution {
+  id        String   @id @default(cuid())
+  amount    Float
+  message   String?
+  planId    String
+  plan      Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([planId])
+  @@index([userId])
 }
 
 model Request {

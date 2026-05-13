@@ -55,8 +55,8 @@ export async function POST(request: Request) {
     data: {
       title,
       description,
-      goals,
-      mileposts,
+      goals: goals || null,
+      mileposts: mileposts || null,
       milepostStatus: '[]',
       userId: session.user.id,
       status: 'ACTIVE',

@@ -120,12 +120,16 @@ export default function OnboardingPage() {
   const handleSaveProfile = async () => {
     setLoading(true)
     setError('')
+
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 15000)
     
     try {
       const res = await fetch(`/api/users/me`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, bio, location, neighborhood, searchRadius: parseFloat(searchRadius) })
+        body: JSON.stringify({ name, bio, location, neighborhood, searchRadius: parseFloat(searchRadius) }),
+        signal: controller.signal
       })
       
       if (!res.ok) {
@@ -135,6 +139,8 @@ export default function OnboardingPage() {
       nextStep()
     } catch {
       setError('Failed to save profile. You can skip this step.')
+    } finally {
+      clearTimeout(timeout)
       setLoading(false)
     }
   }
@@ -148,15 +154,18 @@ export default function OnboardingPage() {
     setLoading(true)
     setError('')
 
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 15000)
+
     try {
       const res = await fetch('/api/plans', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           title: planTitle, 
-          description: planDescription,
-          status: 'DRAFT'
-        })
+          description: planDescription
+        }),
+        signal: controller.signal
       })
 
       if (!res.ok) {
@@ -166,6 +175,8 @@ export default function OnboardingPage() {
       nextStep()
     } catch {
       setError('Failed to create plan. You can skip this step.')
+    } finally {
+      clearTimeout(timeout)
       setLoading(false)
     }
   }

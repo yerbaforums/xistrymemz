@@ -1,0 +1,272 @@
+.sortableList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sortableItem {
+  display: flex;
+  align-items: stretch;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  transition: border-color 0.2s, opacity 0.2s, transform 0.2s;
+  cursor: default;
+}
+
+.sortableItem:hover {
+  border-color: var(--accent-primary);
+}
+
+.sortableItem.dragging {
+  opacity: 0.4;
+}
+
+.sortableItem.dragOver {
+  border-color: var(--accent-primary);
+  border-style: dashed;
+  transform: scale(1.02);
+  box-shadow: 0 0 12px rgba(0, 217, 255, 0.2);
+}
+
+.dragHandle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  min-height: 44px;
+  cursor: grab;
+  color: var(--text-muted);
+  font-size: 1rem;
+  flex-shrink: 0;
+  user-select: none;
+  border-right: 1px solid var(--border-color);
+}
+
+.dragHandle:hover {
+  color: var(--accent-primary);
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.itemBody {
+  flex: 1;
+  padding: 12px;
+  min-width: 0;
+}
+
+.itemTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.itemTitle input {
+  flex: 1;
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 4px 8px;
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+}
+
+.itemTitle input:focus {
+  border-color: var(--accent-primary);
+  background: var(--bg-secondary);
+  outline: none;
+}
+
+.itemTitle input:hover {
+  border-color: var(--border-color);
+}
+
+.itemDescription {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 6px;
+  padding-left: 4px;
+  line-height: 1.4;
+}
+
+.itemMeta {
+  display: flex;
+  gap: 12px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+  padding-left: 4px;
+}
+
+.itemActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  flex-shrink: 0;
+}
+
+.actionBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 4px 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: color 0.2s, background 0.2s;
+}
+
+.actionBtn:hover {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+.actionBtnDanger {
+  composes: actionBtn;
+}
+
+.actionBtnDanger:hover {
+  color: var(--accent-secondary);
+  background: rgba(255, 51, 102, 0.1);
+}
+
+.addForm {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.addForm input {
+  flex: 1;
+  padding: 10px 12px;
+  background: var(--bg-tertiary);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.addForm input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  border-style: solid;
+}
+
+.addBtn {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+}
+
+.addBtn:hover {
+  box-shadow: var(--shadow-glow);
+}
+
+.addBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.header h3 {
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.saveBtn {
+  background: transparent;
+  border: 1px solid var(--accent-primary);
+  color: var(--accent-primary);
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+}
+
+.saveBtn:hover {
+  background: rgba(0, 217, 255, 0.1);
+}
+
+.saveBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.completedItem {
+  composes: sortableItem;
+  opacity: 0.6;
+}
+
+.completedItem:hover {
+  opacity: 0.8;
+}
+
+.checkboxWrap {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+}
+
+.checkboxWrap input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-success);
+  cursor: pointer;
+}
+
+.completedText {
+  text-decoration: line-through;
+  color: var(--text-muted) !important;
+}
+
+.completedIdicator {
+  color: var(--accent-success);
+  font-size: 0.75rem;
+  margin-left: 8px;
+}
+
+.dateInput {
+  padding: 2px 6px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.75rem;
+}
+
+.dateInput:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+@media (max-width: 768px) {
+  .addForm {
+    flex-direction: column;
+  }
+
+  .dragHandle {
+    width: 28px;
+  }
+}

@@ -86,10 +86,11 @@ export async function PUT(
         title: body.title ?? existingPlan.title,
         description: body.description ?? existingPlan.description,
         status: body.status ?? existingPlan.status,
-        goals: body.goals ?? existingPlan.goals,
-        mileposts: body.mileposts ?? existingPlan.mileposts,
-        milepostStatus: body.milepostStatus ?? existingPlan.milepostStatus,
+        goals: body.goals !== undefined ? body.goals : existingPlan.goals,
+        mileposts: body.mileposts !== undefined ? body.mileposts : existingPlan.mileposts,
+        milepostStatus: body.milepostStatus !== undefined ? body.milepostStatus : existingPlan.milepostStatus,
         published: body.published ?? existingPlan.published,
+        resources: body.resources !== undefined ? body.resources : existingPlan.resources,
         schoolId: body.schoolId ?? existingPlan.schoolId,
         shopId: body.shopId ?? existingPlan.shopId
       }

@@ -498,3 +498,222 @@
   color: var(--bg-primary);
   border-color: var(--accent-primary);
 }
+
+/* Tab Bar */
+.tabBar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 4px;
+  overflow-x: auto;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s;
+}
+
+.tab:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.tabActive {
+  background: var(--accent-primary) !important;
+  color: var(--bg-primary) !important;
+}
+
+.tabPanel {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Overview Tab */
+.overviewHeader {
+  margin-bottom: 24px;
+}
+
+.titleInput {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.titleInput:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.descInput {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  resize: vertical;
+  font-family: inherit;
+}
+
+.descInput:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.overviewEdit {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.overviewActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.overviewActionBtn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.overviewActionBtn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background: rgba(0, 217, 255, 0.05);
+}
+
+/* Progress Section */
+.progressSection {
+  margin-bottom: 20px;
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.progressTrack {
+  height: 8px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-success));
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+/* Stats Row */
+.statsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.statChip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  transition: border-color 0.2s;
+}
+
+.statChip:hover {
+  border-color: var(--accent-primary);
+}
+
+.statChipIcon {
+  font-size: 1rem;
+}
+
+/* Error Banner */
+.errorBanner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: rgba(255, 51, 102, 0.1);
+  border: 1px solid var(--accent-secondary);
+  color: var(--accent-secondary);
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+  font-size: 0.85rem;
+}
+
+.errorClose {
+  background: transparent;
+  border: none;
+  color: var(--accent-secondary);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+@media (max-width: 768px) {
+  .tabBar {
+    gap: 2px;
+    padding: 3px;
+  }
+
+  .tab {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+  }
+
+  .tab span:first-child {
+    margin-right: 0;
+  }
+
+  .statsRow {
+    gap: 6px;
+  }
+
+  .statChip {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+  }
+}

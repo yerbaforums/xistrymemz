@@ -8,19 +8,22 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions)
-  
+
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const { id } = await params
+  const body = await request.json().catch(() => ({}))
+  const role = body.role || 'ATTENDEE'
+
+  if (!['ATTENDEE', 'VOLUNTEER'].includes(role)) {
+    return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
+  }
 
   const plan = await prisma.plan.findUnique({
     where: { id },
-    include: {
-      joiners: true,
-      _count: { select: { joiners: true } }
-    }
+    include: { joiners: true }
   })
 
   if (!plan) {
@@ -28,7 +31,7 @@ export async function POST(
   }
 
   if (plan.userId === session.user.id) {
-    return NextResponse.json({ error: 'Cannot join your own event' }, { status: 400 })
+    return NextResponse.json({ error: 'Cannot join your own plan' }, { status: 400 })
   }
 
   const existingJoiner = await prisma.planJoiner.findUnique({
@@ -40,14 +43,23 @@ export async function POST(
     }
   })
 
+  if (existingJoiner && existingJoiner.role === role) {
+    return NextResponse.json({ error: `Already joined as ${role.toLowerCase()}` }, { status: 400 })
+  }
+
   if (existingJoiner) {
-    return NextResponse.json({ error: 'Already joined this event' }, { status: 400 })
+    const joiner = await prisma.planJoiner.update({
+      where: { id: existingJoiner.id },
+      data: { role }
+    })
+    return NextResponse.json(joiner)
   }
 
   const joiner = await prisma.planJoiner.create({
     data: {
       planId: plan.id,
-      userId: session.user.id
+      userId: session.user.id,
+      role
     }
   })
 
@@ -59,12 +71,14 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions)
-  
+
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const { id } = await params
+  const url = new URL(request.url)
+  const role = url.searchParams.get('role') || 'ATTENDEE'
 
   const joiner = await prisma.planJoiner.findUnique({
     where: {
@@ -76,7 +90,11 @@ export async function DELETE(
   })
 
   if (!joiner) {
-    return NextResponse.json({ error: 'Not joined this event' }, { status: 404 })
+    return NextResponse.json({ error: 'Not joined this plan' }, { status: 404 })
+  }
+
+  if (joiner.role !== role) {
+    return NextResponse.json({ error: `Not joined as ${role.toLowerCase()}` }, { status: 400 })
   }
 
   await prisma.planJoiner.delete({

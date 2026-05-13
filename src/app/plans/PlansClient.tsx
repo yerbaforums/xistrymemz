@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
+import { stringifyGoals, stringifyMilestones } from '@/lib/plan-utils'
 
 interface Plan {
   id: string
@@ -62,11 +63,28 @@ export default function PlansClient({ initialPlans }: PlansClientProps) {
     e.preventDefault()
     setLoading(true)
 
+    const goalItems = goals
+      .split('\n')
+      .map(l => l.trim())
+      .filter(Boolean)
+      .map((text, i) => ({ id: `cg_${i}`, text, order: i, status: 'active' as const }))
+
+    const milestoneItems = mileposts
+      .split('\n')
+      .map(l => l.trim())
+      .filter(Boolean)
+      .map((title, i) => ({ id: `cm_${i}`, title, order: i, completed: false }))
+
     try {
       const res = await fetch('/api/plans', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, description, goals, mileposts })
+        body: JSON.stringify({
+          title,
+          description,
+          goals: stringifyGoals(goalItems),
+          mileposts: stringifyMilestones(milestoneItems)
+        })
       })
 
       if (res.ok) {
