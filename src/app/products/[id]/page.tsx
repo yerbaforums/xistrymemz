@@ -146,6 +146,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [mapExpanded, setMapExpanded] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [cryptoPrices, setCryptoPrices] = useState<Record<string, number>>({})
+  const [copiedShare, setCopiedShare] = useState(false)
 
   useEffect(() => {
     getCryptoPrices().then(prices => {
@@ -802,7 +803,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             </div>
           )}
 
-          {product.price && (
+          {product.price != null && (
             <div className={styles.priceCard}>
               <p className={styles.price}>${product.price}</p>
               <div className={styles.cryptoConversions}>
@@ -813,7 +814,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                       alt={symbol}
                       className={styles.cryptoLogo}
                     />
-                    ≈ {(product.price / (cryptoPrices[symbol] || fallback)).toFixed(decimals)} {symbol}
+                    ≈ {(product.price! / (cryptoPrices[symbol] || fallback)).toFixed(decimals)} {symbol}
                   </span>
                 ))}
               </div>
@@ -872,6 +873,47 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
           <div className={styles.metaCard}>
             <p>Listed {new Date(product.createdAt).toLocaleDateString()}</p>
+          </div>
+
+          <div className={styles.shareCard}>
+            <h3>🔗 Share</h3>
+            <div className={styles.shareButtons}>
+              <button
+                className={styles.shareBtn}
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href)
+                  setCopiedShare(true)
+                  setTimeout(() => setCopiedShare(false), 2000)
+                }}
+                title="Copy link"
+              >
+                {copiedShare ? '✓ Copied!' : '📋 Copy Link'}
+              </button>
+              {typeof navigator !== 'undefined' && 'share' in navigator && (
+                <button
+                  className={styles.shareBtn}
+                  onClick={() => {
+                    navigator.share({
+                      title: product.title,
+                      text: product.description || `Check out ${product.title}`,
+                      url: window.location.href,
+                    }).catch(() => {})
+                  }}
+                  title="Share"
+                >
+                  📤 Share
+                </button>
+              )}
+              <a
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out ${product.title} on XistrYmemZ`)}&url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.shareBtn}
+                title="Share on X"
+              >
+                𝕏 Post
+              </a>
+            </div>
           </div>
         </div>
       </div>
