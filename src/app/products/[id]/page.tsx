@@ -58,6 +58,7 @@ interface Product {
   rentalMinDays: number
   rentalMaxDays: number | null
   rentalAvailable: boolean
+  hashtags?: { id: string; tag?: string; hashtag?: { id: string; tag: string } }[]
 }
 
 interface Plan {
