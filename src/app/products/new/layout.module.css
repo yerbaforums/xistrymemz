@@ -1,0 +1,17 @@
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  flex: 1;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px;
+  width: 100%;
+}
+
+.main {
+  flex: 1;
+}

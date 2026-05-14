@@ -1,4 +1,5 @@
-// Global test setup
+import '@testing-library/jest-dom'
+
 beforeAll(async () => {
   // Any global setup needed
 })

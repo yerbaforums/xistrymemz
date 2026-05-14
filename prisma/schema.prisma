@@ -487,8 +487,9 @@ model Product {
   requests         Request[]
   groupPosts       GroupPost[]
   groupProducts    GroupProduct[]
-  ratings          Rating[]
-  escrowTxns       EscrowTransaction[]
+  ratings           Rating[]
+  escrowTxns        EscrowTransaction[]
+  hashtags          ProductHashtag[]
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -631,12 +632,13 @@ model Post {
 }
 
 model Hashtag {
-  id        String        @id @default(cuid())
-  tag       String        @unique
-  postCount Int           @default(0)
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  id        String          @id @default(cuid())
+  tag       String          @unique
+  postCount Int             @default(0)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
   posts     PostHashtag[]
+  products  ProductHashtag[]
 
   @@index([postCount])
   @@index([tag])
@@ -652,6 +654,19 @@ model PostHashtag {
   createdAt  DateTime @default(now())
 
   @@unique([postId, hashtagId])
+  @@index([hashtagId])
+}
+
+model ProductHashtag {
+  id         String   @id @default(cuid())
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  hashtagId  String
+  hashtag    Hashtag  @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+  sourceType String   @default("PRODUCT")
+  createdAt  DateTime @default(now())
+
+  @@unique([productId, hashtagId])
   @@index([hashtagId])
 }
 

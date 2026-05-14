@@ -52,7 +52,8 @@ export const productSchema = z.object({
   rentalAvailable: z.boolean().optional(),
   sellerPayoutAddress: z.string().optional().nullable(),
   sellerCryptoCurrency: z.string().optional().nullable(),
-  createGroup: z.boolean().optional()
+  createGroup: z.boolean().optional(),
+  hashtags: z.array(z.string()).optional()
 })
 
 export const groupSchema = z.object({

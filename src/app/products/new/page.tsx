@@ -1,0 +1,460 @@
+'use client'
+
+import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
+import { useToast } from '@/context/ToastContext'
+import { useSiteSettings } from '@/hooks/useSiteSettings'
+import { extractHashtags } from '@/lib/hashtags'
+import Breadcrumbs from '@/components/Breadcrumbs'
+import FormWizard, { useWizard } from '@/components/FormWizard'
+import type { DonationAddr } from '@/types/product'
+import styles from './page.module.css'
+
+const steps = [
+  { key: 'basics', label: 'Basics' },
+  { key: 'pricing', label: 'Pricing' },
+  { key: 'media', label: 'Media & Location' },
+  { key: 'review', label: 'Review & List' },
+]
+
+const conditions = ['', 'NEW', 'LIKE_NEW', 'GOOD', 'FAIR']
+
+export default function NewProductPage() {
+  const router = useRouter()
+  const { data: session } = useSession()
+  const { warning, error, success } = useToast()
+  const { settings } = useSiteSettings()
+  const wizard = useWizard(steps)
+
+  const [checkingShop, setCheckingShop] = useState(true)
+  const [creating, setCreating] = useState(false)
+  const [userDonationAddrs, setUserDonationAddrs] = useState<DonationAddr[]>([])
+
+  const [form, setForm] = useState({
+    title: '',
+    description: '',
+    price: '',
+    type: 'PRODUCT',
+    category: '',
+    condition: '',
+    location: '',
+    locationDetails: '',
+    isGlobal: false,
+    imageUrl: '',
+    paymentMethods: [] as string[],
+    paymentType: 'BOTH',
+    sellerPayoutAddress: '',
+    sellerCryptoCurrency: 'ETH',
+    rentalDaily: '',
+    rentalWeekly: '',
+    rentalMonthly: '',
+    rentalDeposit: '',
+    rentalMinDays: 1,
+    rentalMaxDays: '',
+    rentalAvailable: true,
+    createGroup: false,
+    tagsInput: '',
+  })
+  const [tagSuggestions, setTagSuggestions] = useState<string[]>([])
+
+  useEffect(() => {
+    if (!session?.user) {
+      router.push('/auth/login')
+      return
+    }
+    checkShop()
+  }, [session])
+
+  useEffect(() => {
+    if (session?.user) {
+      fetch('/api/users/donations')
+        .then(r => r.ok ? r.json() : null)
+        .then(data => { if (data?.addresses) setUserDonationAddrs(data.addresses) })
+        .catch(() => {})
+    }
+  }, [session])
+
+  const checkShop = async () => {
+    try {
+      const res = await fetch('/api/shop')
+      const data = await res.json()
+      if (!data?.shopSlug) {
+        warning('Set up your shop before listing products')
+        router.push('/shop/setup')
+        return
+      }
+    } catch {
+      warning('Could not verify shop status')
+    } finally {
+      setCheckingShop(false)
+    }
+  }
+
+  const update = useCallback(<K extends keyof typeof form>(key: K, value: (typeof form)[K]) => {
+    setForm(prev => ({ ...prev, [key]: value }))
+  }, [])
+
+  const extractedTags = useCallback(() => {
+    const fromDesc = extractHashtags(form.description)
+    const fromInput = form.tagsInput
+      .split(/[,\s]+/)
+      .map(t => t.replace(/^#/, '').toLowerCase().trim())
+      .filter(Boolean)
+    return [...new Set([...fromDesc, ...fromInput])]
+  }, [form.description, form.tagsInput])
+
+  const handleSubmit = async () => {
+    setCreating(true)
+    const tags = extractedTags()
+    try {
+      const res = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: form.title,
+          description: form.description,
+          price: form.price || null,
+          type: form.type,
+          category: form.category || null,
+          condition: form.condition || null,
+          location: form.isGlobal ? 'GLOBAL' : (form.location || null),
+          locationDetails: form.locationDetails || null,
+          isGlobal: form.isGlobal,
+          imageUrl: form.imageUrl || null,
+          paymentMethods: form.paymentMethods.join(','),
+          paymentType: settings.enableWallet ? form.paymentType : 'BOTH',
+          sellerPayoutAddress: form.sellerPayoutAddress || null,
+          sellerCryptoCurrency: form.sellerCryptoCurrency || 'ETH',
+          rentalDaily: form.type === 'RENTAL' ? (form.rentalDaily || null) : null,
+          rentalWeekly: form.type === 'RENTAL' ? (form.rentalWeekly || null) : null,
+          rentalMonthly: form.type === 'RENTAL' ? (form.rentalMonthly || null) : null,
+          rentalDeposit: form.type === 'RENTAL' ? (form.rentalDeposit || null) : null,
+          rentalMinDays: form.type === 'RENTAL' ? form.rentalMinDays : 1,
+          rentalMaxDays: form.type === 'RENTAL' ? (form.rentalMaxDays || null) : null,
+          rentalAvailable: form.type === 'RENTAL' ? form.rentalAvailable : true,
+          published: true,
+          createGroup: form.createGroup,
+          hashtags: tags,
+        }),
+      })
+      if (res.ok) {
+        success('Product listed successfully!')
+        router.push('/products')
+      } else {
+        const err = await res.json()
+        error(err.error || 'Failed to create product')
+      }
+    } catch {
+      error('Failed to create product')
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  if (checkingShop) {
+    return (
+      <div className={styles.loadingWrap}>
+        <div className={styles.spinner} />
+        <p>Checking your shop...</p>
+      </div>
+    )
+  }
+
+  const basicsValid = form.title.trim().length > 0
+  const canContinue = (step: string) => {
+    if (step === 'basics') return basicsValid
+    return true
+  }
+
+  const handleNext = () => {
+    if (canContinue(wizard.currentStep)) wizard.goNext()
+  }
+
+  return (
+    <div className={styles.page}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Marketplace', href: '/products' },
+        { label: 'New Listing' }
+      ]} />
+
+      <h1 className={styles.pageTitle}>List a New Item</h1>
+      <p className={styles.pageSub}>Fill in the details below to publish your listing</p>
+
+      <FormWizard
+        steps={steps}
+        currentStep={wizard.currentStep}
+        onStepChange={wizard.setCurrentStep}
+        onNext={handleNext}
+        onBack={wizard.goBack}
+        onSubmit={handleSubmit}
+        isFirstStep={wizard.isFirstStep}
+        isLastStep={wizard.isLastStep}
+        loading={creating}
+        submitLabel="List Item"
+      >
+        {wizard.currentStep === 'basics' && (
+          <div className={styles.stepContent}>
+            <div className="form-group">
+              <label>Title *</label>
+              <input type="text" value={form.title} onChange={e => update('title', e.target.value)} placeholder="What are you listing?" required />
+            </div>
+            <div className="form-group">
+              <label>Description</label>
+              <textarea value={form.description} onChange={e => update('description', e.target.value)} placeholder="Describe your item... Use #hashtags to make it discoverable" rows={5} />
+            </div>
+            <div className={styles.row}>
+              <div className="form-group">
+                <label>Type</label>
+                <select value={form.type} onChange={e => update('type', e.target.value)}>
+                  <option value="PRODUCT">Product</option>
+                  <option value="SERVICE">Service</option>
+                  <option value="RENTAL">Rental</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Category</label>
+                <input type="text" value={form.category} onChange={e => update('category', e.target.value)} placeholder="e.g. Electronics" />
+              </div>
+            </div>
+            <div className="form-group">
+              <label>Condition</label>
+              <select value={form.condition} onChange={e => update('condition', e.target.value)}>
+                {conditions.map(c => (
+                  <option key={c} value={c}>{c ? c.replace('_', ' ') : 'Select...'}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
+
+        {wizard.currentStep === 'pricing' && (
+          <div className={styles.stepContent}>
+            {form.type !== 'RENTAL' ? (
+              <div className="form-group">
+                <label>Price ($)</label>
+                <input type="number" value={form.price} onChange={e => update('price', e.target.value)} placeholder="0.00" step="0.01" min="0" />
+              </div>
+            ) : (
+              <div className={styles.rentalSection}>
+                <h3>Rental Pricing</h3>
+                <div className={styles.row}>
+                  <div className="form-group">
+                    <label>Daily Rate ($)</label>
+                    <input type="number" value={form.rentalDaily} onChange={e => update('rentalDaily', e.target.value)} placeholder="0.00" step="0.01" />
+                  </div>
+                  <div className="form-group">
+                    <label>Weekly Rate ($)</label>
+                    <input type="number" value={form.rentalWeekly} onChange={e => update('rentalWeekly', e.target.value)} placeholder="0.00" step="0.01" />
+                  </div>
+                  <div className="form-group">
+                    <label>Monthly Rate ($)</label>
+                    <input type="number" value={form.rentalMonthly} onChange={e => update('rentalMonthly', e.target.value)} placeholder="0.00" step="0.01" />
+                  </div>
+                </div>
+                <div className={styles.row}>
+                  <div className="form-group">
+                    <label>Deposit ($)</label>
+                    <input type="number" value={form.rentalDeposit} onChange={e => update('rentalDeposit', e.target.value)} placeholder="0.00" step="0.01" />
+                  </div>
+                  <div className="form-group">
+                    <label>Min Days</label>
+                    <input type="number" value={form.rentalMinDays} onChange={e => update('rentalMinDays', parseInt(e.target.value) || 1)} min="1" />
+                  </div>
+                  <div className="form-group">
+                    <label>Max Days</label>
+                    <input type="number" value={form.rentalMaxDays} onChange={e => update('rentalMaxDays', e.target.value)} placeholder="Unlimited" min="1" />
+                  </div>
+                </div>
+                <label className={styles.checkLabel}>
+                  <input type="checkbox" checked={form.rentalAvailable} onChange={e => update('rentalAvailable', e.target.checked)} />
+                  Available for Rent
+                </label>
+              </div>
+            )}
+
+            <div className="form-group">
+              <label>Payment Methods</label>
+              <div className={styles.pillGroup}>
+                {['Cash', 'Venmo', 'PayPal', 'Zelle', 'Crypto', 'Card'].map(method => (
+                  <label key={method} className={`${styles.pill} ${form.paymentMethods.includes(method) ? styles.pillActive : ''}`}>
+                    <input
+                      type="checkbox"
+                      checked={form.paymentMethods.includes(method)}
+                      onChange={e => {
+                        if (e.target.checked) {
+                          update('paymentMethods', [...form.paymentMethods, method])
+                        } else {
+                          update('paymentMethods', form.paymentMethods.filter(m => m !== method))
+                        }
+                      }}
+                      className={styles.pillCheckbox}
+                    />
+                    {method}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {settings.enableWallet && (
+              <>
+                <div className="form-group">
+                  <label>Payment Type</label>
+                  <select value={form.paymentType} onChange={e => update('paymentType', e.target.value)}>
+                    <option value="BOTH">Both (Escrow + Direct)</option>
+                    <option value="ESCROW">Escrow Only (Protected)</option>
+                    <option value="DIRECT">Direct Payment Only</option>
+                  </select>
+                  <small className={styles.hint}>
+                    {form.paymentType === 'ESCROW' && `Buyers pay with escrow protection (${settings.platformFeePercent || 10}% fee)`}
+                    {form.paymentType === 'DIRECT' && `Buyers pay directly to your wallet (${Math.round((settings.platformFeePercent || 10) / 2)}% fee)`}
+                    {form.paymentType === 'BOTH' && 'Buyers can choose their preferred payment method'}
+                  </small>
+                </div>
+
+                {(form.paymentType === 'DIRECT' || form.paymentType === 'BOTH') && (
+                  <div className="form-group">
+                    <label>Donation Address for Payments</label>
+                    {userDonationAddrs.length === 0 ? (
+                      <p className={styles.noAddrs}>
+                        No donation addresses saved.{' '}
+                        <a href="/profile/edit" style={{ color: 'var(--accent-primary)' }}>Add one in your profile settings</a>
+                      </p>
+                    ) : (
+                      <div className={styles.chipGroup}>
+                        {userDonationAddrs.map(da => {
+                          const selected = form.sellerPayoutAddress === da.address && form.sellerCryptoCurrency === da.currency
+                          const shortAddr = da.address.length > 12 ? da.address.slice(0, 4) + '...' + da.address.slice(-4) : da.address
+                          return (
+                            <button
+                              key={da.id}
+                              type="button"
+                              onClick={() => {
+                                update('sellerPayoutAddress', da.address)
+                                update('sellerCryptoCurrency', da.currency)
+                              }}
+                              className={`${styles.chip} ${selected ? styles.chipSelected : ''}`}
+                              title={`${da.label || da.currency}: ${da.address}`}
+                            >
+                              <span className={styles.chipCurrency}>{da.currency}</span>
+                              <span>{shortAddr}</span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
+        {wizard.currentStep === 'media' && (
+          <div className={styles.stepContent}>
+            <div className="form-group">
+              <label>Image URL</label>
+              <input type="text" value={form.imageUrl} onChange={e => update('imageUrl', e.target.value)} placeholder="https://example.com/image.jpg" />
+              {form.imageUrl && (
+                <div className={styles.preview}>
+                  <img src={form.imageUrl} alt="Preview" className={styles.previewImg} />
+                </div>
+              )}
+            </div>
+            <div className="form-group">
+              <label className={styles.checkLabel}>
+                <input type="checkbox" checked={form.isGlobal} onChange={e => update('isGlobal', e.target.checked)} />
+                Available Globally (no location required)
+              </label>
+            </div>
+            {!form.isGlobal && (
+              <>
+                <div className="form-group">
+                  <label>Location</label>
+                  <input type="text" value={form.location} onChange={e => update('location', e.target.value)} placeholder="City, State or full address" />
+                </div>
+                <div className="form-group">
+                  <label>Location Details</label>
+                  <input type="text" value={form.locationDetails} onChange={e => update('locationDetails', e.target.value)} placeholder="Additional details (optional)" />
+                </div>
+              </>
+            )}
+            <div className="form-group">
+              <label className={styles.checkLabel}>
+                <input type="checkbox" checked={form.createGroup} onChange={e => update('createGroup', e.target.checked)} />
+                Create a discussion group for this listing
+              </label>
+            </div>
+          </div>
+        )}
+
+        {wizard.currentStep === 'review' && (
+          <div className={styles.stepContent}>
+            <div className="form-group">
+              <label>Tags</label>
+              <input
+                type="text"
+                value={form.tagsInput}
+                onChange={e => update('tagsInput', e.target.value)}
+                placeholder="Add tags: #electronics #vintage (space or comma separated)"
+              />
+              <div className={styles.tagPreview}>
+                {extractedTags().map(tag => (
+                  <span key={tag} className={styles.tag}>#{tag}</span>
+                ))}
+                {extractedTags().length === 0 && (
+                  <span className={styles.hint}>Tags will be extracted from your description and this field</span>
+                )}
+              </div>
+            </div>
+
+            <div className={styles.reviewCard}>
+              <h3>Review Your Listing</h3>
+              <div className={styles.reviewGrid}>
+                <div className={styles.reviewItem}>
+                  <span className={styles.reviewLabel}>Title</span>
+                  <span>{form.title}</span>
+                </div>
+                <div className={styles.reviewItem}>
+                  <span className={styles.reviewLabel}>Type</span>
+                  <span className={styles.typeBadge}>{form.type}</span>
+                </div>
+                {form.category && (
+                  <div className={styles.reviewItem}>
+                    <span className={styles.reviewLabel}>Category</span>
+                    <span>{form.category}</span>
+                  </div>
+                )}
+                {form.condition && (
+                  <div className={styles.reviewItem}>
+                    <span className={styles.reviewLabel}>Condition</span>
+                    <span>{form.condition.replace('_', ' ')}</span>
+                  </div>
+                )}
+                <div className={styles.reviewItem}>
+                  <span className={styles.reviewLabel}>Price</span>
+                  <span className={styles.reviewPrice}>
+                    {form.type === 'RENTAL'
+                      ? form.rentalDaily ? `$${form.rentalDaily}/day` : 'Contact for pricing'
+                      : form.price ? `$${form.price}` : 'Free'}
+                  </span>
+                </div>
+                <div className={styles.reviewItem}>
+                  <span className={styles.reviewLabel}>Location</span>
+                  <span>{form.isGlobal ? '🌍 Global' : form.location || 'Not specified'}</span>
+                </div>
+                {form.paymentMethods.length > 0 && (
+                  <div className={styles.reviewItem}>
+                    <span className={styles.reviewLabel}>Payment</span>
+                    <span>{form.paymentMethods.join(', ')}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </FormWizard>
+    </div>
+  )
+}

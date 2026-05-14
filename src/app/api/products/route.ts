@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { geocodeLocation } from '@/lib/geocoding'
+import { extractHashtags } from '@/lib/hashtags'
 import { productSchema, validateBody } from '@/lib/schemas'
 
 export async function GET(request: Request) {
@@ -18,6 +19,7 @@ export async function GET(request: Request) {
     const userLng = searchParams.get('lng')
     const radius = searchParams.get('radius')
     const pinned = searchParams.get('pinned')
+    const hashtag = searchParams.get('hashtag')
 
     const session = await getServerSession(authOptions)
     let userLocation = null
@@ -56,16 +58,23 @@ export async function GET(request: Request) {
       where.pinned = true
     }
 
-    const products = await prisma.product.findMany({
+    let products = await prisma.product.findMany({
       where,
       include: {
-        user: { select: { name: true, location: true, neighborhood: true, shopSlug: true } }
+        user: { select: { name: true, location: true, neighborhood: true, shopSlug: true } },
+        hashtags: { include: { hashtag: { select: { id: true, tag: true } } } },
       },
       orderBy: [
         { pinned: 'desc' },
         { createdAt: 'desc' }
       ]
     })
+
+    if (hashtag) {
+      products = products.filter(p =>
+        p.hashtags?.some(ph => ph.hashtag.tag === hashtag.toLowerCase())
+      )
+    }
 
     let filteredProducts = products
     if (localOnly && (userLat || userLocation?.latitude)) {
@@ -132,7 +141,7 @@ export async function POST(request: Request) {
       rentalDaily, rentalWeekly, rentalMonthly, rentalDeposit,
       rentalMinDays, rentalMaxDays, rentalAvailable,
       sellerPayoutAddress, sellerCryptoCurrency,
-      createGroup
+      createGroup, hashtags
     } = validation.data
 
     const paymentMethodsString = paymentMethods ? 
@@ -196,6 +205,32 @@ export async function POST(request: Request) {
         }
       })
       return NextResponse.json({ ...product, _group: group })
+    }
+
+    const allTags = [...new Set([
+      ...(hashtags || []),
+      ...extractHashtags([title, description || ''].join(' '))
+    ])]
+
+    if (allTags.length > 0) {
+      await Promise.all(allTags.map(async tag => {
+        const hashtag = await prisma.hashtag.upsert({
+          where: { tag },
+          create: { tag, postCount: 0 },
+          update: {},
+        })
+        await prisma.productHashtag.create({
+          data: {
+            productId: product.id,
+            hashtagId: hashtag.id,
+            sourceType: 'PRODUCT',
+          },
+        }).catch(() => {})
+        await prisma.hashtag.update({
+          where: { id: hashtag.id },
+          data: { postCount: { increment: 1 } },
+        })
+      }))
     }
 
     return NextResponse.json(product)

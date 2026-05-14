@@ -227,6 +227,19 @@
   opacity: 0.9;
 }
 
+.btnDisabled {
+  opacity: 0.35 !important;
+  cursor: not-allowed !important;
+  filter: grayscale(1) !important;
+  pointer-events: auto !important;
+}
+
+.btnDisabled:hover {
+  opacity: 0.35 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 .escrowSummary {
   background: var(--bg-secondary);
   border-radius: var(--radius-md);

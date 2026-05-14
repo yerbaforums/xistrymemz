@@ -1,3 +1,9 @@
+/**
+ * @jest-environment node
+ */
+
+const BASE_URL = process.env.TEST_BASE_URL || 'http://localhost:3000'
+
 import { prisma } from '@/lib/prisma'
 
 describe('/api/products', () => {
@@ -10,12 +16,15 @@ describe('/api/products', () => {
         email: 'product-test@test.com',
         password: 'hashed',
         name: 'Product Test User',
-        shopName: 'Test Shop'
+        shopName: 'Test Shop',
+        shopSlug: 'test-shop'
       }
     })
   })
 
   afterEach(async () => {
+    await prisma.productHashtag.deleteMany()
+    await prisma.hashtag.deleteMany()
     await prisma.product.deleteMany()
     await prisma.user.deleteMany({
       where: { email: { contains: 'test@' } }
@@ -28,7 +37,7 @@ describe('/api/products', () => {
 
   describe('POST /api/products', () => {
     it('should create a new product with valid data', async () => {
-      const res = await fetch('http://localhost/api/products', {
+      const res = await fetch(`${BASE_URL}/api/products`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -51,7 +60,7 @@ describe('/api/products', () => {
     })
 
     it('should reject product without title', async () => {
-      const res = await fetch('http://localhost/api/products', {
+      const res = await fetch(`${BASE_URL}/api/products`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -66,7 +75,7 @@ describe('/api/products', () => {
     })
 
     it('should create service type product', async () => {
-      const res = await fetch('http://localhost/api/products', {
+      const res = await fetch(`${BASE_URL}/api/products`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -83,6 +92,87 @@ describe('/api/products', () => {
       expect(res.status).toBe(200)
       const data = await res.json()
       expect(data.type).toBe('SERVICE')
+    })
+
+    it('should create hashtags from description', async () => {
+      const res = await fetch(`${BASE_URL}/api/products`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': testUser.id
+        },
+        body: JSON.stringify({
+          title: 'Tagged Product',
+          description: 'A great #electronics #gadget for sale',
+          price: 99.99,
+          type: 'PRODUCT'
+        })
+      })
+
+      expect(res.status).toBe(200)
+      const data = await res.json()
+
+      const tags = await prisma.productHashtag.findMany({
+        where: { productId: data.id },
+        include: { hashtag: true }
+      })
+      const tagNames = tags.map(t => t.hashtag.tag)
+      expect(tagNames).toContain('electronics')
+      expect(tagNames).toContain('gadget')
+    })
+
+    it('should create hashtags from explicit hashtags field', async () => {
+      const res = await fetch(`${BASE_URL}/api/products`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': testUser.id
+        },
+        body: JSON.stringify({
+          title: 'Hashtag Product',
+          price: 49.99,
+          type: 'PRODUCT',
+          hashtags: ['vintage', 'collectible']
+        })
+      })
+
+      expect(res.status).toBe(200)
+      const data = await res.json()
+
+      const tags = await prisma.productHashtag.findMany({
+        where: { productId: data.id },
+        include: { hashtag: true }
+      })
+      const tagNames = tags.map(t => t.hashtag.tag)
+      expect(tagNames).toContain('vintage')
+      expect(tagNames).toContain('collectible')
+    })
+
+    it('should create a rental product with all fields', async () => {
+      const res = await fetch(`${BASE_URL}/api/products`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': testUser.id
+        },
+        body: JSON.stringify({
+          title: 'Camera Rental',
+          type: 'RENTAL',
+          rentalDaily: 25,
+          rentalWeekly: 140,
+          rentalMonthly: 400,
+          rentalDeposit: 200,
+          rentalMinDays: 1,
+          rentalMaxDays: 30,
+          rentalAvailable: true,
+          category: 'Photography'
+        })
+      })
+
+      expect(res.status).toBe(200)
+      const data = await res.json()
+      expect(data.type).toBe('RENTAL')
+      expect(data.rentalDaily).toBe(25)
     })
   })
 
@@ -102,10 +192,27 @@ describe('/api/products', () => {
     })
 
     it('should return published products', async () => {
-      const res = await fetch('http://localhost/api/products')
+      const res = await fetch(`${BASE_URL}/api/products`)
       expect(res.status).toBe(200)
       const data = await res.json()
-      expect(Array.isArray(data)).toBe(true)
+      expect(Array.isArray(data.products)).toBe(true)
+    })
+
+    it('should filter by hashtag', async () => {
+      const hashtag = await prisma.hashtag.create({ data: { tag: 'testtag' } })
+      await prisma.productHashtag.create({
+        data: { productId: testProduct.id, hashtagId: hashtag.id, sourceType: 'PRODUCT' }
+      })
+      await prisma.hashtag.update({
+        where: { id: hashtag.id },
+        data: { postCount: { increment: 1 } }
+      })
+
+      const res = await fetch(`${BASE_URL}/api/products?hashtag=testtag`)
+      expect(res.status).toBe(200)
+      const data = await res.json()
+      expect(data.products.length).toBeGreaterThanOrEqual(1)
+      expect(data.products[0].id).toBe(testProduct.id)
     })
   })
 })

@@ -798,19 +798,23 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 <span className={styles.cryptoLabel}>≈ {(product.price / (cryptoPrices['FIRO'] || 1.20)).toFixed(2)} FIRO</span>
               </div>
                <button 
-                 className={styles.addToCartBtn}
-                 onClick={() => setShowCartModal(true)}
-               >
-                 Add to Cart
-               </button>
-              {session?.user && !isOwner && (
-                <button 
-                  className={styles.escrowBtn}
-                  onClick={openEscrowModal}
+                  className={`${styles.addToCartBtn} ${!settings.enableCheckout ? styles.btnDisabled : ''}`}
+                  onClick={() => setShowCartModal(true)}
+                  disabled={!settings.enableCheckout}
+                  title={!settings.enableCheckout ? 'Cart coming soon' : 'Add to cart'}
                 >
-                  🔒 Escrow Checkout
+                  {!settings.enableCheckout ? '🛒 Cart Coming Soon' : 'Add to Cart'}
                 </button>
-              )}
+               {session?.user && !isOwner && (
+                 <button 
+                   className={`${styles.escrowBtn} ${!settings.enableCheckout ? styles.btnDisabled : ''}`}
+                   onClick={openEscrowModal}
+                   disabled={!settings.enableCheckout}
+                   title={!settings.enableCheckout ? 'Escrow coming soon' : 'Escrow checkout'}
+                 >
+                   🔒 {settings.enableCheckout ? 'Escrow Checkout' : 'Escrow Coming Soon'}
+                 </button>
+               )}
               {session?.user && !isOwner && product.acceptsOffers !== false && (
                 <button 
                   className={styles.addToPlanBtn}
