@@ -711,6 +711,17 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   <p>{product.condition.replace('_', ' ')}</p>
                 </div>
               )}
+
+              {product.hashtags && product.hashtags.length > 0 && (
+                <div className={styles.hashtags}>
+                  <h3>Tags</h3>
+                  <div className={styles.hashtagList}>
+                    {product.hashtags.map(h => (
+                      <span key={h.hashtag?.id || h.id} className={styles.hashtag}>#{h.hashtag?.tag || h.tag}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>

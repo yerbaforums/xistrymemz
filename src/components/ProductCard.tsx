@@ -112,6 +112,14 @@ export default function ProductCard({
           <span>by {product.user.name || 'Unknown'}</span>
         </div>
 
+        {product.hashtags && product.hashtags.length > 0 && (
+          <div className={styles.hashtags}>
+            {product.hashtags.slice(0, 3).map(h => (
+              <span key={h.tag} className={styles.hashtag}>#{h.tag}</span>
+            ))}
+          </div>
+        )}
+
         {product.category && viewMode === 'list' && (
           <div className={styles.meta}>
             <span className={styles.catPill}>{product.category}</span>

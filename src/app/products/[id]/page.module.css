@@ -95,6 +95,32 @@
   margin-bottom: 24px;
 }
 
+.hashtags {
+  margin-bottom: 24px;
+}
+
+.hashtags h3 {
+  font-size: 1rem;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+}
+
+.hashtagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hashtag {
+  display: inline-block;
+  padding: 4px 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  color: var(--accent-primary);
+}
+
 .description h3,
 .details h3 {
   font-size: 1rem;

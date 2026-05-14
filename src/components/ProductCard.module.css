@@ -215,6 +215,22 @@
   white-space: nowrap;
 }
 
+.hashtags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 6px 0;
+}
+
+.hashtag {
+  font-size: 0.65rem;
+  color: var(--accent-primary);
+  background: rgba(0, 217, 255, 0.08);
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
 .footer {
   display: flex;
   justify-content: space-between;
