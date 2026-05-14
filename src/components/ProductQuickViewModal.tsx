@@ -127,14 +127,11 @@ export default function ProductQuickViewModal({ product, onClose, onFund }: Quic
             View Full Details →
           </Link>
           <div className={styles.secondaryActions}>
-            {product.price != null && (
+            {product.price != null && !isCartDisabled && (
               <button
-                className={`${styles.actionBtn} ${isCartDisabled ? styles.disabled : ''}`}
-                onClick={() => {
-                  if (!isCartDisabled) addItem({ id: product.id, title: product.title, price: product.price || 0, imageUrl: product.imageUrl })
-                }}
-                disabled={isCartDisabled}
-                title={isCartDisabled ? 'Cart coming soon' : 'Add to cart'}
+                className={styles.actionBtn}
+                onClick={() => addItem({ id: product.id, title: product.title, price: product.price || 0, imageUrl: product.imageUrl })}
+                title="Add to cart"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>

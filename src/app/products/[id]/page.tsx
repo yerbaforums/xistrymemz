@@ -830,23 +830,29 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   </span>
                 ))}
               </div>
-               <button 
-                  className={`${styles.addToCartBtn} ${!settings.enableCheckout ? styles.btnDisabled : ''}`}
-                  onClick={() => setShowCartModal(true)}
-                  disabled={!settings.enableCheckout}
-                  title={!settings.enableCheckout ? 'Cart coming soon' : 'Add to cart'}
-                >
-                  {!settings.enableCheckout ? '🛒 Cart Coming Soon' : 'Add to Cart'}
-                </button>
-               {session?.user && !isOwner && (
-                 <button 
-                   className={`${styles.escrowBtn} ${!settings.enableCheckout ? styles.btnDisabled : ''}`}
-                   onClick={openEscrowModal}
-                   disabled={!settings.enableCheckout}
-                   title={!settings.enableCheckout ? 'Escrow coming soon' : 'Escrow checkout'}
-                 >
-                   🔒 {settings.enableCheckout ? 'Escrow Checkout' : 'Escrow Coming Soon'}
-                 </button>
+               {settings.enableCheckout ? (
+                 <>
+                   <button 
+                     className={styles.addToCartBtn}
+                     onClick={() => setShowCartModal(true)}
+                     title="Add to cart"
+                   >
+                     Add to Cart
+                   </button>
+                   {session?.user && !isOwner && (
+                     <button 
+                       className={styles.escrowBtn}
+                       onClick={openEscrowModal}
+                       title="Escrow checkout"
+                     >
+                       🔒 Escrow Checkout
+                     </button>
+                   )}
+                 </>
+               ) : (
+                 <div className={styles.disabledNotice}>
+                   Direct purchases are currently disabled
+                 </div>
                )}
               {session?.user && !isOwner && product.acceptsOffers !== false && (
                 <button 

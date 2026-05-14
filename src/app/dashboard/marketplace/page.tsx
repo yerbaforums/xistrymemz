@@ -30,6 +30,7 @@ interface Product {
   rentalMinDays: number
   rentalMaxDays: number | null
   rentalAvailable: boolean
+  hashtags?: { id: string; tag: string }[]
 }
 
 interface ShopSettings {
@@ -73,6 +74,7 @@ function MarketplaceContent() {
     acceptsRequests: false,
     acceptsOffers: true,
     published: true,
+    hashtags: '',
     rentalDaily: '',
     rentalWeekly: '',
     rentalMonthly: '',
@@ -122,6 +124,7 @@ function MarketplaceContent() {
           acceptsRequests: product.acceptsRequests,
           acceptsOffers: product.acceptsOffers,
           published: product.published,
+          hashtags: product.hashtags?.map(h => h.tag).join(', ') || '',
           rentalDaily: product.rentalDaily?.toString() || '',
           rentalWeekly: product.rentalWeekly?.toString() || '',
           rentalMonthly: product.rentalMonthly?.toString() || '',
@@ -184,6 +187,7 @@ function MarketplaceContent() {
       acceptsRequests: false,
       acceptsOffers: true,
       published: true,
+      hashtags: '',
       rentalDaily: '',
       rentalWeekly: '',
       rentalMonthly: '',
@@ -202,6 +206,7 @@ function MarketplaceContent() {
 
     const payload = {
       ...productForm,
+      hashtags: productForm.hashtags ? productForm.hashtags.split(',').map(t => t.trim()).filter(Boolean) : [],
       paymentMethods: productForm.paymentMethods.join(','),
       price: productForm.price ? parseFloat(productForm.price) : null,
       rentalDaily: productForm.rentalDaily ? parseFloat(productForm.rentalDaily) : null,
@@ -288,6 +293,7 @@ function MarketplaceContent() {
       acceptsRequests: product.acceptsRequests,
       acceptsOffers: product.acceptsOffers,
       published: product.published,
+      hashtags: product.hashtags?.map(h => h.tag).join(', ') || '',
       rentalDaily: product.rentalDaily?.toString() || '',
       rentalWeekly: product.rentalWeekly?.toString() || '',
       rentalMonthly: product.rentalMonthly?.toString() || '',
@@ -568,6 +574,10 @@ function MarketplaceContent() {
               <div className="form-group">
                 <label>Description</label>
                 <textarea value={productForm.description} onChange={e => setProductForm({...productForm, description: e.target.value})} rows={2} placeholder="Describe your product..." />
+              </div>
+              <div className="form-group">
+                <label>Hashtags</label>
+                <input type="text" value={productForm.hashtags} onChange={e => setProductForm({...productForm, hashtags: e.target.value})} placeholder="e.g. tech, vintage, handmade (comma separated)" />
               </div>
               <div className="form-row">
                 <div className="form-group">

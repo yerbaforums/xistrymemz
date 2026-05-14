@@ -144,6 +144,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
   const [newPost, setNewPost] = useState('')
   const [posting, setPosting] = useState(false)
   const [resolvedSlug, setResolvedSlug] = useState<string | null>(null)
+  const [qrDonation, setQrDonation] = useState<DonationAddr | null>(null)
 
   useEffect(() => { params.then(p => setResolvedSlug(p.slug)) }, [params])
 
@@ -544,7 +545,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                               </code>
                             </div>
                           </div>
-                          <DonationActions address={da.address} size="md" />
+                          <DonationActions address={da.address} size="md" onQrClick={() => setQrDonation(da)} />
                         </div>
                       ))}
                     </div>
@@ -555,6 +556,9 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
           </div>
         )}
       </div>
+      {qrDonation && (
+        <QRCodeModal isOpen={true} onClose={() => setQrDonation(null)} currency={qrDonation.label || qrDonation.currency} address={qrDonation.address} />
+      )}
     </div>
   )
 }

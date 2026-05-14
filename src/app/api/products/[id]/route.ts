@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { geocodeLocation } from '@/lib/geocoding'
 import { productSchema, validateBody } from '@/lib/schemas'
+import { extractHashtags } from '@/lib/hashtags'
 
 export async function GET(
   request: Request,
@@ -49,7 +50,7 @@ export async function PUT(
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { title, description, price, type, category, condition, location, locationDetails, imageUrl, isGlobal, published, paymentMethods, paymentType, acceptsRequests, acceptsOffers, requestPrice, sellerPayoutAddress, sellerCryptoCurrency, rentalDaily, rentalWeekly, rentalMonthly, rentalDeposit, rentalMinDays, rentalMaxDays, rentalAvailable } = body
+    const { title, description, price, type, category, condition, location, locationDetails, imageUrl, isGlobal, published, paymentMethods, paymentType, acceptsRequests, acceptsOffers, requestPrice, sellerPayoutAddress, sellerCryptoCurrency, rentalDaily, rentalWeekly, rentalMonthly, rentalDeposit, rentalMinDays, rentalMaxDays, rentalAvailable, hashtags } = body
 
     const existing = await prisma.product.findFirst({
       where: { id, userId: session.user.id }
@@ -110,6 +111,48 @@ export async function PUT(
         rentalAvailable: rentalAvailable ?? existing.rentalAvailable
       }
     })
+
+    const existingTags = await prisma.productHashtag.findMany({
+      where: { productId: id },
+      include: { hashtag: true }
+    })
+
+    for (const pt of existingTags) {
+      await prisma.hashtag.update({
+        where: { id: pt.hashtagId },
+        data: { postCount: { decrement: 1 } },
+      })
+    }
+
+    await prisma.productHashtag.deleteMany({ where: { productId: id } })
+
+    const resolvedTitle = title ?? existing.title
+    const resolvedDescription = description ?? existing.description
+    const allTags = [...new Set([
+      ...(hashtags || []),
+      ...extractHashtags([resolvedTitle, resolvedDescription || ''].join(' '))
+    ])]
+
+    if (allTags.length > 0) {
+      await Promise.all(allTags.map(async tag => {
+        const hashtag = await prisma.hashtag.upsert({
+          where: { tag },
+          create: { tag, postCount: 0 },
+          update: {},
+        })
+        await prisma.productHashtag.create({
+          data: {
+            productId: product.id,
+            hashtagId: hashtag.id,
+            sourceType: 'PRODUCT',
+          },
+        }).catch(() => {})
+        await prisma.hashtag.update({
+          where: { id: hashtag.id },
+          data: { postCount: { increment: 1 } },
+        })
+      }))
+    }
 
     return NextResponse.json(product)
   } catch (error) {

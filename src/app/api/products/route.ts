@@ -20,6 +20,7 @@ export async function GET(request: Request) {
     const radius = searchParams.get('radius')
     const pinned = searchParams.get('pinned')
     const hashtag = searchParams.get('hashtag')
+    const limit = searchParams.get('limit')
 
     const session = await getServerSession(authOptions)
     let userLocation = null
@@ -58,8 +59,11 @@ export async function GET(request: Request) {
       where.pinned = true
     }
 
+    const take = limit ? parseInt(limit) : undefined
+
     let products = await prisma.product.findMany({
       where,
+      take,
       include: {
         user: { select: { name: true, location: true, neighborhood: true, shopSlug: true } },
         hashtags: { include: { hashtag: { select: { id: true, tag: true } } } },

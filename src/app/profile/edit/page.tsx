@@ -371,6 +371,23 @@ export default function ProfileEditPage() {
     }
   }
 
+  const handleReorderDonations = async (draggedIndex: number, targetIndex: number) => {
+    const newAddresses = [...donationAddresses]
+    const [draggedItem] = newAddresses.splice(draggedIndex, 1)
+    newAddresses.splice(targetIndex, 0, draggedItem)
+    setDonationAddresses(newAddresses)
+
+    for (let i = 0; i < newAddresses.length; i++) {
+      if (newAddresses[i].sortOrder !== i) {
+        await fetch(`/api/users/donations/${newAddresses[i].id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sortOrder: i })
+        })
+      }
+    }
+  }
+
   const getSocialType = (type: string) => {
     return SOCIAL_TYPES.find(t => t.type === type) || SOCIAL_TYPES[0]
   }
@@ -767,10 +784,24 @@ export default function ProfileEditPage() {
             </p>
           )}
 
-          {donationAddresses.map(da => {
+          {donationAddresses.map((da, index) => {
             const crypto = allCryptos.find(c => c.id === da.currency)
             return (
-              <div key={da.id} style={{display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '14px', background: 'var(--bg-tertiary)', borderRadius: '10px', marginBottom: '8px', border: '1px solid var(--border-color)'}}>
+              <div
+                key={da.id}
+                draggable
+                onDragStart={(e) => e.dataTransfer.setData('text/plain', String(index))}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'))
+                  if (draggedIndex !== index) handleReorderDonations(draggedIndex, index)
+                }}
+                style={{display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '14px', background: 'var(--bg-tertiary)', borderRadius: '10px', marginBottom: '8px', border: '1px solid var(--border-color)', cursor: 'grab'}}
+              >
+                <div style={{width: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '1rem', marginTop: '2px'}} title="Drag to reorder">
+                  ⠿
+                </div>
                 <div style={{flex: 1}}>
                   <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px'}}>
                     {crypto?.icon && <img src={crypto.icon} alt="" width={20} height={20} style={{borderRadius: '50%'}} />}

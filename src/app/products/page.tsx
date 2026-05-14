@@ -70,6 +70,7 @@ export default function ProductsPage() {
     isGlobal: false,
     imageUrl: '',
     published: true,
+    hashtags: '',
   })
 
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -254,6 +255,7 @@ export default function ProductsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...myForm,
+          hashtags: myForm.hashtags ? myForm.hashtags.split(',').map(t => t.trim()).filter(Boolean) : [],
           price: myForm.price ? parseFloat(myForm.price) : null,
           paymentMethods: '',
           paymentType: 'BOTH',
@@ -288,6 +290,7 @@ export default function ProductsPage() {
       isGlobal: product.isGlobal,
       imageUrl: product.imageUrl || '',
       published: product.published,
+      hashtags: product.hashtags?.map(h => h.tag).join(', ') || '',
     })
     setShowMyForm(true)
   }
@@ -594,15 +597,21 @@ export default function ProductsPage() {
                     </select>
                   </div>
                 </div>
-                <div className={styles.myFormRow}>
-                  <div className="form-group" style={{ flex: 1 }}>
-                    <label>Image URL</label>
-                    <input type="text" value={myForm.imageUrl} onChange={e => setMyForm({...myForm, imageUrl: e.target.value})} placeholder="https://..." />
-                  </div>
-                </div>
-                <div className={styles.myFormRow}>
-                  <div className="form-group" style={{ flex: 1 }}>
-                    <label>Location</label>
+  <div className={styles.myFormRow}>
+    <div className="form-group" style={{ flex: 1 }}>
+      <label>Image URL</label>
+      <input type="text" value={myForm.imageUrl} onChange={e => setMyForm({...myForm, imageUrl: e.target.value})} placeholder="https://..." />
+    </div>
+  </div>
+  <div className={styles.myFormRow}>
+    <div className="form-group" style={{ flex: 1 }}>
+      <label>Hashtags</label>
+      <input type="text" value={myForm.hashtags} onChange={e => setMyForm({...myForm, hashtags: e.target.value})} placeholder="e.g. tech, vintage, handmade (comma separated)" />
+    </div>
+  </div>
+  <div className={styles.myFormRow}>
+    <div className="form-group" style={{ flex: 1 }}>
+      <label>Location</label>
                     <input type="text" value={myForm.location} onChange={e => setMyForm({...myForm, location: e.target.value})} placeholder="City, State" />
                   </div>
                   <div className="form-group" style={{ flex: '0 0 auto', display: 'flex', alignItems: 'flex-end', paddingBottom: '4px' }}>
@@ -637,7 +646,7 @@ export default function ProductsPage() {
           }).length === 0 ? (
             <div className={styles.myListingsEmpty}>
               <p>No listings yet.</p>
-              <button onClick={() => { setMyForm({ title: '', description: '', price: '', type: 'PRODUCT', category: '', condition: '', location: '', isGlobal: false, imageUrl: '', published: true }); setEditProduct(null); setShowMyForm(true) }} className="btn-primary">Create Your First Listing</button>
+              <button onClick={() => { setMyForm({ title: '', description: '', price: '', type: 'PRODUCT', category: '', condition: '', location: '', isGlobal: false, imageUrl: '', published: true, hashtags: '' }); setEditProduct(null); setShowMyForm(true) }} className="btn-primary">Create Your First Listing</button>
             </div>
           ) : (
             <div className={styles.myListingsGrid}>

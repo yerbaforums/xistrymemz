@@ -86,7 +86,8 @@ export default function SetupShopPage() {
     paymentType: 'BOTH',
     acceptsRequests: false,
     acceptsOffers: true,
-    requestPrice: ''
+    requestPrice: '',
+    hashtags: ''
   })
 
   const [editProduct, setEditProduct] = useState({
@@ -104,7 +105,8 @@ export default function SetupShopPage() {
     paymentType: 'BOTH',
     acceptsRequests: false,
     requestPrice: '',
-    published: true
+    published: true,
+    hashtags: ''
   })
 
   const wizard = useWizard(steps)
@@ -234,6 +236,7 @@ export default function SetupShopPage() {
     try {
       const productData = {
         ...newProduct,
+        hashtags: newProduct.hashtags ? newProduct.hashtags.split(',').map(t => t.trim()).filter(Boolean) : [],
         paymentMethods: newProduct.paymentMethods.join(','),
         price: newProduct.price ? parseFloat(newProduct.price) : undefined,
         requestPrice: newProduct.requestPrice ? parseFloat(newProduct.requestPrice) : undefined,
@@ -251,7 +254,8 @@ export default function SetupShopPage() {
           title: '', description: '', price: '', type: 'PRODUCT', category: '',
           condition: '', location: '', locationDetails: '', isGlobal: false,
           imageUrl: '', paymentMethods: [], paymentType: 'BOTH',
-          acceptsRequests: false, acceptsOffers: true, requestPrice: ''
+          acceptsRequests: false, acceptsOffers: true, requestPrice: '',
+          hashtags: ''
         })
         fetchShopData()
       } else {
@@ -282,7 +286,8 @@ export default function SetupShopPage() {
       paymentType: (product as { paymentType?: string }).paymentType || 'BOTH',
       acceptsRequests: product.acceptsRequests,
       requestPrice: product.requestPrice?.toString() || '',
-      published: product.published
+      published: product.published,
+      hashtags: (product as { hashtags?: { id: string; tag: string }[] }).hashtags?.map(h => h.tag).join(', ') || ''
     })
     setShowEditModal(true)
   }
@@ -295,6 +300,7 @@ export default function SetupShopPage() {
     try {
       const productData = {
         ...editProduct,
+        hashtags: editProduct.hashtags ? editProduct.hashtags.split(',').map(t => t.trim()).filter(Boolean) : [],
         paymentMethods: editProduct.paymentMethods.join(','),
         price: editProduct.price ? parseFloat(editProduct.price) : undefined,
         requestPrice: editProduct.requestPrice ? parseFloat(editProduct.requestPrice) : undefined,
@@ -630,6 +636,10 @@ export default function SetupShopPage() {
                 {newProduct.imageUrl && <img src={newProduct.imageUrl} alt="Preview" className={styles.imagePreview} />}
               </div>
               <div className="form-group">
+                <label>Hashtags</label>
+                <input type="text" value={newProduct.hashtags} onChange={e => setNewProduct({...newProduct, hashtags: e.target.value})} placeholder="e.g. tech, vintage, handmade (comma separated)" />
+              </div>
+              <div className="form-group">
                 <label className={styles.checkboxLabel}>
                   <input type="checkbox" checked={newProduct.isGlobal} onChange={e => setNewProduct({...newProduct, isGlobal: e.target.checked})} />
                   Available Globally
@@ -741,6 +751,10 @@ export default function SetupShopPage() {
                   <input type="text" value={editProduct.imageUrl} onChange={e => setEditProduct({...editProduct, imageUrl: e.target.value})} placeholder="Or paste image URL" className={styles.urlInput} />
                 </div>
                 {editProduct.imageUrl && <img src={editProduct.imageUrl} alt="Preview" className={styles.imagePreview} />}
+              </div>
+              <div className="form-group">
+                <label>Hashtags</label>
+                <input type="text" value={editProduct.hashtags} onChange={e => setEditProduct({...editProduct, hashtags: e.target.value})} placeholder="e.g. tech, vintage, handmade (comma separated)" />
               </div>
               <div className="form-group">
                 <label className={styles.checkboxLabel}>

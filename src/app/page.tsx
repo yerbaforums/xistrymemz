@@ -9,7 +9,6 @@ import HashtagSection from '@/components/home/HashtagSection'
 import PulseSection from '@/components/home/PulseSection'
 import StepsSection from '@/components/home/StepsSection'
 import FeaturesSection from '@/components/home/FeaturesSection'
-import TestimonialsSection from '@/components/home/TestimonialsSection'
 import CTASection from '@/components/home/CTASection'
 import HomeFooterSection from '@/components/home/HomeFooterSection'
 import type { PlatformStats, FeaturedShop, FeaturedProduct, PublicRequest } from '@/components/home/types'
@@ -72,11 +71,11 @@ export default function Home() {
   const fetchProducts = useCallback(async (type?: string) => {
     setLoadingProducts(true)
     try {
-      const params = !type || type === 'all' ? 'pinned=true' : `pinned=true&type=${type}`
+      const params = !type || type === 'all' ? 'limit=6' : `limit=6&type=${type}`
       const res = await fetch(`/api/products?${params}`)
       if (res.ok) {
         const data = await res.json()
-        if (data?.products) setProducts(data.products.slice(0, 6))
+        if (data?.products) setProducts(data.products)
       }
     } catch { } finally { setLoadingProducts(false) }
   }, [])
@@ -124,7 +123,6 @@ export default function Home() {
       />
       <StepsSection />
       <FeaturesSection />
-      <TestimonialsSection />
       <HomeMap />
       <CTASection memberCount={animatedStats.members} />
       <HomeFooterSection />
