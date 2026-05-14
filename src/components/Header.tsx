@@ -10,6 +10,8 @@ import CartButton from './CartButton'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { getUserProfileUrl } from '@/lib/utils'
 import LocationStatus from './LocationStatus'
+import { useTheme } from '@/context/ThemeContext'
+import type { ThemeAccent } from '@/context/ThemeContext'
 
 export default function Header() {
   const { data: session, status } = useSession()
@@ -33,6 +35,7 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false)
 
   const { settings } = useSiteSettings()
+  const { mode, accent, setMode, setAccent, toggleMode } = useTheme()
   const isAuthenticated = status === 'authenticated'
   const isAuthPage = pathname?.startsWith('/auth')
 
@@ -301,6 +304,26 @@ export default function Header() {
             <Link href="/community/groups" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>👥 Groups</Link>
           </div>
 
+          <div className={styles.mobileSection}>
+            <div className={styles.mobileSectionTitle}>Theme</div>
+            <div className={styles.mobileThemeRow}>
+              <button className={styles.mobileThemeToggle} onClick={toggleMode}>
+                {mode === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode'}
+              </button>
+            </div>
+            <div className={styles.mobileAccentRow}>
+              {(['cyan', 'purple', 'green', 'orange', 'pink', 'blue'] as ThemeAccent[]).map(c => (
+                <button
+                  key={c}
+                  className={`${styles.mobileAccentDot} ${accent === c ? styles.mobileAccentDotActive : ''}`}
+                  data-accent={c}
+                  onClick={() => { setAccent(c); setMenuOpen(false) }}
+                  aria-label={`${c} accent`}
+                />
+              ))}
+            </div>
+          </div>
+
           {isAuthenticated ? (
             <>
               <div className={styles.mobileSection}>
@@ -353,6 +376,9 @@ export default function Header() {
         <div className={styles.rightSection}>
           {isAuthenticated && (
             <>
+              <button className={styles.themeToggle} onClick={toggleMode} aria-label={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`} title={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`}>
+                {mode === 'dark' ? <span aria-hidden="true">☀️</span> : <span aria-hidden="true">🌙</span>}
+              </button>
               <div className={styles.searchContainer}>
                 {searchOpen ? (
                   <>
@@ -478,6 +504,18 @@ export default function Header() {
                     <strong>{session.user.name || 'User'}</strong>
                     <span className={styles.userEmail}>{session.user.email}</span>
                   </div>
+                  <div className={styles.themeAccentPicker}>
+                    {(['cyan', 'purple', 'green', 'orange', 'pink', 'blue'] as ThemeAccent[]).map(c => (
+                      <button
+                        key={c}
+                        className={`${styles.accentDot} ${accent === c ? styles.accentDotActive : ''}`}
+                        data-accent={c}
+                        onClick={() => setAccent(c)}
+                        aria-label={`${c} accent theme`}
+                        title={`${c} accent theme`}
+                      />
+                    ))}
+                  </div>
                   <div className={styles.userLinks}>
                     <Link href={session?.user ? getUserProfileUrl({ id: session.user.id, username: (session.user as { username?: string }).username }) : '/auth/login'} className={styles.userLink} role="menuitem" onClick={closeDropdown}>My Profile</Link>
                     <Link href="/profile/settings" className={styles.userLink} role="menuitem" onClick={closeDropdown}>Settings</Link>
@@ -510,10 +548,15 @@ export default function Header() {
           )}
 
           {!isAuthenticated && status !== 'loading' && (
-            <div className={styles.authButtons}>
-              <Link href="/auth/login" className={styles.loginBtn}>Login</Link>
-              <Link href="/auth/register" className={styles.signupBtn}>Sign Up</Link>
-            </div>
+            <>
+              <button className={styles.themeToggle} onClick={toggleMode} aria-label={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`} title={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`}>
+                {mode === 'dark' ? <span aria-hidden="true">☀️</span> : <span aria-hidden="true">🌙</span>}
+              </button>
+              <div className={styles.authButtons}>
+                <Link href="/auth/login" className={styles.loginBtn}>Login</Link>
+                <Link href="/auth/register" className={styles.signupBtn}>Sign Up</Link>
+              </div>
+            </>
           )}
         </div>
       </div>

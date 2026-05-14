@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./themes.css";
 import { Providers } from "@/components/Providers";
 import { TariWalletProvider } from "@/context/TariWalletContext";
 import { SiteSettingsProvider } from "@/hooks/useSiteSettings";
