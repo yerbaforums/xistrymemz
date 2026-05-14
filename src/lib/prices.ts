@@ -17,6 +17,19 @@ const COINGECKO_IDS: Record<string, string> = {
   FIRO: 'firo',
 }
 
+const FALLBACK_PRICES: Record<string, number> = {
+  BTC: 68500,
+  ETH: 3450,
+  USDT: 1,
+  USDC: 1,
+  XMR: 165,
+  XTM: 0.06,
+  ARRR: 3.50,
+  DERO: 2.00,
+  ZANO: 0.50,
+  FIRO: 1.20,
+}
+
 const SYMBOLS = Object.keys(COINGECKO_IDS) as (keyof typeof COINGECKO_IDS)[]
 
 let cache: { prices: Record<string, number>; changes: Record<string, number>; ts: number } | null = null
@@ -37,6 +50,12 @@ async function fetchPrices(): Promise<void> {
     if (entry?.usd != null) {
       prices[symbol] = entry.usd
       changes[symbol] = entry.usd_24h_change ?? 0
+    }
+  }
+
+  for (const symbol of SYMBOLS) {
+    if (prices[symbol] == null && FALLBACK_PRICES[symbol] != null) {
+      prices[symbol] = FALLBACK_PRICES[symbol]
     }
   }
 

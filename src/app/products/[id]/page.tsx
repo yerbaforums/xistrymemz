@@ -15,6 +15,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import RoleBadge from '@/components/RoleBadge'
 import { getCryptoPrices } from '@/lib/prices'
+import { CRYPTO_LOGOS } from '@/lib/constants'
 import dynamic from 'next/dynamic'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
@@ -69,6 +70,19 @@ interface Plan {
   id: string
   title: string
 }
+
+const CRYPTO_DISPLAY = [
+  { symbol: 'BTC', decimals: 6, fallback: 68500 },
+  { symbol: 'ETH', decimals: 4, fallback: 3450 },
+  { symbol: 'USDT', decimals: 2, fallback: 1 },
+  { symbol: 'USDC', decimals: 2, fallback: 1 },
+  { symbol: 'XMR', decimals: 4, fallback: 165 },
+  { symbol: 'XTM', decimals: 4, fallback: 0.06 },
+  { symbol: 'ARRR', decimals: 4, fallback: 3.50 },
+  { symbol: 'DERO', decimals: 4, fallback: 2.00 },
+  { symbol: 'ZANO', decimals: 4, fallback: 0.50 },
+  { symbol: 'FIRO', decimals: 2, fallback: 1.20 },
+]
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { data: session } = useSession()
@@ -792,10 +806,16 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <div className={styles.priceCard}>
               <p className={styles.price}>${product.price}</p>
               <div className={styles.cryptoConversions}>
-                <span className={styles.cryptoLabel}>≈ {(product.price / (cryptoPrices['BTC'] || 68500)).toFixed(6)} BTC</span>
-                <span className={styles.cryptoLabel}>≈ {(product.price / (cryptoPrices['ETH'] || 3450)).toFixed(4)} ETH</span>
-                <span className={styles.cryptoLabel}>≈ {(product.price / (cryptoPrices['XMR'] || 165)).toFixed(4)} XMR</span>
-                <span className={styles.cryptoLabel}>≈ {(product.price / (cryptoPrices['FIRO'] || 1.20)).toFixed(2)} FIRO</span>
+                {CRYPTO_DISPLAY.map(({ symbol, decimals, fallback }) => (
+                  <span key={symbol} className={styles.cryptoLabel}>
+                    <img
+                      src={`/crypto-logos/${CRYPTO_LOGOS[symbol] || 'ethereum.png'}`}
+                      alt={symbol}
+                      className={styles.cryptoLogo}
+                    />
+                    ≈ {(product.price / (cryptoPrices[symbol] || fallback)).toFixed(decimals)} {symbol}
+                  </span>
+                ))}
               </div>
                <button 
                   className={`${styles.addToCartBtn} ${!settings.enableCheckout ? styles.btnDisabled : ''}`}

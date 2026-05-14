@@ -500,6 +500,16 @@
   font-size: 0.8rem;
   color: var(--text-secondary);
   font-family: monospace;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cryptoLogo {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .messageBtn {

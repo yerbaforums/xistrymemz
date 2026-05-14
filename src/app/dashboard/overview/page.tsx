@@ -243,7 +243,7 @@ export default async function DashboardOverview() {
             <Link href="/templates" className={styles.actionBtn}>
               <span>📋</span> Browse Templates
             </Link>
-            <Link href="/shop/setup" className={styles.actionBtn}>
+            <Link href="/products/new" className={styles.actionBtn}>
               <span>🛒</span> New Product
             </Link>
             <Link href="/plans" className={styles.actionBtn}>
@@ -259,7 +259,7 @@ export default async function DashboardOverview() {
               <span>📅</span> New Event
             </Link>
             <Link href="/products/new" className={styles.actionBtn}>
-              <span>🏠</span> List Rental
+              <span>📦</span> List Item
             </Link>
             <Link href="/school/setup" className={styles.actionBtn}>
               <span>🏫</span> Create Course

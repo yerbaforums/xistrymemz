@@ -237,3 +237,268 @@
     justify-content: center;
   }
 }
+
+.tabsBar {
+  display: flex;
+  gap: 0;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tabBtn {
+  padding: 10px 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: inherit;
+  font-weight: 500;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tabBtn:hover {
+  color: var(--text-primary);
+}
+
+.tabActive {
+  color: var(--accent-primary);
+  border-bottom-color: var(--accent-primary);
+}
+
+.tabCount {
+  font-size: 0.7rem;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  padding: 1px 7px;
+  border-radius: 10px;
+}
+
+.tabActive .tabCount {
+  background: rgba(0, 217, 255, 0.15);
+  color: var(--accent-primary);
+}
+
+.myListings {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.myListingsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.myListingsFilters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.myFilterSelect {
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.85rem;
+}
+
+.myListingsCount {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.myFormSection {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.myFormHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.myFormHeader h3 {
+  font-size: 1rem;
+}
+
+.myFormClose {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 4px;
+}
+
+.myFormClose:hover {
+  color: var(--text-primary);
+}
+
+.myForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.myFormRow {
+  display: flex;
+  gap: 12px;
+}
+
+.myFormActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.myCheckLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.myCheckLabel input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent-primary);
+}
+
+.myListingsEmpty {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-secondary);
+}
+
+.myListingsEmpty p {
+  margin-bottom: 16px;
+}
+
+.myListingsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.myListingCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+}
+
+.myListingCard:hover {
+  border-color: var(--accent-primary);
+}
+
+.myListingImage {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.myListingImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.myListingImagePlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-tertiary);
+  font-size: 1.2rem;
+}
+
+.myListingInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.myListingHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.myListingHeader h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.myListingMeta {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.myListingActions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.myListingActionBtn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.myListingActionBtn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background: var(--bg-tertiary);
+}
+
+@media (max-width: 768px) {
+  .myListingsHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .myFormRow {
+    flex-direction: column;
+  }
+}

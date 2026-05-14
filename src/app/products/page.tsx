@@ -24,6 +24,8 @@ export default function ProductsPage() {
   const { location: passportLocation } = usePassportLocation()
   const { addItem } = useCart()
 
+  const [tab, setTab] = useState<'browse' | 'mylistings'>('browse')
+
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -51,8 +53,46 @@ export default function ProductsPage() {
   const [requestGoal, setRequestGoal] = useState('')
   const [requestLoading, setRequestLoading] = useState(false)
 
+  const [myProducts, setMyProducts] = useState<Product[]>([])
+  const [myProductsLoading, setMyProductsLoading] = useState(false)
+  const [myFilter, setMyFilter] = useState<'all' | 'published' | 'draft'>('all')
+  const [showMyForm, setShowMyForm] = useState(false)
+  const [editProduct, setEditProduct] = useState<Product | null>(null)
+  const [savingMy, setSavingMy] = useState(false)
+  const [myForm, setMyForm] = useState({
+    title: '',
+    description: '',
+    price: '',
+    type: 'PRODUCT',
+    category: '',
+    condition: '',
+    location: '',
+    isGlobal: false,
+    imageUrl: '',
+    published: true,
+  })
+
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const urlSynced = useRef(false)
+
+  const fetchMyProducts = useCallback(async () => {
+    setMyProductsLoading(true)
+    try {
+      const res = await fetch('/api/products/user')
+      const data = await res.json()
+      setMyProducts(data)
+    } catch {
+      // silently fail
+    } finally {
+      setMyProductsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (tab === 'mylistings' && session?.user && myProducts.length === 0) {
+      fetchMyProducts()
+    }
+  }, [tab, session, myProducts.length, fetchMyProducts])
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -203,6 +243,88 @@ export default function ProductsPage() {
     setUserLocation(null); setSearchQuery('')
   }
 
+  const handleMySubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSavingMy(true)
+    try {
+      const url = editProduct ? `/api/products/${editProduct.id}` : '/api/products'
+      const method = editProduct ? 'PUT' : 'POST'
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...myForm,
+          price: myForm.price ? parseFloat(myForm.price) : null,
+          paymentMethods: '',
+          paymentType: 'BOTH',
+        }),
+      })
+      if (res.ok) {
+        success(editProduct ? 'Listing updated!' : 'Listing created!')
+        fetchMyProducts()
+        setShowMyForm(false)
+        setEditProduct(null)
+      } else {
+        const err = await res.json()
+        error(err.error || 'Failed to save')
+      }
+    } catch {
+      error('Failed to save listing')
+    } finally {
+      setSavingMy(false)
+    }
+  }
+
+  const startMyEdit = (product: Product) => {
+    setEditProduct(product)
+    setMyForm({
+      title: product.title,
+      description: product.description || '',
+      price: product.price?.toString() || '',
+      type: product.type,
+      category: product.category || '',
+      condition: product.condition || '',
+      location: product.location || '',
+      isGlobal: product.isGlobal,
+      imageUrl: product.imageUrl || '',
+      published: product.published,
+    })
+    setShowMyForm(true)
+  }
+
+  const toggleMyPublish = async (product: Product) => {
+    try {
+      const res = await fetch(`/api/products/${product.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ published: !product.published }),
+      })
+      if (res.ok) {
+        success(!product.published ? 'Published!' : 'Hidden')
+        fetchMyProducts()
+      } else {
+        error('Failed to update')
+      }
+    } catch {
+      error('Failed to update')
+    }
+  }
+
+  const deleteMyListing = async (product: Product) => {
+    if (!confirm(`Delete "${product.title}"? This cannot be undone.`)) return
+    try {
+      const res = await fetch(`/api/products/${product.id}`, { method: 'DELETE' })
+      if (res.ok) {
+        success('Listing deleted')
+        fetchMyProducts()
+      } else {
+        error('Failed to delete')
+      }
+    } catch {
+      error('Failed to delete')
+    }
+  }
+
   const handleFund = (product: Product) => {
     setRequestTitle(`Wanted: ${product.title}`)
     setRequestDesc(`Looking for: ${product.title}`)
@@ -268,114 +390,295 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      <div className={styles.searchBar}>
-        <svg className={styles.searchIcon} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
-        </svg>
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          placeholder="Search products, services, and rentals..."
-          className={styles.searchInput}
-        />
-        {searchQuery && (
-          <button className={styles.searchClear} onClick={() => setSearchQuery('')}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
+      {session?.user && (
+        <div className={styles.tabsBar}>
+          <button
+            className={`${styles.tabBtn} ${tab === 'browse' ? styles.tabActive : ''}`}
+            onClick={() => setTab('browse')}
+          >
+            Browse
           </button>
-        )}
-      </div>
+          <button
+            className={`${styles.tabBtn} ${tab === 'mylistings' ? styles.tabActive : ''}`}
+            onClick={() => setTab('mylistings')}
+          >
+            My Listings {myProducts.length > 0 && <span className={styles.tabCount}>{myProducts.length}</span>}
+          </button>
+        </div>
+      )}
 
-      <div className={styles.mainLayout}>
-        <ProductFilters
-          type={type} category={category} location={location} condition={condition}
-          showGlobal={showGlobal} priceMin={priceMin} priceMax={priceMax}
-          zipCode={zipCode} radius={radius} geocodingLoading={geocodingLoading}
-          hasPassportLocation={!!(passportLocation?.latitude && passportLocation?.longitude)}
-          categories={categories} locations={locations}
-          onTypeChange={setType} onCategoryChange={setCategory}
-          onLocationChange={setLocation} onConditionChange={setCondition}
-          onShowGlobalChange={setShowGlobal}
-          onPriceMinChange={v => debouncedSet(setPriceMin, v)}
-          onPriceMaxChange={v => debouncedSet(setPriceMax, v)}
-          onZipCodeChange={v => debouncedSet(setZipCode, v)}
-          onRadiusChange={setRadius} onGeocode={geocodeZipCode}
-          onClear={clearFilters}
-          onUsePassportLocation={() => {
-            if (passportLocation?.latitude && passportLocation?.longitude) {
-              setUserLocation({ lat: passportLocation.latitude, lon: passportLocation.longitude })
-              setRadius(String(passportLocation.searchRadius || 25))
-              setZipCode('')
-            }
-          }}
-        />
+      {tab === 'browse' && (
+        <div className={styles.searchBar}>
+          <svg className={styles.searchIcon} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+          </svg>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Search products, services, and rentals..."
+            className={styles.searchInput}
+          />
+          {searchQuery && (
+            <button className={styles.searchClear} onClick={() => setSearchQuery('')}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          )}
+        </div>
+      )}
 
-        <main className={styles.content}>
-          <div className={styles.resultsHeader}>
-            <span className={styles.resultsCount}>
-              <strong>{filteredProducts.length}</strong> {filteredProducts.length === 1 ? 'item' : 'items'} found
-            </span>
-            <div className={styles.resultsControls}>
-              <select value={sortBy} onChange={e => setSortBy(e.target.value)} className={styles.sortSelect}>
-                <option value="newest">Newest First</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-              </select>
-              <div className={styles.viewToggle}>
-                <button
-                  className={`${styles.viewToggleBtn} ${viewMode === 'grid' ? styles.active : ''}`}
-                  onClick={() => setViewMode('grid')}
-                  title="Grid view"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <rect x="3" y="3" width="7" height="7" rx="1"/>
-                    <rect x="14" y="3" width="7" height="7" rx="1"/>
-                    <rect x="3" y="14" width="7" height="7" rx="1"/>
-                    <rect x="14" y="14" width="7" height="7" rx="1"/>
-                  </svg>
-                </button>
-                <button
-                  className={`${styles.viewToggleBtn} ${viewMode === 'list' ? styles.active : ''}`}
-                  onClick={() => setViewMode('list')}
-                  title="List view"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <rect x="3" y="4" width="18" height="4" rx="1"/>
-                    <rect x="3" y="10" width="18" height="4" rx="1"/>
-                    <rect x="3" y="16" width="18" height="4" rx="1"/>
-                  </svg>
-                </button>
-                <button
-                  className={`${styles.viewToggleBtn} ${viewMode === 'map' ? styles.active : ''}`}
-                  onClick={() => setViewMode('map')}
-                  title="Map view"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-                  </svg>
-                </button>
+      {tab === 'browse' && (
+        <div className={styles.mainLayout}>
+          <ProductFilters
+            type={type} category={category} location={location} condition={condition}
+            showGlobal={showGlobal} priceMin={priceMin} priceMax={priceMax}
+            zipCode={zipCode} radius={radius} geocodingLoading={geocodingLoading}
+            hasPassportLocation={!!(passportLocation?.latitude && passportLocation?.longitude)}
+            categories={categories} locations={locations}
+            onTypeChange={setType} onCategoryChange={setCategory}
+            onLocationChange={setLocation} onConditionChange={setCondition}
+            onShowGlobalChange={setShowGlobal}
+            onPriceMinChange={v => debouncedSet(setPriceMin, v)}
+            onPriceMaxChange={v => debouncedSet(setPriceMax, v)}
+            onZipCodeChange={v => debouncedSet(setZipCode, v)}
+            onRadiusChange={setRadius} onGeocode={geocodeZipCode}
+            onClear={clearFilters}
+            onUsePassportLocation={() => {
+              if (passportLocation?.latitude && passportLocation?.longitude) {
+                setUserLocation({ lat: passportLocation.latitude, lon: passportLocation.longitude })
+                setRadius(String(passportLocation.searchRadius || 25))
+                setZipCode('')
+              }
+            }}
+          />
+
+          <main className={styles.content}>
+            <div className={styles.resultsHeader}>
+              <span className={styles.resultsCount}>
+                <strong>{filteredProducts.length}</strong> {filteredProducts.length === 1 ? 'item' : 'items'} found
+              </span>
+              <div className={styles.resultsControls}>
+                <select value={sortBy} onChange={e => setSortBy(e.target.value)} className={styles.sortSelect}>
+                  <option value="newest">Newest First</option>
+                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-high">Price: High to Low</option>
+                </select>
+                <div className={styles.viewToggle}>
+                  <button
+                    className={`${styles.viewToggleBtn} ${viewMode === 'grid' ? styles.active : ''}`}
+                    onClick={() => setViewMode('grid')}
+                    title="Grid view"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <rect x="3" y="3" width="7" height="7" rx="1"/>
+                      <rect x="14" y="3" width="7" height="7" rx="1"/>
+                      <rect x="3" y="14" width="7" height="7" rx="1"/>
+                      <rect x="14" y="14" width="7" height="7" rx="1"/>
+                    </svg>
+                  </button>
+                  <button
+                    className={`${styles.viewToggleBtn} ${viewMode === 'list' ? styles.active : ''}`}
+                    onClick={() => setViewMode('list')}
+                    title="List view"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <rect x="3" y="4" width="18" height="4" rx="1"/>
+                      <rect x="3" y="10" width="18" height="4" rx="1"/>
+                      <rect x="3" y="16" width="18" height="4" rx="1"/>
+                    </svg>
+                  </button>
+                  <button
+                    className={`${styles.viewToggleBtn} ${viewMode === 'map' ? styles.active : ''}`}
+                    onClick={() => setViewMode('map')}
+                    title="Map view"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
+
+            {viewMode === 'map' ? (
+              <ProductMapView products={filteredProducts} userLocation={userLocation} />
+            ) : (
+              <ProductGrid
+                products={filteredProducts}
+                loading={loading}
+                viewMode={viewMode}
+                page={page}
+                pageSize={pageSize}
+                onViewModeChange={setViewMode}
+                onFund={handleFund}
+                onClearFilters={clearFilters}
+              />
+            )}
+          </main>
+        </div>
+      )}
+
+      {tab === 'mylistings' && session?.user && (
+        <div className={styles.myListings}>
+          <div className={styles.myListingsHeader}>
+            <div className={styles.myListingsFilters}>
+              <select value={myFilter} onChange={e => setMyFilter(e.target.value as typeof myFilter)} className={styles.myFilterSelect}>
+                <option value="all">All</option>
+                <option value="published">Published</option>
+                <option value="draft">Draft</option>
+              </select>
+              <span className={styles.myListingsCount}>
+                {myProducts.filter(p => {
+                  if (myFilter === 'published' && !p.published) return false
+                  if (myFilter === 'draft' && p.published) return false
+                  return true
+                }).length} listings
+              </span>
+            </div>
+            <Link href="/products/new" className={styles.createBtn} style={{ textDecoration: 'none' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              New Listing
+            </Link>
           </div>
 
-          {viewMode === 'map' ? (
-            <ProductMapView products={filteredProducts} userLocation={userLocation} />
-          ) : (
-            <ProductGrid
-              products={filteredProducts}
-              loading={loading}
-              viewMode={viewMode}
-              page={page}
-              pageSize={pageSize}
-              onViewModeChange={setViewMode}
-              onFund={handleFund}
-              onClearFilters={clearFilters}
-            />
+          {showMyForm && (
+            <div className={styles.myFormSection}>
+              <div className={styles.myFormHeader}>
+                <h3>{editProduct ? 'Edit Listing' : 'New Listing'}</h3>
+                <button onClick={() => { setShowMyForm(false); setEditProduct(null) }} className={styles.myFormClose}>✕</button>
+              </div>
+              <form onSubmit={handleMySubmit} className={styles.myForm}>
+                <div className={styles.myFormRow}>
+                  <div className="form-group">
+                    <label>Title *</label>
+                    <input type="text" value={myForm.title} onChange={e => setMyForm({...myForm, title: e.target.value})} placeholder="Item title" required />
+                  </div>
+                </div>
+                <div className={styles.myFormRow}>
+                  <div className="form-group">
+                    <label>Description</label>
+                    <textarea value={myForm.description} onChange={e => setMyForm({...myForm, description: e.target.value})} placeholder="Description" rows={3} />
+                  </div>
+                </div>
+                <div className={styles.myFormRow}>
+                  <div className="form-group" style={{ flex: 1 }}>
+                    <label>Price ($)</label>
+                    <input type="number" value={myForm.price} onChange={e => setMyForm({...myForm, price: e.target.value})} placeholder="0.00" step="0.01" />
+                  </div>
+                  <div className="form-group" style={{ flex: 1 }}>
+                    <label>Category</label>
+                    <input type="text" value={myForm.category} onChange={e => setMyForm({...myForm, category: e.target.value})} placeholder="e.g. Electronics" />
+                  </div>
+                </div>
+                <div className={styles.myFormRow}>
+                  <div className="form-group" style={{ flex: 1 }}>
+                    <label>Type</label>
+                    <select value={myForm.type} onChange={e => setMyForm({...myForm, type: e.target.value})}>
+                      <option value="PRODUCT">Product</option>
+                      <option value="SERVICE">Service</option>
+                      <option value="RENTAL">Rental</option>
+                    </select>
+                  </div>
+                  <div className="form-group" style={{ flex: 1 }}>
+                    <label>Condition</label>
+                    <select value={myForm.condition} onChange={e => setMyForm({...myForm, condition: e.target.value})}>
+                      <option value="">Select...</option>
+                      <option value="NEW">New</option>
+                      <option value="LIKE_NEW">Like New</option>
+                      <option value="GOOD">Good</option>
+                      <option value="FAIR">Fair</option>
+                    </select>
+                  </div>
+                </div>
+                <div className={styles.myFormRow}>
+                  <div className="form-group" style={{ flex: 1 }}>
+                    <label>Image URL</label>
+                    <input type="text" value={myForm.imageUrl} onChange={e => setMyForm({...myForm, imageUrl: e.target.value})} placeholder="https://..." />
+                  </div>
+                </div>
+                <div className={styles.myFormRow}>
+                  <div className="form-group" style={{ flex: 1 }}>
+                    <label>Location</label>
+                    <input type="text" value={myForm.location} onChange={e => setMyForm({...myForm, location: e.target.value})} placeholder="City, State" />
+                  </div>
+                  <div className="form-group" style={{ flex: '0 0 auto', display: 'flex', alignItems: 'flex-end', paddingBottom: '4px' }}>
+                    <label className={styles.myCheckLabel}>
+                      <input type="checkbox" checked={myForm.isGlobal} onChange={e => setMyForm({...myForm, isGlobal: e.target.checked})} />
+                      Global
+                    </label>
+                  </div>
+                </div>
+                <div className={styles.myFormRow}>
+                  <label className={styles.myCheckLabel}>
+                    <input type="checkbox" checked={myForm.published} onChange={e => setMyForm({...myForm, published: e.target.checked})} />
+                    Publish now
+                  </label>
+                </div>
+                <div className={styles.myFormActions}>
+                  <button type="button" onClick={() => { setShowMyForm(false); setEditProduct(null) }} className="btn-ghost">Cancel</button>
+                  <button type="submit" className="btn-primary" disabled={savingMy}>
+                    {savingMy ? 'Saving...' : editProduct ? 'Save Changes' : 'Create Listing'}
+                  </button>
+                </div>
+              </form>
+            </div>
           )}
-        </main>
-      </div>
+
+          {myProductsLoading ? (
+            <div className={styles.myListingsEmpty}>Loading your listings...</div>
+          ) : myProducts.filter(p => {
+            if (myFilter === 'published' && !p.published) return false
+            if (myFilter === 'draft' && p.published) return false
+            return true
+          }).length === 0 ? (
+            <div className={styles.myListingsEmpty}>
+              <p>No listings yet.</p>
+              <button onClick={() => { setMyForm({ title: '', description: '', price: '', type: 'PRODUCT', category: '', condition: '', location: '', isGlobal: false, imageUrl: '', published: true }); setEditProduct(null); setShowMyForm(true) }} className="btn-primary">Create Your First Listing</button>
+            </div>
+          ) : (
+            <div className={styles.myListingsGrid}>
+              {myProducts.filter(p => {
+                if (myFilter === 'published' && !p.published) return false
+                if (myFilter === 'draft' && p.published) return false
+                return true
+              }).map(product => (
+                <div key={product.id} className={styles.myListingCard}>
+                  <div className={styles.myListingImage}>
+                    {product.imageUrl ? (
+                      <img src={product.imageUrl} alt={product.title} />
+                    ) : (
+                      <div className={styles.myListingImagePlaceholder}>📦</div>
+                    )}
+                  </div>
+                  <div className={styles.myListingInfo}>
+                    <div className={styles.myListingHeader}>
+                      <h4>{product.title}</h4>
+                      <span className={`badge ${product.published ? 'badge-published' : 'badge-draft'}`}>
+                        {product.published ? 'Published' : 'Draft'}
+                      </span>
+                    </div>
+                    <div className={styles.myListingMeta}>
+                      <span className={`badge badge-${product.type.toLowerCase()}`}>{product.type}</span>
+                      {product.category && <span className="badge badge-category">{product.category}</span>}
+                      <span>{product.price ? `$${product.price}` : 'Free'}</span>
+                    </div>
+                  </div>
+                  <div className={styles.myListingActions}>
+                    <Link href={`/products/${product.id}`} className={styles.myListingActionBtn} title="View">👁️</Link>
+                    <button onClick={() => startMyEdit(product)} className={styles.myListingActionBtn} title="Edit">✏️</button>
+                    <button onClick={() => toggleMyPublish(product)} className={styles.myListingActionBtn} title={product.published ? 'Hide' : 'Publish'}>{product.published ? '👁️‍🗨️' : '✅'}</button>
+                    <button onClick={() => deleteMyListing(product)} className={styles.myListingActionBtn} title="Delete">🗑️</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {showRequestModal && requestProduct && (
         <div className="modal-overlay" onClick={() => { setShowRequestModal(false); setRequestProduct(null) }}>

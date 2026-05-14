@@ -27,9 +27,11 @@ export default function NewProductPage() {
   const { settings } = useSiteSettings()
   const wizard = useWizard(steps)
 
-  const [checkingShop, setCheckingShop] = useState(true)
+  const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
   const [userDonationAddrs, setUserDonationAddrs] = useState<DonationAddr[]>([])
+  const [shop, setShop] = useState<{ shopName: string; shopSlug: string } | null>(null)
+  const [listingMode, setListingMode] = useState<'shop' | 'standalone' | null>(null)
 
   const [form, setForm] = useState({
     title: '',
@@ -56,14 +58,21 @@ export default function NewProductPage() {
     createGroup: false,
     tagsInput: '',
   })
-  const [tagSuggestions, setTagSuggestions] = useState<string[]>([])
 
   useEffect(() => {
     if (!session?.user) {
       router.push('/auth/login')
       return
     }
-    checkShop()
+    fetch('/api/shop')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.shopSlug) {
+          setShop({ shopName: data.shopName, shopSlug: data.shopSlug })
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
   }, [session])
 
   useEffect(() => {
@@ -74,22 +83,6 @@ export default function NewProductPage() {
         .catch(() => {})
     }
   }, [session])
-
-  const checkShop = async () => {
-    try {
-      const res = await fetch('/api/shop')
-      const data = await res.json()
-      if (!data?.shopSlug) {
-        warning('Set up your shop before listing products')
-        router.push('/shop/setup')
-        return
-      }
-    } catch {
-      warning('Could not verify shop status')
-    } finally {
-      setCheckingShop(false)
-    }
-  }
 
   const update = useCallback(<K extends keyof typeof form>(key: K, value: (typeof form)[K]) => {
     setForm(prev => ({ ...prev, [key]: value }))
@@ -123,7 +116,7 @@ export default function NewProductPage() {
           isGlobal: form.isGlobal,
           imageUrl: form.imageUrl || null,
           paymentMethods: form.paymentMethods.join(','),
-          paymentType: settings.enableWallet ? form.paymentType : 'BOTH',
+          paymentType: settings.enableCheckout && settings.enableWallet ? form.paymentType : 'BOTH',
           sellerPayoutAddress: form.sellerPayoutAddress || null,
           sellerCryptoCurrency: form.sellerCryptoCurrency || 'ETH',
           rentalDaily: form.type === 'RENTAL' ? (form.rentalDaily || null) : null,
@@ -152,11 +145,67 @@ export default function NewProductPage() {
     }
   }
 
-  if (checkingShop) {
+  if (loading) {
     return (
       <div className={styles.loadingWrap}>
         <div className={styles.spinner} />
-        <p>Checking your shop...</p>
+        <p>Getting ready...</p>
+      </div>
+    )
+  }
+
+  if (!listingMode) {
+    return (
+      <div className={styles.page}>
+        <Breadcrumbs items={[
+          { label: 'Home', href: '/' },
+          { label: 'Marketplace', href: '/products' },
+          { label: 'New Listing' }
+        ]} />
+
+        <div className={styles.welcomeScreen}>
+          <h1 className={styles.welcomeTitle}>✨ Create a New Listing</h1>
+          <p className={styles.welcomeSub}>How would you like to list your item?</p>
+
+          <div className={styles.welcomeCards}>
+            {shop && (
+              <button
+                className={styles.welcomeCard}
+                onClick={() => setListingMode('shop')}
+              >
+                <span className={styles.welcomeCardIcon}>🏪</span>
+                <span className={styles.welcomeCardTitle}>List in Your Shop</span>
+                <span className={styles.welcomeCardDesc}>
+                  Showcase this item in <strong>{shop.shopName}</strong> — your customers can find it alongside your other listings
+                </span>
+              </button>
+            )}
+
+            <button
+              className={styles.welcomeCard}
+              onClick={() => setListingMode('standalone')}
+            >
+              <span className={styles.welcomeCardIcon}>📦</span>
+              <span className={styles.welcomeCardTitle}>List as Standalone</span>
+              <span className={styles.welcomeCardDesc}>
+                No shop needed! Your item will appear in the marketplace where everyone can see, message, and make offers
+              </span>
+            </button>
+
+            {!shop && (
+              <button
+                className={`${styles.welcomeCard} ${styles.welcomeCardSecondary}`}
+                onClick={() => router.push('/shop/setup')}
+              >
+                <span className={styles.welcomeCardIcon}>✨</span>
+                <span className={styles.welcomeCardTitle}>Set Up a New Shop</span>
+                <span className={styles.welcomeCardDesc}>
+                  Create your own shop to build a brand, organize listings, and grow your presence
+                </span>
+              </button>
+            )}
+          </div>
+        </div>
       </div>
     )
   }
@@ -180,7 +229,12 @@ export default function NewProductPage() {
       ]} />
 
       <h1 className={styles.pageTitle}>List a New Item</h1>
-      <p className={styles.pageSub}>Fill in the details below to publish your listing</p>
+      {shop && listingMode === 'shop' && (
+        <p className={styles.pageSub}>Adding to <strong>{shop.shopName}</strong></p>
+      )}
+      {listingMode === 'standalone' && (
+        <p className={styles.pageSub}>Listing as a standalone item</p>
+      )}
 
       <FormWizard
         steps={steps}
@@ -297,7 +351,7 @@ export default function NewProductPage() {
               </div>
             </div>
 
-            {settings.enableWallet && (
+            {settings.enableCheckout && settings.enableWallet && (
               <>
                 <div className="form-group">
                   <label>Payment Type</label>
