@@ -5,6 +5,12 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import type { Product } from '@/types/product'
 import styles from './ProductMapView.module.css'
+import { useTheme } from '@/context/ThemeContext'
+
+const DARK_TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+const LIGHT_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+const DARK_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>'
+const LIGHT_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
@@ -30,6 +36,7 @@ interface ProductMapViewProps {
 }
 
 export default function ProductMapView({ products, userLocation }: ProductMapViewProps) {
+  const { mode } = useTheme()
   const mapRef = useRef<any>(null)
   const productsWithCoords = products.filter(p => p.latitude != null && p.longitude != null)
 
@@ -86,8 +93,8 @@ export default function ProductMapView({ products, userLocation }: ProductMapVie
         ref={mapRef}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution={mode === 'dark' ? DARK_ATTR : LIGHT_ATTR}
+          url={mode === 'dark' ? DARK_TILE_URL : LIGHT_TILE_URL}
         />
         {productsWithCoords.map(product => (
           <Marker

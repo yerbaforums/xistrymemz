@@ -3,11 +3,17 @@
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import styles from './HomeMap.module.css'
+import { useTheme } from '@/context/ThemeContext'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
 const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false })
 const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false })
+
+const DARK_TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+const LIGHT_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+const DARK_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>'
+const LIGHT_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 
 interface MapItem {
   id: string
@@ -39,6 +45,7 @@ function calculateCenter(items: MapItem[]): [number, number] {
 }
 
 export default function HomeMap() {
+  const { mode } = useTheme()
   const [items, setItems] = useState<MapItem[]>([])
   const [loading, setLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
@@ -68,8 +75,8 @@ export default function HomeMap() {
         ) : (
           <MapContainer center={center} zoom={3} className={styles.map} scrollWheelZoom={false}>
             <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution={mode === 'dark' ? DARK_ATTR : LIGHT_ATTR}
+              url={mode === 'dark' ? DARK_TILE_URL : LIGHT_TILE_URL}
             />
             {items.map(item => (
               <Marker key={`${item.type}-${item.id}`} position={[item.lat, item.lng]}>

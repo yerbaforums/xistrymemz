@@ -33,6 +33,6 @@
 }
 
 .iconBtn.copied {
-  border-color: #22c55e;
-  color: #22c55e;
+  border-color: var(--accent-success);
+  color: var(--accent-success);
 }
