@@ -70,7 +70,14 @@ export default function Header() {
   }, [])
 
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        if (isAuthenticated) {
+          setSearchOpen(prev => !prev)
+        }
+        return
+      }
       if (e.key === 'Escape') {
         if (menuOpen) {
           setMenuOpen(false)
@@ -82,9 +89,9 @@ export default function Header() {
         }
       }
     }
-    document.addEventListener('keydown', handleEscape)
-    return () => document.removeEventListener('keydown', handleEscape)
-  }, [menuOpen, openDropdown])
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [menuOpen, openDropdown, isAuthenticated])
 
   const fetchNotificationCount = async () => {
     try {
