@@ -1,6 +1,7 @@
 .layout {
   min-height: 100vh;
   background: var(--bg-primary);
+  overflow-x: hidden;
 }
 
 .container {
@@ -48,8 +49,12 @@
 }
 
 @media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+
   .main {
-    padding: 20px;
+    padding: 16px;
   }
 }
 
