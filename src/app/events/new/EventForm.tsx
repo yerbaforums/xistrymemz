@@ -50,7 +50,8 @@ export function EventForm() {
     volunteerDescription: '',
     acceptsDonations: false,
     donationAddress: '',
-    donationCurrency: 'ETH'
+    donationCurrency: 'ETH',
+    hashtags: [] as string[]
   })
 
   useEffect(() => {
@@ -80,12 +81,26 @@ export function EventForm() {
     }
   }, [searchParams])
 
+  const [hashtagInput, setHashtagInput] = useState('')
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
     }))
+  }
+
+  const handleAddHashtag = () => {
+    const tag = hashtagInput.trim().replace(/^#/, '')
+    if (tag && !formData.hashtags.includes(tag)) {
+      setFormData(prev => ({ ...prev, hashtags: [...prev.hashtags, tag] }))
+    }
+    setHashtagInput('')
+  }
+
+  const handleRemoveHashtag = (tag: string) => {
+    setFormData(prev => ({ ...prev, hashtags: prev.hashtags.filter(t => t !== tag) }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -115,7 +130,8 @@ export function EventForm() {
           ticketPrice: formData.ticketPrice ? parseFloat(String(formData.ticketPrice)) : 0,
           acceptsDonations: formData.acceptsDonations,
           donationAddress: formData.acceptsDonations ? (formData.donationAddress || null) : null,
-          donationCurrency: formData.acceptsDonations ? (formData.donationCurrency || 'ETH') : null
+          donationCurrency: formData.acceptsDonations ? (formData.donationCurrency || 'ETH') : null,
+          hashtags: formData.hashtags
         })
       })
 
@@ -330,6 +346,35 @@ export function EventForm() {
         )}
       </div>
 
+      <div className={styles.field}>
+        <label>Hashtags</label>
+        <div className={styles.hashtagInputRow}>
+          <input
+            type="text"
+            value={hashtagInput}
+            onChange={e => setHashtagInput(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                handleAddHashtag()
+              }
+            }}
+            placeholder="Type a hashtag and press Enter"
+          />
+          <button type="button" onClick={handleAddHashtag} className={styles.addHashtagBtn}>Add</button>
+        </div>
+        {formData.hashtags.length > 0 && (
+          <div className={styles.hashtagList}>
+            {formData.hashtags.map(tag => (
+              <span key={tag} className={styles.hashtagChip}>
+                #{tag}
+                <button type="button" onClick={() => handleRemoveHashtag(tag)} className={styles.removeHashtagBtn}>&times;</button>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
       <details className={styles.eventSettings}>
         <summary className={styles.settingsSummary}>Event Settings</summary>
         <div className={styles.settingsBody}>
@@ -423,7 +468,8 @@ export function EventForm() {
               volunteerDescription: '',
               acceptsDonations: false,
               donationAddress: '',
-              donationCurrency: 'ETH'
+              donationCurrency: 'ETH',
+              hashtags: []
             })
           }}>
             Clear Template

@@ -37,7 +37,8 @@ export async function GET() {
         createdAt: true,
         plan: { select: { id: true, title: true } },
         group: { select: { id: true, name: true } },
-        _count: { select: { eventJoiners: true } }
+        _count: { select: { eventJoiners: true } },
+        eventHashtags: { include: { hashtag: true } }
       }
     }),
     prisma.eventJoiner.findMany({
@@ -64,7 +65,8 @@ export async function GET() {
             createdAt: true,
             plan: { select: { id: true, title: true } },
             group: { select: { id: true, name: true } },
-            _count: { select: { eventJoiners: true } }
+            _count: { select: { eventJoiners: true } },
+            eventHashtags: { include: { hashtag: true } }
           }
         }
       }
@@ -109,7 +111,8 @@ export async function GET() {
       planId: e.plan?.id || null,
       groupTitle: e.group?.name || null,
       groupId: e.group?.id || null,
-      createdAt: e.createdAt.toISOString()
+      createdAt: e.createdAt.toISOString(),
+      hashtags: e.eventHashtags.map(eh => eh.hashtag.tag)
     })),
     ...joinedEvents.map(j => ({
       id: j.event.id,
@@ -134,7 +137,8 @@ export async function GET() {
       planId: j.event.plan?.id || null,
       groupTitle: j.event.group?.name || null,
       groupId: j.event.group?.id || null,
-      createdAt: j.event.createdAt.toISOString()
+      createdAt: j.event.createdAt.toISOString(),
+      hashtags: j.event.eventHashtags.map(eh => eh.hashtag.tag)
     })),
     ...userEvents.map(e => ({
       id: e.id,

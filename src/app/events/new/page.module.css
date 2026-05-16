@@ -168,11 +168,6 @@
   border-top: 1px solid var(--border-color);
 }
 
-@media (max-width: 600px) {
-  .row {
-    grid-template-columns: 1fr;
-  }
-  
 .eventSettings {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -254,10 +249,64 @@
   margin-top: 4px;
 }
 
-.actions {
+.hashtagInputRow {
+  display: flex;
+  gap: 8px;
+}
+
+.addHashtagBtn {
+  padding: 8px 16px;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.hashtagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.hashtagChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(0, 217, 255, 0.1);
+  border: 1px solid rgba(0, 217, 255, 0.3);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  color: var(--accent-primary);
+}
+
+.removeHashtagBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+.removeHashtagBtn:hover {
+  color: var(--accent-secondary);
+}
+
+@media (max-width: 600px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
     flex-direction: column-reverse;
   }
-  
+
   .actions button {
     width: 100%;
   }

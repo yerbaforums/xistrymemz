@@ -4,30 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useToast } from '@/context/ToastContext'
 import styles from './events.module.css'
-
-interface Event {
-  id: string
-  title: string
-  description: string | null
-  eventDate: string | null
-  eventCategory: string | null
-  location: string | null
-  locationDetails: string | null
-  latitude: number | null
-  longitude: number | null
-  maxJoiners: number
-  isTicketed: boolean
-  ticketPrice: number | null
-  currency: string
-  acceptsDonations: boolean
-  donationAddress: string | null
-  donationCurrency: string
-  joinerCount: number
-  type: string
-  planTitle: string | null
-  planId: string | null
-  createdAt: string
-}
+import type { DashboardEvent } from '@/types/event'
 
 const TYPE_CONFIG: Record<string, { icon: string; label: string; color: string }> = {
   ORGANIZED: { icon: '🎯', label: 'Organized', color: '#00d9ff' },
@@ -47,15 +24,15 @@ type SortOption = 'newest' | 'oldest' | 'soonest' | 'mostAttendees'
 
 export default function DashboardEvents() {
   const { success, error } = useToast()
-  const [events, setEvents] = useState<Event[]>([])
+  const [events, setEvents] = useState<DashboardEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState('ALL')
   const [sortBy, setSortBy] = useState<SortOption>('newest')
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('calendar')
   const [currentMonth, setCurrentMonth] = useState(new Date())
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
-  const [editingEvent, setEditingEvent] = useState<Event | null>(null)
+  const [selectedEvent, setSelectedEvent] = useState<DashboardEvent | null>(null)
+  const [editingEvent, setEditingEvent] = useState<DashboardEvent | null>(null)
   const [saving, setSaving] = useState(false)
 
   const handleDeleteEvent = async (id: string, eventType: string) => {
@@ -79,7 +56,7 @@ export default function DashboardEvents() {
     }
   }
 
-  const handleUpdateEvent = async (id: string, data: Partial<Event>) => {
+  const handleUpdateEvent = async (id: string, data: Partial<DashboardEvent>) => {
     setSaving(true)
     try {
       const res = await fetch(`/api/events/${id}`, {

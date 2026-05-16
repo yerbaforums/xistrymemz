@@ -83,10 +83,27 @@ export const pollVoteSchema = z.object({
 export const eventSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200),
   description: z.string().max(5000).optional(),
-  startDate: z.string(),
+  eventCategory: z.string().optional(),
+  eventDate: z.string().optional(),
   endDate: z.string().optional(),
   location: z.string().optional(),
-  isOnline: z.boolean().optional()
+  locationDetails: z.string().optional(),
+  maxJoiners: z.coerce.number().int().min(0).optional(),
+  isTicketed: z.boolean().optional(),
+  ticketPrice: z.coerce.number().min(0).optional(),
+  currency: z.string().optional(),
+  visibility: z.string().optional(),
+  eventType: z.string().optional(),
+  acceptsDonations: z.boolean().optional(),
+  donationAddress: z.string().optional().nullable(),
+  donationCurrency: z.string().optional(),
+  needsVolunteers: z.boolean().optional(),
+  volunteerRoles: z.string().optional(),
+  volunteerDescription: z.string().optional(),
+  planId: z.string().optional().nullable(),
+  groupId: z.string().optional().nullable(),
+  createGroup: z.boolean().optional(),
+  hashtags: z.array(z.string()).optional()
 })
 
 export const updateSchema = z.object({

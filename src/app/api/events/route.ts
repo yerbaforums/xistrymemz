@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { geocodeLocation } from '@/lib/geocoding'
+import { eventSchema, validateBody } from '@/lib/schemas'
+import { extractHashtags } from '@/lib/hashtags'
 
 export async function GET(request: Request) {
   try {
@@ -104,6 +106,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
     }
 
+    const validation = validateBody(eventSchema, body)
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400 })
+    }
+
     const { 
       title, 
       description, 
@@ -126,12 +133,9 @@ export async function POST(request: NextRequest) {
       needsVolunteers,
       volunteerRoles,
       volunteerDescription,
-      createGroup
-    } = body
-
-    if (!title) {
-      return NextResponse.json({ error: 'Title is required' }, { status: 400 })
-    }
+      createGroup,
+      hashtags
+    } = validation.data
 
     if (eventType === 'personal') {
       const event = await prisma.userEvent.create({
@@ -220,6 +224,31 @@ export async function POST(request: NextRequest) {
         data: { groupId: group.id }
       })
       return NextResponse.json({ ...event, groupId: group.id, _group: group })
+    }
+
+    const allTags = [...new Set([
+      ...(hashtags || []),
+      ...extractHashtags([title, description || ''].join(' '))
+    ])]
+
+    if (allTags.length > 0) {
+      await Promise.all(allTags.map(async tag => {
+        const hashtag = await prisma.hashtag.upsert({
+          where: { tag },
+          create: { tag, postCount: 0 },
+          update: {},
+        })
+        await prisma.eventHashtag.create({
+          data: {
+            eventId: event.id,
+            hashtagId: hashtag.id,
+          },
+        }).catch(() => {})
+        await prisma.hashtag.update({
+          where: { id: hashtag.id },
+          data: { postCount: { increment: 1 } },
+        })
+      }))
     }
 
     return NextResponse.json(event)

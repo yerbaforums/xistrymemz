@@ -6,6 +6,7 @@ import styles from './page.module.css'
 import { calculateDistance, geocodeLocation } from '@/lib/geocoding'
 import { useToast } from '@/context/ToastContext'
 import { usePassportLocation } from '@/hooks/usePassportLocation'
+import type { Event } from '@/types/event'
 
 import dynamic from 'next/dynamic'
 
@@ -26,35 +27,7 @@ if (typeof window !== 'undefined') {
   })
 }
 
-interface EventJoiner {
-  id: string
-  userId: string
-  user: { name: string | null; email: string }
-}
 
-interface Event {
-  id: string
-  title: string
-  description: string | null
-  eventCategory: string | null
-  eventDate: string | null
-  location: string | null
-  locationDetails: string | null
-  latitude: number | null
-  longitude: number | null
-  maxJoiners: number
-  pinned: boolean
-  isTicketed: boolean
-  ticketPrice: number
-  currency: string
-  planId: string | null
-  planTitle: string | null
-  userName: string | null
-  userId: string
-  joiners: EventJoiner[]
-  joined?: boolean
-  acceptsDonations?: boolean
-}
 
 export default function EventsPage() {
   const { warning, info, error: toastError } = useToast()

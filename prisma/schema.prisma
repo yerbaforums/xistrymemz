@@ -274,6 +274,7 @@ model Event {
   eventJoiners    EventJoiner[]
   eventTickets    EventTicket[]
   requests        Request[]
+  eventHashtags   EventHashtag[]
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -643,6 +644,7 @@ model Hashtag {
   updatedAt DateTime        @updatedAt
   posts     PostHashtag[]
   products  ProductHashtag[]
+  events    EventHashtag[]
 
   @@index([postCount])
   @@index([tag])
@@ -671,6 +673,18 @@ model ProductHashtag {
   createdAt  DateTime @default(now())
 
   @@unique([productId, hashtagId])
+  @@index([hashtagId])
+}
+
+model EventHashtag {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  hashtagId String
+  hashtag   Hashtag  @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([eventId, hashtagId])
   @@index([hashtagId])
 }
 

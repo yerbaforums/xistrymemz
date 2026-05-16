@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { geocodeLocation } from '@/lib/geocoding'
+import { eventSchema, validateBody } from '@/lib/schemas'
+import { extractHashtags } from '@/lib/hashtags'
 
 export async function GET(
   request: NextRequest,
@@ -35,6 +37,9 @@ export async function GET(
             }
           },
           take: 50
+        },
+        eventHashtags: {
+          include: { hashtag: true }
         }
       }
     })
@@ -86,6 +91,7 @@ export async function GET(
       })),
       joined,
       isOrganizer,
+      hashtags: event.eventHashtags.map(eh => eh.hashtag.tag),
       _count: event._count
     })
   } catch (error) {
@@ -122,6 +128,11 @@ export async function PUT(
       return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
     }
 
+    const validation = validateBody(eventSchema.partial(), body)
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400 })
+    }
+
     const { 
       title, 
       description, 
@@ -139,8 +150,9 @@ export async function PUT(
       donationCurrency,
       needsVolunteers,
       volunteerRoles,
-      volunteerDescription
-    } = body
+      volunteerDescription,
+      hashtags
+    } = validation.data
 
     let latitude = event.latitude
     let longitude = event.longitude
@@ -177,6 +189,32 @@ export async function PUT(
         volunteerDescription: volunteerDescription ?? event.volunteerDescription
       }
     })
+
+    if (hashtags !== undefined) {
+      const allTags = [...new Set([
+        ...hashtags,
+        ...extractHashtags([title || event.title, description || event.description || ''].join(' '))
+      ])]
+
+      await prisma.eventHashtag.deleteMany({ where: { eventId: id } })
+
+      if (allTags.length > 0) {
+        await Promise.all(allTags.map(async tag => {
+          const hashtag = await prisma.hashtag.upsert({
+            where: { tag },
+            create: { tag, postCount: 0 },
+            update: {},
+          })
+          await prisma.eventHashtag.create({
+            data: { eventId: id, hashtagId: hashtag.id },
+          }).catch(() => {})
+          await prisma.hashtag.update({
+            where: { id: hashtag.id },
+            data: { postCount: { increment: 1 } },
+          })
+        }))
+      }
+    }
 
     return NextResponse.json(updated)
   } catch (error) {

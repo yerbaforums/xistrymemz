@@ -7,55 +7,16 @@ import styles from './page.module.css'
 import dynamic from 'next/dynamic'
 import { useToast } from '@/context/ToastContext'
 import RoleBadge from '@/components/RoleBadge'
+import type { Event } from '@/types/event'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
 const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false })
 const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false })
 
-interface Joiner {
-  id: string
-  userId: string
-  role: string
-  user: { name: string | null; email: string; image?: string; role: string; userClass: string | null }
-}
-
-interface Event {
-  id: string
-  title: string
-  description: string | null
-  eventCategory: string | null
-  eventDate: string | null
-  endDate: string | null
-  location: string | null
-  locationDetails: string | null
-  latitude: number | null
-  longitude: number | null
-  maxJoiners: number
-  isTicketed: boolean
-  ticketPrice: number
-  currency: string
-  planId: string | null
-  planTitle: string | null
-  userId: string
-  userName: string | null
-  organizer?: { id: string; name: string; email: string; image: string; role: string }
-  group?: { id: string; name: string }
-  joiners: Joiner[]
-  joined?: boolean
-  isOrganizer?: boolean
-  _count?: { eventJoiners: number }
-  needsVolunteers?: boolean
-  volunteerRoles?: string[]
-  volunteerDescription?: string | null
-  acceptsDonations?: boolean
-  donationAddress?: string | null
-  donationCurrency?: string | null
-}
-
 function EventDetailContent() {
   const params = useParams()
-  const { error, info } = useToast()
+  const { success, error, info } = useToast()
   const [event, setEvent] = useState<Event | null>(null)
   const [loading, setLoading] = useState(true)
   const [joining, setJoining] = useState(false)
@@ -66,6 +27,88 @@ function EventDetailContent() {
   const [bulkSuccess, setBulkSuccess] = useState('')
   const [joinRole, setJoinRole] = useState<'ATTENDEE' | 'VOLUNTEER'>('ATTENDEE')
   const [copiedDonation, setCopiedDonation] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editForm, setEditForm] = useState({
+    title: '',
+    description: '',
+    location: '',
+    locationDetails: '',
+    maxJoiners: 0,
+    isTicketed: false,
+    ticketPrice: 0,
+    currency: 'USD',
+    acceptsDonations: false,
+    donationAddress: '',
+    donationCurrency: 'ETH',
+    needsVolunteers: false,
+    volunteerRoles: '',
+    volunteerDescription: ''
+  })
+  const [saving, setSaving] = useState(false)
+
+  const startEditing = () => {
+    if (!event) return
+    setEditForm({
+      title: event.title,
+      description: event.description || '',
+      location: event.location || '',
+      locationDetails: event.locationDetails || '',
+      maxJoiners: event.maxJoiners,
+      isTicketed: event.isTicketed,
+      ticketPrice: event.ticketPrice,
+      currency: event.currency,
+      acceptsDonations: event.acceptsDonations || false,
+      donationAddress: event.donationAddress || '',
+      donationCurrency: event.donationCurrency || 'ETH',
+      needsVolunteers: event.needsVolunteers || false,
+      volunteerRoles: event.volunteerRoles ? (Array.isArray(event.volunteerRoles) ? event.volunteerRoles.join(', ') : '') : '',
+      volunteerDescription: event.volunteerDescription || ''
+    })
+    setIsEditing(true)
+  }
+
+  const cancelEditing = () => {
+    setIsEditing(false)
+  }
+
+  const handleSave = async () => {
+    if (!event) return
+    setSaving(true)
+    try {
+      let volunteerRoles = editForm.volunteerRoles
+      if (editForm.needsVolunteers && volunteerRoles) {
+        try { JSON.parse(volunteerRoles) } catch {
+          volunteerRoles = JSON.stringify(volunteerRoles.split(',').map(r => r.trim()).filter(Boolean))
+        }
+      }
+
+      const res = await fetch(`/api/events/${event.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...editForm,
+          volunteerRoles,
+          ticketPrice: editForm.ticketPrice ? parseFloat(String(editForm.ticketPrice)) : 0,
+          donationAddress: editForm.acceptsDonations ? (editForm.donationAddress || null) : null
+        })
+      })
+
+      if (res.ok) {
+        const updated = await res.json()
+        setEvent(prev => prev ? { ...prev, ...updated, volunteerRoles: editForm.needsVolunteers ? editForm.volunteerRoles.split(',').map(r => r.trim()).filter(Boolean) : [] } : prev)
+        success('Event updated')
+        setIsEditing(false)
+      } else {
+        const data = await res.json()
+        error(data.error || 'Failed to update event')
+      }
+    } catch (err) {
+      console.error(err)
+      error('Failed to update event')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   useEffect(() => {
     fetch('/api/auth/session')
@@ -233,29 +276,137 @@ function EventDetailContent() {
               )}
             </div>
             
-            <h1>{event.title}</h1>
-            <p className={styles.author}>
-              by{' '}
-              <Link href={`/profile/${event.userId}`} className={styles.authorLink}>
-                {event.userName || 'Unknown'}
-              </Link>
-              {event.organizer?.role && <RoleBadge role={event.organizer.role} />}
-            </p>
-            {event.planTitle && (
-              <p className={styles.planRef}>From: {event.planTitle}</p>
-            )}
-            
-            {event.description && (
-              <p className={styles.description}>{event.description}</p>
-            )}
-
-            <div className={styles.locationSection}>
-              <h3>📍 Location</h3>
-              <p className={styles.locationType}>{event.location || 'Not specified'}</p>
-              {event.locationDetails && (
-                <p className={styles.locationDetails}>{event.locationDetails}</p>
+            <div className={styles.titleRow}>
+              <h1>{isEditing ? 'Editing Event' : event.title}</h1>
+              {isOwner && !isEditing && (
+                <button onClick={startEditing} className={styles.editBtn}>Edit</button>
               )}
             </div>
+
+            {isEditing ? (
+              <>
+                <div className={styles.field}>
+                  <label>Title</label>
+                  <input type="text" value={editForm.title} onChange={e => setEditForm(p => ({ ...p, title: e.target.value }))} />
+                </div>
+                <div className={styles.field}>
+                  <label>Description</label>
+                  <textarea rows={4} value={editForm.description} onChange={e => setEditForm(p => ({ ...p, description: e.target.value }))} />
+                </div>
+                <div className={styles.field}>
+                  <label>Location</label>
+                  <input type="text" value={editForm.location} onChange={e => setEditForm(p => ({ ...p, location: e.target.value }))} />
+                </div>
+                <div className={styles.field}>
+                  <label>Location Details</label>
+                  <input type="text" value={editForm.locationDetails} onChange={e => setEditForm(p => ({ ...p, locationDetails: e.target.value }))} />
+                </div>
+                <div className={styles.field}>
+                  <label>Max Attendees (0 = unlimited)</label>
+                  <input type="number" value={editForm.maxJoiners} onChange={e => setEditForm(p => ({ ...p, maxJoiners: parseInt(e.target.value) || 0 }))} min={0} />
+                </div>
+                <div className={styles.checkboxField}>
+                  <input type="checkbox" id="edit-ticketed" checked={editForm.isTicketed} onChange={e => setEditForm(p => ({ ...p, isTicketed: e.target.checked }))} />
+                  <label htmlFor="edit-ticketed">Ticketed Event</label>
+                </div>
+                {editForm.isTicketed && (
+                  <div className={styles.row}>
+                    <div className={styles.field}>
+                      <label>Ticket Price</label>
+                      <input type="number" value={editForm.ticketPrice} onChange={e => setEditForm(p => ({ ...p, ticketPrice: parseFloat(e.target.value) || 0 }))} min={0} step={0.01} />
+                    </div>
+                    <div className={styles.field}>
+                      <label>Currency</label>
+                      <select value={editForm.currency} onChange={e => setEditForm(p => ({ ...p, currency: e.target.value }))}>
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                        <option value="XMR">XMR</option>
+                        <option value="XTM">XTM</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+                <div className={styles.checkboxField}>
+                  <input type="checkbox" id="edit-donations" checked={editForm.acceptsDonations} onChange={e => setEditForm(p => ({ ...p, acceptsDonations: e.target.checked }))} />
+                  <label htmlFor="edit-donations">Accept Donations</label>
+                </div>
+                {editForm.acceptsDonations && (
+                  <div className={styles.row}>
+                    <div className={styles.field}>
+                      <label>Donation Address</label>
+                      <input type="text" value={editForm.donationAddress} onChange={e => setEditForm(p => ({ ...p, donationAddress: e.target.value }))} />
+                    </div>
+                    <div className={styles.field}>
+                      <label>Currency</label>
+                      <select value={editForm.donationCurrency} onChange={e => setEditForm(p => ({ ...p, donationCurrency: e.target.value }))}>
+                        <option value="ETH">ETH</option>
+                        <option value="BTC">BTC</option>
+                        <option value="USDT">USDT</option>
+                        <option value="XMR">XMR</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+                <div className={styles.checkboxField}>
+                  <input type="checkbox" id="edit-volunteers" checked={editForm.needsVolunteers} onChange={e => setEditForm(p => ({ ...p, needsVolunteers: e.target.checked }))} />
+                  <label htmlFor="edit-volunteers">Recruit Volunteers</label>
+                </div>
+                {editForm.needsVolunteers && (
+                  <>
+                    <div className={styles.field}>
+                      <label>Volunteer Roles (comma separated)</label>
+                      <input type="text" value={editForm.volunteerRoles} onChange={e => setEditForm(p => ({ ...p, volunteerRoles: e.target.value }))} placeholder="e.g., Setup, Cleanup" />
+                    </div>
+                    <div className={styles.field}>
+                      <label>Volunteer Description</label>
+                      <textarea rows={2} value={editForm.volunteerDescription} onChange={e => setEditForm(p => ({ ...p, volunteerDescription: e.target.value }))} />
+                    </div>
+                  </>
+                )}
+                <div className={styles.editActions}>
+                  <button onClick={cancelEditing} className="btn-secondary" disabled={saving}>Cancel</button>
+                  <button onClick={handleSave} className="btn-primary" disabled={saving}>
+                    {saving ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className={styles.author}>
+                  by{' '}
+                  <Link href={`/profile/${event.userId}`} className={styles.authorLink}>
+                    {event.userName || 'Unknown'}
+                  </Link>
+                  {event.organizer?.role && <RoleBadge role={event.organizer.role} />}
+                </p>
+                {event.planTitle && (
+                  <p className={styles.planRef}>From: {event.planTitle}</p>
+                )}
+                
+                {event.description && (
+                  <p className={styles.description}>{event.description}</p>
+                )}
+
+                {event.hashtags && event.hashtags.length > 0 && (
+                  <div className={styles.hashtagList}>
+                    {event.hashtags.map(tag => (
+                      <span key={tag} className={styles.hashtagChip}>
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <div className={styles.locationSection}>
+                  <h3>📍 Location</h3>
+                  <p className={styles.locationType}>{event.location || 'Not specified'}</p>
+                  {event.locationDetails && (
+                    <p className={styles.locationDetails}>{event.locationDetails}</p>
+                  )}
+                </div>
+              </>
+            )}
 
             {event.latitude && event.longitude && (
               <div className={styles.mapSection}>

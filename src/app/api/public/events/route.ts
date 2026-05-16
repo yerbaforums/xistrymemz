@@ -30,6 +30,9 @@ export async function GET() {
       _count: { select: { eventJoiners: true } },
       eventJoiners: {
         include: { user: { select: { name: true, email: true } } }
+      },
+      eventHashtags: {
+        include: { hashtag: true }
       }
     },
     orderBy: [
@@ -78,7 +81,11 @@ export async function GET() {
         userId: j.userId,
         user: { name: j.user.name, email: j.user.email }
       })),
-      joined: isJoined
+      joined: isJoined,
+      acceptsDonations: event.acceptsDonations,
+      donationAddress: event.donationAddress,
+      donationCurrency: event.donationCurrency,
+      hashtags: event.eventHashtags.map(eh => eh.hashtag.tag)
     }
   }))
 
