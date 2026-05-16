@@ -70,6 +70,11 @@ export default function ProductsPage() {
     isGlobal: false,
     imageUrl: '',
     published: true,
+    acceptsOffers: true,
+    acceptsRequests: false,
+    acceptsDonations: false,
+    donationAddress: '',
+    donationCurrency: 'ETH',
     hashtags: '',
   })
 
@@ -259,6 +264,8 @@ export default function ProductsPage() {
           price: myForm.price ? parseFloat(myForm.price) : null,
           paymentMethods: '',
           paymentType: 'BOTH',
+          donationAddress: myForm.acceptsDonations ? (myForm.donationAddress || null) : null,
+          donationCurrency: myForm.acceptsDonations ? (myForm.donationCurrency || 'ETH') : null,
         }),
       })
       if (res.ok) {
@@ -290,6 +297,11 @@ export default function ProductsPage() {
       isGlobal: product.isGlobal,
       imageUrl: product.imageUrl || '',
       published: product.published,
+      acceptsOffers: product.acceptsOffers ?? true,
+      acceptsRequests: product.acceptsRequests ?? false,
+      acceptsDonations: product.acceptsDonations ?? false,
+      donationAddress: product.donationAddress || '',
+      donationCurrency: product.donationCurrency || 'ETH',
       hashtags: product.hashtags?.map(h => h.tag).join(', ') || '',
     })
     setShowMyForm(true)
@@ -627,6 +639,45 @@ export default function ProductsPage() {
                     Publish now
                   </label>
                 </div>
+                <details className={styles.listingSettings}>
+                  <summary className={styles.settingsSummary}>⚙️ Listing Settings</summary>
+                  <div className={styles.settingsBody}>
+                    <label className={styles.myCheckLabel}>
+                      <input type="checkbox" checked={myForm.acceptsOffers} onChange={e => setMyForm({...myForm, acceptsOffers: e.target.checked})} />
+                      Accept Offers / Barter
+                    </label>
+                    <label className={styles.myCheckLabel}>
+                      <input type="checkbox" checked={myForm.acceptsRequests} onChange={e => setMyForm({...myForm, acceptsRequests: e.target.checked})} />
+                      Allow adding to Plans
+                    </label>
+                    <label className={styles.myCheckLabel}>
+                      <input type="checkbox" checked={myForm.acceptsDonations} onChange={e => setMyForm({...myForm, acceptsDonations: e.target.checked})} />
+                      Accept Donations
+                    </label>
+                    {myForm.acceptsDonations && (
+                      <div className={styles.donationFields}>
+                        <div className="form-group" style={{ marginBottom: 8 }}>
+                          <label>Donation Currency</label>
+                          <select value={myForm.donationCurrency} onChange={e => setMyForm({...myForm, donationCurrency: e.target.value})}>
+                            <option value="ETH">ETH (Ethereum)</option>
+                            <option value="BTC">BTC (Bitcoin)</option>
+                            <option value="USDT">USDT (Tether)</option>
+                            <option value="USDC">USDC (USD Coin)</option>
+                            <option value="XMR">XMR (Monero)</option>
+                            <option value="XTM">XTM (Tari)</option>
+                            <option value="ARRR">ARRR (Pirate)</option>
+                            <option value="DERO">DERO (Dero)</option>
+                            <option value="ZANO">ZANO (Zano)</option>
+                          </select>
+                        </div>
+                        <div className="form-group">
+                          <label>Donation Address</label>
+                          <input type="text" value={myForm.donationAddress} onChange={e => setMyForm({...myForm, donationAddress: e.target.value})} placeholder="Your crypto donation address" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </details>
                 <div className={styles.myFormActions}>
                   <button type="button" onClick={() => { setShowMyForm(false); setEditProduct(null) }} className="btn-ghost">Cancel</button>
                   <button type="submit" className="btn-primary" disabled={savingMy}>
@@ -646,7 +697,7 @@ export default function ProductsPage() {
           }).length === 0 ? (
             <div className={styles.myListingsEmpty}>
               <p>No listings yet.</p>
-              <button onClick={() => { setMyForm({ title: '', description: '', price: '', type: 'PRODUCT', category: '', condition: '', location: '', isGlobal: false, imageUrl: '', published: true, hashtags: '' }); setEditProduct(null); setShowMyForm(true) }} className="btn-primary">Create Your First Listing</button>
+              <button onClick={() => { setMyForm({ title: '', description: '', price: '', type: 'PRODUCT', category: '', condition: '', location: '', isGlobal: false, imageUrl: '', published: true, acceptsOffers: true, acceptsRequests: false, acceptsDonations: false, donationAddress: '', donationCurrency: 'ETH', hashtags: '' }); setEditProduct(null); setShowMyForm(true) }} className="btn-primary">Create Your First Listing</button>
             </div>
           ) : (
             <div className={styles.myListingsGrid}>

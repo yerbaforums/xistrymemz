@@ -48,6 +48,9 @@ interface Event {
   needsVolunteers?: boolean
   volunteerRoles?: string[]
   volunteerDescription?: string | null
+  acceptsDonations?: boolean
+  donationAddress?: string | null
+  donationCurrency?: string | null
 }
 
 function EventDetailContent() {
@@ -62,6 +65,7 @@ function EventDetailContent() {
   const [sendingBulk, setSendingBulk] = useState(false)
   const [bulkSuccess, setBulkSuccess] = useState('')
   const [joinRole, setJoinRole] = useState<'ATTENDEE' | 'VOLUNTEER'>('ATTENDEE')
+  const [copiedDonation, setCopiedDonation] = useState(false)
 
   useEffect(() => {
     fetch('/api/auth/session')
@@ -360,6 +364,27 @@ function EventDetailContent() {
               </div>
             )}
           </div>
+
+          {event.acceptsDonations && event.donationAddress && (
+            <div className={styles.donationCard}>
+              <h3>Donations Accepted</h3>
+              <p className={styles.donationCrypto}>{event.donationCurrency || 'ETH'}</p>
+              <div className={styles.donationAddress}>
+                <code>{event.donationAddress}</code>
+                <button
+                  className={styles.copyDonationBtn}
+                  onClick={() => {
+                    navigator.clipboard.writeText(event.donationAddress || '')
+                    setCopiedDonation(true)
+                    setTimeout(() => setCopiedDonation(false), 2000)
+                  }}
+                >
+                  {copiedDonation ? 'Copied' : 'Copy'}
+                </button>
+              </div>
+              <p className={styles.donationHint}>Send {event.donationCurrency || 'ETH'} to this address to support</p>
+            </div>
+          )}
 
           {isOwner && joinerCount > 0 && (
             <div className={styles.joinersCard}>

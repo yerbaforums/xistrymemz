@@ -27,6 +27,9 @@ export interface Product {
   rentalMinDays: number
   rentalMaxDays: number | null
   rentalAvailable: boolean
+  acceptsDonations: boolean
+  donationAddress: string | null
+  donationCurrency: string | null
   sellerPayoutAddress: string | null
   sellerCryptoCurrency: string | null
   userId: string

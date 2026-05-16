@@ -354,142 +354,47 @@
   gap: 12px;
 }
 
-.myFormRow {
-  display: flex;
-  gap: 12px;
+.listingSettings {
+  margin: 8px 0;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
 }
 
-.myFormActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.myCheckLabel {
+.settingsSummary {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  user-select: none;
+  list-style: none;
   display: flex;
   align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
+  gap: 8px;
 }
 
-.myCheckLabel input {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--accent-primary);
+.settingsSummary::-webkit-details-marker {
+  display: none;
 }
 
-.myListingsEmpty {
-  text-align: center;
-  padding: 48px 24px;
-  color: var(--text-secondary);
+.settingsSummary:hover {
+  color: var(--text-primary);
 }
 
-.myListingsEmpty p {
-  margin-bottom: 16px;
-}
-
-.myListingsGrid {
+.settingsBody {
+  padding: 0 14px 14px;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.myListingCard {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.donationFields {
   padding: 12px;
   background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  transition: var(--transition);
-}
-
-.myListingCard:hover {
-  border-color: var(--accent-primary);
-}
-
-.myListingImage {
-  width: 48px;
-  height: 48px;
   border-radius: var(--radius-sm);
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.myListingImage img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.myListingImagePlaceholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-tertiary);
-  font-size: 1.2rem;
-}
-
-.myListingInfo {
-  flex: 1;
-  min-width: 0;
-}
-
-.myListingHeader {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-.myListingHeader h4 {
-  font-size: 0.9rem;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.myListingMeta {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-}
-
-.myListingActions {
-  display: flex;
-  gap: 4px;
-  flex-shrink: 0;
-}
-
-.myListingActionBtn {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  text-decoration: none;
-  transition: var(--transition);
-}
-
-.myListingActionBtn:hover {
-  border-color: var(--accent-primary);
-  color: var(--accent-primary);
-  background: var(--bg-tertiary);
 }
 
 @media (max-width: 768px) {

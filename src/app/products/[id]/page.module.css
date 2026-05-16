@@ -396,58 +396,53 @@
   accent-color: var(--accent-primary);
 }
 
-.payoutCard {
+.addToCartBtnDisabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(1);
+  background: var(--text-muted);
+}
+
+.addToCartBtnDisabled:hover {
+  opacity: 0.4;
+  transform: none;
+  box-shadow: none;
+}
+
+.listingSettings {
+  margin-top: 8px;
   background: var(--bg-tertiary);
-  border: 1px solid var(--accent-primary);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 16px;
+  overflow: hidden;
 }
 
-.payoutCard h3 {
-  font-size: 1rem;
-  margin-bottom: 12px;
-  color: var(--accent-primary);
-}
-
-.payoutCrypto {
-  font-size: 0.9rem;
-  margin-bottom: 8px;
-}
-
-.payoutAddress {
+.settingsSummary {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  user-select: none;
+  list-style: none;
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
 }
 
-.payoutAddress code {
-  font-size: 0.75rem;
-  background: var(--bg-secondary);
-  padding: 6px 8px;
-  border-radius: var(--radius-sm);
-  word-break: break-all;
-  flex: 1;
+.settingsSummary::-webkit-details-marker {
+  display: none;
 }
 
-.copyPayoutBtn {
-  background: var(--accent-primary);
-  color: var(--bg-primary);
-  border: none;
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: 0.8rem;
-  white-space: nowrap;
+.settingsSummary:hover {
+  color: var(--text-primary);
 }
 
-.copyPayoutBtn:hover {
-  opacity: 0.9;
-}
-
-.payoutHint {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
+.settingsBody {
+  padding: 0 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .rentalPricingDisplay {

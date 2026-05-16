@@ -49,6 +49,9 @@ interface Product {
   acceptsRequests: boolean
   acceptsOffers: boolean
   requestPrice: number | null
+  acceptsDonations: boolean
+  donationAddress: string | null
+  donationCurrency: string | null
   sellerPayoutAddress: string | null
   sellerCryptoCurrency: string | null
   rentalDaily: number | null
@@ -106,6 +109,11 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     locationDetails: '',
     isGlobal: false,
     published: true,
+    acceptsOffers: true,
+    acceptsRequests: false,
+    acceptsDonations: false,
+    donationAddress: '',
+    donationCurrency: 'ETH',
     sellerPayoutAddress: '',
     sellerCryptoCurrency: 'ETH',
     rentalDaily: '',
@@ -190,6 +198,11 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           locationDetails: data.locationDetails || '',
           isGlobal: data.isGlobal,
           published: data.published,
+          acceptsOffers: data.acceptsOffers ?? true,
+          acceptsRequests: data.acceptsRequests ?? false,
+          acceptsDonations: data.acceptsDonations ?? false,
+          donationAddress: data.donationAddress || '',
+          donationCurrency: data.donationCurrency || 'ETH',
           sellerPayoutAddress: data.sellerPayoutAddress || '',
           sellerCryptoCurrency: data.sellerCryptoCurrency || 'ETH',
           rentalDaily: data.rentalDaily?.toString() || '',
@@ -618,33 +631,77 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   onChange={e => setEditData({...editData, locationDetails: e.target.value})}
                 />
               </div>
-              <div className="form-group">
-                <label>Payout Crypto</label>
-                <select
-                  value={editData.sellerCryptoCurrency}
-                  onChange={e => setEditData({...editData, sellerCryptoCurrency: e.target.value})}
-                >
-                  <option value="ETH">ETH (Ethereum)</option>
-                  <option value="BTC">BTC (Bitcoin)</option>
-                  <option value="USDT">USDT (Tether)</option>
-                  <option value="USDC">USDC (USD Coin)</option>
-                  <option value="XMR">XMR (Monero)</option>
-                  <option value="XTM">XTM (Tari)</option>
-                  <option value="ARRR">ARRR (Pirate)</option>
-                  <option value="DERO">DERO (Dero)</option>
-                  <option value="ZANO">ZANO (Zano)</option>
-                  <option value="OTHER">OTHER</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Payout Address</label>
-                <input
-                  type="text"
-                  value={editData.sellerPayoutAddress}
-                  onChange={e => setEditData({...editData, sellerPayoutAddress: e.target.value})}
-                  placeholder="Your crypto wallet address"
-                />
-              </div>
+              <details className={styles.listingSettings}>
+                <summary className={styles.settingsSummary}>⚙️ Listing Settings</summary>
+                <div className={styles.settingsBody}>
+                  <label className={styles.checkboxLabel}>
+                    <input type="checkbox" checked={editData.acceptsOffers} onChange={e => setEditData({...editData, acceptsOffers: e.target.checked})} />
+                    Accept Offers / Barter
+                  </label>
+                  <label className={styles.checkboxLabel}>
+                    <input type="checkbox" checked={editData.acceptsRequests} onChange={e => setEditData({...editData, acceptsRequests: e.target.checked})} />
+                    Allow adding to Plans
+                  </label>
+                  <label className={styles.checkboxLabel}>
+                    <input type="checkbox" checked={editData.acceptsDonations} onChange={e => setEditData({...editData, acceptsDonations: e.target.checked})} />
+                    Accept Donations
+                  </label>
+                  {editData.acceptsDonations && (
+                    <div className="form-group" style={{ marginTop: 8 }}>
+                      <label>Donation Currency</label>
+                      <select value={editData.donationCurrency} onChange={e => setEditData({...editData, donationCurrency: e.target.value})}>
+                        <option value="ETH">ETH (Ethereum)</option>
+                        <option value="BTC">BTC (Bitcoin)</option>
+                        <option value="USDT">USDT (Tether)</option>
+                        <option value="USDC">USDC (USD Coin)</option>
+                        <option value="XMR">XMR (Monero)</option>
+                        <option value="XTM">XTM (Tari)</option>
+                        <option value="ARRR">ARRR (Pirate)</option>
+                        <option value="DERO">DERO (Dero)</option>
+                        <option value="ZANO">ZANO (Zano)</option>
+                      </select>
+                    </div>
+                  )}
+                  {editData.acceptsDonations && (
+                    <div className="form-group" style={{ marginTop: 8 }}>
+                      <label>Donation Address</label>
+                      <input type="text" value={editData.donationAddress} onChange={e => setEditData({...editData, donationAddress: e.target.value})} placeholder="Your crypto donation address" />
+                    </div>
+                  )}
+                </div>
+              </details>
+
+              {settings.enableCheckout && (
+                <>
+                  <div className="form-group">
+                    <label>Payout Crypto</label>
+                    <select
+                      value={editData.sellerCryptoCurrency}
+                      onChange={e => setEditData({...editData, sellerCryptoCurrency: e.target.value})}
+                    >
+                      <option value="ETH">ETH (Ethereum)</option>
+                      <option value="BTC">BTC (Bitcoin)</option>
+                      <option value="USDT">USDT (Tether)</option>
+                      <option value="USDC">USDC (USD Coin)</option>
+                      <option value="XMR">XMR (Monero)</option>
+                      <option value="XTM">XTM (Tari)</option>
+                      <option value="ARRR">ARRR (Pirate)</option>
+                      <option value="DERO">DERO (Dero)</option>
+                      <option value="ZANO">ZANO (Zano)</option>
+                      <option value="OTHER">OTHER</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Payout Address</label>
+                    <input
+                      type="text"
+                      value={editData.sellerPayoutAddress}
+                      onChange={e => setEditData({...editData, sellerPayoutAddress: e.target.value})}
+                      placeholder="Your crypto wallet address"
+                    />
+                  </div>
+                </>
+              )}
               <div className={styles.editActions}>
                 <button onClick={() => setIsEditing(false)} className="btn-ghost">
                   Cancel
@@ -794,27 +851,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             </div>
           )}
 
-          {!settings.enableCheckout && session?.user && product.sellerPayoutAddress && (
-            <div className={styles.payoutCard}>
-              <h3>💰 Direct Crypto Payment</h3>
-              <p className={styles.payoutCrypto}>Crypto: {product.sellerCryptoCurrency || 'ETH'}</p>
-              <div className={styles.payoutAddress}>
-                <code>{product.sellerPayoutAddress}</code>
-                <button 
-                  className={styles.copyPayoutBtn}
-                  onClick={() => {
-                    navigator.clipboard.writeText(product.sellerPayoutAddress || '')
-                    setCopiedPayout(true)
-                    setTimeout(() => setCopiedPayout(false), 2000)
-                  }}
-                >
-                  {copiedPayout ? '✓ Copied' : 'Copy'}
-                </button>
-              </div>
-              <p className={styles.payoutHint}>Send {product.sellerCryptoCurrency || 'ETH'} to this address for direct payment</p>
-            </div>
-          )}
-
           {product.price != null && (
             <div className={styles.priceCard}>
               <p className={styles.price}>${product.price}</p>
@@ -850,9 +886,13 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                    )}
                  </>
                ) : (
-                 <div className={styles.disabledNotice}>
-                   Direct purchases are currently disabled
-                 </div>
+                 <button 
+                   className={`${styles.addToCartBtn} ${styles.addToCartBtnDisabled}`}
+                   disabled
+                   title="Checkout is currently disabled"
+                 >
+                   Add to Cart
+                 </button>
                )}
               {session?.user && !isOwner && product.acceptsOffers !== false && (
                 <button 

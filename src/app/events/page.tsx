@@ -53,6 +53,7 @@ interface Event {
   userId: string
   joiners: EventJoiner[]
   joined?: boolean
+  acceptsDonations?: boolean
 }
 
 export default function EventsPage() {
@@ -546,7 +547,10 @@ export default function EventsPage() {
                     <div key={event.id} className={`${styles.eventCard} ${selectedEvent?.id === event.id ? styles.selected : ''}`} onClick={() => { setSelectedEvent(event); if (event.latitude && event.longitude && mapRef.current) { mapRef.current.setView([event.latitude, event.longitude], 15, { animate: true }) } }}>
                       <div className={styles.eventHeader}>
                         <span className={`badge badge-${event.eventCategory?.toLowerCase()}`}>{event.eventCategory}</span>
-                        {event.eventDate && (<span className={styles.eventDate}>{new Date(event.eventDate).toLocaleDateString()}</span>)}
+                        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                          {event.acceptsDonations && <span className={styles.donationBadge}>Donations</span>}
+                          {event.eventDate && (<span className={styles.eventDate}>{new Date(event.eventDate).toLocaleDateString()}</span>)}
+                        </div>
                       </div>
                       <h3>{event.title}</h3>
                       {event.description && <p className={styles.eventDesc}>{event.description}</p>}

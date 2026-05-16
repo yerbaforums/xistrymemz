@@ -46,6 +46,11 @@ export default function NewProductPage() {
     imageUrl: '',
     paymentMethods: [] as string[],
     paymentType: 'BOTH',
+    acceptsOffers: true,
+    acceptsRequests: false,
+    acceptsDonations: false,
+    donationAddress: '',
+    donationCurrency: 'ETH',
     sellerPayoutAddress: '',
     sellerCryptoCurrency: 'ETH',
     rentalDaily: '',
@@ -117,8 +122,13 @@ export default function NewProductPage() {
           imageUrl: form.imageUrl || null,
           paymentMethods: form.paymentMethods.join(','),
           paymentType: settings.enableCheckout && settings.enableWallet ? form.paymentType : 'BOTH',
-          sellerPayoutAddress: form.sellerPayoutAddress || null,
-          sellerCryptoCurrency: form.sellerCryptoCurrency || 'ETH',
+          acceptsOffers: form.acceptsOffers,
+          acceptsRequests: form.acceptsRequests,
+          acceptsDonations: form.acceptsDonations,
+          donationAddress: form.acceptsDonations ? (form.donationAddress || null) : null,
+          donationCurrency: form.acceptsDonations ? (form.donationCurrency || 'ETH') : null,
+          sellerPayoutAddress: settings.enableCheckout ? (form.sellerPayoutAddress || null) : null,
+          sellerCryptoCurrency: settings.enableCheckout ? (form.sellerCryptoCurrency || 'ETH') : null,
           rentalDaily: form.type === 'RENTAL' ? (form.rentalDaily || null) : null,
           rentalWeekly: form.type === 'RENTAL' ? (form.rentalWeekly || null) : null,
           rentalMonthly: form.type === 'RENTAL' ? (form.rentalMonthly || null) : null,
@@ -402,6 +412,59 @@ export default function NewProductPage() {
                 )}
               </>
             )}
+
+            <details className={styles.listingSettings}>
+              <summary className={styles.settingsSummary}>⚙️ Listing Settings</summary>
+              <div className={styles.settingsBody}>
+                <label className={styles.checkLabel}>
+                  <input type="checkbox" checked={form.acceptsOffers} onChange={e => update('acceptsOffers', e.target.checked)} />
+                  Accept Offers / Barter
+                </label>
+                <label className={styles.checkLabel}>
+                  <input type="checkbox" checked={form.acceptsRequests} onChange={e => update('acceptsRequests', e.target.checked)} />
+                  Allow adding to Plans
+                </label>
+                <label className={styles.checkLabel}>
+                  <input type="checkbox" checked={form.acceptsDonations} onChange={e => update('acceptsDonations', e.target.checked)} />
+                  Accept Donations
+                </label>
+                {form.acceptsDonations && (
+                  <div className={styles.donationFields}>
+                    <div className="form-group">
+                      <label>Donation Address</label>
+                      {userDonationAddrs.length === 0 ? (
+                        <p className={styles.noAddrs}>
+                          No donation addresses saved.{' '}
+                          <a href="/profile/edit" style={{ color: 'var(--accent-primary)' }}>Add one in your profile settings</a>
+                        </p>
+                      ) : (
+                        <div className={styles.chipGroup}>
+                          {userDonationAddrs.map(da => {
+                            const selected = form.donationAddress === da.address && form.donationCurrency === da.currency
+                            const shortAddr = da.address.length > 12 ? da.address.slice(0, 4) + '...' + da.address.slice(-4) : da.address
+                            return (
+                              <button
+                                key={da.id}
+                                type="button"
+                                onClick={() => {
+                                  update('donationAddress', da.address)
+                                  update('donationCurrency', da.currency)
+                                }}
+                                className={`${styles.chip} ${selected ? styles.chipSelected : ''}`}
+                                title={`${da.label || da.currency}: ${da.address}`}
+                              >
+                                <span className={styles.chipCurrency}>{da.currency}</span>
+                                <span>{shortAddr}</span>
+                              </button>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </details>
           </div>
         )}
 

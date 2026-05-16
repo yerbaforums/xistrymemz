@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import { getEventTemplateById } from '@/lib/event-templates'
+import type { DonationAddr } from '@/types/product'
 
 const CATEGORIES = [
   { value: 'GENERAL', label: 'General' },
@@ -29,6 +30,7 @@ export function EventForm() {
   const searchParams = useSearchParams()
   const { success, error } = useToast()
   const [loading, setLoading] = useState(false)
+  const [userDonationAddrs, setUserDonationAddrs] = useState<DonationAddr[]>([])
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -45,8 +47,18 @@ export function EventForm() {
     eventType: 'public',
     needsVolunteers: false,
     volunteerRoles: '',
-    volunteerDescription: ''
+    volunteerDescription: '',
+    acceptsDonations: false,
+    donationAddress: '',
+    donationCurrency: 'ETH'
   })
+
+  useEffect(() => {
+    fetch('/api/user/donation-addresses')
+      .then(res => res.ok ? res.json() : [])
+      .then(data => setUserDonationAddrs(data || []))
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     const templateId = searchParams.get('template')
@@ -100,7 +112,10 @@ export function EventForm() {
           ...formData,
           volunteerRoles,
           maxJoiners: formData.maxJoiners ? parseInt(String(formData.maxJoiners)) : 0,
-          ticketPrice: formData.ticketPrice ? parseFloat(String(formData.ticketPrice)) : 0
+          ticketPrice: formData.ticketPrice ? parseFloat(String(formData.ticketPrice)) : 0,
+          acceptsDonations: formData.acceptsDonations,
+          donationAddress: formData.acceptsDonations ? (formData.donationAddress || null) : null,
+          donationCurrency: formData.acceptsDonations ? (formData.donationCurrency || 'ETH') : null
         })
       })
 
@@ -315,6 +330,75 @@ export function EventForm() {
         )}
       </div>
 
+      <details className={styles.eventSettings}>
+        <summary className={styles.settingsSummary}>Event Settings</summary>
+        <div className={styles.settingsBody}>
+          <div className={styles.checkboxField}>
+            <input
+              type="checkbox"
+              id="acceptsDonations"
+              name="acceptsDonations"
+              checked={formData.acceptsDonations}
+              onChange={handleChange}
+            />
+            <label htmlFor="acceptsDonations">Accept Donations</label>
+          </div>
+
+          {formData.acceptsDonations && (
+            <div className={styles.donationFields}>
+              <div className="form-group">
+                <label>Donation Address</label>
+                {userDonationAddrs.length === 0 ? (
+                  <p className={styles.noAddrs}>
+                    No donation addresses saved.{' '}
+                    <a href="/profile/edit" style={{ color: 'var(--accent-primary)' }}>Add one in your profile settings</a>
+                  </p>
+                ) : (
+                  <div className={styles.chipGroup}>
+                    {userDonationAddrs.map(da => {
+                      const selected = formData.donationAddress === da.address && formData.donationCurrency === da.currency
+                      const shortAddr = da.address.length > 12 ? da.address.slice(0, 4) + '...' + da.address.slice(-4) : da.address
+                      return (
+                        <button
+                          key={da.id}
+                          type="button"
+                          onClick={() => {
+                            setFormData(prev => ({ ...prev, donationAddress: da.address, donationCurrency: da.currency }))
+                          }}
+                          className={`${styles.chip} ${selected ? styles.chipSelected : ''}`}
+                          title={`${da.label || da.currency}: ${da.address}`}
+                        >
+                          <span className={styles.chipCurrency}>{da.currency}</span>
+                          <span>{shortAddr}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+              {userDonationAddrs.length === 0 && (
+                <div className={styles.row}>
+                  <div className={styles.field}>
+                    <label>Currency</label>
+                    <select value={formData.donationCurrency} onChange={e => setFormData(prev => ({ ...prev, donationCurrency: e.target.value }))}>
+                      <option value="ETH">ETH (Ethereum)</option>
+                      <option value="BTC">BTC (Bitcoin)</option>
+                      <option value="USDT">USDT (Tether)</option>
+                      <option value="USDC">USDC (USD Coin)</option>
+                      <option value="XMR">XMR (Monero)</option>
+                      <option value="XTM">XTM (Tari)</option>
+                      <option value="ARRR">ARRR (Pirate)</option>
+                      <option value="DERO">DERO (Dero)</option>
+                      <option value="ZANO">ZANO (Zano)</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </details>
+
       {searchParams.get('template') && (
         <div className={styles.templateNotice}>
           <span>📋 Template applied — fields pre-filled from &quot;{getEventTemplateById(searchParams.get('template') || '')?.name || 'template'}&quot;</span>
@@ -336,7 +420,10 @@ export function EventForm() {
               eventType: 'public',
               needsVolunteers: false,
               volunteerRoles: '',
-              volunteerDescription: ''
+              volunteerDescription: '',
+              acceptsDonations: false,
+              donationAddress: '',
+              donationCurrency: 'ETH'
             })
           }}>
             Clear Template

@@ -144,6 +144,7 @@ export async function POST(request: Request) {
       paymentMethods, paymentType, acceptsRequests, acceptsOffers, requestPrice, published,
       rentalDaily, rentalWeekly, rentalMonthly, rentalDeposit,
       rentalMinDays, rentalMaxDays, rentalAvailable,
+      acceptsDonations, donationAddress, donationCurrency,
       sellerPayoutAddress, sellerCryptoCurrency,
       createGroup, hashtags
     } = validation.data
@@ -178,6 +179,9 @@ export async function POST(request: Request) {
         rentalMinDays: rentalMinDays ?? 1,
         rentalMaxDays: rentalMaxDays || null,
         rentalAvailable: rentalAvailable ?? true,
+        acceptsDonations: acceptsDonations ?? false,
+        donationAddress: donationAddress || null,
+        donationCurrency: donationCurrency || 'ETH',
         sellerPayoutAddress: sellerPayoutAddress || null,
         sellerCryptoCurrency: sellerCryptoCurrency || 'ETH',
         userId: session.user.id

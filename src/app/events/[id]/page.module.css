@@ -199,6 +199,63 @@
   gap: 20px;
 }
 
+.donationCard {
+  background: var(--bg-secondary);
+  border: 1px solid var(--accent-primary);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.donationCard h3 {
+  font-size: 1rem;
+  margin-bottom: 12px;
+  color: var(--accent-primary);
+}
+
+.donationCrypto {
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.donationAddress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.donationAddress code {
+  font-size: 0.75rem;
+  background: var(--bg-tertiary);
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  word-break: break-all;
+  flex: 1;
+  color: var(--text-primary);
+}
+
+.copyDonationBtn {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border: none;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.copyDonationBtn:hover {
+  opacity: 0.9;
+}
+
+.donationHint {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
 .statsCard,
 .joinersCard {
   background: var(--bg-secondary);
