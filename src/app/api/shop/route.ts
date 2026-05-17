@@ -33,7 +33,7 @@ export async function PUT(request: Request) {
   }
 
   const body = await request.json()
-  const { shopName, shopAbout, shopImage, shopCoverImage, shopSlug, email } = body
+  const { shopName, shopAbout, shopImage, shopCoverImage, shopCoverStyle, shopSlug, email } = body
 
   if (!shopName?.trim()) {
     await prisma.user.update({
@@ -52,6 +52,7 @@ export async function PUT(request: Request) {
       shopAbout,
       shopImage,
       shopCoverImage,
+      shopCoverStyle,
       shopSlug: slug,
       email
     }

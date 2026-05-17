@@ -19,6 +19,7 @@ import ImageUploader from '@/components/ImageUploader'
 import PostActions from '@/components/PostActions'
 import SharedItemCard from '@/components/SharedItemCard'
 import ReplySection from '@/components/ReplySection'
+import BookAppointmentModal from '@/components/BookAppointmentModal'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { useToast } from '@/context/ToastContext'
 import dynamic from 'next/dynamic'
@@ -379,6 +380,7 @@ export default function ProfilePage() {
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set())
   const [copiedShare, setCopiedShare] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
+  const [showAppointmentModal, setShowAppointmentModal] = useState(false)
   const [confirmDeletePost, setConfirmDeletePost] = useState<string | null>(null)
   const [confirmDisconnect, setConfirmDisconnect] = useState(false)
   const { error: toastError, success: toastSuccess } = useToast()
@@ -986,6 +988,7 @@ export default function ProfilePage() {
             )             : status === 'authenticated' ? (
               <>
                 <Link href={`/messages?user=${user.id}`} className={styles.messageBtn}>Message</Link>
+                <button onClick={() => setShowAppointmentModal(true)} className={styles.messageBtn}>📅 Book</button>
                 {user.isConnected ? (
                   <button 
                   onClick={() => setConfirmDisconnect(true)}
@@ -1760,6 +1763,13 @@ export default function ProfilePage() {
         message="Disconnect from this user?"
         confirmLabel="Disconnect"
         variant="warning"
+      />
+
+      <BookAppointmentModal
+        isOpen={showAppointmentModal}
+        onClose={() => setShowAppointmentModal(false)}
+        sellerId={user.id}
+        sellerName={user.name}
       />
     </div>
   )

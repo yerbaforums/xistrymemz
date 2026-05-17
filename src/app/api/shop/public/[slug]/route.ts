@@ -21,6 +21,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
       createdAt: true,
       role: true,
       shopCoverImage: true,
+      shopCoverStyle: true,
       userLinks: {
         select: { id: true, type: true, url: true, label: true, icon: true, sortOrder: true },
         orderBy: { sortOrder: 'asc' }
@@ -66,6 +67,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
     shopAbout: user.shopAbout,
     shopImage: user.shopImage,
     shopCoverImage: user.shopCoverImage,
+    shopCoverStyle: user.shopCoverStyle,
     shopSlug: user.shopSlug,
     user: {
       name: user.name,

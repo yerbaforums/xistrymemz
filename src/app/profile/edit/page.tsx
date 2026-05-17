@@ -9,6 +9,7 @@ import { getUserProfileUrl } from '@/lib/utils'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { useToast } from '@/context/ToastContext'
 import ImageUploader from '@/components/ImageUploader'
+import AvailabilityEditor from '@/components/AvailabilityEditor'
 import styles from '../[username]/profile.module.css'
 
 interface UserLink {
@@ -468,6 +469,8 @@ export default function ProfileEditPage() {
                 ))}
               </div>
             </div>
+
+            <AvailabilityEditor userId={session?.user.id ?? ''} />
 
             <div style={{marginBottom: '16px'}}>
               <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>Bio</label>

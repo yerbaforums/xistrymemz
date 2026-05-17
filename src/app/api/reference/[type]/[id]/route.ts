@@ -31,6 +31,16 @@ export async function GET(
         if (p) item = { id: p.id, title: p.title, image: null }
         break
       }
+      case 'POST': {
+        const post = await prisma.post.findUnique({
+          where: { id },
+          include: { user: { select: { id: true, name: true, image: true, username: true } } }
+        })
+        if (post) {
+          item = { id: post.id, title: post.content, image: post.imageUrl || null }
+        }
+        break
+      }
     }
 
     if (!item) {

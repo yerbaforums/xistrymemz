@@ -10,6 +10,7 @@ import { QRCodeModal } from '@/components/QRCodeModal'
 import { DonationActions } from '@/components/DonationActions'
 import ImageUploader from '@/components/ImageUploader'
 import MentionInput from '@/components/MentionInput'
+import BookAppointmentModal from '@/components/BookAppointmentModal'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
 import Rating from '@/components/Rating'
@@ -43,6 +44,7 @@ interface ShopData {
   shopAbout: string | null
   shopImage: string | null
   shopCoverImage: string | null
+  shopCoverStyle: string
   shopSlug: string | null
   user: {
     id: string
@@ -140,10 +142,11 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
   const [isOwner, setIsOwner] = useState(false)
   const [activeTab, setActiveTab] = useState<'products' | 'posts' | 'reviews' | 'about'>('products')
   const [showEditModal, setShowEditModal] = useState(false)
-  const [editForm, setEditForm] = useState({ shopName: '', shopAbout: '', shopImage: '', shopCoverImage: '' })
+  const [editForm, setEditForm] = useState({ shopName: '', shopAbout: '', shopImage: '', shopCoverImage: '', shopCoverStyle: 'cover' })
   const [saving, setSaving] = useState(false)
   const [newPost, setNewPost] = useState('')
   const [newPostImages, setNewPostImages] = useState<string[]>([])
+  const [showAppointmentModal, setShowAppointmentModal] = useState(false)
   const [posting, setPosting] = useState(false)
   const [resolvedSlug, setResolvedSlug] = useState<string | null>(null)
   const [qrDonation, setQrDonation] = useState<DonationAddr | null>(null)
@@ -161,7 +164,8 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
           shopName: data.shopName || '',
           shopAbout: data.shopAbout || '',
           shopImage: data.shopImage || '',
-          shopCoverImage: data.shopCoverImage || ''
+          shopCoverImage: data.shopCoverImage || '',
+          shopCoverStyle: data.shopCoverStyle || 'cover'
         })
       })
       .catch(() => error('Failed to load shop'))
@@ -272,7 +276,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
       <div className={styles.shopHeader}>
         <div
           className={styles.coverImage}
-          style={{ backgroundImage: shop.shopCoverImage ? `url(${shop.shopCoverImage})` : undefined }}
+          style={{ backgroundImage: shop.shopCoverImage ? `url(${shop.shopCoverImage})` : undefined, backgroundSize: shop.shopCoverStyle === 'contain' ? 'contain' : shop.shopCoverStyle === 'fill' ? '100% 100%' : shop.shopCoverStyle === 'repeat' ? 'auto' : 'cover', backgroundRepeat: shop.shopCoverStyle === 'repeat' ? 'repeat' : 'no-repeat', backgroundPosition: 'center' }}
         >
           {!shop.shopCoverImage && <div className={styles.coverGradient} />}
         </div>
@@ -357,6 +361,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
             <Link href={getUserProfileUrl(shop.user)} className={styles.viewOwnerBtn}>
               View Owner Profile
             </Link>
+            <button onClick={() => setShowAppointmentModal(true)} className={styles.viewOwnerBtn} style={{ fontSize: '0.78rem' }}>📅 Book</button>
             {isOwner && (
               <button onClick={() => { setShowEditModal(true); setActiveTab('about'); }} className={styles.editBtn}>
                 Edit Shop
@@ -518,6 +523,20 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                   <label>Cover Image</label>
                   <ImageUploader images={editForm.shopCoverImage ? [editForm.shopCoverImage] : []} onChange={urls => setEditForm({ ...editForm, shopCoverImage: urls[0] || '' })} maxImages={1} />
                 </div>
+                {editForm.shopCoverImage && (
+                  <div className={styles.formGroup}>
+                    <label>Cover Style</label>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      {['cover', 'contain', 'fill', 'repeat'].map(s => (
+                        <button key={s} type="button" onClick={() => setEditForm(prev => ({ ...prev, shopCoverStyle: s }))} style={{
+                          padding: '6px 14px', borderRadius: 6, border: `1px solid ${editForm.shopCoverStyle === s ? 'var(--accent-primary)' : 'var(--border-color)'}`, background: editForm.shopCoverStyle === s ? 'var(--accent-primary)' : 'transparent', color: editForm.shopCoverStyle === s ? '#fff' : 'var(--text-primary)', cursor: 'pointer', fontSize: '0.8rem', textTransform: 'capitalize'
+                        }}>
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className={styles.formActions}>
                   <button type="submit" className="btn-primary" disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
                   <button type="button" className="btn-ghost" onClick={() => setShowEditModal(false)}>Cancel</button>
@@ -568,6 +587,13 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
       {qrDonation && (
         <QRCodeModal isOpen={true} onClose={() => setQrDonation(null)} currency={qrDonation.label || qrDonation.currency} address={qrDonation.address} />
       )}
+
+      <BookAppointmentModal
+        isOpen={showAppointmentModal}
+        onClose={() => setShowAppointmentModal(false)}
+        sellerId={shop.user.id}
+        sellerName={shop.user.name}
+      />
     </div>
   )
 }

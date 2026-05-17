@@ -11,6 +11,11 @@ interface FeedPost {
   content: string
   images: string | null
   createdAt: string
+  userId: string
+  likes: number
+  referenceType?: string | null
+  referenceId?: string | null
+  referenceTitle?: string | null
   user: { id: string; name: string | null; image: string | null; username?: string | null }
   sourceType: 'POST' | 'GROUPPOST' | 'FORUMPOST'
   context?: string | null

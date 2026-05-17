@@ -10,6 +10,7 @@ import { QRCodeModal } from '@/components/QRCodeModal'
 import { DonationActions } from '@/components/DonationActions'
 import ImageUploader from '@/components/ImageUploader'
 import MentionInput from '@/components/MentionInput'
+import BookAppointmentModal from '@/components/BookAppointmentModal'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
 import Rating from '@/components/Rating'
@@ -66,6 +67,7 @@ interface SchoolData {
   schoolAbout: string | null
   schoolImage: string | null
   schoolCoverImage: string | null
+  schoolCoverStyle: string
   schoolSlug: string | null
   user: {
     id: string
@@ -145,10 +147,11 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
   const [isOwner, setIsOwner] = useState(false)
   const [activeTab, setActiveTab] = useState<'content' | 'posts' | 'reviews' | 'about'>('content')
   const [showEditModal, setShowEditModal] = useState(false)
-  const [editForm, setEditForm] = useState({ schoolName: '', schoolAbout: '', schoolImage: '', schoolCoverImage: '' })
+  const [editForm, setEditForm] = useState({ schoolName: '', schoolAbout: '', schoolImage: '', schoolCoverImage: '', schoolCoverStyle: 'cover' })
   const [saving, setSaving] = useState(false)
   const [newPost, setNewPost] = useState('')
   const [newPostImages, setNewPostImages] = useState<string[]>([])
+  const [showAppointmentModal, setShowAppointmentModal] = useState(false)
   const [posting, setPosting] = useState(false)
   const [showContentForm, setShowContentForm] = useState(false)
   const [contentForm, setContentForm] = useState({ title: '', content: '', contentType: 'article', price: '', isPaid: false })
@@ -169,7 +172,8 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
           schoolName: data.schoolName || '',
           schoolAbout: data.schoolAbout || '',
           schoolImage: data.schoolImage || '',
-          schoolCoverImage: data.schoolCoverImage || ''
+          schoolCoverImage: data.schoolCoverImage || '',
+          schoolCoverStyle: data.schoolCoverStyle || 'cover'
         })
       })
       .catch(() => error('Failed to load school'))
@@ -294,7 +298,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
       <div className={styles.schoolHeader}>
         <div
           className={styles.coverImage}
-          style={{ backgroundImage: school.schoolCoverImage ? `url(${school.schoolCoverImage})` : undefined }}
+          style={{ backgroundImage: school.schoolCoverImage ? `url(${school.schoolCoverImage})` : undefined, backgroundSize: school.schoolCoverStyle === 'contain' ? 'contain' : school.schoolCoverStyle === 'fill' ? '100% 100%' : school.schoolCoverStyle === 'repeat' ? 'auto' : 'cover', backgroundRepeat: school.schoolCoverStyle === 'repeat' ? 'repeat' : 'no-repeat', backgroundPosition: 'center' }}
         >
           {!school.schoolCoverImage && <div className={styles.coverGradient} />}
         </div>
@@ -367,6 +371,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
           </div>
           <div className={styles.actions}>
             <Link href={getUserProfileUrl(school.user)} className={styles.viewOwnerBtn}>View Instructor</Link>
+            <button onClick={() => setShowAppointmentModal(true)} className={styles.viewOwnerBtn} style={{ fontSize: '0.8rem' }}>📅 Book</button>
             {isOwner && (
               <button onClick={() => { setShowEditModal(true); setActiveTab('about'); }} className={styles.editBtn}>Edit School</button>
             )}
@@ -564,6 +569,20 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                   <label>Cover Image</label>
                   <ImageUploader images={editForm.schoolCoverImage ? [editForm.schoolCoverImage] : []} onChange={urls => setEditForm({ ...editForm, schoolCoverImage: urls[0] || '' })} maxImages={1} />
                 </div>
+                {editForm.schoolCoverImage && (
+                  <div className={styles.formGroup}>
+                    <label>Cover Style</label>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      {['cover', 'contain', 'fill', 'repeat'].map(s => (
+                        <button key={s} type="button" onClick={() => setEditForm(prev => ({ ...prev, schoolCoverStyle: s }))} style={{
+                          padding: '6px 14px', borderRadius: 6, border: `1px solid ${editForm.schoolCoverStyle === s ? 'var(--accent-primary)' : 'var(--border-color)'}`, background: editForm.schoolCoverStyle === s ? 'var(--accent-primary)' : 'transparent', color: editForm.schoolCoverStyle === s ? '#fff' : 'var(--text-primary)', cursor: 'pointer', fontSize: '0.8rem', textTransform: 'capitalize'
+                        }}>
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className={styles.formActions}>
                   <button type="submit" className="btn-primary" disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
                   <button type="button" className="btn-ghost" onClick={() => setShowEditModal(false)}>Cancel</button>
@@ -606,6 +625,13 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
             )}
           </div>
         )}
+
+      <BookAppointmentModal
+        isOpen={showAppointmentModal}
+        onClose={() => setShowAppointmentModal(false)}
+        sellerId={school.user.id}
+        sellerName={school.user.name}
+      />
       </div>
     </div>
   )

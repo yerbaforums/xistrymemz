@@ -129,3 +129,31 @@
   height: 100%;
   object-fit: cover;
 }
+
+@media (max-width: 600px) {
+  .item {
+    padding: 12px;
+    border-radius: 8px;
+  }
+
+  .header {
+    gap: 8px;
+  }
+
+  .userName {
+    font-size: 0.85rem;
+  }
+
+  .imageGrid:not(.singleImage) {
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+
+  .imageWrapper {
+    padding-top: 66%;
+  }
+
+  .singleImage .imageWrapper {
+    padding-top: 56%;
+  }
+}

@@ -12,6 +12,7 @@ import { getUserProfileUrl } from '@/lib/utils'
 import { MakeOfferModal } from '@/components/MakeOfferModal'
 import { ComingSoonModal } from '@/components/ComingSoonModal'
 import ShareToPostModal from '@/components/ShareToPostModal'
+import BookAppointmentModal from '@/components/BookAppointmentModal'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import RoleBadge from '@/components/RoleBadge'
@@ -38,6 +39,7 @@ interface Product {
   longitude: number | null
   isGlobal: boolean
   imageUrl: string | null
+  userId: string
   user: {
     id: string
     name: string | null
@@ -62,6 +64,10 @@ interface Product {
   rentalMinDays: number
   rentalMaxDays: number | null
   rentalAvailable: boolean
+  acceptsAppointments: boolean
+  appointmentDuration?: number | null
+  appointmentLocation?: string | null
+  appointmentMeetingLink?: string | null
   hashtags?: { id: string; tag?: string; hashtag?: { id: string; tag: string } }[]
 }
 
@@ -150,6 +156,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [showOfferModal, setShowOfferModal] = useState(false)
   const [showCartModal, setShowCartModal] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
+  const [showAppointmentModal, setShowAppointmentModal] = useState(false)
   const [showEscrowComingSoon, setShowEscrowComingSoon] = useState(false)
   const [showMessageModal, setShowMessageModal] = useState(false)
   const [messageContent, setMessageContent] = useState('')
@@ -915,6 +922,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             </div>
           )}
 
+          {product.acceptsAppointments && (
+            <div className={styles.priceCard}>
+              <button className={styles.addToPlanBtn} onClick={() => setShowAppointmentModal(true)}>
+                📅 Book Appointment
+              </button>
+            </div>
+          )}
+
           <div className={styles.priceCard}>
             {session?.user && (
               <button 
@@ -1293,6 +1308,18 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         referenceId={product.id}
         referenceTitle={product.title}
         referenceImage={product.imageUrl}
+      />
+
+      <BookAppointmentModal
+        isOpen={showAppointmentModal}
+        onClose={() => setShowAppointmentModal(false)}
+        sellerId={product.userId}
+        sellerName={product.user?.name}
+        productId={product.id}
+        productTitle={product.title}
+        defaultDuration={product.appointmentDuration}
+        defaultLocation={product.appointmentLocation}
+        defaultMeetingLink={product.appointmentMeetingLink}
       />
     </div>
   )

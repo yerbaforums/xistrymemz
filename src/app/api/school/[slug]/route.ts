@@ -12,6 +12,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
       schoolImage: true,
       schoolSlug: true,
       schoolCoverImage: true,
+      schoolCoverStyle: true,
       name: true,
       id: true,
       username: true,
@@ -69,6 +70,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
     schoolAbout: user.schoolAbout,
     schoolImage: user.schoolImage,
     schoolCoverImage: user.schoolCoverImage,
+    schoolCoverStyle: user.schoolCoverStyle,
     schoolSlug: user.schoolSlug,
     user: {
       name: user.name,
