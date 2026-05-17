@@ -22,6 +22,7 @@ model User {
   searchRadius Float   @default(50)
   website   String?
   coverImage String?
+  coverStyle String @default("cover")
   userClass String?
   role      String    @default("USER")
   shopName  String?
@@ -72,6 +73,7 @@ model User {
   sentMessages        Message[] @relation("MessageSender")
   receivedMessages    Message[] @relation("MessageReceiver")
   posts     Post[]
+  postTips  PostTip[]
   wallPosts Post[] @relation("WallPostTarget")
   planUpdates PlanUpdate[]
   statusHistory RequestStatusHistory[]
@@ -615,25 +617,48 @@ model PlanUpdate {
 }
 
 model Post {
-  id            String   @id @default(cuid())
-  content       String
-  imageUrl      String?
-  pinned        Boolean  @default(false)
-  context       String   @default("PROFILE") // PROFILE | SHOP | SCHOOL | WALL
-  images        String?  // JSON array of URLs
-  mentions      String?  // JSON array of mentioned user IDs
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  targetUserId  String?
-  targetUser    User?    @relation("WallPostTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
-  likes         Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  hashtags      PostHashtag[]
+  id              String   @id @default(cuid())
+  content         String
+  imageUrl        String?
+  pinned          Boolean  @default(false)
+  context         String   @default("PROFILE") // PROFILE | SHOP | SCHOOL | WALL
+  images          String?  // JSON array of URLs
+  mentions        String?  // JSON array of mentioned user IDs
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetUserId    String?
+  targetUser      User?    @relation("WallPostTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+  parentId        String?
+  parent          Post?    @relation("PostReplies", fields: [parentId], references: [id])
+  replies         Post[]   @relation("PostReplies")
+  referenceType   String?  // PRODUCT | EVENT | REQUEST | PLAN
+  referenceId     String?
+  referenceTitle  String?
+  likes           Int      @default(0)
+  totalTips       Float    @default(0)
+  tippers         Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  hashtags        PostHashtag[]
+  postTips        PostTip[]
 
   @@index([userId])
   @@index([targetUserId])
+  @@index([parentId])
   @@index([context])
+}
+
+model PostTip {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Float
+  createdAt DateTime @default(now())
+
+  @@index([postId])
+  @@index([userId])
 }
 
 model Hashtag {

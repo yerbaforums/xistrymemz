@@ -3,6 +3,9 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import HashtagText from '@/components/HashtagText'
+import PostActions from '@/components/PostActions'
+import SharedItemCard from '@/components/SharedItemCard'
+import ReplySection from '@/components/ReplySection'
 import { getUserProfileUrl } from '@/lib/utils'
 import styles from './FeedItem.module.css'
 
@@ -10,6 +13,8 @@ interface FeedPost {
   id: string
   content: string
   images: string | null
+  likes?: number
+  userId?: string
   createdAt: string
   user: {
     id: string
@@ -21,6 +26,9 @@ interface FeedPost {
   context?: string | null
   groupName?: string
   groupId?: string
+  referenceType?: string | null
+  referenceId?: string | null
+  referenceTitle?: string | null
 }
 
 const CONTEXT_CONFIG: Record<string, { label: string; icon: string; className: string }> = {
@@ -105,6 +113,26 @@ export default function FeedItem({ post }: { post: FeedPost }) {
               />
             </div>
           ))}
+        </div>
+      )}
+      {post.referenceType && post.referenceId && (
+        <SharedItemCard
+          referenceType={post.referenceType}
+          referenceId={post.referenceId}
+          referenceTitle={post.referenceTitle}
+        />
+      )}
+      {post.sourceType === 'POST' && post.userId && (
+        <div style={{ marginTop: 8 }}>
+          <PostActions
+            postId={post.id}
+            postAuthorId={post.userId}
+            initialLikes={post.likes || 0}
+            showTip={true}
+            replyCount={0}
+            onReply={() => {}}
+          />
+          <ReplySection postId={post.id} postAuthorId={post.userId} />
         </div>
       )}
     </div>

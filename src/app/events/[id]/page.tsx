@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic'
 import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
 import RoleBadge from '@/components/RoleBadge'
+import ShareToPostModal from '@/components/ShareToPostModal'
 import type { Event } from '@/types/event'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
@@ -23,6 +24,7 @@ function EventDetailContent() {
   const [joining, setJoining] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [showJoiners, setShowJoiners] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
   const [bulkMessage, setBulkMessage] = useState('')
   const [sendingBulk, setSendingBulk] = useState(false)
   const [bulkSuccess, setBulkSuccess] = useState('')
@@ -622,8 +624,22 @@ function EventDetailContent() {
               </div>
             </div>
           )}
+
+          <div className={styles.statsCard}>
+            <button onClick={() => setShowShareModal(true)} style={{ width: '100%', padding: '8px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-primary)', cursor: 'pointer' }}>
+              📝 Share via Post
+            </button>
+          </div>
         </div>
       </div>
+
+      <ShareToPostModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        referenceType="EVENT"
+        referenceId={event.id}
+        referenceTitle={event.title}
+      />
     </div>
   )
 }

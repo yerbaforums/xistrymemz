@@ -9,6 +9,7 @@ import { getUserProfileUrl } from '@/lib/utils'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { DonationActions } from '@/components/DonationActions'
 import ImageUploader from '@/components/ImageUploader'
+import MentionInput from '@/components/MentionInput'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
 import Rating from '@/components/Rating'
@@ -484,7 +485,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
           <div className={styles.postsSection}>
             {isOwner && (
               <form onSubmit={handleCreatePost} className={styles.createPost}>
-                <textarea value={newPost} onChange={e => setNewPost(e.target.value)} placeholder="Share an announcement..." className={styles.postInput} rows={3} />
+                <MentionInput value={newPost} onChange={setNewPost} placeholder="Share an announcement..." className={styles.postInput} rows={3} />
                 <ImageUploader images={newPostImages} onChange={setNewPostImages} maxImages={6} />
                 <div className={styles.postActions}>
                   <span className={styles.charCount}>{newPost.length}/2000</span>

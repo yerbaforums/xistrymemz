@@ -11,7 +11,7 @@
 }
 
 .coverImage {
-  height: 80px;
+  height: 200px;
   background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
   background-size: cover;
   background-position: center;
@@ -32,7 +32,7 @@
   margin-bottom: 20px;
   padding-bottom: 16px;
   border-bottom: 1px solid var(--border-color);
-  padding-top: 50px;
+  padding-top: 220px;
 }
 
 .profileContent {
@@ -45,11 +45,12 @@
 }
 
 .coverImage {
-  height: 80px;
+  height: 200px;
   background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
   background-size: cover;
   background-position: center;
   border-radius: 12px;
+  position: relative;
   margin: 0 -24px;
   position: absolute;
   top: 0;
@@ -74,6 +75,7 @@
   overflow: hidden;
   border: 3px solid var(--bg-primary);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  position: relative;
 }
 
 .avatar img {
@@ -916,11 +918,11 @@
 
 @media (max-width: 768px) {
   .profileHeader {
-    padding-top: 60px;
+    padding-top: 180px;
   }
 
   .coverImage {
-    height: 100px;
+    height: 160px;
     top: 0;
   }
 
@@ -969,7 +971,7 @@
   }
   
   .coverImage {
-    height: 100px;
+    height: 160px;
   }
 
   .compactPassport {

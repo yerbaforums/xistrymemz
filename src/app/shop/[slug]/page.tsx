@@ -9,6 +9,7 @@ import { getUserProfileUrl } from '@/lib/utils'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { DonationActions } from '@/components/DonationActions'
 import ImageUploader from '@/components/ImageUploader'
+import MentionInput from '@/components/MentionInput'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
 import Rating from '@/components/Rating'
@@ -430,9 +431,9 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
           <div className={styles.postsSection}>
             {isOwner && (
               <form onSubmit={handleCreatePost} className={styles.createPost}>
-                <textarea
+                <MentionInput
                   value={newPost}
-                  onChange={e => setNewPost(e.target.value)}
+                  onChange={setNewPost}
                   placeholder="Share an update with your customers..."
                   className={styles.postInput}
                   rows={3}

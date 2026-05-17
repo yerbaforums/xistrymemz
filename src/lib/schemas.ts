@@ -183,7 +183,11 @@ export const postSchema = z.object({
   imageUrl: z.string().max(500).optional().nullable(),
   images: z.array(z.string()).optional().nullable(),
   targetUserId: z.string().min(1).optional().nullable(),
-  context: z.enum(['PROFILE', 'SHOP', 'SCHOOL', 'WALL']).optional()
+  context: z.enum(['PROFILE', 'SHOP', 'SCHOOL', 'WALL']).optional(),
+  parentId: z.string().min(1).optional().nullable(),
+  referenceType: z.enum(['PRODUCT', 'EVENT', 'REQUEST', 'PLAN']).optional().nullable(),
+  referenceId: z.string().min(1).optional().nullable(),
+  referenceTitle: z.string().max(500).optional().nullable()
 })
 
 export const profileUpdateSchema = z.object({

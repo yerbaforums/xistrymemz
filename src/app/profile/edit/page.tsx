@@ -67,6 +67,7 @@ export default function ProfileEditPage() {
   const [bio, setBio] = useState('')
   const [image, setImage] = useState('')
   const [coverImage, setCoverImage] = useState('')
+  const [coverStyle, setCoverStyle] = useState('cover')
   const [location, setLocation] = useState('')
   const [website, setWebsite] = useState('')
   const [userClass, setUserClass] = useState('')
@@ -134,6 +135,7 @@ export default function ProfileEditPage() {
       setBio(user.bio || '')
       setImage(user.image || '')
       setCoverImage(user.coverImage || '')
+      setCoverStyle(user.coverStyle || 'cover')
       setLocation(user.location || '')
       setWebsite(user.website || '')
       setUserClass(user.userClass || '')
@@ -272,7 +274,7 @@ export default function ProfileEditPage() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name, username, bio, image, coverImage, location, website, userClass,
+          name, username, bio, image, coverImage, coverStyle, location, website, userClass,
           walletAddress, paymentAddress, refundAddress, cryptoCurrency,
           acceptsDonations, neighborhood, searchRadius,
           latitude: latitude ?? null, longitude: longitude ?? null,
@@ -453,6 +455,18 @@ export default function ProfileEditPage() {
             <div style={{marginBottom: '16px'}}>
               <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>Cover Image</label>
               <ImageUploader images={coverImage ? [coverImage] : []} onChange={urls => setCoverImage(urls[0] || '')} maxImages={1} />
+              {coverImage && (
+                <div style={{marginTop: 8, height: 200, borderRadius: 8, backgroundImage: `url(${coverImage})`, backgroundSize: coverStyle === 'contain' ? 'contain' : coverStyle === 'fill' ? '100% 100%' : coverStyle === 'repeat' ? 'auto' : 'cover', backgroundRepeat: coverStyle === 'repeat' ? 'repeat' : 'no-repeat', backgroundPosition: 'center', border: '1px solid var(--border-color)'}} />
+              )}
+              <div style={{marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap'}}>
+                {['cover', 'contain', 'fill', 'repeat'].map(s => (
+                  <button key={s} type="button" onClick={() => setCoverStyle(s)} style={{
+                    padding: '6px 14px', borderRadius: 6, border: `1px solid ${coverStyle === s ? 'var(--accent-primary)' : 'var(--border-color)'}`, background: coverStyle === s ? 'var(--accent-primary)' : 'transparent', color: coverStyle === s ? '#fff' : 'var(--text-primary)', cursor: 'pointer', fontSize: '0.8rem', textTransform: 'capitalize'
+                  }}>
+                    {s}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div style={{marginBottom: '16px'}}>

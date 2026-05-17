@@ -16,6 +16,9 @@ import RoleBadge from '@/components/RoleBadge'
 import HashtagText from '@/components/HashtagText'
 import MentionInput from '@/components/MentionInput'
 import ImageUploader from '@/components/ImageUploader'
+import PostActions from '@/components/PostActions'
+import SharedItemCard from '@/components/SharedItemCard'
+import ReplySection from '@/components/ReplySection'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { useToast } from '@/context/ToastContext'
 import dynamic from 'next/dynamic'
@@ -58,6 +61,7 @@ interface ProfileUser {
   username: string | null
   image: string | null
   coverImage: string | null
+  coverStyle?: string
   bio: string | null
   location: string | null
   neighborhood: string | null
@@ -123,6 +127,9 @@ interface Post {
   likes: number
   createdAt: string
   context?: string | null
+  referenceType?: string | null
+  referenceId?: string | null
+  referenceTitle?: string | null
   user: {
     id: string
     name: string | null
@@ -634,27 +641,13 @@ export default function ProfilePage() {
     }
   }
 
-  const handleLikePost = async (postId: string, currentLikes: number) => {
-    try {
-      const isLiked = likedPosts.has(postId)
-      const newLikeCount = isLiked ? currentLikes - 1 : currentLikes + 1
-      const res = await fetch(`/api/posts/${postId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ likes: newLikeCount })
-      })
-      if (res.ok) {
-        setLikedPosts(prev => {
-          const next = new Set(prev)
-          if (isLiked) next.delete(postId)
-          else next.add(postId)
-          return next
-        })
-        fetchProfile(getTargetId())
-      }
-    } catch (error) {
-      console.error('Error liking post:', error)
-    }
+  const handleToggleLike = (postId: string, liked: boolean) => {
+    setLikedPosts(prev => {
+      const next = new Set(prev)
+      if (liked) next.add(postId)
+      else next.delete(postId)
+      return next
+    })
   }
 
   const handleLoadMorePosts = async () => {
@@ -759,7 +752,11 @@ export default function ProfilePage() {
       <div className={styles.profileHeader}>
         <div 
           className={styles.coverImage}
-          style={{ backgroundImage: user.coverImage ? `url(${user.coverImage})` : undefined }}
+          style={{
+            backgroundImage: user.coverImage ? `url(${user.coverImage})` : undefined,
+            backgroundSize: user.coverStyle === 'contain' ? 'contain' : user.coverStyle === 'fill' ? '100% 100%' : user.coverStyle === 'repeat' ? 'auto' : 'cover',
+            backgroundRepeat: user.coverStyle === 'repeat' ? 'repeat' : 'no-repeat'
+          }}
         >
           {!user.coverImage && <div className={styles.coverPlaceholder} />}
           {isOwnProfile && !editMode && (
@@ -767,7 +764,7 @@ export default function ProfilePage() {
               type="button"
               onClick={() => coverInputRef.current?.click()}
               disabled={coverUploading}
-              style={{ position: 'absolute', bottom: 8, right: 8, padding: '6px 12px', background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}
+              style={{ position: 'absolute', bottom: 8, right: 8, zIndex: 3, padding: '6px 12px', background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}
             >
               {coverUploading ? '...' : 'Change Cover'}
             </button>
@@ -1175,11 +1172,23 @@ export default function ProfilePage() {
                             ))}
                           </div>
                         )}
+                        {post.referenceType && post.referenceId && (
+                          <SharedItemCard
+                            referenceType={post.referenceType}
+                            referenceId={post.referenceId}
+                            referenceTitle={post.referenceTitle}
+                          />
+                        )}
                         <div className={styles.postFooter}>
-                          <span className={styles.postLikes}>♥ {post.likes}</span>
-                          <button onClick={() => handleLikePost(post.id, post.likes)} className={styles.likeBtn}>
-                            {likedPosts.has(post.id) ? 'Unlike' : 'Like'}
-                          </button>
+                          <PostActions
+                            postId={post.id}
+                            postAuthorId={post.userId}
+                            initialLikes={post.likes}
+                            liked={likedPosts.has(post.id)}
+                            showTip={true}
+                            onLike={handleToggleLike}
+                          />
+                          <ReplySection postId={post.id} postAuthorId={post.userId} />
                         </div>
                       </div>
                     )

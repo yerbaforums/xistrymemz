@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    const where: Record<string, unknown> = {}
+    const where: Record<string, unknown> = { parentId: null }
 
     if (tag) {
       const hashtag = await prisma.hashtag.findUnique({ where: { tag: tag.toLowerCase() } })
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { content, imageUrl, images, targetUserId, context } = validation.data
+    const { content, imageUrl, images, targetUserId, context, parentId, referenceType, referenceId, referenceTitle } = validation.data
 
     const resolvedImageUrl = imageUrl || (images && images.length > 0 ? images[0] : null)
 
@@ -103,6 +103,10 @@ export async function POST(request: NextRequest) {
         userId: session.user.id,
         targetUserId: isWallPost ? targetUserId : null,
         context: context || 'PROFILE',
+        parentId: parentId || null,
+        referenceType: referenceType || null,
+        referenceId: referenceId || null,
+        referenceTitle: referenceTitle || null,
         pinned: false
       },
       include: {

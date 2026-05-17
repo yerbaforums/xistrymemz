@@ -11,6 +11,7 @@ import Rating from '@/components/Rating'
 import { getUserProfileUrl } from '@/lib/utils'
 import { MakeOfferModal } from '@/components/MakeOfferModal'
 import { ComingSoonModal } from '@/components/ComingSoonModal'
+import ShareToPostModal from '@/components/ShareToPostModal'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import RoleBadge from '@/components/RoleBadge'
@@ -148,6 +149,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [showOfferModal, setShowOfferModal] = useState(false)
   const [showCartModal, setShowCartModal] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
   const [showEscrowComingSoon, setShowEscrowComingSoon] = useState(false)
   const [showMessageModal, setShowMessageModal] = useState(false)
   const [messageContent, setMessageContent] = useState('')
@@ -971,6 +973,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               >
                 𝕏 Post
               </a>
+              <button onClick={() => setShowShareModal(true)} className={styles.shareBtn} title="Share via Post">
+                📝 Post
+              </button>
             </div>
           </div>
         </div>
@@ -1279,6 +1284,15 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         message="Are you sure you want to delete this listing? This cannot be undone."
         confirmLabel="Delete"
         variant="danger"
+      />
+
+      <ShareToPostModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        referenceType="PRODUCT"
+        referenceId={product.id}
+        referenceTitle={product.title}
+        referenceImage={product.imageUrl}
       />
     </div>
   )

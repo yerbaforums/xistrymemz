@@ -8,6 +8,7 @@ import { useToast } from '@/context/ToastContext'
 import { MakeOfferModal } from '@/components/MakeOfferModal'
 import { getUserProfileUrl } from '@/lib/utils'
 import { getCryptoIcon, getCryptoName } from '@/lib/crypto-icons'
+import ShareToPostModal from '@/components/ShareToPostModal'
 
 const CATEGORIES = [
   { value: 'GENERAL', label: 'General', icon: '\u{1F4CB}' },
@@ -154,6 +155,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
   const [request, setRequest] = useState(initialRequest)
   const [comment, setComment] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
   const [showCompleteModal, setShowCompleteModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showHistoryModal, setShowHistoryModal] = useState(false)
@@ -889,6 +891,12 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
             </div>
           )}
 
+          <div className={styles.quickActions} style={{ marginTop: 8 }}>
+            <button onClick={() => setShowShareModal(true)} className={styles.actionBtn}>
+              📝 Share via Post
+            </button>
+          </div>
+
           {canRollback && (
             <div className={styles.quickActions}>
               <button
@@ -1353,6 +1361,14 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
         listingTitle={request.title}
         listingType="REQUEST"
         listingOwnerName={request.user.name || undefined}
+      />
+
+      <ShareToPostModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        referenceType="REQUEST"
+        referenceId={request.id}
+        referenceTitle={request.title}
       />
     </div>
   )
