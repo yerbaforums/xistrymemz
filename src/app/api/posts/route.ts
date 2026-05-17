@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     if (context) {
       where.context = context
     } else if (targetUserId || userId) {
-      where.NOT = { context: { in: ['SHOP' as string, 'SCHOOL' as string] } }
+      where.context = { notIn: ['SHOP' as string, 'SCHOOL' as string] }
     }
 
     const [posts, total] = await Promise.all([

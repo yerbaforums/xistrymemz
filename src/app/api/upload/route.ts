@@ -7,13 +7,16 @@ import { existsSync } from 'fs'
 import { randomUUID } from 'crypto'
 import { uploadToIPFSBackground } from '@/lib/ipfs'
 import { prisma } from '@/lib/prisma'
+import sharp from 'sharp'
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm']
 const ALLOWED_TYPES = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_VIDEO_TYPES]
 
-const IMAGE_MAX_SIZE = 10 * 1024 * 1024
+const IMAGE_MAX_SIZE = 20 * 1024 * 1024
 const VIDEO_MAX_SIZE = 100 * 1024 * 1024
+const COMPRESS_QUALITY = 80
+const MAX_DIMENSION = 1920
 
 const DANGEROUS_EXTENSIONS = [
   'php', 'phtml', 'php3', 'php4', 'php5', 'phar',
@@ -65,6 +68,26 @@ function getMaxSize(mimeType: string): number {
   return IMAGE_MAX_SIZE
 }
 
+async function compressImage(buffer: Buffer, mimeType: string): Promise<Buffer> {
+  if (mimeType === 'image/gif') return buffer
+  try {
+    let img = sharp(buffer).rotate()
+    const metadata = await img.metadata()
+    if (metadata.width && metadata.width > MAX_DIMENSION) {
+      img = img.resize(MAX_DIMENSION, undefined, { fit: 'inside', withoutEnlargement: true })
+    }
+    if (metadata.height && metadata.height > MAX_DIMENSION) {
+      img = img.resize(undefined, MAX_DIMENSION, { fit: 'inside', withoutEnlargement: true })
+    }
+    if (mimeType === 'image/jpeg') return img.jpeg({ quality: COMPRESS_QUALITY, mozjpeg: true }).toBuffer()
+    if (mimeType === 'image/png') return img.png({ quality: COMPRESS_QUALITY, compressionLevel: 9 }).toBuffer()
+    if (mimeType === 'image/webp') return img.webp({ quality: COMPRESS_QUALITY }).toBuffer()
+    return buffer
+  } catch {
+    return buffer
+  }
+}
+
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions)
   
@@ -108,6 +131,10 @@ export async function POST(request: Request) {
         throw new Error('Invalid file content')
       }
 
+      const compressed = await compressImage(buffer, mimeType)
+      const compressedSize = compressed.length
+      const compressionRatio = ((1 - compressedSize / fileSize) * 100).toFixed(1)
+
       const uploadDir = join(process.cwd(), 'public', 'uploads', session.user.id)
       if (!existsSync(uploadDir)) {
         await mkdir(uploadDir, { recursive: true })
@@ -115,11 +142,15 @@ export async function POST(request: Request) {
 
       const safeFilename = `${randomUUID()}.${TYPE_EXTENSIONS[mimeType as keyof typeof TYPE_EXTENSIONS]}`
       const filepath = join(uploadDir, safeFilename)
-      await writeFile(filepath, buffer)
+      await writeFile(filepath, compressed)
       const url = `/uploads/${session.user.id}/${safeFilename}`
 
+      if (compressionRatio) {
+        console.log(`Compressed ${safeFilename}: ${(fileSize / 1024).toFixed(1)}KB → ${(compressedSize / 1024).toFixed(1)}KB (${compressionRatio}%)`)
+      }
+
       // Async IPFS upload (non-blocking)
-      uploadToIPFSBackground(buffer, safeFilename)
+      uploadToIPFSBackground(compressed, safeFilename)
         .then(async (ipfs) => {
           try {
             await prisma.file.create({

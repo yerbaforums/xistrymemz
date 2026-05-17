@@ -15,6 +15,7 @@ import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
 import HashtagText from '@/components/HashtagText'
 import MentionInput from '@/components/MentionInput'
+import ImageUploader from '@/components/ImageUploader'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { useToast } from '@/context/ToastContext'
 import dynamic from 'next/dynamic'
@@ -358,6 +359,7 @@ export default function ProfilePage() {
     userClass: ''
   })
   const [newPost, setNewPost] = useState('')
+  const [newPostImages, setNewPostImages] = useState<string[]>([])
   const [posting, setPosting] = useState(false)
   const [showConnectModal, setShowConnectModal] = useState(false)
   const [connectMessage, setConnectMessage] = useState('')
@@ -519,12 +521,14 @@ export default function ProfilePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           content: newPost,
-          targetUserId: isOwnProfile ? undefined : user.id
+          targetUserId: isOwnProfile ? undefined : user.id,
+          images: newPostImages.length > 0 ? newPostImages : undefined
         })
       })
 
       if (res.ok) {
         setNewPost('')
+        setNewPostImages([])
         fetchProfile(getTargetId())
       } else {
         const err = await res.json()
@@ -1011,6 +1015,9 @@ export default function ProfilePage() {
                     className={styles.postInput}
                     rows={3}
                   />
+                </div>
+                <div style={{ marginTop: '8px' }}>
+                  <ImageUploader images={newPostImages} onChange={setNewPostImages} />
                 </div>
                 <div className={styles.formPostActions}>
                   <span className={styles.charCount}>{newPost.length}/2000</span>

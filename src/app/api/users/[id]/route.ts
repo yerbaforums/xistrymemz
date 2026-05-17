@@ -105,7 +105,7 @@ export async function GET(
             { userId, targetUserId: null },
             { targetUserId: userId }
           ],
-          NOT: { context: { in: ['SHOP' as string, 'SCHOOL' as string] } }
+          context: { notIn: ['SHOP' as string, 'SCHOOL' as string] },
         },
         include: {
           user: {
@@ -180,7 +180,7 @@ export async function GET(
             { userId, targetUserId: null },
             { targetUserId: userId }
           ],
-          NOT: { context: { in: ['SHOP' as string, 'SCHOOL' as string] } }
+          context: { notIn: ['SHOP' as string, 'SCHOOL' as string] },
         }
       }),
       prisma.userLocation.findMany({
