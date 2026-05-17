@@ -774,8 +774,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 <div className={styles.hashtags}>
                   <h3>Tags</h3>
                   <div className={styles.hashtagList}>
-                    {product.hashtags.map(h => (
-                      <span key={h.hashtag?.id || h.id} className={styles.hashtag}>#{h.hashtag?.tag || h.tag}</span>
+                    {product.hashtags.map((h: any) => (
+                      <Link key={h.hashtag?.id || h.id} href={`/hashtag/${h.hashtag?.tag || h.tag}`} className={styles.hashtag}>#{h.hashtag?.tag || h.tag}</Link>
                     ))}
                   </div>
                 </div>

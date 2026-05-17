@@ -391,9 +391,9 @@ function EventDetailContent() {
                 {event.hashtags && event.hashtags.length > 0 && (
                   <div className={styles.hashtagList}>
                     {event.hashtags.map(tag => (
-                      <span key={tag} className={styles.hashtagChip}>
+                      <Link key={tag} href={`/hashtag/${tag}`} className={styles.hashtagChip}>
                         #{tag}
-                      </span>
+                      </Link>
                     ))}
                   </div>
                 )}

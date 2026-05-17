@@ -2,8 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { renderMentions } from '@/lib/mentions'
-import { linkHashtags } from '@/lib/hashtags'
+import HashtagText from '@/components/HashtagText'
 
 interface FeedPost {
   id: string
@@ -18,11 +17,6 @@ interface FeedPost {
   sourceType: 'POST' | 'GROUPPOST' | 'FORUMPOST'
   groupName?: string
   groupId?: string
-}
-
-function renderContent(text: string): string {
-  const userMap = new Map<string, string>()
-  return renderMentions(linkHashtags(text), userMap)
 }
 
 function getImages(images: string | null): string[] {
@@ -93,8 +87,9 @@ export default function FeedItem({ post }: { post: FeedPost }) {
 
       <div
         style={{ lineHeight: 1.6, marginBottom: imageList.length > 0 ? '12px' : 0 }}
-        dangerouslySetInnerHTML={{ __html: renderContent(post.content) }}
-      />
+      >
+        <HashtagText text={post.content} />
+      </div>
 
       {imageList.length > 0 && (
         <div style={{

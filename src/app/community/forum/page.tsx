@@ -5,8 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import MentionInput, { type MentionInputHandle } from '@/components/MentionInput'
 import { getUserProfileUrl } from '@/lib/utils'
-import { linkMentions } from '@/lib/mentions'
-import { linkHashtags } from '@/lib/hashtags'
+import HashtagText from '@/components/HashtagText'
 import styles from './forum.module.css'
 
 interface Post {
@@ -338,12 +337,9 @@ export default function ForumPage() {
                     </span>
                   </div>
                   <h3>{post.title}</h3>
-                  <p
-                    className={styles.postPreview}
-                    dangerouslySetInnerHTML={{
-                      __html: linkHashtags(linkMentions(post.content.length > 150 ? post.content.substring(0, 150) + '...' : post.content))
-                    }}
-                  />
+                  <p className={styles.postPreview}>
+                    <HashtagText text={post.content} mentionLinks truncate={150} />
+                  </p>
                   <div className={styles.postMeta}>
                     <Link href={getUserProfileUrl(post.author)} onClick={e => e.stopPropagation()}>
                       👤 {post.author.name || 'Anonymous'}

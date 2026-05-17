@@ -159,6 +159,67 @@
   text-decoration: underline;
 }
 
+.hashtagRow {
+  margin-top: 32px;
+  padding: 20px 24px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+}
+
+.hashtagRowHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 14px;
+  color: var(--text-primary);
+}
+
+.hashtagRowIcon {
+  font-size: 1.1rem;
+}
+
+.hashtagRowCloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.hashtagRowPill {
+  display: inline-block;
+  padding: 5px 14px;
+  background: rgba(0, 217, 255, 0.08);
+  border: 1px solid rgba(0, 217, 255, 0.2);
+  border-radius: 100px;
+  color: var(--accent-primary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.hashtagRowPill:hover {
+  border-color: var(--accent-primary);
+  background: rgba(0, 217, 255, 0.14);
+  text-decoration: none;
+}
+
+.hashtagRowMore {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.hashtagRowMore:hover {
+  color: var(--accent-primary);
+}
+
 @media (max-width: 1024px) {
   .grid {
     grid-template-columns: 1fr;

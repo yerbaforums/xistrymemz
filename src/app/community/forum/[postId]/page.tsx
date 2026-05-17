@@ -5,8 +5,7 @@ import { useParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import MentionInput, { type MentionInputHandle } from '@/components/MentionInput'
-import { linkMentions } from '@/lib/mentions'
-import { linkHashtags } from '@/lib/hashtags'
+import HashtagText from '@/components/HashtagText'
 import styles from '../../community.module.css'
 import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
@@ -414,7 +413,7 @@ export default function ForumThreadPage() {
               </div>
             </div>
           ) : (
-            <div dangerouslySetInnerHTML={{ __html: linkHashtags(linkMentions(post.content)) }} />
+            <div><HashtagText text={post.content} mentionLinks /></div>
           )}
         </div>
 
@@ -551,7 +550,7 @@ export default function ForumThreadPage() {
                       </div>
                     </div>
                   ) : (
-                    <div dangerouslySetInnerHTML={{ __html: linkHashtags(linkMentions(reply.content)) }} />
+                    <div><HashtagText text={reply.content} mentionLinks /></div>
                   )}
                 </div>
                 

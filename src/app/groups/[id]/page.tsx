@@ -5,8 +5,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import MentionInput, { type MentionInputHandle } from '@/components/MentionInput'
-import { linkMentions } from '@/lib/mentions'
-import { linkHashtags } from '@/lib/hashtags'
+import HashtagText from '@/components/HashtagText'
 import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import { useToast } from '@/context/ToastContext'
@@ -679,7 +678,7 @@ function GroupDetailContent() {
                               )}
                             </div>
                           </div>
-                          <p className={styles.postContent} dangerouslySetInnerHTML={{ __html: linkHashtags(linkMentions(post.content)) }} />
+                          <p className={styles.postContent}><HashtagText text={post.content} mentionLinks /></p>
                           {post.imageUrl && (
                             <div className={styles.postImage}>
                               <img src={post.imageUrl} alt="Post attachment" />

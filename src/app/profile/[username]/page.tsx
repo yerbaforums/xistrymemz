@@ -13,8 +13,7 @@ import { DonationActions } from '@/components/DonationActions'
 import { ShareProfileModal } from '@/components/ShareProfileModal'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
-import { linkHashtags } from '@/lib/hashtags'
-import { renderMentions } from '@/lib/mentions'
+import HashtagText from '@/components/HashtagText'
 import MentionInput from '@/components/MentionInput'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { useToast } from '@/context/ToastContext'
@@ -1062,9 +1061,7 @@ export default function ProfilePage() {
                             </button>
                           </div>
                         </div>
-                        <p className={styles.postContent} dangerouslySetInnerHTML={{
-                          __html: renderMentions(linkHashtags(post.content), new Map())
-                        }} />
+                        <p className={styles.postContent}><HashtagText text={post.content} /></p>
                         <div className={styles.postFooter}>
                           <span className={styles.postLikes}>♥ {post.likes}</span>
                           <button onClick={() => handleLikePost(post.id, post.likes)} className={styles.likeBtn}>

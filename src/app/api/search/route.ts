@@ -10,7 +10,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ results: {} })
   }
 
-  const [plans, products, users, groups, events, requests, schoolContent, forumPosts] = await Promise.all([
+  const hashtagQuery = query.startsWith('#') ? query.slice(1).toLowerCase() : ''
+
+  const [plans, products, users, groups, events, requests, schoolContent, forumPosts, hashtags] = await Promise.all([
     prisma.plan.findMany({
       where: {
         OR: [
@@ -94,7 +96,12 @@ export async function GET(request: Request) {
       },
       select: { id: true, title: true, content: true, createdAt: true, authorId: true },
       take: limit
-    })
+    }),
+    hashtagQuery ? prisma.hashtag.findMany({
+      where: { tag: { contains: hashtagQuery } },
+      orderBy: { postCount: 'desc' },
+      take: limit
+    }) : Promise.resolve([])
   ])
 
   const results = {
@@ -105,7 +112,8 @@ export async function GET(request: Request) {
     events: events.map(e => ({ ...e, type: 'event', url: `/events/${e.id}` })),
     requests: requests.map(r => ({ ...r, type: 'request', url: `/requests/${r.id}` })),
     schoolContent: schoolContent.map(s => ({ ...s, type: 'school', url: `/schools` })),
-    forumPosts: forumPosts.map(p => ({ ...p, type: 'forumPost', url: `/community/forum/${p.id}` }))
+    forumPosts: forumPosts.map(p => ({ ...p, type: 'forumPost', url: `/community/forum/${p.id}` })),
+    hashtags: hashtags.map(h => ({ tag: h.tag, postCount: h.postCount, type: 'hashtag', url: `/hashtag/${h.tag}` }))
   }
 
   return NextResponse.json({ results, query })

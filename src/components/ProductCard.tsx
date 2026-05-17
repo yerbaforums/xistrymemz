@@ -115,7 +115,7 @@ export default function ProductCard({
         {product.hashtags && product.hashtags.length > 0 && (
           <div className={styles.hashtags}>
             {product.hashtags.slice(0, 3).map(h => (
-              <span key={h.tag} className={styles.hashtag}>#{h.tag}</span>
+              <Link key={h.tag} href={`/hashtag/${h.tag}`} className={styles.hashtag} onClick={e => e.stopPropagation()}>#{h.tag}</Link>
             ))}
           </div>
         )}

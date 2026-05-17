@@ -65,7 +65,7 @@ export default function Home() {
   const [loadingShops, setLoadingShops] = useState(true)
   const [loadingProducts, setLoadingProducts] = useState(true)
   const [loadingRequests, setLoadingRequests] = useState(true)
-  const [trendingTags, setTrendingTags] = useState<{ tag: string; postCount: number }[]>([])
+  const [trendingTags, setTrendingTags] = useState<{ tag: string; postCount: number; entities: { posts: number; products: number; events: number; forumPosts: number; groupPosts: number } }[]>([])
   const animatedStats = useCountUp(stats)
 
   const fetchProducts = useCallback(async (type?: string) => {
@@ -102,9 +102,9 @@ export default function Home() {
       })
       .catch(() => setLoadingRequests(false))
 
-    fetch('/api/hashtags?mode=trending&limit=12')
+    fetch('/api/hashtags?mode=trending&limit=20')
       .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.hashtags) setTrendingTags(d.hashtags.filter((h: { postCount: number }) => h.postCount > 0)) })
+      .then(d => { if (d?.hashtags) setTrendingTags(d.hashtags) })
       .catch(() => {})
   }, [fetchProducts])
 
@@ -120,6 +120,7 @@ export default function Home() {
         loadingShops={loadingShops}
         loadingProducts={loadingProducts}
         loadingRequests={loadingRequests}
+        trendingTags={trendingTags}
       />
       <StepsSection />
       <FeaturesSection />

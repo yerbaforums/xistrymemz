@@ -13,9 +13,10 @@ interface Props {
   loadingShops: boolean
   loadingProducts: boolean
   loadingRequests: boolean
+  trendingTags?: { tag: string; entities?: { products: number; events: number; posts: number; forumPosts: number; groupPosts: number } }[]
 }
 
-export default function PulseSection({ shops, products, requests, loadingShops, loadingProducts, loadingRequests }: Props) {
+export default function PulseSection({ shops, products, requests, loadingShops, loadingProducts, loadingRequests, trendingTags }: Props) {
   const { ref, visible } = useScrollReveal()
 
   return (
@@ -98,6 +99,23 @@ export default function PulseSection({ shops, products, requests, loadingShops, 
           <Link href="/requests" className={styles.viewAll}>View all requests →</Link>
         </div>
       </div>
+
+      {trendingTags && trendingTags.length > 0 && (
+        <div className={styles.hashtagRow}>
+          <div className={styles.hashtagRowHeader}>
+            <span className={styles.hashtagRowIcon}>🏷️</span>
+            <span>Trending Tags</span>
+          </div>
+          <div className={styles.hashtagRowCloud}>
+            {trendingTags.slice(0, 8).map(h => (
+              <Link key={h.tag} href={`/hashtag/${h.tag}`} className={styles.hashtagRowPill}>
+                #{h.tag}
+              </Link>
+            ))}
+            <Link href="/hashtags" className={styles.hashtagRowMore}>View All →</Link>
+          </div>
+        </div>
+      )}
     </section>
   )
 }
