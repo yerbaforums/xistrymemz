@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation'
 import styles from './page.module.css'
 import dynamic from 'next/dynamic'
 import { useToast } from '@/context/ToastContext'
+import { getUserProfileUrl } from '@/lib/utils'
 import RoleBadge from '@/components/RoleBadge'
 import type { Event } from '@/types/event'
 
@@ -375,7 +376,7 @@ function EventDetailContent() {
               <>
                 <p className={styles.author}>
                   by{' '}
-                  <Link href={`/profile/${event.userId}`} className={styles.authorLink}>
+                  <Link href={getUserProfileUrl({ id: event.userId, name: event.userName })} className={styles.authorLink}>
                     {event.userName || 'Unknown'}
                   </Link>
                   {event.organizer?.role && <RoleBadge role={event.organizer.role} />}
@@ -551,7 +552,7 @@ function EventDetailContent() {
                 <div className={styles.joinerList}>
                   {event.joiners.map((j, i) => (
                     <div key={`${j.id}-${i}`} className={styles.joinerItem}>
-                      <Link href={`/profile/${j.userId}`} className={styles.joinerLink}>
+                      <Link href={getUserProfileUrl({ id: j.userId, name: j.user.name })} className={styles.joinerLink}>
                         <span className={styles.joinerName}>
                           {j.user.name || j.user.email || `User ${i + 1}`}
                         </span>
@@ -603,7 +604,7 @@ function EventDetailContent() {
               <h3>Joined ({joinerCount})</h3>
               <div className={styles.joinerList}>
                 {event.joiners.slice(0, 10).map((j, i) => (
-                  <Link key={`${j.id}-${i}`} href={`/profile/${j.userId}`} className={styles.joinerBadgeLink}>
+                  <Link key={`${j.id}-${i}`} href={getUserProfileUrl({ id: j.userId, name: j.user.name })} className={styles.joinerBadgeLink}>
                     <span className={styles.joinerBadge}>
                       {j.user.name || j.user.email || `User ${i + 1}`}
                       {j.role === 'VOLUNTEER' && ' 🙋'}

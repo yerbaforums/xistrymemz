@@ -3,7 +3,9 @@
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState, useRef, Suspense } from 'react'
+import Link from 'next/link'
 import styles from './messages.module.css'
+import { getUserProfileUrl } from '@/lib/utils'
 
 interface User {
   id: string
@@ -207,9 +209,9 @@ function MessagesContent() {
                     <p>{selectedUser.email}</p>
                   </div>
                 </div>
-                <a href={`/profile/${selectedUser.id}`} className={styles.viewProfileBtn}>
+                <Link href={getUserProfileUrl(selectedUser)} className={styles.viewProfileBtn}>
                   View Profile
-                </a>
+                </Link>
               </div>
 
               <div className={styles.messagesContainer}>

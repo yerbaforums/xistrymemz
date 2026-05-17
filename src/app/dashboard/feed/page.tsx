@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -11,11 +11,29 @@ interface FeedPost {
   content: string
   images: string | null
   createdAt: string
-  user: { id: string; name: string | null; image: string | null }
+  user: { id: string; name: string | null; image: string | null; username?: string | null }
   sourceType: 'POST' | 'GROUPPOST' | 'FORUMPOST'
+  context?: string | null
   groupName?: string
   groupId?: string
 }
+
+const SECTION_CONFIG: Record<string, { label: string; icon: string }> = {
+  WALL: { label: 'Wall Posts', icon: '📝' },
+  SHOP: { label: 'Shop Posts', icon: '🏪' },
+  SCHOOL: { label: 'School Posts', icon: '📚' },
+  PROFILE: { label: 'Posts', icon: '👤' },
+  GROUPPOST: { label: 'Group Posts', icon: '👥' },
+  FORUMPOST: { label: 'Forum Posts', icon: '💬' },
+}
+
+function getSectionKey(post: FeedPost): string {
+  if (post.sourceType === 'GROUPPOST') return 'GROUPPOST'
+  if (post.sourceType === 'FORUMPOST') return 'FORUMPOST'
+  return post.context || 'PROFILE'
+}
+
+const SECTION_ORDER = ['WALL', 'SHOP', 'SCHOOL', 'PROFILE', 'GROUPPOST', 'FORUMPOST']
 
 export default function DashboardFeed() {
   const { data: session, status } = useSession()
@@ -24,6 +42,16 @@ export default function DashboardFeed() {
   const [offset, setOffset] = useState(0)
   const [hasMore, setHasMore] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set())
+
+  const toggleSection = (key: string) => {
+    setCollapsedSections(prev => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }
 
   const fetchFeed = useCallback(async (reset = false) => {
     const currentOffset = reset ? 0 : offset
@@ -57,6 +85,22 @@ export default function DashboardFeed() {
     fetchFeed()
   }
 
+  const groupedFeed = useMemo(() => {
+    const groups: Record<string, FeedPost[]> = {}
+    for (const post of feed) {
+      const key = getSectionKey(post)
+      if (!groups[key]) groups[key] = []
+      groups[key].push(post)
+    }
+    const ordered: { key: string; posts: FeedPost[] }[] = []
+    for (const orderKey of SECTION_ORDER) {
+      if (groups[orderKey]?.length) {
+        ordered.push({ key: orderKey, posts: groups[orderKey] })
+      }
+    }
+    return ordered
+  }, [feed])
+
   if (loading) {
     return (
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '24px 16px' }}>
@@ -79,10 +123,46 @@ export default function DashboardFeed() {
 
       {feed.length > 0 ? (
         <>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {feed.map((item, i) => (
-              <FeedItem key={`${item.sourceType}-${item.id}-${i}`} post={item} />
-            ))}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            {groupedFeed.map(({ key, posts }) => {
+              const config = SECTION_CONFIG[key] || SECTION_CONFIG.PROFILE
+              const isCollapsed = collapsedSections.has(key)
+              return (
+                <section key={key}>
+                  <button
+                    onClick={() => toggleSection(key)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: 0,
+                      marginBottom: '12px',
+                      fontSize: '1.1rem',
+                      fontWeight: 600,
+                      color: 'var(--text-primary)',
+                    }}
+                  >
+                    <span>{config.icon} {config.label}</span>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                      ({posts.length})
+                    </span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                      {isCollapsed ? '▶' : '▼'}
+                    </span>
+                  </button>
+                  {!isCollapsed && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      {posts.map((item, i) => (
+                        <FeedItem key={`${item.sourceType}-${item.id}-${i}`} post={item} />
+                      ))}
+                    </div>
+                  )}
+                </section>
+              )
+            })}
           </div>
           {hasMore && (
             <div style={{ textAlign: 'center', marginTop: '24px' }}>

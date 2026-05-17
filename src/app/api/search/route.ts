@@ -42,7 +42,7 @@ export async function GET(request: Request) {
           { email: { contains: query } },
         ]
       },
-      select: { id: true, name: true, image: true, bio: true },
+      select: { id: true, name: true, image: true, bio: true, username: true },
       take: limit
     }),
     prisma.group.findMany({
@@ -107,7 +107,7 @@ export async function GET(request: Request) {
   const results = {
     plans: plans.map(p => ({ ...p, type: 'plan', url: `/plans/${p.id}` })),
     products: products.map(p => ({ ...p, type: 'product', url: `/products/${p.id}` })),
-    users: users.map(u => ({ ...u, type: 'user', url: `/profile/${u.id}` })),
+    users: users.map(u => ({ ...u, type: 'user', url: `/profile/${u.username || u.id}` })),
     groups: groups.map(g => ({ ...g, type: 'group', url: `/groups/${g.id}`, memberCount: g._count.members })),
     events: events.map(e => ({ ...e, type: 'event', url: `/events/${e.id}` })),
     requests: requests.map(r => ({ ...r, type: 'request', url: `/requests/${r.id}` })),

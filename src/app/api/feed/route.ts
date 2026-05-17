@@ -46,7 +46,7 @@ export async function GET(request: Request) {
       prisma.post.findMany({
         where: wherePosts as any,
         include: {
-          user: { select: { id: true, name: true, image: true } }
+          user: { select: { id: true, name: true, image: true, username: true } }
         },
         orderBy: { createdAt: 'desc' },
         take: limit,
@@ -66,7 +66,7 @@ export async function GET(request: Request) {
         ? prisma.groupPost.findMany({
             where: { groupId: { in: groupIds } },
             include: {
-              user: { select: { id: true, name: true, image: true } },
+              user: { select: { id: true, name: true, image: true, username: true } },
               group: { select: { id: true, name: true } }
             },
             orderBy: { createdAt: 'desc' },
@@ -79,7 +79,7 @@ export async function GET(request: Request) {
           authorId: { in: Array.from(connectedUserIds) }
         },
         include: {
-          author: { select: { id: true, name: true, image: true } }
+          author: { select: { id: true, name: true, image: true, username: true } }
         },
         orderBy: { createdAt: 'desc' },
         take: limit,
@@ -94,6 +94,7 @@ export async function GET(request: Request) {
         images: p.images,
         createdAt: p.createdAt.toISOString(),
         user: p.user,
+        context: p.context,
         sourceType: 'POST' as const,
         type: 'post' as const
       })),

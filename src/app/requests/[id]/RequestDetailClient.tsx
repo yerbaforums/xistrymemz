@@ -685,7 +685,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               {request.completedBy && (
                 <div className={styles.metaItem}>
                   <span className={styles.metaLabel}>Completed by</span>
-                  <Link href={`/profile/${request.completedBy}`} className={styles.metaValue}>
+                  <Link href={getUserProfileUrl({ id: request.completedBy })} className={styles.metaValue}>
                     {request.completedBy === request.user.id ? 'Requester (Self)' : 'Helper'}
                   </Link>
                 </div>
@@ -819,7 +819,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               <div className={styles.supportersList}>
                 {supporters.map(s => (
                   <div key={s.id} className={styles.supporterItem}>
-                    <Link href={`/profile/${s.user.id}`} className={styles.supporterAuthor}>
+                    <Link href={getUserProfileUrl(s.user)} className={styles.supporterAuthor}>
                       {s.user.name || s.user.username || 'Anonymous'}
                     </Link>
                     <span className={styles.supporterDate}>

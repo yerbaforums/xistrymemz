@@ -1,7 +1,7 @@
 'use client'
 
 import { useParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import FeedItem from '@/components/FeedItem'
 import ProductCard from '@/components/ProductCard'
@@ -24,6 +24,12 @@ const TABS: { key: TabType; label: string }[] = [
   { key: 'products', label: 'Products' },
   { key: 'events', label: 'Events' },
 ]
+
+const POST_SECTION_CONFIG: Record<string, { label: string; icon: string; order: number }> = {
+  post: { label: 'Wall Posts', icon: '📝', order: 0 },
+  FORUMPOST: { label: 'Forum Discussions', icon: '💬', order: 1 },
+  GROUPPOST: { label: 'Group Posts', icon: '👥', order: 2 },
+}
 
 export default function HashtagPage() {
   const params = useParams()
@@ -59,9 +65,25 @@ export default function HashtagPage() {
     ? totals.posts + totals.products + totals.events + totals.forumPosts + totals.groupPosts
     : 0
 
-  const showPosts = activeTab === 'all' || activeTab === 'posts'
   const showProducts = activeTab === 'all' || activeTab === 'products'
   const showEvents = activeTab === 'all' || activeTab === 'events'
+
+  const groupedPosts = useMemo(() => {
+    if (!posts.length) return []
+    const groups: Record<string, any[]> = {}
+    for (const post of posts) {
+      const key = post._sourceType || 'post'
+      if (!groups[key]) groups[key] = []
+      groups[key].push(post)
+    }
+    return Object.entries(groups)
+      .map(([key, items]) => ({
+        key,
+        config: POST_SECTION_CONFIG[key] || { label: 'Posts', icon: '👤', order: 99 },
+        items,
+      }))
+      .sort((a, b) => a.config.order - b.config.order)
+  }, [posts])
 
   return (
     <div className={styles.page}>
@@ -168,12 +190,46 @@ export default function HashtagPage() {
             </section>
           )}
 
-          {showPosts && posts.length > 0 && (
+          {activeTab !== 'products' && activeTab !== 'events' && groupedPosts.length > 0 && (
             <section>
-              {activeTab === 'all' && <h2 className={styles.sectionTitle}>Posts</h2>}
+              {activeTab === 'all' && groupedPosts.length > 1 && (
+                <h2 className={styles.sectionTitle}>Posts</h2>
+              )}
               <div className={styles.postList}>
-                {posts.map((post: any) => (
-                  <FeedItem key={post.id} post={{ ...post, sourceType: post._sourceType || 'POST' }} />
+                {groupedPosts.map(({ key, config, items }) => (
+                  <div key={key} style={{ marginBottom: '20px' }}>
+                    {groupedPosts.length > 1 && (
+                      <h3 style={{
+                        fontSize: '0.95rem',
+                        fontWeight: 600,
+                        marginBottom: '12px',
+                        color: 'var(--text-secondary)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}>
+                        {config.icon} {config.label}
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>
+                          ({items.length})
+                        </span>
+                      </h3>
+                    )}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {items.map((post: any) => {
+                        const sourceType = key === 'FORUMPOST' ? 'FORUMPOST' : key === 'GROUPPOST' ? 'GROUPPOST' : 'POST'
+                        return (
+                          <FeedItem
+                            key={post.id}
+                            post={{
+                              ...post,
+                              user: post.user || { id: '', name: null, image: null },
+                              sourceType,
+                            }}
+                          />
+                        )
+                      })}
+                    </div>
+                  </div>
                 ))}
               </div>
             </section>

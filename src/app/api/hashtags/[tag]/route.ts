@@ -43,7 +43,7 @@ export async function GET(
         include: {
           post: {
             include: {
-              user: { select: { id: true, name: true, image: true } }
+              user: { select: { id: true, name: true, image: true, username: true } }
             }
           }
         },
@@ -51,7 +51,7 @@ export async function GET(
         take: type === 'all' ? 5 : limit,
         skip: type === 'all' ? 0 : skip,
       })
-      data.posts = postHashtags.map(ph => ph.post)
+      data.posts = postHashtags.map(ph => ({ ...ph.post, context: ph.post.context, _sourceType: 'post' }))
     }
 
     if (type === 'all' || type === 'products') {
@@ -95,7 +95,7 @@ export async function GET(
         include: {
           post: {
             include: {
-              user: { select: { id: true, name: true, image: true } }
+              user: { select: { id: true, name: true, image: true, username: true } }
             }
           }
         },
@@ -107,7 +107,7 @@ export async function GET(
         data.forumPosts = forumHashtags.map(ph => ph.post)
       } else if (type === 'all') {
         if (!data.posts) data.posts = []
-        data.posts = [...data.posts, ...forumHashtags.map(ph => ({ ...ph.post, _sourceType: 'forum' }))]
+        data.posts = [...data.posts, ...forumHashtags.map(ph => ({ ...ph.post, context: ph.post.context, _sourceType: 'FORUMPOST' }))]
       }
     }
 
@@ -117,7 +117,7 @@ export async function GET(
         include: {
           post: {
             include: {
-              user: { select: { id: true, name: true, image: true } }
+              user: { select: { id: true, name: true, image: true, username: true } }
             }
           }
         },
@@ -129,7 +129,7 @@ export async function GET(
         data.groupPosts = groupHashtags.map(ph => ph.post)
       } else if (type === 'all') {
         if (!data.posts) data.posts = []
-        data.posts = [...data.posts, ...groupHashtags.map(ph => ({ ...ph.post, _sourceType: 'group' }))]
+        data.posts = [...data.posts, ...groupHashtags.map(ph => ({ ...ph.post, context: ph.post.context, _sourceType: 'GROUPPOST' }))]
       }
     }
 

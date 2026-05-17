@@ -54,7 +54,8 @@ export async function GET(request: NextRequest) {
             select: {
               id: true,
               name: true,
-              image: true
+              image: true,
+              username: true
             }
           }
         },
@@ -105,7 +106,8 @@ export async function POST(request: NextRequest) {
           select: {
             id: true,
             name: true,
-            image: true
+            image: true,
+            username: true
           }
         }
       }
@@ -133,7 +135,7 @@ export async function POST(request: NextRequest) {
               type: 'MENTION',
               title: 'New Mention',
               message: `${session.user.name || 'Someone'} mentioned you in a post`,
-              link: `/profile/${session.user.id}`,
+              link: `/profile/${(session.user as any).username || session.user.id}`,
               relatedId: post.id
             }))
         })
