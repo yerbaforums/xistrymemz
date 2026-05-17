@@ -91,12 +91,14 @@ export async function POST(request: NextRequest) {
 
     const { content, imageUrl, images, targetUserId, context } = validation.data
 
+    const resolvedImageUrl = imageUrl || (images && images.length > 0 ? images[0] : null)
+
     const isWallPost = targetUserId && targetUserId !== session.user.id
 
     const post = await prisma.post.create({
       data: {
         content: content.trim(),
-        imageUrl: imageUrl || null,
+        imageUrl: resolvedImageUrl,
         images: images && images.length > 0 ? JSON.stringify(images) : null,
         userId: session.user.id,
         targetUserId: isWallPost ? targetUserId : null,

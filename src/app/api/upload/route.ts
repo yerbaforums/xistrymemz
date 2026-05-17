@@ -104,7 +104,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
-    const toUpload = file ? [file] : files
+    const toUpload = files.length > 0 ? files : (file ? [file] : [])
 
     const uploads = await Promise.all(toUpload.map(async (f) => {
       const mimeType = f.type.toLowerCase()

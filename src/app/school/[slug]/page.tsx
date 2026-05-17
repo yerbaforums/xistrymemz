@@ -41,7 +41,7 @@ interface SchoolContent {
   isSubscription: boolean
   pinned: boolean
   createdAt: string
-  owner: {
+  user: {
     id: string
     name: string | null
     image: string | null
@@ -465,7 +465,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                           <p key={i}>{line}</p>
                         ))}
                         <div className={styles.contentMeta}>
-                          <span>by {item.owner.name || 'Unknown'}</span>
+                          <span>by {item.user?.name || 'Unknown'}</span>
                           <span>{new Date(item.createdAt).toLocaleDateString()}</span>
                         </div>
                       </div>
@@ -556,12 +556,12 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                   <textarea value={editForm.schoolAbout} onChange={e => setEditForm({ ...editForm, schoolAbout: e.target.value })} rows={4} />
                 </div>
                 <div className={styles.formGroup}>
-                  <label>School Logo URL</label>
-                  <input type="url" value={editForm.schoolImage} onChange={e => setEditForm({ ...editForm, schoolImage: e.target.value })} placeholder="https://..." />
+                  <label>School Logo</label>
+                  <ImageUploader images={editForm.schoolImage ? [editForm.schoolImage] : []} onChange={urls => setEditForm({ ...editForm, schoolImage: urls[0] || '' })} maxImages={1} />
                 </div>
                 <div className={styles.formGroup}>
-                  <label>Cover Image URL</label>
-                  <input type="url" value={editForm.schoolCoverImage} onChange={e => setEditForm({ ...editForm, schoolCoverImage: e.target.value })} placeholder="https://..." />
+                  <label>Cover Image</label>
+                  <ImageUploader images={editForm.schoolCoverImage ? [editForm.schoolCoverImage] : []} onChange={urls => setEditForm({ ...editForm, schoolCoverImage: urls[0] || '' })} maxImages={1} />
                 </div>
                 <div className={styles.formActions}>
                   <button type="submit" className="btn-primary" disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>

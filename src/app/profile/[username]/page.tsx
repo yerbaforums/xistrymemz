@@ -374,7 +374,17 @@ export default function ProfilePage() {
   const [showShareModal, setShowShareModal] = useState(false)
   const [confirmDeletePost, setConfirmDeletePost] = useState<string | null>(null)
   const [confirmDisconnect, setConfirmDisconnect] = useState(false)
-  const { error: toastError } = useToast()
+  const { error: toastError, success: toastSuccess } = useToast()
+
+  const getPostImages = (images: string | null): string[] => {
+    if (!images) return []
+    try {
+      const parsed = JSON.parse(images)
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return []
+    }
+  }
 
   const handleShareProfile = async () => {
     setShowShareModal(true)
@@ -533,9 +543,14 @@ export default function ProfilePage() {
       if (updateRes.ok) {
         setEditForm(f => ({ ...f, image: url }))
         fetchProfile(getTargetId())
+        toastSuccess('Avatar updated!')
+      } else {
+        const errData = await updateRes.json().catch(() => ({ error: 'Failed to update profile' }))
+        toastError(errData.error || 'Failed to update avatar')
       }
     } catch (err) {
       console.error('Avatar upload failed:', err)
+      toastError('Failed to upload avatar. Please try again.')
     } finally {
       setAvatarUploading(false)
       if (avatarInputRef.current) avatarInputRef.current.value = ''
@@ -561,9 +576,14 @@ export default function ProfilePage() {
       if (updateRes.ok) {
         setEditForm(f => ({ ...f, coverImage: url }))
         fetchProfile(getTargetId())
+        toastSuccess('Cover image updated!')
+      } else {
+        const errData = await updateRes.json().catch(() => ({ error: 'Failed to update profile' }))
+        toastError(errData.error || 'Failed to update cover image')
       }
     } catch (err) {
       console.error('Cover upload failed:', err)
+      toastError('Failed to upload cover image. Please try again.')
     } finally {
       setCoverUploading(false)
       if (coverInputRef.current) coverInputRef.current.value = ''
@@ -1148,6 +1168,13 @@ export default function ProfilePage() {
                           </div>
                         </div>
                         <p className={styles.postContent}><HashtagText text={post.content} /></p>
+                        {getPostImages(post.images).length > 0 && (
+                          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
+                            {getPostImages(post.images).map((url, i) => (
+                              <img key={i} src={url} alt="" style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 8, objectFit: 'cover' }} loading="lazy" />
+                            ))}
+                          </div>
+                        )}
                         <div className={styles.postFooter}>
                           <span className={styles.postLikes}>♥ {post.likes}</span>
                           <button onClick={() => handleLikePost(post.id, post.likes)} className={styles.likeBtn}>

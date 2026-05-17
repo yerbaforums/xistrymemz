@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { useSession } from 'next-auth/react'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
@@ -134,7 +133,7 @@ function CompactDonation({ donation }: { donation: DonationAddr }) {
 
 export default function ShopDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { data: session } = useSession()
-  const { success, error, info } = useToast()
+  const { success, error } = useToast()
   const [shop, setShop] = useState<ShopData | null>(null)
   const [loading, setLoading] = useState(true)
   const [isOwner, setIsOwner] = useState(false)
@@ -511,12 +510,12 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                   <textarea value={editForm.shopAbout} onChange={e => setEditForm({ ...editForm, shopAbout: e.target.value })} rows={4} />
                 </div>
                 <div className={styles.formGroup}>
-                  <label>Shop Logo URL</label>
-                  <input type="url" value={editForm.shopImage} onChange={e => setEditForm({ ...editForm, shopImage: e.target.value })} placeholder="https://..." />
+                  <label>Shop Logo</label>
+                  <ImageUploader images={editForm.shopImage ? [editForm.shopImage] : []} onChange={urls => setEditForm({ ...editForm, shopImage: urls[0] || '' })} maxImages={1} />
                 </div>
                 <div className={styles.formGroup}>
-                  <label>Cover Image URL</label>
-                  <input type="url" value={editForm.shopCoverImage} onChange={e => setEditForm({ ...editForm, shopCoverImage: e.target.value })} placeholder="https://..." />
+                  <label>Cover Image</label>
+                  <ImageUploader images={editForm.shopCoverImage ? [editForm.shopCoverImage] : []} onChange={urls => setEditForm({ ...editForm, shopCoverImage: urls[0] || '' })} maxImages={1} />
                 </div>
                 <div className={styles.formActions}>
                   <button type="submit" className="btn-primary" disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
