@@ -10,6 +10,7 @@ import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
+import ImageUploader from '@/components/ImageUploader'
 
 interface Member {
   id: string
@@ -124,7 +125,7 @@ function GroupDetailContent() {
   const [loading, setLoading] = useState(true)
   const [joining, setJoining] = useState(false)
   const [postContent, setPostContent] = useState('')
-  const [postImage, setPostImage] = useState('')
+  const [postImages, setPostImages] = useState<string[]>([])
   const [posting, setPosting] = useState(false)
   const groupMentionRef = useRef<MentionInputHandle>(null)
   const [activeTab, setActiveTab] = useState<'posts' | 'buys' | 'requests' | 'marketplace' | 'activity'>('posts')
@@ -225,13 +226,13 @@ function GroupDetailContent() {
       const res = await fetch(`/api/groups/${params.id}/posts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: postContent, imageUrl: postImage || null })
+        body: JSON.stringify({ content: postContent, images: postImages.length > 0 ? postImages : undefined })
       })
       if (res.ok) {
         const newPost = await res.json()
         setGroup(g => g ? { ...g, posts: [newPost, ...g.posts], _count: { ...g._count, posts: g._count.posts + 1 } } : g)
         setPostContent('')
-        setPostImage('')
+        setPostImages([])
       }
     } catch {
       error('Failed to post')
@@ -633,13 +634,7 @@ function GroupDetailContent() {
                         </button>
                       </div>
                       <div className={styles.postFormRow}>
-                        <input
-                          type="url"
-                          value={postImage}
-                          onChange={e => setPostImage(e.target.value)}
-                          placeholder="Image URL (optional)"
-                          className={styles.imageInput}
-                        />
+                        <ImageUploader images={postImages} onChange={setPostImages} maxImages={6} />
                         <button type="submit" disabled={posting || !postContent.trim()} className="btn-primary">
                           {posting ? 'Posting...' : 'Post'}
                         </button>

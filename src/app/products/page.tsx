@@ -14,6 +14,7 @@ import ProductFilters from '@/components/ProductFilters'
 import ProductGrid from '@/components/ProductGrid'
 import ProductMapView from '@/components/ProductMapView'
 import type { Product } from '@/types/product'
+import ImageUploader from '@/components/ImageUploader'
 
 const DEBOUNCE_MS = 300
 
@@ -69,6 +70,7 @@ export default function ProductsPage() {
     location: '',
     isGlobal: false,
     imageUrl: '',
+    imageUrls: [] as string[],
     published: true,
     acceptsOffers: true,
     acceptsRequests: false,
@@ -264,6 +266,7 @@ export default function ProductsPage() {
           price: myForm.price ? parseFloat(myForm.price) : null,
           paymentMethods: '',
           paymentType: 'BOTH',
+          imageUrl: myForm.imageUrls?.[0] || null,
           donationAddress: myForm.acceptsDonations ? (myForm.donationAddress || null) : null,
           donationCurrency: myForm.acceptsDonations ? (myForm.donationCurrency || 'ETH') : null,
         }),
@@ -296,6 +299,7 @@ export default function ProductsPage() {
       location: product.location || '',
       isGlobal: product.isGlobal,
       imageUrl: product.imageUrl || '',
+      imageUrls: product.imageUrl ? [product.imageUrl] : [] as string[],
       published: product.published,
       acceptsOffers: product.acceptsOffers ?? true,
       acceptsRequests: product.acceptsRequests ?? false,
@@ -611,8 +615,8 @@ export default function ProductsPage() {
                 </div>
   <div className={styles.myFormRow}>
     <div className="form-group" style={{ flex: 1 }}>
-      <label>Image URL</label>
-      <input type="text" value={myForm.imageUrl} onChange={e => setMyForm({...myForm, imageUrl: e.target.value})} placeholder="https://..." />
+      <label>Image</label>
+      <ImageUploader images={myForm.imageUrls || []} onChange={(urls) => setMyForm({...myForm, imageUrls: urls})} maxImages={1} />
     </div>
   </div>
   <div className={styles.myFormRow}>
@@ -697,7 +701,7 @@ export default function ProductsPage() {
           }).length === 0 ? (
             <div className={styles.myListingsEmpty}>
               <p>No listings yet.</p>
-              <button onClick={() => { setMyForm({ title: '', description: '', price: '', type: 'PRODUCT', category: '', condition: '', location: '', isGlobal: false, imageUrl: '', published: true, acceptsOffers: true, acceptsRequests: false, acceptsDonations: false, donationAddress: '', donationCurrency: 'ETH', hashtags: '' }); setEditProduct(null); setShowMyForm(true) }} className="btn-primary">Create Your First Listing</button>
+              <button onClick={() => { setMyForm({ title: '', description: '', price: '', type: 'PRODUCT', category: '', condition: '', location: '', isGlobal: false, imageUrl: '', imageUrls: [] as string[], published: true, acceptsOffers: true, acceptsRequests: false, acceptsDonations: false, donationAddress: '', donationCurrency: 'ETH', hashtags: '' }); setEditProduct(null); setShowMyForm(true) }} className="btn-primary">Create Your First Listing</button>
             </div>
           ) : (
             <div className={styles.myListingsGrid}>

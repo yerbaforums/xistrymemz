@@ -5,7 +5,7 @@ import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { existsSync } from 'fs'
 import { randomUUID } from 'crypto'
-import { uploadToIPFSBackground } from '@/lib/ipfs'
+import { uploadToIPFS } from '@/lib/ipfs'
 import { prisma } from '@/lib/prisma'
 import sharp from 'sharp'
 
@@ -135,39 +135,40 @@ export async function POST(request: Request) {
       const compressedSize = compressed.length
       const compressionRatio = ((1 - compressedSize / fileSize) * 100).toFixed(1)
 
-      const uploadDir = join(process.cwd(), 'public', 'uploads', session.user.id)
-      if (!existsSync(uploadDir)) {
-        await mkdir(uploadDir, { recursive: true })
+      const safeFilename = `${randomUUID()}.${TYPE_EXTENSIONS[mimeType as keyof typeof TYPE_EXTENSIONS]}`
+
+      // Upload to IPFS synchronously (critical for Vercel — no persistent FS)
+      let url: string
+      try {
+        const ipfs = await uploadToIPFS(compressed, safeFilename)
+        url = ipfs.gatewayUrl
+        await prisma.file.create({
+          data: {
+            cid: ipfs.cid,
+            fileName: safeFilename,
+            mimeType,
+            size: fileSize,
+            gatewayUrl: ipfs.gatewayUrl,
+            userId: session.user.id,
+            modelName: 'Upload',
+            modelId: safeFilename
+          }
+        }).catch(() => {})
+      } catch (ipfsErr) {
+        console.warn('IPFS upload failed, saving locally as fallback:', ipfsErr)
+        // Fallback: save to local filesystem (dev only)
+        const uploadDir = join(process.cwd(), 'public', 'uploads', session.user.id)
+        if (!existsSync(uploadDir)) {
+          await mkdir(uploadDir, { recursive: true })
+        }
+        const filepath = join(uploadDir, safeFilename)
+        await writeFile(filepath, compressed)
+        url = `/uploads/${session.user.id}/${safeFilename}`
       }
 
-      const safeFilename = `${randomUUID()}.${TYPE_EXTENSIONS[mimeType as keyof typeof TYPE_EXTENSIONS]}`
-      const filepath = join(uploadDir, safeFilename)
-      await writeFile(filepath, compressed)
-      const url = `/uploads/${session.user.id}/${safeFilename}`
-
-      if (compressionRatio) {
+      if (+compressionRatio > 0) {
         console.log(`Compressed ${safeFilename}: ${(fileSize / 1024).toFixed(1)}KB → ${(compressedSize / 1024).toFixed(1)}KB (${compressionRatio}%)`)
       }
-
-      // Async IPFS upload (non-blocking)
-      uploadToIPFSBackground(compressed, safeFilename)
-        .then(async (ipfs) => {
-          try {
-            await prisma.file.create({
-              data: {
-                cid: ipfs.cid,
-                fileName: safeFilename,
-                mimeType,
-                size: fileSize,
-                gatewayUrl: ipfs.gatewayUrl,
-                userId: session.user.id,
-                modelName: 'Upload',
-                modelId: safeFilename
-              }
-            })
-          } catch {}
-        })
-        .catch(() => {})
 
       return { url, mimeType, size: fileSize }
     }))

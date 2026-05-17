@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useToast } from '@/context/ToastContext'
+import ImageUploader from '@/components/ImageUploader'
 import styles from './rentals.module.css'
 
 interface RentalItem {
@@ -48,6 +49,7 @@ export default function RentalsPage() {
     location: '',
     isGlobal: false,
     imageUrl: '',
+    imageUrls: [] as string[],
     published: true,
   })
 
@@ -70,7 +72,7 @@ export default function RentalsPage() {
       title: '', description: '', rentalDaily: '', rentalWeekly: '',
       rentalMonthly: '', rentalDeposit: '', rentalMinDays: '1',
       rentalMaxDays: '', rentalAvailable: true, category: '',
-      location: '', isGlobal: false, imageUrl: '', published: true,
+      location: '', isGlobal: false, imageUrl: '', imageUrls: [] as string[], published: true,
     })
     setEditing(null)
     setShowForm(false)
@@ -91,6 +93,7 @@ export default function RentalsPage() {
       location: r.location || '',
       isGlobal: r.isGlobal,
       imageUrl: r.imageUrl || '',
+      imageUrls: r.imageUrl ? [r.imageUrl] : [] as string[],
       published: r.published,
     })
     setEditing(r)
@@ -104,6 +107,7 @@ export default function RentalsPage() {
       const payload = {
         ...form,
         type: 'RENTAL',
+        imageUrl: form.imageUrls?.[0] || null,
         price: form.rentalDaily ? parseFloat(form.rentalDaily) : null,
         rentalDaily: form.rentalDaily ? parseFloat(form.rentalDaily) : null,
         rentalWeekly: form.rentalWeekly ? parseFloat(form.rentalWeekly) : null,
@@ -283,8 +287,8 @@ export default function RentalsPage() {
                   <input type="text" value={form.category} onChange={e => setForm({...form, category: e.target.value})} placeholder="e.g., Tools, Space, Vehicle" />
                 </div>
                 <div className="form-group">
-                  <label>Image URL</label>
-                  <input type="text" value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} placeholder="https://..." />
+                  <label>Image</label>
+                  <ImageUploader images={form.imageUrls || []} onChange={(urls) => setForm({...form, imageUrls: urls})} maxImages={1} />
                 </div>
               </div>
               <div className="form-group">

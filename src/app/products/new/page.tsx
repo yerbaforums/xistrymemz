@@ -8,6 +8,7 @@ import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { extractHashtags } from '@/lib/hashtags'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import FormWizard, { useWizard } from '@/components/FormWizard'
+import ImageUploader from '@/components/ImageUploader'
 import type { DonationAddr } from '@/types/product'
 import styles from './page.module.css'
 
@@ -471,13 +472,8 @@ export default function NewProductPage() {
         {wizard.currentStep === 'media' && (
           <div className={styles.stepContent}>
             <div className="form-group">
-              <label>Image URL</label>
-              <input type="text" value={form.imageUrl} onChange={e => update('imageUrl', e.target.value)} placeholder="https://example.com/image.jpg" />
-              {form.imageUrl && (
-                <div className={styles.preview}>
-                  <img src={form.imageUrl} alt="Preview" className={styles.previewImg} />
-                </div>
-              )}
+              <label>Image</label>
+              <ImageUploader images={form.imageUrl ? [form.imageUrl] : []} onChange={urls => update('imageUrl', urls[0] || '')} maxImages={1} />
             </div>
             <div className="form-group">
               <label className={styles.checkLabel}>

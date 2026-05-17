@@ -9,6 +9,7 @@ import { getAllCryptos, getCryptoIcon, getCryptoName } from '@/lib/crypto-icons'
 import { getUserProfileUrl } from '@/lib/utils'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { useToast } from '@/context/ToastContext'
+import ImageUploader from '@/components/ImageUploader'
 import styles from '../[username]/profile.module.css'
 
 interface UserLink {
@@ -65,6 +66,8 @@ export default function ProfileEditPage() {
   const [name, setName] = useState('')
   const [username, setUsername] = useState('')
   const [bio, setBio] = useState('')
+  const [image, setImage] = useState('')
+  const [coverImage, setCoverImage] = useState('')
   const [location, setLocation] = useState('')
   const [website, setWebsite] = useState('')
   const [userClass, setUserClass] = useState('')
@@ -130,6 +133,8 @@ export default function ProfileEditPage() {
       setName(user.name || '')
       setUsername(user.username || '')
       setBio(user.bio || '')
+      setImage(user.image || '')
+      setCoverImage(user.coverImage || '')
       setLocation(user.location || '')
       setWebsite(user.website || '')
       setUserClass(user.userClass || '')
@@ -268,7 +273,7 @@ export default function ProfileEditPage() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name, username, bio, location, website, userClass,
+          name, username, bio, image, coverImage, location, website, userClass,
           walletAddress, paymentAddress, refundAddress, cryptoCurrency,
           acceptsDonations, neighborhood, searchRadius,
           latitude: latitude ?? null, longitude: longitude ?? null,
@@ -439,6 +444,16 @@ export default function ProfileEditPage() {
             <div style={{marginBottom: '16px'}}>
               <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>Display Name</label>
               <input type="text" value={name} onChange={e => setName(e.target.value)} style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)'}} />
+            </div>
+
+            <div style={{marginBottom: '16px'}}>
+              <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>Avatar</label>
+              <ImageUploader images={image ? [image] : []} onChange={urls => setImage(urls[0] || '')} maxImages={1} />
+            </div>
+
+            <div style={{marginBottom: '16px'}}>
+              <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>Cover Image</label>
+              <ImageUploader images={coverImage ? [coverImage] : []} onChange={urls => setCoverImage(urls[0] || '')} maxImages={1} />
             </div>
 
             <div style={{marginBottom: '16px'}}>

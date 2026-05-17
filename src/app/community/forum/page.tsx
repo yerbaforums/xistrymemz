@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation'
 import MentionInput, { type MentionInputHandle } from '@/components/MentionInput'
 import { getUserProfileUrl } from '@/lib/utils'
 import HashtagText from '@/components/HashtagText'
+import ImageUploader from '@/components/ImageUploader'
 import styles from './forum.module.css'
 
 interface Post {
@@ -47,6 +48,7 @@ export default function ForumPage() {
   const [pollType, setPollType] = useState('single')
   const [pollOptions, setPollOptions] = useState(['', '', '', ''])
   const [posting, setPosting] = useState(false)
+  const [postImages, setPostImages] = useState<string[]>([])
   const [error, setError] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('newest')
@@ -122,7 +124,8 @@ export default function ForumPage() {
     const payload: Record<string, unknown> = { 
       title: newPostTitle, 
       content: newPostContent, 
-      categoryId: categoryObj?.id || ''
+      categoryId: categoryObj?.id || '',
+      images: postImages.length > 0 ? postImages : undefined
     }
     
     if (isPoll) {
@@ -144,6 +147,7 @@ export default function ForumPage() {
         setNewPostCategory('')
         setIsPoll(false)
         setPollOptions(['', '', '', ''])
+        setPostImages([])
         const updated = await fetch('/api/community/forum').then(r => r.json())
         setPosts(updated.posts || [])
       }
@@ -255,6 +259,7 @@ export default function ForumPage() {
                   <option key={cat.id} value={cat.slug}>{cat.name}</option>
                 ))}
               </select>
+              <ImageUploader images={postImages} onChange={setPostImages} maxImages={6} />
               <button 
                 onClick={handleCreatePost} 
                 disabled={posting || !newPostTitle.trim() || !newPostContent.trim()}

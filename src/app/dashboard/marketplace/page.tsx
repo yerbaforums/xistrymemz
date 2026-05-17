@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
+import ImageUploader from '@/components/ImageUploader'
 import styles from './marketplace.module.css'
 
 interface Product {
@@ -69,6 +70,7 @@ function MarketplaceContent() {
     location: '',
     isGlobal: false,
     imageUrl: '',
+    imageUrls: [] as string[],
     paymentMethods: [] as string[],
     paymentType: 'BOTH',
     acceptsRequests: false,
@@ -88,6 +90,7 @@ function MarketplaceContent() {
     shopName: '',
     shopAbout: '',
     shopImage: '',
+    shopImages: [] as string[],
     shopSlug: '',
     email: '',
     name: ''
@@ -119,6 +122,7 @@ function MarketplaceContent() {
           location: product.location || '',
           isGlobal: product.isGlobal,
           imageUrl: product.imageUrl || '',
+          imageUrls: product.imageUrl ? [product.imageUrl] : [] as string[],
           paymentMethods: product.paymentMethods?.split(',').filter(Boolean) || [],
           paymentType: product.paymentType || 'BOTH',
           acceptsRequests: product.acceptsRequests,
@@ -151,6 +155,7 @@ function MarketplaceContent() {
         shopName: shopData.shopName || '',
         shopAbout: shopData.shopAbout || '',
         shopImage: shopData.shopImage || '',
+        shopImages: shopData.shopImage ? [shopData.shopImage] : [] as string[],
         shopSlug: shopData.shopSlug || '',
         email: shopData.email || '',
         name: shopData.name || ''
@@ -182,6 +187,7 @@ function MarketplaceContent() {
       location: '',
       isGlobal: false,
       imageUrl: '',
+      imageUrls: [] as string[],
       paymentMethods: [] as string[],
       paymentType: 'BOTH',
       acceptsRequests: false,
@@ -215,7 +221,8 @@ function MarketplaceContent() {
       rentalDeposit: productForm.rentalDeposit ? parseFloat(productForm.rentalDeposit) : null,
       rentalMinDays: productForm.rentalMinDays || 1,
       rentalMaxDays: productForm.rentalMaxDays ? parseInt(productForm.rentalMaxDays) : null,
-      rentalAvailable: productForm.rentalAvailable
+      rentalAvailable: productForm.rentalAvailable,
+      imageUrl: productForm.imageUrls?.[0] || null
     }
 
     try {
@@ -288,6 +295,7 @@ function MarketplaceContent() {
       location: product.location || '',
       isGlobal: product.isGlobal,
       imageUrl: product.imageUrl || '',
+      imageUrls: product.imageUrl ? [product.imageUrl] : [] as string[],
       paymentMethods: product.paymentMethods?.split(',').filter(Boolean) || [],
       paymentType: product.paymentType || 'BOTH',
       acceptsRequests: product.acceptsRequests,
@@ -347,7 +355,7 @@ function MarketplaceContent() {
       const res = await fetch('/api/shop', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(shopForm)
+        body: JSON.stringify({ ...shopForm, shopImage: shopForm.shopImages?.[0] || null })
       })
 
       if (res.ok) {
@@ -469,8 +477,8 @@ function MarketplaceContent() {
                 <textarea value={shopForm.shopAbout} onChange={e => setShopForm({...shopForm, shopAbout: e.target.value})} rows={3} placeholder="Tell customers about your shop..." />
               </div>
               <div className="form-group">
-                <label>Shop Image URL</label>
-                <input type="text" value={shopForm.shopImage} onChange={e => setShopForm({...shopForm, shopImage: e.target.value})} placeholder="https://..." />
+                <label>Shop Image</label>
+                <ImageUploader images={shopForm.shopImages || []} onChange={(urls) => setShopForm({...shopForm, shopImages: urls})} maxImages={1} />
               </div>
               <div className="form-group">
                 <label>Shop URL Slug</label>
@@ -591,8 +599,8 @@ function MarketplaceContent() {
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Image URL</label>
-                  <input type="text" value={productForm.imageUrl} onChange={e => setProductForm({...productForm, imageUrl: e.target.value})} placeholder="https://..." />
+                  <label>Image</label>
+                  <ImageUploader images={productForm.imageUrls || []} onChange={(urls) => setProductForm({...productForm, imageUrls: urls})} maxImages={1} />
                 </div>
               </div>
               <div className="form-group">

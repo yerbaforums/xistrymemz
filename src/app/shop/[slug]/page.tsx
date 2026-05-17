@@ -9,6 +9,7 @@ import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { DonationActions } from '@/components/DonationActions'
+import ImageUploader from '@/components/ImageUploader'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
 import Rating from '@/components/Rating'
@@ -142,6 +143,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
   const [editForm, setEditForm] = useState({ shopName: '', shopAbout: '', shopImage: '', shopCoverImage: '' })
   const [saving, setSaving] = useState(false)
   const [newPost, setNewPost] = useState('')
+  const [newPostImages, setNewPostImages] = useState<string[]>([])
   const [posting, setPosting] = useState(false)
   const [resolvedSlug, setResolvedSlug] = useState<string | null>(null)
   const [qrDonation, setQrDonation] = useState<DonationAddr | null>(null)
@@ -202,10 +204,11 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
       const res = await fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newPost })
+        body: JSON.stringify({ content: newPost, images: newPostImages.length > 0 ? newPostImages : undefined })
       })
       if (res.ok) {
         setNewPost('')
+        setNewPostImages([])
         if (resolvedSlug) {
           fetch(`/api/shop/public/${resolvedSlug}`)
             .then(r => r.json())
@@ -435,6 +438,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                   className={styles.postInput}
                   rows={3}
                 />
+                <ImageUploader images={newPostImages} onChange={setNewPostImages} maxImages={6} />
                 <div className={styles.postActions}>
                   <span className={styles.charCount}>{newPost.length}/2000</span>
                   <button type="submit" disabled={posting || !newPost.trim()} className={styles.postBtn}>
@@ -470,6 +474,11 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                       </div>
                     </div>
                     <p className={styles.postContent}>{post.content}</p>
+                    {post.imageUrl && (
+                      <div className={styles.postImage}>
+                        <img src={post.imageUrl} alt="" style={{maxWidth:'100%', borderRadius:'8px', marginTop:'8px'}} />
+                      </div>
+                    )}
                     <div className={styles.postFooter}>
                       <span className={styles.postLikes}>♥ {post.likes}</span>
                       <button onClick={() => handleLikePost(post.id, post.likes)} className={styles.likeBtn}>Like</button>
