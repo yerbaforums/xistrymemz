@@ -23,6 +23,7 @@ function DashboardNav() {
   
   const navItems = [
     { href: '/dashboard/overview', icon: '📊', label: 'Overview' },
+    { href: '/dashboard/feed', icon: '📡', label: 'Feed' },
     { href: '/dashboard/projects', icon: '🚀', label: 'Projects' },
     { href: '/dashboard/requests', icon: '📝', label: 'Requests' },
     { href: '/dashboard/marketplace', icon: '🛒', label: 'Marketplace' },

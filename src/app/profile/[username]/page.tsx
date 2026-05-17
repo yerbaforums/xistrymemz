@@ -121,10 +121,12 @@ interface Post {
   targetUserId: string | null
   likes: number
   createdAt: string
+  context?: string | null
   user: {
     id: string
     name: string | null
     image: string | null
+    username?: string | null
     shopSlug: string | null
   }
 }
