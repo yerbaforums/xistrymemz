@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react'
 import { useRouter, useParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import styles from './profile.module.css'
@@ -365,6 +365,10 @@ export default function ProfilePage() {
   const [connectMessage, setConnectMessage] = useState('')
   const [connecting, setConnecting] = useState(false)
   const [isOwnProfile, setIsOwnProfile] = useState(false)
+  const [avatarUploading, setAvatarUploading] = useState(false)
+  const [coverUploading, setCoverUploading] = useState(false)
+  const avatarInputRef = useRef<HTMLInputElement>(null)
+  const coverInputRef = useRef<HTMLInputElement>(null)
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set())
   const [copiedShare, setCopiedShare] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
@@ -507,6 +511,62 @@ export default function ProfilePage() {
       }
     } catch (error) {
       console.error('Error updating profile:', error)
+    }
+  }
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !user) return
+    setAvatarUploading(true)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await fetch('/api/upload', { method: 'POST', body: fd })
+      if (!res.ok) throw new Error('Upload failed')
+      const data = await res.json()
+      const url = data.url
+      const updateRes = await fetch(`/api/users/${user.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...editForm, image: url })
+      })
+      if (updateRes.ok) {
+        setEditForm(f => ({ ...f, image: url }))
+        fetchProfile(getTargetId())
+      }
+    } catch (err) {
+      console.error('Avatar upload failed:', err)
+    } finally {
+      setAvatarUploading(false)
+      if (avatarInputRef.current) avatarInputRef.current.value = ''
+    }
+  }
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !user) return
+    setCoverUploading(true)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await fetch('/api/upload', { method: 'POST', body: fd })
+      if (!res.ok) throw new Error('Upload failed')
+      const data = await res.json()
+      const url = data.url
+      const updateRes = await fetch(`/api/users/${user.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...editForm, coverImage: url })
+      })
+      if (updateRes.ok) {
+        setEditForm(f => ({ ...f, coverImage: url }))
+        fetchProfile(getTargetId())
+      }
+    } catch (err) {
+      console.error('Cover upload failed:', err)
+    } finally {
+      setCoverUploading(false)
+      if (coverInputRef.current) coverInputRef.current.value = ''
     }
   }
 
@@ -682,18 +742,35 @@ export default function ProfilePage() {
           style={{ backgroundImage: user.coverImage ? `url(${user.coverImage})` : undefined }}
         >
           {!user.coverImage && <div className={styles.coverPlaceholder} />}
+          {isOwnProfile && !editMode && (
+            <button
+              type="button"
+              onClick={() => coverInputRef.current?.click()}
+              disabled={coverUploading}
+              style={{ position: 'absolute', bottom: 8, right: 8, padding: '6px 12px', background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}
+            >
+              {coverUploading ? '...' : 'Change Cover'}
+            </button>
+          )}
+          <input ref={coverInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleCoverUpload} style={{ display: 'none' }} />
         </div>
         
            <div className={styles.profileContent}>
-             <div className={styles.avatarSection}>
-               <div className={styles.avatar}>
-                 {user.image ? (
-                   <Image src={user.image} alt={user.name || 'User'} fill />
-                 ) : (
-                   <span>{user.name?.[0] || 'U'}</span>
-                 )}
-               </div>
-               {user.verifiedIdentity && (
+              <div className={styles.avatarSection}>
+                <div className={styles.avatar} style={{ cursor: isOwnProfile && !editMode ? 'pointer' : undefined }} onClick={() => { if (isOwnProfile && !editMode) avatarInputRef.current?.click() }}>
+                  {user.image ? (
+                    <Image src={user.image} alt={user.name || 'User'} fill />
+                  ) : (
+                    <span>{user.name?.[0] || 'U'}</span>
+                  )}
+                  {isOwnProfile && !editMode && (
+                    <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', opacity: 0, transition: 'opacity 0.2s', fontSize: 12, color: '#fff', fontWeight: 600 }}>
+                      {avatarUploading ? '...' : 'Edit'}
+                    </div>
+                  )}
+                </div>
+                <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleAvatarUpload} style={{ display: 'none' }} />
+                {user.verifiedIdentity && (
                  <div className={styles.verifiedBadge}>
                    <img src="/logo.png" alt="Verified" width={20} height={20} className={styles.logoBadge} />
                  </div>
@@ -1352,22 +1429,12 @@ export default function ProfilePage() {
                   <small className={styles.formHint}>Shown on your profile and posts</small>
                 </div>
                 <div className={styles.formGroup}>
-                  <label>Profile Picture URL</label>
-                  <input
-                    type="url"
-                    value={editForm.image}
-                    onChange={(e) => setEditForm({ ...editForm, image: e.target.value })}
-                    placeholder="https://example.com/avatar.jpg"
-                  />
+                  <label>Profile Picture</label>
+                  <ImageUploader images={editForm.image ? [editForm.image] : []} onChange={urls => setEditForm({ ...editForm, image: urls[0] || '' })} maxImages={1} />
                 </div>
                 <div className={styles.formGroup}>
-                  <label>Cover Image URL</label>
-                  <input
-                    type="url"
-                    value={editForm.coverImage}
-                    onChange={(e) => setEditForm({ ...editForm, coverImage: e.target.value })}
-                    placeholder="https://example.com/cover.jpg"
-                  />
+                  <label>Cover Image</label>
+                  <ImageUploader images={editForm.coverImage ? [editForm.coverImage] : []} onChange={urls => setEditForm({ ...editForm, coverImage: urls[0] || '' })} maxImages={1} />
                 </div>
                 <div className={styles.formGroup}>
                   <label>User Class (select multiple)</label>
