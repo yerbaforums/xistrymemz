@@ -40,6 +40,8 @@ export default function BookAppointmentModal({
   const [location, setLocation] = useState(defaultLocation || '')
   const [meetingLink, setMeetingLink] = useState(defaultMeetingLink || '')
   const [booking, setBooking] = useState(false)
+  const [busySlots, setBusySlots] = useState<{ type: string; start: string; end: string; title: string }[]>([])
+  const [loadingBusy, setLoadingBusy] = useState(false)
 
   useEffect(() => {
     if (!isOpen) return
@@ -50,6 +52,37 @@ export default function BookAppointmentModal({
       .catch(() => toastError('Failed to load availability'))
       .finally(() => setLoading(false))
   }, [isOpen, sellerId])
+
+  useEffect(() => {
+    if (!selectedDate) return
+    setLoadingBusy(true)
+    setSelectedTime('')
+    fetch(`/api/appointments/busy-slots?userId=${sellerId}&date=${selectedDate}`)
+      .then(r => r.json())
+      .then(data => setBusySlots(data.slots || []))
+      .catch(() => setBusySlots([]))
+      .finally(() => setLoadingBusy(false))
+  }, [selectedDate, sellerId])
+
+  function isSlotBusy(startTime: string, endTime: string): { busy: boolean; type?: string; title?: string } {
+    const slotStart = new Date(`${selectedDate}T${startTime}`).getTime()
+    const slotEnd = new Date(`${selectedDate}T${endTime}`).getTime()
+    for (const busy of busySlots) {
+      const busyStart = new Date(busy.start).getTime()
+      const busyEnd = new Date(busy.end).getTime()
+      if (slotStart < busyEnd && slotEnd > busyStart) {
+        return { busy: true, type: busy.type, title: busy.title }
+      }
+    }
+    return { busy: false }
+  }
+
+  function hasDateBusySlots(dayOfWeek: number): boolean {
+    if (!selectedDate) return false
+    const d = new Date(selectedDate)
+    if (d.getDay() !== dayOfWeek) return false
+    return busySlots.length > 0
+  }
 
   if (!isOpen) return null
 
@@ -165,24 +198,45 @@ export default function BookAppointmentModal({
             {daySlots.length > 0 && (
               <>
                 <div style={{ marginBottom: 16 }}>
-                  <label style={{ display: 'block', marginBottom: 6, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Time</label>
+                  <label style={{ display: 'block', marginBottom: 6, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                    Time {loadingBusy && <span style={{ color: 'var(--text-muted)' }}>(checking availability...)</span>}
+                  </label>
                   <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                    {daySlots.map((slot, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => setSelectedTime(slot.startTime)}
-                        style={{
-                          padding: '6px 12px', borderRadius: 6, fontSize: '0.8rem',
-                          border: `1px solid ${selectedTime === slot.startTime ? 'var(--accent-primary)' : 'var(--border-color)'}`,
-                          background: selectedTime === slot.startTime ? 'var(--accent-primary)' : 'transparent',
-                          color: selectedTime === slot.startTime ? '#fff' : 'var(--text-primary)',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {slot.startTime} - {slot.endTime}
-                      </button>
-                    ))}
+                    {daySlots.map((slot, i) => {
+                      const conflict = isSlotBusy(slot.startTime, slot.endTime)
+                      const isBusy = conflict.busy && conflict.type === 'CONFIRMED'
+                      const isRequested = conflict.busy && conflict.type === 'PENDING'
+                      return (
+                        <div key={i} style={{ position: 'relative' }}>
+                          <button
+                            type="button"
+                            disabled={isBusy || loadingBusy}
+                            onClick={() => setSelectedTime(slot.startTime)}
+                            title={conflict.title || ''}
+                            style={{
+                              padding: '6px 12px', borderRadius: 6, fontSize: '0.8rem',
+                              border: `1px solid ${
+                                isBusy ? '#ef4444' :
+                                isRequested ? '#f59e0b' :
+                                selectedTime === slot.startTime ? 'var(--accent-primary)' : 'var(--border-color)'
+                              }`,
+                              background: isBusy ? '#ef444420' :
+                                isRequested ? '#f59e0b20' :
+                                selectedTime === slot.startTime ? 'var(--accent-primary)' : 'transparent',
+                              color: isBusy ? '#ef4444' :
+                                isRequested ? '#f59e0b' :
+                                selectedTime === slot.startTime ? '#fff' : 'var(--text-primary)',
+                              cursor: isBusy ? 'not-allowed' : loadingBusy ? 'wait' : 'pointer',
+                              opacity: isBusy ? 0.5 : isRequested ? 0.7 : 1
+                            }}
+                          >
+                            {slot.startTime} - {slot.endTime}
+                          </button>
+                          {isBusy && <span style={{ position: 'absolute', bottom: -14, left: 0, fontSize: '0.65rem', color: '#ef4444', whiteSpace: 'nowrap' }}>Booked</span>}
+                          {isRequested && <span style={{ position: 'absolute', bottom: -14, left: 0, fontSize: '0.65rem', color: '#f59e0b', whiteSpace: 'nowrap' }}>Requested</span>}
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
 

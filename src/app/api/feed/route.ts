@@ -55,6 +55,15 @@ export async function GET(request: Request) {
       prisma.post.count({ where: wherePosts as any })
     ])
 
+    const postIds = posts.map(p => p.id)
+    const userLikes = postIds.length > 0
+      ? await prisma.postLike.findMany({
+          where: { userId, postId: { in: postIds } },
+          select: { postId: true }
+        })
+      : []
+    const likedSet = new Set(userLikes.map(l => l.postId))
+
     const groupMemberships = await prisma.groupMember.findMany({
       where: { userId },
       select: { groupId: true }
@@ -95,6 +104,7 @@ export async function GET(request: Request) {
         createdAt: p.createdAt.toISOString(),
         userId: p.userId,
         likes: p.likes,
+        liked: likedSet.has(p.id),
         referenceType: p.referenceType,
         referenceId: p.referenceId,
         referenceTitle: p.referenceTitle,

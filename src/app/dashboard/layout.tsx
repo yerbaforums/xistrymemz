@@ -31,6 +31,7 @@ function DashboardNav() {
     { href: '/dashboard/teaching', icon: '🏫', label: 'Teaching' },
     { href: '/dashboard/offers', icon: '🤝', label: 'Offers' },
     { href: '/dashboard/events', icon: '📅', label: 'Events' },
+    { href: '/dashboard/appointments', icon: '🗓️', label: 'Planner' },
     { href: '/saved', icon: '⭐', label: 'Saved' },
   ]
 

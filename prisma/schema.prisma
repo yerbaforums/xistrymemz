@@ -75,6 +75,7 @@ model User {
   sentMessages        Message[] @relation("MessageSender")
   receivedMessages    Message[] @relation("MessageReceiver")
   posts     Post[]
+  postLikes PostLike[]
   postTips  PostTip[]
   wallPosts Post[] @relation("WallPostTarget")
   planUpdates PlanUpdate[]
@@ -654,11 +655,25 @@ model Post {
   updatedAt       DateTime @updatedAt
   hashtags        PostHashtag[]
   postTips        PostTip[]
+  postLikes       PostLike[]
 
   @@index([userId])
   @@index([targetUserId])
   @@index([parentId])
   @@index([context])
+}
+
+model PostLike {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+  @@index([postId])
+  @@index([userId])
 }
 
 model PostTip {

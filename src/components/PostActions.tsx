@@ -6,6 +6,13 @@ import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { useToast } from '@/context/ToastContext'
 import TipModal from './TipModal'
 
+interface DonationAddr {
+  id: string
+  currency: string
+  address: string
+  label: string | null
+}
+
 interface PostActionsProps {
   postId: string
   postAuthorId: string
@@ -44,6 +51,7 @@ export default function PostActions({ postId, postAuthorId, initialLikes, liked:
   const [tipTarget, setTipTarget] = useState<{ postId: string } | null>(null)
   const [showShareMenu, setShowShareMenu] = useState(false)
   const [likeAnim, setLikeAnim] = useState(false)
+  const [donationAddresses, setDonationAddresses] = useState<DonationAddr[]>([])
 
   const walletEnabled = settings?.enableWallet !== false
   const isOwner = session?.user?.id === postAuthorId
@@ -132,7 +140,7 @@ export default function PostActions({ postId, postAuthorId, initialLikes, liked:
       const res = await fetch('/api/saved', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ postId, type: 'POST' })
+        body: JSON.stringify({ itemType: 'POST', itemId: postId })
       })
       if (res.ok) {
         success('Post saved!')
@@ -207,7 +215,13 @@ export default function PostActions({ postId, postAuthorId, initialLikes, liked:
         {showTip && walletEnabled && !isOwner && (
           <button
             type="button"
-            onClick={() => setTipTarget({ postId })}
+            onClick={() => {
+              fetch(`/api/users/donations?userId=${postAuthorId}`)
+                .then(r => r.json())
+                .then(data => setDonationAddresses(data.addresses || []))
+                .catch(() => setDonationAddresses([]))
+              setTipTarget({ postId })
+            }}
             style={btnStyle}
             onMouseDown={e => (e.currentTarget as HTMLElement).style.transform = 'scale(0.92)'}
             onMouseUp={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1)'}
@@ -269,6 +283,7 @@ export default function PostActions({ postId, postAuthorId, initialLikes, liked:
         isOpen={tipTarget !== null}
         onClose={() => setTipTarget(null)}
         onTip={handleTip}
+        donationAddresses={donationAddresses}
       />
     </>
   )

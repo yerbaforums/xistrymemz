@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'itemType and itemId are required' }, { status: 400 })
     }
 
-    const validTypes = ['PLAN', 'PRODUCT', 'REQUEST', 'EVENT', 'FORUM_POST']
+    const validTypes = ['PLAN', 'PRODUCT', 'REQUEST', 'EVENT', 'FORUM_POST', 'POST']
     if (!validTypes.includes(itemType)) {
       return NextResponse.json({ error: `Invalid itemType. Must be one of: ${validTypes.join(', ')}` }, { status: 400 })
     }

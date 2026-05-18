@@ -14,6 +14,7 @@ interface FeedPost {
   content: string
   images: string | null
   likes?: number
+  liked?: boolean
   userId?: string
   createdAt: string
   user: {
@@ -128,6 +129,7 @@ export default function FeedItem({ post }: { post: FeedPost }) {
             postId={post.id}
             postAuthorId={post.userId}
             initialLikes={post.likes || 0}
+            liked={post.liked}
             showTip={true}
             replyCount={0}
             onReply={() => {}}
