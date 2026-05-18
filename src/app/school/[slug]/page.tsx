@@ -11,6 +11,7 @@ import { DonationActions } from '@/components/DonationActions'
 import ImageUploader from '@/components/ImageUploader'
 import MentionInput from '@/components/MentionInput'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
+import ShareToPostModal from '@/components/ShareToPostModal'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
 import Rating from '@/components/Rating'
@@ -152,6 +153,8 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
   const [newPost, setNewPost] = useState('')
   const [newPostImages, setNewPostImages] = useState<string[]>([])
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
+  const [shareContent, setShareContent] = useState<SchoolContent | null>(null)
   const [posting, setPosting] = useState(false)
   const [showContentForm, setShowContentForm] = useState(false)
   const [contentForm, setContentForm] = useState({ title: '', content: '', contentType: 'article', price: '', isPaid: false })
@@ -372,6 +375,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
           <div className={styles.actions}>
             <Link href={getUserProfileUrl(school.user)} className={styles.viewOwnerBtn}>View Instructor</Link>
             <button onClick={() => setShowAppointmentModal(true)} className={styles.viewOwnerBtn} style={{ fontSize: '0.8rem' }}>📅 Book</button>
+            {school.schoolSlug && <button onClick={() => setShowShareModal(true)} className={styles.viewOwnerBtn}>🔗 Share</button>}
             {isOwner && (
               <button onClick={() => { setShowEditModal(true); setActiveTab('about'); }} className={styles.editBtn}>Edit School</button>
             )}
@@ -465,6 +469,13 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                       )}
                     </div>
                     <h3 onClick={() => setSelectedContent(selectedContent?.id === item.id ? null : item)}>{item.title}</h3>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setShareContent(item) }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.9rem', padding: '4px 8px', borderRadius: 4, color: 'var(--text-secondary)', transition: 'all 0.15s' }}
+                      title="Share to Feed"
+                    >
+                      🔗
+                    </button>
                     {selectedContent?.id === item.id && (
                       <div className={styles.contentBody}>
                         {item.content.split('\n').map((line, i) => (
@@ -631,6 +642,23 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
         onClose={() => setShowAppointmentModal(false)}
         sellerId={school.user.id}
         sellerName={school.user.name}
+      />
+
+      <ShareToPostModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        referenceType="SCHOOL"
+        referenceId={school.schoolSlug || ''}
+        referenceTitle={school.schoolName || 'School'}
+        referenceImage={school.schoolImage}
+      />
+
+      <ShareToPostModal
+        isOpen={shareContent !== null}
+        onClose={() => setShareContent(null)}
+        referenceType="SCHOOLCONTENT"
+        referenceId={shareContent?.id || ''}
+        referenceTitle={shareContent?.title || ''}
       />
       </div>
     </div>

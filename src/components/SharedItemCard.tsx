@@ -28,13 +28,25 @@ export default function SharedItemCard({ referenceType, referenceId, referenceTi
       .finally(() => setLoading(false))
   }, [referenceType, referenceId, cachedTitle])
 
-  const href = `/${referenceType.toLowerCase()}s/${referenceId}`
-
-  const TYPE_ICONS: Record<string, string> = {
-    PRODUCT: '🛒', EVENT: '📅', REQUEST: '📋', PLAN: '📐', POST: '🔁'
+  const typeToRoute: Record<string, string> = {
+    PRODUCT: 'products',
+    EVENT: 'events',
+    REQUEST: 'requests',
+    PLAN: 'plans',
+    SCHOOLCONTENT: 'school',
+    FORUMPOST: 'community/forum',
+    GROUP: 'groups',
   }
 
-  if (referenceType === 'POST') {
+  const TYPE_ICONS: Record<string, string> = {
+    PRODUCT: '🛒', EVENT: '📅', REQUEST: '📋', PLAN: '📐', POST: '🔁',
+    SCHOOLCONTENT: '📖', FORUMPOST: '💬', GROUP: '👥',
+  }
+
+  const route = typeToRoute[referenceType]
+  const href = route ? `/${route}/${referenceId}` : '#'
+
+  if (referenceType === 'POST' || !route) {
     return (
       <div style={{
         display: 'flex', gap: 10, padding: 10, borderRadius: 8,

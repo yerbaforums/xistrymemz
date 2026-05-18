@@ -41,6 +41,31 @@ export async function GET(
         }
         break
       }
+      case 'SCHOOLCONTENT': {
+        const sc = await prisma.schoolContent.findUnique({ where: { id }, include: { author: { select: { image: true } } } })
+        if (sc) item = { id: sc.id, title: sc.title, image: sc.author.image }
+        break
+      }
+      case 'FORUMPOST': {
+        const fp = await prisma.forumPost.findUnique({ where: { id }, include: { author: { select: { image: true } } } })
+        if (fp) item = { id: fp.id, title: fp.title, image: fp.author.image }
+        break
+      }
+      case 'GROUP': {
+        const g = await prisma.group.findUnique({ where: { id } })
+        if (g) item = { id: g.id, title: g.name, image: g.imageUrl }
+        break
+      }
+      case 'SHOP': {
+        const shopUser = await prisma.user.findFirst({ where: { shopSlug: id } })
+        if (shopUser) item = { id: id, title: shopUser.shopName || 'Shop', image: shopUser.shopImage }
+        break
+      }
+      case 'SCHOOL': {
+        const schoolUser = await prisma.user.findFirst({ where: { schoolSlug: id } })
+        if (schoolUser) item = { id: id, title: schoolUser.schoolName || 'School', image: schoolUser.schoolImage }
+        break
+      }
     }
 
     if (!item) {

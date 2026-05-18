@@ -11,6 +11,7 @@ import { DonationActions } from '@/components/DonationActions'
 import ImageUploader from '@/components/ImageUploader'
 import MentionInput from '@/components/MentionInput'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
+import ShareToPostModal from '@/components/ShareToPostModal'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
 import Rating from '@/components/Rating'
@@ -147,6 +148,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
   const [newPost, setNewPost] = useState('')
   const [newPostImages, setNewPostImages] = useState<string[]>([])
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
   const [posting, setPosting] = useState(false)
   const [resolvedSlug, setResolvedSlug] = useState<string | null>(null)
   const [qrDonation, setQrDonation] = useState<DonationAddr | null>(null)
@@ -362,6 +364,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
               View Owner Profile
             </Link>
             <button onClick={() => setShowAppointmentModal(true)} className={styles.viewOwnerBtn} style={{ fontSize: '0.78rem' }}>📅 Book</button>
+            {shop.shopSlug && <button onClick={() => setShowShareModal(true)} className={styles.viewOwnerBtn}>🔗 Share</button>}
             {isOwner && (
               <button onClick={() => { setShowEditModal(true); setActiveTab('about'); }} className={styles.editBtn}>
                 Edit Shop
@@ -593,6 +596,15 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
         onClose={() => setShowAppointmentModal(false)}
         sellerId={shop.user.id}
         sellerName={shop.user.name}
+      />
+
+      <ShareToPostModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        referenceType="SHOP"
+        referenceId={shop.shopSlug || ''}
+        referenceTitle={shop.shopName || 'Shop'}
+        referenceImage={shop.shopImage}
       />
     </div>
   )

@@ -7,7 +7,7 @@ import { useToast } from '@/context/ToastContext'
 interface ShareToPostModalProps {
   isOpen: boolean
   onClose: () => void
-  referenceType: 'PRODUCT' | 'EVENT' | 'REQUEST' | 'PLAN'
+  referenceType: 'PRODUCT' | 'EVENT' | 'REQUEST' | 'PLAN' | 'SCHOOLCONTENT' | 'FORUMPOST' | 'GROUP' | 'SHOP' | 'SCHOOL'
   referenceId: string
   referenceTitle: string
   referenceImage?: string | null
@@ -59,7 +59,7 @@ export default function ShareToPostModal({ isOpen, onClose, referenceType, refer
   }
 
   const hasShop = !!(session?.user as any)?.shopSlug
-  const hasSchool = false // simplified: check if user has school
+  const hasSchool = !!(session?.user as any)?.schoolSlug
 
   return (
     <div style={{
