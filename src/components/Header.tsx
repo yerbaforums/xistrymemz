@@ -187,8 +187,10 @@ export default function Header() {
               <Link href="/requests" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">📝 Requests</Link>
               <Link href="/events" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">📅 Events</Link>
               <Link href="/products" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🛒 Marketplace</Link>
+              <Link href="/products?type=RENTAL" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🏠 Rentals</Link>
               <Link href="/shops" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🏪 Shops</Link>
               <Link href="/schools" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🏫 Schools</Link>
+              <Link href="/hashtags" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"># Hashtags</Link>
             </div>
           </div>
 
@@ -202,11 +204,13 @@ export default function Header() {
             >
               Community
             </button>
-            <div className={styles.navDropdown} id="nav-dropdown-community" role="menu">
-              <Link href="/community" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">👤 Members</Link>
-              <Link href="/community/forum" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">💬 Forum</Link>
-              <Link href="/community/groups" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">👥 Groups</Link>
-            </div>
+              <div className={styles.navDropdown} id="nav-dropdown-community" role="menu">
+                <Link href="/community" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">👤 Members</Link>
+                <Link href="/connections" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🔗 Connections</Link>
+                <Link href="/community/forum" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">💬 Forum</Link>
+                <Link href="/community/groups" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">👥 Groups</Link>
+                <Link href="/hashtags" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"># Hashtags</Link>
+              </div>
           </div>
 
           {isAuthenticated && (
@@ -222,14 +226,22 @@ export default function Header() {
               </button>
               <div className={styles.navDropdown} id="nav-dropdown-more" role="menu">
                 <Link href="/messages" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">💬 Messages</Link>
+                <Link href="/dashboard/feed" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">📡 Feed</Link>
+                <Link href="/dashboard/appointments" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🗓️ Planner</Link>
+                <Link href="/dashboard/offers" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🤝 Offers</Link>
+                <Link href="/dashboard/rentals" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🏠 Rentals</Link>
+                <Link href="/dashboard/teaching" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🏫 Teaching</Link>
                 <Link href="/orders" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">📦 Orders</Link>
+                <Link href="/notifications" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🔔 Notifications</Link>
+                <Link href="/saved" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">⭐ Saved</Link>
+                <Link href="/connections" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🔗 Connections</Link>
+                <Link href="/courier/setup" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🚚 Courier</Link>
+                <Link href="/templates" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">📋 Templates</Link>
                 {settings.enableWallet ? (
                   <Link href="/wallet" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">💰 Wallet</Link>
                 ) : (
                   <span className={`${styles.navLink} ${styles.disabled}`} title="Coming Soon" role="menuitem" aria-disabled="true">💰 Wallet</span>
                 )}
-                <Link href="/courier/setup" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🚚 Courier</Link>
-                <Link href="/templates" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">📋 Templates</Link>
               </div>
             </div>
           )}
@@ -300,15 +312,19 @@ export default function Header() {
             <Link href="/requests" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📝 Requests</Link>
             <Link href="/events" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📅 Events</Link>
             <Link href="/products" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🛒 Marketplace</Link>
+            <Link href="/products?type=RENTAL" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🏠 Rentals</Link>
             <Link href="/shops" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🏪 Shops</Link>
             <Link href="/schools" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🏫 Schools</Link>
+            <Link href="/hashtags" className={styles.mobileLink} onClick={() => setMenuOpen(false)}># Hashtags</Link>
           </div>
 
           <div className={styles.mobileSection}>
             <div className={styles.mobileSectionTitle}>Community</div>
             <Link href="/community" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>👤 Members</Link>
+            <Link href="/connections" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🔗 Connections</Link>
             <Link href="/community/forum" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>💬 Forum</Link>
             <Link href="/community/groups" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>👥 Groups</Link>
+            <Link href="/hashtags" className={styles.mobileLink} onClick={() => setMenuOpen(false)}># Hashtags</Link>
           </div>
 
           <div className={styles.mobileSection}>
@@ -336,18 +352,28 @@ export default function Header() {
               <div className={styles.mobileSection}>
                 <div className={styles.mobileSectionTitle}>Dashboard</div>
                 <Link href="/dashboard/overview" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📊 Overview</Link>
+                <Link href="/dashboard/feed" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📡 Feed</Link>
                 <Link href="/plans" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🚀 My Projects</Link>
                 <Link href="/requests" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📝 My Requests</Link>
-                <Link href="/dashboard/events" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📅 My Events</Link>
+                <Link href="/dashboard/offers" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🤝 Offers</Link>
+                <Link href="/dashboard/rentals" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🏠 Rentals</Link>
+                <Link href="/dashboard/teaching" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🏫 Teaching</Link>
+                <Link href="/dashboard/events" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📅 Events</Link>
+                <Link href="/dashboard/appointments" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🗓️ Planner</Link>
+                <Link href="/notifications" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🔔 Notifications</Link>
+                <Link href="/saved" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>⭐ Saved</Link>
+                <Link href="/connections" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🔗 Connections</Link>
+                <Link href="/messages" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>💬 Messages</Link>
+                <Link href="/courier/setup" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🚚 Courier</Link>
+                <Link href="/templates" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📋 Templates</Link>
                 {settings.enableWallet ? (
                   <Link href="/wallet" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>💳 Wallet</Link>
                 ) : (
                   <span className={`${styles.mobileLink} ${styles.disabled}`}>💳 Wallet (Coming Soon)</span>
                 )}
-                <Link href="/messages" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>💬 Messages</Link>
-                <Link href="/templates" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📋 Templates</Link>
                 <Link href={session?.user ? getUserProfileUrl({ id: session.user.id, username: (session.user as { username?: string }).username }) : '/auth/login'} className={styles.mobileLink} onClick={() => setMenuOpen(false)}>👤 Profile</Link>
                 <Link href="/profile/settings" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>⚙️ Settings</Link>
+                <Link href="/onboarding" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🚀 Getting Started</Link>
               </div>
 
               {isAdmin && (
@@ -526,6 +552,7 @@ export default function Header() {
                   <div className={styles.userLinks}>
                     <Link href={session?.user ? getUserProfileUrl({ id: session.user.id, username: (session.user as { username?: string }).username }) : '/auth/login'} className={styles.userLink} role="menuitem" onClick={closeDropdown}>My Profile</Link>
                     <Link href="/profile/settings" className={styles.userLink} role="menuitem" onClick={closeDropdown}>Settings</Link>
+                    <Link href="/onboarding" className={styles.userLink} role="menuitem" onClick={closeDropdown}>🚀 Getting Started</Link>
                     <Link href="/dashboard/overview" className={styles.userLink} role="menuitem" onClick={closeDropdown}>Dashboard</Link>
                     {settings.enableWallet ? (
                       <Link href="/wallet" className={styles.userLink} role="menuitem" onClick={closeDropdown}>Wallet</Link>

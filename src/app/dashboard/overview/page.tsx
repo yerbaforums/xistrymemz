@@ -5,6 +5,10 @@ import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import FeedItem from '@/components/FeedItem'
 import styles from '../page.module.css'
+import overviewStyles from './OverviewCards.module.css'
+import TipCard from './TipCard'
+import ChecklistCard from './ChecklistCard'
+import FeatureBanner from './FeatureBanner'
 
 export const dynamic = 'force-dynamic'
 
@@ -134,7 +138,7 @@ export default async function DashboardOverview() {
 
   const user = await prisma.user.findUnique({ 
     where: { id: userId },
-    select: { shopSlug: true, schoolSlug: true, walletAddress: true, paymentAddress: true, refundAddress: true, cryptoCurrency: true, donationAddress: true, donationCurrency: true, acceptsDonations: true }
+    select: { name: true, bio: true, shopSlug: true, schoolSlug: true, walletAddress: true, paymentAddress: true, refundAddress: true, cryptoCurrency: true, donationAddress: true, donationCurrency: true, acceptsDonations: true }
   })
 
   const allStats = await Promise.all([
@@ -144,6 +148,7 @@ export default async function DashboardOverview() {
     prisma.groupMember.count({ where: { userId } }),
     prisma.eventJoiner.count({ where: { userId } }),
     prisma.schoolContent.count({ where: { userId } }),
+    prisma.post.count({ where: { userId } }),
   ])
 
   const [offersSent, offersReceived] = await Promise.all([

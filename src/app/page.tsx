@@ -15,7 +15,8 @@ import type { PlatformStats, FeaturedShop, FeaturedProduct, PublicRequest } from
 
 const ZERO_STATS: PlatformStats = {
   members: 0, shops: 0, schools: 0, products: 0, services: 0,
-  rentals: 0, events: 0, plans: 0, requests: 0, forumPosts: 0, forumReplies: 0
+  rentals: 0, events: 0, plans: 0, requests: 0, forumPosts: 0, forumReplies: 0,
+  offers: 0, appointments: 0
 }
 
 function easeOutCubic(t: number): number {

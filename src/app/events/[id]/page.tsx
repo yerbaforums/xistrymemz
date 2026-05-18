@@ -10,6 +10,9 @@ import { getUserProfileUrl } from '@/lib/utils'
 import RoleBadge from '@/components/RoleBadge'
 import ShareToPostModal from '@/components/ShareToPostModal'
 import type { Event } from '@/types/event'
+import type { DonationAddr } from '@/types/product'
+
+const QRCodeModal = dynamic(() => import('@/components/QRCodeModal').then(mod => mod.QRCodeModal), { ssr: false })
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
@@ -30,6 +33,8 @@ function EventDetailContent() {
   const [bulkSuccess, setBulkSuccess] = useState('')
   const [joinRole, setJoinRole] = useState<'ATTENDEE' | 'VOLUNTEER'>('ATTENDEE')
   const [copiedDonation, setCopiedDonation] = useState(false)
+  const [qrOpen, setQrOpen] = useState<string | null>(null)
+  const [userDonationAddrs, setUserDonationAddrs] = useState<DonationAddr[]>([])
   const [isEditing, setIsEditing] = useState(false)
   const [editForm, setEditForm] = useState({
     title: '',
@@ -126,6 +131,15 @@ function EventDetailContent() {
       })
       .catch(() => {})
   }, [])
+
+  useEffect(() => {
+    if (userId) {
+      fetch('/api/users/donations')
+        .then(res => res.ok ? res.json() : null)
+        .then(data => { if (data?.addresses) setUserDonationAddrs(data.addresses) })
+        .catch(() => {})
+    }
+  }, [userId])
 
   useEffect(() => {
     setLoading(true)
@@ -338,7 +352,36 @@ function EventDetailContent() {
                   <div className={styles.row}>
                     <div className={styles.field}>
                       <label>Donation Address</label>
-                      <input type="text" value={editForm.donationAddress} onChange={e => setEditForm(p => ({ ...p, donationAddress: e.target.value }))} />
+                      {userDonationAddrs.length > 0 ? (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                          {userDonationAddrs.map(da => {
+                            const selected = editForm.donationAddress === da.address && editForm.donationCurrency === da.currency
+                            const shortAddr = da.address.length > 12 ? da.address.slice(0, 4) + '...' + da.address.slice(-4) : da.address
+                            return (
+                              <button
+                                key={da.id}
+                                type="button"
+                                onClick={() => setEditForm(p => ({ ...p, donationAddress: da.address, donationCurrency: da.currency }))}
+                                style={{
+                                  padding: '6px 12px',
+                                  borderRadius: '20px',
+                                  border: selected ? '2px solid var(--accent)' : '1px solid var(--border)',
+                                  background: selected ? 'var(--accent)' : 'var(--bg-secondary)',
+                                  color: selected ? '#fff' : 'var(--text-primary)',
+                                  cursor: 'pointer',
+                                  fontSize: '0.8rem'
+                                }}
+                                title={`${da.label || da.currency}: ${da.address}`}
+                              >
+                                <span style={{ fontWeight: 600, marginRight: 4 }}>{da.currency}</span>
+                                {shortAddr}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        <input type="text" value={editForm.donationAddress} onChange={e => setEditForm(p => ({ ...p, donationAddress: e.target.value }))} placeholder="Enter wallet address" />
+                      )}
                     </div>
                     <div className={styles.field}>
                       <label>Currency</label>
@@ -522,22 +565,33 @@ function EventDetailContent() {
           {event.acceptsDonations && event.donationAddress && (
             <div className={styles.donationCard}>
               <h3>Donations Accepted</h3>
-              <p className={styles.donationCrypto}>{event.donationCurrency || 'ETH'}</p>
+              <div className={styles.donationCrypto}>
+                <img src={`/crypto-logos/${(event.donationCurrency || 'ETH').toLowerCase()}.png`} alt="" width={20} height={20} style={{ borderRadius: '50%' }} />
+                <span>{event.donationCurrency || 'ETH'}</span>
+              </div>
               <div className={styles.donationAddress}>
-                <code>{event.donationAddress}</code>
-                <button
-                  className={styles.copyDonationBtn}
-                  onClick={() => {
-                    navigator.clipboard.writeText(event.donationAddress || '')
-                    setCopiedDonation(true)
-                    setTimeout(() => setCopiedDonation(false), 2000)
-                  }}
-                >
-                  {copiedDonation ? 'Copied' : 'Copy'}
-                </button>
+                <code>{event.donationAddress.length > 20 ? event.donationAddress.slice(0, 10) + '...' + event.donationAddress.slice(-8) : event.donationAddress}</code>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button
+                    className={styles.copyDonationBtn}
+                    onClick={() => {
+                      navigator.clipboard.writeText(event.donationAddress || '')
+                      setCopiedDonation(true)
+                      setTimeout(() => setCopiedDonation(false), 2000)
+                    }}
+                  >
+                    {copiedDonation ? 'Copied' : 'Copy'}
+                  </button>
+                  <button className={styles.copyDonationBtn} onClick={() => setQrOpen(event.donationAddress || '')}>
+                    QR
+                  </button>
+                </div>
               </div>
               <p className={styles.donationHint}>Send {event.donationCurrency || 'ETH'} to this address to support</p>
             </div>
+          )}
+          {qrOpen && (
+            <QRCodeModal isOpen={true} onClose={() => setQrOpen(null)} currency={event.donationCurrency || 'ETH'} address={qrOpen} />
           )}
 
           {isOwner && joinerCount > 0 && (

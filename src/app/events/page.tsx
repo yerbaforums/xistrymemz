@@ -14,6 +14,7 @@ const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapCo
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
 const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false })
 const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false })
+const QRCodeModal = dynamic(() => import('@/components/QRCodeModal').then(mod => mod.QRCodeModal), { ssr: false })
 
 let L: any
 
@@ -50,6 +51,7 @@ export default function EventsPage() {
   const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'map'>('list')
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [mapExpanded, setMapExpanded] = useState(false)
+  const [qrOpen, setQrOpen] = useState<string | null>(null)
   const mapRef = useRef<L.Map | null>(null)
   const { location: passportLocation } = usePassportLocation()
 
@@ -521,7 +523,15 @@ export default function EventsPage() {
                       <div className={styles.eventHeader}>
                         <span className={`badge badge-${event.eventCategory?.toLowerCase()}`}>{event.eventCategory}</span>
                         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                          {event.acceptsDonations && <span className={styles.donationBadge}>Donations</span>}
+                          {event.acceptsDonations && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setQrOpen(event.id) }}
+                              className={styles.donationBadge}
+                              title={`Donate ${event.donationCurrency || 'ETH'}`}
+                            >
+                              💰 Donate
+                            </button>
+                          )}
                           {event.eventDate && (<span className={styles.eventDate}>{new Date(event.eventDate).toLocaleDateString()}</span>)}
                         </div>
                       </div>
@@ -547,6 +557,14 @@ export default function EventsPage() {
             </>
           )}
         </main>
+
+        {qrOpen && (() => {
+          const ev = events.find(e => e.id === qrOpen)
+          if (!ev) return null
+          return (
+            <QRCodeModal isOpen={true} onClose={() => setQrOpen(null)} currency={ev.donationCurrency || 'ETH'} address={ev.donationAddress || ''} />
+          )
+        })()}
       </div>
     </div>
   )

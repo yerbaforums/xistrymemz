@@ -10,6 +10,8 @@ export interface PlatformStats {
   requests: number
   forumPosts: number
   forumReplies: number
+  offers: number
+  appointments: number
 }
 
 export interface FeaturedShop {

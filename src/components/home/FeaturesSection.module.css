@@ -25,17 +25,32 @@
   text-align: center;
 }
 
+.group {
+  margin-bottom: 40px;
+}
+
+.group:last-child {
+  margin-bottom: 0;
+}
+
+.groupTitle {
+  font-size: 1.25rem;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+  font-family: var(--font-heading);
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  gap: 16px;
   max-width: 1000px;
   margin: 0 auto;
 }
 
 .card {
   text-align: center;
-  padding: 28px 20px;
+  padding: 24px 16px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
@@ -53,21 +68,22 @@
 }
 
 .icon {
-  font-size: 2.2rem;
-  margin-bottom: 16px;
+  font-size: 2rem;
+  margin-bottom: 10px;
   display: block;
 }
 
-.card h3 {
-  font-size: 1rem;
-  margin-bottom: 8px;
+.card h4 {
+  font-size: 0.95rem;
+  margin-bottom: 6px;
   color: var(--text-primary);
 }
 
 .card p {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: var(--text-secondary);
   line-height: 1.5;
+  margin: 0;
 }
 
 @media (max-width: 768px) {
