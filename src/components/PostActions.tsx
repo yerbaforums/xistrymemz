@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { useToast } from '@/context/ToastContext'
@@ -19,6 +19,7 @@ interface PostActionsProps {
   postAuthorId: string
   initialLikes: number
   liked?: boolean
+  initialSaved?: boolean
   replyCount?: number
   onLike?: (postId: string, liked: boolean) => void
   onTip?: (postId: string) => void
@@ -40,7 +41,7 @@ const activeStyle: React.CSSProperties = {
   transform: 'scale(0.92)',
 }
 
-export default function PostActions({ postId, postAuthorId, initialLikes, liked: initialLiked, replyCount, onLike, onTip, onReply, showTip = true }: PostActionsProps) {
+export default function PostActions({ postId, postAuthorId, initialLikes, liked: initialLiked, initialSaved = false, replyCount, onLike, onTip, onReply, showTip = true }: PostActionsProps) {
   const { data: session } = useSession()
   const { settings } = useSiteSettings()
   const { success, error: toastError } = useToast()
@@ -57,6 +58,9 @@ export default function PostActions({ postId, postAuthorId, initialLikes, liked:
   const [shareContent, setShareContent] = useState('')
   const [sharingPost, setSharingPost] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
+  const [saved, setSaved] = useState(initialSaved)
+  const [saving, setSaving] = useState(false)
+  const savedRecordId = useRef<string | null>(null)
 
   const walletEnabled = settings?.enableWallet !== false
   const isOwner = session?.user?.id === postAuthorId
@@ -77,6 +81,7 @@ export default function PostActions({ postId, postAuthorId, initialLikes, liked:
         body: JSON.stringify({ liked: newLiked })
       })
       if (!res.ok) throw new Error()
+      onLike?.(postId, newLiked)
     } catch {
       setLiked(!newLiked)
       setLikes(previousLikes)
@@ -140,20 +145,38 @@ export default function PostActions({ postId, postAuthorId, initialLikes, liked:
   }
 
   const handleBookmark = async () => {
-    if (!session) return
+    if (!session || saving) return
+    setSaving(true)
     try {
-      const res = await fetch('/api/saved', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ itemType: 'POST', itemId: postId })
-      })
-      if (res.ok) {
-        success('Post saved!')
+      if (savedRecordId.current) {
+        const res = await fetch(`/api/saved/${savedRecordId.current}`, { method: 'DELETE' })
+        if (res.ok) {
+          setSaved(false)
+          savedRecordId.current = null
+          success('Bookmark removed')
+        } else {
+          toastError('Failed to remove bookmark')
+        }
       } else {
-        toastError('Failed to save')
+        const res = await fetch('/api/saved', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ itemType: 'POST', itemId: postId })
+        })
+        if (res.ok) {
+          const data = await res.json()
+          savedRecordId.current = data.saved.id
+          setSaved(true)
+          success('Post saved!')
+        } else {
+          const err = await res.json()
+          toastError(err.error || 'Failed to save')
+        }
       }
     } catch {
       toastError('Failed to save')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -279,11 +302,18 @@ export default function PostActions({ postId, postAuthorId, initialLikes, liked:
           <button
             type="button"
             onClick={handleBookmark}
-            style={btnStyle}
-            aria-label="Bookmark"
+            disabled={saving}
+            style={{
+              ...btnStyle,
+              cursor: saving ? 'not-allowed' : 'pointer',
+              opacity: saving ? 0.6 : 1,
+              color: saved ? 'var(--accent-primary)' : 'var(--text-secondary)',
+              background: saved ? 'var(--bg-hover)' : 'transparent',
+            }}
+            aria-label={saved ? 'Remove bookmark' : 'Bookmark'}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-            <span>Save</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            <span>{saved ? 'Saved' : 'Save'}</span>
           </button>
         )}
 
@@ -348,7 +378,7 @@ export default function PostActions({ postId, postAuthorId, initialLikes, liked:
           position: 'fixed', inset: 0, zIndex: 1000,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           background: 'rgba(0,0,0,0.5)'
-        }} onClick={() => setShowShareComposer(false)}>
+        }} onClick={() => { setShowShareComposer(false); setShareContent('') }}>
           <div style={{
             background: 'var(--bg-secondary)', borderRadius: 12, padding: 24,
             maxWidth: 500, width: '90%',
@@ -367,7 +397,7 @@ export default function PostActions({ postId, postAuthorId, initialLikes, liked:
               placeholder="Add your thoughts..."
             />
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-              <button type="button" onClick={() => setShowShareComposer(false)}
+              <button type="button" onClick={() => { setShowShareComposer(false); setShareContent('') }}
                 style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.85rem' }}>
                 Cancel
               </button>

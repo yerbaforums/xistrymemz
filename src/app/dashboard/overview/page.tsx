@@ -12,20 +12,21 @@ import FeatureBanner from './FeatureBanner'
 
 export const dynamic = 'force-dynamic'
 
-function StatGauge({ value, max = 100, size = 32, color = 'var(--accent-primary)' }: { value: number; max?: number; size?: number; color?: string }) {
+function StatGauge({ value, max = 100, size = 48, color = 'var(--accent-primary)' }: { value: number; max?: number; size?: number; color?: string }) {
   const pct = Math.min(Math.max(value / max, 0), 1)
-  const r = 14
+  const r = 20
   const c = 2 * Math.PI * r
   const offset = c - pct * c
+  const fontSize = value >= 1000 ? 7 : value >= 100 ? 8 : 10
 
   return (
-    <svg viewBox="0 0 32 32" width={size} height={size}>
-      <circle cx="16" cy="16" r={r} fill="none" stroke="var(--bg-tertiary)" strokeWidth="2.5" />
-      <circle cx="16" cy="16" r={r} fill="none" stroke={color} strokeWidth="2.5"
+    <svg viewBox="0 0 48 48" width={size} height={size}>
+      <circle cx="24" cy="24" r={r} fill="none" stroke="var(--bg-tertiary)" strokeWidth="3.5" />
+      <circle cx="24" cy="24" r={r} fill="none" stroke={color} strokeWidth="3.5"
         strokeDasharray={c} strokeDashoffset={offset} strokeLinecap="round"
-        transform="rotate(-90 16 16)" />
-      <text x="16" y="16" textAnchor="middle" dominantBaseline="central"
-        fill="var(--text-primary)" fontSize="7" fontWeight="700">{value}</text>
+        transform="rotate(-90 24 24)" />
+      <text x="24" y="24" textAnchor="middle" dominantBaseline="central"
+        fill="var(--text-primary)" fontSize={fontSize} fontWeight="700">{value}</text>
     </svg>
   )
 }
@@ -234,14 +235,14 @@ export default async function DashboardOverview() {
           stat.href ? (
             <Link key={stat.label} href={stat.href} className={styles.overviewStatCard}>
               <div className={styles.statGauge}>
-                <StatGauge value={stat.value} max={stat.max} color={stat.color} size={32} />
+                <StatGauge value={stat.value} max={stat.max} color={stat.color} size={48} />
               </div>
               <span className={styles.overviewStatLabel}>{stat.label}</span>
             </Link>
           ) : (
             <div key={stat.label} className={styles.overviewStatCard} style={{ cursor: 'default' }}>
               <div className={styles.statGauge}>
-                <StatGauge value={stat.value} max={stat.max} color={stat.color} size={32} />
+                <StatGauge value={stat.value} max={stat.max} color={stat.color} size={48} />
               </div>
               <span className={styles.overviewStatLabel}>{stat.label}</span>
             </div>

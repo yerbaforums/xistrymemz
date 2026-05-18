@@ -18,6 +18,7 @@ const TYPE_LABELS: Record<string, string> = {
   PRODUCT: 'Product',
   REQUEST: 'Request',
   EVENT: 'Event',
+  POST: 'Post',
   FORUM_POST: 'Forum Post',
 }
 
@@ -26,6 +27,7 @@ const TYPE_LINKS: Record<string, string> = {
   PRODUCT: '/products',
   REQUEST: '/requests',
   EVENT: '/events',
+  POST: '/posts',
   FORUM_POST: '/community/forum',
 }
 

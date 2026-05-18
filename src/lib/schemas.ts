@@ -185,7 +185,7 @@ export const postSchema = z.object({
   targetUserId: z.string().min(1).optional().nullable(),
   context: z.enum(['PROFILE', 'SHOP', 'SCHOOL', 'WALL']).optional(),
   parentId: z.string().min(1).optional().nullable(),
-  referenceType: z.enum(['PRODUCT', 'EVENT', 'REQUEST', 'PLAN']).optional().nullable(),
+  referenceType: z.enum(['PRODUCT', 'EVENT', 'REQUEST', 'PLAN', 'POST']).optional().nullable(),
   referenceId: z.string().min(1).optional().nullable(),
   referenceTitle: z.string().max(500).optional().nullable()
 })

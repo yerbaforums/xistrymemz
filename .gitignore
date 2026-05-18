@@ -11,3 +11,4 @@ prisma/dev.db
 prisma/schema_original.prisma
 prisma/seed-forum.ts.bak
 old sessions/
+tsconfig.tsbuildinfo

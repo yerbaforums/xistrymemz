@@ -9,11 +9,9 @@ interface SharePostModalProps {
   isOpen: boolean
   onClose: () => void
   postId: string
-  postContent?: string
-  authorName?: string
 }
 
-export function SharePostModal({ isOpen, onClose, postId, postContent, authorName }: SharePostModalProps) {
+export function SharePostModal({ isOpen, onClose, postId }: SharePostModalProps) {
   const [copied, setCopied] = useState(false)
   const modalRef = useFocusTrap(isOpen, onClose)
   const { error: toastError } = useToast()
@@ -21,7 +19,7 @@ export function SharePostModal({ isOpen, onClose, postId, postContent, authorNam
   if (!isOpen) return null
 
   const url = typeof window !== 'undefined' ? `${window.location.origin}/posts/${postId}` : `https://xistrymemz.xyz/posts/${postId}`
-  const shareText = authorName ? `Check out this post by ${authorName} on XistrYmemZ!` : 'Check out this post on XistrYmemZ!'
+  const shareText = 'Check out this post on XistrYmemZ!'
 
   const shareLinks = [
     {
@@ -119,13 +117,6 @@ export function SharePostModal({ isOpen, onClose, postId, postContent, authorNam
           <h3>Share Post</h3>
           <button onClick={onClose} className={styles.closeBtn}>&times;</button>
         </div>
-
-        {postContent && (
-          <div className={styles.postPreview}>
-            <div className={styles.postIcon}>{postContent[0]?.toUpperCase() || 'P'}</div>
-            <div className={styles.postContent}>{postContent}</div>
-          </div>
-        )}
 
         {typeof navigator !== 'undefined' && 'share' in navigator && (
           <button onClick={handleNativeShare} className={styles.nativeShareBtn}>

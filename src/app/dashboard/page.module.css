@@ -24,17 +24,17 @@
 
 .overviewStats {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-  gap: 8px;
-  margin-bottom: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
 .overviewStatCard {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 10px 4px;
+  gap: 4px;
+  padding: 16px 8px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -88,9 +88,9 @@
 
 .actionButtons {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding-bottom: 6px;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
@@ -102,14 +102,14 @@
 .actionBtn {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 7px 12px;
+  gap: 6px;
+  padding: 10px 16px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   color: var(--text-primary);
   text-decoration: none;
-  font-size: 0.78rem;
+  font-size: 0.85rem;
   white-space: nowrap;
   flex-shrink: 0;
   transition: var(--transition);
