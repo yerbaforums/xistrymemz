@@ -12,6 +12,33 @@ import FeatureBanner from './FeatureBanner'
 
 export const dynamic = 'force-dynamic'
 
+function StatGauge({ value, max = 100, size = 32, color = 'var(--accent-primary)' }: { value: number; max?: number; size?: number; color?: string }) {
+  const pct = Math.min(Math.max(value / max, 0), 1)
+  const r = 14
+  const c = 2 * Math.PI * r
+  const offset = c - pct * c
+
+  return (
+    <svg viewBox="0 0 32 32" width={size} height={size}>
+      <circle cx="16" cy="16" r={r} fill="none" stroke="var(--bg-tertiary)" strokeWidth="2.5" />
+      <circle cx="16" cy="16" r={r} fill="none" stroke={color} strokeWidth="2.5"
+        strokeDasharray={c} strokeDashoffset={offset} strokeLinecap="round"
+        transform="rotate(-90 16 16)" />
+      <text x="16" y="16" textAnchor="middle" dominantBaseline="central"
+        fill="var(--text-primary)" fontSize="7" fontWeight="700">{value}</text>
+    </svg>
+  )
+}
+
+interface StatDef {
+  label: string
+  value: number
+  max: number
+  color: string
+  icon: string
+  href: string
+}
+
 export default async function DashboardOverview() {
   const session = await getServerSession(authOptions)
   
@@ -122,7 +149,7 @@ export default async function DashboardOverview() {
         user: { select: { id: true, name: true, image: true } }
       },
       orderBy: { createdAt: 'desc' },
-      take: 10
+      take: 3
     }),
     prisma.eventJoiner.groupBy({
       by: ['role'],
@@ -167,116 +194,71 @@ export default async function DashboardOverview() {
   const eventVolunteerCount = eventJoinerCounts.find(r => r.role === 'VOLUNTEER')?._count ?? 0
   const totalEarnings = (sellerEarnings._sum.netAmount ?? 0) + (teachingEarnings._sum.amount ?? 0)
 
+  const stats: StatDef[] = [
+    { label: 'Projects', value: allStats[0], max: 20, color: '#8B5CF6', icon: '🚀', href: '/dashboard/projects' },
+    { label: 'Requests', value: pendingRequests, max: 20, color: '#F59E0B', icon: '📝', href: '/dashboard/requests' },
+    { label: 'Products', value: allStats[2], max: 50, color: '#10B981', icon: '🛒', href: '/dashboard/marketplace' },
+    { label: 'Rentals', value: rentalCount, max: 20, color: '#3B82F6', icon: '🏠', href: '/dashboard/rentals' },
+    { label: 'Teacngs', value: allStats[5], max: 20, color: '#EC4899', icon: '🏫', href: '/dashboard/teaching' },
+    { label: 'Offers In', value: offersReceived, max: 20, color: '#F97316', icon: '🤝', href: '/dashboard/offers' },
+    { label: 'Offers Out', value: offersSent, max: 20, color: '#FB923C', icon: '📤', href: '/dashboard/offers' },
+    { label: 'Connectns', value: connectionCount, max: 100, color: '#06B6D4', icon: '👥', href: '/community' },
+    { label: 'Groups', value: allStats[3], max: 20, color: '#84CC16', icon: '🏠', href: '/community/groups' },
+    { label: 'Events', value: eventAttendeeCount, max: 20, color: '#6366F1', icon: '📅', href: '/dashboard/events' },
+    { label: 'Volunteer', value: eventVolunteerCount, max: 10, color: '#14B8A6', icon: '🙋', href: '/dashboard/events' },
+    { label: 'Orders', value: orderStats.length, max: 50, color: '#EF4444', icon: '📦', href: '/orders' },
+    { label: 'Earnings', value: Math.round(totalEarnings), max: 5000, color: '#F59E0B', icon: '💰', href: '' },
+  ]
+
+  const quickActions = [
+    { label: 'New Project', icon: '🚀', href: '/plans' },
+    { label: 'New Product', icon: '🛒', href: '/products/new' },
+    { label: 'New Event', icon: '📅', href: '/events/new' },
+    { label: 'Post Request', icon: '📝', href: '/requests' },
+    { label: 'New Group', icon: '👥', href: '/groups/new' },
+    { label: 'List Item', icon: '📦', href: '/products/new' },
+    { label: 'Community', icon: '💬', href: '/community' },
+    { label: 'Templates', icon: '📋', href: '/templates' },
+    { label: 'Settings', icon: '⚙️', href: '/profile/settings' },
+  ]
+
   return (
     <div className={styles.overview}>
       <div className={styles.welcomeHeader}>
         <h2>Welcome back, {session.user.name?.split(' ')[0] || 'User'}!</h2>
-        <p>Here&apos;s what&apos;s happening with your activity</p>
-      </div>
-      
-      <div className={styles.statsGrid}>
-        <Link href="/dashboard/projects" className={styles.statCard}>
-          <span className={styles.statIcon}>🚀</span>
-          <span className={styles.statValue}>{allStats[0]}</span>
-          <span className={styles.statLabel}>Projects</span>
-        </Link>
-        <Link href="/dashboard/requests" className={styles.statCard}>
-          <span className={styles.statIcon}>📝</span>
-          <span className={styles.statValue}>{pendingRequests}</span>
-          <span className={styles.statLabel}>Requests</span>
-        </Link>
-        <Link href="/dashboard/marketplace" className={styles.statCard}>
-          <span className={styles.statIcon}>🛒</span>
-          <span className={styles.statValue}>{allStats[2]}</span>
-          <span className={styles.statLabel}>Products</span>
-        </Link>
-        <Link href="/dashboard/rentals" className={styles.statCard}>
-          <span className={styles.statIcon}>🏠</span>
-          <span className={styles.statValue}>{rentalCount}</span>
-          <span className={styles.statLabel}>Rentals</span>
-        </Link>
-        <Link href="/dashboard/teaching" className={styles.statCard}>
-          <span className={styles.statIcon}>🏫</span>
-          <span className={styles.statValue}>{allStats[5]}</span>
-          <span className={styles.statLabel}>Teachings</span>
-        </Link>
-        <Link href="/dashboard/offers" className={styles.statCard}>
-          <span className={styles.statIcon}>🤝</span>
-          <span className={styles.statValue}>{offersReceived}</span>
-          <span className={styles.statLabel}>Offers In</span>
-        </Link>
-        <Link href="/dashboard/offers" className={styles.statCard}>
-          <span className={styles.statIcon}>📤</span>
-          <span className={styles.statValue}>{offersSent}</span>
-          <span className={styles.statLabel}>Offers Out</span>
-        </Link>
-        <Link href="/community" className={styles.statCard}>
-          <span className={styles.statIcon}>👥</span>
-          <span className={styles.statValue}>{connectionCount}</span>
-          <span className={styles.statLabel}>Connections</span>
-        </Link>
-        <Link href="/community/groups" className={styles.statCard}>
-          <span className={styles.statIcon}>🏠</span>
-          <span className={styles.statValue}>{allStats[3]}</span>
-          <span className={styles.statLabel}>Groups</span>
-        </Link>
-        <Link href="/dashboard/events" className={styles.statCard}>
-          <span className={styles.statIcon}>📅</span>
-          <span className={styles.statValue}>{eventAttendeeCount}</span>
-          <span className={styles.statLabel}>Events</span>
-        </Link>
-        <Link href="/dashboard/events" className={styles.statCard}>
-          <span className={styles.statIcon}>🙋</span>
-          <span className={styles.statValue}>{eventVolunteerCount}</span>
-          <span className={styles.statLabel}>Volunteer</span>
-        </Link>
-        <Link href="/orders" className={styles.statCard}>
-          <span className={styles.statIcon}>📦</span>
-          <span className={styles.statValue}>{orderStats.length}</span>
-          <span className={styles.statLabel}>Orders</span>
-        </Link>
-        <div className={styles.statCard} style={{ cursor: 'default' }}>
-          <span className={styles.statIcon}>💰</span>
-          <span className={styles.statValue}>${totalEarnings.toFixed(2)}</span>
-          <span className={styles.statLabel}>Earnings</span>
-        </div>
+        <p>{allStats[6]} posts · {connectionCount} connections · {totalEarnings > 0 ? `$${totalEarnings.toFixed(0)} earned` : 'getting started'}</p>
       </div>
 
-        <div className={styles.quickActions}>
-          <h3>Quick Actions</h3>
-          <div className={styles.actionButtons}>
-            <Link href="/templates" className={styles.actionBtn}>
-              <span>📋</span> Browse Templates
+      <div className={styles.overviewStats}>
+        {stats.map(stat => (
+          stat.href ? (
+            <Link key={stat.label} href={stat.href} className={styles.overviewStatCard}>
+              <div className={styles.statGauge}>
+                <StatGauge value={stat.value} max={stat.max} color={stat.color} size={32} />
+              </div>
+              <span className={styles.overviewStatLabel}>{stat.label}</span>
             </Link>
-            <Link href="/products/new" className={styles.actionBtn}>
-              <span>🛒</span> New Product
+          ) : (
+            <div key={stat.label} className={styles.overviewStatCard} style={{ cursor: 'default' }}>
+              <div className={styles.statGauge}>
+                <StatGauge value={stat.value} max={stat.max} color={stat.color} size={32} />
+              </div>
+              <span className={styles.overviewStatLabel}>{stat.label}</span>
+            </div>
+          )
+        ))}
+      </div>
+
+      <div className={styles.quickActions}>
+        <h3>Quick Actions</h3>
+        <div className={styles.actionButtons}>
+          {quickActions.map(a => (
+            <Link key={a.label} href={a.href} className={styles.actionBtn}>
+              <span>{a.icon}</span> {a.label}
             </Link>
-            <Link href="/plans" className={styles.actionBtn}>
-              <span>🚀</span> New Project
-            </Link>
-            <Link href="/requests" className={styles.actionBtn}>
-              <span>📝</span> Post Request
-            </Link>
-            <Link href="/groups/new" className={styles.actionBtn}>
-              <span>👥</span> New Group
-            </Link>
-            <Link href="/events/new" className={styles.actionBtn}>
-              <span>📅</span> New Event
-            </Link>
-            <Link href="/products/new" className={styles.actionBtn}>
-              <span>📦</span> List Item
-            </Link>
-            <Link href="/school/setup" className={styles.actionBtn}>
-              <span>🏫</span> Create Course
-            </Link>
-            <Link href="/community" className={styles.actionBtn}>
-              <span>💬</span> Community
-            </Link>
-            <Link href="/profile/settings" className={styles.actionBtn}>
-              <span>⚙️</span> Profile Settings
-            </Link>
-          </div>
+          ))}
         </div>
+      </div>
 
       <div className={styles.activityGrid}>
         <div className={styles.activitySection}>
@@ -291,9 +273,9 @@ export default async function DashboardOverview() {
                   <div className={styles.activityIcon}>🚀</div>
                   <div className={styles.activityInfo}>
                     <span className={styles.activityTitle}>{plan.title}</span>
-                    <span className={styles.activityMeta}>{plan.status} • {new Date(plan.createdAt).toLocaleDateString()}</span>
+                    <span className={styles.activityMeta}>{plan.status} · {new Date(plan.createdAt).toLocaleDateString()}</span>
                   </div>
-                  <span className={`badge badge-${plan.status.toLowerCase()}`}>{plan.status}</span>
+                  <span className={`badge badge-${plan.status.toLowerCase()}`} style={{ fontSize: '0.65rem' }}>{plan.status}</span>
                 </Link>
               ))}
             </div>
@@ -305,7 +287,36 @@ export default async function DashboardOverview() {
           )}
         </div>
 
-        {connectionFeed.length > 0 && (
+        <div className={styles.activitySection}>
+          <div className={styles.sectionHeader}>
+            <h3>Your Feed</h3>
+            <Link href="/dashboard/feed" className={styles.viewAll}>View all →</Link>
+          </div>
+          {recentFeedPosts.length > 0 ? (
+            <div className={styles.feedCompact}>
+              {recentFeedPosts.map(post => (
+                <FeedItem key={post.id} post={{
+                  id: post.id,
+                  content: post.content,
+                  images: post.images,
+                  createdAt: post.createdAt.toISOString(),
+                  user: post.user,
+                  likes: 0,
+                  sourceType: 'POST'
+                }} />
+              ))}
+            </div>
+          ) : (
+            <div className={styles.emptyState}>
+              <p>No recent posts</p>
+              <Link href="/dashboard/feed" className={styles.emptyAction}>Explore feed</Link>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {connectionFeed.length > 0 && (
+        <div style={{ marginTop: 12 }}>
           <div className={styles.activitySection}>
             <div className={styles.sectionHeader}>
               <h3>Activity from Connections</h3>
@@ -321,76 +332,22 @@ export default async function DashboardOverview() {
                   <div className={styles.activityIcon}>{item.feedType === 'plan' ? '🚀' : '🛒'}</div>
                   <div className={styles.activityInfo}>
                     <span className={styles.activityTitle}>{item.title}</span>
-                    <span className={styles.activityMeta}>by {item.userName || 'Unknown'} • {new Date(item.createdAt).toLocaleDateString()}</span>
+                    <span className={styles.activityMeta}>by {item.userName || 'Unknown'} · {new Date(item.createdAt).toLocaleDateString()}</span>
                   </div>
                 </Link>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {recentFeedPosts.length > 0 && (
-        <div className={styles.activityGrid} style={{ marginTop: '32px' }}>
-          <div className={styles.activitySection} style={{ gridColumn: '1 / -1' }}>
-            <div className={styles.sectionHeader}>
-              <h3>Your Feed</h3>
-              <Link href="/dashboard/feed" className={styles.viewAll}>View all →</Link>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {recentFeedPosts.map(post => (
-                <FeedItem key={post.id} post={{
-                  id: post.id,
-                  content: post.content,
-                  images: post.images,
-                  createdAt: post.createdAt.toISOString(),
-                  user: post.user,
-                  sourceType: 'POST'
-                }} />
               ))}
             </div>
           </div>
         </div>
       )}
 
-      {/* My Wallet Addresses */}
       {user && (user.walletAddress || user.paymentAddress || user.refundAddress || (user.acceptsDonations && user.donationAddress)) && (
-        <div className={styles.promoGrid}>
-          <div className={styles.promoCard} style={{gridColumn: '1 / -1'}}>
-            <div className={styles.promoIcon}>💳</div>
-            <h4>My Wallet Addresses</h4>
-            <div style={{display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px'}}>
-              {user.walletAddress && (
-                <div style={{display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.875rem'}}>
-                  <img src={`/crypto-logos/${user.cryptoCurrency?.toLowerCase() || 'ethereum'}.png`} alt="" width={20} height={20} style={{borderRadius: '50%'}} />
-                  <span style={{color: 'var(--text-secondary)', minWidth: '120px'}}>Wallet:</span>
-                  <code style={{flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.75rem', background: 'var(--bg-tertiary)', padding: '4px 8px', borderRadius: '4px'}}>{user.walletAddress}</code>
-                </div>
-              )}
-              {user.paymentAddress && (
-                <div style={{display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.875rem'}}>
-                  <img src={`/crypto-logos/${user.cryptoCurrency?.toLowerCase() || 'ethereum'}.png`} alt="" width={20} height={20} style={{borderRadius: '50%'}} />
-                  <span style={{color: 'var(--text-secondary)', minWidth: '120px'}}>Payment:</span>
-                  <code style={{flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.75rem', background: 'var(--bg-tertiary)', padding: '4px 8px', borderRadius: '4px'}}>{user.paymentAddress}</code>
-                </div>
-              )}
-              {user.refundAddress && (
-                <div style={{display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.875rem'}}>
-                  <img src={`/crypto-logos/${user.cryptoCurrency?.toLowerCase() || 'ethereum'}.png`} alt="" width={20} height={20} style={{borderRadius: '50%'}} />
-                  <span style={{color: 'var(--text-secondary)', minWidth: '120px'}}>Refund:</span>
-                  <code style={{flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.75rem', background: 'var(--bg-tertiary)', padding: '4px 8px', borderRadius: '4px'}}>{user.refundAddress}</code>
-                </div>
-              )}
-              {user.acceptsDonations && user.donationAddress && (
-                <div style={{display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.875rem'}}>
-                  <img src={`/crypto-logos/${user.donationCurrency?.toLowerCase() || 'ethereum'}.png`} alt="" width={20} height={20} style={{borderRadius: '50%'}} />
-                  <span style={{color: 'var(--text-secondary)', minWidth: '120px'}}>Donation:</span>
-                  <code style={{flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.75rem', background: 'var(--bg-tertiary)', padding: '4px 8px', borderRadius: '4px'}}>{user.donationAddress}</code>
-                </div>
-              )}
-            </div>
-            <Link href="/profile/edit" className={styles.promoBtn} style={{marginTop: '12px'}}>Manage Addresses</Link>
-          </div>
+        <div className={styles.walletCompact}>
+          <h4>💳 Wallet</h4>
+          {user.walletAddress && <code title={user.walletAddress}>{user.walletAddress.slice(0, 10)}...{user.walletAddress.slice(-4)}</code>}
+          {user.paymentAddress && <code title={user.paymentAddress}>Pay: {user.paymentAddress.slice(0, 8)}...{user.paymentAddress.slice(-4)}</code>}
+          {user.acceptsDonations && user.donationAddress && <code title={user.donationAddress}>Donate: {user.donationAddress.slice(0, 8)}...{user.donationAddress.slice(-4)}</code>}
+          <Link href="/profile/edit" style={{ marginLeft: 'auto', fontSize: '0.75rem', color: 'var(--accent-primary)', textDecoration: 'none' }}>Manage</Link>
         </div>
       )}
 
@@ -399,25 +356,29 @@ export default async function DashboardOverview() {
           <div className={styles.promoCard}>
             <div className={styles.promoIcon}>📋</div>
             <h4>Business Templates</h4>
-            <p>Start with pre-built templates for shops, schools, or courier services</p>
-            <Link href="/templates" className={styles.promoBtn}>Browse All Templates</Link>
+            <p>Pre-built templates for shops, schools, or courier services</p>
+            <Link href="/templates" className={styles.promoBtn}>Browse</Link>
           </div>
           {!user?.shopSlug && (
             <div className={styles.promoCard}>
               <div className={styles.promoIcon}>🏪</div>
               <h4>Start Selling</h4>
-              <p>Create your shop and start listing products or services</p>
-              <Link href="/templates" className={styles.promoBtnSecondary}>Browse Templates</Link>
-              <Link href="/shop/setup" className={styles.promoBtn}>Setup Shop</Link>
+              <p>Create your shop and list products or services</p>
+              <div>
+                <Link href="/templates" className={styles.promoBtnSecondary}>Templates</Link>
+                <Link href="/shop/setup" className={styles.promoBtn}>Setup Shop</Link>
+              </div>
             </div>
           )}
           {!user?.schoolSlug && (
             <div className={styles.promoCard}>
               <div className={styles.promoIcon}>🏫</div>
               <h4>Teach & Earn</h4>
-              <p>Share your knowledge and create educational content</p>
-              <Link href="/templates" className={styles.promoBtnSecondary}>Browse Templates</Link>
-              <Link href="/school/setup" className={styles.promoBtn}>Create School</Link>
+              <p>Share knowledge and create educational content</p>
+              <div>
+                <Link href="/templates" className={styles.promoBtnSecondary}>Templates</Link>
+                <Link href="/school/setup" className={styles.promoBtn}>Create School</Link>
+              </div>
             </div>
           )}
         </div>
