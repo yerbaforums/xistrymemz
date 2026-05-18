@@ -27,9 +27,10 @@ interface TipModalProps {
   onTip: (amount: number, cryptoSymbol: string) => Promise<void>
   donationAddresses?: DonationAddr[]
   endpoint?: string
+  walletEnabled?: boolean
 }
 
-export default function TipModal({ isOpen, onClose, onTip, donationAddresses }: TipModalProps) {
+export default function TipModal({ isOpen, onClose, onTip, donationAddresses, walletEnabled = true }: TipModalProps) {
   const [tipAmount, setTipAmount] = useState('')
   const [tipCrypto, setTipCrypto] = useState('USDT')
   const [cryptoBalances, setCryptoBalances] = useState<CryptoOption[]>([])
@@ -88,7 +89,19 @@ export default function TipModal({ isOpen, onClose, onTip, donationAddresses }: 
 
           {cryptoBalances.length > 0 && (
             <>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 16 }}>
+              {!walletEnabled && (
+                <div style={{
+                  padding: '10px 12px', marginBottom: 12, borderRadius: 8,
+                  background: 'rgba(255, 204, 0, 0.1)', border: '1px solid rgba(255, 204, 0, 0.3)',
+                  color: 'var(--text-secondary)', fontSize: '0.8rem', textAlign: 'center'
+                }}>
+                  Wallet features are disabled. You can still send direct donations below.
+                </div>
+              )}
+              <div style={{
+                display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 16,
+                opacity: walletEnabled ? 1 : 0.5, pointerEvents: walletEnabled ? 'auto' : 'none',
+              }}>
                 {cryptoBalances.map(c => (
                   <button key={c.symbol} type="button" onClick={() => setTipCrypto(c.symbol)}
                     style={{
@@ -101,7 +114,7 @@ export default function TipModal({ isOpen, onClose, onTip, donationAddresses }: 
                 ))}
               </div>
 
-              <div style={{ marginBottom: 16 }}>
+              <div style={{ marginBottom: 16, opacity: walletEnabled ? 1 : 0.5, pointerEvents: walletEnabled ? 'auto' : 'none' }}>
                 <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>
                   Amount ({tipCrypto}) — Available: {selectedCrypto?.available.toFixed(2) || '0'}
                 </label>
@@ -116,9 +129,9 @@ export default function TipModal({ isOpen, onClose, onTip, donationAddresses }: 
                   style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-primary)', cursor: 'pointer' }}>
                   Cancel
                 </button>
-                <button type="button" onClick={handleConfirm} disabled={tipping || !tipAmount}
-                  style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: 'var(--accent-primary)', color: '#fff', cursor: tipping || !tipAmount ? 'not-allowed' : 'pointer', opacity: tipping || !tipAmount ? 0.6 : 1 }}>
-                  {tipping ? 'Tipping...' : 'Confirm Tip'}
+                <button type="button" onClick={handleConfirm} disabled={tipping || !tipAmount || !walletEnabled}
+                  style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: 'var(--accent-primary)', color: '#fff', cursor: tipping || !tipAmount || !walletEnabled ? 'not-allowed' : 'pointer', opacity: tipping || !tipAmount || !walletEnabled ? 0.6 : 1 }}>
+                  {tipping ? 'Tipping...' : !walletEnabled ? 'Wallet Unavailable' : 'Confirm Tip'}
                 </button>
               </div>
             </>

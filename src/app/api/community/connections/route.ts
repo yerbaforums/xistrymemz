@@ -32,8 +32,8 @@ export async function GET(request: Request) {
     const connections = await prisma.connection.findMany({
       where,
       include: {
-        requester: { select: { id: true, name: true, image: true, earthId: true, verificationLevel: true } },
-        receiver: { select: { id: true, name: true, image: true, earthId: true, verificationLevel: true } }
+        requester: { select: { id: true, name: true, image: true, earthId: true, verificationLevel: true, username: true } },
+        receiver: { select: { id: true, name: true, image: true, earthId: true, verificationLevel: true, username: true } }
       },
       orderBy: { createdAt: 'desc' }
     })

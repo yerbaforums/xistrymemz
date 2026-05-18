@@ -425,7 +425,7 @@ export default function ProfileEditPage() {
       <div style={{maxWidth: '800px', margin: '0 auto', padding: '20px'}}>
         <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px'}}>
           <h1>Edit Profile</h1>
-          <Link href={getUserProfileUrl(userData || { id: session?.user?.id || '', name: session?.user?.name })} className={styles.editBtn}>
+          <Link href={getUserProfileUrl(userData || { id: session?.user?.id || '', username: (session?.user as { username?: string })?.username })} className={styles.editBtn}>
             View Profile
           </Link>
         </div>

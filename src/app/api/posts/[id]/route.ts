@@ -17,7 +17,8 @@ export async function GET(
           select: {
             id: true,
             name: true,
-            image: true
+            image: true,
+            username: true
           }
         }
       }
@@ -27,7 +28,30 @@ export async function GET(
       return NextResponse.json({ error: 'Post not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ post })
+    const likesCount = await prisma.postLike.count({
+      where: { postId: id }
+    })
+
+    const session = await getServerSession(authOptions)
+    let liked = false
+    if (session?.user?.id) {
+      const like = await prisma.postLike.findUnique({
+        where: { userId_postId: { userId: session.user.id, postId: id } }
+      })
+      liked = !!like
+    }
+
+    const replies = await prisma.post.findMany({
+      where: { parentId: id },
+      include: {
+        user: {
+          select: { id: true, name: true, image: true, username: true }
+        }
+      },
+      orderBy: { createdAt: 'asc' }
+    })
+
+    return NextResponse.json({ post, likes: likesCount, liked, replies })
   } catch (error) {
     console.error('Error fetching post:', error)
     return NextResponse.json({ error: 'Failed to fetch post' }, { status: 500 })
@@ -71,7 +95,8 @@ export async function PUT(
           select: {
             id: true,
             name: true,
-            image: true
+            image: true,
+            username: true
           }
         }
       }

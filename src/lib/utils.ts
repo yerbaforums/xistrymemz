@@ -8,10 +8,10 @@ export function slugify(text: string | null | undefined): string {
     .replace(/^-+|-+$/g, '')
 }
 
-export function getUserProfileParam(user: { id: string; name?: string | null; username?: string | null }): string {
+export function getUserProfileParam(user: { id: string; username?: string | null }): string {
   return user.username || user.id
 }
 
-export function getUserProfileUrl(user: { id: string; name?: string | null; username?: string | null }): string {
+export function getUserProfileUrl(user: { id: string; username?: string | null }): string {
   return `/profile/${getUserProfileParam(user)}`
 }

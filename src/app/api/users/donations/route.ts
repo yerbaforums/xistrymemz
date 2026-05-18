@@ -53,6 +53,7 @@ export async function POST(request: NextRequest) {
         currency,
         address,
         label: label || null,
+        isPublic: true,
         qrCodeUrl: qrCodeUrl || null,
         showQR: showQR !== undefined ? showQR : true,
         sortOrder: sortOrder || 0

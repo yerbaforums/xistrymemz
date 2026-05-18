@@ -8,6 +8,7 @@ interface UserResult {
   id: string
   name: string | null
   image: string | null
+  username: string | null
 }
 
 interface HashtagResult {
@@ -160,7 +161,7 @@ const MentionInput = forwardRef<MentionInputHandle, MentionInputProps>(function 
 
     const beforeAt = value.slice(0, atIdx)
     const afterAt = value.slice(pos)
-    const username = user.name?.toLowerCase().replace(/\s+/g, '') || 'user'
+    const username = user.username || user.name?.toLowerCase().replace(/\s+/g, '') || 'user'
     const newValue = `${beforeAt}@${username} ${afterAt}`
 
     onChange(newValue)

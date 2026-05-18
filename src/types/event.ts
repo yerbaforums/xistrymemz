@@ -8,6 +8,7 @@ export interface EventJoiner {
     image?: string
     role?: string
     userClass?: string | null
+    username?: string | null
   }
 }
 
@@ -47,6 +48,7 @@ export interface Event {
     email: string
     image: string
     role: string
+    username?: string | null
   }
   group?: { id: string; name: string }
   hashtags?: string[]
