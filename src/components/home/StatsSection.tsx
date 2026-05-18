@@ -16,8 +16,8 @@ const STAT_CARDS = [
   { key: 'events' as const, icon: '📅', label: 'Events', href: '/events' },
   { key: 'plans' as const, icon: '🚀', label: 'Projects', href: '/plans/public' },
   { key: 'requests' as const, icon: '📝', label: 'Requests', href: '/requests' },
-  { key: 'offers' as const, icon: '🤝', label: 'Offers', href: '/offers' },
-  { key: 'appointments' as const, icon: '🗓️', label: 'Appointments', href: '/appointments' },
+  { key: 'offers' as const, icon: '🤝', label: 'Offers', href: '/dashboard/offers' },
+  { key: 'appointments' as const, icon: '🗓️', label: 'Appointments', href: '/dashboard/appointments' },
 ]
 
 interface Props {
