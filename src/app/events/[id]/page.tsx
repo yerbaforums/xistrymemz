@@ -35,6 +35,7 @@ function EventDetailContent() {
   const [copiedDonation, setCopiedDonation] = useState(false)
   const [qrOpen, setQrOpen] = useState<string | null>(null)
   const [userDonationAddrs, setUserDonationAddrs] = useState<DonationAddr[]>([])
+  const [ownerDonationAddrs, setOwnerDonationAddrs] = useState<DonationAddr[]>([])
   const [isEditing, setIsEditing] = useState(false)
   const [editForm, setEditForm] = useState({
     title: '',
@@ -155,6 +156,12 @@ function EventDetailContent() {
       })
       .then(data => {
         setEvent(data)
+        if (data?.acceptsDonations && data?.userId) {
+          fetch(`/api/users/donations?userId=${data.userId}`)
+            .then(res => res.ok ? res.json() : null)
+            .then(d => { if (d?.addresses) setOwnerDonationAddrs(d.addresses) })
+            .catch(() => {})
+        }
         setLoading(false)
       })
       .catch(() => setLoading(false))
@@ -562,37 +569,51 @@ function EventDetailContent() {
             )}
           </div>
 
-          {event.acceptsDonations && event.donationAddress && (
+          {event.acceptsDonations && (
             <div className={styles.donationCard}>
               <h3>Donations Accepted</h3>
-              <div className={styles.donationCrypto}>
-                <img src={`/crypto-logos/${(event.donationCurrency || 'ETH').toLowerCase()}.png`} alt="" width={20} height={20} style={{ borderRadius: '50%' }} />
-                <span>{event.donationCurrency || 'ETH'}</span>
-              </div>
-              <div className={styles.donationAddress}>
-                <code>{event.donationAddress.length > 20 ? event.donationAddress.slice(0, 10) + '...' + event.donationAddress.slice(-8) : event.donationAddress}</code>
-                <div style={{ display: 'flex', gap: '6px' }}>
-                  <button
-                    className={styles.copyDonationBtn}
-                    onClick={() => {
-                      navigator.clipboard.writeText(event.donationAddress || '')
-                      setCopiedDonation(true)
-                      setTimeout(() => setCopiedDonation(false), 2000)
-                    }}
-                  >
-                    {copiedDonation ? 'Copied' : 'Copy'}
-                  </button>
-                  <button className={styles.copyDonationBtn} onClick={() => setQrOpen(event.donationAddress || '')}>
-                    QR
-                  </button>
+              {ownerDonationAddrs.length > 0 ? ownerDonationAddrs.map(da => {
+                const shortAddr = da.address.length > 20 ? da.address.slice(0, 10) + '...' + da.address.slice(-8) : da.address
+                const cryptoName = da.currency || 'ETH'
+                return (
+                  <div key={da.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid var(--border-color)' }}>
+                    <img src={`/crypto-logos/${cryptoName.toLowerCase()}.png`} alt="" width={20} height={20} style={{ borderRadius: '50%' }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{da.label || cryptoName}</div>
+                      <code style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', wordBreak: 'break-all' }}>{shortAddr}</code>
+                    </div>
+                    <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                      <button className={styles.copyDonationBtn} onClick={() => { navigator.clipboard.writeText(da.address); setCopiedDonation(true); setTimeout(() => setCopiedDonation(false), 2000) }}>
+                        {copiedDonation ? 'Copied' : 'Copy'}
+                      </button>
+                      <button className={styles.copyDonationBtn} onClick={() => setQrOpen(da.address)}>QR</button>
+                    </div>
+                  </div>
+                )
+              }) : event.donationAddress && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 0' }}>
+                  <img src={`/crypto-logos/${(event.donationCurrency || 'ETH').toLowerCase()}.png`} alt="" width={20} height={20} style={{ borderRadius: '50%' }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{event.donationCurrency || 'ETH'}</div>
+                    <code style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', wordBreak: 'break-all' }}>{event.donationAddress.length > 20 ? event.donationAddress.slice(0, 10) + '...' + event.donationAddress.slice(-8) : event.donationAddress}</code>
+                  </div>
+                  <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                    <button className={styles.copyDonationBtn} onClick={() => { navigator.clipboard.writeText(event.donationAddress || ''); setCopiedDonation(true); setTimeout(() => setCopiedDonation(false), 2000) }}>
+                      {copiedDonation ? 'Copied' : 'Copy'}
+                    </button>
+                    <button className={styles.copyDonationBtn} onClick={() => setQrOpen(event.donationAddress || '')}>QR</button>
+                  </div>
                 </div>
-              </div>
-              <p className={styles.donationHint}>Send {event.donationCurrency || 'ETH'} to this address to support</p>
+              )}
+              <p className={styles.donationHint}>Send crypto to any address above to support</p>
             </div>
           )}
-          {qrOpen && (
-            <QRCodeModal isOpen={true} onClose={() => setQrOpen(null)} currency={event.donationCurrency || 'ETH'} address={qrOpen} />
-          )}
+          {qrOpen && (() => {
+            const addr = ownerDonationAddrs.find(da => da.address === qrOpen)
+            return (
+              <QRCodeModal isOpen={true} onClose={() => setQrOpen(null)} currency={addr?.currency || event.donationCurrency || 'ETH'} address={qrOpen} />
+            )
+          })()}
 
           {isOwner && joinerCount > 0 && (
             <div className={styles.joinersCard}>

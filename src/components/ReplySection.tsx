@@ -117,7 +117,7 @@ export default function ReplySection({ postId, postAuthorId }: ReplySectionProps
                   postId={reply.id}
                   postAuthorId={reply.user.id}
                   initialLikes={reply.likes}
-                  showTip={false}
+                  showTip={true}
                 />
               </div>
             </div>
