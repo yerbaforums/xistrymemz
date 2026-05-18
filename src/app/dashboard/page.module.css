@@ -24,17 +24,17 @@
 
 .overviewStats {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-  gap: 10px;
-  margin-bottom: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
 .overviewStatCard {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 16px 8px;
+  gap: 6px;
+  padding: 20px 10px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -63,7 +63,7 @@
 }
 
 .overviewStatLabel {
-  font-size: 0.6rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
   text-align: center;
   white-space: nowrap;
@@ -88,9 +88,9 @@
 
 .actionButtons {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   overflow-x: auto;
-  padding-bottom: 6px;
+  padding-bottom: 8px;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
@@ -102,14 +102,15 @@
 .actionBtn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 16px;
+  gap: 8px;
+  padding: 12px 20px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   color: var(--text-primary);
   text-decoration: none;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
+  font-weight: 500;
   white-space: nowrap;
   flex-shrink: 0;
   transition: var(--transition);
@@ -118,6 +119,7 @@
 .actionBtn:hover {
   border-color: var(--accent-primary);
   background: var(--bg-tertiary);
+  transform: translateY(-2px);
 }
 
 .alertBtn {

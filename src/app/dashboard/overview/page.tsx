@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import FeedItem from '@/components/FeedItem'
+import DashboardTodo from '@/components/DashboardTodo'
 import styles from '../page.module.css'
 import overviewStyles from './OverviewCards.module.css'
 import TipCard from './TipCard'
@@ -12,20 +13,20 @@ import FeatureBanner from './FeatureBanner'
 
 export const dynamic = 'force-dynamic'
 
-function StatGauge({ value, max = 100, size = 48, color = 'var(--accent-primary)' }: { value: number; max?: number; size?: number; color?: string }) {
+function StatGauge({ value, max = 100, size = 60, color = 'var(--accent-primary)' }: { value: number; max?: number; size?: number; color?: string }) {
   const pct = Math.min(Math.max(value / max, 0), 1)
-  const r = 20
+  const r = 25
   const c = 2 * Math.PI * r
   const offset = c - pct * c
-  const fontSize = value >= 1000 ? 7 : value >= 100 ? 8 : 10
+  const fontSize = value >= 1000 ? 8 : value >= 100 ? 10 : 12
 
   return (
-    <svg viewBox="0 0 48 48" width={size} height={size}>
-      <circle cx="24" cy="24" r={r} fill="none" stroke="var(--bg-tertiary)" strokeWidth="3.5" />
-      <circle cx="24" cy="24" r={r} fill="none" stroke={color} strokeWidth="3.5"
+    <svg viewBox="0 0 60 60" width={size} height={size}>
+      <circle cx="30" cy="30" r={r} fill="none" stroke="var(--bg-tertiary)" strokeWidth="4" />
+      <circle cx="30" cy="30" r={r} fill="none" stroke={color} strokeWidth="4"
         strokeDasharray={c} strokeDashoffset={offset} strokeLinecap="round"
-        transform="rotate(-90 24 24)" />
-      <text x="24" y="24" textAnchor="middle" dominantBaseline="central"
+        transform="rotate(-90 30 30)" />
+      <text x="30" y="30" textAnchor="middle" dominantBaseline="central"
         fill="var(--text-primary)" fontSize={fontSize} fontWeight="700">{value}</text>
     </svg>
   )
@@ -235,14 +236,14 @@ export default async function DashboardOverview() {
           stat.href ? (
             <Link key={stat.label} href={stat.href} className={styles.overviewStatCard}>
               <div className={styles.statGauge}>
-                <StatGauge value={stat.value} max={stat.max} color={stat.color} size={48} />
+                <StatGauge value={stat.value} max={stat.max} color={stat.color} size={60} />
               </div>
               <span className={styles.overviewStatLabel}>{stat.label}</span>
             </Link>
           ) : (
             <div key={stat.label} className={styles.overviewStatCard} style={{ cursor: 'default' }}>
               <div className={styles.statGauge}>
-                <StatGauge value={stat.value} max={stat.max} color={stat.color} size={48} />
+                <StatGauge value={stat.value} max={stat.max} color={stat.color} size={60} />
               </div>
               <span className={styles.overviewStatLabel}>{stat.label}</span>
             </div>
@@ -260,6 +261,8 @@ export default async function DashboardOverview() {
           ))}
         </div>
       </div>
+
+      <DashboardTodo />
 
       <div className={styles.activityGrid}>
         <div className={styles.activitySection}>
