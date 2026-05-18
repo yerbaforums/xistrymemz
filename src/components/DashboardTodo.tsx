@@ -128,21 +128,17 @@ export default function DashboardTodo() {
           No tasks yet. Add something above!
         </p>
       ) : (
-        <div style={{
-          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6,
-          maxHeight: 320, overflowY: 'auto',
-        }}>
+        <div style={{ maxHeight: 320, overflowY: 'auto' }}>
           {todos.map(t => (
             <div
               key={t.id}
               style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '6px 8px', borderRadius: 6,
-                background: t.done ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.6)',
-                transition: 'all 0.15s',
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '6px 4px',
+                borderBottom: '1px solid rgba(0,0,0,0.06)',
                 textDecoration: t.done ? 'line-through' : 'none',
                 color: t.done ? '#8d7b6a' : '#4e342e',
-                fontSize: '0.82rem',
+                fontSize: '0.85rem',
               }}
             >
               <input
@@ -158,6 +154,7 @@ export default function DashboardTodo() {
                 style={{
                   background: 'none', border: 'none', cursor: 'pointer',
                   fontSize: '0.8rem', color: '#bcaaa4', padding: 2, lineHeight: 1, flexShrink: 0,
+                  opacity: 0.5,
                 }}
                 title="Remove"
               >

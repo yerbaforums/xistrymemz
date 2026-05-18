@@ -87,38 +87,25 @@
 }
 
 .actionButtons {
-  display: flex;
-  gap: 14px;
-  overflow-x: auto;
-  padding-bottom: 12px;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border-color) transparent;
-}
-
-.actionButtons::-webkit-scrollbar {
-  height: 4px;
-}
-
-.actionButtons::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 4px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
 }
 
 .actionBtn {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 14px 24px;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 20px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   color: var(--text-primary);
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 500;
   white-space: nowrap;
-  flex-shrink: 0;
   transition: var(--transition);
 }
 
