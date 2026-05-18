@@ -63,6 +63,7 @@ export default function NewProductPage() {
     rentalAvailable: true,
     createGroup: false,
     tagsInput: '',
+    shareToFeed: false,
   })
 
   useEffect(() => {
@@ -143,6 +144,20 @@ export default function NewProductPage() {
         }),
       })
       if (res.ok) {
+        const product = await res.json()
+        if (form.shareToFeed) {
+          await fetch('/api/posts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              content: `Just listed: ${form.title}`,
+              context: session?.user && (session.user as any).shopSlug ? 'SHOP' : 'PROFILE',
+              referenceType: 'PRODUCT',
+              referenceId: product.id,
+              referenceTitle: form.title
+            })
+          }).catch(() => {})
+        }
         success('Product listed successfully!')
         router.push('/products')
       } else {
@@ -565,6 +580,11 @@ export default function NewProductPage() {
                 )}
               </div>
             </div>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', background: 'var(--bg-tertiary)', borderRadius: 8, cursor: 'pointer', marginTop: 12 }}>
+              <input type="checkbox" checked={form.shareToFeed} onChange={e => setForm({ ...form, shareToFeed: e.target.checked })} />
+              <span style={{ fontSize: '0.9rem' }}>Also share to my feed</span>
+            </label>
           </div>
         )}
       </FormWizard>
