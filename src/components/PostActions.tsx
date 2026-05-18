@@ -95,15 +95,10 @@ export default function PostActions({ postId, postAuthorId, initialLikes, liked:
     if (!session || reposting) return
     setReposting(true)
     try {
-      const res = await fetch('/api/posts', {
+      const res = await fetch('/api/posts/repost', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: '',
-          context: 'PROFILE',
-          referenceType: 'POST',
-          referenceId: postId,
-        })
+        body: JSON.stringify({ postId })
       })
       if (res.ok) {
         success('Post shared to your profile!')

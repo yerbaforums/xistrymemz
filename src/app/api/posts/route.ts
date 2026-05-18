@@ -91,6 +91,10 @@ export async function POST(request: NextRequest) {
 
     const { content, imageUrl, images, targetUserId, context, parentId, referenceType, referenceId, referenceTitle } = validation.data
 
+    if (!content?.trim() && !referenceType && !parentId) {
+      return NextResponse.json({ error: 'Content is required' }, { status: 400 })
+    }
+
     const resolvedImageUrl = imageUrl || (images && images.length > 0 ? images[0] : null)
 
     const isWallPost = targetUserId && targetUserId !== session.user.id

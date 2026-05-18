@@ -24,17 +24,17 @@
 
 .overviewStats {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 12px;
-  margin-bottom: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
 }
 
 .overviewStatCard {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 20px 10px;
+  gap: 8px;
+  padding: 28px 14px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -44,7 +44,7 @@
 
 .overviewStatCard:hover {
   border-color: var(--accent-primary);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   background: var(--bg-tertiary);
 }
 
@@ -63,7 +63,7 @@
 }
 
 .overviewStatLabel {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
   text-align: center;
   white-space: nowrap;
@@ -88,28 +88,34 @@
 
 .actionButtons {
   display: flex;
-  gap: 10px;
+  gap: 14px;
   overflow-x: auto;
-  padding-bottom: 8px;
+  padding-bottom: 12px;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
 }
 
 .actionButtons::-webkit-scrollbar {
-  display: none;
+  height: 4px;
+}
+
+.actionButtons::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
 }
 
 .actionBtn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
+  gap: 10px;
+  padding: 14px 24px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   color: var(--text-primary);
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 500;
   white-space: nowrap;
   flex-shrink: 0;

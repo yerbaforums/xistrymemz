@@ -179,11 +179,11 @@ export const counterOfferSchema = z.object({
 })
 
 export const postSchema = z.object({
-  content: z.string().min(1, 'Content is required').max(2000),
+  content: z.string().max(2000).default(''),
   imageUrl: z.string().max(500).optional().nullable(),
   images: z.array(z.string()).optional().nullable(),
   targetUserId: z.string().min(1).optional().nullable(),
-  context: z.enum(['PROFILE', 'SHOP', 'SCHOOL', 'WALL']).optional(),
+  context: z.enum(['PROFILE', 'SHOP', 'SCHOOL', 'WALL', 'REPOST']).optional(),
   parentId: z.string().min(1).optional().nullable(),
   referenceType: z.enum(['PRODUCT', 'EVENT', 'REQUEST', 'PLAN', 'POST']).optional().nullable(),
   referenceId: z.string().min(1).optional().nullable(),

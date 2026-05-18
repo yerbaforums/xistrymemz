@@ -66,9 +66,9 @@ export default function DashboardTodo() {
     <div style={{
       background: 'linear-gradient(135deg, #fff9c4 0%, #fff59d 100%)',
       borderRadius: 12,
-      padding: 20,
+      padding: 24,
       boxShadow: '4px 6px 16px rgba(0,0,0,0.1), -2px -2px 8px rgba(255,255,255,0.5) inset',
-      transform: 'rotate(-0.5deg)',
+      transform: 'rotate(-0.3deg)',
       position: 'relative',
       marginTop: 12,
     }}>
@@ -80,21 +80,21 @@ export default function DashboardTodo() {
       }} />
 
       <h4 style={{
-        margin: '0 0 12px', fontSize: '0.9rem', color: '#5d4037',
+        margin: '0 0 12px', fontSize: '1rem', color: '#5d4037',
         fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: 8,
       }}>
         📝 Quick Tasks
         {remaining > 0 && (
           <span style={{
             background: '#5d4037', color: '#fff', borderRadius: 10,
-            padding: '1px 8px', fontSize: '0.7rem', fontWeight: 600,
+            padding: '1px 10px', fontSize: '0.75rem', fontWeight: 600,
           }}>
             {remaining}
           </span>
         )}
       </h4>
 
-      <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
         <input
           ref={inputRef}
           type="text"
@@ -103,8 +103,8 @@ export default function DashboardTodo() {
           onKeyDown={handleKeyDown}
           placeholder="Add a quick task..."
           style={{
-            flex: 1, padding: '8px 10px', borderRadius: 8, border: '1px solid #e0d5a0',
-            background: 'rgba(255,255,255,0.8)', fontSize: '0.8rem', outline: 'none',
+            flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid #e0d5a0',
+            background: 'rgba(255,255,255,0.85)', fontSize: '0.85rem', outline: 'none',
             color: '#333', fontFamily: 'inherit',
           }}
         />
@@ -113,10 +113,10 @@ export default function DashboardTodo() {
           onClick={add}
           disabled={!text.trim()}
           style={{
-            padding: '8px 14px', borderRadius: 8, border: 'none',
+            padding: '10px 18px', borderRadius: 8, border: 'none',
             background: text.trim() ? '#5d4037' : '#ccc',
             color: '#fff', cursor: text.trim() ? 'pointer' : 'not-allowed',
-            fontSize: '0.8rem', fontWeight: 600,
+            fontSize: '0.85rem', fontWeight: 600,
           }}
         >
           Add
@@ -124,18 +124,21 @@ export default function DashboardTodo() {
       </div>
 
       {todos.length === 0 ? (
-        <p style={{ color: '#8d7b6a', fontSize: '0.78rem', margin: 0, fontStyle: 'italic' }}>
+        <p style={{ color: '#8d7b6a', fontSize: '0.8rem', margin: 0, fontStyle: 'italic' }}>
           No tasks yet. Add something above!
         </p>
       ) : (
-        <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div style={{
+          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6,
+          maxHeight: 320, overflowY: 'auto',
+        }}>
           {todos.map(t => (
-            <li
+            <div
               key={t.id}
               style={{
-                display: 'flex', alignItems: 'center', gap: 8,
+                display: 'flex', alignItems: 'center', gap: 6,
                 padding: '6px 8px', borderRadius: 6,
-                background: t.done ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.6)',
+                background: t.done ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.6)',
                 transition: 'all 0.15s',
                 textDecoration: t.done ? 'line-through' : 'none',
                 color: t.done ? '#8d7b6a' : '#4e342e',
@@ -146,23 +149,23 @@ export default function DashboardTodo() {
                 type="checkbox"
                 checked={t.done}
                 onChange={() => toggle(t.id)}
-                style={{ cursor: 'pointer', accentColor: '#5d4037' }}
+                style={{ cursor: 'pointer', accentColor: '#5d4037', flexShrink: 0 }}
               />
-              <span style={{ flex: 1, wordBreak: 'break-word' }}>{t.text}</span>
+              <span style={{ flex: 1, wordBreak: 'break-word', minWidth: 0 }}>{t.text}</span>
               <button
                 type="button"
                 onClick={() => remove(t.id)}
                 style={{
                   background: 'none', border: 'none', cursor: 'pointer',
-                  fontSize: '0.8rem', color: '#bcaaa4', padding: 2, lineHeight: 1,
+                  fontSize: '0.8rem', color: '#bcaaa4', padding: 2, lineHeight: 1, flexShrink: 0,
                 }}
                 title="Remove"
               >
                 ✕
               </button>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   )

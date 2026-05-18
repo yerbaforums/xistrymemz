@@ -145,12 +145,12 @@ export default function RentalsPage() {
     } catch { error('Failed to delete') }
   }
 
-  const handleToggle = async (id: string, field: string, value: boolean) => {
+  const handleTogglePublish = async (id: string, current: boolean) => {
     const res = await fetch(`/api/products/${id}`, {
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ [field]: value })
+      body: JSON.stringify({ published: !current })
     })
-    if (res.ok) { fetchRentals(); success('Updated') }
+    if (res.ok) { fetchRentals(); success(!current ? 'Published!' : 'Hidden') }
     else error('Failed')
   }
 
@@ -163,20 +163,31 @@ export default function RentalsPage() {
     return true
   })
 
-  const formatPrice = (val: number | null) => val ? `$${val}` : '—'
-
   return (
     <div className={styles.page}>
       <div className={styles.header}>
         <div>
-          <h1>🏠 Rentals</h1>
+          <h1>🏠 My Rentals</h1>
           <p className={styles.welcome}>Manage your rental listings</p>
         </div>
-        <button onClick={() => { resetForm(); setShowForm(true) }} className="btn-primary">➕ Add Rental</button>
+        <div className={styles.headerActions}>
+          <Link href="/products?type=rental" className="btn-secondary">
+            🌐 View Public
+          </Link>
+          <button onClick={() => { resetForm(); setShowForm(true) }} className="btn-primary">
+            ➕ Add Rental
+          </button>
+        </div>
       </div>
 
       <div className={styles.filters}>
-        <input type="text" placeholder="Search rentals..." value={search} onChange={e => setSearch(e.target.value)} className={styles.searchInput} />
+        <input
+          type="text"
+          placeholder="Search rentals..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className={styles.searchInput}
+        />
         <select value={filter} onChange={e => setFilter(e.target.value as typeof filter)}>
           <option value="all">All</option>
           <option value="published">Published</option>
@@ -197,41 +208,37 @@ export default function RentalsPage() {
           <button onClick={() => { resetForm(); setShowForm(true) }} className="btn-primary">➕ Add Your First Rental</button>
         </div>
       ) : (
-        <div className={styles.grid}>
+        <div className={styles.list}>
           {filtered.map(r => (
-            <div key={r.id} className={styles.card}>
-              <div className={styles.cardImage}>
-                {r.imageUrl ? <img src={r.imageUrl} alt={r.title} /> : <div className={styles.imgPlaceholder}>🏠</div>}
+            <div key={r.id} className={styles.item}>
+              <div className={styles.itemImage}>
+                {r.imageUrl ? <img src={r.imageUrl} alt={r.title} /> : <div className={styles.imagePlaceholder}>🏠</div>}
               </div>
-              <div className={styles.cardBody}>
-                <div className={styles.cardHeader}>
+              <div className={styles.itemMain}>
+                <div className={styles.itemHeader}>
                   <h3>{r.title}</h3>
                   <span className={`badge ${r.published ? 'badge-published' : 'badge-draft'}`}>
-                    {r.published ? 'Published' : 'Draft'}
+                    {r.published ? '✓ Published' : 'Draft'}
                   </span>
                 </div>
-                <div className={styles.pricing}>
+                <p className={styles.itemDesc}>{r.description?.slice(0, 80) || 'No description'}</p>
+                <div className={styles.itemMeta}>
                   {r.rentalDaily && <span className={styles.priceTag}>${r.rentalDaily}/day</span>}
                   {r.rentalWeekly && <span className={styles.priceTag}>${r.rentalWeekly}/wk</span>}
                   {r.rentalMonthly && <span className={styles.priceTag}>${r.rentalMonthly}/mo</span>}
                   {r.rentalDeposit && <span className={styles.deposit}>Deposit: ${r.rentalDeposit}</span>}
-                </div>
-                <div className={styles.meta}>
                   <span>{r.isGlobal ? '🌍 Global' : `📍 ${r.location || 'Local'}`}</span>
                   <span>Min {r.rentalMinDays} day{r.rentalMinDays > 1 ? 's' : ''}</span>
-                  {r.rentalMaxDays && <span>Max {r.rentalMaxDays} days</span>}
                   <span className={r.rentalAvailable ? styles.available : styles.unavailable}>
                     {r.rentalAvailable ? '✓ Available' : '✕ Unavailable'}
                   </span>
                 </div>
               </div>
-              <div className={styles.actions}>
-                <button onClick={() => startEdit(r)} className={styles.editBtn}>✏️</button>
-                <button onClick={() => handleToggle(r.id, 'rentalAvailable', !r.rentalAvailable)} className={styles.toggleBtn}>
-                  {r.rentalAvailable ? '🔴' : '🟢'}
-                </button>
-                <button onClick={() => handleToggle(r.id, 'published', !r.published)} className={styles.toggleBtn}>
-                  {r.published ? '👁️' : '✅'}
+              <div className={styles.itemActions}>
+                <Link href={`/products/${r.id}`} className={styles.viewBtn}>👁️ View</Link>
+                <button onClick={() => startEdit(r)} className={styles.editBtn}>✏️ Edit</button>
+                <button onClick={() => handleTogglePublish(r.id, r.published)} className={r.published ? styles.hideBtn : styles.publishBtn}>
+                  {r.published ? '👁️ Hide' : '✅ Publish'}
                 </button>
                 <button onClick={() => handleDelete(r.id, r.title)} className={styles.deleteBtn}>🗑️</button>
               </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useToast } from '@/context/ToastContext'
 import PostActions from './PostActions'
@@ -16,9 +16,10 @@ interface Reply {
 interface ReplySectionProps {
   postId: string
   postAuthorId: string
+  expandReply?: boolean
 }
 
-export default function ReplySection({ postId, postAuthorId }: ReplySectionProps) {
+export default function ReplySection({ postId, postAuthorId, expandReply }: ReplySectionProps) {
   const { data: session } = useSession()
   const { success, error: toastError } = useToast()
   const [replies, setReplies] = useState<Reply[]>([])
@@ -27,6 +28,14 @@ export default function ReplySection({ postId, postAuthorId }: ReplySectionProps
   const [replyContent, setReplyContent] = useState('')
   const [posting, setPosting] = useState(false)
   const [loading, setLoading] = useState(false)
+  const replyInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (expandReply) {
+      setExpanded(true)
+      setTimeout(() => replyInputRef.current?.focus(), 100)
+    }
+  }, [expandReply])
 
   const fetchReplies = async () => {
     setLoading(true)
@@ -126,6 +135,7 @@ export default function ReplySection({ postId, postAuthorId }: ReplySectionProps
           {session && (
             <form onSubmit={handleReply} style={{ display: 'flex', gap: 8, marginTop: 8 }}>
               <input
+                ref={replyInputRef}
                 type="text"
                 value={replyContent}
                 onChange={e => setReplyContent(e.target.value)}
