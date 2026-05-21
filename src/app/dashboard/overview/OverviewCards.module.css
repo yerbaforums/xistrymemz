@@ -96,7 +96,7 @@
 }
 
 .featureBanner {
-  background: linear-gradient(135deg, var(--accent), var(--accent-secondary, var(--accent)));
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary, var(--accent-primary)));
   border-radius: 12px;
   padding: 16px 20px;
   display: flex;
