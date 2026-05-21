@@ -17,6 +17,8 @@ interface AppointmentItem {
   duration: number | null
   location: string | null
   meetingLink: string | null
+  appointmentNotes?: string | null
+  formResponses?: Record<string, string> | null
   product: { id: string; title: string; imageUrl: string | null } | null
   createdAt: string
   buyer: { id: string; name: string | null; image: string | null; username: string | null }
@@ -459,6 +461,16 @@ export default function DashboardAppointments() {
                       <div className={styles.eventDetailRow}><span className={styles.eventLabel}>Buyer</span><span>{a.buyer.name || 'Anonymous'}</span></div>
                       <div className={styles.eventDetailRow}><span className={styles.eventLabel}>Seller</span><span>{a.seller.name || 'Anonymous'}</span></div>
                       {a.description && <div className={styles.eventDetailRow}><span className={styles.eventLabel}>Notes</span><p>{a.description}</p></div>}
+                      {a.formResponses && Object.keys(a.formResponses).length > 0 && (
+                        <div className={styles.eventDetailRow}>
+                          <span className={styles.eventLabel}>Form Responses</span>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                            {Object.entries(a.formResponses).map(([label, value]) => (
+                              <div key={label}><strong>{label}:</strong> {value}</div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <div className={styles.eventModalActions}>
                       {a._role === 'seller' && a.status === 'PENDING' && (

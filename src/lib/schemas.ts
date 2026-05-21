@@ -62,7 +62,12 @@ export const productSchema = z.object({
   appointmentDuration: z.coerce.number().int().min(5).optional().nullable(),
   appointmentLeadTime: z.coerce.number().int().min(0).optional().nullable(),
   appointmentLocation: z.string().optional().nullable(),
-  appointmentMeetingLink: z.string().optional().nullable()
+  appointmentMeetingLink: z.string().optional().nullable(),
+  appointmentFormFields: z.array(z.object({
+    label: z.string().min(1),
+    type: z.enum(['text', 'textarea']),
+    required: z.boolean()
+  })).optional().nullable()
 })
 
 export const groupSchema = z.object({

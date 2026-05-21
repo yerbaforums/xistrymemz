@@ -147,7 +147,7 @@ export async function POST(request: Request) {
       acceptsDonations, donationAddress, donationCurrency,
       sellerPayoutAddress, sellerCryptoCurrency,
       createGroup, hashtags,
-      acceptsAppointments, appointmentDuration, appointmentLeadTime, appointmentLocation, appointmentMeetingLink
+      acceptsAppointments, appointmentDuration, appointmentLeadTime, appointmentLocation, appointmentMeetingLink, appointmentFormFields
     } = validation.data
 
     const paymentMethodsString = paymentMethods ? 
@@ -190,6 +190,7 @@ export async function POST(request: Request) {
         appointmentLeadTime: appointmentLeadTime || null,
         appointmentLocation: appointmentLocation || null,
         appointmentMeetingLink: appointmentMeetingLink || null,
+        appointmentFormFields: appointmentFormFields || undefined,
         userId: session.user.id
       }
     })

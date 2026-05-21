@@ -50,7 +50,7 @@ export async function PUT(
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { title, description, price, type, category, condition, location, locationDetails, imageUrl, isGlobal, published, paymentMethods, paymentType, acceptsRequests, acceptsOffers, requestPrice, acceptsDonations, donationAddress, donationCurrency, sellerPayoutAddress, sellerCryptoCurrency, rentalDaily, rentalWeekly, rentalMonthly, rentalDeposit, rentalMinDays, rentalMaxDays, rentalAvailable, hashtags, acceptsAppointments, appointmentDuration, appointmentLeadTime, appointmentLocation, appointmentMeetingLink } = body
+    const { title, description, price, type, category, condition, location, locationDetails, imageUrl, isGlobal, published, paymentMethods, paymentType, acceptsRequests, acceptsOffers, requestPrice, acceptsDonations, donationAddress, donationCurrency, sellerPayoutAddress, sellerCryptoCurrency, rentalDaily, rentalWeekly, rentalMonthly, rentalDeposit, rentalMinDays, rentalMaxDays, rentalAvailable, hashtags, acceptsAppointments, appointmentDuration, appointmentLeadTime, appointmentLocation, appointmentMeetingLink, appointmentFormFields } = body
 
     const existing = await prisma.product.findFirst({
       where: { id, userId: session.user.id }
@@ -116,7 +116,8 @@ export async function PUT(
         appointmentDuration: appointmentDuration != null ? parseInt(appointmentDuration) : existing.appointmentDuration,
         appointmentLeadTime: appointmentLeadTime != null ? parseInt(appointmentLeadTime) : existing.appointmentLeadTime,
         appointmentLocation: appointmentLocation ?? existing.appointmentLocation,
-        appointmentMeetingLink: appointmentMeetingLink ?? existing.appointmentMeetingLink
+        appointmentMeetingLink: appointmentMeetingLink ?? existing.appointmentMeetingLink,
+        appointmentFormFields: appointmentFormFields ?? existing.appointmentFormFields
       }
     })
 

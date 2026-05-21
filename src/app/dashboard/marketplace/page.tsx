@@ -37,6 +37,7 @@ interface Product {
   appointmentLeadTime?: number | null
   appointmentLocation?: string | null
   appointmentMeetingLink?: string | null
+  appointmentFormFields?: { label: string; type: string; required: boolean }[] | null
 }
 
 interface ShopSettings {
@@ -87,6 +88,7 @@ function MarketplaceContent() {
     appointmentLeadTime: '24',
     appointmentLocation: '',
     appointmentMeetingLink: '',
+    appointmentFormFields: [] as { label: string; type: string; required: boolean }[],
   })
 
   const [shopForm, setShopForm] = useState({
@@ -137,6 +139,7 @@ function MarketplaceContent() {
           appointmentLeadTime: product.appointmentLeadTime?.toString() || '24',
           appointmentLocation: product.appointmentLocation || '',
           appointmentMeetingLink: product.appointmentMeetingLink || '',
+          appointmentFormFields: (product.appointmentFormFields as { label: string; type: string; required: boolean }[]) || [],
         })
         setShowProductForm(true)
       }
@@ -200,6 +203,7 @@ function MarketplaceContent() {
       appointmentLeadTime: '24',
       appointmentLocation: '',
       appointmentMeetingLink: '',
+      appointmentFormFields: [] as { label: string; type: string; required: boolean }[],
     })
     setEditingProduct(null)
     setShowProductForm(false)
@@ -214,7 +218,8 @@ function MarketplaceContent() {
       hashtags: productForm.hashtags ? productForm.hashtags.split(',').map(t => t.trim()).filter(Boolean) : [],
       paymentMethods: productForm.paymentMethods.join(','),
       price: productForm.price ? parseFloat(productForm.price) : null,
-      imageUrl: productForm.imageUrls?.[0] || null
+      imageUrl: productForm.imageUrls?.[0] || null,
+      appointmentFormFields: productForm.acceptsAppointments ? productForm.appointmentFormFields : [],
     }
 
     try {
@@ -299,6 +304,7 @@ function MarketplaceContent() {
       appointmentLeadTime: product.appointmentLeadTime?.toString() || '24',
       appointmentLocation: product.appointmentLocation || '',
       appointmentMeetingLink: product.appointmentMeetingLink || '',
+      appointmentFormFields: (product.appointmentFormFields as { label: string; type: string; required: boolean }[]) || [],
     })
     setShowProductForm(true)
   }
@@ -610,6 +616,35 @@ function MarketplaceContent() {
                   <div className="form-group">
                     <label>Meeting Link</label>
                     <input type="url" value={productForm.appointmentMeetingLink} onChange={e => setProductForm({...productForm, appointmentMeetingLink: e.target.value})} placeholder="https://meet.google.com/..." />
+                  </div>
+                  <div className="form-group">
+                    <label>Custom Form Fields (buyers fill when booking)</label>
+                    {productForm.appointmentFormFields.map((field, i) => (
+                      <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+                        <input type="text" value={field.label} onChange={e => {
+                          const fields = [...productForm.appointmentFormFields]
+                          fields[i] = { ...fields[i], label: e.target.value }
+                          setProductForm({...productForm, appointmentFormFields: fields})
+                        }} placeholder="Question label" style={{ flex: 1 }} />
+                        <select value={field.type} onChange={e => {
+                          const fields = [...productForm.appointmentFormFields]
+                          fields[i] = { ...fields[i], type: e.target.value }
+                          setProductForm({...productForm, appointmentFormFields: fields})
+                        }}>
+                          <option value="text">Text</option>
+                          <option value="textarea">Textarea</option>
+                        </select>
+                        <label style={{ whiteSpace: 'nowrap', fontSize: 13 }}>
+                          <input type="checkbox" checked={field.required} onChange={e => {
+                            const fields = [...productForm.appointmentFormFields]
+                            fields[i] = { ...fields[i], required: e.target.checked }
+                            setProductForm({...productForm, appointmentFormFields: fields})
+                          }} /> Required
+                        </label>
+                        <button type="button" onClick={() => setProductForm({...productForm, appointmentFormFields: productForm.appointmentFormFields.filter((_, j) => j !== i)})} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#e74c3c', fontSize: 18 }} title="Remove field">×</button>
+                      </div>
+                    ))}
+                    <button type="button" onClick={() => setProductForm({...productForm, appointmentFormFields: [...productForm.appointmentFormFields, { label: '', type: 'text', required: false }]})} className="btn-ghost" style={{ fontSize: 13 }}>+ Add Field</button>
                   </div>
                 </div>
               )}

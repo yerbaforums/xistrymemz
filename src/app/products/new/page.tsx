@@ -69,6 +69,7 @@ export default function NewProductPage() {
     appointmentLeadTime: '24',
     appointmentLocation: '',
     appointmentMeetingLink: '',
+    appointmentFormFields: [] as { label: string; type: string; required: boolean }[],
   })
 
   useEffect(() => {
@@ -151,6 +152,7 @@ export default function NewProductPage() {
           appointmentLeadTime: form.acceptsAppointments ? parseInt(form.appointmentLeadTime) : null,
           appointmentLocation: form.acceptsAppointments ? (form.appointmentLocation || null) : null,
           appointmentMeetingLink: form.acceptsAppointments ? (form.appointmentMeetingLink || null) : null,
+          appointmentFormFields: form.acceptsAppointments ? form.appointmentFormFields : [],
         }),
       })
       if (res.ok) {
@@ -510,6 +512,35 @@ export default function NewProductPage() {
                     <div className="form-group">
                       <label>Meeting Link (optional)</label>
                       <input type="url" value={form.appointmentMeetingLink} onChange={e => update('appointmentMeetingLink', e.target.value)} placeholder="https://meet.google.com/..." />
+                    </div>
+                    <div className="form-group">
+                      <label>Custom Form Fields (buyers answer when booking)</label>
+                      {form.appointmentFormFields.map((field, i) => (
+                        <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+                          <input type="text" value={field.label} onChange={e => {
+                            const fields = [...form.appointmentFormFields]
+                            fields[i] = { ...fields[i], label: e.target.value }
+                            setForm({ ...form, appointmentFormFields: fields })
+                          }} placeholder="Question label" style={{ flex: 1 }} />
+                          <select value={field.type} onChange={e => {
+                            const fields = [...form.appointmentFormFields]
+                            fields[i] = { ...fields[i], type: e.target.value }
+                            setForm({ ...form, appointmentFormFields: fields })
+                          }}>
+                            <option value="text">Text</option>
+                            <option value="textarea">Textarea</option>
+                          </select>
+                          <label style={{ whiteSpace: 'nowrap', fontSize: 13, display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <input type="checkbox" checked={field.required} onChange={e => {
+                              const fields = [...form.appointmentFormFields]
+                              fields[i] = { ...fields[i], required: e.target.checked }
+                              setForm({ ...form, appointmentFormFields: fields })
+                            }} /> Required
+                          </label>
+                          <button type="button" onClick={() => setForm({ ...form, appointmentFormFields: form.appointmentFormFields.filter((_, j) => j !== i) })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#e74c3c', fontSize: 18 }} title="Remove field">×</button>
+                        </div>
+                      ))}
+                      <button type="button" onClick={() => setForm({ ...form, appointmentFormFields: [...form.appointmentFormFields, { label: '', type: 'text', required: false }] })} className="btn-ghost" style={{ fontSize: 13 }}>+ Add Field</button>
                     </div>
                   </div>
                 )}

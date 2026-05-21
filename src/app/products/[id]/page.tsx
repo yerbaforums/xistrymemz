@@ -66,8 +66,10 @@ interface Product {
   rentalAvailable: boolean
   acceptsAppointments: boolean
   appointmentDuration?: number | null
+  appointmentLeadTime?: number | null
   appointmentLocation?: string | null
   appointmentMeetingLink?: string | null
+  appointmentFormFields?: { label: string; type: string; required: boolean }[] | null
   hashtags?: { id: string; tag?: string; hashtag?: { id: string; tag: string } }[]
 }
 
@@ -1318,8 +1320,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         productId={product.id}
         productTitle={product.title}
         defaultDuration={product.appointmentDuration}
+        defaultLeadTime={product.appointmentLeadTime}
         defaultLocation={product.appointmentLocation}
         defaultMeetingLink={product.appointmentMeetingLink}
+        formFields={product.appointmentFormFields as { label: string; type: 'text' | 'textarea'; required: boolean }[] | null}
       />
     </div>
   )

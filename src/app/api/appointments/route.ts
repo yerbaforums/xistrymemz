@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { title, description, startTime, endTime, duration, location, meetingLink, sellerId, productId } = body
+    const { title, description, startTime, endTime, duration, location, meetingLink, sellerId, productId, formResponses } = body
 
     if (!title || !startTime || !endTime || !sellerId) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -67,7 +67,8 @@ export async function POST(request: NextRequest) {
         meetingLink: meetingLink || null,
         buyerId: session.user.id,
         sellerId,
-        productId: productId || null
+        productId: productId || null,
+        formResponses: formResponses || undefined
       },
       include: {
         buyer: { select: { id: true, name: true, image: true, username: true } },

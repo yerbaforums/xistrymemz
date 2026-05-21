@@ -502,6 +502,7 @@ model Product {
   appointmentLeadTime   Int?     // hours notice
   appointmentLocation   String?
   appointmentMeetingLink String?
+  appointmentFormFields Json?    // [{ label: string, type: "text"|"textarea", required: boolean }]
 
   sellerPayoutAddress String?  // Crypto address for direct payouts
   sellerCryptoCurrency String? // BTC, ETH, USDT, USDC, XMR, XTM, ARRR, DERO, ZANO, OTHER
@@ -1452,6 +1453,7 @@ model Appointment {
   duration     Int?     // minutes
   location     String?
   meetingLink  String?
+  formResponses Json?    // [{ label: string, value: string }]
 
   buyerId      String
   buyer        User     @relation("BuyerAppointments", fields: [buyerId], references: [id], onDelete: Cascade)
