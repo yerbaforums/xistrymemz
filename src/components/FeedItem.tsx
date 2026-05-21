@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import HashtagText from '@/components/HashtagText'
-import LinkPreview from '@/components/LinkPreview'
+import LinkPreview, { URL_REGEX } from '@/components/LinkPreview'
 import PostActions from '@/components/PostActions'
 import SharedItemCard from '@/components/SharedItemCard'
 import ReplySection from '@/components/ReplySection'
@@ -57,6 +57,7 @@ function getImages(images: string | null): string[] {
 export default function FeedItem({ post }: { post: FeedPost }) {
   const [showReplies, setShowReplies] = useState(false)
   const imageList = getImages(post.images)
+  const displayContent = post.content.replace(URL_REGEX, '').trim()
   const contextKey = post.context || post.sourceType || 'PROFILE'
   const ctxConfig = CONTEXT_CONFIG[contextKey] || CONTEXT_CONFIG.PROFILE
   const borderStyle = contextKey === 'GROUPPOST' || contextKey === 'FORUMPOST'
@@ -103,7 +104,7 @@ export default function FeedItem({ post }: { post: FeedPost }) {
       <div
         style={{ lineHeight: 1.6, marginBottom: imageList.length > 0 ? '12px' : 0 }}
       >
-        <HashtagText text={post.content} />
+        <HashtagText text={displayContent} />
       </div>
 
       <LinkPreview text={post.content} />

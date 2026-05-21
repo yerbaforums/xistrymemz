@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
+import { useSiteSettings } from '@/hooks/useSiteSettings'
 import ImageUploader from '@/components/ImageUploader'
 import styles from './marketplace.module.css'
 
@@ -38,6 +39,11 @@ interface Product {
   appointmentLocation?: string | null
   appointmentMeetingLink?: string | null
   appointmentFormFields?: { label: string; type: string; required: boolean }[] | null
+  acceptsDonations?: boolean
+  donationAddress?: string | null
+  donationCurrency?: string | null
+  sellerPayoutAddress?: string | null
+  sellerCryptoCurrency?: string | null
 }
 
 interface ShopSettings {
@@ -65,6 +71,8 @@ function MarketplaceContent() {
   const [showProductForm, setShowProductForm] = useState(false)
   const [showShopModal, setShowShopModal] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+  const [userDonationAddrs, setUserDonationAddrs] = useState<{ id: string; currency: string; address: string; label: string | null }[]>([])
+  const { settings } = useSiteSettings()
 
   const [productForm, setProductForm] = useState({
     title: '',
@@ -89,6 +97,11 @@ function MarketplaceContent() {
     appointmentLocation: '',
     appointmentMeetingLink: '',
     appointmentFormFields: [] as { label: string; type: string; required: boolean }[],
+    acceptsDonations: false,
+    donationAddress: '',
+    donationCurrency: 'ETH',
+    sellerPayoutAddress: '',
+    sellerCryptoCurrency: 'ETH',
   })
 
   const [shopForm, setShopForm] = useState({
@@ -140,6 +153,11 @@ function MarketplaceContent() {
           appointmentLocation: product.appointmentLocation || '',
           appointmentMeetingLink: product.appointmentMeetingLink || '',
           appointmentFormFields: (product.appointmentFormFields as { label: string; type: string; required: boolean }[]) || [],
+          acceptsDonations: product.acceptsDonations || false,
+          donationAddress: product.donationAddress || '',
+          donationCurrency: product.donationCurrency || 'ETH',
+          sellerPayoutAddress: product.sellerPayoutAddress || '',
+          sellerCryptoCurrency: product.sellerCryptoCurrency || 'ETH',
         })
         setShowProductForm(true)
       }
@@ -148,12 +166,15 @@ function MarketplaceContent() {
 
   const fetchAll = async () => {
     try {
-      const [shopRes, productsRes] = await Promise.all([
+      const [shopRes, productsRes, donationsRes] = await Promise.all([
         fetch('/api/shop'),
-        fetch('/api/products/user')
+        fetch('/api/products/user'),
+        fetch('/api/users/donations')
       ])
       const shopData = await shopRes.json()
       const productsData = await productsRes.json()
+      const donationsData = await donationsRes.json()
+      if (donationsData?.addresses) setUserDonationAddrs(donationsData.addresses)
       setShopSettings(shopData)
       setShopForm({
         shopName: shopData.shopName || '',
@@ -204,6 +225,11 @@ function MarketplaceContent() {
       appointmentLocation: '',
       appointmentMeetingLink: '',
       appointmentFormFields: [] as { label: string; type: string; required: boolean }[],
+      acceptsDonations: false,
+      donationAddress: '',
+      donationCurrency: 'ETH',
+      sellerPayoutAddress: '',
+      sellerCryptoCurrency: 'ETH',
     })
     setEditingProduct(null)
     setShowProductForm(false)
@@ -220,6 +246,10 @@ function MarketplaceContent() {
       price: productForm.price ? parseFloat(productForm.price) : null,
       imageUrl: productForm.imageUrls?.[0] || null,
       appointmentFormFields: productForm.acceptsAppointments ? productForm.appointmentFormFields : [],
+      donationAddress: productForm.acceptsDonations ? (productForm.donationAddress || null) : null,
+      donationCurrency: productForm.acceptsDonations ? (productForm.donationCurrency || 'ETH') : null,
+      sellerPayoutAddress: productForm.sellerPayoutAddress || null,
+      sellerCryptoCurrency: productForm.sellerCryptoCurrency || 'ETH',
     }
 
     try {
@@ -305,6 +335,11 @@ function MarketplaceContent() {
       appointmentLocation: product.appointmentLocation || '',
       appointmentMeetingLink: product.appointmentMeetingLink || '',
       appointmentFormFields: (product.appointmentFormFields as { label: string; type: string; required: boolean }[]) || [],
+      acceptsDonations: product.acceptsDonations || false,
+      donationAddress: product.donationAddress || '',
+      donationCurrency: product.donationCurrency || 'ETH',
+      sellerPayoutAddress: product.sellerPayoutAddress || '',
+      sellerCryptoCurrency: product.sellerCryptoCurrency || 'ETH',
     })
     setShowProductForm(true)
   }
@@ -646,6 +681,46 @@ function MarketplaceContent() {
                     ))}
                     <button type="button" onClick={() => setProductForm({...productForm, appointmentFormFields: [...productForm.appointmentFormFields, { label: '', type: 'text', required: false }]})} className="btn-ghost" style={{ fontSize: 13 }}>+ Add Field</button>
                   </div>
+                </div>
+              )}
+              <label className={styles.checkboxLabel}>
+                <input type="checkbox" checked={productForm.acceptsDonations} onChange={e => setProductForm({...productForm, acceptsDonations: e.target.checked})} />
+                Accept Donations
+              </label>
+              {productForm.acceptsDonations && (
+                <div style={{ marginBottom: 12, padding: 12, borderRadius: 8, background: 'var(--bg-tertiary)' }}>
+                  {userDonationAddrs.length === 0 ? (
+                    <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-tertiary)' }}>
+                      No donation addresses saved.{' '}
+                      <a href="/profile/edit" style={{ color: 'var(--accent-primary)' }}>Add one in your profile settings</a>
+                    </p>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>Donation Address</label>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        {userDonationAddrs.map(da => {
+                          const selected = productForm.donationAddress === da.address && productForm.donationCurrency === da.currency
+                          const shortAddr = da.address.length > 12 ? da.address.slice(0, 4) + '...' + da.address.slice(-4) : da.address
+                          return (
+                            <button
+                              key={da.id}
+                              type="button"
+                              onClick={() => setProductForm({...productForm, donationAddress: da.address, donationCurrency: da.currency})}
+                              style={{
+                                padding: '6px 12px', borderRadius: 6, border: selected ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
+                                background: selected ? 'var(--accent-primary)' : 'var(--bg-secondary)',
+                                color: selected ? '#fff' : 'var(--text-primary)',
+                                cursor: 'pointer', fontSize: '0.82rem',
+                              }}
+                            >
+                              <span style={{ fontWeight: 600, marginRight: 4 }}>{da.currency}</span>
+                              {shortAddr}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
               <div className={styles.formActions}>

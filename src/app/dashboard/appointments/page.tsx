@@ -491,6 +491,9 @@ export default function DashboardAppointments() {
                       {a._role === 'seller' && a.status === 'CONFIRMED' && (
                         <button onClick={() => { handleAction(a.id, 'complete'); setSelectedItem(null) }} className="btn-primary">✅ Mark Complete</button>
                       )}
+                      {a.product && a._role === 'seller' && (
+                        <Link href={`/dashboard/marketplace?editId=${a.product.id}`} className="btn-secondary">⚙️ Edit Listing Settings</Link>
+                      )}
                       {a.status === 'REJECTED' && a.declineReason && (
                         <div style={{ marginTop: 8, padding: 12, background: '#fef2f2', borderRadius: 8, color: '#991b1b', fontSize: 14 }}>
                           <strong>Reason for declining:</strong> {a.declineReason}

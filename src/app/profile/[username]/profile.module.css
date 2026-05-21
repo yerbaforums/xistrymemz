@@ -1095,6 +1095,7 @@
   justify-content: center;
   overflow: hidden;
   flex-shrink: 0;
+  position: relative;
 }
 
 .connectionAvatar img {
@@ -1167,6 +1168,7 @@
   overflow: hidden;
   flex-shrink: 0;
   font-size: 1.5rem;
+  position: relative;
 }
 
 .groupIcon img {
