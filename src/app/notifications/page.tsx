@@ -22,6 +22,10 @@ const TYPE_ICONS: Record<string, string> = {
   OFFER_REJECTED: '❌',
   OFFER_WITHDRAWN: '↩️',
   MENTION: '📣',
+  APPOINTMENT_REQUEST: '📅',
+  APPOINTMENT_CONFIRMED: '✅',
+  APPOINTMENT_DECLINED: '❌',
+  APPOINTMENT_RESCHEDULED: '🔄',
 }
 
 export default function NotificationsPage() {

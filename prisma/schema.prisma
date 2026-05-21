@@ -1218,7 +1218,7 @@ model BarterOffer {
 
 model Notification {
   id          String   @id @default(cuid())
-  type        String   // OFFER_RECEIVED, OFFER_ACCEPTED, OFFER_REJECTED, OFFER_WITHDRAWN
+  type        String   // OFFER_RECEIVED, OFFER_ACCEPTED, OFFER_REJECTED, OFFER_WITHDRAWN, APPOINTMENT_REQUEST, APPOINTMENT_CONFIRMED, APPOINTMENT_DECLINED, APPOINTMENT_RESCHEDULED
   title       String
   message    String
   link       String?
@@ -1445,7 +1445,8 @@ model Appointment {
   id           String   @id @default(cuid())
   title        String
   description  String?
-  status       String   @default("PENDING") // PENDING | CONFIRMED | CANCELLED | COMPLETED
+  status       String   @default("PENDING") // PENDING | CONFIRMED | CANCELLED | COMPLETED | REJECTED
+  declineReason String?
   startTime    DateTime
   endTime      DateTime
   duration     Int?     // minutes

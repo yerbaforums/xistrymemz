@@ -64,6 +64,11 @@ export default function NewProductPage() {
     createGroup: false,
     tagsInput: '',
     shareToFeed: false,
+    acceptsAppointments: false,
+    appointmentDuration: '60',
+    appointmentLeadTime: '24',
+    appointmentLocation: '',
+    appointmentMeetingLink: '',
   })
 
   useEffect(() => {
@@ -141,6 +146,11 @@ export default function NewProductPage() {
           published: true,
           createGroup: form.createGroup,
           hashtags: tags,
+          acceptsAppointments: form.acceptsAppointments,
+          appointmentDuration: form.acceptsAppointments ? parseInt(form.appointmentDuration) : null,
+          appointmentLeadTime: form.acceptsAppointments ? parseInt(form.appointmentLeadTime) : null,
+          appointmentLocation: form.acceptsAppointments ? (form.appointmentLocation || null) : null,
+          appointmentMeetingLink: form.acceptsAppointments ? (form.appointmentMeetingLink || null) : null,
         }),
       })
       if (res.ok) {
@@ -476,6 +486,30 @@ export default function NewProductPage() {
                           })}
                         </div>
                       )}
+                    </div>
+                  </div>
+                )}
+                <label className={styles.checkLabel}>
+                  <input type="checkbox" checked={form.acceptsAppointments} onChange={e => update('acceptsAppointments', e.target.checked)} />
+                  Accept Appointments / Booking
+                </label>
+                {form.acceptsAppointments && (
+                  <div className={styles.donationFields}>
+                    <div className="form-group">
+                      <label>Duration (minutes)</label>
+                      <input type="number" value={form.appointmentDuration} onChange={e => update('appointmentDuration', e.target.value)} min={5} step={5} />
+                    </div>
+                    <div className="form-group">
+                      <label>Lead Time (hours notice required)</label>
+                      <input type="number" value={form.appointmentLeadTime} onChange={e => update('appointmentLeadTime', e.target.value)} min={0} />
+                    </div>
+                    <div className="form-group">
+                      <label>Location (optional)</label>
+                      <input type="text" value={form.appointmentLocation} onChange={e => update('appointmentLocation', e.target.value)} placeholder="Address or meeting point" />
+                    </div>
+                    <div className="form-group">
+                      <label>Meeting Link (optional)</label>
+                      <input type="url" value={form.appointmentMeetingLink} onChange={e => update('appointmentMeetingLink', e.target.value)} placeholder="https://meet.google.com/..." />
                     </div>
                   </div>
                 )}

@@ -146,7 +146,8 @@ export async function POST(request: Request) {
       rentalMinDays, rentalMaxDays, rentalAvailable,
       acceptsDonations, donationAddress, donationCurrency,
       sellerPayoutAddress, sellerCryptoCurrency,
-      createGroup, hashtags
+      createGroup, hashtags,
+      acceptsAppointments, appointmentDuration, appointmentLeadTime, appointmentLocation, appointmentMeetingLink
     } = validation.data
 
     const paymentMethodsString = paymentMethods ? 
@@ -184,6 +185,11 @@ export async function POST(request: Request) {
         donationCurrency: donationCurrency || 'ETH',
         sellerPayoutAddress: sellerPayoutAddress || null,
         sellerCryptoCurrency: sellerCryptoCurrency || 'ETH',
+        acceptsAppointments: acceptsAppointments ?? false,
+        appointmentDuration: appointmentDuration || null,
+        appointmentLeadTime: appointmentLeadTime || null,
+        appointmentLocation: appointmentLocation || null,
+        appointmentMeetingLink: appointmentMeetingLink || null,
         userId: session.user.id
       }
     })

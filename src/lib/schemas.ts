@@ -57,7 +57,12 @@ export const productSchema = z.object({
   sellerPayoutAddress: z.string().optional().nullable(),
   sellerCryptoCurrency: z.string().optional().nullable(),
   createGroup: z.boolean().optional(),
-  hashtags: z.array(z.string()).optional()
+  hashtags: z.array(z.string()).optional(),
+  acceptsAppointments: z.boolean().optional(),
+  appointmentDuration: z.coerce.number().int().min(5).optional().nullable(),
+  appointmentLeadTime: z.coerce.number().int().min(0).optional().nullable(),
+  appointmentLocation: z.string().optional().nullable(),
+  appointmentMeetingLink: z.string().optional().nullable()
 })
 
 export const groupSchema = z.object({

@@ -50,7 +50,7 @@ export async function PUT(
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { title, description, price, type, category, condition, location, locationDetails, imageUrl, isGlobal, published, paymentMethods, paymentType, acceptsRequests, acceptsOffers, requestPrice, acceptsDonations, donationAddress, donationCurrency, sellerPayoutAddress, sellerCryptoCurrency, rentalDaily, rentalWeekly, rentalMonthly, rentalDeposit, rentalMinDays, rentalMaxDays, rentalAvailable, hashtags } = body
+    const { title, description, price, type, category, condition, location, locationDetails, imageUrl, isGlobal, published, paymentMethods, paymentType, acceptsRequests, acceptsOffers, requestPrice, acceptsDonations, donationAddress, donationCurrency, sellerPayoutAddress, sellerCryptoCurrency, rentalDaily, rentalWeekly, rentalMonthly, rentalDeposit, rentalMinDays, rentalMaxDays, rentalAvailable, hashtags, acceptsAppointments, appointmentDuration, appointmentLeadTime, appointmentLocation, appointmentMeetingLink } = body
 
     const existing = await prisma.product.findFirst({
       where: { id, userId: session.user.id }
@@ -111,7 +111,12 @@ export async function PUT(
         rentalDeposit: rentalDeposit != null ? parseFloat(rentalDeposit) : existing.rentalDeposit,
         rentalMinDays: rentalMinDays != null ? parseInt(rentalMinDays) : existing.rentalMinDays,
         rentalMaxDays: rentalMaxDays != null ? parseInt(rentalMaxDays) : existing.rentalMaxDays,
-        rentalAvailable: rentalAvailable ?? existing.rentalAvailable
+        rentalAvailable: rentalAvailable ?? existing.rentalAvailable,
+        acceptsAppointments: acceptsAppointments ?? existing.acceptsAppointments,
+        appointmentDuration: appointmentDuration != null ? parseInt(appointmentDuration) : existing.appointmentDuration,
+        appointmentLeadTime: appointmentLeadTime != null ? parseInt(appointmentLeadTime) : existing.appointmentLeadTime,
+        appointmentLocation: appointmentLocation ?? existing.appointmentLocation,
+        appointmentMeetingLink: appointmentMeetingLink ?? existing.appointmentMeetingLink
       }
     })
 

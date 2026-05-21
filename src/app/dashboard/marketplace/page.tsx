@@ -32,6 +32,11 @@ interface Product {
   rentalMaxDays: number | null
   rentalAvailable: boolean
   hashtags?: { id: string; tag: string }[]
+  acceptsAppointments?: boolean
+  appointmentDuration?: number | null
+  appointmentLeadTime?: number | null
+  appointmentLocation?: string | null
+  appointmentMeetingLink?: string | null
 }
 
 interface ShopSettings {
@@ -77,6 +82,11 @@ function MarketplaceContent() {
     acceptsOffers: true,
     published: true,
     hashtags: '',
+    acceptsAppointments: false,
+    appointmentDuration: '60',
+    appointmentLeadTime: '24',
+    appointmentLocation: '',
+    appointmentMeetingLink: '',
   })
 
   const [shopForm, setShopForm] = useState({
@@ -122,6 +132,11 @@ function MarketplaceContent() {
           acceptsOffers: product.acceptsOffers,
           published: product.published,
           hashtags: product.hashtags?.map(h => h.tag).join(', ') || '',
+          acceptsAppointments: product.acceptsAppointments || false,
+          appointmentDuration: product.appointmentDuration?.toString() || '60',
+          appointmentLeadTime: product.appointmentLeadTime?.toString() || '24',
+          appointmentLocation: product.appointmentLocation || '',
+          appointmentMeetingLink: product.appointmentMeetingLink || '',
         })
         setShowProductForm(true)
       }
@@ -180,6 +195,11 @@ function MarketplaceContent() {
       acceptsOffers: true,
       published: true,
       hashtags: '',
+      acceptsAppointments: false,
+      appointmentDuration: '60',
+      appointmentLeadTime: '24',
+      appointmentLocation: '',
+      appointmentMeetingLink: '',
     })
     setEditingProduct(null)
     setShowProductForm(false)
@@ -274,6 +294,11 @@ function MarketplaceContent() {
       acceptsOffers: product.acceptsOffers,
       published: product.published,
       hashtags: product.hashtags?.map(h => h.tag).join(', ') || '',
+      acceptsAppointments: product.acceptsAppointments || false,
+      appointmentDuration: product.appointmentDuration?.toString() || '60',
+      appointmentLeadTime: product.appointmentLeadTime?.toString() || '24',
+      appointmentLocation: product.appointmentLocation || '',
+      appointmentMeetingLink: product.appointmentMeetingLink || '',
     })
     setShowProductForm(true)
   }
@@ -563,7 +588,31 @@ function MarketplaceContent() {
                   <input type="checkbox" checked={productForm.published} onChange={e => setProductForm({...productForm, published: e.target.checked})} />
                   Publish Now
                 </label>
+                <label className={styles.checkboxLabel}>
+                  <input type="checkbox" checked={productForm.acceptsAppointments} onChange={e => setProductForm({...productForm, acceptsAppointments: e.target.checked})} />
+                  Accept Appointments / Booking
+                </label>
               </div>
+              {productForm.acceptsAppointments && (
+                <div className={styles.appointmentFields}>
+                  <div className="form-group">
+                    <label>Duration (minutes)</label>
+                    <input type="number" value={productForm.appointmentDuration} onChange={e => setProductForm({...productForm, appointmentDuration: e.target.value})} min={5} step={5} />
+                  </div>
+                  <div className="form-group">
+                    <label>Lead Time (hours)</label>
+                    <input type="number" value={productForm.appointmentLeadTime} onChange={e => setProductForm({...productForm, appointmentLeadTime: e.target.value})} min={0} />
+                  </div>
+                  <div className="form-group">
+                    <label>Location</label>
+                    <input type="text" value={productForm.appointmentLocation} onChange={e => setProductForm({...productForm, appointmentLocation: e.target.value})} placeholder="Address or meeting point" />
+                  </div>
+                  <div className="form-group">
+                    <label>Meeting Link</label>
+                    <input type="url" value={productForm.appointmentMeetingLink} onChange={e => setProductForm({...productForm, appointmentMeetingLink: e.target.value})} placeholder="https://meet.google.com/..." />
+                  </div>
+                </div>
+              )}
               <div className={styles.formActions}>
                 <button type="button" onClick={resetProductForm} className="btn-ghost">Cancel</button>
                 <button type="submit" className="btn-primary" disabled={saving}>
