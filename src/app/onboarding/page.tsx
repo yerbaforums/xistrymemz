@@ -26,12 +26,31 @@ export default function OnboardingPage() {
   const [planDescription, setPlanDescription] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [checkingOnboarding, setCheckingOnboarding] = useState(true)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/auth/login')
     }
   }, [status, router])
+
+  useEffect(() => {
+    if (status !== 'authenticated') return
+    fetch('/api/users/me')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.user?.onboardingCompleted) {
+          router.push('/dashboard')
+        } else {
+          setCheckingOnboarding(false)
+        }
+      })
+      .catch(() => setCheckingOnboarding(false))
+  }, [status, router])
+
+  const completeOnboarding = async () => {
+    await fetch('/api/users/onboarding', { method: 'PUT' }).catch(() => {})
+  }
 
   useEffect(() => {
     if (step === 'profile') {
@@ -113,7 +132,8 @@ export default function OnboardingPage() {
     }
   }
 
-  const skipAndGoToDashboard = () => {
+  const skipAndGoToDashboard = async () => {
+    await completeOnboarding()
     router.push('/dashboard')
   }
 
@@ -181,8 +201,19 @@ export default function OnboardingPage() {
     }
   }
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
+    await completeOnboarding()
     router.push('/dashboard')
+  }
+
+  if (checkingOnboarding || status === 'loading') {
+    return (
+      <div className={styles.onboarding}>
+        <div className={styles.container} style={{ textAlign: 'center', paddingTop: '20vh' }}>
+          <p>Loading...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

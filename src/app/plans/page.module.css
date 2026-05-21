@@ -193,6 +193,14 @@
   color: var(--accent-success);
 }
 
+.collabBadge {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+}
+
 .cardActions {
   display: flex;
   gap: 8px;

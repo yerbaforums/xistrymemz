@@ -12,6 +12,7 @@ interface Plan {
   status: string
   published: boolean
   pinned: boolean
+  lookingForCollaborators: boolean
   createdAt: string
   updatedAt: string
   progress?: number
@@ -179,6 +180,9 @@ export default function PlansClient({ initialPlans }: PlansClientProps) {
                 </span>
                 {plan.published && (
                   <span className={styles.publicBadge}>🌐 Public</span>
+                )}
+                {plan.lookingForCollaborators && (
+                  <span className={styles.collabBadge}>🤝 Collaborators</span>
                 )}
               </div>
               

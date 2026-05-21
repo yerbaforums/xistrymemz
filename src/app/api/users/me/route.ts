@@ -37,7 +37,9 @@ export async function GET() {
           createdAt: true,
           donationAddress: true,
           donationCurrency: true,
-          acceptsDonations: true
+          acceptsDonations: true,
+          onboardingCompleted: true,
+          lookingForCollaborators: true
         }
       }),
       prisma.userLink.findMany({
@@ -71,7 +73,7 @@ export async function PUT(request: Request) {
       name, username, bio, location, neighborhood, searchRadius, traveling, website, userClass,
       walletAddress, paymentAddress, refundAddress, cryptoCurrency,
       donationAddress, donationCurrency, acceptsDonations,
-      latitude, longitude
+      latitude, longitude, lookingForCollaborators
     } = validation.data
 
     if (username !== undefined && username !== null && username !== '') {
@@ -112,7 +114,8 @@ export async function PUT(request: Request) {
         userClass: userClass || null,
         donationAddress: donationAddress || null,
         donationCurrency: donationCurrency || 'ETH',
-        acceptsDonations: acceptsDonations ?? false
+        acceptsDonations: acceptsDonations ?? false,
+        lookingForCollaborators: lookingForCollaborators ?? false
       },
       select: {
         id: true,
@@ -136,6 +139,7 @@ export async function PUT(request: Request) {
         donationAddress: true,
         donationCurrency: true,
         acceptsDonations: true,
+        lookingForCollaborators: true,
         createdAt: true
       }
     })

@@ -32,6 +32,8 @@ export default function GroupsPage() {
       .catch(() => setLoading(false))
   }, [])
 
+  const topGroups = [...groups].sort((a, b) => b._count.members - a._count.members).slice(0, 3)
+
   const filteredGroups = search
     ? groups.filter(g => g.name.toLowerCase().includes(search.toLowerCase()))
     : groups
@@ -50,6 +52,40 @@ export default function GroupsPage() {
         </div>
         <Link href="/groups/new" className="btn-primary">+ Create Group</Link>
       </div>
+
+      {topGroups.length > 0 && groups.length > 3 && sortBy === 'recent' && !search && (
+        <div style={{ marginBottom: 24 }}>
+          <h3 style={{ fontSize: '0.95rem', marginBottom: 12, color: 'var(--text-primary)' }}>
+            🔥 Popular Groups
+          </h3>
+          <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 8 }}>
+            {topGroups.map(group => (
+              <Link key={group.id} href={`/groups/${group.id}`} style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '12px 16px', borderRadius: 10,
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border-color)',
+                textDecoration: 'none', color: 'var(--text-primary)',
+                minWidth: 200, flexShrink: 0,
+                transition: 'border-color 0.15s',
+              }}
+                onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = 'var(--accent-primary)'}
+                onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-color)'}
+              >
+                <span style={{ fontSize: '2rem' }}>👥</span>
+                <div style={{ minWidth: 0 }}>
+                  <strong style={{ fontSize: '0.9rem', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {group.name}
+                  </strong>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                    {group._count.members} members · {group._count.posts} posts
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className={styles.filters}>
         <div className={styles.searchBox}>

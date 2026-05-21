@@ -13,6 +13,8 @@ import { DonationActions } from '@/components/DonationActions'
 import { ShareProfileModal } from '@/components/ShareProfileModal'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
+import ActiveStatus from '@/components/ActiveStatus'
+import LookingForCollaboratorsBadge from '@/components/LookingForCollaboratorsBadge'
 import HashtagText from '@/components/HashtagText'
 import MentionInput from '@/components/MentionInput'
 import ImageUploader from '@/components/ImageUploader'
@@ -107,6 +109,8 @@ interface ProfileUser {
   requestCount?: number
   groupCount?: number
   badges?: Badge[]
+  lookingForCollaborators?: boolean
+  lastActiveAt?: string | null
 }
 
 interface Badge {
@@ -810,6 +814,8 @@ export default function ProfilePage() {
                   <>
                     <h1>{user.name || 'Anonymous User'}</h1>
                     <RoleBadge role={user.role || 'USER'} />
+                    <ActiveStatus lastActiveAt={user.lastActiveAt} showLabel size={8} />
+                    {user.lookingForCollaborators && <LookingForCollaboratorsBadge size="md" />}
                   </>
                 )}
               </div>
@@ -989,6 +995,7 @@ export default function ProfilePage() {
               <>
                 <Link href={`/messages?user=${user.id}`} className={styles.messageBtn}>Message</Link>
                 <button onClick={() => setShowAppointmentModal(true)} className={styles.messageBtn}>📅 Book</button>
+
                 {user.isConnected ? (
                   <button 
                   onClick={() => setConfirmDisconnect(true)}

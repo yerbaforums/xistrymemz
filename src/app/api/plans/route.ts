@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: validation.error }, { status: 400 })
   }
 
-  const { title, description, goals, mileposts } = validation.data
+  const { title, description, goals, mileposts, lookingForCollaborators } = validation.data
 
   const plan = await prisma.plan.create({
     data: {
@@ -60,7 +60,8 @@ export async function POST(request: Request) {
       milepostStatus: '[]',
       userId: session.user.id,
       status: 'ACTIVE',
-      published: true
+      published: true,
+      lookingForCollaborators: lookingForCollaborators ?? false
     }
   })
 

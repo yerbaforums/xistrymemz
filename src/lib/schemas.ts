@@ -4,7 +4,8 @@ export const planSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200),
   description: z.string().max(5000).optional(),
   goals: z.string().optional(),
-  mileposts: z.string().optional()
+  mileposts: z.string().optional(),
+  lookingForCollaborators: z.boolean().optional()
 })
 
 export const requestSchema = z.object({
@@ -208,7 +209,8 @@ export const profileUpdateSchema = z.object({
   cryptoCurrency: z.string().max(10).optional(),
   donationAddress: z.string().max(500).optional().nullable(),
   donationCurrency: z.string().max(10).optional(),
-  acceptsDonations: z.boolean().optional()
+  acceptsDonations: z.boolean().optional(),
+  lookingForCollaborators: z.boolean().optional()
 })
 
 export const ratingSchema = z.object({

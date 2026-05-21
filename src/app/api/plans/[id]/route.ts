@@ -92,7 +92,8 @@ export async function PUT(
         published: body.published ?? existingPlan.published,
         resources: body.resources !== undefined ? body.resources : existingPlan.resources,
         schoolId: body.schoolId ?? existingPlan.schoolId,
-        shopId: body.shopId ?? existingPlan.shopId
+        shopId: body.shopId ?? existingPlan.shopId,
+        lookingForCollaborators: body.lookingForCollaborators ?? existingPlan.lookingForCollaborators
       }
     })
 

@@ -125,7 +125,7 @@ export async function sendWelcomeEmail(email: string, name: string): Promise<voi
 
   const body = `
     <h2 style="color:#00d9ff;font-size:20px;margin:0 0 16px">Welcome to ${APP_NAME}!</h2>
-    <p style="margin:0 0 16px">Hi${name ? ` ${name}` : ''},</p>
+    <p style="margin:0 0 16px">Hi${name ? `, ${name}` : ''},</p>
     <p style="margin:0 0 16px">You're now part of the Cosmic Whitepages Cooperative — a community where you can create plans, collaborate with others, and bring your ideas to life.</p>
     <h3 style="color:#ffffff;font-size:15px;margin:24px 0 12px">Quick start:</h3>
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px">

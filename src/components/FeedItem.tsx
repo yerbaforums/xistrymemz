@@ -6,6 +6,7 @@ import HashtagText from '@/components/HashtagText'
 import PostActions from '@/components/PostActions'
 import SharedItemCard from '@/components/SharedItemCard'
 import ReplySection from '@/components/ReplySection'
+import { useState } from 'react'
 import { getUserProfileUrl } from '@/lib/utils'
 import styles from './FeedItem.module.css'
 
@@ -15,6 +16,7 @@ interface FeedPost {
   images: string | null
   likes?: number
   liked?: boolean
+  replyCount?: number
   userId?: string
   createdAt: string
   user: {
@@ -52,6 +54,7 @@ function getImages(images: string | null): string[] {
 }
 
 export default function FeedItem({ post }: { post: FeedPost }) {
+  const [showReplies, setShowReplies] = useState(false)
   const imageList = getImages(post.images)
   const contextKey = post.context || post.sourceType || 'PROFILE'
   const ctxConfig = CONTEXT_CONFIG[contextKey] || CONTEXT_CONFIG.PROFILE
@@ -131,10 +134,10 @@ export default function FeedItem({ post }: { post: FeedPost }) {
             initialLikes={post.likes || 0}
             liked={post.liked}
             showTip={true}
-            replyCount={0}
-            onReply={() => {}}
+            replyCount={post.replyCount ?? 0}
+            onReply={() => setShowReplies(!showReplies)}
           />
-          <ReplySection postId={post.id} postAuthorId={post.userId} />
+          <ReplySection postId={post.id} postAuthorId={post.userId} expandReply={showReplies} />
         </div>
       )}
     </div>

@@ -83,6 +83,7 @@ export default function ProfileEditPage() {
   const [latitude, setLatitude] = useState<number | null>(null)
   const [longitude, setLongitude] = useState<number | null>(null)
   const [traveling, setTraveling] = useState(false)
+  const [lookingForCollaborators, setLookingForCollaborators] = useState(false)
   const [geoLoading, setGeoLoading] = useState(false)
 
   // Donation fields
@@ -149,6 +150,7 @@ export default function ProfileEditPage() {
       setLatitude(user.latitude || null)
       setLongitude(user.longitude || null)
       setTraveling(user.traveling || false)
+      setLookingForCollaborators(user.lookingForCollaborators || false)
       setAcceptsDonations(user.acceptsDonations || false)
       const [donationsRes, locationsRes] = await Promise.all([
         fetch('/api/users/donations'),
@@ -274,13 +276,13 @@ export default function ProfileEditPage() {
       const res = await fetch('/api/users/me', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name, username, bio, image, coverImage, coverStyle, location, website, userClass,
-          walletAddress, paymentAddress, refundAddress, cryptoCurrency,
-          acceptsDonations, neighborhood, searchRadius,
-          latitude: latitude ?? null, longitude: longitude ?? null,
-          traveling
-        })
+          body: JSON.stringify({
+            name, username, bio, image, coverImage, coverStyle, location, website, userClass,
+            walletAddress, paymentAddress, refundAddress, cryptoCurrency,
+            acceptsDonations, neighborhood, searchRadius,
+            latitude: latitude ?? null, longitude: longitude ?? null,
+            traveling, lookingForCollaborators
+          })
       })
 
       if (!res.ok) throw new Error('Failed to update')
@@ -501,6 +503,21 @@ export default function ProfileEditPage() {
                 <option value="Explorer">Explorer</option>
                 <option value="Mentor">Mentor</option>
               </select>
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={lookingForCollaborators}
+                  onChange={e => setLookingForCollaborators(e.target.checked)}
+                  style={{ width: '18px', height: '18px', accentColor: 'var(--accent-primary)' }}
+                />
+                <span>🤝 Looking for collaborators</span>
+              </label>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', margin: '4px 0 0 26px' }}>
+                Show a badge on your profile and member cards indicating you're open to collaboration.
+              </p>
             </div>
           </div>
 

@@ -10,6 +10,8 @@ import overviewStyles from './OverviewCards.module.css'
 import TipCard from './TipCard'
 import ChecklistCard from './ChecklistCard'
 import FeatureBanner from './FeatureBanner'
+import StreakCard from './StreakCard'
+import AchievementCard from './AchievementCard'
 
 export const dynamic = 'force-dynamic'
 
@@ -167,7 +169,7 @@ export default async function DashboardOverview() {
 
   const user = await prisma.user.findUnique({ 
     where: { id: userId },
-    select: { name: true, bio: true, shopSlug: true, schoolSlug: true, walletAddress: true, paymentAddress: true, refundAddress: true, cryptoCurrency: true, donationAddress: true, donationCurrency: true, acceptsDonations: true }
+    select: { name: true, bio: true, shopSlug: true, schoolSlug: true, onboardingCompleted: true, walletAddress: true, paymentAddress: true, refundAddress: true, cryptoCurrency: true, donationAddress: true, donationCurrency: true, acceptsDonations: true }
   })
 
   const allStats = await Promise.all([
@@ -183,6 +185,21 @@ export default async function DashboardOverview() {
   const [offersSent, offersReceived] = await Promise.all([
     prisma.barterOffer.count({ where: { makerId: userId } }),
     prisma.barterOffer.count({ where: { receiverId: userId } }),
+  ])
+
+  const [trendingPlans, recentListings] = await Promise.all([
+    prisma.plan.findMany({
+      where: { published: true, status: { not: 'ARCHIVED' } },
+      select: { id: true, title: true, user: { select: { name: true } }, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+      take: 4
+    }),
+    prisma.product.findMany({
+      where: { published: true },
+      select: { id: true, title: true, price: true, user: { select: { name: true, shopSlug: true } }, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+      take: 4
+    }),
   ])
 
   const plans = _plans
@@ -201,10 +218,10 @@ export default async function DashboardOverview() {
     { label: 'Requests', value: pendingRequests, max: 20, color: '#F59E0B', icon: '📝', href: '/dashboard/requests' },
     { label: 'Products', value: allStats[2], max: 50, color: '#10B981', icon: '🛒', href: '/dashboard/marketplace' },
     { label: 'Rentals', value: rentalCount, max: 20, color: '#3B82F6', icon: '🏠', href: '/dashboard/rentals' },
-    { label: 'Teacngs', value: allStats[5], max: 20, color: '#EC4899', icon: '🏫', href: '/dashboard/teaching' },
+    { label: 'Teaching', value: allStats[5], max: 20, color: '#EC4899', icon: '🏫', href: '/dashboard/teaching' },
     { label: 'Offers In', value: offersReceived, max: 20, color: '#F97316', icon: '🤝', href: '/dashboard/offers' },
     { label: 'Offers Out', value: offersSent, max: 20, color: '#FB923C', icon: '📤', href: '/dashboard/offers' },
-    { label: 'Connectns', value: connectionCount, max: 100, color: '#06B6D4', icon: '👥', href: '/community' },
+    { label: 'Connections', value: connectionCount, max: 100, color: '#06B6D4', icon: '👥', href: '/community' },
     { label: 'Groups', value: allStats[3], max: 20, color: '#84CC16', icon: '🏠', href: '/community/groups' },
     { label: 'Events', value: eventAttendeeCount, max: 20, color: '#6366F1', icon: '📅', href: '/dashboard/events' },
     { label: 'Volunteer', value: eventVolunteerCount, max: 10, color: '#14B8A6', icon: '🙋', href: '/dashboard/events' },
@@ -230,6 +247,29 @@ export default async function DashboardOverview() {
         <h2>Welcome back, {session.user.name?.split(' ')[0] || 'User'}!</h2>
         <p>{allStats[6]} posts · {connectionCount} connections · {totalEarnings > 0 ? `$${totalEarnings.toFixed(0)} earned` : 'getting started'}</p>
       </div>
+
+      <FeatureBanner />
+      <TipCard />
+      <StreakCard postCount={allStats[6]} connectionCount={connectionCount} />
+      <ChecklistCard
+        hasName={!!user?.name}
+        hasBio={!!user?.bio}
+        postCount={allStats[6]}
+        productCount={allStats[2]}
+        groupCount={allStats[3]}
+        connectionCount={connectionCount}
+        hasShop={!!user?.shopSlug}
+        hasSchool={!!user?.schoolSlug}
+      />
+      <AchievementCard
+        postCount={allStats[6]}
+        connectionCount={connectionCount}
+        productCount={allStats[2]}
+        planCount={allStats[0]}
+        groupCount={allStats[3]}
+        hasShop={!!user?.shopSlug}
+        hasSchool={!!user?.schoolSlug}
+      />
 
       <div className={styles.overviewStats}>
         {stats.map(stat => (
@@ -260,6 +300,54 @@ export default async function DashboardOverview() {
             </Link>
           ))}
         </div>
+      </div>
+
+      <div className={styles.discoverSection}>
+        <h3 style={{ margin: '24px 0 12px', fontSize: '1rem' }}>🌍 Discover</h3>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <Link href="/plans/public" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
+            <span>🚀</span> Browse Projects
+          </Link>
+          <Link href="/products" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
+            <span>🛒</span> Browse Marketplace
+          </Link>
+          <Link href="/community" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
+            <span>👥</span> Find Members
+          </Link>
+          <Link href="/community/groups" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
+            <span>👤</span> Explore Groups
+          </Link>
+        </div>
+        {trendingPlans.length > 0 && (
+          <div style={{ marginTop: 12 }}>
+            <h4 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 8 }}>
+              Latest Public Projects
+            </h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {trendingPlans.map(p => (
+                <Link key={p.id} href={`/plans/${p.id}`} className={styles.activityItem} style={{ padding: '8px 12px' }}>
+                  <span className={styles.activityTitle}>{p.title}</span>
+                  <span className={styles.activityMeta}>by {p.user.name || 'Unknown'}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+        {recentListings.length > 0 && (
+          <div style={{ marginTop: 12 }}>
+            <h4 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 8 }}>
+              Recent Listings
+            </h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {recentListings.map(p => (
+                <Link key={p.id} href={`/products/${p.id}`} className={styles.activityItem} style={{ padding: '8px 12px' }}>
+                  <span className={styles.activityTitle}>{p.title}</span>
+                  <span className={styles.activityMeta}>${p.price}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <DashboardTodo />

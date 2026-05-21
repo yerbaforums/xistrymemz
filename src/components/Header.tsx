@@ -171,46 +171,32 @@ export default function Header() {
             </Link>
           )}
 
-          <div className={`${styles.navItem} ${openDropdown === 'discover' ? styles.dropdownVisible : ''}`}>
+          <div className={`${styles.navItem} ${openDropdown === 'explore' ? styles.dropdownVisible : ''}`}>
             <button
-              className={`${styles.navToggle} ${isActive('/plans') || isActive('/requests')}`}
-              onClick={() => toggleDropdown('discover')}
-              onKeyDown={e => handleDropdownKeyDown(e, 'discover')}
-              aria-expanded={openDropdown === 'discover'}
-              aria-controls="nav-dropdown-discover"
+              className={`${styles.navToggle}`}
+              onClick={() => toggleDropdown('explore')}
+              onKeyDown={e => handleDropdownKeyDown(e, 'explore')}
+              aria-expanded={openDropdown === 'explore'}
+              aria-controls="nav-dropdown-explore"
             >
-              Discover
+              Explore
             </button>
-            <div className={styles.navDropdown} id="nav-dropdown-discover" role="menu">
-              <Link href="/" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🏠 Home</Link>
-              <Link href="/plans/public" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🚀 Browse Projects</Link>
-              <Link href="/requests" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">📝 Requests</Link>
-              <Link href="/events" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">📅 Events</Link>
+            <div className={styles.navDropdown} id="nav-dropdown-explore" role="menu" style={{ minWidth: 200 }}>
+              <div style={{ padding: '6px 14px', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Browse</div>
+              <Link href="/plans/public" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🚀 Projects</Link>
               <Link href="/products" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🛒 Marketplace</Link>
-              <Link href="/products?type=RENTAL" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🏠 Rentals</Link>
               <Link href="/shops" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🏪 Shops</Link>
               <Link href="/schools" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🏫 Schools</Link>
+              <Link href="/requests" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">📝 Requests</Link>
+              <Link href="/events" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">📅 Events</Link>
               <Link href="/hashtags" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"># Hashtags</Link>
+              <div style={{ borderTop: '1px solid var(--border-color)', margin: '4px 0' }} />
+              <div style={{ padding: '6px 14px', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Community</div>
+              <Link href="/community" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">👤 Members</Link>
+              <Link href="/community/forum" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">💬 Forum</Link>
+              <Link href="/community/groups" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">👥 Groups</Link>
+              <Link href="/connections" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🔗 Connections</Link>
             </div>
-          </div>
-
-          <div className={`${styles.navItem} ${openDropdown === 'community' ? styles.dropdownVisible : ''}`}>
-            <button
-              className={`${styles.navToggle} ${isActive('/community')}`}
-              onClick={() => toggleDropdown('community')}
-              onKeyDown={e => handleDropdownKeyDown(e, 'community')}
-              aria-expanded={openDropdown === 'community'}
-              aria-controls="nav-dropdown-community"
-            >
-              Community
-            </button>
-              <div className={styles.navDropdown} id="nav-dropdown-community" role="menu">
-                <Link href="/community" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">👤 Members</Link>
-                <Link href="/connections" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🔗 Connections</Link>
-                <Link href="/community/forum" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">💬 Forum</Link>
-                <Link href="/community/groups" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">👥 Groups</Link>
-                <Link href="/hashtags" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"># Hashtags</Link>
-              </div>
           </div>
 
           {isAuthenticated && (
@@ -306,24 +292,18 @@ export default function Header() {
           </div>
 
           <div className={styles.mobileSection}>
-            <div className={styles.mobileSectionTitle}>Discover</div>
+            <div className={styles.mobileSectionTitle}>Explore</div>
             <Link href="/" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🏠 Home</Link>
-            <Link href="/plans/public" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🚀 Browse Projects</Link>
-            <Link href="/requests" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📝 Requests</Link>
-            <Link href="/events" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📅 Events</Link>
+            <Link href="/plans/public" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🚀 Projects</Link>
             <Link href="/products" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🛒 Marketplace</Link>
-            <Link href="/products?type=RENTAL" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🏠 Rentals</Link>
             <Link href="/shops" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🏪 Shops</Link>
             <Link href="/schools" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🏫 Schools</Link>
-            <Link href="/hashtags" className={styles.mobileLink} onClick={() => setMenuOpen(false)}># Hashtags</Link>
-          </div>
-
-          <div className={styles.mobileSection}>
-            <div className={styles.mobileSectionTitle}>Community</div>
+            <Link href="/requests" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📝 Requests</Link>
+            <Link href="/events" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📅 Events</Link>
             <Link href="/community" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>👤 Members</Link>
-            <Link href="/connections" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🔗 Connections</Link>
             <Link href="/community/forum" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>💬 Forum</Link>
             <Link href="/community/groups" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>👥 Groups</Link>
+            <Link href="/connections" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🔗 Connections</Link>
             <Link href="/hashtags" className={styles.mobileLink} onClick={() => setMenuOpen(false)}># Hashtags</Link>
           </div>
 

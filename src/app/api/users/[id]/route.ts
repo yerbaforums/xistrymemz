@@ -43,6 +43,8 @@ export async function GET(
       acceptsDonations: true,
       donationAddress: true,
       donationCurrency: true,
+      lookingForCollaborators: true,
+      lastActiveAt: true,
       _count: {
         select: {
           plans: true,
@@ -271,6 +273,8 @@ export async function GET(
         hasPendingRequest,
         connectionId,
         acceptsDonations: user.acceptsDonations || false,
+        lookingForCollaborators: user.lookingForCollaborators || false,
+        lastActiveAt: user.lastActiveAt?.toISOString() || null,
         donationAddresses,
         links,
         volunteerCount: eventVolunteerCount + planVolunteerCount,

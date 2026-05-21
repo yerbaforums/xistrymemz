@@ -38,6 +38,7 @@ interface Plan {
   id: string; title: string; description: string | null
   goals: string | null; mileposts: string | null; milepostStatus: string | null; resources: string | null
   status: string; published: boolean; schoolId: string | null; shopId: string | null
+  lookingForCollaborators: boolean
   requests: Request[]; isOwner: boolean; isEditor: boolean; events: PlanEvent[]
   goalAmount: number | null; currentFunding: number | null
   donationAddress: string | null; donationCurrency: string
@@ -202,6 +203,18 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
       setPlan({ ...plan, ...updated })
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Failed to update status')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleToggleCollab = async () => {
+    setLoading(true)
+    try {
+      const updated = await saveField({ lookingForCollaborators: !plan.lookingForCollaborators })
+      setPlan({ ...plan, ...updated })
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to update collaboration setting')
     } finally {
       setLoading(false)
     }
@@ -446,6 +459,7 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                         <h1>{plan.title}</h1>
                         <div className={styles.badges}>
                           {plan.published ? <span className="badge badge-published">Published</span> : <span className={`badge badge-${plan.status.toLowerCase()}`}>{plan.status}</span>}
+                          {plan.lookingForCollaborators && <span className="badge" style={{ background: 'rgba(99,102,241,0.1)', color: '#6366f1' }}>🤝 Looking for collaborators</span>}
                         </div>
                       </div>
                       {plan.description && <p className={styles.description}>{plan.description}</p>}
@@ -498,6 +512,9 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                       <button onClick={() => setEditingOverview(true)} className={styles.overviewActionBtn}>Edit Details</button>
                       <button onClick={handlePublish} className={plan.published ? 'btn-secondary' : 'btn-primary'} disabled={loading}>
                         {plan.published ? 'Unpublish' : 'Publish'}
+                      </button>
+                      <button onClick={handleToggleCollab} className={plan.lookingForCollaborators ? 'btn-secondary' : 'btn-primary'} disabled={loading}>
+                        {plan.lookingForCollaborators ? '🤝 Open to Collab' : '🤝 Looking for Collaborators'}
                       </button>
                       {plan.status !== 'COMPLETED' && (
                         <button onClick={() => handleStatusChange('COMPLETED', false)} className="btn-secondary" disabled={loading}>Mark Complete</button>

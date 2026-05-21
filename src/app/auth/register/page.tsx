@@ -21,6 +21,8 @@ export default function RegisterPage() {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordError, setPasswordError] = useState('')
   const [inviteCode, setInviteCode] = useState('')
   const [inviteValidating, setInviteValidating] = useState(false)
   const [inviteValid, setInviteValid] = useState<boolean | null>(null)
@@ -70,6 +72,12 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    if (password !== confirmPassword) {
+      setPasswordError('Passwords do not match')
+      setLoading(false)
+      return
+    }
+    setPasswordError('')
     setLoading(true)
 
     try {
@@ -206,6 +214,23 @@ export default function RegisterPage() {
               aria-describedby="password-hint"
             />
             <span id="password-hint" className={styles.fieldHint}>Minimum 8 characters</span>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="confirmPassword">Confirm Password</label>
+            <input
+              id="confirmPassword"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value)
+                if (passwordError && e.target.value === password) setPasswordError('')
+              }}
+              placeholder="Confirm your password"
+              required
+              minLength={8}
+            />
+            {passwordError && <span className={styles.fieldError}>{passwordError}</span>}
           </div>
 
           <div className={styles.formGroup}>

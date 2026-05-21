@@ -23,6 +23,7 @@ export default async function PlansPage() {
       published: true,
       pinned: true,
       userId: true,
+      lookingForCollaborators: true,
       createdAt: true,
       updatedAt: true,
       _count: {

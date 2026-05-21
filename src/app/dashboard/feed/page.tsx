@@ -5,6 +5,8 @@ import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import FeedItem from '@/components/FeedItem'
+import MentionInput from '@/components/MentionInput'
+import ImageUploader from '@/components/ImageUploader'
 
 interface FeedPost {
   id: string
@@ -48,6 +50,33 @@ export default function DashboardFeed() {
   const [hasMore, setHasMore] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set())
+  const [postContent, setPostContent] = useState('')
+  const [postImages, setPostImages] = useState<string[]>([])
+  const [posting, setPosting] = useState(false)
+
+  const handleCreatePost = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!session || posting || !postContent.trim()) return
+    setPosting(true)
+    try {
+      const res = await fetch('/api/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: postContent.trim(),
+          images: postImages.length > 0 ? JSON.stringify(postImages) : null,
+          context: 'PROFILE',
+        })
+      })
+      if (res.ok) {
+        setPostContent('')
+        setPostImages([])
+        fetchFeed(true)
+      }
+    } catch {} finally {
+      setPosting(false)
+    }
+  }
 
   const toggleSection = (key: string) => {
     setCollapsedSections(prev => {
@@ -125,6 +154,44 @@ export default function DashboardFeed() {
       </nav>
 
       <h1 style={{ fontSize: '1.8rem', marginBottom: '24px' }}>Your Feed</h1>
+
+      {session && (
+        <form onSubmit={handleCreatePost} style={{
+          background: 'var(--bg-secondary)',
+          border: '1px solid var(--border-color)',
+          borderRadius: 12,
+          padding: 16,
+          marginBottom: 24,
+        }}>
+          <MentionInput
+            value={postContent}
+            onChange={setPostContent}
+            placeholder="What's on your mind?"
+            rows={2}
+          />
+          <div style={{ marginTop: 8 }}>
+            <ImageUploader images={postImages} onChange={setPostImages} />
+          </div>
+          <div style={{
+            display: 'flex', justifyContent: 'space-between',
+            alignItems: 'center', marginTop: 8,
+          }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+              {postContent.length}/2000
+            </span>
+            <button type="submit" disabled={posting || !postContent.trim()}
+              style={{
+                padding: '8px 20px', borderRadius: 8, border: 'none',
+                background: postContent.trim() ? 'var(--accent-primary)' : 'var(--bg-tertiary)',
+                color: postContent.trim() ? '#fff' : 'var(--text-muted)',
+                cursor: postContent.trim() ? 'pointer' : 'not-allowed',
+                fontSize: '0.85rem', fontWeight: 600,
+              }}>
+              {posting ? 'Posting...' : 'Post'}
+            </button>
+          </div>
+        </form>
+      )}
 
       {feed.length > 0 ? (
         <>

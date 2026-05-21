@@ -10,6 +10,8 @@ import { EmptyState } from '@/components/EmptyState'
 import { SkeletonList } from '@/components/Skeleton'
 import { getUserProfileUrl } from '@/lib/utils'
 import RoleBadge from '@/components/RoleBadge'
+import ActiveStatus from '@/components/ActiveStatus'
+import LookingForCollaboratorsBadge from '@/components/LookingForCollaboratorsBadge'
 
 interface Member {
   id: string
@@ -23,6 +25,8 @@ interface Member {
   username: string | null
   shopSlug: string | null
   createdAt: string
+  lastActiveAt: string | null
+  lookingForCollaborators: boolean
   planCount?: number
   requestCount?: number
   productCount?: number
@@ -365,6 +369,10 @@ export default function CommunityPage() {
                       {member.name || 'Anonymous User'}
                       <RoleBadge role={member.role || 'USER'} />
                     </h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                      <ActiveStatus lastActiveAt={member.lastActiveAt} showLabel size={8} />
+                      {member.lookingForCollaborators && <LookingForCollaboratorsBadge />}
+                    </div>
                     {member.userClass && (
                       <div className={styles.classBadges}>
                         {member.userClass.split(',').map(c => c.trim()).filter(Boolean).map(cls => (
@@ -441,6 +449,10 @@ export default function CommunityPage() {
                     </div>
                     <div className={styles.memberInfo}>
                       <h3>{connectedMember.name || 'Anonymous User'}</h3>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                        <ActiveStatus lastActiveAt={connectedMember.lastActiveAt} showLabel size={8} />
+                        {connectedMember.lookingForCollaborators && <LookingForCollaboratorsBadge />}
+                      </div>
                       {connectedMember.location && (
                         <p className={styles.memberLocation}>
                           <span>📍</span> {connectedMember.location}

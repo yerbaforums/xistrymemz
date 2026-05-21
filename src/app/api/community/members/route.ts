@@ -27,6 +27,8 @@ export async function GET() {
         role: true,
         shopSlug: true,
         createdAt: true,
+        lastActiveAt: true,
+        lookingForCollaborators: true,
         _count: {
           select: { 
             plans: true,
@@ -78,10 +80,10 @@ export async function GET() {
       },
       include: {
         requester: {
-          select: { id: true, name: true, username: true, email: true, image: true, location: true, shopSlug: true }
+          select: { id: true, name: true, username: true, email: true, image: true, location: true, shopSlug: true, lastActiveAt: true, lookingForCollaborators: true }
         },
         receiver: {
-          select: { id: true, name: true, username: true, email: true, image: true, location: true, shopSlug: true }
+          select: { id: true, name: true, username: true, email: true, image: true, location: true, shopSlug: true, lastActiveAt: true, lookingForCollaborators: true }
         }
       }
     })
@@ -93,7 +95,7 @@ export async function GET() {
       },
       include: {
         requester: {
-          select: { id: true, name: true, username: true, email: true, image: true }
+          select: { id: true, name: true, username: true, email: true, image: true, lastActiveAt: true, lookingForCollaborators: true }
         }
       }
     })

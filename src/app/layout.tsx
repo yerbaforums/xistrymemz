@@ -8,6 +8,7 @@ import { ToastContainer } from "@/components/Toast";
 import AppShell from "@/components/AppShell";
 import Footer from "@/components/Footer";
 import BackToTop from "@/components/BackToTop";
+import CreateFAB from "@/components/CreateFAB";
 
 export const metadata: Metadata = {
   title: "XistrYmemZ - Plan. Request. Complete.",
@@ -63,6 +64,7 @@ export default function RootLayout({
               <AppShell>
                 {children}
                 <ToastContainer />
+                <CreateFAB />
                 <BackToTop />
               </AppShell>
               <Footer />
