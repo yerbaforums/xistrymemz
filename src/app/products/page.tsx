@@ -435,7 +435,7 @@ export default function ProductsPage() {
             type="text"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search products, services, and rentals..."
+            placeholder="Search products and services..."
             className={styles.searchInput}
           />
           {searchQuery && (

@@ -31,7 +31,7 @@ function DashboardNav() {
     { href: '/products', icon: '🛒', label: 'Marketplace' },
     { href: '/shops', icon: '🏪', label: 'Shops' },
     { href: '/schools', icon: '🏫', label: 'Schools' },
-    { href: '/rentals', icon: '🏠', label: 'Rentals' },
+    { href: '/dashboard/rentals', icon: '🏠', label: 'Rentals' },
     { href: '/dashboard/teaching', icon: '📚', label: 'Teaching' },
     { href: '/dashboard/offers', icon: '🤝', label: 'Offers' },
     { href: '/events', icon: '📅', label: 'Events' },

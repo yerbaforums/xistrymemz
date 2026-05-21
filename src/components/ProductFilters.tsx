@@ -57,7 +57,6 @@ export default function ProductFilters({
           <option value="ALL">All Types</option>
           <option value="PRODUCT">Products</option>
           <option value="SERVICE">Services</option>
-          <option value="RENTAL">Rentals</option>
         </select>
       </div>
 
