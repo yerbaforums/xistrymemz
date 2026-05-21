@@ -26,6 +26,7 @@ function DashboardNav() {
     { href: '/dashboard/feed', icon: '📡', label: 'Feed' },
     { href: '/messages', icon: '💬', label: 'Messages' },
     { href: '/community', icon: '👥', label: 'Community' },
+    { href: '/dashboard/community', icon: '🤝', label: 'Community Mgmt' },
     { href: '/plans', icon: '🚀', label: 'Projects' },
     { href: '/requests', icon: '📝', label: 'Requests' },
     { href: '/products', icon: '🛒', label: 'Marketplace' },

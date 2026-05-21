@@ -15,7 +15,7 @@ import AchievementCard from './AchievementCard'
 
 export const dynamic = 'force-dynamic'
 
-function StatGauge({ value, max = 100, size = 80, color = 'var(--accent-primary)' }: { value: number; max?: number; size?: number; color?: string }) {
+function StatGauge({ value, max = 100, size = 80, color = 'var(--accent-primary)', icon = '📊' }: { value: number; max?: number; size?: number; color?: string; icon?: string }) {
   const pct = Math.min(Math.max(value / max, 0), 1)
   const r = 34
   const c = 2 * Math.PI * r
@@ -28,7 +28,9 @@ function StatGauge({ value, max = 100, size = 80, color = 'var(--accent-primary)
       <circle cx="40" cy="40" r={r} fill="none" stroke={color} strokeWidth="5"
         strokeDasharray={c} strokeDashoffset={offset} strokeLinecap="round"
         transform="rotate(-90 40 40)" />
-      <text x="40" y="40" textAnchor="middle" dominantBaseline="central"
+      <text x="40" y="26" textAnchor="middle" dominantBaseline="central"
+        fontSize="16">{icon}</text>
+      <text x="40" y="49" textAnchor="middle" dominantBaseline="central"
         fill="var(--text-primary)" fontSize={fontSize} fontWeight="700">{value}</text>
     </svg>
   )
@@ -244,46 +246,26 @@ export default async function DashboardOverview() {
   return (
     <div className={styles.overview}>
       <div className={styles.welcomeHeader}>
-        <h2>Welcome back, {session.user.name?.split(' ')[0] || 'User'}!</h2>
+        <h2>Welcome back, {session.user.name?.split(' ')[0] || 'User'}! 👋</h2>
         <p>{allStats[6]} posts · {connectionCount} connections · {totalEarnings > 0 ? `$${totalEarnings.toFixed(0)} earned` : 'getting started'}</p>
       </div>
 
       <FeatureBanner />
       <TipCard />
-      <StreakCard postCount={allStats[6]} connectionCount={connectionCount} />
-      <ChecklistCard
-        hasName={!!user?.name}
-        hasBio={!!user?.bio}
-        postCount={allStats[6]}
-        productCount={allStats[2]}
-        groupCount={allStats[3]}
-        connectionCount={connectionCount}
-        hasShop={!!user?.shopSlug}
-        hasSchool={!!user?.schoolSlug}
-      />
-      <AchievementCard
-        postCount={allStats[6]}
-        connectionCount={connectionCount}
-        productCount={allStats[2]}
-        planCount={allStats[0]}
-        groupCount={allStats[3]}
-        hasShop={!!user?.shopSlug}
-        hasSchool={!!user?.schoolSlug}
-      />
 
       <div className={styles.overviewStats}>
         {stats.map(stat => (
           stat.href ? (
             <Link key={stat.label} href={stat.href} className={styles.overviewStatCard}>
               <div className={styles.statGauge}>
-                <StatGauge value={stat.value} max={stat.max} color={stat.color} size={80} />
+                <StatGauge value={stat.value} max={stat.max} color={stat.color} icon={stat.icon} size={80} />
               </div>
               <span className={styles.overviewStatLabel}>{stat.label}</span>
             </Link>
           ) : (
             <div key={stat.label} className={styles.overviewStatCard} style={{ cursor: 'default' }}>
               <div className={styles.statGauge}>
-                <StatGauge value={stat.value} max={stat.max} color={stat.color} size={80} />
+                <StatGauge value={stat.value} max={stat.max} color={stat.color} icon={stat.icon} size={80} />
               </div>
               <span className={styles.overviewStatLabel}>{stat.label}</span>
             </div>
@@ -300,6 +282,83 @@ export default async function DashboardOverview() {
             </Link>
           ))}
         </div>
+      </div>
+
+      <div className={styles.activityGrid}>
+        <div className={styles.activitySection}>
+          <div className={styles.sectionHeader}>
+            <h3>📦 Recent Projects</h3>
+            <Link href="/dashboard/projects" className={styles.viewAll}>View all →</Link>
+          </div>
+          {plans.length > 0 ? (
+            <div className={styles.activityList}>
+              {plans.map(plan => (
+                <Link key={plan.id} href={`/plans/${plan.id}`} className={styles.activityItem}>
+                  <div className={styles.activityIcon}>🚀</div>
+                  <div className={styles.activityInfo}>
+                    <span className={styles.activityTitle}>{plan.title}</span>
+                    <span className={styles.activityMeta}>{plan.status} · {new Date(plan.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <span className={`badge badge-${plan.status.toLowerCase()}`} style={{ fontSize: '0.65rem' }}>{plan.status}</span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className={styles.emptyState}>
+              <p>No projects yet</p>
+              <Link href="/plans" className={styles.emptyAction}>Create your first project</Link>
+            </div>
+          )}
+        </div>
+
+        <div className={styles.activitySection}>
+          <div className={styles.sectionHeader}>
+            <h3>📡 Your Feed</h3>
+            <Link href="/dashboard/feed" className={styles.viewAll}>View all →</Link>
+          </div>
+          {recentFeedPosts.length > 0 ? (
+            <div className={styles.feedCompact}>
+              {recentFeedPosts.map(post => (
+                <FeedItem key={post.id} post={{
+                  id: post.id,
+                  content: post.content,
+                  images: post.images,
+                  createdAt: post.createdAt.toISOString(),
+                  user: post.user,
+                  likes: 0,
+                  sourceType: 'POST'
+                }} />
+              ))}
+            </div>
+          ) : (
+            <div className={styles.emptyState}>
+              <p>No recent posts</p>
+              <Link href="/dashboard/feed" className={styles.emptyAction}>Explore feed</Link>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 20 }}>
+        <ChecklistCard
+          hasName={!!user?.name}
+          hasBio={!!user?.bio}
+          postCount={allStats[6]}
+          productCount={allStats[2]}
+          groupCount={allStats[3]}
+          connectionCount={connectionCount}
+          hasShop={!!user?.shopSlug}
+          hasSchool={!!user?.schoolSlug}
+        />
+        <AchievementCard
+          postCount={allStats[6]}
+          connectionCount={connectionCount}
+          productCount={allStats[2]}
+          planCount={allStats[0]}
+          groupCount={allStats[3]}
+          hasShop={!!user?.shopSlug}
+          hasSchool={!!user?.schoolSlug}
+        />
       </div>
 
       <div className={styles.discoverSection}>
@@ -350,68 +409,11 @@ export default async function DashboardOverview() {
         )}
       </div>
 
-      <DashboardTodo />
-
-      <div className={styles.activityGrid}>
-        <div className={styles.activitySection}>
-          <div className={styles.sectionHeader}>
-            <h3>Recent Projects</h3>
-            <Link href="/dashboard/projects" className={styles.viewAll}>View all →</Link>
-          </div>
-          {plans.length > 0 ? (
-            <div className={styles.activityList}>
-              {plans.map(plan => (
-                <Link key={plan.id} href={`/plans/${plan.id}`} className={styles.activityItem}>
-                  <div className={styles.activityIcon}>🚀</div>
-                  <div className={styles.activityInfo}>
-                    <span className={styles.activityTitle}>{plan.title}</span>
-                    <span className={styles.activityMeta}>{plan.status} · {new Date(plan.createdAt).toLocaleDateString()}</span>
-                  </div>
-                  <span className={`badge badge-${plan.status.toLowerCase()}`} style={{ fontSize: '0.65rem' }}>{plan.status}</span>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div className={styles.emptyState}>
-              <p>No projects yet</p>
-              <Link href="/plans" className={styles.emptyAction}>Create your first project</Link>
-            </div>
-          )}
-        </div>
-
-        <div className={styles.activitySection}>
-          <div className={styles.sectionHeader}>
-            <h3>Your Feed</h3>
-            <Link href="/dashboard/feed" className={styles.viewAll}>View all →</Link>
-          </div>
-          {recentFeedPosts.length > 0 ? (
-            <div className={styles.feedCompact}>
-              {recentFeedPosts.map(post => (
-                <FeedItem key={post.id} post={{
-                  id: post.id,
-                  content: post.content,
-                  images: post.images,
-                  createdAt: post.createdAt.toISOString(),
-                  user: post.user,
-                  likes: 0,
-                  sourceType: 'POST'
-                }} />
-              ))}
-            </div>
-          ) : (
-            <div className={styles.emptyState}>
-              <p>No recent posts</p>
-              <Link href="/dashboard/feed" className={styles.emptyAction}>Explore feed</Link>
-            </div>
-          )}
-        </div>
-      </div>
-
       {connectionFeed.length > 0 && (
         <div style={{ marginTop: 12 }}>
           <div className={styles.activitySection}>
             <div className={styles.sectionHeader}>
-              <h3>Activity from Connections</h3>
+              <h3>🤝 Activity from Connections</h3>
               <Link href="/community" className={styles.viewAll}>View all →</Link>
             </div>
             <div className={styles.activityList}>
@@ -432,6 +434,9 @@ export default async function DashboardOverview() {
           </div>
         </div>
       )}
+
+      <StreakCard postCount={allStats[6]} connectionCount={connectionCount} />
+      <DashboardTodo />
 
       {user && (user.walletAddress || user.paymentAddress || user.refundAddress || (user.acceptsDonations && user.donationAddress)) && (
         <div className={styles.walletCompact}>

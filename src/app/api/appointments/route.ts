@@ -76,6 +76,19 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    const buyerName = (appointment.buyer?.name || session.user.name || 'Someone')
+
+    await prisma.notification.create({
+      data: {
+        type: 'APPOINTMENT_REQUEST',
+        title: 'New Booking Request',
+        message: `${buyerName} wants to book "${title}" with you`,
+        link: `/dashboard/appointments`,
+        userId: sellerId,
+        relatedId: appointment.id
+      }
+    }).catch(() => {})
+
     return NextResponse.json({ appointment }, { status: 201 })
   } catch (error) {
     console.error('Error creating appointment:', error)

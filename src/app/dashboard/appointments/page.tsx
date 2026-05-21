@@ -11,6 +11,7 @@ interface AppointmentItem {
   title: string
   description: string | null
   status: string
+  declineReason?: string | null
   startTime: string
   endTime: string
   duration: number | null
@@ -48,6 +49,7 @@ const STATUS_CONFIG: Record<string, { icon: string; label: string; color: string
   CONFIRMED: { icon: '✅', label: 'Confirmed', color: '#22c55e' },
   CANCELLED: { icon: '❌', label: 'Cancelled', color: '#ef4444' },
   COMPLETED: { icon: '✅', label: 'Completed', color: '#3b82f6' },
+  REJECTED: { icon: '🚫', label: 'Declined', color: '#ef4444' },
 }
 
 const TYPE_CONFIG: Record<string, { icon: string; label: string; color: string }> = {
@@ -87,6 +89,14 @@ export default function DashboardAppointments() {
   const [selectedItem, setSelectedItem] = useState<PlannerItem | null>(null)
   const [filterType, setFilterType] = useState('ALL')
   const [searchQuery, setSearchQuery] = useState('')
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false)
+  const [rescheduleAppt, setRescheduleAppt] = useState<AppointmentItem | null>(null)
+  const [rescheduleDate, setRescheduleDate] = useState('')
+  const [rescheduleStart, setRescheduleStart] = useState('')
+  const [rescheduleEnd, setRescheduleEnd] = useState('')
+  const [declineReason, setDeclineReason] = useState('')
+  const [showDeclineModal, setShowDeclineModal] = useState(false)
+  const [declineAppt, setDeclineAppt] = useState<AppointmentItem | null>(null)
 
   const fetchAll = async () => {
     setLoading(true)
@@ -113,21 +123,65 @@ export default function DashboardAppointments() {
 
   useEffect(() => { fetchAll() }, [])
 
-  const handleConfirm = async (id: string) => {
+  const handleAction = async (id: string, action: string, extra: Record<string, unknown> = {}) => {
     const res = await fetch(`/api/appointments/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'CONFIRMED' })
+      body: JSON.stringify({ action, ...extra })
     })
-    if (res.ok) { success('Appointment confirmed!'); fetchAll() }
-    else toastError('Failed to confirm')
+    if (res.ok) {
+      const labels: Record<string, string> = {
+        accept: 'Booking accepted!',
+        decline: 'Booking declined',
+        cancel: 'Appointment cancelled',
+        complete: 'Marked as complete',
+        reschedule: 'Rescheduled — awaiting confirmation'
+      }
+      success(labels[action] || 'Updated')
+      fetchAll()
+    } else {
+      const err = await res.json()
+      toastError(err.error || 'Failed')
+    }
   }
 
-  const handleCancel = async (id: string) => {
-    if (!confirm('Cancel this appointment?')) return
-    const res = await fetch(`/api/appointments/${id}`, { method: 'DELETE' })
-    if (res.ok) { success('Appointment cancelled'); fetchAll() }
-    else toastError('Failed to cancel')
+  const openReschedule = (appt: AppointmentItem) => {
+    setRescheduleAppt(appt)
+    const start = new Date(appt.startTime)
+    const end = new Date(appt.endTime)
+    setRescheduleDate(start.toISOString().slice(0, 10))
+    setRescheduleStart(start.toTimeString().slice(0, 5))
+    setRescheduleEnd(end.toTimeString().slice(0, 5))
+    setShowRescheduleModal(true)
+  }
+
+  const handleRescheduleSubmit = async () => {
+    if (!rescheduleAppt) return
+    const startTime = new Date(`${rescheduleDate}T${rescheduleStart}`)
+    const endTime = new Date(`${rescheduleDate}T${rescheduleEnd}`)
+    if (endTime <= startTime) {
+      toastError('End time must be after start time')
+      return
+    }
+    await handleAction(rescheduleAppt.id, 'reschedule', {
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString()
+    })
+    setShowRescheduleModal(false)
+    setRescheduleAppt(null)
+  }
+
+  const openDecline = (appt: AppointmentItem) => {
+    setDeclineAppt(appt)
+    setDeclineReason('')
+    setShowDeclineModal(true)
+  }
+
+  const handleDeclineSubmit = async () => {
+    if (!declineAppt) return
+    await handleAction(declineAppt.id, 'decline', { declineReason })
+    setShowDeclineModal(false)
+    setDeclineAppt(null)
   }
 
   const allItems: PlannerItem[] = useMemo(() => {
@@ -261,19 +315,29 @@ export default function DashboardAppointments() {
                         {appt.meetingLink && <span className={styles.metaItem}>🔗 <a href={appt.meetingLink} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>Meeting link</a></span>}
                         <span className={styles.metaItem}>👤 {roleLabel}</span>
                         {appt.product && <span className={styles.metaItem}>🛒 <Link href={`/products/${appt.product.id}`} onClick={e => e.stopPropagation()}>{appt.product.title}</Link></span>}
+                      {appt.status === 'REJECTED' && appt.declineReason && <span className={styles.metaItem} style={{ color: '#ef4444' }}>🚫 {appt.declineReason}</span>}
                       </div>
                       <div className={styles.cardFooter}>
                         <span className={styles.cardDate}>{formatRelativeDate(appt.createdAt)}</span>
                         <div className={styles.cardActions}>
                           <button onClick={() => setSelectedItem(appt)} className={styles.cardActionBtn}>👁️ View</button>
-                          {appt.status === 'PENDING' && (
+                          {appt._role === 'seller' && appt.status === 'PENDING' && (
                             <>
-                              <button onClick={() => handleConfirm(appt.id)} className={styles.cardActionBtn} style={{ color: '#22c55e', borderColor: '#22c55e' }}>✅ Confirm</button>
-                              <button onClick={() => handleCancel(appt.id)} className={styles.cardDeleteBtn}>❌</button>
+                              <button onClick={() => handleAction(appt.id, 'accept')} className={styles.cardActionBtn} style={{ color: '#22c55e', borderColor: '#22c55e' }}>✅ Accept</button>
+                              <button onClick={() => openDecline(appt)} className={styles.cardDeleteBtn}>🚫 Decline</button>
                             </>
                           )}
+                          {appt._role === 'buyer' && appt.status === 'PENDING' && (
+                            <button onClick={() => handleAction(appt.id, 'cancel')} className={styles.cardDeleteBtn}>❌ Cancel Request</button>
+                          )}
                           {appt.status === 'CONFIRMED' && (
-                            <button onClick={() => handleCancel(appt.id)} className={styles.cardDeleteBtn}>❌ Cancel</button>
+                            <>
+                              <button onClick={() => openReschedule(appt)} className={styles.cardActionBtn}>🔄 Reschedule</button>
+                              <button onClick={() => handleAction(appt.id, 'cancel')} className={styles.cardDeleteBtn}>❌ Cancel</button>
+                            </>
+                          )}
+                          {appt.status === 'CONFIRMED' && appt._role === 'seller' && (
+                            <button onClick={() => handleAction(appt.id, 'complete')} className={styles.cardActionBtn} style={{ color: '#3b82f6', borderColor: '#3b82f6' }}>✅ Complete</button>
                           )}
                         </div>
                       </div>
@@ -393,14 +457,28 @@ export default function DashboardAppointments() {
                       {a.description && <div className={styles.eventDetailRow}><span className={styles.eventLabel}>Notes</span><p>{a.description}</p></div>}
                     </div>
                     <div className={styles.eventModalActions}>
-                      {a.status === 'PENDING' && (
+                      {a._role === 'seller' && a.status === 'PENDING' && (
                         <>
-                          <button onClick={() => { handleConfirm(a.id); setSelectedItem(null) }} className="btn-primary">✅ Confirm</button>
-                          <button onClick={() => { handleCancel(a.id); setSelectedItem(null) }} className={styles.deleteBtn}>❌ Cancel</button>
+                          <button onClick={() => { handleAction(a.id, 'accept'); setSelectedItem(null) }} className="btn-primary">✅ Accept</button>
+                          <button onClick={() => { openDecline(a); setSelectedItem(null) }} className={styles.deleteBtn}>🚫 Decline</button>
                         </>
                       )}
+                      {a._role === 'buyer' && a.status === 'PENDING' && (
+                        <button onClick={() => { handleAction(a.id, 'cancel'); setSelectedItem(null) }} className={styles.deleteBtn}>❌ Cancel Request</button>
+                      )}
                       {a.status === 'CONFIRMED' && (
-                        <button onClick={() => { handleCancel(a.id); setSelectedItem(null) }} className={styles.deleteBtn}>❌ Cancel Appointment</button>
+                        <>
+                          <button onClick={() => { openReschedule(a); setSelectedItem(null) }} className="btn-secondary">🔄 Reschedule</button>
+                          <button onClick={() => { handleAction(a.id, 'cancel'); setSelectedItem(null) }} className={styles.deleteBtn}>❌ Cancel</button>
+                        </>
+                      )}
+                      {a._role === 'seller' && a.status === 'CONFIRMED' && (
+                        <button onClick={() => { handleAction(a.id, 'complete'); setSelectedItem(null) }} className="btn-primary">✅ Mark Complete</button>
+                      )}
+                      {a.status === 'REJECTED' && a.declineReason && (
+                        <div style={{ marginTop: 8, padding: 12, background: '#fef2f2', borderRadius: 8, color: '#991b1b', fontSize: 14 }}>
+                          <strong>Reason for declining:</strong> {a.declineReason}
+                        </div>
                       )}
                     </div>
                   </>
@@ -432,6 +510,56 @@ export default function DashboardAppointments() {
                 )
               })()
             )}
+          </div>
+        </div>
+      )}
+
+      {showRescheduleModal && rescheduleAppt && (
+        <div className="modal-overlay" onClick={() => setShowRescheduleModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className={styles.eventModalHeader}>
+              <h2>Reschedule: {rescheduleAppt.title}</h2>
+              <button onClick={() => setShowRescheduleModal(false)} className={styles.closeBtn}>✕</button>
+            </div>
+            <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 14, fontWeight: 500 }}>
+                Date
+                <input type="date" value={rescheduleDate} onChange={e => setRescheduleDate(e.target.value)} style={{ padding: 8, borderRadius: 8, border: '1px solid #ddd', fontSize: 14 }} />
+              </label>
+              <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 14, fontWeight: 500 }}>
+                Start Time
+                <input type="time" value={rescheduleStart} onChange={e => setRescheduleStart(e.target.value)} style={{ padding: 8, borderRadius: 8, border: '1px solid #ddd', fontSize: 14 }} />
+              </label>
+              <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 14, fontWeight: 500 }}>
+                End Time
+                <input type="time" value={rescheduleEnd} onChange={e => setRescheduleEnd(e.target.value)} style={{ padding: 8, borderRadius: 8, border: '1px solid #ddd', fontSize: 14 }} />
+              </label>
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+                <button onClick={() => setShowRescheduleModal(false)} className="btn-secondary">Cancel</button>
+                <button onClick={handleRescheduleSubmit} className="btn-primary">Submit Reschedule</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showDeclineModal && declineAppt && (
+        <div className="modal-overlay" onClick={() => setShowDeclineModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className={styles.eventModalHeader}>
+              <h2>Decline: {declineAppt.title}</h2>
+              <button onClick={() => setShowDeclineModal(false)} className={styles.closeBtn}>✕</button>
+            </div>
+            <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 14, fontWeight: 500 }}>
+                Reason (optional, shared with buyer)
+                <textarea value={declineReason} onChange={e => setDeclineReason(e.target.value)} rows={3} style={{ padding: 8, borderRadius: 8, border: '1px solid #ddd', fontSize: 14, resize: 'vertical' }} placeholder="e.g. No longer offering this service..." />
+              </label>
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+                <button onClick={() => setShowDeclineModal(false)} className="btn-secondary">Keep Appointment</button>
+                <button onClick={handleDeclineSubmit} className={styles.deleteBtn}>🚫 Decline Booking</button>
+              </div>
+            </div>
           </div>
         </div>
       )}
