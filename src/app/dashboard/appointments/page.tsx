@@ -235,6 +235,9 @@ export default function DashboardAppointments() {
           <p className={styles.subtitle}>Appointments, personal events, and group activities</p>
         </div>
         <div className={styles.headerActions}>
+          <Link href="/profile/edit" className={styles.viewToggle} style={{ textDecoration: 'none' }}>
+            ⏰ Availability
+          </Link>
           <button onClick={() => setViewMode(viewMode === 'list' ? 'calendar' : 'list')} className={styles.viewToggle}>
             {viewMode === 'list' ? '📅 Calendar' : '📋 List'}
           </button>
@@ -273,7 +276,8 @@ export default function DashboardAppointments() {
           <div className={styles.emptyIcon}>📅</div>
           <h3>Nothing planned yet</h3>
           <p>Book appointments, create events, or join group activities to fill your planner.</p>
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link href="/profile/edit" className="btn-secondary">⏰ Set Availability</Link>
             <Link href="/events/new" className="btn-primary">+ New Event</Link>
             <Link href="/events" className="btn-secondary">Browse Events</Link>
           </div>

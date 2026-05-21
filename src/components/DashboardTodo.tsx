@@ -83,7 +83,7 @@ export default function DashboardTodo() {
         margin: '0 0 12px', fontSize: '1rem', color: '#5d4037',
         fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: 8,
       }}>
-        📝 Quick Tasks
+        📋 Quick Tasks
         {remaining > 0 && (
           <span style={{
             background: '#5d4037', color: '#fff', borderRadius: 10,
@@ -128,33 +128,41 @@ export default function DashboardTodo() {
           No tasks yet. Add something above!
         </p>
       ) : (
-        <div style={{ maxHeight: 320, overflowY: 'auto' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 400, overflowY: 'auto' }}>
           {todos.map(t => (
             <div
               key={t.id}
               style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                padding: '6px 4px',
-                borderBottom: '1px solid rgba(0,0,0,0.06)',
-                textDecoration: t.done ? 'line-through' : 'none',
-                color: t.done ? '#8d7b6a' : '#4e342e',
-                fontSize: '0.85rem',
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 14px',
+                background: t.done ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.85)',
+                borderRadius: 10,
+                border: '1px solid rgba(0,0,0,0.06)',
+                opacity: t.done ? 0.6 : 1,
+                transition: 'all 0.15s ease',
               }}
             >
               <input
                 type="checkbox"
                 checked={t.done}
                 onChange={() => toggle(t.id)}
-                style={{ cursor: 'pointer', accentColor: '#5d4037', flexShrink: 0 }}
+                style={{ cursor: 'pointer', accentColor: '#5d4037', flexShrink: 0, width: 18, height: 18 }}
               />
-              <span style={{ flex: 1, wordBreak: 'break-word', minWidth: 0 }}>{t.text}</span>
+              <span style={{
+                flex: 1, wordBreak: 'break-word', minWidth: 0, lineHeight: 1.5,
+                textDecoration: t.done ? 'line-through' : 'none',
+                color: t.done ? '#8d7b6a' : '#4e342e', fontSize: '0.85rem',
+              }}>
+                {t.text}
+              </span>
               <button
                 type="button"
                 onClick={() => remove(t.id)}
                 style={{
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  fontSize: '0.8rem', color: '#bcaaa4', padding: 2, lineHeight: 1, flexShrink: 0,
-                  opacity: 0.5,
+                  background: 'rgba(0,0,0,0.05)', border: 'none', cursor: 'pointer',
+                  fontSize: '0.7rem', color: '#8d7b6a', padding: '4px 8px',
+                  borderRadius: 6, lineHeight: 1, flexShrink: 0,
+                  transition: 'background 0.15s',
                 }}
                 title="Remove"
               >

@@ -36,31 +36,62 @@ interface ForumPost {
   author: { id: string; name: string | null }
 }
 
+interface GroupMember {
+  id: string
+  role: string
+  userId: string
+}
+
+interface Group {
+  id: string
+  name: string
+  description: string | null
+  imageUrl: string | null
+  isPrivate: boolean
+  createdAt: string
+  user: { id: string; name: string | null; image: string | null }
+  _count: { members: number; posts: number }
+  members: GroupMember[]
+}
+
+type TabKey = 'overview' | 'connections' | 'groups' | 'forum'
+
+const TABS: { key: TabKey; icon: string; label: string }[] = [
+  { key: 'overview', icon: '🌐', label: 'Overview' },
+  { key: 'connections', icon: '🤝', label: 'Connections' },
+  { key: 'groups', icon: '👥', label: 'Groups' },
+  { key: 'forum', icon: '💬', label: 'Forum' },
+]
+
 export default function CommunityManagement() {
   const { data: session } = useSession()
-  const [activeTab, setActiveTab] = useState('connections')
+  const [activeTab, setActiveTab] = useState<TabKey>('overview')
   const [pendingReceived, setPendingReceived] = useState<Connection[]>([])
   const [pendingSent, setPendingSent] = useState<Connection[]>([])
   const [acceptedConnections, setAcceptedConnections] = useState<Connection[]>([])
   const [forumPosts, setForumPosts] = useState<ForumPost[]>([])
+  const [groups, setGroups] = useState<Group[]>([])
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState<string | null>(null)
+  const [deletingGroup, setDeletingGroup] = useState<string | null>(null)
 
   const fetchData = useCallback(async () => {
     setLoading(true)
     try {
-      const [receivedRes, sentRes, acceptedRes, forumRes] = await Promise.all([
+      const [receivedRes, sentRes, acceptedRes, forumRes, groupsRes] = await Promise.all([
         fetch('/api/community/connections?filter=pending'),
         fetch('/api/community/connections?filter=sent'),
         fetch('/api/community/connections?filter=accepted'),
         session?.user?.id
           ? fetch(`/api/forum/posts?authorId=${session.user.id}&limit=20`)
           : Promise.resolve(null),
+        fetch('/api/groups?my=true'),
       ])
       if (receivedRes.ok) setPendingReceived(await receivedRes.json())
       if (sentRes.ok) setPendingSent(await sentRes.json())
       if (acceptedRes.ok) setAcceptedConnections(await acceptedRes.json())
       if (forumRes?.ok) setForumPosts(await forumRes.json())
+      if (groupsRes.ok) setGroups(await groupsRes.json())
     } catch {
       /* ignore */
     } finally {
@@ -103,14 +134,35 @@ export default function CommunityManagement() {
     }
   }
 
+  const handleDeleteGroup = async (groupId: string) => {
+    if (!confirm('Delete this group? This cannot be undone.')) return
+    setDeletingGroup(groupId)
+    try {
+      const res = await fetch(`/api/groups/${groupId}`, { method: 'DELETE' })
+      if (res.ok) {
+        setGroups(prev => prev.filter(g => g.id !== groupId))
+      }
+    } catch {
+      /* ignore */
+    } finally {
+      setDeletingGroup(null)
+    }
+  }
+
   const otherUser = (c: Connection) =>
     c.requester.id === session?.user?.id ? c.receiver : c.requester
+
+  const isAdmin = (g: Group) => g.members.some(m => m.userId === session?.user?.id && m.role === 'ADMIN')
+  const isOwner = (g: Group) => g.user.id === session?.user?.id
+
+  const ownerGroups = groups.filter(g => isOwner(g))
+  const memberGroups = groups.filter(g => !isOwner(g))
 
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <h1>👥 Community Management</h1>
-        <p className={styles.subtitle}>Manage connections and forum posts</p>
+        <h1>🌐 Community</h1>
+        <p className={styles.subtitle}>Manage connections, groups, and forum activity</p>
       </div>
 
       <div className={styles.statGrid}>
@@ -123,20 +175,17 @@ export default function CommunityManagement() {
           <div className={styles.statLabel}>Connections</div>
         </div>
         <div className={styles.statCard}>
-          <div className={styles.statValue}>{forumPosts.length}</div>
-          <div className={styles.statLabel}>Forum Posts</div>
+          <div className={styles.statValue}>{groups.length}</div>
+          <div className={styles.statLabel}>Groups</div>
         </div>
         <div className={styles.statCard}>
-          <div className={styles.statValue}>{forumPosts.reduce((s, p) => s + p.replyCount, 0)}</div>
-          <div className={styles.statLabel}>Total Replies</div>
+          <div className={styles.statValue}>{forumPosts.length}</div>
+          <div className={styles.statLabel}>Forum Posts</div>
         </div>
       </div>
 
       <div className={styles.tabs}>
-        {[
-          { key: 'connections', icon: '🤝', label: 'Connections' },
-          { key: 'forum', icon: '💬', label: 'Forum Posts' },
-        ].map(t => (
+        {TABS.map(t => (
           <button
             key={t.key}
             onClick={() => setActiveTab(t.key)}
@@ -146,6 +195,41 @@ export default function CommunityManagement() {
           </button>
         ))}
       </div>
+
+      {activeTab === 'overview' && (
+        <div className={styles.section}>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 16 }}>
+            Quick access to all community features
+          </p>
+          <div className={styles.linkGrid}>
+            <Link href="/community" className={styles.linkCard}>
+              <span className={styles.linkIcon}>👤</span>
+              <span className={styles.linkLabel}>Browse Members</span>
+              <span className={styles.linkDesc}>Find and connect with other members</span>
+            </Link>
+            <Link href="/community/forum" className={styles.linkCard}>
+              <span className={styles.linkIcon}>💬</span>
+              <span className={styles.linkLabel}>Forum</span>
+              <span className={styles.linkDesc}>Join discussions and create posts</span>
+            </Link>
+            <Link href="/community/groups" className={styles.linkCard}>
+              <span className={styles.linkIcon}>👥</span>
+              <span className={styles.linkLabel}>Groups</span>
+              <span className={styles.linkDesc}>Discover and join groups</span>
+            </Link>
+            <Link href="/groups/new" className={styles.linkCard}>
+              <span className={styles.linkIcon}>➕</span>
+              <span className={styles.linkLabel}>Create Group</span>
+              <span className={styles.linkDesc}>Start a new community group</span>
+            </Link>
+            <Link href="/connections" className={styles.linkCard}>
+              <span className={styles.linkIcon}>🔗</span>
+              <span className={styles.linkLabel}>Connections</span>
+              <span className={styles.linkDesc}>Manage connection requests</span>
+            </Link>
+          </div>
+        </div>
+      )}
 
       {activeTab === 'connections' && (
         <>
@@ -261,43 +345,110 @@ export default function CommunityManagement() {
         </>
       )}
 
-      {activeTab === 'forum' && (
+      {activeTab === 'groups' && (
         <>
           <div className={styles.section}>
             <div className={styles.sectionHeader}>
-              <h3>📝 My Forum Posts ({forumPosts.length})</h3>
-              <Link href="/community/forum" className={styles.actionBtn}>Browse Forum</Link>
+              <h3>👑 My Groups (Admin)</h3>
+              <Link href="/groups/new" className={styles.actionBtn}>+ Create Group</Link>
             </div>
-            {forumPosts.length === 0 ? (
+            {ownerGroups.length === 0 ? (
               <div className={styles.emptyState}>
-                <p>No forum posts yet</p>
-                <Link href="/community/forum" style={{ color: 'var(--accent-primary)', fontSize: '0.85rem' }}>Create your first post →</Link>
+                <p>You don&apos;t own any groups yet</p>
+                <Link href="/groups/new" style={{ color: 'var(--accent-primary)', fontSize: '0.85rem' }}>Create your first group →</Link>
               </div>
             ) : (
-              forumPosts.map(p => (
-                <Link key={p.id} href={`/community/forum/${p.id}`} className={styles.card}>
-                  <div className={styles.iconCircle} style={{ background: p.pinned ? '#6366f120' : '#6b728020' }}>
-                    {p.pinned ? '📌' : '💬'}
+              ownerGroups.map(g => (
+                <div key={g.id} className={styles.card}>
+                  <div className={styles.iconCircle} style={{ background: '#6366f120' }}>
+                    👥
                   </div>
                   <div className={styles.info}>
-                    <div className={styles.titleRow}>
-                      <span className={styles.name}>{p.title}</span>
-                      {p.pinned && <span className={`${styles.badge} ${styles.pendingBadge}`}>Pinned</span>}
-                      {p.locked && <span style={{ fontSize: '0.65rem', color: '#ef4444' }}>🔒 Locked</span>}
-                    </div>
+                    <div className={styles.name}>{g.name}</div>
                     <div className={styles.meta}>
-                      {p.category?.name || 'Uncategorized'} · {new Date(p.createdAt).toLocaleDateString()}
-                    </div>
-                    <div className={styles.statsRow}>
-                      <span>👁️ {p.viewCount} views</span>
-                      <span>💬 {p.replyCount} replies</span>
+                      {g._count.members} members · {g._count.posts} posts · {g.isPrivate ? '🔒 Private' : '🌍 Public'}
                     </div>
                   </div>
+                  <div className={styles.actions}>
+                    <Link href={`/groups/${g.id}`} className={styles.actionBtn}>View</Link>
+                    <button
+                      onClick={() => handleDeleteGroup(g.id)}
+                      disabled={deletingGroup === g.id}
+                      className={styles.deleteBtn}
+                    >
+                      {deletingGroup === g.id ? '...' : 'Delete'}
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <h3>✅ Joined Groups</h3>
+              <Link href="/community/groups" className={styles.actionBtn}>Browse Groups</Link>
+            </div>
+            {memberGroups.length === 0 ? (
+              <div className={styles.emptyState}>
+                <p>Not a member of any groups yet</p>
+                <Link href="/community/groups" style={{ color: 'var(--accent-primary)', fontSize: '0.85rem' }}>Discover groups →</Link>
+              </div>
+            ) : (
+              memberGroups.map(g => (
+                <Link key={g.id} href={`/groups/${g.id}`} className={styles.card}>
+                  <div className={styles.iconCircle} style={{ background: '#22c55e20' }}>
+                    👥
+                  </div>
+                  <div className={styles.info}>
+                    <div className={styles.name}>{g.name}</div>
+                    <div className={styles.meta}>
+                      {g._count.members} members · by {g.user.name || 'Unknown'} · {g.isPrivate ? '🔒 Private' : '🌍 Public'}
+                    </div>
+                  </div>
+                  <span className={`${styles.badge} ${styles.acceptedBadge}`}>Member</span>
                 </Link>
               ))
             )}
           </div>
         </>
+      )}
+
+      {activeTab === 'forum' && (
+        <div className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <h3>📝 My Forum Posts ({forumPosts.length})</h3>
+            <Link href="/community/forum" className={styles.actionBtn}>Browse Forum</Link>
+          </div>
+          {forumPosts.length === 0 ? (
+            <div className={styles.emptyState}>
+              <p>No forum posts yet</p>
+              <Link href="/community/forum" style={{ color: 'var(--accent-primary)', fontSize: '0.85rem' }}>Create your first post →</Link>
+            </div>
+          ) : (
+            forumPosts.map(p => (
+              <Link key={p.id} href={`/community/forum/${p.id}`} className={styles.card}>
+                <div className={styles.iconCircle} style={{ background: p.pinned ? '#6366f120' : '#6b728020' }}>
+                  {p.pinned ? '📌' : '💬'}
+                </div>
+                <div className={styles.info}>
+                  <div className={styles.titleRow}>
+                    <span className={styles.name}>{p.title}</span>
+                    {p.pinned && <span className={`${styles.badge} ${styles.pendingBadge}`}>Pinned</span>}
+                    {p.locked && <span style={{ fontSize: '0.65rem', color: '#ef4444' }}>🔒 Locked</span>}
+                  </div>
+                  <div className={styles.meta}>
+                    {p.category?.name || 'Uncategorized'} · {new Date(p.createdAt).toLocaleDateString()}
+                  </div>
+                  <div className={styles.statsRow}>
+                    <span>👁️ {p.viewCount} views</span>
+                    <span>💬 {p.replyCount} replies</span>
+                  </div>
+                </div>
+              </Link>
+            ))
+          )}
+        </div>
       )}
     </div>
   )

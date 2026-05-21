@@ -25,8 +25,7 @@ function DashboardNav() {
     { href: '/dashboard/overview', icon: '📊', label: 'Overview' },
     { href: '/dashboard/feed', icon: '📡', label: 'Feed' },
     { href: '/messages', icon: '💬', label: 'Messages' },
-    { href: '/community', icon: '👥', label: 'Community' },
-    { href: '/dashboard/community', icon: '🤝', label: 'Community Mgmt' },
+    { href: '/dashboard/community', icon: '🌐', label: 'Community' },
     { href: '/plans', icon: '🚀', label: 'Projects' },
     { href: '/requests', icon: '📝', label: 'Requests' },
     { href: '/products', icon: '🛒', label: 'Marketplace' },
@@ -35,7 +34,7 @@ function DashboardNav() {
     { href: '/dashboard/rentals', icon: '🏠', label: 'Rentals' },
     { href: '/dashboard/teaching', icon: '📚', label: 'Teaching' },
     { href: '/dashboard/offers', icon: '🤝', label: 'Offers' },
-    { href: '/events', icon: '📅', label: 'Events' },
+    { href: '/dashboard/events', icon: '📅', label: 'Events' },
     { href: '/dashboard/appointments', icon: '🗓️', label: 'Planner' },
     { href: '/dashboard/saved', icon: '⭐', label: 'Saved' },
   ]

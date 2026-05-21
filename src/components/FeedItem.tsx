@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import HashtagText from '@/components/HashtagText'
+import LinkPreview from '@/components/LinkPreview'
 import PostActions from '@/components/PostActions'
 import SharedItemCard from '@/components/SharedItemCard'
 import ReplySection from '@/components/ReplySection'
@@ -104,6 +105,8 @@ export default function FeedItem({ post }: { post: FeedPost }) {
       >
         <HashtagText text={post.content} />
       </div>
+
+      <LinkPreview text={post.content} />
 
       {imageList.length > 0 && (
         <div className={`${styles.imageGrid} ${imageList.length === 1 ? styles.singleImage : ''}`}>
