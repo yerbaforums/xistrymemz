@@ -6,6 +6,7 @@ import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
+import ImageUploader from '@/components/ImageUploader'
 import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import type { DonationAddr } from '@/types/product'
 import { getEventTemplateById } from '@/lib/event-templates'
@@ -53,7 +54,8 @@ export function EventForm() {
     volunteerDescription: '',
     acceptsDonations: false,
     selectedDonationAddrs: [] as DonationAddr[],
-    hashtags: [] as string[]
+    hashtags: [] as string[],
+    images: [] as string[]
   })
 
   useEffect(() => {
@@ -121,6 +123,7 @@ export function EventForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          imageUrl: formData.images[0] || null,
           volunteerRoles,
           maxJoiners: formData.maxJoiners ? parseInt(String(formData.maxJoiners)) : 0,
           ticketPrice: formData.ticketPrice ? parseFloat(String(formData.ticketPrice)) : 0,
@@ -188,6 +191,15 @@ export function EventForm() {
           onChange={handleChange}
           placeholder="Describe your event..."
           rows={4}
+        />
+      </div>
+
+      <div className={styles.field}>
+        <label>Event Image</label>
+        <ImageUploader
+          images={formData.images}
+          onChange={(urls) => setFormData(prev => ({ ...prev, images: urls }))}
+          maxImages={1}
         />
       </div>
 
@@ -421,7 +433,8 @@ export function EventForm() {
               volunteerDescription: '',
               acceptsDonations: false,
               selectedDonationAddrs: [] as DonationAddr[],
-              hashtags: []
+              hashtags: [],
+              images: []
             })
           }}>
             Clear Template

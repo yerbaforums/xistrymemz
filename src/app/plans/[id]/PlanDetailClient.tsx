@@ -43,6 +43,7 @@ interface Plan {
   goals: string | null; mileposts: string | null; milepostStatus: string | null; resources: string | null
   status: string; published: boolean; schoolId: string | null; shopId: string | null
   lookingForCollaborators: boolean
+  imageUrl: string | null
   requests: Request[]; isOwner: boolean; isEditor: boolean; events: PlanEvent[]
   goalAmount: number | null; currentFunding: number | null
   donationAddress: string | null; donationCurrency: string; donationAddresses: string | null
@@ -471,6 +472,11 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                           {plan.lookingForCollaborators && <span className="badge" style={{ background: 'rgba(99,102,241,0.1)', color: '#6366f1' }}>🤝 Looking for collaborators</span>}
                         </div>
                       </div>
+                      {plan.imageUrl && (
+                        <div style={{ margin: '16px 0', borderRadius: '12px', overflow: 'hidden', maxHeight: 300 }}>
+                          <img src={plan.imageUrl} alt={plan.title} style={{ width: '100%', height: 'auto', maxHeight: 300, objectFit: 'cover', borderRadius: 12 }} />
+                        </div>
+                      )}
                       {plan.description && <p className={styles.description}>{plan.description}</p>}
                       <button onClick={() => setShowShareModal(true)} style={{ marginTop: 8, padding: '6px 14px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.8rem' }}>
                         📝 Share via Post

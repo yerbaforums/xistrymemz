@@ -172,6 +172,7 @@ model Plan {
   id             String     @id @default(cuid())
   title          String
   description    String?
+  imageUrl       String?
   category       String?
   goals          String?
   mileposts      String?
@@ -246,6 +247,7 @@ model Event {
   id              String   @id @default(cuid())
   title           String
   description     String?
+  imageUrl        String?
   eventCategory   String?
   eventDate       DateTime?
   endDate         DateTime?
@@ -356,6 +358,7 @@ model Request {
   id           String    @id @default(cuid())
   title        String
   description String?
+  imageUrl     String?
   status      String    @default("PENDING")
   category    String    @default("GENERAL")
   priority    String    @default("MEDIUM")

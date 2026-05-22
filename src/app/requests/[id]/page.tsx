@@ -92,6 +92,7 @@ export default async function RequestDetailPage({
     completedBy: request.completedBy,
     completedAt: request.completedAt?.toISOString() || null,
     allowFulfillments: request.allowFulfillments,
+    imageUrl: (request as any).imageUrl || null,
     plan: request.plan ? {
       id: request.plan.id,
       title: request.plan.title,

@@ -110,7 +110,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { title, description, planId, productId, groupId, schoolContentId, eventId, category, priority, budget, goalAmount, currentFunding, location, isPublic, createGroup } = validation.data
+    const { title, description, imageUrl, planId, productId, groupId, schoolContentId, eventId, category, priority, budget, goalAmount, currentFunding, location, isPublic, createGroup } = validation.data
 
     if (planId) {
       const plan = await prisma.plan.findFirst({
@@ -170,6 +170,7 @@ export async function POST(request: Request) {
       data: {
         title,
         description,
+        imageUrl: imageUrl || null,
         planId: planId || null,
         productId: productId || null,
         groupId: groupId || null,

@@ -3,6 +3,7 @@ import { z } from 'zod'
 export const planSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200),
   description: z.string().max(5000).optional(),
+  imageUrl: z.string().optional().nullable(),
   goals: z.string().optional(),
   mileposts: z.string().optional(),
   lookingForCollaborators: z.boolean().optional(),
@@ -21,6 +22,7 @@ export const requestSchema = z.object({
   eventId: z.string().optional(),
   title: z.string().min(1, 'Title is required').max(200),
   description: z.string().max(5000).optional(),
+  imageUrl: z.string().optional().nullable(),
   category: z.string().optional(),
   priority: z.string().optional(),
   budget: z.number().optional().nullable(),
@@ -100,6 +102,7 @@ export const pollVoteSchema = z.object({
 export const eventSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200),
   description: z.string().max(5000).optional(),
+  imageUrl: z.string().optional().nullable(),
   eventCategory: z.string().optional(),
   eventDate: z.string().optional(),
   endDate: z.string().optional(),

@@ -1,0 +1,35 @@
+{
+  "version": "5.2.0",
+  "steps": [
+    {
+      "tag": "AlterTable",
+      "table": "Event",
+      "operation": "addColumn",
+      "column": {
+        "name": "imageUrl",
+        "type": "TEXT",
+        "isRequired": false
+      }
+    },
+    {
+      "tag": "AlterTable",
+      "table": "Plan",
+      "operation": "addColumn",
+      "column": {
+        "name": "imageUrl",
+        "type": "TEXT",
+        "isRequired": false
+      }
+    },
+    {
+      "tag": "AlterTable",
+      "table": "Request",
+      "operation": "addColumn",
+      "column": {
+        "name": "imageUrl",
+        "type": "TEXT",
+        "isRequired": false
+      }
+    }
+  ]
+}

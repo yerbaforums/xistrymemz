@@ -38,3 +38,22 @@ export interface PublicRequest {
   goalAmount: number | null
   user: { name: string | null }
 }
+
+export interface FeaturedEvent {
+  id: string
+  title: string
+  description: string | null
+  imageUrl: string | null
+  eventDate: string | null
+  location: string | null
+  eventCategory: string | null
+  userName?: string | null
+}
+
+export interface PublicPlan {
+  id: string
+  title: string
+  description: string | null
+  imageUrl: string | null
+  user: { name: string | null }
+}

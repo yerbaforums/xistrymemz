@@ -22,6 +22,7 @@ export default function Header() {
   const [notificationCount, setNotificationCount] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const headerRef = useRef<HTMLElement>(null)
+  const [avatarError, setAvatarError] = useState(false)
   const [searchResults, setSearchResults] = useState<{
     plans: { id: string; title: string; type: string; url: string }[]
     products: { id: string; title: string; type: string; url: string }[]
@@ -150,6 +151,10 @@ export default function Header() {
       setSearching(false)
     }
   }, [])
+
+  useEffect(() => {
+    setAvatarError(false)
+  }, [session?.user?.image])
 
   if (isAuthPage) return null
 
@@ -506,8 +511,8 @@ export default function Header() {
                   aria-expanded={openDropdown === 'user'}
                   aria-controls="user-menu-dropdown"
                 >
-                  {session.user.image ? (
-                    <Image src={session.user.image} alt={session.user.name || ''} className={styles.userAvatar} width={36} height={36} />
+                  {session.user.image && !avatarError ? (
+                    <Image src={session.user.image} alt={session.user.name || ''} className={styles.userAvatar} width={36} height={36} onError={() => setAvatarError(true)} />
                   ) : (
                     <span className={styles.userInitial}>
                       {(session.user.name || session.user.email || 'U')[0].toUpperCase()}

@@ -13,13 +13,13 @@ export default function PassportSection() {
         <div className={styles.icon}>🌍</div>
         <h2 className={styles.title}>Earth Passport</h2>
         <p className={styles.subtitle}>
-          Your verified identity across the XistrYmemZ network
+          A universal reference to search, connect, and share your whereabouts across the network
         </p>
         <div className={styles.cards}>
           <div className={styles.card}>
             <span className={styles.cardIcon}>🪪</span>
-            <h4>Verified Identity</h4>
-            <p>Build trust with verified profiles, real locations, and reputation scores visible to the community.</p>
+            <h4>Universal Reference</h4>
+            <p>Your Earth Passport is your universal reference on the network. Search within, notify others of your whereabouts, and stay connected wherever you are.</p>
           </div>
           <div className={styles.card}>
             <span className={styles.cardIcon}>⭐</span>

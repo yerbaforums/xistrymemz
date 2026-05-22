@@ -4,9 +4,31 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { planSchema, validateBody } from '@/lib/schemas'
 
-export async function GET() {
+export async function GET(request: Request) {
   const session = await getServerSession(authOptions)
-  
+  const { searchParams } = new URL(request.url)
+  const isPublic = searchParams.get('public') === 'true'
+
+  if (isPublic) {
+    const plans = await prisma.plan.findMany({
+      where: {
+        published: true,
+        status: { in: ['ACTIVE', 'COMPLETED'] }
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        imageUrl: true,
+        status: true,
+        user: { select: { name: true } }
+      },
+      orderBy: { updatedAt: 'desc' },
+      take: 4
+    })
+    return NextResponse.json(plans)
+  }
+
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
@@ -17,6 +39,7 @@ export async function GET() {
       id: true,
       title: true,
       description: true,
+      imageUrl: true,
       status: true,
       published: true,
       _count: {
@@ -49,12 +72,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: validation.error }, { status: 400 })
   }
 
-  const { title, description, goals, mileposts, lookingForCollaborators, acceptsDonations, donationAddress, donationCurrency, donationDescription, donationAddresses } = validation.data
+  const { title, description, imageUrl, goals, mileposts, lookingForCollaborators, acceptsDonations, donationAddress, donationCurrency, donationDescription, donationAddresses } = validation.data
 
   const plan = await prisma.plan.create({
     data: {
       title,
       description,
+      imageUrl: imageUrl || null,
       goals: goals || null,
       mileposts: mileposts || null,
       milepostStatus: '[]',

@@ -12,7 +12,7 @@ import FeaturesSection from '@/components/home/FeaturesSection'
 import CTASection from '@/components/home/CTASection'
 import PassportSection from '@/components/home/PassportSection'
 import HomeFooterSection from '@/components/home/HomeFooterSection'
-import type { PlatformStats, FeaturedShop, FeaturedProduct, PublicRequest } from '@/components/home/types'
+import type { PlatformStats, FeaturedShop, FeaturedProduct, PublicRequest, FeaturedEvent, PublicPlan } from '@/components/home/types'
 
 const ZERO_STATS: PlatformStats = {
   members: 0, shops: 0, schools: 0, products: 0, services: 0,
@@ -64,9 +64,13 @@ export default function Home() {
   const [shops, setShops] = useState<FeaturedShop[]>([])
   const [products, setProducts] = useState<FeaturedProduct[]>([])
   const [requests, setRequests] = useState<PublicRequest[]>([])
+  const [events, setEvents] = useState<FeaturedEvent[]>([])
+  const [plans, setPlans] = useState<PublicPlan[]>([])
   const [loadingShops, setLoadingShops] = useState(true)
   const [loadingProducts, setLoadingProducts] = useState(true)
   const [loadingRequests, setLoadingRequests] = useState(true)
+  const [loadingEvents, setLoadingEvents] = useState(true)
+  const [loadingPlans, setLoadingPlans] = useState(true)
   const [trendingTags, setTrendingTags] = useState<{ tag: string; postCount: number; entities: { posts: number; products: number; events: number; forumPosts: number; groupPosts: number } }[]>([])
   const animatedStats = useCountUp(stats)
 
@@ -108,6 +112,19 @@ export default function Home() {
       .then(r => r.ok ? r.json() : null)
       .then(d => { if (d?.hashtags) setTrendingTags(d.hashtags) })
       .catch(() => {})
+
+    fetch('/api/public/events')
+      .then(r => r.ok ? r.json() : [])
+      .then(data => { setEvents(Array.isArray(data) ? data.slice(0, 4) : []); setLoadingEvents(false) })
+      .catch(() => setLoadingEvents(false))
+
+    fetch('/api/plans?public=true')
+      .then(r => r.ok ? r.json() : [])
+      .then(data => {
+        const list = Array.isArray(data) ? data : (data?.plans || [])
+        setPlans(list.slice(0, 4)); setLoadingPlans(false)
+      })
+      .catch(() => setLoadingPlans(false))
   }, [fetchProducts])
 
   return (
@@ -119,9 +136,13 @@ export default function Home() {
         shops={shops}
         products={products}
         requests={requests}
+        events={events}
+        plans={plans}
         loadingShops={loadingShops}
         loadingProducts={loadingProducts}
         loadingRequests={loadingRequests}
+        loadingEvents={loadingEvents}
+        loadingPlans={loadingPlans}
         trendingTags={trendingTags}
       />
       <StepsSection />

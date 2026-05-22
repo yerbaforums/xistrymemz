@@ -98,6 +98,21 @@
   margin-bottom: 24px;
 }
 
+.detailImageWrapper {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  max-height: 300px;
+  margin-bottom: 24px;
+  background: var(--bg-tertiary);
+}
+
+.detailImage {
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+  object-fit: cover;
+}
+
 .locationSection {
   padding: 20px;
   background: var(--bg-tertiary);
@@ -590,6 +605,12 @@
   gap: 16px;
 }
 
+.titleActions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .editBtn {
   padding: 6px 16px;
   background: transparent;
@@ -604,6 +625,27 @@
 .editBtn:hover {
   border-color: var(--accent-primary);
   color: var(--accent-primary);
+}
+
+.deleteBtn {
+  padding: 6px 16px;
+  background: transparent;
+  border: 1px solid var(--accent-secondary);
+  border-radius: var(--radius-sm);
+  color: var(--accent-secondary);
+  cursor: pointer;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.deleteBtn:hover:not(:disabled) {
+  background: var(--accent-secondary);
+  color: var(--bg-primary);
+}
+
+.deleteBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .field {

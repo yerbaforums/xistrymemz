@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import ImageUploader from '@/components/ImageUploader'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import styles from './page.module.css'
 import { getUserProfileUrl } from '@/lib/utils'
@@ -25,6 +26,7 @@ interface Request {
   id: string
   title: string
   description: string | null
+  imageUrl: string | null
   status: string
   category: string
   priority: string
@@ -89,11 +91,12 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
   const [sortBy, setSortBy] = useState('newest')
   const [showCreate, setShowCreate] = useState(false)
   const [editingRequest, setEditingRequest] = useState<Request | null>(null)
-  const [editForm, setEditForm] = useState({ title: '', description: '', category: 'GENERAL', priority: 'MEDIUM', budget: '', goalAmount: '', location: '', isPublic: true, allowFulfillments: true, showDonationAddress: true })
+  const [editForm, setEditForm] = useState({ title: '', description: '', category: 'GENERAL', priority: 'MEDIUM', budget: '', goalAmount: '', location: '', isPublic: true, allowFulfillments: true, showDonationAddress: true, images: [] as string[] })
   const [saving, setSaving] = useState(false)
   const [newRequest, setNewRequest] = useState({
     title: '', description: '', category: 'GENERAL', priority: 'MEDIUM',
-    budget: '', goalAmount: '', location: '', isPublic: true, allowFulfillments: true, showDonationAddress: true, createGroup: false
+    budget: '', goalAmount: '', location: '', isPublic: true, allowFulfillments: true, showDonationAddress: true, createGroup: false,
+    images: [] as string[]
   })
   const [creating, setCreating] = useState(false)
   const [selectedDonation, setSelectedDonation] = useState<DonationAddr | null>(null)
@@ -212,6 +215,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
         body: JSON.stringify({
           title: newRequest.title,
           description: newRequest.description || null,
+          imageUrl: newRequest.images[0] || null,
           category: newRequest.category,
           priority: newRequest.priority,
           budget: newRequest.budget ? parseFloat(newRequest.budget) : null,
@@ -231,7 +235,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
           commentCount: 0, fulfillmentCount: 0, supportCount: 0
         }, ...requests])
         setShowCreate(false)
-        setNewRequest({ title: '', description: '', category: 'GENERAL', priority: 'MEDIUM', budget: '', goalAmount: '', location: '', isPublic: true, allowFulfillments: true, showDonationAddress: true, createGroup: false })
+        setNewRequest({ title: '', description: '', category: 'GENERAL', priority: 'MEDIUM', budget: '', goalAmount: '', location: '', isPublic: true, allowFulfillments: true, showDonationAddress: true, createGroup: false, images: [] })
         success('Request created!')
       } else {
         const err = await res.json()
@@ -250,6 +254,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
         body: JSON.stringify({
           title: editForm.title,
           description: editForm.description,
+          imageUrl: editForm.images[0] || null,
           category: editForm.category,
           priority: editForm.priority,
           budget: editForm.budget ? parseFloat(editForm.budget) : null,
@@ -433,6 +438,11 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
               <h3>Create New Request</h3>
               <input type="text" placeholder="Request title *" value={newRequest.title} onChange={e => setNewRequest({ ...newRequest, title: e.target.value })} className={styles.input} />
               <textarea placeholder="Describe what you need..." value={newRequest.description} onChange={e => setNewRequest({ ...newRequest, description: e.target.value })} className={styles.textarea} rows={3} />
+              <ImageUploader
+                images={newRequest.images}
+                onChange={(urls) => setNewRequest({ ...newRequest, images: urls })}
+                maxImages={1}
+              />
               <div className={styles.formRow}>
                 <select value={newRequest.category} onChange={e => setNewRequest({ ...newRequest, category: e.target.value })} className={styles.select}>
                   {CATEGORIES.filter(c => c !== 'ALL').map(cat => (<option key={cat} value={cat}>{cat.charAt(0) + cat.slice(1).toLowerCase()}</option>))}
@@ -498,6 +508,11 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
                   const pct = req.goalAmount ? Math.min(((req.currentFunding || 0) / (req.goalAmount || 1)) * 100, 100) : 0
                   return (
                     <div key={req.id} className={styles.card}>
+                      {req.imageUrl && (
+                        <div className={styles.cardImageWrapper}>
+                          <img src={req.imageUrl} alt={req.title} className={styles.cardImage} />
+                        </div>
+                      )}
                       <Link href={`/requests/${req.id}`} className={styles.cardTitle}>{req.title}</Link>
                       <div className={styles.cardTags}>
                         <span className={styles.priorityDot} style={{ backgroundColor: PRIORITY_COLORS[req.priority] }} title={req.priority} />
@@ -579,7 +594,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
 
                       <div className={styles.cardActions}>
                         {canManage && (
-                          <button onClick={() => { setEditingRequest(req); setEditForm({ title: req.title, description: req.description || '', category: req.category, priority: req.priority, budget: req.budget?.toString() || '', goalAmount: req.goalAmount?.toString() || '', location: req.location || '', isPublic: req.isPublic, allowFulfillments: req.allowFulfillments, showDonationAddress: req.showDonationAddress }) }} className={styles.editBtn}>Edit</button>
+                          <button onClick={() => { setEditingRequest(req); setEditForm({ title: req.title, description: req.description || '', category: req.category, priority: req.priority, budget: req.budget?.toString() || '', goalAmount: req.goalAmount?.toString() || '', location: req.location || '', isPublic: req.isPublic, allowFulfillments: req.allowFulfillments, showDonationAddress: req.showDonationAddress, images: (req as any).imageUrl ? [(req as any).imageUrl] : [] }) }} className={styles.editBtn}>Edit</button>
                         )}
                         {canManage && <button onClick={() => handleDelete(req.id)} className={styles.deleteBtn}>Delete</button>}
                         <Link href={`/requests/${req.id}`} className={styles.viewDetailsBtn}>View Details →</Link>
@@ -600,6 +615,11 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
             <h2>Edit Request</h2>
             <input type="text" placeholder="Title" value={editForm.title} onChange={e => setEditForm({ ...editForm, title: e.target.value })} className={styles.input} />
             <textarea placeholder="Description" value={editForm.description} onChange={e => setEditForm({ ...editForm, description: e.target.value })} className={styles.textarea} rows={3} />
+            <ImageUploader
+              images={editForm.images}
+              onChange={(urls) => setEditForm({ ...editForm, images: urls })}
+              maxImages={1}
+            />
             <div className={styles.formRow}>
               <select value={editForm.category} onChange={e => setEditForm({ ...editForm, category: e.target.value })} className={styles.select}>
                 {CATEGORIES.filter(c => c !== 'ALL').map(cat => (<option key={cat} value={cat}>{cat}</option>))}

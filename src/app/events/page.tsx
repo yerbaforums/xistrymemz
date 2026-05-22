@@ -520,6 +520,11 @@ export default function EventsPage() {
                 ) : (
                   filteredEvents.map(event => (
                     <div key={event.id} className={`${styles.eventCard} ${selectedEvent?.id === event.id ? styles.selected : ''}`} onClick={() => { setSelectedEvent(event); if (event.latitude && event.longitude && mapRef.current) { mapRef.current.setView([event.latitude, event.longitude], 15, { animate: true }) } }}>
+                      {event.imageUrl && (
+                        <div className={styles.eventImageWrapper}>
+                          <img src={event.imageUrl} alt={event.title} className={styles.eventCardImage} />
+                        </div>
+                      )}
                       <div className={styles.eventHeader}>
                         <span className={`badge badge-${event.eventCategory?.toLowerCase()}`}>{event.eventCategory}</span>
                         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>

@@ -63,6 +63,7 @@ export async function GET(request: Request) {
         id: event.id,
         title: event.title,
         description: event.description,
+        imageUrl: event.imageUrl,
         eventCategory: event.eventCategory,
         eventDate: event.eventDate?.toISOString() || null,
         endDate: event.endDate?.toISOString() || null,
@@ -114,6 +115,7 @@ export async function POST(request: NextRequest) {
     const { 
       title, 
       description, 
+      imageUrl,
       eventCategory, 
       eventDate, 
       endDate,
@@ -177,6 +179,7 @@ export async function POST(request: NextRequest) {
       data: {
         title,
         description,
+        imageUrl: imageUrl || null,
         eventCategory: eventCategory || 'GENERAL',
         eventDate: eventDate ? new Date(eventDate) : undefined,
         endDate: endDate ? new Date(endDate) : undefined,

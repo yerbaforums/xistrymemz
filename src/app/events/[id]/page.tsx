@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import styles from './page.module.css'
 import dynamic from 'next/dynamic'
 import { useToast } from '@/context/ToastContext'
@@ -14,6 +14,7 @@ import RoleBadge from '@/components/RoleBadge'
 import ShareToPostModal from '@/components/ShareToPostModal'
 import type { Event } from '@/types/event'
 import type { DonationAddr } from '@/types/product'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 const QRCodeModal = dynamic(() => import('@/components/QRCodeModal').then(mod => mod.QRCodeModal), { ssr: false })
 
@@ -56,6 +57,29 @@ function EventDetailContent() {
     volunteerDescription: ''
   })
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const router = useRouter()
+
+  const confirmDelete = async () => {
+    if (!event) return
+    if (!window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) return
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/events/${event.id}`, { method: 'DELETE' })
+      if (res.ok) {
+        success('Event deleted')
+        router.push('/events')
+      } else {
+        const data = await res.json()
+        error(data.error || 'Failed to delete event')
+      }
+    } catch (err) {
+      console.error(err)
+      error('Failed to delete event')
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   const startEditing = () => {
     if (!event) return
@@ -297,7 +321,12 @@ function EventDetailContent() {
             <div className={styles.titleRow}>
               <h1>{isEditing ? 'Editing Event' : event.title}</h1>
               {isOwner && !isEditing && (
-                <button onClick={startEditing} className={styles.editBtn}>Edit</button>
+                <div className={styles.titleActions}>
+                  <button onClick={startEditing} className={styles.editBtn}>Edit</button>
+                  <button onClick={confirmDelete} className={styles.deleteBtn} disabled={deleting}>
+                    {deleting ? 'Deleting...' : 'Delete'}
+                  </button>
+                </div>
               )}
             </div>
 
@@ -392,6 +421,12 @@ function EventDetailContent() {
                   <p className={styles.planRef}>From: {event.planTitle}</p>
                 )}
                 
+                {event.imageUrl && (
+                  <div className={styles.detailImageWrapper}>
+                    <img src={event.imageUrl} alt={event.title} className={styles.detailImage} />
+                  </div>
+                )}
+
                 {event.description && (
                   <p className={styles.description}>{event.description}</p>
                 )}
@@ -676,8 +711,10 @@ function EventDetailContent() {
 
 export default function PublicEventPage() {
   return (
-    <Suspense fallback={<div className={styles.loading}>Loading...</div>}>
-      <EventDetailContent />
-    </Suspense>
+    <ErrorBoundary>
+      <Suspense fallback={<div className={styles.loading}>Loading...</div>}>
+        <EventDetailContent />
+      </Suspense>
+    </ErrorBoundary>
   )
 }

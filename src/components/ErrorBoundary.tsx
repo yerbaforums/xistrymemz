@@ -1,57 +1,44 @@
 'use client'
 
-import { Component, ErrorInfo, ReactNode } from 'react'
+import { Component, type ReactNode } from 'react'
 
-interface ErrorBoundaryProps {
+interface Props {
   children: ReactNode
   fallback?: ReactNode
-  onError?: (error: Error, errorInfo: ErrorInfo) => void
 }
 
-interface ErrorBoundaryState {
+interface State {
   hasError: boolean
   error: Error | null
 }
 
-export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  state: ErrorBoundaryState = { hasError: false, error: null }
+export class ErrorBoundary extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props)
+    this.state = { hasError: false, error: null }
+  }
 
   static getDerivedStateFromError(error: Error) {
     return { hasError: true, error }
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary caught:', error, errorInfo)
-    this.props.onError?.(error, errorInfo)
+  componentDidCatch(error: Error, info: { componentStack?: string }) {
+    console.error('ErrorBoundary caught:', error, info)
   }
 
   render() {
     if (this.state.hasError) {
-      if (this.props.fallback) return this.props.fallback
-      return (
-        <div style={{
-          minHeight: '40vh',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          textAlign: 'center',
-          padding: '48px 24px'
-        }}>
-          <h2 style={{ marginBottom: '12px' }}>Something went wrong</h2>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '8px' }}>
-            An unexpected error occurred. Please try refreshing the page.
+      return this.props.fallback || (
+        <div style={{ padding: '40px 24px', textAlign: 'center' }}>
+          <h2>Something went wrong</h2>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: 16 }}>
+            {this.state.error?.message || 'An unexpected error occurred'}
           </p>
-          {this.state.error && (
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '24px' }}>
-              {this.state.error.message}
-            </p>
-          )}
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => this.setState({ hasError: false, error: null })}
             className="btn-primary"
           >
-            Refresh Page
+            Try Again
           </button>
         </div>
       )

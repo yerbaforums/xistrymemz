@@ -3,20 +3,24 @@
 import Link from 'next/link'
 import Skeleton from '@/components/Skeleton'
 import { useScrollReveal } from '@/hooks/useScrollReveal'
-import type { FeaturedShop, FeaturedProduct, PublicRequest } from './types'
+import type { FeaturedShop, FeaturedProduct, PublicRequest, FeaturedEvent, PublicPlan } from './types'
 import styles from './PulseSection.module.css'
 
 interface Props {
   shops: FeaturedShop[]
   products: FeaturedProduct[]
   requests: PublicRequest[]
+  events: FeaturedEvent[]
+  plans: PublicPlan[]
   loadingShops: boolean
   loadingProducts: boolean
   loadingRequests: boolean
+  loadingEvents: boolean
+  loadingPlans: boolean
   trendingTags?: { tag: string; entities?: { products: number; events: number; posts: number; forumPosts: number; groupPosts: number } }[]
 }
 
-export default function PulseSection({ shops, products, requests, loadingShops, loadingProducts, loadingRequests, trendingTags }: Props) {
+export default function PulseSection({ shops, products, requests, events, plans, loadingShops, loadingProducts, loadingRequests, loadingEvents, loadingPlans, trendingTags }: Props) {
   const { ref, visible } = useScrollReveal()
 
   return (
@@ -97,6 +101,53 @@ export default function PulseSection({ shops, products, requests, loadingShops, 
             </div>
           ) : <p className={styles.empty}>No requests yet</p>}
           <Link href="/requests" className={styles.viewAll}>View all requests →</Link>
+        </div>
+        <div className={styles.card}>
+          <div className={styles.header}>
+            <span className={styles.icon}>📅</span>
+            <h3>Upcoming Events</h3>
+          </div>
+          {loadingEvents ? (
+            <div className={styles.list}>{[1,2,3].map(i => <Skeleton key={i} width="100%" height="2.5rem" />)}</div>
+          ) : events.length > 0 ? (
+            <div className={styles.list}>
+              {events.slice(0, 4).map(ev => (
+                <Link key={ev.id} href={`/events/${ev.id}`} className={styles.item}>
+                  <span className={styles.itemIcon}>📅</span>
+                  <div className={styles.itemCol}>
+                    <span className={styles.itemTitle}>{ev.title}</span>
+                    <span className={styles.itemMeta}>{ev.location || ev.eventCategory || 'Event'}</span>
+                  </div>
+                  {ev.eventDate && (
+                    <span className={styles.itemPrice}>{new Date(ev.eventDate).toLocaleDateString()}</span>
+                  )}
+                </Link>
+              ))}
+            </div>
+          ) : <p className={styles.empty}>No upcoming events</p>}
+          <Link href="/events" className={styles.viewAll}>Explore events →</Link>
+        </div>
+        <div className={styles.card}>
+          <div className={styles.header}>
+            <span className={styles.icon}>🚀</span>
+            <h3>Active Projects</h3>
+          </div>
+          {loadingPlans ? (
+            <div className={styles.list}>{[1,2,3].map(i => <Skeleton key={i} width="100%" height="2.5rem" />)}</div>
+          ) : plans.length > 0 ? (
+            <div className={styles.list}>
+              {plans.slice(0, 4).map(plan => (
+                <Link key={plan.id} href={`/plans/public?id=${plan.id}`} className={styles.item}>
+                  <span className={styles.itemIcon}>🚀</span>
+                  <div className={styles.itemCol}>
+                    <span className={styles.itemTitle}>{plan.title}</span>
+                    <span className={styles.itemMeta}>by {plan.user?.name || 'Unknown'}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : <p className={styles.empty}>No active projects</p>}
+          <Link href="/plans/public" className={styles.viewAll}>Explore projects →</Link>
         </div>
       </div>
 

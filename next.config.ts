@@ -25,7 +25,23 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
+        hostname: '*.pinata.cloud',
+      },
+      {
+        protocol: 'https',
         hostname: 'ipfs.io',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cloudflare-ipfs.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'dweb.link',
+      },
+      {
+        protocol: 'https',
+        hostname: 'ipfs.xistrymemz.xyz',
       },
       {
         protocol: 'https',

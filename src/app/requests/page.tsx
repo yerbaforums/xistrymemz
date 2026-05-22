@@ -54,6 +54,7 @@ export default async function RequestsPage() {
     id: req.id,
     title: req.title,
     description: req.description,
+    imageUrl: req.imageUrl,
     status: req.status,
     category: req.category,
     priority: req.priority,

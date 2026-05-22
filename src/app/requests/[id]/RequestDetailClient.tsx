@@ -120,6 +120,7 @@ interface Request {
   completedBy: string | null
   completedAt: string | null
   allowFulfillments: boolean
+  imageUrl: string | null
   plan: {
     id: string
     title: string
@@ -624,6 +625,12 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                 </button>
               )}
             </div>
+
+            {request.imageUrl && (
+              <div className={styles.detailImageWrapper}>
+                <img src={request.imageUrl} alt={request.title} className={styles.detailImage} />
+              </div>
+            )}
 
             {request.description && (
               <p className={styles.description}>{request.description}</p>

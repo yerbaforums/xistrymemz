@@ -114,6 +114,7 @@ export async function PUT(
       data: {
         title: body.title ?? existingRequest.title,
         description: body.description ?? existingRequest.description,
+        imageUrl: body.imageUrl !== undefined ? body.imageUrl : existingRequest.imageUrl,
         status: newStatus,
         category: body.category ?? existingRequest.category,
         priority: body.priority ?? existingRequest.priority,

@@ -85,6 +85,7 @@ export async function PUT(
       data: {
         title: body.title ?? existingPlan.title,
         description: body.description ?? existingPlan.description,
+        imageUrl: body.imageUrl !== undefined ? body.imageUrl : existingPlan.imageUrl,
         status: body.status ?? existingPlan.status,
         goals: body.goals !== undefined ? body.goals : existingPlan.goals,
         mileposts: body.mileposts !== undefined ? body.mileposts : existingPlan.mileposts,

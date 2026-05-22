@@ -59,6 +59,7 @@ export async function GET(
       id: event.id,
       title: event.title,
       description: event.description,
+      imageUrl: event.imageUrl,
       eventCategory: event.eventCategory,
       eventDate: event.eventDate?.toISOString() || null,
       endDate: event.endDate?.toISOString() || null,
@@ -74,6 +75,7 @@ export async function GET(
       acceptsDonations: event.acceptsDonations,
       donationAddress: event.donationAddress,
       donationCurrency: event.donationCurrency,
+      donationAddresses: event.donationAddresses,
       needsVolunteers: event.needsVolunteers,
       volunteerRoles: event.volunteerRoles ? JSON.parse(event.volunteerRoles) : [],
       volunteerDescription: event.volunteerDescription,
@@ -136,6 +138,7 @@ export async function PUT(
     const { 
       title, 
       description, 
+      imageUrl,
       eventCategory, 
       eventDate, 
       endDate, 
@@ -171,6 +174,7 @@ export async function PUT(
       data: {
         title,
         description,
+        imageUrl: imageUrl !== undefined ? imageUrl : event.imageUrl,
         eventCategory: eventCategory || event.eventCategory,
         eventDate: eventDate ? new Date(eventDate) : event.eventDate,
         endDate: endDate ? new Date(endDate) : event.endDate,
@@ -222,5 +226,35 @@ export async function PUT(
   } catch (error) {
     console.error('PUT /api/events/[id]:', error)
     return NextResponse.json({ error: 'Failed to update event' }, { status: 500 })
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    const session = await getServerSession(authOptions)
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const event = await prisma.event.findUnique({ where: { id } })
+    if (!event) {
+      return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+    }
+
+    if (event.organizerId !== session.user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    await prisma.event.delete({ where: { id } })
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('DELETE /api/events/[id]:', error)
+    return NextResponse.json({ error: 'Failed to delete event' }, { status: 500 })
   }
 }

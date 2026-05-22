@@ -16,6 +16,7 @@ export default async function PlansPage() {
       id: true,
       title: true,
       description: true,
+      imageUrl: true,
       goals: true,
       mileposts: true,
       milepostStatus: true,

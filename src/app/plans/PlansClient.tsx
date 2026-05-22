@@ -6,6 +6,7 @@ import styles from './page.module.css'
 import { stringifyGoals, stringifyMilestones } from '@/lib/plan-utils'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
+import ImageUploader from '@/components/ImageUploader'
 import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import type { DonationAddr } from '@/types/product'
 
@@ -13,6 +14,7 @@ interface Plan {
   id: string
   title: string
   description: string | null
+  imageUrl: string | null
   status: string
   published: boolean
   pinned: boolean
@@ -58,6 +60,7 @@ export default function PlansClient({ initialPlans }: PlansClientProps) {
   const [acceptsDonations, setAcceptsDonations] = useState(false)
   const [selectedDonationAddrs, setSelectedDonationAddrs] = useState<DonationAddr[]>([])
   const [donationDescription, setDonationDescription] = useState('')
+  const [planImages, setPlanImages] = useState<string[]>([])
   const userDonationAddrs = useDonationAddresses()
 
   const filteredPlans = plans.filter(p => {
@@ -92,6 +95,7 @@ export default function PlansClient({ initialPlans }: PlansClientProps) {
           body: JSON.stringify({
             title,
             description,
+            imageUrl: planImages[0] || null,
             goals: stringifyGoals(goalItems),
             mileposts: stringifyMilestones(milestoneItems),
             acceptsDonations,
@@ -199,6 +203,11 @@ export default function PlansClient({ initialPlans }: PlansClientProps) {
                 )}
               </div>
               
+              {plan.imageUrl && (
+                <div className={styles.cardImageWrapper}>
+                  <img src={plan.imageUrl} alt={plan.title} className={styles.cardImage} />
+                </div>
+              )}
               <Link href={`/plans/${plan.id}`} className={styles.cardTitle}>
                 {plan.title}
               </Link>
@@ -277,6 +286,14 @@ export default function PlansClient({ initialPlans }: PlansClientProps) {
                   onChange={e => setDescription(e.target.value)}
                   placeholder="What is this project about? What outcome are you looking for?"
                   rows={3}
+                />
+              </div>
+              <div className="form-group">
+                <label>Project Image</label>
+                <ImageUploader
+                  images={planImages}
+                  onChange={setPlanImages}
+                  maxImages={1}
                 />
               </div>
               <div className="form-group">

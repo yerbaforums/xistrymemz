@@ -61,6 +61,7 @@ export async function GET() {
       id: event.id,
       title: event.title,
       description: event.description,
+      imageUrl: event.imageUrl,
       eventCategory: event.eventCategory,
       eventDate: event.eventDate,
       location: event.location,

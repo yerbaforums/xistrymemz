@@ -16,6 +16,7 @@ export interface Event {
   id: string
   title: string
   description: string | null
+  imageUrl: string | null
   eventCategory: string | null
   eventDate: string | null
   endDate: string | null
@@ -59,6 +60,7 @@ export interface DashboardEvent {
   id: string
   title: string
   description: string | null
+  imageUrl: string | null
   eventDate: string | null
   eventCategory: string | null
   location: string | null
