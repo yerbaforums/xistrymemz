@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import styles from './page.module.css'
@@ -10,6 +10,14 @@ import { eventTemplates, type EventTemplate } from '@/lib/event-templates'
 type FilterType = 'ALL' | 'SHOP' | 'SCHOOL' | 'COURIER' | 'EVENTS'
 
 export default function TemplatesPage() {
+  return (
+    <Suspense fallback={<div style={{padding: '40px', textAlign: 'center'}}>Loading templates...</div>}>
+      <TemplatesPageContent />
+    </Suspense>
+  )
+}
+
+function TemplatesPageContent() {
   const searchParams = useSearchParams()
   const filterParam = searchParams.get('filter')?.toUpperCase() as FilterType | null
   const [activeFilter, setActiveFilter] = useState<FilterType>(
