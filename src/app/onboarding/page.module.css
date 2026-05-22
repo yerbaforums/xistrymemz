@@ -456,132 +456,6 @@
   font-size: 0.875rem;
 }
 
-.walletOptions {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin: 32px 0;
-  text-align: left;
-}
-
-.walletCard {
-  padding: 20px;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  transition: var(--transition);
-}
-
-.walletCard:hover {
-  border-color: var(--accent-primary);
-  background: rgba(0, 217, 255, 0.03);
-}
-
-.walletHeader {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.walletHeader img {
-  border-radius: 50%;
-}
-
-.walletHeader strong {
-  color: var(--text-primary);
-  font-size: 1rem;
-  display: block;
-}
-
-.walletDesc {
-  color: var(--text-secondary);
-  font-size: 0.8rem;
-}
-
-.walletSteps {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  line-height: 1.6;
-}
-
-.walletSteps p {
-  margin-bottom: 8px;
-  color: var(--text-primary);
-}
-
-.walletSteps ol {
-  margin: 0 0 16px 0;
-  padding-left: 20px;
-}
-
-.walletSteps li {
-  margin-bottom: 6px;
-}
-
-.walletSteps a {
-  color: var(--accent-primary);
-  text-decoration: none;
-}
-
-.walletSteps a:hover {
-  text-decoration: underline;
-}
-
-.walletDownloadBtn {
-  display: inline-block;
-  padding: 10px 20px;
-  background: var(--accent-primary);
-  color: var(--bg-primary);
-  border-radius: var(--radius-sm);
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 0.875rem;
-  transition: var(--transition);
-}
-
-.walletDownloadBtn:hover {
-  transform: scale(1.02);
-  box-shadow: var(--shadow-glow);
-  text-decoration: none;
-}
-
-.warningBox {
-  text-align: left;
-  margin: 24px 0;
-  padding: 16px;
-  background: rgba(255, 51, 102, 0.05);
-  border: 1px solid rgba(255, 51, 102, 0.3);
-  border-radius: var(--radius-md);
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-}
-
-.warningBox strong {
-  color: var(--accent-secondary);
-}
-
-.warningBox ul {
-  margin: 8px 0 0 0;
-  padding-left: 20px;
-}
-
-.warningBox li {
-  margin-bottom: 4px;
-}
-
-@media (max-width: 768px) {
-  .walletCard {
-    padding: 16px;
-  }
-  
-  .walletHeader {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-}
-
 .classGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -614,4 +488,277 @@
 
 .classOption span {
   flex: 1;
+}
+
+.headerUserBtn {
+  position: relative;
+}
+
+.userBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  border: 2px solid var(--border-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: var(--transition);
+  padding: 0;
+}
+
+.userBtn:hover {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(0, 217, 255, 0.3);
+}
+
+.userAvatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.userInitial {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--bg-primary);
+}
+
+.userDropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 200px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+}
+
+.userDropdownInfo {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.userDropdownInfo strong {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.userDropdownInfo span {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.userDropdownLinks {
+  padding: 6px 0;
+}
+
+.userDropdownLink {
+  display: block;
+  padding: 8px 16px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: var(--transition);
+}
+
+.userDropdownLink:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+.tourCard {
+  text-align: center;
+  padding: 32px 24px;
+  margin: 24px 0;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+}
+
+.tourIcon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+}
+
+.tourName {
+  font-size: 1.4rem;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+.tourDesc {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.tourOutletGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 20px 0;
+  justify-content: center;
+}
+
+.tourOutletCard {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  font-size: 0.85rem;
+}
+
+.tourOutletCard:hover {
+  border-color: var(--accent-primary);
+  background: rgba(0, 217, 255, 0.05);
+}
+
+.tourOutletActive {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 1px rgba(0, 217, 255, 0.3);
+}
+
+.tourOutletSelected {
+  background: rgba(0, 217, 255, 0.1);
+  border-color: var(--accent-primary);
+}
+
+.tourOutletIcon {
+  font-size: 1.1rem;
+}
+
+.tourOutletName {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.tourOutletCheck {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  font-size: 0.65rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quickStartBtn {
+  margin-top: 16px;
+  padding: 10px 24px;
+  background: transparent;
+  border: 1px solid var(--accent-primary);
+  color: var(--accent-primary);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.quickStartBtn:hover {
+  background: rgba(0, 217, 255, 0.1);
+  transform: scale(1.02);
+}
+
+.selectedSummary {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin: 8px 0;
+}
+
+.tourNav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.tourNavBtn {
+  padding: 8px 20px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.tourNavBtn:hover:not(:disabled) {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.tourNavBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tourNavBtnPrimary {
+  padding: 8px 20px;
+  background: var(--accent-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--bg-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.tourNavBtnPrimary:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-glow);
+}
+
+.tourCounter {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+@media (max-width: 768px) {
+  .tourCard {
+    padding: 24px 16px;
+  }
+
+  .tourIcon {
+    font-size: 3rem;
+  }
+
+  .tourNav {
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .tourOutletGrid {
+    gap: 6px;
+  }
+
+  .tourOutletCard {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
 }

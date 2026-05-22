@@ -70,7 +70,7 @@ export async function PUT(request: Request) {
     }
 
     const {
-      name, username, bio, location, neighborhood, searchRadius, traveling, website, userClass,
+      name, username, image, bio, location, neighborhood, searchRadius, traveling, website, userClass,
       walletAddress, paymentAddress, refundAddress, cryptoCurrency,
       donationAddress, donationCurrency, acceptsDonations,
       latitude, longitude, lookingForCollaborators
@@ -99,6 +99,7 @@ export async function PUT(request: Request) {
       data: {
         name: name || null,
         username: username ? username.toLowerCase().replace(/[^a-z0-9]/g, '') : null,
+        image: image || null,
         bio: bio || null,
         location: location || null,
         neighborhood: neighborhood || null,

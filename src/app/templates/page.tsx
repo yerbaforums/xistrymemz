@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import styles from './page.module.css'
 import { businessTemplates, getTemplatesByType, type BusinessTemplate } from '@/lib/templates'
 import { eventTemplates, type EventTemplate } from '@/lib/event-templates'
@@ -9,7 +10,19 @@ import { eventTemplates, type EventTemplate } from '@/lib/event-templates'
 type FilterType = 'ALL' | 'SHOP' | 'SCHOOL' | 'COURIER' | 'EVENTS'
 
 export default function TemplatesPage() {
-  const [activeFilter, setActiveFilter] = useState<FilterType>('ALL')
+  const searchParams = useSearchParams()
+  const filterParam = searchParams.get('filter')?.toUpperCase() as FilterType | null
+  const [activeFilter, setActiveFilter] = useState<FilterType>(
+    filterParam && ['ALL', 'SHOP', 'SCHOOL', 'COURIER', 'EVENTS'].includes(filterParam)
+      ? filterParam
+      : 'ALL'
+  )
+
+  useEffect(() => {
+    if (filterParam && ['ALL', 'SHOP', 'SCHOOL', 'COURIER', 'EVENTS'].includes(filterParam)) {
+      setActiveFilter(filterParam)
+    }
+  }, [filterParam])
   const [selectedBusiness, setSelectedBusiness] = useState<BusinessTemplate | null>(null)
   const [selectedEvent, setSelectedEvent] = useState<EventTemplate | null>(null)
 

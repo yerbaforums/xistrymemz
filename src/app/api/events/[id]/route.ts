@@ -148,6 +148,7 @@ export async function PUT(
       acceptsDonations,
       donationAddress,
       donationCurrency,
+      donationAddresses,
       needsVolunteers,
       volunteerRoles,
       volunteerDescription,
@@ -184,6 +185,7 @@ export async function PUT(
         acceptsDonations: acceptsDonations ?? event.acceptsDonations,
         donationAddress: donationAddress ?? event.donationAddress,
         donationCurrency: donationCurrency ?? event.donationCurrency,
+        donationAddresses: donationAddresses !== undefined ? (donationAddresses || null) : event.donationAddresses,
         needsVolunteers: needsVolunteers ?? event.needsVolunteers,
         volunteerRoles: volunteerRoles ? JSON.stringify(volunteerRoles) : event.volunteerRoles,
         volunteerDescription: volunteerDescription ?? event.volunteerDescription

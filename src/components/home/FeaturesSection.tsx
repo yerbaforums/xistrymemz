@@ -42,7 +42,7 @@ const GROUPS = [
     icon: '💰',
     features: [
       { icon: '🌍', title: 'Earth Passport', desc: 'Verified identity, reputation scores, and trust badges across the network.', href: '/about' },
-      { icon: '💰', title: 'Crypto Wallet', desc: 'Privacy-respecting crypto payments, tips, donations, and escrow built in.', href: '/wallet' },
+      { icon: '💰', title: 'Crypto-Friendly Donations', desc: 'Send and receive crypto donations with privacy and QR codes. More decentralized features in development.', href: '/profile/edit' },
       { icon: '📋', title: 'Templates', desc: 'Start fast with pre-built templates for shops, schools, and services.', href: '/templates' },
     ]
   }

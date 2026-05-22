@@ -93,7 +93,12 @@ export async function PUT(
         resources: body.resources !== undefined ? body.resources : existingPlan.resources,
         schoolId: body.schoolId ?? existingPlan.schoolId,
         shopId: body.shopId ?? existingPlan.shopId,
-        lookingForCollaborators: body.lookingForCollaborators ?? existingPlan.lookingForCollaborators
+        lookingForCollaborators: body.lookingForCollaborators ?? existingPlan.lookingForCollaborators,
+        acceptsDonations: body.acceptsDonations !== undefined ? body.acceptsDonations : existingPlan.acceptsDonations,
+        donationAddress: body.donationAddress !== undefined ? (body.donationAddress || null) : existingPlan.donationAddress,
+        donationCurrency: body.donationCurrency ?? existingPlan.donationCurrency,
+        donationDescription: body.donationDescription !== undefined ? (body.donationDescription || null) : existingPlan.donationDescription,
+        donationAddresses: body.donationAddresses !== undefined ? (body.donationAddresses || null) : existingPlan.donationAddresses
       }
     })
 

@@ -144,7 +144,7 @@ export async function POST(request: Request) {
       paymentMethods, paymentType, acceptsRequests, acceptsOffers, requestPrice, published,
       rentalDaily, rentalWeekly, rentalMonthly, rentalDeposit,
       rentalMinDays, rentalMaxDays, rentalAvailable,
-      acceptsDonations, donationAddress, donationCurrency,
+      acceptsDonations, donationAddress, donationCurrency, donationAddresses,
       sellerPayoutAddress, sellerCryptoCurrency,
       createGroup, hashtags,
       acceptsAppointments, appointmentDuration, appointmentLeadTime, appointmentLocation, appointmentMeetingLink, appointmentFormFields
@@ -183,6 +183,7 @@ export async function POST(request: Request) {
         acceptsDonations: acceptsDonations ?? false,
         donationAddress: donationAddress || null,
         donationCurrency: donationCurrency || 'ETH',
+        donationAddresses: donationAddresses || null,
         sellerPayoutAddress: sellerPayoutAddress || null,
         sellerCryptoCurrency: sellerCryptoCurrency || 'ETH',
         acceptsAppointments: acceptsAppointments ?? false,

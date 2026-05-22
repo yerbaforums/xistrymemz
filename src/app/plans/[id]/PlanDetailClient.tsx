@@ -11,6 +11,10 @@ import PlanSupport from './PlanSupport'
 import { parseGoals, parseMilestones, parseResources, stringifyGoals, stringifyMilestones, stringifyResources } from '@/lib/plan-utils'
 import { getUserProfileUrl } from '@/lib/utils'
 import ShareToPostModal from '@/components/ShareToPostModal'
+import DonationAddressPicker from '@/components/DonationAddressPicker'
+import { useDonationAddresses } from '@/hooks/useDonationAddresses'
+import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
+import type { DonationAddr } from '@/types/product'
 import type { PlanGoal, PlanMilestone, PlanResource, PlanContribution, PlanJoiner } from '@/lib/plan-utils'
 
 interface Request {
@@ -41,7 +45,7 @@ interface Plan {
   lookingForCollaborators: boolean
   requests: Request[]; isOwner: boolean; isEditor: boolean; events: PlanEvent[]
   goalAmount: number | null; currentFunding: number | null
-  donationAddress: string | null; donationCurrency: string
+  donationAddress: string | null; donationCurrency: string; donationAddresses: string | null
   acceptsDonations: boolean; donationDescription: string | null
   needsVolunteers: boolean; volunteerRoles: string | null; volunteerDescription: string | null
   joiners: PlanJoiner[]; contributions: PlanContribution[]
@@ -90,6 +94,11 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
   const [selectedProductId, setSelectedProductId] = useState('')
   const [availableProducts, setAvailableProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
+  const [editDonations, setEditDonations] = useState(false)
+  const [editAcceptsDonations, setEditAcceptsDonations] = useState(plan.acceptsDonations)
+  const [editSelectedDonationAddrs, setEditSelectedDonationAddrs] = useState<DonationAddr[]>(() => hydrateDonationAddresses(plan.donationAddress, plan.donationCurrency, plan.donationAddresses))
+  const [editDonationDescription, setEditDonationDescription] = useState(plan.donationDescription || '')
+  const userDonationAddrs = useDonationAddresses()
 
   const [eventTitle, setEventTitle] = useState('')
   const [eventDesc, setEventDesc] = useState('')
@@ -554,14 +563,92 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
           {/* Support Tab */}
           {activeTab === 'support' && (
             <div className={styles.tabPanel}>
+              {isOwner && (
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <h3 style={{ margin: 0 }}>Donation Settings</h3>
+                    <button
+                      onClick={() => {
+                        if (editDonations) {
+                          setEditAcceptsDonations(plan.acceptsDonations)
+                          setEditSelectedDonationAddrs(hydrateDonationAddresses(plan.donationAddress, plan.donationCurrency, plan.donationAddresses))
+                          setEditDonationDescription(plan.donationDescription || '')
+                        }
+                        setEditDonations(!editDonations)
+                      }}
+                      className="btn-ghost"
+                      style={{ fontSize: '0.85rem' }}
+                    >
+                      {editDonations ? 'Cancel' : 'Edit'}
+                    </button>
+                  </div>
+                  {editDonations ? (
+                    <>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginBottom: 8 }}>
+                        <input type="checkbox" checked={editAcceptsDonations} onChange={e => setEditAcceptsDonations(e.target.checked)} />
+                        Accept Donations
+                      </label>
+                      {editAcceptsDonations && (
+                        <>
+<DonationAddressPicker
+                             savedAddresses={userDonationAddrs}
+                             selectedAddresses={editSelectedDonationAddrs}
+                             onAddressesChange={(addrs) => setEditSelectedDonationAddrs(addrs)}
+                           />
+                          <div className="form-group" style={{ marginTop: 8 }}>
+                            <label>Donation Description</label>
+                            <textarea
+                              value={editDonationDescription}
+                              onChange={e => setEditDonationDescription(e.target.value)}
+                              placeholder="What will donations be used for?"
+                              rows={2}
+                            />
+                          </div>
+                        </>
+                      )}
+                      <button
+                        onClick={async () => {
+                          setLoading(true)
+                          try {
+                            const legacy = donationAddressesToLegacy(editAcceptsDonations ? editSelectedDonationAddrs : [])
+                            const updated = await saveField({
+                              acceptsDonations: editAcceptsDonations,
+                              ...legacy,
+                              donationAddresses: editAcceptsDonations ? serializeDonationAddresses(editSelectedDonationAddrs) : null,
+                              donationDescription: editAcceptsDonations ? (editDonationDescription || null) : null
+                            })
+                            setPlan({ ...plan, ...updated })
+                            setEditDonations(false)
+                          } catch (err) {
+                            setSaveError(err instanceof Error ? err.message : 'Failed to update donation settings')
+                          } finally {
+                            setLoading(false)
+                          }
+                        }}
+                        className="btn-primary"
+                        disabled={loading}
+                        style={{ marginTop: 8 }}
+                      >
+                        {loading ? 'Saving...' : 'Save Donation Settings'}
+                      </button>
+                    </>
+                  ) : (
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                      {plan.acceptsDonations ? 'This project accepts donations.' : 'Donations are not enabled for this project.'}
+                      {plan.donationAddress && ` Address: ${plan.donationAddress.slice(0, 6)}...${plan.donationAddress.slice(-4)}`}
+                    </p>
+                  )}
+                </div>
+              )}
               <PlanSupport
                 planId={plan.id}
                 currentFunding={plan.currentFunding}
                 goalAmount={plan.goalAmount}
                 donationAddress={plan.donationAddress}
                 donationCurrency={plan.donationCurrency}
-                donationDescription={plan.donationDescription}
-                acceptsDonations={plan.acceptsDonations}
+donationDescription={plan.donationDescription}
+                 donationAddresses={plan.donationAddresses}
+                 acceptsDonations={plan.acceptsDonations}
                 needsVolunteers={plan.needsVolunteers}
                 volunteerRoles={plan.volunteerRoles}
                 volunteerDescription={plan.volunteerDescription}

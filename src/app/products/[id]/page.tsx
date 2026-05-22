@@ -18,6 +18,10 @@ import Breadcrumbs from '@/components/Breadcrumbs'
 import RoleBadge from '@/components/RoleBadge'
 import { getCryptoPrices } from '@/lib/prices'
 import { CRYPTO_LOGOS } from '@/lib/constants'
+import { useDonationAddresses } from '@/hooks/useDonationAddresses'
+import DonationAddressPicker from '@/components/DonationAddressPicker'
+import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
+import type { DonationAddr } from '@/types/product'
 import dynamic from 'next/dynamic'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
@@ -121,8 +125,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     acceptsOffers: true,
     acceptsRequests: false,
     acceptsDonations: false,
-    donationAddress: '',
-    donationCurrency: 'ETH',
+    selectedDonationAddrs: [] as DonationAddr[],
     sellerPayoutAddress: '',
     sellerCryptoCurrency: 'ETH',
     rentalDaily: '',
@@ -133,6 +136,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     rentalMaxDays: '',
     rentalAvailable: true
   })
+  const userDonationAddrs = useDonationAddresses()
   const [saving, setSaving] = useState(false)
   const [resolvedParams, setResolvedParams] = useState<{ id: string } | null>(null)
   const [showPlanModal, setShowPlanModal] = useState(false)
@@ -212,8 +216,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           acceptsOffers: data.acceptsOffers ?? true,
           acceptsRequests: data.acceptsRequests ?? false,
           acceptsDonations: data.acceptsDonations ?? false,
-          donationAddress: data.donationAddress || '',
-          donationCurrency: data.donationCurrency || 'ETH',
+          selectedDonationAddrs: hydrateDonationAddresses(data.donationAddress, data.donationCurrency, data.donationAddresses),
           sellerPayoutAddress: data.sellerPayoutAddress || '',
           sellerCryptoCurrency: data.sellerCryptoCurrency || 'ETH',
           rentalDaily: data.rentalDaily?.toString() || '',
@@ -426,10 +429,16 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     setSaving(true)
 
     try {
+      const { selectedDonationAddrs, ...rest } = editData
+      const legacy = donationAddressesToLegacy(editData.acceptsDonations ? selectedDonationAddrs : [])
       const res = await fetch(`/api/products/${product.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editData)
+        body: JSON.stringify({
+          ...rest,
+          ...legacy,
+          donationAddresses: editData.acceptsDonations ? serializeDonationAddresses(selectedDonationAddrs) : null,
+        })
       })
 
       if (res.ok) {
@@ -658,26 +667,11 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     Accept Donations
                   </label>
                   {editData.acceptsDonations && (
-                    <div className="form-group" style={{ marginTop: 8 }}>
-                      <label>Donation Currency</label>
-                      <select value={editData.donationCurrency} onChange={e => setEditData({...editData, donationCurrency: e.target.value})}>
-                        <option value="ETH">ETH (Ethereum)</option>
-                        <option value="BTC">BTC (Bitcoin)</option>
-                        <option value="USDT">USDT (Tether)</option>
-                        <option value="USDC">USDC (USD Coin)</option>
-                        <option value="XMR">XMR (Monero)</option>
-                        <option value="XTM">XTM (Tari)</option>
-                        <option value="ARRR">ARRR (Pirate)</option>
-                        <option value="DERO">DERO (Dero)</option>
-                        <option value="ZANO">ZANO (Zano)</option>
-                      </select>
-                    </div>
-                  )}
-                  {editData.acceptsDonations && (
-                    <div className="form-group" style={{ marginTop: 8 }}>
-                      <label>Donation Address</label>
-                      <input type="text" value={editData.donationAddress} onChange={e => setEditData({...editData, donationAddress: e.target.value})} placeholder="Your crypto donation address" />
-                    </div>
+                    <DonationAddressPicker
+                      savedAddresses={userDonationAddrs}
+                      selectedAddresses={editData.selectedDonationAddrs}
+                      onAddressesChange={(addrs) => setEditData({...editData, selectedDonationAddrs: addrs})}
+                    />
                   )}
                 </div>
               </details>
@@ -685,31 +679,36 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               {settings.enableCheckout && (
                 <>
                   <div className="form-group">
-                    <label>Payout Crypto</label>
-                    <select
-                      value={editData.sellerCryptoCurrency}
-                      onChange={e => setEditData({...editData, sellerCryptoCurrency: e.target.value})}
-                    >
-                      <option value="ETH">ETH (Ethereum)</option>
-                      <option value="BTC">BTC (Bitcoin)</option>
-                      <option value="USDT">USDT (Tether)</option>
-                      <option value="USDC">USDC (USD Coin)</option>
-                      <option value="XMR">XMR (Monero)</option>
-                      <option value="XTM">XTM (Tari)</option>
-                      <option value="ARRR">ARRR (Pirate)</option>
-                      <option value="DERO">DERO (Dero)</option>
-                      <option value="ZANO">ZANO (Zano)</option>
-                      <option value="OTHER">OTHER</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
                     <label>Payout Address</label>
-                    <input
-                      type="text"
-                      value={editData.sellerPayoutAddress}
-                      onChange={e => setEditData({...editData, sellerPayoutAddress: e.target.value})}
-                      placeholder="Your crypto wallet address"
-                    />
+                    {userDonationAddrs.length === 0 ? (
+                      <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                        No addresses saved.{' '}
+                        <a href="/profile/edit" style={{ color: 'var(--accent-primary)' }}>Add one in profile settings</a>
+                      </p>
+                    ) : (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                        {userDonationAddrs.map(da => {
+                          const selected = editData.sellerPayoutAddress === da.address && editData.sellerCryptoCurrency === da.currency
+                          const shortAddr = da.address.length > 12 ? da.address.slice(0, 4) + '...' + da.address.slice(-4) : da.address
+                          return (
+                            <button
+                              key={da.id}
+                              type="button"
+                              onClick={() => setEditData({...editData, sellerPayoutAddress: da.address, sellerCryptoCurrency: da.currency})}
+                              style={{
+                                padding: '6px 12px', borderRadius: 20, border: selected ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
+                                background: selected ? 'var(--accent-primary)' : 'var(--bg-tertiary)',
+                                color: selected ? 'var(--bg-primary)' : 'var(--text-secondary)',
+                                cursor: 'pointer', fontSize: '0.8rem',
+                              }}
+                            >
+                              <span style={{ fontWeight: 600, marginRight: 4 }}>{da.currency}</span>
+                              {shortAddr}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
                 </>
               )}

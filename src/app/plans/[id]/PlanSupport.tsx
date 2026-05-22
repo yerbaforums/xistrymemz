@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import styles from './support.module.css'
 import type { PlanContribution, PlanJoiner } from '@/lib/plan-utils'
+import type { DonationAddr } from '@/types/product'
+import { parseDonationAddresses } from '@/lib/donations'
 
 interface PlanSupportProps {
   planId: string
@@ -12,6 +14,7 @@ interface PlanSupportProps {
   donationCurrency: string
   donationDescription: string | null
   acceptsDonations: boolean
+  donationAddresses?: string | null
   needsVolunteers: boolean
   volunteerRoles: string | null
   volunteerDescription: string | null
@@ -29,6 +32,7 @@ export default function PlanSupport({
   donationCurrency,
   donationDescription,
   acceptsDonations,
+  donationAddresses,
   needsVolunteers,
   volunteerRoles,
   volunteerDescription,
@@ -52,6 +56,13 @@ export default function PlanSupport({
   const parsedVolunteerRoles: string[] = volunteerRoles
     ? (() => { try { const p = JSON.parse(volunteerRoles); return Array.isArray(p) ? p : [] } catch { return [] } })()
     : []
+
+  const donationAddrs: DonationAddr[] = (() => {
+    const parsed = parseDonationAddresses(donationAddresses)
+    if (parsed.length > 0) return parsed
+    if (donationAddress) return [{ id: 'legacy-0', currency: donationCurrency, address: donationAddress, label: null, qrCodeUrl: null, showQR: true, sortOrder: 0 }]
+    return []
+  })()
 
   const volunteers = joiners.filter(j => j.role === 'VOLUNTEER')
   const isVolunteer = volunteers.some(v => v.userId === userId)
@@ -170,10 +181,14 @@ export default function PlanSupport({
               <p className={styles.donationDesc}>{donationDescription}</p>
             )}
 
-            {donationAddress && (
+            {donationAddrs.length > 0 && (
               <div className={styles.addressBox}>
-                <span className={styles.addressLabel}>Donation Address ({donationCurrency})</span>
-                <code className={styles.addressValue}>{donationAddress}</code>
+                {donationAddrs.map((addr, i) => (
+                  <div key={i} style={{ marginBottom: i < donationAddrs.length - 1 ? 8 : 0 }}>
+                    <span className={styles.addressLabel}>{addr.label || addr.currency}</span>
+                    <code className={styles.addressValue}>{addr.address}</code>
+                  </div>
+                ))}
               </div>
             )}
 

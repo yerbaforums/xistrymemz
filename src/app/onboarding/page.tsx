@@ -1,12 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
+import ImageUploader from '@/components/ImageUploader'
 import styles from './page.module.css'
 
-type OnboardingStep = 'welcome' | 'profile' | 'first-plan' | 'community' | 'complete'
+type OnboardingStep = 'welcome' | 'profile' | 'tour' | 'community' | 'complete'
 
 const USER_CLASSES = [
   'Healer',
@@ -42,12 +44,25 @@ const CLASS_ICONS: Record<string, string> = {
   Mentor: '🌟'
 }
 
+const TOUR_OUTLETS = [
+  { id: 'marketplace', icon: '🛒', name: 'Marketplace', description: 'Buy, sell, and barter products with the community. List items, accept donations, and make offers.', url: '/dashboard/marketplace' },
+  { id: 'projects', icon: '🚀', name: 'Projects', description: 'Organize goals with mileposts, track progress, and collaborate with others on shared plans.', url: '/plans/new' },
+  { id: 'community', icon: '🌐', name: 'Community', description: 'Connect with members, join groups, discuss in forums, and build your network.', url: '/dashboard/community' },
+  { id: 'requests', icon: '📝', name: 'Requests', description: 'Post tasks you need help with or browse open requests to contribute your skills.', url: '/dashboard/requests' },
+  { id: 'events', icon: '📅', name: 'Events', description: 'Discover local events, join gatherings, or create your own events for others.', url: '/events/new' },
+  { id: 'rentals', icon: '🏠', name: 'Rentals', description: 'List tools, equipment, and spaces for rent, or find what you need nearby.', url: '/dashboard/rentals' },
+  { id: 'shops', icon: '🏪', name: 'Shops', description: 'Open your own shop front with a branded storefront to showcase and sell products.', url: '/shop/setup' },
+  { id: 'schools', icon: '📚', name: 'Schools', description: 'Create courses, publish articles and tutorials, or enroll in educational content.', url: '/school/setup' },
+  { id: 'offers', icon: '🤝', name: 'Offers & Barter', description: 'Trade items and services through barter offers without needing traditional payment.', url: '/dashboard/offers' },
+]
+
 export default function OnboardingPage() {
   const router = useRouter()
-  const { status } = useSession()
+  const { data: session, status, update: updateSession } = useSession()
   const [step, setStep] = useState<OnboardingStep>('welcome')
   const [name, setName] = useState('')
   const [bio, setBio] = useState('')
+  const [avatarImage, setAvatarImage] = useState('')
   const [location, setLocation] = useState('')
   const [locationName, setLocationName] = useState('')
   const [neighborhood, setNeighborhood] = useState('')
@@ -57,11 +72,19 @@ export default function OnboardingPage() {
   const [newLocationName, setNewLocationName] = useState('')
   const [newLocationPlace, setNewLocationPlace] = useState('')
   const [addingLocation, setAddingLocation] = useState(false)
-  const [planTitle, setPlanTitle] = useState('')
-  const [planDescription, setPlanDescription] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [checkingOnboarding, setCheckingOnboarding] = useState(true)
+  const [tourIndex, setTourIndex] = useState(0)
+  const [selectedOutlets, setSelectedOutlets] = useState<string[]>([])
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  const toggleOutlet = (id: string) => {
+    setSelectedOutlets(prev =>
+      prev.includes(id) ? prev.filter(o => o !== id) : [...prev, id]
+    )
+  }
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -77,14 +100,28 @@ export default function OnboardingPage() {
         if (data?.user?.onboardingCompleted) {
           router.push('/dashboard')
         } else {
+          setName(data?.user?.name || '')
+          setBio(data?.user?.bio || '')
+          setAvatarImage(data?.user?.image || '')
           setCheckingOnboarding(false)
         }
       })
       .catch(() => setCheckingOnboarding(false))
   }, [status, router])
 
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   const completeOnboarding = async () => {
-    await fetch('/api/users/onboarding', { method: 'PUT' }).catch(() => {})
+    const res = await fetch('/api/users/onboarding', { method: 'PUT' })
+    if (!res.ok) throw new Error('Failed to mark onboarding as complete')
   }
 
   useEffect(() => {
@@ -145,7 +182,7 @@ export default function OnboardingPage() {
   const steps: { key: OnboardingStep; label: string }[] = [
     { key: 'welcome', label: 'Welcome' },
     { key: 'profile', label: 'Profile' },
-    { key: 'first-plan', label: 'First Plan' },
+    { key: 'tour', label: 'Explore' },
     { key: 'community', label: 'Community' },
     { key: 'complete', label: 'Complete' }
   ]
@@ -167,8 +204,12 @@ export default function OnboardingPage() {
   }
 
   const skipAndGoToDashboard = async () => {
-    await completeOnboarding()
-    router.push('/dashboard')
+    try {
+      await completeOnboarding()
+      router.push('/dashboard')
+    } catch {
+      setError('Failed to skip onboarding. Please try again.')
+    }
   }
 
   const handleSaveProfile = async () => {
@@ -182,14 +223,15 @@ export default function OnboardingPage() {
       const res = await fetch(`/api/users/me`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, bio, location, neighborhood, searchRadius: parseFloat(searchRadius), userClass }),
+        body: JSON.stringify({ name, bio, location, neighborhood, searchRadius: parseFloat(searchRadius), userClass, image: avatarImage }),
         signal: controller.signal
       })
       
       if (!res.ok) {
         throw new Error('Failed to save profile')
       }
-      
+
+      await updateSession()
       nextStep()
     } catch {
       setError('Failed to save profile. You can skip this step.')
@@ -199,46 +241,26 @@ export default function OnboardingPage() {
     }
   }
 
-  const handleCreatePlan = async () => {
-    if (!planTitle.trim()) {
-      setError('Please enter a plan title')
-      return
-    }
-
-    setLoading(true)
-    setError('')
-
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 15000)
-
-    try {
-      const res = await fetch('/api/plans', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          title: planTitle, 
-          description: planDescription
-        }),
-        signal: controller.signal
-      })
-
-      if (!res.ok) {
-        throw new Error('Failed to create plan')
-      }
-
-      nextStep()
-    } catch {
-      setError('Failed to create plan. You can skip this step.')
-    } finally {
-      clearTimeout(timeout)
-      setLoading(false)
-    }
-  }
-
   const handleComplete = async () => {
-    await completeOnboarding()
-    router.push('/dashboard')
+    try {
+      await completeOnboarding()
+      if (selectedOutlets.length > 0) {
+        const outlet = TOUR_OUTLETS.find(o => o.id === selectedOutlets[0])
+        if (outlet) {
+          router.push(outlet.url)
+          return
+        }
+      }
+      router.push('/dashboard')
+    } catch {
+      setError('Failed to complete onboarding. Please try again.')
+    }
   }
+
+  const sessionUser = session?.user
+  const userInitial = (sessionUser?.name || sessionUser?.email || 'U')[0].toUpperCase()
+  const displayName = sessionUser?.name?.split(' ')[0] || 'there'
+  const userImage = avatarImage || sessionUser?.image || ''
 
   if (checkingOnboarding || status === 'loading') {
     return (
@@ -259,14 +281,41 @@ export default function OnboardingPage() {
             XistrYmemZ
           </div>
           <div className={styles.headerActions}>
-            {currentStepIndex > 0 && (
+            {currentStepIndex > 0 && currentStepIndex < steps.length - 1 && (
               <button onClick={prevStep} className={styles.backBtn} aria-label="Go back">
                 &#8592; Back
               </button>
             )}
-            <button onClick={skipAndGoToDashboard} className={styles.skipBtn}>
-              Skip for now
-            </button>
+            {currentStepIndex < steps.length - 1 && (
+              <button onClick={skipAndGoToDashboard} className={styles.skipBtn}>
+                Skip for now
+              </button>
+            )}
+            <div className={styles.headerUserBtn} ref={dropdownRef}>
+              <button
+                className={styles.userBtn}
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                aria-label="User menu"
+              >
+                {userImage ? (
+                  <Image src={userImage} alt={name || 'User'} width={32} height={32} className={styles.userAvatarImg} />
+                ) : (
+                  <span className={styles.userInitial}>{userInitial}</span>
+                )}
+              </button>
+              {dropdownOpen && (
+                <div className={styles.userDropdown}>
+                  <div className={styles.userDropdownInfo}>
+                    <strong>{name || sessionUser?.name || 'User'}</strong>
+                    <span>{sessionUser?.email}</span>
+                  </div>
+                  <div className={styles.userDropdownLinks}>
+                    <Link href={`/profile/${(sessionUser as any)?.username || ''}`} className={styles.userDropdownLink} onClick={() => setDropdownOpen(false)}>My Profile</Link>
+                    <Link href="/dashboard/overview" className={styles.userDropdownLink} onClick={() => setDropdownOpen(false)}>Dashboard</Link>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -286,18 +335,18 @@ export default function OnboardingPage() {
           {step === 'welcome' && (
             <div className={styles.stepContent}>
               <div className={styles.welcomeIcon}>🎉</div>
-              <h1>Welcome to XistrYmemZ!</h1>
+              <h1>Welcome, {displayName}!</h1>
               <p className={styles.welcomeText}>
-                You&apos;re now part of a community where you can create plans, 
-                collaborate with others, and bring your ideas to life.
+                You&apos;re now part of XistrYmemZ — a community marketplace where you can 
+                create projects, sell products, teach courses, rent items, and connect 
+                with others who share your interests.
               </p>
               <p className={styles.welcomeText}>
-                Let&apos;s get you set up. This quick tour will help you start posting 
-                and connecting with the community.
+                Let&apos;s get you set up in just a few steps.
               </p>
               <div className={styles.actionBtns}>
                 <button onClick={nextStep} className={styles.primaryBtn}>
-                  Get Started
+                  Let&apos;s Go
                 </button>
                 <button onClick={skipAndGoToDashboard} className={styles.secondaryBtn}>
                   I&apos;ll explore on my own
@@ -309,11 +358,16 @@ export default function OnboardingPage() {
           {step === 'profile' && (
             <div className={styles.stepContent}>
               <h2>Set Up Your Profile</h2>
-              <p>Help others get to know you by adding some details to your profile.</p>
+              <p>Add a photo and some details so others can get to know you.</p>
               
               {error && <div className={styles.error}>{error}</div>}
               
               <div className={styles.form}>
+                <div className={styles.formGroup}>
+                  <label>Profile Photo</label>
+                  <ImageUploader images={avatarImage ? [avatarImage] : []} onChange={urls => setAvatarImage(urls[0] || '')} maxImages={1} />
+                </div>
+
                 <div className={styles.formGroup}>
                   <label>Display Name</label>
                   <input
@@ -435,74 +489,117 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {step === 'first-plan' && (
+          {step === 'tour' && (
             <div className={styles.stepContent}>
-              <h2>Create Your First Project</h2>
-              <p>Projects help you organize goals and track progress. Create your first one now!</p>
-              
-              {error && <div className={styles.error}>{error}</div>}
-              
-              <div className={styles.form}>
-                <div className={styles.formGroup}>
-                  <label>Project Title</label>
-                  <input
-                    type="text"
-                    value={planTitle}
-                    onChange={(e) => setPlanTitle(e.target.value)}
-                    placeholder="What do you want to accomplish?"
-                    required
-                  />
-                </div>
-                
-                <div className={styles.formGroup}>
-                  <label>Description (optional)</label>
-                  <textarea
-                    value={planDescription}
-                    onChange={(e) => setPlanDescription(e.target.value)}
-                    placeholder="Add more details about your project..."
-                    rows={4}
-                  />
-                </div>
+              <h2>Explore XistrYmemZ</h2>
+              <p>Browse what you can do here. Select the ones you want to start right away.</p>
+
+              <div className={styles.tourOutletGrid}>
+                {TOUR_OUTLETS.map((outlet, i) => {
+                  const isSelected = selectedOutlets.includes(outlet.id)
+                  return (
+                    <div
+                      key={outlet.id}
+                      className={`${styles.tourOutletCard} ${i === tourIndex ? styles.tourOutletActive : ''} ${isSelected ? styles.tourOutletSelected : ''}`}
+                      onClick={() => { setTourIndex(i); toggleOutlet(outlet.id) }}
+                    >
+                      <span className={styles.tourOutletIcon}>{outlet.icon}</span>
+                      <span className={styles.tourOutletName}>{outlet.name}</span>
+                      {isSelected && <span className={styles.tourOutletCheck}>✓</span>}
+                    </div>
+                  )
+                })}
               </div>
-              
-              <div className={styles.actionBtns}>
-                <button onClick={handleCreatePlan} className={styles.primaryBtn} disabled={loading}>
-                  {loading ? 'Creating...' : 'Create Project'}
+
+              <div className={styles.tourCard}>
+                <div className={styles.tourIcon}>{TOUR_OUTLETS[tourIndex].icon}</div>
+                <h3 className={styles.tourName}>{TOUR_OUTLETS[tourIndex].name}</h3>
+                <p className={styles.tourDesc}>{TOUR_OUTLETS[tourIndex].description}</p>
+                <button
+                  className={styles.quickStartBtn}
+                  onClick={() => toggleOutlet(TOUR_OUTLETS[tourIndex].id)}
+                >
+                  {selectedOutlets.includes(TOUR_OUTLETS[tourIndex].id)
+                    ? '✓ Selected — Will Start Here'
+                    : '🚀 Quick Start This'}
                 </button>
-                <button onClick={nextStep} className={styles.secondaryBtn}>
-                  Skip
+              </div>
+
+              {selectedOutlets.length > 0 && (
+                <p className={styles.selectedSummary}>
+                  You selected {selectedOutlets.length} {selectedOutlets.length === 1 ? 'outlet' : 'outlets'} to start. 
+                  We&apos;ll take you to the first one after setup.
+                </p>
+              )}
+
+              <div className={styles.tourNav}>
+                <button
+                  onClick={() => setTourIndex(Math.max(0, tourIndex - 1))}
+                  disabled={tourIndex === 0}
+                  className={styles.tourNavBtn}
+                >
+                  &#8592; Previous
                 </button>
+                <span className={styles.tourCounter}>{tourIndex + 1} / {TOUR_OUTLETS.length}</span>
+                {tourIndex < TOUR_OUTLETS.length - 1 ? (
+                  <button
+                    onClick={() => setTourIndex(Math.min(TOUR_OUTLETS.length - 1, tourIndex + 1))}
+                    className={styles.tourNavBtn}
+                  >
+                    Next &#8594;
+                  </button>
+                ) : (
+                  <button onClick={nextStep} className={styles.tourNavBtnPrimary}>
+                    Finish Tour &#8594;
+                  </button>
+                )}
               </div>
             </div>
           )}
 
           {step === 'community' && (
             <div className={styles.stepContent}>
-              <h2>Join the Community</h2>
-              <p>Connect with others, browse public projects, and start collaborating!</p>
+              <h2>Connect with the Community</h2>
+              <p>XistrYmemZ is built around people. Find your people and start collaborating.</p>
               
               <div className={styles.quickLinks}>
                 <Link href="/community" className={styles.quickLink}>
                   <span className={styles.linkIcon}>👥</span>
                   <div>
                     <strong>Browse Members</strong>
-                    <span>Find and connect with others</span>
+                    <span>Find and connect with people near you</span>
                   </div>
                 </Link>
                 
-                <Link href="/plans/public" className={styles.quickLink}>
+                <Link href="/community/groups" className={styles.quickLink}>
+                  <span className={styles.linkIcon}>👤</span>
+                  <div>
+                    <strong>Join Groups</strong>
+                    <span>Find groups by interest, location, or purpose</span>
+                  </div>
+                </Link>
+
+                <Link href="/community/forum" className={styles.quickLink}>
+                  <span className={styles.linkIcon}>💬</span>
+                  <div>
+                    <strong>Discussion Forum</strong>
+                    <span>Start conversations and share ideas</span>
+                  </div>
+                </Link>
+                
+                <Link href="/dashboard/projects" className={styles.quickLink}>
                   <span className={styles.linkIcon}>📋</span>
                   <div>
                     <strong>Public Projects</strong>
-                    <span>Explore projects you can join</span>
+                    <span>Explore projects you can join and contribute to</span>
                   </div>
                 </Link>
                 
-                <Link href="/requests" className={styles.quickLink}>
+                <Link href="/dashboard/requests" className={styles.quickLink}>
                   <span className={styles.linkIcon}>📝</span>
                   <div>
                     <strong>Open Requests</strong>
-                    <span>Find tasks to help with</span>
+                    <span>Find tasks to help with or needs to fill</span>
                   </div>
                 </Link>
               </div>
@@ -518,19 +615,20 @@ export default function OnboardingPage() {
           {step === 'complete' && (
             <div className={styles.stepContent}>
               <div className={styles.completeIcon}>🚀</div>
-              <h2>You&apos;re All Set!</h2>
+              <h2>You&apos;re All Set, {displayName}!</h2>
               <p>
-                Your account is ready. Start creating plans, connecting with others, 
-                and making things happen!
+                Your profile is ready and you&apos;re now part of the XistrYmemZ community.
+                Here&apos;s where to go from here:
               </p>
               
               <div className={styles.nextSteps}>
-                <h3>Quick Tips:</h3>
+                <h3>Recommended Next Steps:</h3>
                 <ul>
-                  <li>Create detailed plans with clear goals</li>
-                  <li>Submit requests with full context</li>
-                  <li>Browse the community and make connections</li>
-                  <li>Set up your shop or school when ready</li>
+                  <li>Post something on the <strong>Feed</strong> to introduce yourself</li>
+                  <li>Browse the <strong>Marketplace</strong> to find products and services</li>
+                  <li>Create a <strong>Project</strong> to organize your goals</li>
+                  <li>Explore the <strong>Community</strong> to connect with others</li>
+                  <li>Set up a <strong>Shop</strong> or <strong>School</strong> when you&apos;re ready to sell or teach</li>
                 </ul>
               </div>
               

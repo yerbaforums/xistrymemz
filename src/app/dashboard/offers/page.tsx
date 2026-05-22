@@ -82,7 +82,12 @@ export default async function DashboardOffers() {
       <div className={styles.section}>
         <h2>Sent Offers</h2>
         {sentOffers.length === 0 ? (
-          <p className={styles.empty}>No offers sent yet. Browse the marketplace to make offers!</p>
+          <div className={styles.emptyLarge}>
+            <div className={styles.emptyIcon}>📤</div>
+            <h3>No offers sent yet</h3>
+            <p>Browse the marketplace to find items you&apos;d like to trade for.</p>
+            <Link href="/products" className={styles.emptyBtn}>Browse Marketplace</Link>
+          </div>
         ) : (
           <div className={styles.list}>
             {sentOffers.map(offer => (
@@ -114,7 +119,12 @@ export default async function DashboardOffers() {
       <div className={styles.section}>
         <h2>Received Offers</h2>
         {receivedOffers.length === 0 ? (
-          <p className={styles.empty}>No offers received yet.</p>
+          <div className={styles.emptyLarge}>
+            <div className={styles.emptyIcon}>📥</div>
+            <h3>No offers received yet</h3>
+            <p>Offers from other members will appear here when someone wants to trade with you.</p>
+            <Link href="/products" className={styles.emptyBtn}>Browse Marketplace</Link>
+          </div>
         ) : (
           <div className={styles.list}>
             {receivedOffers.map(offer => (

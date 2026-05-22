@@ -5,7 +5,12 @@ export const planSchema = z.object({
   description: z.string().max(5000).optional(),
   goals: z.string().optional(),
   mileposts: z.string().optional(),
-  lookingForCollaborators: z.boolean().optional()
+  lookingForCollaborators: z.boolean().optional(),
+  acceptsDonations: z.boolean().optional(),
+  donationAddress: z.string().max(500).optional().nullable(),
+  donationCurrency: z.string().max(10).optional(),
+  donationDescription: z.string().max(1000).optional().nullable(),
+  donationAddresses: z.string().optional().nullable()
 })
 
 export const requestSchema = z.object({
@@ -54,6 +59,7 @@ export const productSchema = z.object({
   acceptsDonations: z.boolean().optional(),
   donationAddress: z.string().optional().nullable(),
   donationCurrency: z.string().optional(),
+  donationAddresses: z.string().optional().nullable(),
   sellerPayoutAddress: z.string().optional().nullable(),
   sellerCryptoCurrency: z.string().optional().nullable(),
   createGroup: z.boolean().optional(),
@@ -108,6 +114,7 @@ export const eventSchema = z.object({
   acceptsDonations: z.boolean().optional(),
   donationAddress: z.string().optional().nullable(),
   donationCurrency: z.string().optional(),
+  donationAddresses: z.string().optional().nullable(),
   needsVolunteers: z.boolean().optional(),
   volunteerRoles: z.string().optional(),
   volunteerDescription: z.string().optional(),
@@ -204,6 +211,7 @@ export const postSchema = z.object({
 export const profileUpdateSchema = z.object({
   name: z.string().max(100).optional().nullable(),
   username: z.string().max(50).optional().nullable(),
+  image: z.string().max(500).optional().nullable(),
   bio: z.string().max(2000).optional().nullable(),
   location: z.string().max(200).optional().nullable(),
   neighborhood: z.string().max(200).optional().nullable(),

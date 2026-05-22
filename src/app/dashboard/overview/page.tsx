@@ -214,6 +214,7 @@ export default async function DashboardOverview() {
   const eventAttendeeCount = eventJoinerCounts.find(r => r.role === 'ATTENDEE')?._count ?? 0
   const eventVolunteerCount = eventJoinerCounts.find(r => r.role === 'VOLUNTEER')?._count ?? 0
   const totalEarnings = (sellerEarnings._sum.netAmount ?? 0) + (teachingEarnings._sum.amount ?? 0)
+  const isNewUser = allStats[6] === 0 && plans.length === 0 && allStats[2] === 0 && connectionCount === 0
 
   const stats: StatDef[] = [
     { label: 'Projects', value: allStats[0], max: 20, color: '#8B5CF6', icon: '🚀', href: '/dashboard/projects' },
@@ -249,6 +250,22 @@ export default async function DashboardOverview() {
         <h2>Welcome back, {session.user.name?.split(' ')[0] || 'User'}! 👋</h2>
         <p>{allStats[6]} posts · {connectionCount} connections · {totalEarnings > 0 ? `$${totalEarnings.toFixed(0)} earned` : 'getting started'}</p>
       </div>
+
+      {isNewUser && (
+        <div className={styles.firstVisitBanner}>
+          <div className={styles.firstVisitIcon}>👋</div>
+          <div className={styles.firstVisitContent}>
+            <h3>Welcome to your Dashboard!</h3>
+            <p>This is your command center. From here you can manage projects, listings, events, and everything else. Here are a few places to start:</p>
+            <div className={styles.firstVisitLinks}>
+              <Link href="/plans" className={styles.firstVisitLink}>🚀 Start a Project</Link>
+              <Link href="/products/new" className={styles.firstVisitLink}>🛒 List a Product</Link>
+              <Link href="/community" className={styles.firstVisitLink}>👥 Find People</Link>
+              <Link href="/profile/edit" className={styles.firstVisitLink}>⚙️ Complete Profile</Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       <FeatureBanner />
       <TipCard />

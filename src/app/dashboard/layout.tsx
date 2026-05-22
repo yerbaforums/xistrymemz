@@ -1,9 +1,10 @@
 'use client'
 
-import { useSession } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 import { usePathname, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import styles from './layout.module.css'
 import sidebarStyles from './layout-sidebar.module.css'
 
@@ -18,8 +19,20 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   saved: 'Saved',
 }
 
-function DashboardNav() {
+function DashboardNav({ user }: { user: { name?: string | null; image?: string | null; username?: string | null } }) {
   const pathname = usePathname()
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
   
   const navItems = [
     { href: '/dashboard/overview', icon: '📊', label: 'Overview' },
@@ -37,8 +50,31 @@ function DashboardNav() {
     { href: '/dashboard/saved', icon: '⭐', label: 'Saved' },
   ]
 
+  const userInitial = (user?.name || 'U')[0].toUpperCase()
+  const profileHref = `/profile/${user?.username || ''}`
+
   return (
     <nav className={sidebarStyles.nav}>
+      <div className={sidebarStyles.profileStripWrapper} ref={dropdownRef}>
+        <button className={sidebarStyles.profileStrip} onClick={() => setDropdownOpen(!dropdownOpen)}>
+          <div className={sidebarStyles.profileAvatar}>
+            {user?.image ? (
+              <Image src={user.image} alt={user.name || 'User'} width={36} height={36} className={sidebarStyles.profileAvatarImg} />
+            ) : (
+              <span className={sidebarStyles.profileAvatarInitial}>{userInitial}</span>
+            )}
+          </div>
+          <div className={sidebarStyles.profileName}>{user?.name || 'User'}</div>
+        </button>
+        {dropdownOpen && (
+          <div className={sidebarStyles.profileDropdown}>
+            <Link href={profileHref} className={sidebarStyles.profileDropdownLink} onClick={() => setDropdownOpen(false)}>My Profile</Link>
+            <Link href="/dashboard/settings" className={sidebarStyles.profileDropdownLink} onClick={() => setDropdownOpen(false)}>Settings</Link>
+            <button className={sidebarStyles.profileDropdownLink} onClick={() => { setDropdownOpen(false); signOut({ callbackUrl: '/auth/login' }) }}>Sign Out</button>
+          </div>
+        )}
+      </div>
+      <div className={sidebarStyles.navDivider} />
       {navItems.map(item => (
         <Link 
           key={item.href} 
@@ -87,6 +123,7 @@ export default function DashboardLayout({
 }) {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const [onboardingChecked, setOnboardingChecked] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -94,7 +131,21 @@ export default function DashboardLayout({
     }
   }, [status, router])
 
-  if (status === 'loading') {
+  useEffect(() => {
+    if (status !== 'authenticated' || !session?.user?.id) return
+    fetch('/api/users/me')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.user?.onboardingCompleted === false) {
+          router.push('/onboarding')
+        } else {
+          setOnboardingChecked(true)
+        }
+      })
+      .catch(() => setOnboardingChecked(true))
+  }, [status, session, router])
+
+  if (status === 'loading' || !onboardingChecked) {
     return (
       <div className={styles.layout}>
         <div className={styles.container}>
@@ -115,7 +166,7 @@ export default function DashboardLayout({
   return (
     <div className={styles.layout}>
       <div className={styles.container}>
-        <DashboardNav />
+        <DashboardNav user={session.user} />
         <main className={styles.main}>
           <nav className={styles.breadcrumbs}>
             <Link href="/dashboard" className={styles.breadcrumbLink}>Dashboard</Link>

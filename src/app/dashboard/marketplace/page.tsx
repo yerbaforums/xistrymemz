@@ -5,6 +5,10 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
+import { useDonationAddresses } from '@/hooks/useDonationAddresses'
+import DonationAddressPicker from '@/components/DonationAddressPicker'
+import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
+import type { DonationAddr } from '@/types/product'
 import ImageUploader from '@/components/ImageUploader'
 import styles from './marketplace.module.css'
 
@@ -42,6 +46,7 @@ interface Product {
   acceptsDonations?: boolean
   donationAddress?: string | null
   donationCurrency?: string | null
+  donationAddresses?: string | null
   sellerPayoutAddress?: string | null
   sellerCryptoCurrency?: string | null
 }
@@ -71,7 +76,7 @@ function MarketplaceContent() {
   const [showProductForm, setShowProductForm] = useState(false)
   const [showShopModal, setShowShopModal] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
-  const [userDonationAddrs, setUserDonationAddrs] = useState<{ id: string; currency: string; address: string; label: string | null }[]>([])
+  const userDonationAddrs = useDonationAddresses()
   const { settings } = useSiteSettings()
 
   const [productForm, setProductForm] = useState({
@@ -98,8 +103,7 @@ function MarketplaceContent() {
     appointmentMeetingLink: '',
     appointmentFormFields: [] as { label: string; type: string; required: boolean }[],
     acceptsDonations: false,
-    donationAddress: '',
-    donationCurrency: 'ETH',
+    selectedDonationAddrs: [] as DonationAddr[],
     sellerPayoutAddress: '',
     sellerCryptoCurrency: 'ETH',
   })
@@ -154,8 +158,7 @@ function MarketplaceContent() {
           appointmentMeetingLink: product.appointmentMeetingLink || '',
           appointmentFormFields: (product.appointmentFormFields as { label: string; type: string; required: boolean }[]) || [],
           acceptsDonations: product.acceptsDonations || false,
-          donationAddress: product.donationAddress || '',
-          donationCurrency: product.donationCurrency || 'ETH',
+          selectedDonationAddrs: hydrateDonationAddresses(product.donationAddress, product.donationCurrency, product.donationAddresses),
           sellerPayoutAddress: product.sellerPayoutAddress || '',
           sellerCryptoCurrency: product.sellerCryptoCurrency || 'ETH',
         })
@@ -166,15 +169,12 @@ function MarketplaceContent() {
 
   const fetchAll = async () => {
     try {
-      const [shopRes, productsRes, donationsRes] = await Promise.all([
+      const [shopRes, productsRes] = await Promise.all([
         fetch('/api/shop'),
-        fetch('/api/products/user'),
-        fetch('/api/users/donations')
+        fetch('/api/products/user')
       ])
       const shopData = await shopRes.json()
       const productsData = await productsRes.json()
-      const donationsData = await donationsRes.json()
-      if (donationsData?.addresses) setUserDonationAddrs(donationsData.addresses)
       setShopSettings(shopData)
       setShopForm({
         shopName: shopData.shopName || '',
@@ -226,8 +226,7 @@ function MarketplaceContent() {
       appointmentMeetingLink: '',
       appointmentFormFields: [] as { label: string; type: string; required: boolean }[],
       acceptsDonations: false,
-      donationAddress: '',
-      donationCurrency: 'ETH',
+      selectedDonationAddrs: [] as DonationAddr[],
       sellerPayoutAddress: '',
       sellerCryptoCurrency: 'ETH',
     })
@@ -246,8 +245,8 @@ function MarketplaceContent() {
       price: productForm.price ? parseFloat(productForm.price) : null,
       imageUrl: productForm.imageUrls?.[0] || null,
       appointmentFormFields: productForm.acceptsAppointments ? productForm.appointmentFormFields : [],
-      donationAddress: productForm.acceptsDonations ? (productForm.donationAddress || null) : null,
-      donationCurrency: productForm.acceptsDonations ? (productForm.donationCurrency || 'ETH') : null,
+      ...donationAddressesToLegacy(productForm.acceptsDonations ? productForm.selectedDonationAddrs : []),
+      donationAddresses: productForm.acceptsDonations ? serializeDonationAddresses(productForm.selectedDonationAddrs) : null,
       sellerPayoutAddress: productForm.sellerPayoutAddress || null,
       sellerCryptoCurrency: productForm.sellerCryptoCurrency || 'ETH',
     }
@@ -336,8 +335,7 @@ function MarketplaceContent() {
       appointmentMeetingLink: product.appointmentMeetingLink || '',
       appointmentFormFields: (product.appointmentFormFields as { label: string; type: string; required: boolean }[]) || [],
       acceptsDonations: product.acceptsDonations || false,
-      donationAddress: product.donationAddress || '',
-      donationCurrency: product.donationCurrency || 'ETH',
+      selectedDonationAddrs: hydrateDonationAddresses(product.donationAddress, product.donationCurrency, product.donationAddresses),
       sellerPayoutAddress: product.sellerPayoutAddress || '',
       sellerCryptoCurrency: product.sellerCryptoCurrency || 'ETH',
     })
@@ -688,40 +686,11 @@ function MarketplaceContent() {
                 Accept Donations
               </label>
               {productForm.acceptsDonations && (
-                <div style={{ marginBottom: 12, padding: 12, borderRadius: 8, background: 'var(--bg-tertiary)' }}>
-                  {userDonationAddrs.length === 0 ? (
-                    <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-tertiary)' }}>
-                      No donation addresses saved.{' '}
-                      <a href="/profile/edit" style={{ color: 'var(--accent-primary)' }}>Add one in your profile settings</a>
-                    </p>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>Donation Address</label>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                        {userDonationAddrs.map(da => {
-                          const selected = productForm.donationAddress === da.address && productForm.donationCurrency === da.currency
-                          const shortAddr = da.address.length > 12 ? da.address.slice(0, 4) + '...' + da.address.slice(-4) : da.address
-                          return (
-                            <button
-                              key={da.id}
-                              type="button"
-                              onClick={() => setProductForm({...productForm, donationAddress: da.address, donationCurrency: da.currency})}
-                              style={{
-                                padding: '6px 12px', borderRadius: 6, border: selected ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
-                                background: selected ? 'var(--accent-primary)' : 'var(--bg-secondary)',
-                                color: selected ? '#fff' : 'var(--text-primary)',
-                                cursor: 'pointer', fontSize: '0.82rem',
-                              }}
-                            >
-                              <span style={{ fontWeight: 600, marginRight: 4 }}>{da.currency}</span>
-                              {shortAddr}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <DonationAddressPicker
+                  savedAddresses={userDonationAddrs}
+                  selectedAddresses={productForm.selectedDonationAddrs}
+                  onAddressesChange={(addrs) => setProductForm({...productForm, selectedDonationAddrs: addrs})}
+                />
               )}
               <div className={styles.formActions}>
                 <button type="button" onClick={resetProductForm} className="btn-ghost">Cancel</button>

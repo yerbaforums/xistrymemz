@@ -50,7 +50,7 @@ export async function PUT(
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { title, description, price, type, category, condition, location, locationDetails, imageUrl, isGlobal, published, paymentMethods, paymentType, acceptsRequests, acceptsOffers, requestPrice, acceptsDonations, donationAddress, donationCurrency, sellerPayoutAddress, sellerCryptoCurrency, rentalDaily, rentalWeekly, rentalMonthly, rentalDeposit, rentalMinDays, rentalMaxDays, rentalAvailable, hashtags, acceptsAppointments, appointmentDuration, appointmentLeadTime, appointmentLocation, appointmentMeetingLink, appointmentFormFields } = body
+    const { title, description, price, type, category, condition, location, locationDetails, imageUrl, isGlobal, published, paymentMethods, paymentType, acceptsRequests, acceptsOffers, requestPrice, acceptsDonations, donationAddress, donationCurrency, donationAddresses, sellerPayoutAddress, sellerCryptoCurrency, rentalDaily, rentalWeekly, rentalMonthly, rentalDeposit, rentalMinDays, rentalMaxDays, rentalAvailable, hashtags, acceptsAppointments, appointmentDuration, appointmentLeadTime, appointmentLocation, appointmentMeetingLink, appointmentFormFields } = body
 
     const existing = await prisma.product.findFirst({
       where: { id, userId: session.user.id }
@@ -103,6 +103,7 @@ export async function PUT(
         acceptsDonations: acceptsDonations ?? existing.acceptsDonations,
         donationAddress: donationAddress ?? existing.donationAddress,
         donationCurrency: donationCurrency ?? existing.donationCurrency,
+        donationAddresses: donationAddresses !== undefined ? (donationAddresses || null) : existing.donationAddresses,
         sellerPayoutAddress: sellerPayoutAddress ?? existing.sellerPayoutAddress,
         sellerCryptoCurrency: sellerCryptoCurrency ?? existing.sellerCryptoCurrency,
         rentalDaily: rentalDaily != null ? parseFloat(rentalDaily) : existing.rentalDaily,

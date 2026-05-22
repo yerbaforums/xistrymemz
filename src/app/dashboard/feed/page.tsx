@@ -257,9 +257,20 @@ export default function DashboardFeed() {
           )}
         </>
       ) : (
-        <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-secondary)' }}>
-          <p style={{ fontSize: '1.2rem', marginBottom: '8px' }}>Your feed is empty</p>
-          <p>Connect with others and follow hashtags to populate your feed</p>
+        <div style={{ textAlign: 'center', padding: '60px 24px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📡</div>
+          <h3 style={{ marginBottom: '8px', color: 'var(--text-primary)' }}>Your feed is empty</h3>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '20px', fontSize: '0.9rem' }}>
+            Connect with others and follow hashtags to populate your feed
+          </p>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link href="/community" className="btn-secondary" style={{ padding: '10px 20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.85rem' }}>
+              👥 Find People
+            </Link>
+            <Link href="/community/groups" className="btn-secondary" style={{ padding: '10px 20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.85rem' }}>
+              👤 Join Groups
+            </Link>
+          </div>
         </div>
       )}
     </div>

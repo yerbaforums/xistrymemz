@@ -9,6 +9,9 @@ import { extractHashtags } from '@/lib/hashtags'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import FormWizard, { useWizard } from '@/components/FormWizard'
 import ImageUploader from '@/components/ImageUploader'
+import { useDonationAddresses } from '@/hooks/useDonationAddresses'
+import DonationAddressPicker from '@/components/DonationAddressPicker'
+import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import type { DonationAddr } from '@/types/product'
 import styles from './page.module.css'
 
@@ -30,7 +33,7 @@ export default function NewProductPage() {
 
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
-  const [userDonationAddrs, setUserDonationAddrs] = useState<DonationAddr[]>([])
+  const userDonationAddrs = useDonationAddresses()
   const [shop, setShop] = useState<{ shopName: string; shopSlug: string } | null>(null)
   const [listingMode, setListingMode] = useState<'shop' | 'standalone' | null>(null)
 
@@ -50,8 +53,7 @@ export default function NewProductPage() {
     acceptsOffers: true,
     acceptsRequests: false,
     acceptsDonations: false,
-    donationAddress: '',
-    donationCurrency: 'ETH',
+    selectedDonationAddrs: [] as DonationAddr[],
     sellerPayoutAddress: '',
     sellerCryptoCurrency: 'ETH',
     rentalDaily: '',
@@ -86,15 +88,6 @@ export default function NewProductPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [session])
-
-  useEffect(() => {
-    if (session?.user) {
-      fetch('/api/users/donations')
-        .then(r => r.ok ? r.json() : null)
-        .then(data => { if (data?.addresses) setUserDonationAddrs(data.addresses) })
-        .catch(() => {})
-    }
   }, [session])
 
   const update = useCallback(<K extends keyof typeof form>(key: K, value: (typeof form)[K]) => {
@@ -133,8 +126,8 @@ export default function NewProductPage() {
           acceptsOffers: form.acceptsOffers,
           acceptsRequests: form.acceptsRequests,
           acceptsDonations: form.acceptsDonations,
-          donationAddress: form.acceptsDonations ? (form.donationAddress || null) : null,
-          donationCurrency: form.acceptsDonations ? (form.donationCurrency || 'ETH') : null,
+          ...donationAddressesToLegacy(form.acceptsDonations ? form.selectedDonationAddrs : []),
+          donationAddresses: form.acceptsDonations ? serializeDonationAddresses(form.selectedDonationAddrs) : null,
           sellerPayoutAddress: settings.enableCheckout ? (form.sellerPayoutAddress || null) : null,
           sellerCryptoCurrency: settings.enableCheckout ? (form.sellerCryptoCurrency || 'ETH') : null,
           rentalDaily: form.type === 'RENTAL' ? (form.rentalDaily || null) : null,
@@ -407,14 +400,14 @@ export default function NewProductPage() {
 
                 {(form.paymentType === 'DIRECT' || form.paymentType === 'BOTH') && (
                   <div className="form-group">
-                    <label>Donation Address for Payments</label>
+                    <label>Payout Address for Payments</label>
                     {userDonationAddrs.length === 0 ? (
                       <p className={styles.noAddrs}>
-                        No donation addresses saved.{' '}
-                        <a href="/profile/edit" style={{ color: 'var(--accent-primary)' }}>Add one in your profile settings</a>
+                        No addresses saved.{' '}
+                        <a href="/profile/edit" style={{ color: 'var(--accent-primary)' }}>Add one in profile settings</a>
                       </p>
                     ) : (
-                      <div className={styles.chipGroup}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
                         {userDonationAddrs.map(da => {
                           const selected = form.sellerPayoutAddress === da.address && form.sellerCryptoCurrency === da.currency
                           const shortAddr = da.address.length > 12 ? da.address.slice(0, 4) + '...' + da.address.slice(-4) : da.address
@@ -422,15 +415,16 @@ export default function NewProductPage() {
                             <button
                               key={da.id}
                               type="button"
-                              onClick={() => {
-                                update('sellerPayoutAddress', da.address)
-                                update('sellerCryptoCurrency', da.currency)
+                              onClick={() => { update('sellerPayoutAddress', da.address); update('sellerCryptoCurrency', da.currency) }}
+                              style={{
+                                padding: '6px 12px', borderRadius: 20, border: selected ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
+                                background: selected ? 'var(--accent-primary)' : 'var(--bg-tertiary)',
+                                color: selected ? 'var(--bg-primary)' : 'var(--text-secondary)',
+                                cursor: 'pointer', fontSize: '0.8rem',
                               }}
-                              className={`${styles.chip} ${selected ? styles.chipSelected : ''}`}
-                              title={`${da.label || da.currency}: ${da.address}`}
                             >
-                              <span className={styles.chipCurrency}>{da.currency}</span>
-                              <span>{shortAddr}</span>
+                              <span style={{ fontWeight: 600, marginRight: 4 }}>{da.currency}</span>
+                              {shortAddr}
                             </button>
                           )
                         })}
@@ -458,37 +452,11 @@ export default function NewProductPage() {
                 </label>
                 {form.acceptsDonations && (
                   <div className={styles.donationFields}>
-                    <div className="form-group">
-                      <label>Donation Address</label>
-                      {userDonationAddrs.length === 0 ? (
-                        <p className={styles.noAddrs}>
-                          No donation addresses saved.{' '}
-                          <a href="/profile/edit" style={{ color: 'var(--accent-primary)' }}>Add one in your profile settings</a>
-                        </p>
-                      ) : (
-                        <div className={styles.chipGroup}>
-                          {userDonationAddrs.map(da => {
-                            const selected = form.donationAddress === da.address && form.donationCurrency === da.currency
-                            const shortAddr = da.address.length > 12 ? da.address.slice(0, 4) + '...' + da.address.slice(-4) : da.address
-                            return (
-                              <button
-                                key={da.id}
-                                type="button"
-                                onClick={() => {
-                                  update('donationAddress', da.address)
-                                  update('donationCurrency', da.currency)
-                                }}
-                                className={`${styles.chip} ${selected ? styles.chipSelected : ''}`}
-                                title={`${da.label || da.currency}: ${da.address}`}
-                              >
-                                <span className={styles.chipCurrency}>{da.currency}</span>
-                                <span>{shortAddr}</span>
-                              </button>
-                            )
-                          })}
-                        </div>
-                      )}
-                    </div>
+                    <DonationAddressPicker
+                      savedAddresses={userDonationAddrs}
+                      selectedAddresses={form.selectedDonationAddrs}
+                      onAddressesChange={(addrs) => update('selectedDonationAddrs', addrs)}
+                    />
                   </div>
                 )}
                 <label className={styles.checkLabel}>

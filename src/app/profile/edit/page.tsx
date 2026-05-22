@@ -485,24 +485,26 @@ export default function ProfileEditPage() {
             </div>
 
             <div>
-              <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>User Class</label>
-              <select value={userClass} onChange={e => setUserClass(e.target.value)} style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)'}}>
-                <option value="">Select a class</option>
-                <option value="Healer">Healer</option>
-                <option value="Revealer">Revealer</option>
-                <option value="Seer">Seer</option>
-                <option value="Teacher">Teacher</option>
-                <option value="Guide">Guide</option>
-                <option value="Warrior">Warrior</option>
-                <option value="Guardian">Guardian</option>
-                <option value="Sage">Sage</option>
-                <option value="Mystic">Mystic</option>
-                <option value="Architect">Architect</option>
-                <option value="Artist">Artist</option>
-                <option value="Builder">Builder</option>
-                <option value="Explorer">Explorer</option>
-                <option value="Mentor">Mentor</option>
-              </select>
+              <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>User Classes (select multiple)</label>
+              <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '6px'}}>
+                {['Healer','Revealer','Seer','Teacher','Guide','Warrior','Guardian','Sage','Mystic','Architect','Artist','Builder','Explorer','Mentor'].map(cls => {
+                  const classIcons: Record<string, string> = { Healer:'💚', Revealer:'👁️', Seer:'🔮', Teacher:'📚', Guide:'🧭', Warrior:'⚔️', Guardian:'🛡️', Sage:'🦉', Mystic:'✨', Architect:'🏗️', Artist:'🎨', Builder:'🔨', Explorer:'🌍', Mentor:'🌟' }
+                  const checked = userClass.split(',').map(c => c.trim()).includes(cls)
+                  return (
+                    <label key={cls} style={{display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 10px', background: 'var(--bg-tertiary)', border: `1px solid ${checked ? 'var(--accent-primary)' : 'var(--border-color)'}`, borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text-primary)', transition: 'var(--transition)'}}>
+                      <input type="checkbox" checked={checked} onChange={() => {
+                        const classes = userClass.split(',').map(c => c.trim()).filter(Boolean)
+                        if (checked) {
+                          setUserClass(classes.filter(c => c !== cls).join(', '))
+                        } else {
+                          setUserClass([...classes, cls].join(', '))
+                        }
+                      }} style={{width: 'auto', accentColor: 'var(--accent-primary)'}} />
+                      <span>{classIcons[cls] || ''} {cls}</span>
+                    </label>
+                  )
+                })}
+              </div>
             </div>
 
             <div style={{ marginBottom: '16px' }}>

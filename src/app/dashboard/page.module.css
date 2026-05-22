@@ -796,6 +796,48 @@
   text-decoration: none;
 }
 
+.emptyLarge {
+  text-align: center;
+  padding: 48px 24px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+}
+
+.emptyLarge h3 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.emptyLarge p {
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+}
+
+.emptyIcon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.emptyBtn {
+  display: inline-block;
+  padding: 10px 24px;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: var(--transition);
+}
+
+.emptyBtn:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-glow);
+}
+
 .shopStats {
   color: var(--text-secondary);
   margin-bottom: 16px;
@@ -1859,4 +1901,60 @@
 .badge-draft {
   background: #888;
   color: white;
+}
+
+.firstVisitBanner {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--radius-lg);
+  align-items: flex-start;
+}
+
+.firstVisitIcon {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+}
+
+.firstVisitContent {
+  flex: 1;
+}
+
+.firstVisitContent h3 {
+  font-size: 1rem;
+  margin: 0 0 6px;
+  color: var(--text-primary);
+}
+
+.firstVisitContent p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0 0 14px;
+  line-height: 1.5;
+}
+
+.firstVisitLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.firstVisitLink {
+  padding: 6px 14px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.82rem;
+  transition: var(--transition);
+}
+
+.firstVisitLink:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background: rgba(0, 217, 255, 0.05);
 }

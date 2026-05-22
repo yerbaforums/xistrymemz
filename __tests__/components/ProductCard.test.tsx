@@ -39,6 +39,7 @@ const baseProduct: Product = {
   acceptsDonations: false,
   donationAddress: null,
   donationCurrency: null,
+  donationAddresses: null,
   sellerPayoutAddress: null,
   sellerCryptoCurrency: null,
   userId: 'user1',

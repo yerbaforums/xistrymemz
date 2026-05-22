@@ -4,6 +4,10 @@ import { useState } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
 import { stringifyGoals, stringifyMilestones } from '@/lib/plan-utils'
+import { useDonationAddresses } from '@/hooks/useDonationAddresses'
+import DonationAddressPicker from '@/components/DonationAddressPicker'
+import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
+import type { DonationAddr } from '@/types/product'
 
 interface Plan {
   id: string
@@ -51,6 +55,10 @@ export default function PlansClient({ initialPlans }: PlansClientProps) {
   const [loading, setLoading] = useState(false)
   const [filter, setFilter] = useState('ALL')
   const [search, setSearch] = useState('')
+  const [acceptsDonations, setAcceptsDonations] = useState(false)
+  const [selectedDonationAddrs, setSelectedDonationAddrs] = useState<DonationAddr[]>([])
+  const [donationDescription, setDonationDescription] = useState('')
+  const userDonationAddrs = useDonationAddresses()
 
   const filteredPlans = plans.filter(p => {
     const matchesFilter = filter === 'ALL' || p.status === filter
@@ -76,16 +84,21 @@ export default function PlansClient({ initialPlans }: PlansClientProps) {
       .filter(Boolean)
       .map((title, i) => ({ id: `cm_${i}`, title, order: i, completed: false }))
 
-    try {
-      const res = await fetch('/api/plans', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title,
-          description,
-          goals: stringifyGoals(goalItems),
-          mileposts: stringifyMilestones(milestoneItems)
-        })
+    const legacy = donationAddressesToLegacy(acceptsDonations ? selectedDonationAddrs : [])
+      try {
+        const res = await fetch('/api/plans', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title,
+            description,
+            goals: stringifyGoals(goalItems),
+            mileposts: stringifyMilestones(milestoneItems),
+            acceptsDonations,
+            ...legacy,
+            donationAddresses: acceptsDonations ? serializeDonationAddresses(selectedDonationAddrs) : null,
+            donationDescription: acceptsDonations ? (donationDescription || null) : null
+          })
       })
 
       if (res.ok) {
@@ -284,6 +297,28 @@ export default function PlansClient({ initialPlans }: PlansClientProps) {
                   rows={4}
                 />
               </div>
+              <label className={styles.checkLabel} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <input type="checkbox" checked={acceptsDonations} onChange={e => setAcceptsDonations(e.target.checked)} />
+                Accept Donations
+              </label>
+              {acceptsDonations && (
+                <>
+                  <DonationAddressPicker
+                    savedAddresses={userDonationAddrs}
+                    selectedAddresses={selectedDonationAddrs}
+                    onAddressesChange={(addrs) => setSelectedDonationAddrs(addrs)}
+                  />
+                  <div className="form-group">
+                    <label>Donation Description (optional)</label>
+                    <textarea
+                      value={donationDescription}
+                      onChange={e => setDonationDescription(e.target.value)}
+                      placeholder="What will donations be used for?"
+                      rows={2}
+                    />
+                  </div>
+                </>
+              )}
               <div className={styles.modalActions}>
                 <button 
                   type="button" 

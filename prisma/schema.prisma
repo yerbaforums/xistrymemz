@@ -195,6 +195,7 @@ model Plan {
   donationCurrency  String   @default("ETH")
   acceptsDonations  Boolean  @default(false)
   donationDescription String?
+  donationAddresses String?   // JSON: [{currency, address, label}]
 
   // Volunteering
   needsVolunteers      Boolean @default(false)
@@ -264,6 +265,7 @@ model Event {
   acceptsDonations Boolean   @default(false)
   donationAddress String?
   donationCurrency  String   @default("ETH")
+  donationAddresses String?   // JSON: [{currency, address, label}]
   
   // Volunteering
   needsVolunteers    Boolean @default(false)
@@ -495,6 +497,7 @@ model Product {
   acceptsDonations    Boolean  @default(false)
   donationAddress     String?
   donationCurrency    String   @default("ETH")
+  donationAddresses   String?   // JSON: [{currency, address, label}]
 
   // Appointment scheduling
   acceptsAppointments   Boolean  @default(false)

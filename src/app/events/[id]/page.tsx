@@ -6,6 +6,9 @@ import { useParams } from 'next/navigation'
 import styles from './page.module.css'
 import dynamic from 'next/dynamic'
 import { useToast } from '@/context/ToastContext'
+import { useDonationAddresses } from '@/hooks/useDonationAddresses'
+import DonationAddressPicker from '@/components/DonationAddressPicker'
+import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import { getUserProfileUrl } from '@/lib/utils'
 import RoleBadge from '@/components/RoleBadge'
 import ShareToPostModal from '@/components/ShareToPostModal'
@@ -34,7 +37,7 @@ function EventDetailContent() {
   const [joinRole, setJoinRole] = useState<'ATTENDEE' | 'VOLUNTEER'>('ATTENDEE')
   const [copiedDonation, setCopiedDonation] = useState(false)
   const [qrOpen, setQrOpen] = useState<string | null>(null)
-  const [userDonationAddrs, setUserDonationAddrs] = useState<DonationAddr[]>([])
+  const userDonationAddrs = useDonationAddresses()
   const [ownerDonationAddrs, setOwnerDonationAddrs] = useState<DonationAddr[]>([])
   const [isEditing, setIsEditing] = useState(false)
   const [editForm, setEditForm] = useState({
@@ -47,8 +50,7 @@ function EventDetailContent() {
     ticketPrice: 0,
     currency: 'USD',
     acceptsDonations: false,
-    donationAddress: '',
-    donationCurrency: 'ETH',
+    selectedDonationAddrs: [] as DonationAddr[],
     needsVolunteers: false,
     volunteerRoles: '',
     volunteerDescription: ''
@@ -67,8 +69,7 @@ function EventDetailContent() {
       ticketPrice: event.ticketPrice,
       currency: event.currency,
       acceptsDonations: event.acceptsDonations || false,
-      donationAddress: event.donationAddress || '',
-      donationCurrency: event.donationCurrency || 'ETH',
+      selectedDonationAddrs: hydrateDonationAddresses(event.donationAddress, event.donationCurrency, event.donationAddresses),
       needsVolunteers: event.needsVolunteers || false,
       volunteerRoles: event.volunteerRoles ? (Array.isArray(event.volunteerRoles) ? event.volunteerRoles.join(', ') : '') : '',
       volunteerDescription: event.volunteerDescription || ''
@@ -91,6 +92,7 @@ function EventDetailContent() {
         }
       }
 
+      const legacy = donationAddressesToLegacy(editForm.acceptsDonations ? editForm.selectedDonationAddrs : [])
       const res = await fetch(`/api/events/${event.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -98,7 +100,8 @@ function EventDetailContent() {
           ...editForm,
           volunteerRoles,
           ticketPrice: editForm.ticketPrice ? parseFloat(String(editForm.ticketPrice)) : 0,
-          donationAddress: editForm.acceptsDonations ? (editForm.donationAddress || null) : null
+          ...legacy,
+          donationAddresses: editForm.acceptsDonations ? serializeDonationAddresses(editForm.selectedDonationAddrs) : null,
         })
       })
 
@@ -132,15 +135,6 @@ function EventDetailContent() {
       })
       .catch(() => {})
   }, [])
-
-  useEffect(() => {
-    if (userId) {
-      fetch('/api/users/donations')
-        .then(res => res.ok ? res.json() : null)
-        .then(data => { if (data?.addresses) setUserDonationAddrs(data.addresses) })
-        .catch(() => {})
-    }
-  }, [userId])
 
   useEffect(() => {
     setLoading(true)
@@ -356,50 +350,11 @@ function EventDetailContent() {
                   <label htmlFor="edit-donations">Accept Donations</label>
                 </div>
                 {editForm.acceptsDonations && (
-                  <div className={styles.row}>
-                    <div className={styles.field}>
-                      <label>Donation Address</label>
-                      {userDonationAddrs.length > 0 ? (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                          {userDonationAddrs.map(da => {
-                            const selected = editForm.donationAddress === da.address && editForm.donationCurrency === da.currency
-                            const shortAddr = da.address.length > 12 ? da.address.slice(0, 4) + '...' + da.address.slice(-4) : da.address
-                            return (
-                              <button
-                                key={da.id}
-                                type="button"
-                                onClick={() => setEditForm(p => ({ ...p, donationAddress: da.address, donationCurrency: da.currency }))}
-                                style={{
-                                  padding: '6px 12px',
-                                  borderRadius: '20px',
-                                  border: selected ? '2px solid var(--accent)' : '1px solid var(--border)',
-                                  background: selected ? 'var(--accent)' : 'var(--bg-secondary)',
-                                  color: selected ? '#fff' : 'var(--text-primary)',
-                                  cursor: 'pointer',
-                                  fontSize: '0.8rem'
-                                }}
-                                title={`${da.label || da.currency}: ${da.address}`}
-                              >
-                                <span style={{ fontWeight: 600, marginRight: 4 }}>{da.currency}</span>
-                                {shortAddr}
-                              </button>
-                            )
-                          })}
-                        </div>
-                      ) : (
-                        <input type="text" value={editForm.donationAddress} onChange={e => setEditForm(p => ({ ...p, donationAddress: e.target.value }))} placeholder="Enter wallet address" />
-                      )}
-                    </div>
-                    <div className={styles.field}>
-                      <label>Currency</label>
-                      <select value={editForm.donationCurrency} onChange={e => setEditForm(p => ({ ...p, donationCurrency: e.target.value }))}>
-                        <option value="ETH">ETH</option>
-                        <option value="BTC">BTC</option>
-                        <option value="USDT">USDT</option>
-                        <option value="XMR">XMR</option>
-                      </select>
-                    </div>
-                  </div>
+                  <DonationAddressPicker
+                    savedAddresses={userDonationAddrs}
+                    selectedAddresses={editForm.selectedDonationAddrs}
+                    onAddressesChange={(addrs) => setEditForm(p => ({ ...p, selectedDonationAddrs: addrs }))}
+                  />
                 )}
                 <div className={styles.checkboxField}>
                   <input type="checkbox" id="edit-volunteers" checked={editForm.needsVolunteers} onChange={e => setEditForm(p => ({ ...p, needsVolunteers: e.target.checked }))} />

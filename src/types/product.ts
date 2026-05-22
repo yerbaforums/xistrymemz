@@ -30,6 +30,7 @@ export interface Product {
   acceptsDonations: boolean
   donationAddress: string | null
   donationCurrency: string | null
+  donationAddresses: string | null
   sellerPayoutAddress: string | null
   sellerCryptoCurrency: string | null
   userId: string

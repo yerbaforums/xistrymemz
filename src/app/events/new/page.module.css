@@ -207,10 +207,10 @@
   border: 1px solid var(--border-color);
 }
 
-.chipGroup {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+.donationFields {
+  padding: 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
   margin-top: 8px;
 }
 

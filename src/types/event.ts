@@ -35,6 +35,7 @@ export interface Event {
   acceptsDonations?: boolean
   donationAddress?: string | null
   donationCurrency?: string | null
+  donationAddresses?: string | null
   needsVolunteers?: boolean
   volunteerRoles?: string[]
   volunteerDescription?: string | null
