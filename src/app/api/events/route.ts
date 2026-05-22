@@ -196,7 +196,7 @@ export async function POST(request: NextRequest) {
         donationCurrency: donationCurrency || 'ETH',
         donationAddresses: donationAddresses || null,
         needsVolunteers: needsVolunteers || false,
-        volunteerRoles: volunteerRoles ? JSON.stringify(volunteerRoles) : null,
+        volunteerRoles: volunteerRoles || null,
         volunteerDescription: volunteerDescription || null,
         planId: planId || null,
         groupId: groupId || null,

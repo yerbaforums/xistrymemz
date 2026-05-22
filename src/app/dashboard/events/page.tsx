@@ -183,6 +183,7 @@ export default function DashboardEvents() {
           <button onClick={() => setViewMode(viewMode === 'list' ? 'calendar' : 'list')} className={styles.viewToggle}>
             {viewMode === 'list' ? '📅 Calendar' : '📋 List'}
           </button>
+          <Link href="/events/new" className="btn-primary">+ Create Event</Link>
           <Link href="/events" className="btn-secondary">Browse Events</Link>
         </div>
       </div>

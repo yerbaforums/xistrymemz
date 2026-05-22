@@ -77,7 +77,7 @@ export async function GET(
       donationCurrency: event.donationCurrency,
       donationAddresses: event.donationAddresses,
       needsVolunteers: event.needsVolunteers,
-      volunteerRoles: event.volunteerRoles ? JSON.parse(event.volunteerRoles) : [],
+      volunteerRoles: event.volunteerRoles ? (() => { try { const p = JSON.parse(event.volunteerRoles); return Array.isArray(p) ? p : [] } catch { return [] } })() : [],
       volunteerDescription: event.volunteerDescription,
       planId: event.planId,
       planTitle: linkedTitle,
@@ -191,7 +191,7 @@ export async function PUT(
         donationCurrency: donationCurrency ?? event.donationCurrency,
         donationAddresses: donationAddresses !== undefined ? (donationAddresses || null) : event.donationAddresses,
         needsVolunteers: needsVolunteers ?? event.needsVolunteers,
-        volunteerRoles: volunteerRoles ? JSON.stringify(volunteerRoles) : event.volunteerRoles,
+        volunteerRoles: volunteerRoles ?? event.volunteerRoles,
         volunteerDescription: volunteerDescription ?? event.volunteerDescription
       }
     })
