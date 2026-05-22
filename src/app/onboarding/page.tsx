@@ -77,6 +77,9 @@ export default function OnboardingPage() {
   const [checkingOnboarding, setCheckingOnboarding] = useState(true)
   const [tourIndex, setTourIndex] = useState(0)
   const [selectedOutlets, setSelectedOutlets] = useState<string[]>([])
+  const [acceptsDonations, setAcceptsDonations] = useState(false)
+  const [donationAddress, setDonationAddress] = useState('')
+  const [donationCurrency, setDonationCurrency] = useState('ETH')
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -223,7 +226,7 @@ export default function OnboardingPage() {
       const res = await fetch(`/api/users/me`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, bio, location, neighborhood, searchRadius: parseFloat(searchRadius), userClass, image: avatarImage }),
+        body: JSON.stringify({ name, bio, location, neighborhood, searchRadius: parseFloat(searchRadius), userClass, image: avatarImage, acceptsDonations, donationAddress: donationAddress || null, donationCurrency }),
         signal: controller.signal
       })
       
@@ -476,6 +479,47 @@ export default function OnboardingPage() {
                     ))}
                   </div>
                 </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.checkboxLabel}>
+                    <input
+                      type="checkbox"
+                      checked={acceptsDonations}
+                      onChange={e => setAcceptsDonations(e.target.checked)}
+                    />
+                    <span>Accept donations on my profile</span>
+                  </label>
+                </div>
+
+                {acceptsDonations && (
+                  <div className={styles.formGroup}>
+                    <label>Donation Address</label>
+                    <div className={styles.donationRow}>
+                      <select
+                        value={donationCurrency}
+                        onChange={e => setDonationCurrency(e.target.value)}
+                        className={styles.currencySelect}
+                      >
+                        <option value="ETH">ETH</option>
+                        <option value="BTC">BTC</option>
+                        <option value="USDT">USDT</option>
+                        <option value="USDC">USDC</option>
+                        <option value="XMR">XMR</option>
+                        <option value="XTM">XTM</option>
+                        <option value="ARRR">ARRR</option>
+                        <option value="DERO">DERO</option>
+                        <option value="ZANO">ZANO</option>
+                      </select>
+                      <input
+                        type="text"
+                        value={donationAddress}
+                        onChange={e => setDonationAddress(e.target.value)}
+                        placeholder="Enter your donation address"
+                        className={styles.donationInput}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
               
               <div className={styles.actionBtns}>
