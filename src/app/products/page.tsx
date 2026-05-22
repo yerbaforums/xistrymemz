@@ -651,7 +651,7 @@ export default function ProductsPage() {
                   <div className={styles.settingsBody}>
                     <label className={styles.myCheckLabel}>
                       <input type="checkbox" checked={myForm.acceptsOffers} onChange={e => setMyForm({...myForm, acceptsOffers: e.target.checked})} />
-                      Accept Offers / Barter
+                      Accept Barter Offers
                     </label>
                     <label className={styles.myCheckLabel}>
                       <input type="checkbox" checked={myForm.acceptsRequests} onChange={e => setMyForm({...myForm, acceptsRequests: e.target.checked})} />

@@ -12,7 +12,7 @@ const GROUPS = [
       { icon: '🏪', title: 'Shop', desc: 'Create your storefront, list products or services, and accept payments.', href: '/shops' },
       { icon: '🛒', title: 'Products', desc: 'Sell physical goods, digital items, or offer services with flexible pricing.', href: '/products' },
       { icon: '🏠', title: 'Rentals', desc: 'List items for rent with daily, weekly, monthly pricing and deposits.', href: '/rentals/browse' },
-      { icon: '🤝', title: 'Offers & Barter', desc: 'Trade items or services directly. Make offers, negotiate, and close deals.', href: '/offers' },
+      { icon: '🤝', title: 'Offers & Barter', desc: 'Exchange items or services directly through barter. Make offers, negotiate, and close arrangements.', href: '/offers' },
       { icon: '🚚', title: 'Courier', desc: 'Set up delivery services and manage local pickup or shipping.', href: '/courier/setup' },
     ]
   },
@@ -43,6 +43,7 @@ const GROUPS = [
     features: [
       { icon: '🌍', title: 'Earth Passport', desc: 'Verified identity, reputation scores, and trust badges across the network.', href: '/about' },
       { icon: '💰', title: 'Crypto-Friendly Donations', desc: 'Send and receive crypto donations with privacy and QR codes. More decentralized features in development.', href: '/profile/edit' },
+      { icon: '🎭', title: 'User Classes', desc: 'Choose from 14 identity classes — Healer, Builder, Explorer, Sage, and more — to express your role.', href: '/profile/edit' },
       { icon: '📋', title: 'Templates', desc: 'Start fast with pre-built templates for shops, schools, and services.', href: '/templates' },
     ]
   }

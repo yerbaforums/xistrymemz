@@ -37,7 +37,7 @@ function DashboardNav({ user }: { user: { name?: string | null; image?: string |
   const navItems = [
     { href: '/dashboard/overview', icon: '📊', label: 'Overview' },
     { href: '/dashboard/feed', icon: '📡', label: 'Feed' },
-    { href: '/messages', icon: '💬', label: 'Messages' },
+    { href: '/dashboard/messages', icon: '💬', label: 'Messages' },
     { href: '/dashboard/community', icon: '🌐', label: 'Community' },
     { href: '/dashboard/projects', icon: '🚀', label: 'Projects' },
     { href: '/dashboard/requests', icon: '📝', label: 'Requests' },

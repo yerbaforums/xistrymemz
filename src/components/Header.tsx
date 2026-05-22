@@ -212,7 +212,7 @@ export default function Header() {
                 More
               </button>
               <div className={styles.navDropdown} id="nav-dropdown-more" role="menu">
-                <Link href="/messages" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">💬 Messages</Link>
+                <Link href="/dashboard/messages" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">💬 Messages</Link>
                 <Link href="/dashboard/feed" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">📡 Feed</Link>
                 <Link href="/dashboard/appointments" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🗓️ Planner</Link>
                 <Link href="/dashboard/offers" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🤝 Offers</Link>
@@ -345,7 +345,7 @@ export default function Header() {
                 <Link href="/notifications" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🔔 Notifications</Link>
                 <Link href="/dashboard/saved" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>⭐ Saved</Link>
                 <Link href="/connections" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🔗 Connections</Link>
-                <Link href="/messages" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>💬 Messages</Link>
+                <Link href="/dashboard/messages" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>💬 Messages</Link>
                 <Link href="/courier/setup" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🚚 Courier</Link>
                 <Link href="/templates" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📋 Templates</Link>
                 {settings.enableWallet ? (
@@ -542,7 +542,7 @@ export default function Header() {
                       <span className={`${styles.userLink} ${styles.disabled}`} role="menuitem" aria-disabled="true">Wallet (Coming Soon)</span>
                     )}
                     <Link href="/orders" className={styles.userLink} role="menuitem" onClick={closeDropdown}>Orders</Link>
-                    <Link href="/messages" className={styles.userLink} role="menuitem" onClick={closeDropdown}>Messages</Link>
+                    <Link href="/dashboard/messages" className={styles.userLink} role="menuitem" onClick={closeDropdown}>Messages</Link>
                     <Link href="/saved" className={styles.userLink} role="menuitem" onClick={closeDropdown}>Saved</Link>
                     {isAdmin && (
                       <>

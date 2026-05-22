@@ -10,6 +10,7 @@ import PulseSection from '@/components/home/PulseSection'
 import StepsSection from '@/components/home/StepsSection'
 import FeaturesSection from '@/components/home/FeaturesSection'
 import CTASection from '@/components/home/CTASection'
+import PassportSection from '@/components/home/PassportSection'
 import HomeFooterSection from '@/components/home/HomeFooterSection'
 import type { PlatformStats, FeaturedShop, FeaturedProduct, PublicRequest } from '@/components/home/types'
 
@@ -125,6 +126,7 @@ export default function Home() {
       />
       <StepsSection />
       <FeaturesSection />
+      <PassportSection />
       <HomeMap />
       <CTASection memberCount={animatedStats.members} />
       <HomeFooterSection />

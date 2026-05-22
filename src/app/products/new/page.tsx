@@ -440,7 +440,7 @@ export default function NewProductPage() {
               <div className={styles.settingsBody}>
                 <label className={styles.checkLabel}>
                   <input type="checkbox" checked={form.acceptsOffers} onChange={e => update('acceptsOffers', e.target.checked)} />
-                  Accept Offers / Barter
+                  Accept Barter Offers
                 </label>
                 <label className={styles.checkLabel}>
                   <input type="checkbox" checked={form.acceptsRequests} onChange={e => update('acceptsRequests', e.target.checked)} />

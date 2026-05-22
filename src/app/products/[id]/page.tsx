@@ -656,7 +656,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 <div className={styles.settingsBody}>
                   <label className={styles.checkboxLabel}>
                     <input type="checkbox" checked={editData.acceptsOffers} onChange={e => setEditData({...editData, acceptsOffers: e.target.checked})} />
-                    Accept Offers / Barter
+                    Accept Barter Offers
                   </label>
                   <label className={styles.checkboxLabel}>
                     <input type="checkbox" checked={editData.acceptsRequests} onChange={e => setEditData({...editData, acceptsRequests: e.target.checked})} />
