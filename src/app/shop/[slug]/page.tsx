@@ -15,6 +15,7 @@ import ShareToPostModal from '@/components/ShareToPostModal'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
 import Rating from '@/components/Rating'
+import { SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service'
 import dynamic from 'next/dynamic'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
@@ -61,6 +62,8 @@ interface ShopData {
   links: UserLink[]
   donationAddresses: DonationAddr[]
   productCount: number
+  serviceCount: number
+  rentalCount: number
   ratingCount: number
   avgRating: number
   products: Array<{
@@ -75,6 +78,37 @@ interface ShopData {
     imageUrl: string | null
     published: boolean
     pinned: boolean
+    createdAt: string
+  }>
+  services: Array<{
+    id: string
+    title: string
+    description: string | null
+    price: number | null
+    category: string
+    duration: number | null
+    location: string | null
+    isRemote: boolean
+    imageUrl: string | null
+    isActive: boolean
+    createdAt: string
+    user: { name: string | null; image: string | null }
+  }>
+  rentals: Array<{
+    id: string
+    title: string
+    description: string | null
+    price: number | null
+    type: string
+    category: string | null
+    condition: string | null
+    location: string | null
+    imageUrl: string | null
+    published: boolean
+    pinned: boolean
+    rentalDaily: number | null
+    rentalWeekly: number | null
+    rentalMonthly: number | null
     createdAt: string
   }>
   posts: Array<{
@@ -141,7 +175,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
   const [shop, setShop] = useState<ShopData | null>(null)
   const [loading, setLoading] = useState(true)
   const [isOwner, setIsOwner] = useState(false)
-  const [activeTab, setActiveTab] = useState<'products' | 'posts' | 'reviews' | 'about'>('products')
+  const [activeTab, setActiveTab] = useState<'products' | 'services' | 'rentals' | 'posts' | 'reviews' | 'about'>('products')
   const [showEditModal, setShowEditModal] = useState(false)
   const [editForm, setEditForm] = useState({ shopName: '', shopAbout: '', shopImage: '', shopCoverImage: '', shopCoverStyle: 'cover' })
   const [saving, setSaving] = useState(false)
@@ -350,6 +384,14 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                 <span className={styles.statLabel}>Products</span>
               </div>
               <div className={styles.stat}>
+                <span className={styles.statValue}>{shop.serviceCount}</span>
+                <span className={styles.statLabel}>Services</span>
+              </div>
+              <div className={styles.stat}>
+                <span className={styles.statValue}>{shop.rentalCount}</span>
+                <span className={styles.statLabel}>Rentals</span>
+              </div>
+              <div className={styles.stat}>
                 <span className={styles.statValue}>{shop.ratingCount}</span>
                 <span className={styles.statLabel}>Reviews</span>
               </div>
@@ -383,6 +425,12 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
       <div className={styles.tabs}>
         <button className={`${styles.tab} ${activeTab === 'products' ? styles.active : ''}`} onClick={() => setActiveTab('products')}>
           Products ({shop.products.length})
+        </button>
+        <button className={`${styles.tab} ${activeTab === 'services' ? styles.active : ''}`} onClick={() => setActiveTab('services')}>
+          Services ({shop.services.length})
+        </button>
+        <button className={`${styles.tab} ${activeTab === 'rentals' ? styles.active : ''}`} onClick={() => setActiveTab('rentals')}>
+          Rentals ({shop.rentals.length})
         </button>
         <button className={`${styles.tab} ${activeTab === 'posts' ? styles.active : ''}`} onClick={() => setActiveTab('posts')}>
           Posts ({shop.posts.length})
@@ -431,6 +479,62 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
               ))
             ) : (
               <div className={styles.empty}><p>No products listed yet</p></div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'services' && (
+          <div className={styles.productsGrid}>
+            {shop.services.length > 0 ? (
+              shop.services.map(service => (
+                <Link key={service.id} href={`/services/${service.id}`} className={styles.productCard}>
+                  {service.imageUrl ? (
+                    <div className={styles.productImage}>
+                      <img src={service.imageUrl} alt={service.title} />
+                    </div>
+                  ) : (
+                    <div className={styles.productImagePlaceholder}>🔧</div>
+                  )}
+                  <div className={styles.productInfo}>
+                    <span className="badge badge-service">
+                      {SERVICE_CATEGORY_ICONS[service.category as keyof typeof SERVICE_CATEGORY_ICONS] || '🔧'} {SERVICE_CATEGORY_LABELS[service.category as keyof typeof SERVICE_CATEGORY_LABELS] || service.category}
+                    </span>
+                    <h3>{service.title}</h3>
+                    {service.price && <p className={styles.price}>${service.price}</p>}
+                    {service.duration && <p className={styles.condition}>{service.duration} min</p>}
+                    <p className={styles.condition}>{service.isRemote ? '🌍 Remote' : `📍 ${service.location || 'Local'}`}</p>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <div className={styles.empty}><p>No services offered yet</p></div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'rentals' && (
+          <div className={styles.productsGrid}>
+            {shop.rentals.length > 0 ? (
+              shop.rentals.map(rental => (
+                <Link key={rental.id} href={`/products/${rental.id}`} className={styles.productCard}>
+                  {rental.imageUrl ? (
+                    <div className={styles.productImage}>
+                      <img src={rental.imageUrl} alt={rental.title} />
+                    </div>
+                  ) : (
+                    <div className={styles.productImagePlaceholder}>🏠</div>
+                  )}
+                  <div className={styles.productInfo}>
+                    <span className="badge badge-rental">RENTAL</span>
+                    {rental.category && <span className={styles.productCategory}>{rental.category}</span>}
+                    <h3>{rental.title}</h3>
+                    {rental.rentalDaily && <p className={styles.price}>${rental.rentalDaily}/day</p>}
+                    {rental.condition && <p className={styles.condition}>{rental.condition.replace('_', ' ')}</p>}
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <div className={styles.empty}><p>No rentals available yet</p></div>
             )}
           </div>
         )}

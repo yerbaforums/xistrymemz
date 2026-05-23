@@ -28,7 +28,7 @@ function ResetPasswordContent() {
     e.preventDefault()
     setError('')
 
-    if (password.length < 6) {
+    if (password.length < 8) {
       setError('Password must be at least 6 characters')
       return
     }
@@ -133,9 +133,9 @@ function ResetPasswordContent() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter new password"
               required
-              minLength={6}
+              minLength={8}
             />
-            <span className={styles.fieldHint}>Minimum 6 characters</span>
+            <span className={styles.fieldHint}>Minimum 8 characters</span>
           </div>
 
           <div className={styles.formGroup}>
@@ -147,7 +147,7 @@ function ResetPasswordContent() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Confirm new password"
               required
-              minLength={6}
+              minLength={8}
             />
           </div>
 

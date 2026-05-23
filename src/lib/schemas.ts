@@ -37,7 +37,7 @@ export const productSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200),
   description: z.string().max(5000).optional().nullable(),
   price: z.coerce.number().min(0).optional().nullable(),
-  type: z.enum(['PRODUCT', 'SERVICE', 'RENTAL']).optional().nullable(),
+  type: z.enum(['PRODUCT', 'RENTAL']).optional().nullable(),
   category: z.string().optional().nullable(),
   condition: z.string().optional().nullable(),
   location: z.string().optional().nullable(),

@@ -109,6 +109,50 @@
   border-radius: var(--radius-md);
   transition: var(--transition);
   font-weight: 500;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.navItem:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.navItem.active {
+  background: rgba(0, 217, 255, 0.1);
+  color: var(--accent-primary);
+}
+
+.navItem span:first-child {
+  font-size: 1.2rem;
+}
+
+.moreToggle {
+  composes: navItem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.moreToggle:hover {
+  color: var(--text-primary);
+}
+
+.moreSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 8px;
+  border-left: 1px solid var(--border-color);
+  margin-left: 8px;
+}
+
+.navDivider {
+  display: none;
 }
 
 .navItem:hover {

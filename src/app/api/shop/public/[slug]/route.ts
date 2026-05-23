@@ -44,7 +44,19 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
   }
 
   const products = await prisma.product.findMany({
-    where: { userId: user.id, published: true },
+    where: { userId: user.id, published: true, type: 'PRODUCT' },
+    orderBy: { createdAt: 'desc' },
+    take: 20
+  })
+
+  const rentals = await prisma.product.findMany({
+    where: { userId: user.id, published: true, type: 'RENTAL' },
+    orderBy: { createdAt: 'desc' },
+    take: 20
+  })
+
+  const services = await prisma.serviceOffering.findMany({
+    where: { userId: user.id, isActive: true },
     orderBy: { createdAt: 'desc' },
     take: 20
   })
@@ -60,6 +72,14 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
     where: { userId: user.id },
     _avg: { rating: true },
     _count: { rating: true }
+  })
+
+  const serviceCount = await prisma.serviceOffering.count({
+    where: { userId: user.id, isActive: true }
+  })
+
+  const rentalCount = await prisma.product.count({
+    where: { userId: user.id, published: true, type: 'RENTAL' }
   })
 
   return NextResponse.json({
@@ -83,9 +103,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
     links: user.userLinks,
     donationAddresses: user.donationAddresses,
     productCount: user._count.products,
+    serviceCount,
+    rentalCount,
     ratingCount: user._count.ratingsReceived,
     avgRating: avgRating._avg.rating || 0,
     products,
+    services,
+    rentals,
     posts
   })
 }

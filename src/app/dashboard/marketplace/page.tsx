@@ -71,7 +71,7 @@ function MarketplaceContent() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [filter, setFilter] = useState<'all' | 'published' | 'draft'>('all')
-  const [typeFilter, setTypeFilter] = useState<'all' | 'PRODUCT'>('all')
+  const [typeFilter] = useState<'all' | 'PRODUCT'>('PRODUCT')
   const [search, setSearch] = useState('')
   const [showProductForm, setShowProductForm] = useState(false)
   const [showShopModal, setShowShopModal] = useState(false)
@@ -414,10 +414,6 @@ function MarketplaceContent() {
           <option value="all">All Status</option>
           <option value="published">Published</option>
           <option value="draft">Draft</option>
-        </select>
-        <select value={typeFilter} onChange={e => setTypeFilter(e.target.value as typeof typeFilter)}>
-          <option value="all">All Types</option>
-          <option value="PRODUCT">Products</option>
         </select>
         <span className={styles.filterCount}>{filteredProducts.length} items</span>
       </div>

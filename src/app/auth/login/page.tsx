@@ -115,10 +115,10 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               required
-              minLength={6}
+              minLength={8}
               aria-describedby="password-hint"
             />
-            <span id="password-hint" className={styles.fieldHint}>Minimum 6 characters</span>
+            <span id="password-hint" className={styles.fieldHint}>Minimum 8 characters</span>
           </div>
 
           <div className={styles.formOptions}>

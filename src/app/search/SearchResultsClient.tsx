@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import styles from './page.module.css'
 
@@ -24,10 +24,19 @@ interface SearchResults {
 
 export default function SearchResultsClient() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const query = searchParams.get('q') || ''
   const [results, setResults] = useState<SearchResults | null>(null)
   const [loading, setLoading] = useState(false)
   const [filter, setFilter] = useState('all')
+  const [searchInput, setSearchInput] = useState(query)
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (searchInput.trim().length >= 2) {
+      router.push(`/search?q=${encodeURIComponent(searchInput.trim())}`)
+    }
+  }
 
   useEffect(() => {
     if (query.length < 2) {
@@ -89,6 +98,18 @@ export default function SearchResultsClient() {
 
   return (
     <div className={styles.page}>
+      <form onSubmit={handleSearch} className={styles.searchBar}>
+        <input
+          type="text"
+          value={searchInput}
+          onChange={e => setSearchInput(e.target.value)}
+          placeholder="Search anything..."
+          className={styles.searchInput}
+          autoFocus
+        />
+        <button type="submit" className={styles.searchBtn}>Search</button>
+      </form>
+
       <div className={styles.header}>
         <h1>Search Results</h1>
         <p className={styles.subtitle}>

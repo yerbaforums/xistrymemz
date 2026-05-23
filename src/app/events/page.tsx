@@ -514,7 +514,7 @@ export default function EventsPage() {
                     </svg>
                     <h3>No events found</h3>
                     <p>Try adjusting your filters or create a new event.</p>
-                    {userId && (<Link href="/dashboard?tab=events" className="btn-primary">Create Event</Link>)}
+                    {userId && (<Link href="/events/new" className="btn-primary">Create Event</Link>)}
                     <button onClick={clearFilters} className={styles.clearBtn} style={{ marginTop: '16px' }}>Clear Filters</button>
                   </div>
                 ) : (

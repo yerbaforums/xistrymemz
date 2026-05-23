@@ -31,7 +31,7 @@ export interface BusinessTemplate {
     title: string
     description: string
     price: number
-    type: 'PRODUCT' | 'SERVICE'
+    type: 'PRODUCT'
     category: string
     condition?: string
     paymentMethods: string
@@ -80,7 +80,7 @@ export const businessTemplates: BusinessTemplate[] = [
         title: 'Catering Service (per person)',
         description: 'Full catering service for events. Includes setup, serving, and cleanup. Menu customizable.',
         price: 25.00,
-        type: 'SERVICE',
+        type: 'PRODUCT',
         category: 'Catering',
         paymentMethods: 'Cash,Venmo,PayPal,Card',
         paymentType: 'ESCROW',
@@ -155,7 +155,7 @@ export const businessTemplates: BusinessTemplate[] = [
         title: 'Personal Styling Service',
         description: 'Get personalized style recommendations and shopping assistance',
         price: 50.00,
-        type: 'SERVICE',
+        type: 'PRODUCT',
         category: 'Services',
         paymentMethods: 'Venmo,PayPal,Card',
         paymentType: 'DIRECT',
@@ -182,7 +182,7 @@ export const businessTemplates: BusinessTemplate[] = [
         title: 'Home Cleaning Service (2 hours)',
         description: 'Professional home cleaning. Includes dusting, vacuuming, bathroom and kitchen cleaning.',
         price: 80.00,
-        type: 'SERVICE',
+        type: 'PRODUCT',
         category: 'Cleaning',
         paymentMethods: 'Cash,Venmo,PayPal,Zelle',
         paymentType: 'ESCROW',
@@ -193,7 +193,7 @@ export const businessTemplates: BusinessTemplate[] = [
         title: 'Computer Repair & Diagnostics',
         description: 'Full computer diagnostics and repair. Hardware and software issues fixed.',
         price: 60.00,
-        type: 'SERVICE',
+        type: 'PRODUCT',
         category: 'Technology',
         paymentMethods: 'Cash,Venmo,PayPal,Card',
         paymentType: 'BOTH',
@@ -204,7 +204,7 @@ export const businessTemplates: BusinessTemplate[] = [
         title: 'Math Tutoring (per hour)',
         description: 'One-on-one math tutoring for all grade levels. Algebra, Geometry, Calculus.',
         price: 35.00,
-        type: 'SERVICE',
+        type: 'PRODUCT',
         category: 'Education',
         paymentMethods: 'Cash,Venmo,PayPal,Zelle',
         paymentType: 'DIRECT',
@@ -255,7 +255,7 @@ export const businessTemplates: BusinessTemplate[] = [
         title: 'Custom Website Design Service',
         description: 'Professional website design tailored to your business. Responsive and modern.',
         price: 500.00,
-        type: 'SERVICE',
+        type: 'PRODUCT',
         category: 'Design',
         paymentMethods: 'PayPal,Card,Crypto',
         paymentType: 'ESCROW',

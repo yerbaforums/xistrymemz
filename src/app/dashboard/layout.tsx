@@ -10,19 +10,23 @@ import sidebarStyles from './layout-sidebar.module.css'
 
 const BREADCRUMB_LABELS: Record<string, string> = {
   overview: 'Overview',
+  feed: 'Feed',
   projects: 'Projects',
   requests: 'Requests',
   marketplace: 'Marketplace',
   services: 'Services',
+  rentals: 'Rentals',
   teaching: 'Teaching',
   offers: 'Offers',
   events: 'Events',
+  appointments: 'Planner',
   saved: 'Saved',
 }
 
 function DashboardNav({ user }: { user: { name?: string | null; image?: string | null; username?: string | null } }) {
   const pathname = usePathname()
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [moreOpen, setMoreOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -35,20 +39,23 @@ function DashboardNav({ user }: { user: { name?: string | null; image?: string |
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
   
-  const navItems = [
+  const primaryNav = [
     { href: '/dashboard/overview', icon: '📊', label: 'Overview' },
     { href: '/dashboard/feed', icon: '📡', label: 'Feed' },
+    { href: '/dashboard/marketplace', icon: '🛒', label: 'Marketplace' },
+    { href: '/dashboard/services', icon: '🔧', label: 'Services' },
+    { href: '/dashboard/rentals', icon: '🏠', label: 'Rentals' },
+    { href: '/dashboard/events', icon: '📅', label: 'Events' },
+    { href: '/dashboard/appointments', icon: '🗓️', label: 'Planner' },
+  ]
+
+  const secondaryNav = [
     { href: '/dashboard/messages', icon: '💬', label: 'Messages' },
     { href: '/dashboard/community', icon: '🌐', label: 'Community' },
     { href: '/dashboard/projects', icon: '🚀', label: 'Projects' },
     { href: '/dashboard/requests', icon: '📝', label: 'Requests' },
-    { href: '/dashboard/marketplace', icon: '🛒', label: 'Marketplace' },
-    { href: '/dashboard/services', icon: '🔧', label: 'Services' },
-    { href: '/dashboard/rentals', icon: '🏠', label: 'Rentals' },
     { href: '/dashboard/teaching', icon: '📚', label: 'Teaching' },
     { href: '/dashboard/offers', icon: '🤝', label: 'Offers' },
-    { href: '/dashboard/events', icon: '📅', label: 'Events' },
-    { href: '/dashboard/appointments', icon: '🗓️', label: 'Planner' },
     { href: '/dashboard/saved', icon: '⭐', label: 'Saved' },
   ]
 
@@ -77,7 +84,7 @@ function DashboardNav({ user }: { user: { name?: string | null; image?: string |
         )}
       </div>
       <div className={sidebarStyles.navDivider} />
-      {navItems.map(item => (
+      {primaryNav.map(item => (
         <Link 
           key={item.href} 
           href={item.href} 
@@ -87,6 +94,24 @@ function DashboardNav({ user }: { user: { name?: string | null; image?: string |
           <span>{item.label}</span>
         </Link>
       ))}
+      <button onClick={() => setMoreOpen(!moreOpen)} className={sidebarStyles.moreToggle}>
+        <span>{moreOpen ? '▼' : '▶'}</span>
+        <span>More</span>
+      </button>
+      {moreOpen && (
+        <div className={sidebarStyles.moreSection}>
+          {secondaryNav.map(item => (
+            <Link 
+              key={item.href} 
+              href={item.href} 
+              className={`${sidebarStyles.navItem} ${pathname === item.href ? sidebarStyles.active : ''}`}
+            >
+              <span>{item.icon}</span>
+              <span>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+      )}
     </nav>
   )
 }

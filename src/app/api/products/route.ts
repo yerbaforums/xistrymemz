@@ -38,7 +38,7 @@ export async function GET(request: Request) {
 
     const searchRadius = radius ? parseFloat(radius) : userRadius
 
-    const where: { published: boolean; pinned?: boolean; category?: string; type?: string | { not: string }; location?: string; user?: { shopSlug: string }; userId?: string; OR?: Record<string, unknown>[] } = { published: true, type: { not: 'SERVICE' } }
+    const where: { published: boolean; pinned?: boolean; category?: string; type?: string | { not: string } | { notIn: string[] }; location?: string; user?: { shopSlug: string }; userId?: string; OR?: Record<string, unknown>[] } = { published: true, type: { notIn: ['SERVICE', 'RENTAL'] } }
 
     if (category && category !== 'ALL') {
       where.category = category
