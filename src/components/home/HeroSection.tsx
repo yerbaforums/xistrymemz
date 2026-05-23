@@ -97,8 +97,8 @@ export default function HeroSection() {
           The <span className={styles.accent}>Cosmic Whitepages</span> Cooperative
         </h1>
         <p className={styles.subtitle}>
-          Your universal identity, projects, and connections — all in one open network.
-          Sign up and start building something extraordinary with the community.
+          Build, share, and grow together — ad-free, AI-free, no data selling, no algorithms, no shadowbanning, no censorship.
+          Sign up and start creating something extraordinary with the community.
         </p>
         <div className={styles.actions}>
           <Link href="/auth/register" className={styles.btnPrimary}>
@@ -115,7 +115,7 @@ export default function HeroSection() {
           <span className={styles.searchIcon}>🔍</span>
           <input
             className={styles.searchInput}
-            placeholder="Search members, shops, projects..."
+            placeholder="Search services, projects, people, hashtags..."
             onKeyDown={e => {
               if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
                 window.location.href = `/search?q=${encodeURIComponent((e.target as HTMLInputElement).value.trim())}`
@@ -133,8 +133,16 @@ export default function HeroSection() {
             <span className={styles.statLabel}>Forever</span>
           </div>
           <div className={styles.stat}>
-            <span className={styles.statValue}>Coop</span>
-            <span className={styles.statLabel}>Owned</span>
+            <span className={styles.statValue}>Ad</span>
+            <span className={styles.statLabel}>Free</span>
+          </div>
+          <div className={styles.stat}>
+            <span className={styles.statValue}>No Data</span>
+            <span className={styles.statLabel}>Sold</span>
+          </div>
+          <div className={styles.stat}>
+            <span className={styles.statValue}>AI</span>
+            <span className={styles.statLabel}>Free</span>
           </div>
         </div>
       </div>

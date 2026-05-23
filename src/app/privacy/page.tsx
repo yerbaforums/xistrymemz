@@ -83,6 +83,27 @@ export default function Privacy() {
         </div>
 
         <div className={styles.section}>
+          <h2>No Advertising</h2>
+          <p>
+            XistrYmemZ does not serve ads, use tracking pixels, or allow third-party advertisers on the platform. We do not profile users for advertising purposes. Your feed is chronological and based on your own choices, not algorithmic manipulation.
+          </p>
+        </div>
+
+        <div className={styles.section}>
+          <h2>No AI Training on Your Data</h2>
+          <p>
+            Your content, messages, profile data, and activity are never used to train, fine-tune, or evaluate any AI or machine learning model. We do not grant AI companies access to platform data. Scraping XistrYmemZ content for AI training is prohibited.
+          </p>
+        </div>
+
+        <div className={styles.section}>
+          <h2>No Shadowbanning or Algorithmic Suppression</h2>
+          <p>
+            We do not shadowban users or secretly reduce the visibility of anyone&apos;s content. If content is removed or an account is restricted, the affected user receives a clear, specific notification explaining why. There are no hidden algorithms manipulating what you or others see.
+          </p>
+        </div>
+
+        <div className={styles.section}>
           <h2>Security</h2>
           <p>
             We implement industry-standard security measures including encrypted connections (HTTPS), hashed passwords, and secure session management. However, no system is completely secure. We encourage you to use strong passwords and not share your credentials.

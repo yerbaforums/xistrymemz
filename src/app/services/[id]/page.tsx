@@ -19,6 +19,12 @@ function formatDuration(mins: number) {
   return m ? `${h}h ${m}m` : `${h}h`
 }
 
+interface FormField {
+  label: string
+  type: string
+  required: boolean
+}
+
 export default function ServiceDetailPage() {
   const params = useParams()
   const { data: session } = useSession()
@@ -54,7 +60,11 @@ export default function ServiceDetailPage() {
   }
 
   const cat = service.category as ServiceCategory
-  const hashtags = service.hashtags || []
+  const hashtags = Array.isArray(service.hashtags) ? service.hashtags.filter(h => h?.hashtag?.tag) : []
+  const acceptsAppointments = service.acceptsAppointments === true
+  const formFields: FormField[] = Array.isArray(service.appointmentFormFields)
+    ? service.appointmentFormFields.filter((f: any) => f && typeof f.label === 'string')
+    : []
 
   useRecordView('service', service?.id || '')
 
@@ -129,7 +139,7 @@ export default function ServiceDetailPage() {
             </div>
           </div>
 
-          {service.acceptsAppointments && (
+          {acceptsAppointments && (
             <div className={styles.appointmentSection}>
               <h3 className={styles.sectionTitle}>📅 Appointment Scheduling</h3>
               <div className={styles.detailsGrid}>
@@ -144,7 +154,7 @@ export default function ServiceDetailPage() {
                   <div className={styles.detailCard}>
                     <div className={styles.detailIcon}>⏳</div>
                     <div className={styles.detailLabel}>Lead Time</div>
-                    <div className={styles.detailValue}>{service.appointmentLeadTime}h minimum</div>
+                    <div className={styles.detailValue}>{String(service.appointmentLeadTime)}h minimum</div>
                   </div>
                 )}
                 {service.appointmentLocation && (
@@ -166,13 +176,13 @@ export default function ServiceDetailPage() {
                   </div>
                 )}
               </div>
-              {service.appointmentFormFields && service.appointmentFormFields.length > 0 && (
+              {formFields.length > 0 && (
                 <div className={styles.formFieldsInfo}>
                   <p className={styles.formFieldsLabel}>Booking form includes:</p>
                   <ul className={styles.formFieldsList}>
-                    {service.appointmentFormFields.map((field, idx) => (
+                    {formFields.map((field, idx) => (
                       <li key={idx}>
-                        {field.label} {field.required && <span style={{ color: 'var(--accent-primary)' }}>*</span>}
+                        {String(field.label)} {field.required && <span style={{ color: 'var(--accent-primary)' }}>*</span>}
                       </li>
                     ))}
                   </ul>
@@ -194,16 +204,16 @@ export default function ServiceDetailPage() {
         <aside className={styles.sidebar}>
           <div className={styles.sellerCard}>
             <div className={styles.sellerInfo}>
-              {service.user.image ? (
+              {service.user?.image ? (
                 <img src={service.user.image} alt="" className={styles.sellerAvatar} />
               ) : (
                 <div className={styles.sellerAvatarPlaceholder}>
-                  {(service.user.name || 'U')[0]}
+                  {(service.user?.name || 'U')[0]}
                 </div>
               )}
               <div>
-                <div className={styles.sellerName}>{service.user.name || 'Anonymous'}</div>
-                {service.user.username && (
+                <div className={styles.sellerName}>{service.user?.name || 'Anonymous'}</div>
+                {service.user?.username && (
                   <Link href={`/profile/${service.user.username}`} className={styles.sellerUsername}>
                     @{service.user.username}
                   </Link>
@@ -233,7 +243,7 @@ export default function ServiceDetailPage() {
           isOpen={true}
           onClose={() => setShowBooking(false)}
           sellerId={service.userId}
-          sellerName={service.user.name}
+          sellerName={service.user?.name}
           defaultDuration={service.appointmentDuration || service.duration}
           defaultLocation={service.appointmentLocation || service.location}
           defaultMeetingLink={service.appointmentMeetingLink || service.meetingLink}

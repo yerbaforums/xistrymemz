@@ -25,7 +25,7 @@ interface SignalData {
   data: any
 }
 
-export function useVideoChat(roomId?: string, currentUserId?: string) {
+export function useVideoChat(initialRoomId?: string, currentUserId?: string) {
   const [room, setRoom] = useState<RoomInfo | null>(null)
   const [localStream, setLocalStream] = useState<MediaStream | null>(null)
   const [peers, setPeers] = useState<Peer[]>([])
@@ -40,6 +40,17 @@ export function useVideoChat(roomId?: string, currentUserId?: string) {
   const localStreamRef = useRef<MediaStream | null>(null)
   const originalVideoTrackRef = useRef<MediaStreamTrack | null>(null)
   const screenStreamRef = useRef<MediaStream | null>(null)
+  const roomRef = useRef<RoomInfo | null>(null)
+  const currentUserIdRef = useRef<string | undefined>(currentUserId)
+
+  // Keep refs in sync with state/props
+  useEffect(() => { roomRef.current = room }, [room])
+  useEffect(() => { currentUserIdRef.current = currentUserId }, [currentUserId])
+
+  // Derive the effective room ID from room state or fallback to prop
+  const getEffectiveRoomId = useCallback(() => {
+    return roomRef.current?.id ?? initialRoomId ?? ''
+  }, [initialRoomId])
 
   const getLocalStream = useCallback(async () => {
     if (localStreamRef.current) return localStreamRef.current
@@ -55,7 +66,7 @@ export function useVideoChat(roomId?: string, currentUserId?: string) {
       } else if (err.name === 'NotFoundError') {
         setError('No camera or microphone found.')
       } else {
-        setError('Failed to access camera/microphone.')
+        setError('Failed to access camera/microphone: ' + (err.message || 'Unknown error'))
       }
       return null
     }
@@ -63,8 +74,8 @@ export function useVideoChat(roomId?: string, currentUserId?: string) {
 
   const replaceVideoTrackForAllPeers = useCallback((newTrack: MediaStreamTrack) => {
     for (const [, entry] of peersRef.current) {
-      const senders = entry.peer?.senders || []
       try {
+        const senders = entry.peer?.senders || []
         const sender = entry.peer._pc?.getSenders?.()?.find((s: any) => s.track?.kind === 'video')
         if (sender) sender.replaceTrack(newTrack)
       } catch {}
@@ -91,8 +102,8 @@ export function useVideoChat(roomId?: string, currentUserId?: string) {
 
     if (isScreenSharing) {
       if (originalVideoTrackRef.current) {
-        const sender = localStreamRef.current.getVideoTracks()[0]
-        if (sender) localStreamRef.current.removeTrack(sender)
+        const oldTrack = localStreamRef.current.getVideoTracks()[0]
+        if (oldTrack) localStreamRef.current.removeTrack(oldTrack)
         localStreamRef.current.addTrack(originalVideoTrackRef.current)
         replaceVideoTrackForAllPeers(originalVideoTrackRef.current)
       }
@@ -138,9 +149,10 @@ export function useVideoChat(roomId?: string, currentUserId?: string) {
   }, [isScreenSharing, replaceVideoTrackForAllPeers])
 
   const pollSignals = useCallback(async (since: number): Promise<number> => {
-    if (!roomId) return since
+    const rid = getEffectiveRoomId()
+    if (!rid) return since
     try {
-      const res = await fetch(`/api/video/rooms/${roomId}/signal?since=${since}`)
+      const res = await fetch(`/api/video/rooms/${rid}/signal?since=${since}`)
       if (!res.ok) return since
       const data = await res.json()
       for (const sig of data.signals as SignalData[]) {
@@ -150,7 +162,7 @@ export function useVideoChat(roomId?: string, currentUserId?: string) {
     } catch {
       return since
     }
-  }, [roomId])
+  }, [getEffectiveRoomId])
 
   const handleIncomingSignal = useCallback((sig: SignalData) => {
     const existing = peersRef.current.get(sig.fromUserId)
@@ -166,15 +178,16 @@ export function useVideoChat(roomId?: string, currentUserId?: string) {
   }, [])
 
   const sendSignal = useCallback(async (toUserId: string, type: string, data: any) => {
-    if (!roomId) return
+    const rid = getEffectiveRoomId()
+    if (!rid) return
     try {
-      await fetch(`/api/video/rooms/${roomId}/signal`, {
+      await fetch(`/api/video/rooms/${rid}/signal`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type, toUserId, data }),
       })
     } catch {}
-  }, [roomId])
+  }, [getEffectiveRoomId])
 
   const createPeer = useCallback((userId: string, initiator: boolean, stream: MediaStream) => {
     const SimplePeer = require('simple-peer')
@@ -245,8 +258,25 @@ export function useVideoChat(roomId?: string, currentUserId?: string) {
     }
   }, [])
 
+  const fetchRoom = useCallback(async (roomId: string) => {
+    try {
+      const res = await fetch(`/api/video/rooms/${roomId}`)
+      if (!res.ok) throw new Error('Failed to fetch room')
+      const data = await res.json()
+      setRoom(data.room)
+      return data.room
+    } catch (err: any) {
+      setError(err.message)
+      return null
+    }
+  }, [])
+
   const startCall = useCallback(async () => {
-    if (!room) return
+    const currentRoom = roomRef.current
+    if (!currentRoom) {
+      console.warn('startCall: no room available yet')
+      return
+    }
     setConnecting(true)
     setError('')
 
@@ -256,10 +286,12 @@ export function useVideoChat(roomId?: string, currentUserId?: string) {
       return
     }
 
-    for (const p of room.participants) {
-      if (p.userId === currentUserId) continue
+    const uid = currentUserIdRef.current
+
+    for (const p of currentRoom.participants) {
+      if (p.userId === uid) continue
       if (peersRef.current.has(p.userId)) continue
-      const isInitiator = currentUserId === room.createdBy.id
+      const isInitiator = uid === currentRoom.createdBy.id
       createPeer(p.userId, isInitiator, stream)
     }
 
@@ -271,7 +303,7 @@ export function useVideoChat(roomId?: string, currentUserId?: string) {
     poll()
 
     setConnecting(false)
-  }, [room, getLocalStream, createPeer, pollSignals, currentUserId])
+  }, [getLocalStream, createPeer, pollSignals])
 
   const leaveRoom = useCallback(async () => {
     if (signalTimerRef.current) {
@@ -301,14 +333,15 @@ export function useVideoChat(roomId?: string, currentUserId?: string) {
     setAudioEnabled(true)
     setVideoEnabled(true)
 
-    if (roomId) {
+    const rid = getEffectiveRoomId()
+    if (rid) {
       try {
-        await fetch(`/api/video/rooms/${roomId}`, { method: 'DELETE' })
+        await fetch(`/api/video/rooms/${rid}`, { method: 'DELETE' })
       } catch {}
     }
 
     setRoom(null)
-  }, [roomId])
+  }, [getEffectiveRoomId])
 
   useEffect(() => {
     return () => {
@@ -333,6 +366,7 @@ export function useVideoChat(roomId?: string, currentUserId?: string) {
     isScreenSharing,
     createRoom,
     joinRoom,
+    fetchRoom,
     startCall,
     leaveRoom,
     setRoom,

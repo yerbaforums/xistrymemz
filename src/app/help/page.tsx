@@ -73,6 +73,30 @@ export default function Help() {
       answer: 'If you see content that violates our community guidelines, use the contact page to report it. Include the link and a description of the issue.'
     },
     {
+      question: 'Is XistrYmemZ ad-free?',
+      answer: 'Yes, completely. We never show ads, sponsored content, or promoted posts. The platform is funded through optional community donations, not by selling your attention to advertisers.'
+    },
+    {
+      question: 'Does XistrYmemZ sell my data?',
+      answer: 'Never. Your personal data, content, messages, and activity are never sold, shared, or traded to third parties. We do not have data brokers, advertising partnerships, or third-party analytics that profile you. Read our full Privacy Policy for details.'
+    },
+    {
+      question: 'Is my content used to train AI?',
+      answer: 'No. XistrYmemZ is an AI-free platform. We do not scrape, train AI models on, or feed your content into any machine learning system. Everything on the platform is created by real people and stays under your control.'
+    },
+    {
+      question: 'Does XistrYmemZ use algorithms to manipulate my feed?',
+      answer: 'No. We don\'t use algorithms to favor or suppress content. Your feed shows posts from people and hashtags you actually follow, in chronological order. What you see is determined by your choices, not by engagement-maximizing algorithms.'
+    },
+    {
+      question: 'Does XistrYmemZ shadowban users?',
+      answer: 'Absolutely not. We don\'t shadowban, throttle, or secretly reduce anyone\'s reach. If your content violates our terms, you\'ll be notified directly. Full transparency — always.'
+    },
+    {
+      question: 'Does XistrYmemZ censor content?',
+      answer: 'We don\'t censor legal content or suppress viewpoints. Content is only removed if it violates our Terms of Service (illegal material, harassment, spam, etc.). The community sets its own norms through groups and forums. Your voice matters.'
+    },
+    {
       question: 'How do I reset my password?',
       answer: 'Go to the Login page and click "Forgot Password". Enter your email address and follow the instructions sent to your inbox.'
     }

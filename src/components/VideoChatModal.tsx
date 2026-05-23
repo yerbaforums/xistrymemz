@@ -17,28 +17,39 @@ export default function VideoChatModal({ roomId: initialRoomId, inviteCode, onCl
   const {
     room, localStream, peers, error, connecting,
     audioEnabled, videoEnabled, isScreenSharing,
-    createRoom, joinRoom, startCall, leaveRoom,
+    createRoom, joinRoom, fetchRoom, startCall, leaveRoom,
     toggleAudio, toggleVideo, toggleScreenShare
   } = useVideoChat(initialRoomId, session?.user?.id)
 
   const localVideoRef = useRef<HTMLVideoElement>(null)
-  const joinedRef = useRef(false)
+  const joinPhaseRef = useRef<'idle' | 'joining' | 'started'>('idle')
   const [isFullscreen, setIsFullscreen] = useState(mode === 'modal')
   const containerRef = useRef<HTMLDivElement>(null)
 
+  // Phase 1: Join or create a room (only once)
   useEffect(() => {
-    if (inviteCode && !joinedRef.current && !room) {
-      joinedRef.current = true
-      joinRoom(inviteCode).then(r => {
-        if (r) setTimeout(() => startCall(), 500)
-      })
-    } else if (!initialRoomId && !inviteCode && !room && !joinedRef.current) {
-      joinedRef.current = true
-      createRoom().then(r => {
-        if (r) setTimeout(() => startCall(), 500)
-      })
+    if (joinPhaseRef.current !== 'idle') return
+
+    if (inviteCode) {
+      joinPhaseRef.current = 'joining'
+      joinRoom(inviteCode)
+    } else if (initialRoomId) {
+      joinPhaseRef.current = 'joining'
+      fetchRoom(initialRoomId)
+    } else if (!inviteCode && !initialRoomId) {
+      joinPhaseRef.current = 'joining'
+      createRoom()
     }
-  }, [inviteCode, initialRoomId, room, joinRoom, createRoom, startCall])
+  }, [inviteCode, initialRoomId, joinRoom, createRoom, fetchRoom])
+
+  // Phase 2: Start call once room is available (separate effect so we always have latest room state)
+  useEffect(() => {
+    if (!room || joinPhaseRef.current === 'started') return
+    joinPhaseRef.current = 'started'
+    // Small delay to ensure signaling endpoint has the participant registered
+    const timer = setTimeout(() => startCall(), 600)
+    return () => clearTimeout(timer)
+  }, [room, startCall])
 
   useEffect(() => {
     if (localVideoRef.current && localStream) {
@@ -85,28 +96,36 @@ export default function VideoChatModal({ roomId: initialRoomId, inviteCode, onCl
         <div className={styles.error}>{error}</div>
       )}
 
-      <div className={styles.videoGrid}>
-        {localStream && (
-          <div className={styles.videoTile}>
-            <video ref={localVideoRef} autoPlay playsInline muted
-              className={`${styles.video} ${!videoEnabled && !isScreenSharing ? styles.videoOff : ''}`}
-              style={{ transform: isScreenSharing ? 'none' : 'scaleX(-1)' }} />
-            {!videoEnabled && !isScreenSharing && (
-              <div className={styles.videoPlaceholder}>📹 Camera Off</div>
-            )}
-            <span className={styles.videoLabel}>
-              {isScreenSharing ? '🖥️ Screen' : 'You'}
-              {!audioEnabled && ' 🔇'}
-            </span>
-          </div>
-        )}
-        {peers.filter(p => p.connected).map(p => (
-          <PeerVideo key={p.userId} peer={p} />
-        ))}
-        {connecting && (
-          <div className={styles.connectingTile}>Connecting...</div>
-        )}
-      </div>
+      {!room && !error && (
+        <div className={styles.connectingTile} style={{ width: '100%', height: '100%' }}>
+          Joining room...
+        </div>
+      )}
+
+      {room && (
+        <div className={styles.videoGrid}>
+          {localStream && (
+            <div className={styles.videoTile}>
+              <video ref={localVideoRef} autoPlay playsInline muted
+                className={`${styles.video} ${!videoEnabled && !isScreenSharing ? styles.videoOff : ''}`}
+                style={{ transform: isScreenSharing ? 'none' : 'scaleX(-1)' }} />
+              {!videoEnabled && !isScreenSharing && (
+                <div className={styles.videoPlaceholder}>📹 Camera Off</div>
+              )}
+              <span className={styles.videoLabel}>
+                {isScreenSharing ? '🖥️ Screen' : 'You'}
+                {!audioEnabled && ' 🔇'}
+              </span>
+            </div>
+          )}
+          {peers.filter(p => p.connected).map(p => (
+            <PeerVideo key={p.userId} peer={p} />
+          ))}
+          {connecting && (
+            <div className={styles.connectingTile}>Connecting...</div>
+          )}
+        </div>
+      )}
 
       <div className={styles.controls}>
         <button

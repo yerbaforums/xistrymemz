@@ -41,12 +41,15 @@ const GROUPS = [
     ]
   },
   {
-    title: 'Grow & Earn',
-    icon: '💰',
+    title: 'Our Promise',
+    icon: '🛡️',
     features: [
-      { icon: '🌍', title: 'Earth Passport', desc: 'Verified identity, reputation scores, and trust badges across the network.', href: '/about' },
-      { icon: '💰', title: 'Crypto-Friendly Donations', desc: 'Send and receive crypto donations with privacy and QR codes.', href: '/profile/edit' },
-      { icon: '🎭', title: 'User Classes', desc: 'Choose from 14 identity classes — Healer, Builder, Explorer, Sage, and more — to express your role.', href: '/profile/edit' },
+      { icon: '🚫', title: 'Ad-Free', desc: 'No ads, no sponsored posts, no promoted content. Your experience is never interrupted by advertising.', href: '/about' },
+      { icon: '🔒', title: 'No Data Selling', desc: 'Your personal data is never sold, shared, or traded to third parties. No exceptions, no loopholes.', href: '/privacy' },
+      { icon: '🤖', title: 'AI-Free', desc: 'No AI scraping, no AI-generated content in your feed, no training on your data. Real people only.', href: '/about' },
+      { icon: '📊', title: 'No Algorithms', desc: 'Content appears chronologically by your choices, not by engagement-maximizing algorithms.', href: '/about' },
+      { icon: '👁️', title: 'No Shadowbanning', desc: 'No secret suppression of your reach. If there\'s an issue, you\'re told directly. Full transparency.', href: '/about' },
+      { icon: '✊', title: 'No Censorship', desc: 'Legal content is never removed for viewpoint. The community sets its own norms through groups and forums.', href: '/terms' },
     ]
   }
 ]

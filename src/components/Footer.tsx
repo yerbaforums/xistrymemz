@@ -54,6 +54,13 @@ export default function Footer() {
         <div className={styles.brand}>
           <Link href="/" className={styles.logo}>XistrYmemZ</Link>
           <p>Plan. Request. Complete.</p>
+          <div className={styles.pillars}>
+            <span className={styles.pillar}>🚫 Ad-Free</span>
+            <span className={styles.pillar}>🔒 No Data Selling</span>
+            <span className={styles.pillar}>🤖 AI-Free</span>
+            <span className={styles.pillar}>📊 No Algorithms</span>
+            <span className={styles.pillar}>👁️ No Shadowbans</span>
+          </div>
         </div>
         
         <div className={styles.links}>
@@ -61,15 +68,18 @@ export default function Footer() {
             <h4>Explore</h4>
             <Link href="/">Home</Link>
             <Link href="/plans/public">Projects</Link>
-            <Link href="/products">Market</Link>
+            <Link href="/products">Marketplace</Link>
+            <Link href="/services">Services</Link>
             <Link href="/events">Events</Link>
           </div>
           
           <div className={styles.col}>
             <h4>Community</h4>
             <Link href="/community">Members</Link>
-            <Link href="/groups">Groups</Link>
+            <Link href="/community/groups">Groups</Link>
+            <Link href="/community/forum">Forum</Link>
             <Link href="/requests">Requests</Link>
+            <Link href="/hashtags">Hashtags</Link>
           </div>
           
           <div className={styles.col}>
@@ -77,6 +87,8 @@ export default function Footer() {
             <Link href="/help">Help</Link>
             <Link href="/contact">Contact</Link>
             <Link href="/about">About</Link>
+            <Link href="/terms">Terms</Link>
+            <Link href="/privacy">Privacy</Link>
           </div>
         </div>
 

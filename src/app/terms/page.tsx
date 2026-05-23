@@ -87,6 +87,41 @@ export default function Terms() {
         </div>
 
         <div className={styles.section}>
+          <h2>No Advertising</h2>
+          <p>
+            XistrYmemZ does not serve ads, sponsored content, or promoted posts. We do not sell advertising space or allow third-party advertisers to target users. The platform is funded through voluntary community donations.
+          </p>
+        </div>
+
+        <div className={styles.section}>
+          <h2>No Data Selling</h2>
+          <p>
+            We do not sell, rent, share, or trade user personal data to third parties for marketing, advertising, or any other purpose. This includes profile information, activity data, messages, and browsing behavior. There are no exceptions to this policy.
+          </p>
+        </div>
+
+        <div className={styles.section}>
+          <h2>No AI Training</h2>
+          <p>
+            User content on XistrYmemZ is not used to train, fine-tune, or evaluate artificial intelligence models. We do not grant access to our platform data for AI development purposes. Scraping platform content for AI training is strictly prohibited.
+          </p>
+        </div>
+
+        <div className={styles.section}>
+          <h2>Algorithmic Transparency &amp; No Shadowbanning</h2>
+          <p>
+            XistrYmemZ does not use engagement-maximizing algorithms to manipulate what you see. Content appears chronologically based on your subscriptions and follows. We do not shadowban, throttle, or secretly reduce the reach of any user&apos;s content. If content is removed or restricted, the user will be notified with a clear explanation.
+          </p>
+        </div>
+
+        <div className={styles.section}>
+          <h2>Content Moderation &amp; No Censorship</h2>
+          <p>
+            We do not censor legal content or suppress viewpoints. Content is removed only when it violates our Terms of Service — specifically illegal material, harassment, spam, and unauthorized private information. The community sets its own norms through groups and forums. Users are free to express lawful opinions without fear of algorithmic suppression or invisible penalties.
+          </p>
+        </div>
+
+        <div className={styles.section}>
           <h2>Intellectual Property</h2>
           <p>
             The XistrYmemZ name, logo, and platform design are protected intellectual property. User-submitted content remains the property of its respective creators. We respect DMCA takedown requests and will remove infringing content upon valid notice.

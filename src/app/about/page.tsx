@@ -42,6 +42,40 @@ export default function About() {
             and neighbors collaborate on projects, offer services, buy and sell, teach skills, and 
             organize events — all in one place.
           </p>
+          <p>
+            No ads. No data selling. No AI scraping your content. No algorithms deciding what you see. No shadowbanning. No censorship.
+            Your data, your community, your terms.
+          </p>
+        </div>
+
+        <div className={styles.block}>
+          <h2>Our Promise</h2>
+          <div className={styles.features}>
+            <div className={styles.feature}>
+              <h3>🚫 Ad-Free</h3>
+              <p>No banners, no pop-ups, no sponsored posts. Your experience is never interrupted by advertising. We fund the platform through optional donations, not by selling your attention.</p>
+            </div>
+            <div className={styles.feature}>
+              <h3>🔒 Your Data, Not for Sale</h3>
+              <p>We never sell, share, or trade your personal data to third parties. Your profile, content, messages, and activity stay yours. Period. No exceptions, no loopholes.</p>
+            </div>
+            <div className={styles.feature}>
+              <h3>🤖 AI-Free Zone</h3>
+              <p>No AI scraping, no AI-generated content fed into your feed, no AI trained on your data. Everything on XistrYmemZ is created by real people for real people.</p>
+            </div>
+            <div className={styles.feature}>
+              <h3>📊 No Algorithmic Tampering</h3>
+              <p>No algorithm decides what you see. Content appears chronologically and by your own choices — follow who you want, join what you want, see what you follow. No hidden ranking, no favor manipulation.</p>
+            </div>
+            <div className={styles.feature}>
+              <h3>👁️ No Shadowbanning</h3>
+              <p>We don't secretly suppress your reach. If there's an issue with your content, you'll know. No invisible penalties, no reduced visibility without explanation. Full transparency.</p>
+            </div>
+            <div className={styles.feature}>
+              <h3>✊ No Censorship</h3>
+              <p>Your voice matters. We don't censor legal content or suppress viewpoints. The community sets its own norms through groups and forums. Content is only removed for illegal material or clear violations of our terms.</p>
+            </div>
+          </div>
         </div>
 
         <div className={styles.block}>
