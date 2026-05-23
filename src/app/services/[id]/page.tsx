@@ -59,14 +59,30 @@ export default function ServiceDetailPage() {
     )
   }
 
-  const cat = service.category as ServiceCategory
-  const hashtags = Array.isArray(service.hashtags) ? service.hashtags.filter(h => h?.hashtag?.tag) : []
+  const category = typeof service.category === 'string' ? service.category : 'OTHER'
+  const cat = category as ServiceCategory
+  const hashtags = Array.isArray(service.hashtags) ? service.hashtags.filter(h => h?.hashtag?.tag && typeof h.hashtag.tag === 'string') : []
   const acceptsAppointments = service.acceptsAppointments === true
   const formFields: FormField[] = Array.isArray(service.appointmentFormFields)
-    ? service.appointmentFormFields.filter((f: any) => f && typeof f.label === 'string')
+    ? service.appointmentFormFields.filter((f: any) => f && typeof f === 'object' && typeof f.label === 'string')
     : []
+  const duration = typeof service.duration === 'number' ? service.duration : 60
+  const price = typeof service.price === 'number' ? service.price : null
+  const title = typeof service.title === 'string' ? service.title : 'Untitled'
+  const description = typeof service.description === 'string' ? service.description : null
+  const imageUrl = typeof service.imageUrl === 'string' ? service.imageUrl : null
+  const location = typeof service.location === 'string' ? service.location : null
+  const meetingLink = typeof service.meetingLink === 'string' ? service.meetingLink : null
+  const apptDuration = typeof service.appointmentDuration === 'number' ? service.appointmentDuration : null
+  const apptLeadTime = typeof service.appointmentLeadTime === 'number' ? service.appointmentLeadTime : null
+  const apptLocation = typeof service.appointmentLocation === 'string' ? service.appointmentLocation : null
+  const apptMeetingLink = typeof service.appointmentMeetingLink === 'string' ? service.appointmentMeetingLink : null
+  const viewCount = typeof service.viewCount === 'number' ? service.viewCount : 0
+  const userName = typeof service.user?.name === 'string' ? service.user.name : null
+  const userImage = typeof service.user?.image === 'string' ? service.user.image : null
+  const userUsername = typeof service.user?.username === 'string' ? service.user.username : null
 
-  useRecordView('service', service?.id || '')
+  useRecordView('service', typeof service.id === 'string' ? service.id : '')
 
   return (
     <div className={styles.page}>
@@ -74,8 +90,8 @@ export default function ServiceDetailPage() {
 
       <div className={styles.layout}>
         <div className={styles.mainContent}>
-          {service.imageUrl ? (
-            <img src={service.imageUrl} alt={service.title} className={styles.heroImage} />
+          {imageUrl ? (
+            <img src={imageUrl} alt={title} className={styles.heroImage} />
           ) : (
             <div className={styles.heroPlaceholder}>
               {SERVICE_CATEGORY_ICONS[cat] || '📋'}
@@ -84,16 +100,16 @@ export default function ServiceDetailPage() {
 
           <div className={styles.metaRow}>
             <span className={styles.categoryBadge}>
-              {SERVICE_CATEGORY_ICONS[cat]} {SERVICE_CATEGORY_LABELS[cat]}
+              {SERVICE_CATEGORY_ICONS[cat] || '📋'} {SERVICE_CATEGORY_LABELS[cat] || 'Other'}
             </span>
-            <span className={styles.durationBadge}>🕐 {formatDuration(service.duration)}</span>
-            <ViewCount count={service.viewCount || 0} />
+            <span className={styles.durationBadge}>🕐 {formatDuration(duration)}</span>
+            <ViewCount count={viewCount} />
           </div>
 
-          <h1 className={styles.title}>{service.title}</h1>
+          <h1 className={styles.title}>{title}</h1>
 
-          {service.description && (
-            <p className={styles.description}>{service.description}</p>
+          {description && (
+            <p className={styles.description}>{description}</p>
           )}
 
           {hashtags.length > 0 && (
@@ -107,27 +123,27 @@ export default function ServiceDetailPage() {
           )}
 
           <div className={styles.detailsGrid}>
-            {service.price != null && (
+            {price != null && (
               <div className={styles.detailCard}>
                 <div className={styles.detailIcon}>💰</div>
                 <div className={styles.detailLabel}>Price</div>
-                <div className={styles.detailValue}>${service.price}</div>
+                <div className={styles.detailValue}>${price}</div>
               </div>
             )}
-            {service.location && (
+            {location && (
               <div className={styles.detailCard}>
                 <div className={styles.detailIcon}>📍</div>
                 <div className={styles.detailLabel}>Location</div>
-                <div className={styles.detailValue}>{service.location}</div>
+                <div className={styles.detailValue}>{location}</div>
               </div>
             )}
-            {service.meetingLink && (
+            {meetingLink && (
               <div className={styles.detailCard}>
                 <div className={styles.detailIcon}>🔗</div>
                 <div className={styles.detailLabel}>Meeting Link</div>
                 <div className={styles.detailValue}>
-                  <a href={service.meetingLink} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-primary)', wordBreak: 'break-all' }}>
-                    {service.meetingLink}
+                  <a href={meetingLink} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-primary)', wordBreak: 'break-all' }}>
+                    {meetingLink}
                   </a>
                 </div>
               </div>
@@ -135,7 +151,7 @@ export default function ServiceDetailPage() {
             <div className={styles.detailCard}>
               <div className={styles.detailIcon}>🕐</div>
               <div className={styles.detailLabel}>Duration</div>
-              <div className={styles.detailValue}>{formatDuration(service.duration)}</div>
+              <div className={styles.detailValue}>{formatDuration(duration)}</div>
             </div>
           </div>
 
@@ -147,30 +163,30 @@ export default function ServiceDetailPage() {
                   <div className={styles.detailCard}>
                     <div className={styles.detailIcon}>⏱️</div>
                     <div className={styles.detailLabel}>Session Duration</div>
-                    <div className={styles.detailValue}>{formatDuration(service.appointmentDuration)}</div>
+                    <div className={styles.detailValue}>{formatDuration(apptDuration || 60)}</div>
                   </div>
                 )}
-                {service.appointmentLeadTime != null && (
+                {apptLeadTime != null && (
                   <div className={styles.detailCard}>
                     <div className={styles.detailIcon}>⏳</div>
                     <div className={styles.detailLabel}>Lead Time</div>
-                    <div className={styles.detailValue}>{String(service.appointmentLeadTime)}h minimum</div>
+                    <div className={styles.detailValue}>{String(apptLeadTime)}h minimum</div>
                   </div>
                 )}
-                {service.appointmentLocation && (
+                {apptLocation && (
                   <div className={styles.detailCard}>
                     <div className={styles.detailIcon}>📍</div>
                     <div className={styles.detailLabel}>Appointment Location</div>
-                    <div className={styles.detailValue}>{service.appointmentLocation}</div>
+                    <div className={styles.detailValue}>{apptLocation}</div>
                   </div>
                 )}
-                {service.appointmentMeetingLink && (
+                {apptMeetingLink && (
                   <div className={styles.detailCard}>
                     <div className={styles.detailIcon}>💻</div>
                     <div className={styles.detailLabel}>Virtual Meeting Link</div>
                     <div className={styles.detailValue}>
-                      <a href={service.appointmentMeetingLink} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-primary)', wordBreak: 'break-all' }}>
-                        {service.appointmentMeetingLink}
+                      <a href={apptMeetingLink} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-primary)', wordBreak: 'break-all' }}>
+                        {apptMeetingLink}
                       </a>
                     </div>
                   </div>
@@ -192,30 +208,30 @@ export default function ServiceDetailPage() {
           )}
 
           <ShareSection
-            title={service.title}
-            description={service.description}
+            title={title}
+            description={description}
             referenceType="SERVICE"
             referenceId={service.id}
-            referenceTitle={service.title}
-            referenceImage={service.imageUrl}
+            referenceTitle={title}
+            referenceImage={imageUrl}
           />
         </div>
 
         <aside className={styles.sidebar}>
           <div className={styles.sellerCard}>
             <div className={styles.sellerInfo}>
-              {service.user?.image ? (
-                <img src={service.user.image} alt="" className={styles.sellerAvatar} />
+              {userImage ? (
+                <img src={userImage} alt="" className={styles.sellerAvatar} />
               ) : (
                 <div className={styles.sellerAvatarPlaceholder}>
-                  {(service.user?.name || 'U')[0]}
+                  {(userName || 'U')[0]}
                 </div>
               )}
               <div>
-                <div className={styles.sellerName}>{service.user?.name || 'Anonymous'}</div>
-                {service.user?.username && (
-                  <Link href={`/profile/${service.user.username}`} className={styles.sellerUsername}>
-                    @{service.user.username}
+                <div className={styles.sellerName}>{userName || 'Anonymous'}</div>
+                {userUsername && (
+                  <Link href={`/profile/${userUsername}`} className={styles.sellerUsername}>
+                    @{userUsername}
                   </Link>
                 )}
               </div>
@@ -243,13 +259,13 @@ export default function ServiceDetailPage() {
           isOpen={true}
           onClose={() => setShowBooking(false)}
           sellerId={service.userId}
-          sellerName={service.user?.name}
-          defaultDuration={service.appointmentDuration || service.duration}
-          defaultLocation={service.appointmentLocation || service.location}
-          defaultMeetingLink={service.appointmentMeetingLink || service.meetingLink}
-          serviceCategory={service.category}
+          sellerName={userName}
+          defaultDuration={apptDuration || duration}
+          defaultLocation={apptLocation || location}
+          defaultMeetingLink={apptMeetingLink || meetingLink}
+          serviceCategory={category}
           serviceOfferingId={service.id}
-          productTitle={service.title}
+          productTitle={title}
         />
       )}
     </div>

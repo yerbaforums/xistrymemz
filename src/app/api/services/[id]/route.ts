@@ -25,7 +25,36 @@ export async function GET(
       return NextResponse.json({ error: 'Service not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ service })
+    const safe = {
+      id: service.id,
+      title: service.title,
+      description: service.description ?? null,
+      category: service.category,
+      duration: service.duration,
+      price: service.price ?? null,
+      location: service.location ?? null,
+      meetingLink: service.meetingLink ?? null,
+      imageUrl: service.imageUrl ?? null,
+      isActive: service.isActive,
+      userId: service.userId,
+      user: service.user,
+      viewCount: service.viewCount,
+      acceptsAppointments: service.acceptsAppointments === true,
+      appointmentDuration: service.appointmentDuration ?? null,
+      appointmentLeadTime: service.appointmentLeadTime ?? null,
+      appointmentLocation: service.appointmentLocation ?? null,
+      appointmentMeetingLink: service.appointmentMeetingLink ?? null,
+      appointmentFormFields: Array.isArray(service.appointmentFormFields)
+        ? (service.appointmentFormFields as any[]).filter(f => f && typeof f === 'object' && typeof f.label === 'string').map(f => ({ label: String(f.label), type: String(f.type || 'text'), required: Boolean(f.required) }))
+        : null,
+      hashtags: Array.isArray(service.hashtags)
+        ? service.hashtags.filter(h => h?.hashtag?.tag).map(h => ({ id: h.id, hashtag: { id: h.hashtag.id, tag: h.hashtag.tag } }))
+        : [],
+      createdAt: service.createdAt instanceof Date ? service.createdAt.toISOString() : String(service.createdAt),
+      updatedAt: service.updatedAt instanceof Date ? service.updatedAt.toISOString() : String(service.updatedAt),
+    }
+
+    return NextResponse.json({ service: safe })
   } catch (error) {
     console.error('Error fetching service:', error)
     return NextResponse.json({ error: 'Failed to fetch service' }, { status: 500 })

@@ -23,6 +23,8 @@ interface BusySlot {
   title: string
 }
 
+type MeetingLinkType = 'default' | 'platform' | 'custom' | 'none'
+
 interface BookAppointmentModalProps {
   isOpen: boolean
   onClose: () => void
@@ -64,7 +66,12 @@ export default function BookAppointmentModal({
   const [title, setTitle] = useState(productTitle ? `Appointment: ${productTitle}` : '')
   const [description, setDescription] = useState('')
   const [location, setLocation] = useState(defaultLocation || '')
-  const [meetingLink, setMeetingLink] = useState(defaultMeetingLink || '')
+  const [meetingLinkType, setMeetingLinkType] = useState<MeetingLinkType>(
+    defaultMeetingLink ? 'default' : 'none'
+  )
+  const [customMeetingLink, setCustomMeetingLink] = useState('')
+  const [platformRoom, setPlatformRoom] = useState<{ id: string; inviteCode: string; name: string } | null>(null)
+  const [creatingRoom, setCreatingRoom] = useState(false)
   const [formResponses, setFormResponses] = useState<Record<string, string>>({})
   const [booking, setBooking] = useState(false)
 
@@ -86,6 +93,9 @@ export default function BookAppointmentModal({
     setSelectedTime('')
     setCurrentMonth(new Date())
     setBusySlots([])
+    setMeetingLinkType(defaultMeetingLink ? 'default' : 'none')
+    setCustomMeetingLink('')
+    setPlatformRoom(null)
     fetch(`/api/availability?userId=${sellerId}`)
       .then(r => r.json())
       .then(data => setAvailSlots(data.slots || []))
@@ -124,7 +134,6 @@ export default function BookAppointmentModal({
 
   function getFreeTimes() {
     if (!selectedDate || busySlots.length === 0 && !loadingBusy) {
-      // If no busy slots loaded yet, compute from availSlots only
     }
     const d = new Date(selectedDate + 'T12:00:00')
     const dow = d.getDay()
@@ -192,6 +201,36 @@ export default function BookAppointmentModal({
     return d < minDate
   }
 
+  async function handleCreatePlatformRoom() {
+    setCreatingRoom(true)
+    try {
+      const res = await fetch('/api/video/rooms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: `${productTitle || 'Appointment'} Video Room` })
+      })
+      if (!res.ok) throw new Error('Failed to create room')
+      const data = await res.json()
+      setPlatformRoom(data.room)
+      return data.room
+    } catch {
+      toastError('Failed to create video room')
+      return null
+    } finally {
+      setCreatingRoom(false)
+    }
+  }
+
+  function getMeetingLinkValue(): string | null {
+    if (meetingLinkType === 'none') return null
+    if (meetingLinkType === 'default') return defaultMeetingLink || null
+    if (meetingLinkType === 'platform' && platformRoom) {
+      return `${window.location.origin}/dashboard/video?invite=${platformRoom.inviteCode}`
+    }
+    if (meetingLinkType === 'custom') return customMeetingLink.trim() || null
+    return null
+  }
+
   const handleBook = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!session || booking) return
@@ -206,6 +245,18 @@ export default function BookAppointmentModal({
           toastError(`"${field.label}" is required`)
           return
         }
+      }
+    }
+
+    let finalMeetingLink = getMeetingLinkValue()
+
+    if (meetingLinkType === 'platform' && !platformRoom) {
+      const room = await handleCreatePlatformRoom()
+      if (room) {
+        finalMeetingLink = `${window.location.origin}/dashboard/video?invite=${room.inviteCode}`
+      } else {
+        toastError('Failed to create video room. Please try a different meeting option.')
+        return
       }
     }
 
@@ -228,7 +279,7 @@ export default function BookAppointmentModal({
           endTime: endTime.toISOString(),
           duration,
           location: location || null,
-          meetingLink: meetingLink || null,
+          meetingLink: finalMeetingLink,
           sellerId,
           productId: productId || null,
           category: serviceCategory || null,
@@ -254,6 +305,16 @@ export default function BookAppointmentModal({
   if (!isOpen) return null
 
   const hasAvailability = availSlots.length > 0
+
+  const labelStyle: React.CSSProperties = {
+    display: 'block', marginBottom: 4, fontSize: '0.85rem', color: 'var(--text-secondary)'
+  }
+  const inputStyle: React.CSSProperties = {
+    width: '100%', padding: '8px 10px', borderRadius: 8,
+    border: '1px solid var(--border-color)',
+    background: 'var(--bg-tertiary)', color: 'var(--text-primary)',
+    fontSize: '0.85rem'
+  }
 
   return (
     <div style={{
@@ -287,9 +348,7 @@ export default function BookAppointmentModal({
             <>
               {/* Calendar */}
               <div style={{ marginBottom: 16 }}>
-                <label style={{ display: 'block', marginBottom: 6, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                  Select Date
-                </label>
+                <label style={labelStyle}>Select Date</label>
                 <div style={{ background: 'var(--bg-tertiary)', borderRadius: 8, padding: 12, border: '1px solid var(--border-color)' }}>
                   {/* Month nav */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
@@ -350,9 +409,7 @@ export default function BookAppointmentModal({
               {/* Time slots */}
               {selectedDate && (
                 <div style={{ marginBottom: 16 }}>
-                  <label style={{ display: 'block', marginBottom: 6, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                    Select Time
-                  </label>
+                  <label style={labelStyle}>Select Time</label>
                   {loadingBusy ? (
                     <div style={{ padding: 12, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '0.82rem' }}>
                       Loading available times...
@@ -403,17 +460,10 @@ export default function BookAppointmentModal({
           )}
 
           <div style={{ marginBottom: 12 }}>
-            <label style={{ display: 'block', marginBottom: 4, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              Title
-            </label>
+            <label style={labelStyle}>Title</label>
             <input
               type="text" value={title} onChange={e => setTitle(e.target.value)}
-              style={{
-                width: '100%', padding: '8px 10px', borderRadius: 8,
-                border: '1px solid var(--border-color)',
-                background: 'var(--bg-tertiary)', color: 'var(--text-primary)',
-                fontSize: '0.85rem'
-              }}
+              style={inputStyle}
             />
           </div>
 
@@ -458,52 +508,148 @@ export default function BookAppointmentModal({
           )}
 
           <div style={{ marginBottom: 12 }}>
-            <label style={{ display: 'block', marginBottom: 4, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              Notes / Comments
-            </label>
+            <label style={labelStyle}>Notes / Comments</label>
             <textarea
               value={description} onChange={e => setDescription(e.target.value)}
               rows={3}
               placeholder="Anything the seller should know..."
               style={{
-                width: '100%', padding: '8px 10px', borderRadius: 8,
-                border: '1px solid var(--border-color)',
-                background: 'var(--bg-tertiary)', color: 'var(--text-primary)',
-                fontSize: '0.85rem', resize: 'vertical'
+                ...inputStyle, resize: 'vertical'
               }}
             />
           </div>
 
           <div style={{ marginBottom: 12 }}>
-            <label style={{ display: 'block', marginBottom: 4, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              Location (optional)
-            </label>
+            <label style={labelStyle}>Location (optional)</label>
             <input
               type="text" value={location} onChange={e => setLocation(e.target.value)}
               placeholder="Physical address or meeting point"
-              style={{
-                width: '100%', padding: '8px 10px', borderRadius: 8,
-                border: '1px solid var(--border-color)',
-                background: 'var(--bg-tertiary)', color: 'var(--text-primary)',
-                fontSize: '0.85rem'
-              }}
+              style={inputStyle}
             />
           </div>
 
+          {/* Meeting Link Selection */}
           <div style={{ marginBottom: 20 }}>
-            <label style={{ display: 'block', marginBottom: 4, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              Meeting Link (optional)
-            </label>
-            <input
-              type="url" value={meetingLink} onChange={e => setMeetingLink(e.target.value)}
-              placeholder="https://meet.google.com/..."
-              style={{
-                width: '100%', padding: '8px 10px', borderRadius: 8,
-                border: '1px solid var(--border-color)',
-                background: 'var(--bg-tertiary)', color: 'var(--text-primary)',
-                fontSize: '0.85rem'
-              }}
-            />
+            <label style={{ ...labelStyle, fontWeight: 600 }}>Video Call / Meeting Link</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
+              {defaultMeetingLink && (
+                <label style={{
+                  display: 'flex', alignItems: 'flex-start', gap: 8, padding: '10px 12px',
+                  borderRadius: 8, border: meetingLinkType === 'default' ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
+                  background: meetingLinkType === 'default' ? 'var(--bg-tertiary)' : 'transparent',
+                  cursor: 'pointer', transition: 'all 0.15s'
+                }}>
+                  <input
+                    type="radio" name="meetingLinkType" checked={meetingLinkType === 'default'}
+                    onChange={() => setMeetingLinkType('default')}
+                    style={{ marginTop: 2 }}
+                  />
+                  <div>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                      Use seller&apos;s link
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: 2, wordBreak: 'break-all' }}>
+                      {defaultMeetingLink}
+                    </div>
+                  </div>
+                </label>
+              )}
+
+              <label style={{
+                display: 'flex', alignItems: 'flex-start', gap: 8, padding: '10px 12px',
+                borderRadius: 8, border: meetingLinkType === 'platform' ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
+                background: meetingLinkType === 'platform' ? 'var(--bg-tertiary)' : 'transparent',
+                cursor: 'pointer', transition: 'all 0.15s'
+              }}>
+                <input
+                  type="radio" name="meetingLinkType" checked={meetingLinkType === 'platform'}
+                  onChange={() => setMeetingLinkType('platform')}
+                  style={{ marginTop: 2 }}
+                />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                    Platform Video Room
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: 2 }}>
+                    Create a video room on this platform. A link will be generated automatically.
+                  </div>
+                  {meetingLinkType === 'platform' && platformRoom && (
+                    <div style={{
+                      marginTop: 6, padding: '6px 10px', borderRadius: 6,
+                      background: 'var(--bg-tertiary)', fontSize: '0.78rem',
+                      color: 'var(--accent-primary)', wordBreak: 'break-all'
+                    }}>
+                      {typeof window !== 'undefined' ? `${window.location.origin}/dashboard/video?invite=${platformRoom.inviteCode}` : ''}
+                    </div>
+                  )}
+                  {meetingLinkType === 'platform' && !platformRoom && (
+                    <button
+                      type="button"
+                      onClick={handleCreatePlatformRoom}
+                      disabled={creatingRoom}
+                      style={{
+                        marginTop: 6, padding: '6px 14px', borderRadius: 6, border: 'none',
+                        background: 'var(--accent-primary)', color: '#fff',
+                        cursor: creatingRoom ? 'not-allowed' : 'pointer',
+                        fontSize: '0.78rem', opacity: creatingRoom ? 0.6 : 1
+                      }}
+                    >
+                      {creatingRoom ? 'Creating...' : 'Create Video Room'}
+                    </button>
+                  )}
+                </div>
+              </label>
+
+              <label style={{
+                display: 'flex', alignItems: 'flex-start', gap: 8, padding: '10px 12px',
+                borderRadius: 8, border: meetingLinkType === 'custom' ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
+                background: meetingLinkType === 'custom' ? 'var(--bg-tertiary)' : 'transparent',
+                cursor: 'pointer', transition: '0.15s'
+              }}>
+                <input
+                  type="radio" name="meetingLinkType" checked={meetingLinkType === 'custom'}
+                  onChange={() => setMeetingLinkType('custom')}
+                  style={{ marginTop: 2 }}
+                />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                    Custom meeting link
+                  </div>
+                  {meetingLinkType === 'custom' && (
+                    <input
+                      type="url"
+                      value={customMeetingLink}
+                      onChange={e => setCustomMeetingLink(e.target.value)}
+                      placeholder="https://zoom.us/j/... or https://meet.google.com/..."
+                      style={{
+                        ...inputStyle, marginTop: 6
+                      }}
+                    />
+                  )}
+                </div>
+              </label>
+
+              <label style={{
+                display: 'flex', alignItems: 'flex-start', gap: 8, padding: '10px 12px',
+                borderRadius: 8, border: meetingLinkType === 'none' ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
+                background: meetingLinkType === 'none' ? 'var(--bg-tertiary)' : 'transparent',
+                cursor: 'pointer', transition: '0.15s'
+              }}>
+                <input
+                  type="radio" name="meetingLinkType" checked={meetingLinkType === 'none'}
+                  onChange={() => setMeetingLinkType('none')}
+                  style={{ marginTop: 2 }}
+                />
+                <div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                    No meeting link
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: 2 }}>
+                    In-person or no video needed
+                  </div>
+                </div>
+              </label>
+            </div>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
