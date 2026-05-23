@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    const services = await prisma.serviceOffering.findMany({
+    const rawServices = await prisma.serviceOffering.findMany({
       where,
       include: {
         user: { select: { id: true, name: true, image: true, username: true } },
@@ -44,6 +44,29 @@ export async function GET(request: NextRequest) {
         ? { duration: 'asc' }
         : { createdAt: 'desc' },
     })
+
+    const services = rawServices.map(s => ({
+      id: s.id,
+      title: s.title,
+      description: s.description ?? null,
+      category: s.category,
+      duration: s.duration,
+      price: s.price ?? null,
+      location: s.location ?? null,
+      meetingLink: s.meetingLink ?? null,
+      imageUrl: s.imageUrl ?? null,
+      isActive: s.isActive === true,
+      userId: s.userId,
+      user: s.user,
+      viewCount: s.viewCount,
+      acceptsAppointments: s.acceptsAppointments === true,
+      appointmentDuration: s.appointmentDuration ?? null,
+      appointmentLeadTime: s.appointmentLeadTime ?? null,
+      appointmentLocation: s.appointmentLocation ?? null,
+      appointmentMeetingLink: s.appointmentMeetingLink ?? null,
+      createdAt: s.createdAt instanceof Date ? s.createdAt.toISOString() : String(s.createdAt),
+      updatedAt: s.updatedAt instanceof Date ? s.updatedAt.toISOString() : String(s.updatedAt),
+    }))
 
     return NextResponse.json({ services })
   } catch (error) {

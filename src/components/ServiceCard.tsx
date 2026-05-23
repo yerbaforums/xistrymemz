@@ -18,9 +18,18 @@ interface ServiceCardProps {
 }
 
 export default function ServiceCard({ service, onClick, style }: ServiceCardProps) {
-  const cat = service.category as ServiceCategory
+  const cat = (typeof service.category === 'string' ? service.category : 'OTHER') as ServiceCategory
   const icon = SERVICE_CATEGORY_ICONS[cat] || '📋'
-  const label = SERVICE_CATEGORY_LABELS[cat] || cat
+  const label = SERVICE_CATEGORY_LABELS[cat] || 'Other'
+  const title = typeof service.title === 'string' ? service.title : 'Untitled'
+  const description = typeof service.description === 'string' ? service.description : null
+  const imageUrl = typeof service.imageUrl === 'string' ? service.imageUrl : null
+  const price = typeof service.price === 'number' ? service.price : null
+  const duration = typeof service.duration === 'number' ? service.duration : 60
+  const location = typeof service.location === 'string' ? service.location : null
+  const viewCount = typeof service.viewCount === 'number' ? service.viewCount : 0
+  const userName = typeof service.user?.name === 'string' ? service.user.name : null
+  const userImage = typeof service.user?.image === 'string' ? service.user.image : null
 
   return (
     <div
@@ -43,10 +52,10 @@ export default function ServiceCard({ service, onClick, style }: ServiceCardProp
         e.currentTarget.style.boxShadow = ''
       }}
     >
-      {service.imageUrl ? (
+      {imageUrl ? (
         <img
-          src={service.imageUrl}
-          alt={service.title}
+          src={imageUrl}
+          alt={title}
           style={{ width: '100%', height: 160, objectFit: 'cover' }}
         />
       ) : (
@@ -68,37 +77,37 @@ export default function ServiceCard({ service, onClick, style }: ServiceCardProp
           }}>
             {icon} {label}
           </span>
-          {service.price != null && (
+          {price != null && (
             <span style={{
               fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)',
               marginLeft: 'auto'
             }}>
-              ${service.price}
+              ${price}
             </span>
           )}
         </div>
         <h3 style={{ margin: '0 0 4px', fontSize: '0.95rem', color: 'var(--text-primary)' }}>
-          {service.title}
+          {title}
         </h3>
-        {service.description && (
+        {description && (
           <p style={{ margin: '0 0 8px', fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-            {service.description}
+            {description}
           </p>
         )}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem', color: 'var(--text-tertiary)' }}>
-          <span>🕐 {formatDuration(service.duration)}</span>
-          {service.location && <span>📍 {service.location}</span>}
-          <ViewCount count={service.viewCount || 0} />
+          <span>🕐 {formatDuration(duration)}</span>
+          {location && <span>📍 {location}</span>}
+          <ViewCount count={viewCount} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, fontSize: '0.78rem', color: 'var(--text-tertiary)' }}>
-          {service.user.image ? (
-            <img src={service.user.image} alt="" style={{ width: 20, height: 20, borderRadius: '50%', objectFit: 'cover' }} />
+          {userImage ? (
+            <img src={userImage} alt="" style={{ width: 20, height: 20, borderRadius: '50%', objectFit: 'cover' }} />
           ) : (
             <span style={{ width: 20, height: 20, borderRadius: '50%', background: 'var(--bg-tertiary)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>
-              {(service.user.name || 'U')[0]}
+              {(userName || 'U')[0]}
             </span>
           )}
-          <span>{service.user.name || 'Anonymous'}</span>
+          <span>{userName || 'Anonymous'}</span>
         </div>
         <div style={{ marginTop: 6, display: 'flex', justifyContent: 'flex-end' }}>
           <button
