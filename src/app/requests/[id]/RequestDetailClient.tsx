@@ -625,6 +625,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
 
             <div className={styles.titleRow}>
               <h1 className={styles.title}>{request.title}</h1>
+              <button onClick={() => navigator.clipboard.writeText(window.location.href)} className={styles.editBtn} title="Copy link">🔗</button>
               {canEdit && (
                 <button onClick={() => setShowEditModal(true)} className={styles.editBtn}>
                   ✏️ Edit

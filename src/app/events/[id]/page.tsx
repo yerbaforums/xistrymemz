@@ -314,14 +314,17 @@ function EventDetailContent() {
             
             <div className={styles.titleRow}>
               <h1>{isEditing ? 'Editing Event' : event.title}</h1>
-              {isOwner && !isEditing && (
-                <div className={styles.titleActions}>
-                  <button onClick={startEditing} className={styles.editBtn}>Edit</button>
-                  <button onClick={confirmDelete} className={styles.deleteBtn} disabled={deleting}>
-                    {deleting ? 'Deleting...' : 'Delete'}
-                  </button>
-                </div>
-              )}
+              <div className={styles.titleActions}>
+                <button onClick={() => navigator.clipboard.writeText(window.location.href)} className={styles.editBtn} title="Copy link">🔗</button>
+                {isOwner && !isEditing && (
+                  <>
+                    <button onClick={startEditing} className={styles.editBtn}>Edit</button>
+                    <button onClick={confirmDelete} className={styles.deleteBtn} disabled={deleting}>
+                      {deleting ? 'Deleting...' : 'Delete'}
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
 
             {isEditing ? (
