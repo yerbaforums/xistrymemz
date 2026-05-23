@@ -9,7 +9,7 @@ const STAT_CARDS = [
   { key: 'shops' as const, icon: '🏪', label: 'Shops', href: '/shops' },
   { key: 'schools' as const, icon: '🏫', label: 'Schools', href: '/schools' },
   { key: 'products' as const, icon: '🛒', label: 'Products', href: '/products' },
-  { key: 'services' as const, icon: '🔧', label: 'Services', href: '/products?type=SERVICE' },
+  { key: 'services' as const, icon: '🔧', label: 'Services', href: '/services' },
   { key: 'rentals' as const, icon: '🏠', label: 'Rentals', href: '/rentals/browse' },
   { key: 'forumPosts' as const, icon: '📣', label: 'Forum Posts', href: '/community/forum' },
   { key: 'forumReplies' as const, icon: '💬', label: 'Forum Replies', href: '/community/forum' },

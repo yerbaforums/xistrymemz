@@ -19,6 +19,7 @@ interface AppointmentItem {
   meetingLink: string | null
   appointmentNotes?: string | null
   formResponses?: Record<string, string> | null
+  category?: string | null
   product: { id: string; title: string; imageUrl: string | null } | null
   createdAt: string
   buyer: { id: string; name: string | null; image: string | null; username: string | null }
@@ -305,6 +306,11 @@ export default function DashboardAppointments() {
                           <span className={styles.typeBadge} style={{ backgroundColor: '#6366f120', color: '#6366f1', borderColor: '#6366f140' }}>
                             📅 Appointment
                           </span>
+                          {appt.category && (
+                            <span className={styles.categoryBadge} style={{ backgroundColor: '#10b98120', color: '#10b981', borderColor: '#10b98140' }}>
+                              🔧 {appt.category.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase())}
+                            </span>
+                          )}
                         </div>
                         {dateParts && (
                           <div className={styles.dateBlock}>
@@ -453,6 +459,7 @@ export default function DashboardAppointments() {
                     </div>
                     <div className={styles.eventModalContent}>
                       <div className={styles.eventDetailRow}><span className={styles.eventLabel}>Status</span><span style={{ color: sc.color }}>{sc.icon} {sc.label}</span></div>
+                      {a.category && <div className={styles.eventDetailRow}><span className={styles.eventLabel}>Category</span><span>🔧 {a.category.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase())}</span></div>}
                       <div className={styles.eventDetailRow}><span className={styles.eventLabel}>Start</span><span>{formatDate(a.startTime)} at {formatTime(a.startTime)}</span></div>
                       <div className={styles.eventDetailRow}><span className={styles.eventLabel}>End</span><span>{formatDate(a.endTime)} at {formatTime(a.endTime)}</span></div>
                       {a.location && <div className={styles.eventDetailRow}><span className={styles.eventLabel}>Location</span><span>{a.location}</span></div>}

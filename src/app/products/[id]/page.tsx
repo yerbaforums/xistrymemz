@@ -546,7 +546,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     onChange={e => setEditData({...editData, type: e.target.value})}
                   >
                     <option value="PRODUCT">Product</option>
-                    <option value="SERVICE">Service</option>
                     <option value="RENTAL">Rental</option>
                   </select>
                 </div>

@@ -601,7 +601,6 @@ export default function ProductsPage() {
                     <label>Type</label>
                     <select value={myForm.type} onChange={e => setMyForm({...myForm, type: e.target.value})}>
                       <option value="PRODUCT">Product</option>
-                      <option value="SERVICE">Service</option>
                       <option value="RENTAL">Rental</option>
                     </select>
                   </div>

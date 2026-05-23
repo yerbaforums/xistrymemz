@@ -190,6 +190,7 @@ export default function Header() {
               <div style={{ padding: '6px 14px', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Browse</div>
               <Link href="/plans/public" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🚀 Projects</Link>
               <Link href="/products" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🛒 Marketplace</Link>
+              <Link href="/services" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🔧 Services</Link>
               <Link href="/shops" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🏪 Shops</Link>
               <Link href="/schools" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🏫 Schools</Link>
               <Link href="/requests" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">📝 Requests</Link>
@@ -302,6 +303,7 @@ export default function Header() {
             <Link href="/" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🏠 Home</Link>
             <Link href="/plans/public" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🚀 Projects</Link>
             <Link href="/products" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🛒 Marketplace</Link>
+            <Link href="/services" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🔧 Services</Link>
             <Link href="/shops" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🏪 Shops</Link>
             <Link href="/schools" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🏫 Schools</Link>
             <Link href="/requests" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📝 Requests</Link>
@@ -343,6 +345,7 @@ export default function Header() {
                 <Link href="/plans" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🚀 My Projects</Link>
                 <Link href="/requests" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📝 My Requests</Link>
                 <Link href="/dashboard/offers" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🤝 Offers</Link>
+                <Link href="/dashboard/services" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🔧 Services</Link>
                 <Link href="/dashboard/rentals" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🏠 Rentals</Link>
                 <Link href="/dashboard/teaching" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🏫 Teaching</Link>
                 <Link href="/dashboard/events" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📅 Events</Link>

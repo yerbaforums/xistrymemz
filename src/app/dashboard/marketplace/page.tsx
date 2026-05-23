@@ -71,7 +71,7 @@ function MarketplaceContent() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [filter, setFilter] = useState<'all' | 'published' | 'draft'>('all')
-  const [typeFilter, setTypeFilter] = useState<'all' | 'PRODUCT' | 'SERVICE'>('all')
+  const [typeFilter, setTypeFilter] = useState<'all' | 'PRODUCT'>('all')
   const [search, setSearch] = useState('')
   const [showProductForm, setShowProductForm] = useState(false)
   const [showShopModal, setShowShopModal] = useState(false)
@@ -96,12 +96,6 @@ function MarketplaceContent() {
     acceptsOffers: true,
     published: true,
     hashtags: '',
-    acceptsAppointments: false,
-    appointmentDuration: '60',
-    appointmentLeadTime: '24',
-    appointmentLocation: '',
-    appointmentMeetingLink: '',
-    appointmentFormFields: [] as { label: string; type: string; required: boolean }[],
     acceptsDonations: false,
     selectedDonationAddrs: [] as DonationAddr[],
     sellerPayoutAddress: '',
@@ -151,12 +145,6 @@ function MarketplaceContent() {
           acceptsOffers: product.acceptsOffers,
           published: product.published,
           hashtags: product.hashtags?.map(h => h.tag).join(', ') || '',
-          acceptsAppointments: product.acceptsAppointments || false,
-          appointmentDuration: product.appointmentDuration?.toString() || '60',
-          appointmentLeadTime: product.appointmentLeadTime?.toString() || '24',
-          appointmentLocation: product.appointmentLocation || '',
-          appointmentMeetingLink: product.appointmentMeetingLink || '',
-          appointmentFormFields: (product.appointmentFormFields as { label: string; type: string; required: boolean }[]) || [],
           acceptsDonations: product.acceptsDonations || false,
           selectedDonationAddrs: hydrateDonationAddresses(product.donationAddress, product.donationCurrency, product.donationAddresses),
           sellerPayoutAddress: product.sellerPayoutAddress || '',
@@ -219,12 +207,6 @@ function MarketplaceContent() {
       acceptsOffers: true,
       published: true,
       hashtags: '',
-      acceptsAppointments: false,
-      appointmentDuration: '60',
-      appointmentLeadTime: '24',
-      appointmentLocation: '',
-      appointmentMeetingLink: '',
-      appointmentFormFields: [] as { label: string; type: string; required: boolean }[],
       acceptsDonations: false,
       selectedDonationAddrs: [] as DonationAddr[],
       sellerPayoutAddress: '',
@@ -244,7 +226,7 @@ function MarketplaceContent() {
       paymentMethods: productForm.paymentMethods.join(','),
       price: productForm.price ? parseFloat(productForm.price) : null,
       imageUrl: productForm.imageUrls?.[0] || null,
-      appointmentFormFields: productForm.acceptsAppointments ? productForm.appointmentFormFields : [],
+      
       ...donationAddressesToLegacy(productForm.acceptsDonations ? productForm.selectedDonationAddrs : []),
       donationAddresses: productForm.acceptsDonations ? serializeDonationAddresses(productForm.selectedDonationAddrs) : null,
       sellerPayoutAddress: productForm.sellerPayoutAddress || null,
@@ -328,12 +310,6 @@ function MarketplaceContent() {
       acceptsOffers: product.acceptsOffers,
       published: product.published,
       hashtags: product.hashtags?.map(h => h.tag).join(', ') || '',
-      acceptsAppointments: product.acceptsAppointments || false,
-      appointmentDuration: product.appointmentDuration?.toString() || '60',
-      appointmentLeadTime: product.appointmentLeadTime?.toString() || '24',
-      appointmentLocation: product.appointmentLocation || '',
-      appointmentMeetingLink: product.appointmentMeetingLink || '',
-      appointmentFormFields: (product.appointmentFormFields as { label: string; type: string; required: boolean }[]) || [],
       acceptsDonations: product.acceptsDonations || false,
       selectedDonationAddrs: hydrateDonationAddresses(product.donationAddress, product.donationCurrency, product.donationAddresses),
       sellerPayoutAddress: product.sellerPayoutAddress || '',
@@ -442,7 +418,6 @@ function MarketplaceContent() {
         <select value={typeFilter} onChange={e => setTypeFilter(e.target.value as typeof typeFilter)}>
           <option value="all">All Types</option>
           <option value="PRODUCT">Products</option>
-          <option value="SERVICE">Services</option>
         </select>
         <span className={styles.filterCount}>{filteredProducts.length} items</span>
       </div>
@@ -551,7 +526,7 @@ function MarketplaceContent() {
                   <label>Type</label>
                   <select value={productForm.type} onChange={e => setProductForm({...productForm, type: e.target.value})}>
                     <option value="PRODUCT">Product</option>
-                    <option value="SERVICE">Service</option>
+                    <option value="RENTAL">Rental</option>
                   </select>
                 </div>
               <div className="form-group">
@@ -627,60 +602,7 @@ function MarketplaceContent() {
                   <input type="checkbox" checked={productForm.published} onChange={e => setProductForm({...productForm, published: e.target.checked})} />
                   Publish Now
                 </label>
-                <label className={styles.checkboxLabel}>
-                  <input type="checkbox" checked={productForm.acceptsAppointments} onChange={e => setProductForm({...productForm, acceptsAppointments: e.target.checked})} />
-                  Accept Appointments / Booking
-                </label>
               </div>
-              {productForm.acceptsAppointments && (
-                <div className={styles.appointmentFields}>
-                  <div className="form-group">
-                    <label>Duration (minutes)</label>
-                    <input type="number" value={productForm.appointmentDuration} onChange={e => setProductForm({...productForm, appointmentDuration: e.target.value})} min={5} step={5} />
-                  </div>
-                  <div className="form-group">
-                    <label>Lead Time (hours)</label>
-                    <input type="number" value={productForm.appointmentLeadTime} onChange={e => setProductForm({...productForm, appointmentLeadTime: e.target.value})} min={0} />
-                  </div>
-                  <div className="form-group">
-                    <label>Location</label>
-                    <input type="text" value={productForm.appointmentLocation} onChange={e => setProductForm({...productForm, appointmentLocation: e.target.value})} placeholder="Address or meeting point" />
-                  </div>
-                  <div className="form-group">
-                    <label>Meeting Link</label>
-                    <input type="url" value={productForm.appointmentMeetingLink} onChange={e => setProductForm({...productForm, appointmentMeetingLink: e.target.value})} placeholder="https://meet.google.com/..." />
-                  </div>
-                  <div className="form-group">
-                    <label>Custom Form Fields (buyers fill when booking)</label>
-                    {productForm.appointmentFormFields.map((field, i) => (
-                      <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
-                        <input type="text" value={field.label} onChange={e => {
-                          const fields = [...productForm.appointmentFormFields]
-                          fields[i] = { ...fields[i], label: e.target.value }
-                          setProductForm({...productForm, appointmentFormFields: fields})
-                        }} placeholder="Question label" style={{ flex: 1 }} />
-                        <select value={field.type} onChange={e => {
-                          const fields = [...productForm.appointmentFormFields]
-                          fields[i] = { ...fields[i], type: e.target.value }
-                          setProductForm({...productForm, appointmentFormFields: fields})
-                        }}>
-                          <option value="text">Text</option>
-                          <option value="textarea">Textarea</option>
-                        </select>
-                        <label style={{ whiteSpace: 'nowrap', fontSize: 13 }}>
-                          <input type="checkbox" checked={field.required} onChange={e => {
-                            const fields = [...productForm.appointmentFormFields]
-                            fields[i] = { ...fields[i], required: e.target.checked }
-                            setProductForm({...productForm, appointmentFormFields: fields})
-                          }} /> Required
-                        </label>
-                        <button type="button" onClick={() => setProductForm({...productForm, appointmentFormFields: productForm.appointmentFormFields.filter((_, j) => j !== i)})} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#e74c3c', fontSize: 18 }} title="Remove field">×</button>
-                      </div>
-                    ))}
-                    <button type="button" onClick={() => setProductForm({...productForm, appointmentFormFields: [...productForm.appointmentFormFields, { label: '', type: 'text', required: false }]})} className="btn-ghost" style={{ fontSize: 13 }}>+ Add Field</button>
-                  </div>
-                </div>
-              )}
               <label className={styles.checkboxLabel}>
                 <input type="checkbox" checked={productForm.acceptsDonations} onChange={e => setProductForm({...productForm, acceptsDonations: e.target.checked})} />
                 Accept Donations

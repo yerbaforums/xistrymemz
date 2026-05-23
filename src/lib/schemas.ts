@@ -78,6 +78,26 @@ export const productSchema = z.object({
   })).optional().nullable()
 })
 
+export const SERVICE_CATEGORIES_ENUM = [
+  'PERFORMANCE', 'RECORDING', 'PHOTOGRAPHY', 'DESIGN',
+  'CONSULTATION', 'LESSON_TUTORING', 'HEALTH_WELLNESS', 'EVENT_SERVICES',
+  'LAWN_GARDEN', 'CLEANING', 'MAINTENANCE_REPAIR', 'CONSTRUCTION',
+  'MOVING_HAULING', 'PET_CARE', 'CHILDCARE', 'TECH_SUPPORT',
+  'TRANSPORTATION', 'OTHER',
+] as const
+
+export const serviceOfferingSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(200),
+  description: z.string().max(5000).optional().nullable(),
+  category: z.enum(SERVICE_CATEGORIES_ENUM),
+  duration: z.coerce.number().int().min(5, 'Duration must be at least 5 minutes'),
+  price: z.coerce.number().min(0).optional().nullable(),
+  location: z.string().max(200).optional().nullable(),
+  meetingLink: z.string().url().optional().nullable().or(z.literal('')),
+  imageUrl: z.string().optional().nullable(),
+  isActive: z.boolean().optional(),
+})
+
 export const groupSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   description: z.string().max(1000).optional(),

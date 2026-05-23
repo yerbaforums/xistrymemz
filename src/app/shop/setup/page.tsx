@@ -600,7 +600,7 @@ export default function SetupShopPage() {
                   <label>Type</label>
                   <select value={newProduct.type} onChange={e => setNewProduct({...newProduct, type: e.target.value})}>
                     <option value="PRODUCT">Product</option>
-                    <option value="SERVICE">Service</option>
+                    <option value="RENTAL">Rental</option>
                   </select>
                 </div>
                 <div className="form-group">
@@ -717,7 +717,7 @@ export default function SetupShopPage() {
                   <label>Type</label>
                   <select value={editProduct.type} onChange={e => setEditProduct({...editProduct, type: e.target.value})}>
                     <option value="PRODUCT">Product</option>
-                    <option value="SERVICE">Service</option>
+                    <option value="RENTAL">Rental</option>
                   </select>
                 </div>
                 <div className="form-group">

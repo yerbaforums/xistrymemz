@@ -35,6 +35,8 @@ interface BookAppointmentModalProps {
   defaultLocation?: string | null
   defaultMeetingLink?: string | null
   formFields?: FormField[] | null
+  serviceCategory?: string | null
+  serviceOfferingId?: string | null
 }
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -54,7 +56,8 @@ function formatTimeDisplay(t: string) {
 
 export default function BookAppointmentModal({
   isOpen, onClose, sellerId, sellerName, productId, productTitle,
-  defaultDuration, defaultLeadTime, defaultLocation, defaultMeetingLink, formFields
+  defaultDuration, defaultLeadTime, defaultLocation, defaultMeetingLink, formFields,
+  serviceCategory, serviceOfferingId
 }: BookAppointmentModalProps) {
   const { data: session } = useSession()
   const { success, error: toastError } = useToast()
@@ -228,6 +231,8 @@ export default function BookAppointmentModal({
           meetingLink: meetingLink || null,
           sellerId,
           productId: productId || null,
+          category: serviceCategory || null,
+          serviceOfferingId: serviceOfferingId || null,
           formResponses: responses
         })
       })

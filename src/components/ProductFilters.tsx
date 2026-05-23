@@ -56,7 +56,6 @@ export default function ProductFilters({
         <select value={type} onChange={e => onTypeChange(e.target.value)} className={styles.select}>
           <option value="ALL">All Types</option>
           <option value="PRODUCT">Products</option>
-          <option value="SERVICE">Services</option>
         </select>
       </div>
 

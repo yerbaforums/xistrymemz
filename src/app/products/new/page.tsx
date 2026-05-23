@@ -294,7 +294,6 @@ export default function NewProductPage() {
                 <label>Type</label>
                 <select value={form.type} onChange={e => update('type', e.target.value)}>
                   <option value="PRODUCT">Product</option>
-                  <option value="SERVICE">Service</option>
                   <option value="RENTAL">Rental</option>
                 </select>
               </div>
@@ -459,59 +458,9 @@ export default function NewProductPage() {
                     />
                   </div>
                 )}
-                <label className={styles.checkLabel}>
-                  <input type="checkbox" checked={form.acceptsAppointments} onChange={e => update('acceptsAppointments', e.target.checked)} />
-                  Accept Appointments / Booking
-                </label>
-                {form.acceptsAppointments && (
-                  <div className={styles.donationFields}>
-                    <div className="form-group">
-                      <label>Duration (minutes)</label>
-                      <input type="number" value={form.appointmentDuration} onChange={e => update('appointmentDuration', e.target.value)} min={5} step={5} />
-                    </div>
-                    <div className="form-group">
-                      <label>Lead Time (hours notice required)</label>
-                      <input type="number" value={form.appointmentLeadTime} onChange={e => update('appointmentLeadTime', e.target.value)} min={0} />
-                    </div>
-                    <div className="form-group">
-                      <label>Location (optional)</label>
-                      <input type="text" value={form.appointmentLocation} onChange={e => update('appointmentLocation', e.target.value)} placeholder="Address or meeting point" />
-                    </div>
-                    <div className="form-group">
-                      <label>Meeting Link (optional)</label>
-                      <input type="url" value={form.appointmentMeetingLink} onChange={e => update('appointmentMeetingLink', e.target.value)} placeholder="https://meet.google.com/..." />
-                    </div>
-                    <div className="form-group">
-                      <label>Custom Form Fields (buyers answer when booking)</label>
-                      {form.appointmentFormFields.map((field, i) => (
-                        <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
-                          <input type="text" value={field.label} onChange={e => {
-                            const fields = [...form.appointmentFormFields]
-                            fields[i] = { ...fields[i], label: e.target.value }
-                            setForm({ ...form, appointmentFormFields: fields })
-                          }} placeholder="Question label" style={{ flex: 1 }} />
-                          <select value={field.type} onChange={e => {
-                            const fields = [...form.appointmentFormFields]
-                            fields[i] = { ...fields[i], type: e.target.value }
-                            setForm({ ...form, appointmentFormFields: fields })
-                          }}>
-                            <option value="text">Text</option>
-                            <option value="textarea">Textarea</option>
-                          </select>
-                          <label style={{ whiteSpace: 'nowrap', fontSize: 13, display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <input type="checkbox" checked={field.required} onChange={e => {
-                              const fields = [...form.appointmentFormFields]
-                              fields[i] = { ...fields[i], required: e.target.checked }
-                              setForm({ ...form, appointmentFormFields: fields })
-                            }} /> Required
-                          </label>
-                          <button type="button" onClick={() => setForm({ ...form, appointmentFormFields: form.appointmentFormFields.filter((_, j) => j !== i) })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#e74c3c', fontSize: 18 }} title="Remove field">×</button>
-                        </div>
-                      ))}
-                      <button type="button" onClick={() => setForm({ ...form, appointmentFormFields: [...form.appointmentFormFields, { label: '', type: 'text', required: false }] })} className="btn-ghost" style={{ fontSize: 13 }}>+ Add Field</button>
-                    </div>
-                  </div>
-                )}
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', margin: 0 }}>
+                  Want to offer bookable services? Visit <a href="/dashboard/services" style={{ color: 'var(--accent-primary)' }}>Services page</a> to create one
+                </p>
               </div>
             </details>
           </div>

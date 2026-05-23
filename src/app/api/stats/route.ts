@@ -10,7 +10,7 @@ export async function GET() {
       prisma.user.count({ where: { shopSlug: { not: null } } }),
       prisma.user.count({ where: { schoolSlug: { not: null } } }),
       prisma.product.count({ where: { published: true, type: 'PRODUCT' } }),
-      prisma.product.count({ where: { published: true, type: 'SERVICE' } }),
+      prisma.serviceOffering.count({ where: { isActive: true } }),
       prisma.product.count({ where: { published: true, type: 'RENTAL' } }),
       prisma.event.count({ where: { eventDate: { gte: new Date() } } }),
       prisma.plan.count({ where: { published: true } }),

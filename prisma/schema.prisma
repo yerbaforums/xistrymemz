@@ -139,6 +139,7 @@ model User {
   barterOffersReceived BarterOffer[] @relation("BarterOfferReceiver")
   appointmentsAsBuyer  Appointment[] @relation("BuyerAppointments")
   appointmentsAsSeller Appointment[] @relation("SellerAppointments")
+  serviceOfferings     ServiceOffering[]
   availabilitySlots    Availability[]
   notifications Notification[]
 
@@ -1460,6 +1461,7 @@ model Appointment {
   location     String?
   meetingLink  String?
   formResponses Json?    // [{ label: string, value: string }]
+  category     String?  // Service category copied from ServiceOffering at booking time
 
   buyerId      String
   buyer        User     @relation("BuyerAppointments", fields: [buyerId], references: [id], onDelete: Cascade)
@@ -1467,6 +1469,8 @@ model Appointment {
   seller       User     @relation("SellerAppointments", fields: [sellerId], references: [id], onDelete: Cascade)
   productId    String?
   product      Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  serviceOfferingId String?
+  serviceOffering   ServiceOffering? @relation(fields: [serviceOfferingId], references: [id], onDelete: SetNull)
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -1474,8 +1478,33 @@ model Appointment {
   @@index([buyerId])
   @@index([sellerId])
   @@index([productId])
+  @@index([serviceOfferingId])
   @@index([status])
   @@index([startTime])
+}
+
+model ServiceOffering {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  category    String   // PERFORMANCE | RECORDING | PHOTOGRAPHY | DESIGN | CONSULTATION | LESSON_TUTORING | HEALTH_WELLNESS | EVENT_SERVICES | LAWN_GARDEN | CLEANING | MAINTENANCE_REPAIR | CONSTRUCTION | MOVING_HAULING | PET_CARE | CHILDCARE | TECH_SUPPORT | TRANSPORTATION | OTHER
+  duration    Int      // minutes
+  price       Float?
+  location    String?
+  meetingLink String?
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([category])
+  @@index([isActive])
 }
 
 model Availability {
