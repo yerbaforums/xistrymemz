@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import VideoChatModal from '@/components/VideoChatModal'
 import styles from './video.module.css'
 
@@ -15,6 +16,7 @@ interface RoomSummary {
 }
 
 export default function VideoChatPage() {
+  const { data: session } = useSession()
   const [rooms, setRooms] = useState<RoomSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [activeRoomId, setActiveRoomId] = useState<string | null>(null)
@@ -22,6 +24,7 @@ export default function VideoChatPage() {
   const [showCall, setShowCall] = useState(false)
   const [joinInput, setJoinInput] = useState('')
   const [error, setError] = useState('')
+  const [copiedRoom, setCopiedRoom] = useState<string | null>(null)
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -74,6 +77,23 @@ export default function VideoChatPage() {
     setActiveRoomId(null)
     setInviteCode(undefined)
     fetchRooms()
+  }
+
+  const handleCopyInvite = (room: RoomSummary) => {
+    const url = `${window.location.origin}/dashboard/video?invite=${room.inviteCode}`
+    navigator.clipboard.writeText(url)
+    setCopiedRoom(room.id)
+    setTimeout(() => setCopiedRoom(null), 2000)
+  }
+
+  const handleDeleteRoom = async (room: RoomSummary) => {
+    if (!confirm(`End "${room.name}"? This will disconnect all participants.`)) return
+    try {
+      const res = await fetch(`/api/video/rooms/${room.id}`, { method: 'DELETE' })
+      if (res.ok) {
+        fetchRooms()
+      }
+    } catch {}
   }
 
   return (
@@ -142,12 +162,19 @@ export default function VideoChatPage() {
                     ))}
                   </div>
                 </div>
-                <button
-                  onClick={() => handleJoinExisting(r)}
-                  className={styles.joinBtn}
-                >
-                  Join
-                </button>
+                <div className={styles.roomActions}>
+                  <button onClick={() => handleJoinExisting(r)} className={styles.joinBtn}>
+                    Join
+                  </button>
+                  <button onClick={() => handleCopyInvite(r)} className={styles.shareBtn} title="Copy invite link">
+                    {copiedRoom === r.id ? '✓ Copied' : '🔗 Share'}
+                  </button>
+                  {r.createdBy.id === session?.user?.id && (
+                    <button onClick={() => handleDeleteRoom(r)} className={styles.deleteBtn} title="End room">
+                      🗑️ End
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>

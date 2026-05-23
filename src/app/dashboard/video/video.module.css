@@ -127,6 +127,13 @@
   gap: 12px;
 }
 
+.roomActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .roomInfo {
   display: flex;
   flex-direction: column;
@@ -190,6 +197,40 @@
 
 .joinBtn:hover {
   opacity: 0.9;
+}
+
+.shareBtn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.shareBtn:hover {
+  border-color: var(--accent-primary);
+  background: var(--bg-secondary);
+}
+
+.deleteBtn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #ef4444;
+  background: transparent;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.deleteBtn:hover {
+  background: #ef4444;
+  color: #fff;
 }
 
 .callContainer {
