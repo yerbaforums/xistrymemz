@@ -665,7 +665,7 @@ model Post {
   parentId        String?
   parent          Post?    @relation("PostReplies", fields: [parentId], references: [id])
   replies         Post[]   @relation("PostReplies")
-  referenceType   String?  // PRODUCT | EVENT | REQUEST | PLAN
+  referenceType   String?  // PRODUCT | SERVICE | EVENT | REQUEST | PLAN | POST
   referenceId     String?
   referenceTitle  String?
   likes           Int      @default(0)
