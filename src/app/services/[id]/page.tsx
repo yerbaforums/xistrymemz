@@ -7,6 +7,8 @@ import { useSession } from 'next-auth/react'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
 import type { ServiceOffering, ServiceCategory } from '@/types/service'
 import { SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service'
+import ViewCount from '@/components/ViewCount'
+import { useRecordView } from '@/hooks/useRecordView'
 import styles from './page.module.css'
 
 function formatDuration(mins: number) {
@@ -52,6 +54,8 @@ export default function ServiceDetailPage() {
 
   const cat = service.category as ServiceCategory
 
+  useRecordView('service', service?.id || '')
+
   return (
     <div className={styles.page}>
       <Link href="/services" className={styles.breadcrumb}>← Back to Services</Link>
@@ -71,6 +75,7 @@ export default function ServiceDetailPage() {
               {SERVICE_CATEGORY_ICONS[cat]} {SERVICE_CATEGORY_LABELS[cat]}
             </span>
             <span className={styles.durationBadge}>🕐 {formatDuration(service.duration)}</span>
+            <ViewCount count={service.viewCount || 0} />
           </div>
 
           <h1 className={styles.title}>{service.title}</h1>

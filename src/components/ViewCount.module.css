@@ -1,0 +1,12 @@
+.viewCount {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.7rem;
+  color: var(--text-tertiary, #888);
+  white-space: nowrap;
+}
+
+.md {
+  font-size: 0.8rem;
+}

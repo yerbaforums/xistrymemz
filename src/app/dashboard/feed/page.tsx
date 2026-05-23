@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import FeedItem from '@/components/FeedItem'
-import MentionInput from '@/components/MentionInput'
+import MentionInput, { type MentionInputHandle } from '@/components/MentionInput'
 import ImageUploader from '@/components/ImageUploader'
+import EmojiPicker from 'emoji-picker-react'
 
 interface FeedPost {
   id: string
@@ -53,6 +54,8 @@ export default function DashboardFeed() {
   const [postContent, setPostContent] = useState('')
   const [postImages, setPostImages] = useState<string[]>([])
   const [posting, setPosting] = useState(false)
+  const [showEmoji, setShowEmoji] = useState(false)
+  const mentionRef = useRef<MentionInputHandle>(null)
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -164,13 +167,27 @@ export default function DashboardFeed() {
           marginBottom: 24,
         }}>
           <MentionInput
+            ref={mentionRef}
             value={postContent}
             onChange={setPostContent}
             placeholder="What's on your mind?"
             rows={2}
           />
-          <div style={{ marginTop: 8 }}>
+          <div style={{ display: 'flex', gap: 6, marginTop: 8, alignItems: 'center', position: 'relative' }}>
+            <button type="button" onClick={() => mentionRef.current?.insertAtCursor('@')}
+              style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.8rem', lineHeight: 1 }}>
+              @
+            </button>
+            <button type="button" onClick={() => setShowEmoji(!showEmoji)}
+              style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.8rem', lineHeight: 1 }}>
+              😊
+            </button>
             <ImageUploader images={postImages} onChange={setPostImages} />
+            {showEmoji && (
+              <div style={{ position: 'absolute', top: 36, left: 0, zIndex: 100 }}>
+                <EmojiPicker onEmojiClick={(e) => { mentionRef.current?.insertAtCursor(e.emoji); setShowEmoji(false) }} />
+              </div>
+            )}
           </div>
           <div style={{
             display: 'flex', justifyContent: 'space-between',

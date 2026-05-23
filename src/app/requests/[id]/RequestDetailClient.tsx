@@ -9,6 +9,8 @@ import { MakeOfferModal } from '@/components/MakeOfferModal'
 import { getUserProfileUrl } from '@/lib/utils'
 import { getCryptoIcon, getCryptoName } from '@/lib/crypto-icons'
 import ShareToPostModal from '@/components/ShareToPostModal'
+import ViewCount from '@/components/ViewCount'
+import { useRecordView } from '@/hooks/useRecordView'
 
 const CATEGORIES = [
   { value: 'GENERAL', label: 'General', icon: '\u{1F4CB}' },
@@ -121,6 +123,7 @@ interface Request {
   completedAt: string | null
   allowFulfillments: boolean
   imageUrl: string | null
+  viewCount?: number
   plan: {
     id: string
     title: string
@@ -154,6 +157,8 @@ interface RequestDetailClientProps {
 export default function RequestDetailClient({ request: initialRequest, userId, userRole = 'USER' }: RequestDetailClientProps) {
   const { success, error: toastError, warning } = useToast()
   const [request, setRequest] = useState(initialRequest)
+
+  useRecordView('request', initialRequest?.id || '')
   const [comment, setComment] = useState('')
   const [loading, setLoading] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
@@ -614,6 +619,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                 <span className={styles.date}>
                   {new Date(request.createdAt).toLocaleDateString()}
                 </span>
+                <ViewCount count={request.viewCount || 0} />
               </div>
             </div>
 

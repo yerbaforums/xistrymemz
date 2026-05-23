@@ -2,6 +2,7 @@
 
 import type { ServiceOffering, ServiceCategory } from '@/types/service'
 import { SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service'
+import ViewCount from '@/components/ViewCount'
 
 function formatDuration(mins: number) {
   if (mins < 60) return `${mins} min`
@@ -87,6 +88,7 @@ export default function ServiceCard({ service, onClick, style }: ServiceCardProp
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem', color: 'var(--text-tertiary)' }}>
           <span>🕐 {formatDuration(service.duration)}</span>
           {service.location && <span>📍 {service.location}</span>}
+          <ViewCount count={service.viewCount || 0} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, fontSize: '0.78rem', color: 'var(--text-tertiary)' }}>
           {service.user.image ? (
@@ -97,6 +99,15 @@ export default function ServiceCard({ service, onClick, style }: ServiceCardProp
             </span>
           )}
           <span>{service.user.name || 'Anonymous'}</span>
+        </div>
+        <div style={{ marginTop: 6, display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(`${window.location.origin}/services/${service.id}`) }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', padding: 4, fontSize: '0.8rem' }}
+            title="Copy link"
+          >
+            🔗
+          </button>
         </div>
       </div>
     </div>

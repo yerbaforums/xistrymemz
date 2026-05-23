@@ -995,6 +995,26 @@ export default function ProfilePage() {
               <>
                 <Link href={`/messages?user=${user.id}`} className={styles.messageBtn}>Message</Link>
                 <button onClick={() => setShowAppointmentModal(true)} className={styles.messageBtn}>📅 Book</button>
+                <button
+                  onClick={async () => {
+                    const res = await fetch('/api/video/rooms', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ name: `Chat with ${user.name || 'User'}` }),
+                    })
+                    if (res.ok) {
+                      const data = await res.json()
+                      router.push(`/dashboard/video?invite=${data.room.inviteCode}`)
+                    }
+                  }}
+                  style={{
+                    padding: '6px 14px', borderRadius: 8, border: '1px solid var(--border-color)',
+                    background: 'var(--bg-secondary)', color: 'var(--text-primary)',
+                    cursor: 'pointer', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: 4,
+                  }}
+                >
+                  📹 Video Chat
+                </button>
 
                 {user.isConnected ? (
                   <button 

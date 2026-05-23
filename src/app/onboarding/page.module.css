@@ -803,3 +803,137 @@
     font-size: 0.8rem;
   }
 }
+
+.classSection {
+  text-align: left;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.classSectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.classSectionHeader h3 {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.setupGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.setupCard {
+  padding: 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+}
+
+.setupCard:hover {
+  border-color: var(--accent-primary);
+}
+
+.setupCardDone {
+  opacity: 0.6;
+  border-color: var(--accent-success);
+}
+
+.setupCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.setupCardDesc {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin: 2px 0 0;
+}
+
+.setupCheck {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent-success);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.setupBtn {
+  padding: 6px 14px;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.setupBtn:hover {
+  transform: scale(1.05);
+}
+
+.completeStepsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.completeStepCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.completeStepCard:hover {
+  border-color: var(--accent-primary);
+  background: rgba(0, 217, 255, 0.05);
+  text-decoration: none;
+}
+
+.completeStepCard div {
+  flex: 1;
+}
+
+.completeStepCard strong {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.completeStepCard p {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  margin: 2px 0 0;
+}
+
+.completeStepArrow {
+  color: var(--accent-primary);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}

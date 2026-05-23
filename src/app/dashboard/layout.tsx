@@ -16,6 +16,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   marketplace: 'Marketplace',
   services: 'Services',
   rentals: 'Rentals',
+  shop: 'Shop',
   teaching: 'Teaching',
   offers: 'Offers',
   events: 'Events',
@@ -45,6 +46,7 @@ function DashboardNav({ user }: { user: { name?: string | null; image?: string |
     { href: '/dashboard/marketplace', icon: '🛒', label: 'Marketplace' },
     { href: '/dashboard/services', icon: '🔧', label: 'Services' },
     { href: '/dashboard/rentals', icon: '🏠', label: 'Rentals' },
+    { href: '/dashboard/shop', icon: '🏪', label: 'Shop' },
     { href: '/dashboard/events', icon: '📅', label: 'Events' },
     { href: '/dashboard/appointments', icon: '🗓️', label: 'Planner' },
   ]
@@ -57,6 +59,7 @@ function DashboardNav({ user }: { user: { name?: string | null; image?: string |
     { href: '/dashboard/teaching', icon: '📚', label: 'Teaching' },
     { href: '/dashboard/offers', icon: '🤝', label: 'Offers' },
     { href: '/dashboard/saved', icon: '⭐', label: 'Saved' },
+    { href: '/dashboard/video', icon: '📹', label: 'Video Chat' },
   ]
 
   const userInitial = (user?.name || 'U')[0].toUpperCase()
@@ -164,6 +167,16 @@ export default function DashboardLayout({
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data?.user?.onboardingCompleted === false) {
+          // Don't redirect if user has previously dismissed setup
+          if (data?.user?.setupProgress) {
+            try {
+              const progress = JSON.parse(data.user.setupProgress)
+              if (progress.setupDismissed) {
+                setOnboardingChecked(true)
+                return
+              }
+            } catch {}
+          }
           router.push('/onboarding')
         } else {
           setOnboardingChecked(true)

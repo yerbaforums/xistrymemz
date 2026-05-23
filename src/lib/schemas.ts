@@ -96,6 +96,16 @@ export const serviceOfferingSchema = z.object({
   meetingLink: z.string().url().optional().nullable().or(z.literal('')),
   imageUrl: z.string().optional().nullable(),
   isActive: z.boolean().optional(),
+  acceptsDonations: z.boolean().optional(),
+  selectedDonationAddrs: z.array(z.object({
+    id: z.string(),
+    currency: z.string(),
+    address: z.string(),
+    label: z.string().nullable().optional(),
+    qrCodeUrl: z.string().nullable().optional(),
+    showQR: z.boolean().optional(),
+    sortOrder: z.number().optional(),
+  })).optional(),
 })
 
 export const groupSchema = z.object({

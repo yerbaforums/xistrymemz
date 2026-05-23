@@ -30,6 +30,9 @@ export default async function AdminLayout({
           <Link href="/admin/subscribers" className={styles.navLink}>
             📧 Subscribers
           </Link>
+          <Link href="/admin/analytics" className={styles.navLink}>
+            📊 Analytics
+          </Link>
           <Link href="/admin/orders" className={styles.navLink}>
             📦 Orders
           </Link>

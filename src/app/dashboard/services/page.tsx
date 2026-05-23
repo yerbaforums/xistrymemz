@@ -1,12 +1,25 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useToast } from '@/context/ToastContext'
+import { useDonationAddresses } from '@/hooks/useDonationAddresses'
+import DonationAddressPicker from '@/components/DonationAddressPicker'
+import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
+import type { DonationAddr } from '@/types/product'
+import ImageUploader from '@/components/ImageUploader'
 import type { ServiceOffering, ServiceCategory } from '@/types/service'
 import { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service'
 import styles from './page.module.css'
+
+interface ShopSettings {
+  shopName: string | null
+  shopAbout: string | null
+  shopImage: string | null
+  shopSlug: string | null
+  email: string | null
+  name: string | null
+}
 
 function formatDuration(mins: number) {
   if (mins < 60) return `${mins} min`
@@ -24,12 +37,15 @@ const EMPTY_FORM = {
   location: '',
   meetingLink: '',
   imageUrl: '',
+  imageUrls: [] as string[],
+  isActive: true,
+  acceptsDonations: false,
+  selectedDonationAddrs: [] as DonationAddr[],
 }
 
 export default function DashboardServices() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
   const { success, error: toastError } = useToast()
+  const userDonationAddrs = useDonationAddresses()
 
   const [services, setServices] = useState<ServiceOffering[]>([])
   const [loading, setLoading] = useState(true)
@@ -38,18 +54,35 @@ export default function DashboardServices() {
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all')
+  const [search, setSearch] = useState('')
+  const [shopSettings, setShopSettings] = useState<ShopSettings | null>(null)
+  const [showShopModal, setShowShopModal] = useState(false)
+  const [shopForm, setShopForm] = useState({
+    shopName: '', shopAbout: '', shopImage: '', shopImages: [] as string[],
+    shopSlug: '', email: '', name: ''
+  })
 
-  useEffect(() => {
-    if (status === 'unauthenticated') router.push('/auth/login')
-    if (status !== 'authenticated') return
-    fetchServices()
-  }, [status])
+  useEffect(() => { fetchAll() }, [])
 
-  const fetchServices = async () => {
+  const fetchAll = async () => {
     try {
-      const res = await fetch('/api/services/user')
-      const data = await res.json()
-      setServices(data.services || [])
+      const [servicesRes, shopRes] = await Promise.all([
+        fetch('/api/services/user'),
+        fetch('/api/shop')
+      ])
+      const servicesData = await servicesRes.json()
+      const shopData = await shopRes.json()
+      setServices(servicesData.services || [])
+      setShopSettings(shopData)
+      setShopForm({
+        shopName: shopData.shopName || '',
+        shopAbout: shopData.shopAbout || '',
+        shopImage: shopData.shopImage || '',
+        shopImages: shopData.shopImage ? [shopData.shopImage] : [] as string[],
+        shopSlug: shopData.shopSlug || '',
+        email: shopData.email || '',
+        name: shopData.name || ''
+      })
     } catch { /* ignore */ }
     setLoading(false)
   }
@@ -70,6 +103,14 @@ export default function DashboardServices() {
       location: s.location || '',
       meetingLink: s.meetingLink || '',
       imageUrl: s.imageUrl || '',
+      imageUrls: s.imageUrl ? [s.imageUrl] : [],
+      isActive: s.isActive,
+      acceptsDonations: (s as any).acceptsDonations || false,
+      selectedDonationAddrs: hydrateDonationAddresses(
+        (s as any).donationAddress,
+        (s as any).donationCurrency,
+        (s as any).donationAddresses
+      ),
     })
     setEditingId(s.id)
     setShowForm(true)
@@ -84,10 +125,17 @@ export default function DashboardServices() {
     setSaving(true)
     try {
       const body = {
-        ...form,
+        title: form.title.trim(),
+        description: form.description || null,
+        category: form.category,
+        duration: form.duration,
         price: form.price ? parseFloat(form.price) : null,
+        location: form.location || null,
         meetingLink: form.meetingLink || null,
-        imageUrl: form.imageUrl || null,
+        imageUrl: form.imageUrls?.[0] || null,
+        isActive: form.isActive,
+        acceptsDonations: form.acceptsDonations,
+        selectedDonationAddrs: form.selectedDonationAddrs,
       }
 
       const url = editingId ? `/api/services/${editingId}` : '/api/services'
@@ -102,7 +150,7 @@ export default function DashboardServices() {
       if (res.ok) {
         success(editingId ? 'Service updated!' : 'Service created!')
         resetForm()
-        fetchServices()
+        fetchAll()
       } else {
         const data = await res.json()
         toastError(data.error || 'Failed to save')
@@ -122,7 +170,7 @@ export default function DashboardServices() {
       })
       if (res.ok) {
         success(s.isActive ? 'Service hidden' : 'Service published')
-        fetchServices()
+        fetchAll()
       }
     } catch {
       toastError('Failed to update')
@@ -135,171 +183,275 @@ export default function DashboardServices() {
       const res = await fetch(`/api/services/${s.id}`, { method: 'DELETE' })
       if (res.ok) {
         success('Service deleted')
-        fetchServices()
+        fetchAll()
       }
     } catch {
       toastError('Failed to delete')
     }
   }
 
+  const handleShopSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+    try {
+      const res = await fetch('/api/shop', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...shopForm, shopImage: shopForm.shopImages?.[0] || null })
+      })
+      if (res.ok) {
+        success('Shop settings saved!')
+        fetchAll()
+        setShowShopModal(false)
+      } else {
+        const err = await res.json()
+        toastError(err.error || 'Failed to save')
+      }
+    } catch { toastError('Failed to save') }
+    setSaving(false)
+  }
+
+  const handleUnpublishShop = async () => {
+    if (!confirm('Unpublish your shop? It will no longer appear in the directory.')) return
+    try {
+      const res = await fetch('/api/shop?action=unpublish', { method: 'DELETE' })
+      if (res.ok) { success('Shop unpublished'); setShowShopModal(false); fetchAll() }
+      else toastError('Failed to unpublish')
+    } catch { toastError('Failed to unpublish') }
+  }
+
+  const handleDeleteShop = async () => {
+    if (!confirm('Permanently delete your shop?')) return
+    if (!confirm('Are you sure? This cannot be undone.')) return
+    try {
+      const res = await fetch('/api/shop?action=delete', { method: 'DELETE' })
+      if (res.ok) { success('Shop deleted'); setShowShopModal(false); fetchAll() }
+      else toastError('Failed to delete shop')
+    } catch { toastError('Failed to delete shop') }
+  }
+
   const filteredServices = services.filter(s => {
     if (filter === 'active') return s.isActive
     if (filter === 'inactive') return !s.isActive
+    if (search && !s.title.toLowerCase().includes(search.toLowerCase())) return false
     return true
   })
-
-  if (status === 'loading') {
-    return <div className={styles.page}><div className={styles.loading}>Loading...</div></div>
-  }
 
   return (
     <div className={styles.page}>
       <div className={styles.header}>
         <div>
           <h1>My Services</h1>
-          <p className={styles.subtitle}>Manage your bookable services</p>
+          <p className={styles.welcome}>Manage your bookable services</p>
         </div>
-        <button
-          onClick={() => { resetForm(); setShowForm(true) }}
-          className={styles.createBtn}
-        >
-          + New Service
-        </button>
+        <div className={styles.headerActions}>
+          <Link href="/services" className="btn-secondary">
+            🌐 View Public
+          </Link>
+          <button onClick={() => setShowShopModal(true)} className="btn-secondary">
+            ⚙️ Shop Settings
+          </button>
+          <button onClick={() => { resetForm(); setShowForm(true) }} className="btn-primary">
+            ➕ Add Service
+          </button>
+        </div>
       </div>
 
-      {!showForm && (
-        <div className={styles.controls}>
-          <div className={styles.filterPills}>
-            {(['all', 'active', 'inactive'] as const).map(f => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`${styles.filterBtn} ${filter === f ? styles.active : ''}`}
-              >
-                {f === 'all' ? 'All' : f === 'active' ? 'Active' : 'Inactive'}
-                {' '}({f === 'all' ? services.length : services.filter(s => f === 'active' ? s.isActive : !s.isActive).length})
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      <div className={styles.filters}>
+        <input
+          type="text"
+          placeholder="Search services..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className={styles.searchInput}
+        />
+        <select value={filter} onChange={e => setFilter(e.target.value as typeof filter)}>
+          <option value="all">All</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+        <span className={styles.count}>{filteredServices.length} items</span>
+      </div>
 
-      {showForm ? (
-        <div className={styles.formSection}>
-          <div className={styles.formHeader}>
-            <h3>{editingId ? 'Edit Service' : 'New Service'}</h3>
-            <button onClick={resetForm} className={styles.closeBtn}>✕</button>
-          </div>
-          <form onSubmit={handleSubmit} className={styles.form}>
-            <div className={styles.formRow}>
-              <div className="form-group" style={{ flex: 1 }}>
-                <label>Title *</label>
-                <input type="text" value={form.title} onChange={e => setForm({...form, title: e.target.value})} placeholder="e.g. 1-Hour Guitar Lesson" required />
-              </div>
-            </div>
-
-            <div className={styles.formRow}>
-              <div className="form-group" style={{ flex: 1 }}>
-                <label>Category</label>
-                <select value={form.category} onChange={e => setForm({...form, category: e.target.value as ServiceCategory})}>
-                  {SERVICE_CATEGORIES.map(cat => (
-                    <option key={cat} value={cat}>{SERVICE_CATEGORY_ICONS[cat]} {SERVICE_CATEGORY_LABELS[cat]}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className={styles.formRow}>
-              <div className="form-group" style={{ flex: 1 }}>
-                <label>Duration (minutes) *</label>
-                <input type="number" value={form.duration} onChange={e => setForm({...form, duration: parseInt(e.target.value) || 60})} min={5} step={5} />
-              </div>
-              <div className="form-group" style={{ flex: 1 }}>
-                <label>Price ($)</label>
-                <input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} placeholder="0.00" step="0.01" />
-              </div>
-            </div>
-
-            <div className={styles.formRow}>
-              <div className="form-group">
-                <label>Description</label>
-                <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} rows={3} placeholder="Describe what you offer..." />
-              </div>
-            </div>
-
-            <div className={styles.formRow}>
-              <div className="form-group" style={{ flex: 1 }}>
-                <label>Location</label>
-                <input type="text" value={form.location} onChange={e => setForm({...form, location: e.target.value})} placeholder="City, State or address" />
-              </div>
-            </div>
-
-            <div className={styles.formRow}>
-              <div className="form-group" style={{ flex: 1 }}>
-                <label>Meeting Link</label>
-                <input type="url" value={form.meetingLink} onChange={e => setForm({...form, meetingLink: e.target.value})} placeholder="https://meet.google.com/..." />
-              </div>
-            </div>
-
-            <div className={styles.formRow}>
-              <div className="form-group" style={{ flex: 1 }}>
-                <label>Image URL</label>
-                <input type="url" value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} placeholder="https://..." />
-              </div>
-            </div>
-
-            <div className={styles.formActions}>
-              <button type="button" onClick={resetForm} className="btn-ghost">Cancel</button>
-              <button type="submit" className="btn-primary" disabled={saving}>
-                {saving ? 'Saving...' : editingId ? 'Save Changes' : 'Create Service'}
-              </button>
-            </div>
-          </form>
-        </div>
-      ) : loading ? (
-        <div className={styles.loading}>Loading your services...</div>
-      ) : filteredServices.length === 0 ? (
-        <div className={styles.emptyState}>
-          <p>No services yet.</p>
-          <button onClick={() => { resetForm(); setShowForm(true) }} className="btn-primary">Create Your First Service</button>
+      {loading ? (
+        <div className={styles.loading}>Loading...</div>
+      ) : filteredServices.length === 0 && !showForm ? (
+        <div className={styles.empty}>
+          <div className={styles.emptyIcon}>🔧</div>
+          <h3>No services yet</h3>
+          <p>Create your first bookable service to get started.</p>
+          <button onClick={() => { resetForm(); setShowForm(true) }} className="btn-primary">➕ Add Your First Service</button>
         </div>
       ) : (
         <div className={styles.list}>
           {filteredServices.map(s => {
             const cat = s.category as ServiceCategory
             return (
-              <div key={s.id} className={styles.card}>
-                <div className={styles.cardImage}>
+              <div key={s.id} className={styles.item}>
+                <div className={styles.itemImage}>
                   {s.imageUrl ? (
                     <img src={s.imageUrl} alt={s.title} />
                   ) : (
-                    <div className={styles.cardImagePlaceholder}>{SERVICE_CATEGORY_ICONS[cat] || '📋'}</div>
+                    <div className={styles.imagePlaceholder}>{SERVICE_CATEGORY_ICONS[cat] || '📋'}</div>
                   )}
                 </div>
-                <div className={styles.cardInfo}>
-                  <div className={styles.cardHeader}>
-                    <h4>{s.title}</h4>
+                <div className={styles.itemMain}>
+                  <div className={styles.itemHeader}>
+                    <h3>{s.title}</h3>
                     <span className={`badge ${s.isActive ? 'badge-published' : 'badge-draft'}`}>
                       {s.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </div>
-                  <div className={styles.cardMeta}>
+                  <p className={styles.itemDesc}>{s.description?.slice(0, 80) || 'No description'}</p>
+                  <div className={styles.itemMeta}>
                     <span className={`badge badge-category`}>{SERVICE_CATEGORY_ICONS[cat]} {SERVICE_CATEGORY_LABELS[cat]}</span>
                     <span>🕐 {formatDuration(s.duration)}</span>
-                    {s.price != null && <span>💰 ${s.price}</span>}
+                    {s.price != null && <span className={styles.priceTag}>💰 ${s.price}</span>}
                     {s.location && <span>📍 {s.location}</span>}
                   </div>
                 </div>
-                <div className={styles.cardActions}>
-                  <button onClick={() => startEdit(s)} className={styles.actionBtn} title="Edit">✏️</button>
-                  <button onClick={() => handleToggleActive(s)} className={styles.actionBtn} title={s.isActive ? 'Deactivate' : 'Activate'}>
-                    {s.isActive ? '🕶️' : '✅'}
+                <div className={styles.itemActions}>
+                  <button onClick={() => startEdit(s)} className={styles.editBtn}>✏️ Edit</button>
+                  <button onClick={() => handleToggleActive(s)} className={s.isActive ? styles.hideBtn : styles.publishBtn}>
+                    {s.isActive ? '🕶️ Hide' : '✅ Publish'}
                   </button>
-                  <button onClick={() => handleDelete(s)} className={styles.actionBtn} title="Delete">🗑️</button>
+                  <button onClick={() => handleDelete(s)} className={styles.deleteBtn}>🗑️</button>
                 </div>
               </div>
             )
           })}
+        </div>
+      )}
+
+      {showForm && (
+        <div className="modal-overlay" onClick={resetForm}>
+          <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
+            <h2>{editingId ? '✏️ Edit Service' : '➕ Add Service'}</h2>
+            <form onSubmit={handleSubmit}>
+              <div className="form-row">
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label>Title *</label>
+                  <input type="text" value={form.title} onChange={e => setForm({...form, title: e.target.value})} placeholder="e.g. 1-Hour Guitar Lesson" required />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label>Category</label>
+                  <select value={form.category} onChange={e => setForm({...form, category: e.target.value as ServiceCategory})}>
+                    {SERVICE_CATEGORIES.map(cat => (
+                      <option key={cat} value={cat}>{SERVICE_CATEGORY_ICONS[cat]} {SERVICE_CATEGORY_LABELS[cat]}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Duration (minutes) *</label>
+                  <input type="number" value={form.duration} onChange={e => setForm({...form, duration: parseInt(e.target.value) || 60})} min={5} step={5} />
+                </div>
+                <div className="form-group">
+                  <label>Price ($)</label>
+                  <input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} placeholder="0.00" step="0.01" />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Description</label>
+                <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} rows={2} placeholder="Describe what you offer..." />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label>Location</label>
+                  <input type="text" value={form.location} onChange={e => setForm({...form, location: e.target.value})} placeholder="City, State or address" />
+                </div>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label>Meeting Link</label>
+                  <input type="url" value={form.meetingLink} onChange={e => setForm({...form, meetingLink: e.target.value})} placeholder="https://meet.google.com/..." />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Image</label>
+                  <ImageUploader images={form.imageUrls || []} onChange={(urls) => setForm({...form, imageUrls: urls})} maxImages={1} />
+                </div>
+              </div>
+
+              <div className={styles.checkGroup}>
+                <label className={styles.checkLabel}>
+                  <input type="checkbox" checked={form.isActive} onChange={e => setForm({...form, isActive: e.target.checked})} />
+                  Active (visible in search)
+                </label>
+              </div>
+
+              <label className={styles.checkLabel}>
+                <input type="checkbox" checked={form.acceptsDonations} onChange={e => setForm({...form, acceptsDonations: e.target.checked})} />
+                Accept Donations
+              </label>
+              {form.acceptsDonations && (
+                <DonationAddressPicker
+                  savedAddresses={userDonationAddrs}
+                  selectedAddresses={form.selectedDonationAddrs}
+                  onAddressesChange={(addrs) => setForm({...form, selectedDonationAddrs: addrs})}
+                />
+              )}
+
+              <div className={styles.formActions}>
+                <button type="button" onClick={resetForm} className="btn-ghost">Cancel</button>
+                <button type="submit" className="btn-primary" disabled={saving}>
+                  {saving ? 'Saving...' : editingId ? 'Save Changes' : 'Create Service'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showShopModal && (
+        <div className="modal-overlay" onClick={() => setShowShopModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2>⚙️ Shop Settings</h2>
+            <form onSubmit={handleShopSubmit}>
+              <div className="form-group">
+                <label>Shop Name</label>
+                <input type="text" value={shopForm.shopName} onChange={e => setShopForm({...shopForm, shopName: e.target.value})} placeholder="Your shop name" />
+              </div>
+              <div className="form-group">
+                <label>About Your Shop</label>
+                <textarea value={shopForm.shopAbout} onChange={e => setShopForm({...shopForm, shopAbout: e.target.value})} rows={3} placeholder="Tell customers about your shop..." />
+              </div>
+              <div className="form-group">
+                <label>Shop Image</label>
+                <ImageUploader images={shopForm.shopImages || []} onChange={(urls) => setShopForm({...shopForm, shopImages: urls})} maxImages={1} />
+              </div>
+              <div className="form-group">
+                <label>Shop URL Slug</label>
+                <input type="text" value={shopForm.shopSlug} onChange={e => setShopForm({...shopForm, shopSlug: e.target.value})} placeholder="my-shop" />
+                <small style={{color: 'var(--text-secondary)'}}>xistrymemz.com/shop/{shopForm.shopSlug || 'your-slug'}</small>
+              </div>
+              <div className="form-group">
+                <label>Contact Email</label>
+                <input type="email" value={shopForm.email} onChange={e => setShopForm({...shopForm, email: e.target.value})} placeholder="you@example.com" />
+              </div>
+              <div className={styles.formActions}>
+                <button type="button" onClick={() => setShowShopModal(false)} className="btn-ghost">Cancel</button>
+                <button type="submit" className="btn-primary" disabled={saving}>{saving ? 'Saving...' : 'Save Settings'}</button>
+              </div>
+            </form>
+            {shopSettings?.shopSlug && (
+              <div className={styles.dangerZone}>
+                <h3>Danger Zone</h3>
+                <p>These actions affect your entire shop.</p>
+                <div className={styles.dangerActions}>
+                  <button onClick={handleUnpublishShop} className={styles.unpublishBtn}>Unpublish Shop</button>
+                  <button onClick={handleDeleteShop} className={styles.deleteShopBtn}>Delete Shop</button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

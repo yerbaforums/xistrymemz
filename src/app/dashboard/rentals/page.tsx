@@ -6,6 +6,15 @@ import { useToast } from '@/context/ToastContext'
 import ImageUploader from '@/components/ImageUploader'
 import styles from './rentals.module.css'
 
+interface ShopSettings {
+  shopName: string | null
+  shopAbout: string | null
+  shopImage: string | null
+  shopSlug: string | null
+  email: string | null
+  name: string | null
+}
+
 interface RentalItem {
   id: string
   title: string
@@ -35,6 +44,12 @@ export default function RentalsPage() {
   const [saving, setSaving] = useState(false)
   const [filter, setFilter] = useState<'all' | 'published' | 'draft' | 'available' | 'unavailable'>('all')
   const [search, setSearch] = useState('')
+  const [shopSettings, setShopSettings] = useState<ShopSettings | null>(null)
+  const [showShopModal, setShowShopModal] = useState(false)
+  const [shopForm, setShopForm] = useState({
+    shopName: '', shopAbout: '', shopImage: '', shopImages: [] as string[],
+    shopSlug: '', email: '', name: ''
+  })
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -53,13 +68,27 @@ export default function RentalsPage() {
     published: true,
   })
 
-  useEffect(() => { fetchRentals() }, [])
+  useEffect(() => { fetchAll() }, [])
 
-  const fetchRentals = async () => {
+  const fetchAll = async () => {
     try {
-      const res = await fetch('/api/products/user?type=RENTAL')
-      const data = await res.json()
-      setRentals(Array.isArray(data) ? data : data?.products || [])
+      const [rentalsRes, shopRes] = await Promise.all([
+        fetch('/api/products/user?type=RENTAL'),
+        fetch('/api/shop')
+      ])
+      const rentalsData = await rentalsRes.json()
+      const shopData = await shopRes.json()
+      setRentals(Array.isArray(rentalsData) ? rentalsData : rentalsData?.products || [])
+      setShopSettings(shopData)
+      setShopForm({
+        shopName: shopData.shopName || '',
+        shopAbout: shopData.shopAbout || '',
+        shopImage: shopData.shopImage || '',
+        shopImages: shopData.shopImage ? [shopData.shopImage] : [] as string[],
+        shopSlug: shopData.shopSlug || '',
+        email: shopData.email || '',
+        name: shopData.name || ''
+      })
     } catch (e) {
       console.error(e)
     } finally {
@@ -123,7 +152,7 @@ export default function RentalsPage() {
       const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       if (res.ok) {
         success(editing ? 'Rental updated!' : 'Rental created!')
-        fetchRentals()
+        fetchAll()
         resetForm()
       } else {
         const err = await res.json()
@@ -140,7 +169,7 @@ export default function RentalsPage() {
     if (!confirm(`Delete "${title}"?`)) return
     try {
       const res = await fetch(`/api/products/${id}`, { method: 'DELETE' })
-      if (res.ok) { success('Deleted'); fetchRentals() }
+      if (res.ok) { success('Deleted'); fetchAll() }
       else error('Failed to delete')
     } catch { error('Failed to delete') }
   }
@@ -150,8 +179,42 @@ export default function RentalsPage() {
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ published: !current })
     })
-    if (res.ok) { fetchRentals(); success(!current ? 'Published!' : 'Hidden') }
+    if (res.ok) { fetchAll(); success(!current ? 'Published!' : 'Hidden') }
     else error('Failed')
+  }
+
+  const handleShopSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+    try {
+      const res = await fetch('/api/shop', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...shopForm, shopImage: shopForm.shopImages?.[0] || null })
+      })
+      if (res.ok) { success('Shop settings saved!'); fetchAll(); setShowShopModal(false) }
+      else { const err = await res.json(); error(err.error || 'Failed to save') }
+    } catch { error('Failed to save') }
+    setSaving(false)
+  }
+
+  const handleUnpublishShop = async () => {
+    if (!confirm('Unpublish your shop?')) return
+    try {
+      const res = await fetch('/api/shop?action=unpublish', { method: 'DELETE' })
+      if (res.ok) { success('Shop unpublished'); setShowShopModal(false); fetchAll() }
+      else error('Failed to unpublish')
+    } catch { error('Failed to unpublish') }
+  }
+
+  const handleDeleteShop = async () => {
+    if (!confirm('Permanently delete your shop?')) return
+    if (!confirm('Are you sure? This cannot be undone.')) return
+    try {
+      const res = await fetch('/api/shop?action=delete', { method: 'DELETE' })
+      if (res.ok) { success('Shop deleted'); setShowShopModal(false); fetchAll() }
+      else error('Failed to delete shop')
+    } catch { error('Failed to delete shop') }
   }
 
   const filtered = rentals.filter(r => {
@@ -171,9 +234,12 @@ export default function RentalsPage() {
           <p className={styles.welcome}>Manage your rental listings</p>
         </div>
         <div className={styles.headerActions}>
-          <Link href="/products?type=rental" className="btn-secondary">
+          <Link href="/rentals" className="btn-secondary">
             🌐 View Public
           </Link>
+          <button onClick={() => setShowShopModal(true)} className="btn-secondary">
+            ⚙️ Shop Settings
+          </button>
           <button onClick={() => { resetForm(); setShowForm(true) }} className="btn-primary">
             ➕ Add Rental
           </button>
@@ -327,6 +393,51 @@ export default function RentalsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showShopModal && (
+        <div className="modal-overlay" onClick={() => setShowShopModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2>⚙️ Shop Settings</h2>
+            <form onSubmit={handleShopSubmit}>
+              <div className="form-group">
+                <label>Shop Name</label>
+                <input type="text" value={shopForm.shopName} onChange={e => setShopForm({...shopForm, shopName: e.target.value})} placeholder="Your shop name" />
+              </div>
+              <div className="form-group">
+                <label>About Your Shop</label>
+                <textarea value={shopForm.shopAbout} onChange={e => setShopForm({...shopForm, shopAbout: e.target.value})} rows={3} placeholder="Tell customers about your shop..." />
+              </div>
+              <div className="form-group">
+                <label>Shop Image</label>
+                <ImageUploader images={shopForm.shopImages || []} onChange={(urls) => setShopForm({...shopForm, shopImages: urls})} maxImages={1} />
+              </div>
+              <div className="form-group">
+                <label>Shop URL Slug</label>
+                <input type="text" value={shopForm.shopSlug} onChange={e => setShopForm({...shopForm, shopSlug: e.target.value})} placeholder="my-shop" />
+                <small style={{color: 'var(--text-secondary)'}}>xistrymemz.com/shop/{shopForm.shopSlug || 'your-slug'}</small>
+              </div>
+              <div className="form-group">
+                <label>Contact Email</label>
+                <input type="email" value={shopForm.email} onChange={e => setShopForm({...shopForm, email: e.target.value})} placeholder="you@example.com" />
+              </div>
+              <div className={styles.formActions}>
+                <button type="button" onClick={() => setShowShopModal(false)} className="btn-ghost">Cancel</button>
+                <button type="submit" className="btn-primary" disabled={saving}>{saving ? 'Saving...' : 'Save Settings'}</button>
+              </div>
+            </form>
+            {shopSettings?.shopSlug && (
+              <div className={styles.dangerZone}>
+                <h3>Danger Zone</h3>
+                <p>These actions affect your entire shop.</p>
+                <div className={styles.dangerActions}>
+                  <button onClick={handleUnpublishShop} className={styles.unpublishBtn}>Unpublish Shop</button>
+                  <button onClick={handleDeleteShop} className={styles.deleteShopBtn}>Delete Shop</button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { serviceOfferingSchema, validateBody } from '@/lib/schemas'
+import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 
 export async function GET(
   request: Request,
@@ -65,6 +66,17 @@ export async function PUT(
     if (d.meetingLink !== undefined) updateData.meetingLink = d.meetingLink || null
     if (d.imageUrl !== undefined) updateData.imageUrl = d.imageUrl || null
     if (d.isActive !== undefined) updateData.isActive = d.isActive
+    if (d.acceptsDonations !== undefined) updateData.acceptsDonations = d.acceptsDonations
+    if (d.acceptsDonations && d.selectedDonationAddrs) {
+      const legacy = donationAddressesToLegacy(d.selectedDonationAddrs as any)
+      updateData.donationAddress = legacy.donationAddress
+      updateData.donationCurrency = legacy.donationCurrency
+      updateData.donationAddresses = serializeDonationAddresses(d.selectedDonationAddrs as any) as any
+    } else if (d.acceptsDonations === false) {
+      updateData.donationAddress = null
+      updateData.donationCurrency = null
+      updateData.donationAddresses = null
+    }
 
     const service = await prisma.serviceOffering.update({
       where: { id },

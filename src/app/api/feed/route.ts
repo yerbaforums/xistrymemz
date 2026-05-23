@@ -64,6 +64,32 @@ export async function GET(request: Request) {
       : []
     const likedSet = new Set(userLikes.map(l => l.postId))
 
+    const replyCounts = postIds.length > 0
+      ? await prisma.post.groupBy({
+          by: ['parentId'],
+          where: { parentId: { in: postIds } },
+          _count: { id: true },
+        })
+      : []
+    const replyCountMap = new Map(replyCounts.map(r => [r.parentId, r._count.id]))
+
+    const repostCounts = postIds.length > 0
+      ? await prisma.postRepost.groupBy({
+          by: ['originalPostId'],
+          where: { originalPostId: { in: postIds } },
+          _count: { id: true },
+        })
+      : []
+    const repostCountMap = new Map(repostCounts.map(r => [r.originalPostId, r._count.id]))
+
+    const userReposts = postIds.length > 0
+      ? await prisma.postRepost.findMany({
+          where: { userId, originalPostId: { in: postIds } },
+          select: { originalPostId: true }
+        })
+      : []
+    const repostedSet = new Set(userReposts.map(r => r.originalPostId))
+
     const groupMemberships = await prisma.groupMember.findMany({
       where: { userId },
       select: { groupId: true }
@@ -105,6 +131,9 @@ export async function GET(request: Request) {
         userId: p.userId,
         likes: p.likes,
         liked: likedSet.has(p.id),
+        replyCount: replyCountMap.get(p.id) ?? 0,
+        repostCount: repostCountMap.get(p.id) ?? 0,
+        reposted: repostedSet.has(p.id),
         referenceType: p.referenceType,
         referenceId: p.referenceId,
         referenceTitle: p.referenceTitle,

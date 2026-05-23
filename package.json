@@ -24,7 +24,9 @@
     "@tari-project/wallet_jrpc_client": "^1.15.0",
     "@tari-project/wallet-daemon-signer": "^0.14.6",
     "@types/leaflet": "^1.9.21",
+    "@types/simple-peer": "^9.11.9",
     "bcryptjs": "^2.4.3",
+    "emoji-picker-react": "^4.19.1",
     "kubo-rpc-client": "^6.1.0",
     "leaflet": "^1.9.4",
     "next": "^15.5.15",
@@ -36,6 +38,7 @@
     "react-leaflet": "^5.0.0",
     "resend": "^6.12.3",
     "sharp": "^0.34.5",
+    "simple-peer": "^9.11.1",
     "zod": "^4.3.6"
   },
   "devDependencies": {

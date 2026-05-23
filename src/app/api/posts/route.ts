@@ -68,7 +68,45 @@ export async function GET(request: NextRequest) {
       prisma.post.count({ where })
     ])
 
-    return NextResponse.json({ posts, total })
+    const session = await getServerSession(authOptions)
+    const currentUserId = session?.user?.id
+
+    const postIds = posts.map(p => p.id)
+
+    const replyCounts = postIds.length > 0
+      ? await prisma.post.groupBy({
+          by: ['parentId'],
+          where: { parentId: { in: postIds } },
+          _count: { id: true },
+        })
+      : []
+    const replyCountMap = new Map(replyCounts.map(r => [r.parentId, r._count.id]))
+
+    const repostCounts = postIds.length > 0
+      ? await prisma.postRepost.groupBy({
+          by: ['originalPostId'],
+          where: { originalPostId: { in: postIds } },
+          _count: { id: true },
+        })
+      : []
+    const repostCountMap = new Map(repostCounts.map(r => [r.originalPostId, r._count.id]))
+
+    const userReposts = currentUserId && postIds.length > 0
+      ? await prisma.postRepost.findMany({
+          where: { userId: currentUserId, originalPostId: { in: postIds } },
+          select: { originalPostId: true }
+        })
+      : []
+    const repostedSet = new Set(userReposts.map(r => r.originalPostId))
+
+    const enriched = posts.map(p => ({
+      ...p,
+      replyCount: replyCountMap.get(p.id) ?? 0,
+      repostCount: repostCountMap.get(p.id) ?? 0,
+      reposted: repostedSet.has(p.id),
+    }))
+
+    return NextResponse.json({ posts: enriched, total })
   } catch (error) {
     console.error('Error fetching posts:', error)
     return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 })

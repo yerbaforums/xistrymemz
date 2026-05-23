@@ -14,6 +14,8 @@ import { ComingSoonModal } from '@/components/ComingSoonModal'
 import ShareToPostModal from '@/components/ShareToPostModal'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
+import ViewCount from '@/components/ViewCount'
+import { useRecordView } from '@/hooks/useRecordView'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import RoleBadge from '@/components/RoleBadge'
 import { getCryptoPrices } from '@/lib/prices'
@@ -75,6 +77,7 @@ interface Product {
   appointmentMeetingLink?: string | null
   appointmentFormFields?: { label: string; type: string; required: boolean }[] | null
   hashtags?: { id: string; tag?: string; hashtag?: { id: string; tag: string } }[]
+  viewCount?: number
 }
 
 interface Plan {
@@ -268,6 +271,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         })
     }
   }, [showPlanModal])
+
+  useRecordView('product', product?.id || '')
 
   const handleMakeRequest = async () => {
     if (!requestTitle.trim() || !product) return
@@ -948,6 +953,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
           <div className={styles.metaCard}>
             <p>Listed {new Date(product.createdAt).toLocaleDateString()}</p>
+            <ViewCount count={product.viewCount || 0} size="md" />
           </div>
 
           <div className={styles.shareCard}>

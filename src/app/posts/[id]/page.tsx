@@ -8,7 +8,9 @@ import HashtagText from '@/components/HashtagText'
 import PostActions from '@/components/PostActions'
 import ReplySection from '@/components/ReplySection'
 import SharedItemCard from '@/components/SharedItemCard'
+import ViewCount from '@/components/ViewCount'
 import { getUserProfileUrl } from '@/lib/utils'
+import { useRecordView } from '@/hooks/useRecordView'
 
 interface PostData {
   id: string
@@ -18,6 +20,7 @@ interface PostData {
   createdAt: string
   userId: string
   likes: number
+  viewCount?: number
   context?: string | null
   referenceType?: string | null
   referenceId?: string | null
@@ -52,6 +55,8 @@ export default function PostPage() {
       .catch(() => setError('Failed to load post'))
       .finally(() => setLoading(false))
   }, [postId])
+
+  useRecordView('post', post?.id || '')
 
   if (loading) {
     return (
@@ -124,7 +129,7 @@ export default function PostPage() {
             </div>
             <div>
               <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>{post.user.name || 'Unknown'}</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{new Date(post.createdAt).toLocaleDateString()}</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 8 }}>{new Date(post.createdAt).toLocaleDateString()} <ViewCount count={post.viewCount || 0} /></div>
             </div>
           </Link>
         </div>

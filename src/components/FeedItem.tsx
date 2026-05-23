@@ -7,7 +7,9 @@ import LinkPreview, { URL_REGEX } from '@/components/LinkPreview'
 import PostActions from '@/components/PostActions'
 import SharedItemCard from '@/components/SharedItemCard'
 import ReplySection from '@/components/ReplySection'
-import { useState } from 'react'
+import ViewCount from '@/components/ViewCount'
+import { useState, useRef } from 'react'
+import { useSession } from 'next-auth/react'
 import { getUserProfileUrl } from '@/lib/utils'
 import styles from './FeedItem.module.css'
 
@@ -33,6 +35,7 @@ interface FeedPost {
   referenceType?: string | null
   referenceId?: string | null
   referenceTitle?: string | null
+  viewCount?: number
 }
 
 const CONTEXT_CONFIG: Record<string, { label: string; icon: string; className: string }> = {
@@ -56,6 +59,9 @@ function getImages(images: string | null): string[] {
 
 export default function FeedItem({ post }: { post: FeedPost }) {
   const [showReplies, setShowReplies] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [editContent, setEditContent] = useState(post.content)
+  const { data: session } = useSession()
   const imageList = getImages(post.images)
   const displayContent = post.content.replace(URL_REGEX, '').trim()
   const contextKey = post.context || post.sourceType || 'PROFILE'
@@ -108,6 +114,7 @@ export default function FeedItem({ post }: { post: FeedPost }) {
             <span className={styles.date}>
               {new Date(post.createdAt).toLocaleDateString()}
             </span>
+            <ViewCount count={post.viewCount || 0} />
           </div>
         </Link>
         <div className={styles.badges}>
@@ -130,7 +137,30 @@ export default function FeedItem({ post }: { post: FeedPost }) {
       <div
         style={{ lineHeight: 1.6, marginBottom: imageList.length > 0 ? '12px' : 0 }}
       >
-        <HashtagText text={displayContent} />
+        {editing ? (
+          <div>
+            <textarea
+              value={editContent}
+              onChange={e => setEditContent(e.target.value)}
+              style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: '0.9rem', resize: 'vertical', minHeight: 80, fontFamily: 'inherit' }}
+            />
+            <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+              <button onClick={async () => {
+                try {
+                  await fetch(`/api/posts/${post.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: editContent }),
+                  })
+                  setEditing(false)
+                } catch {}
+              }} style={{ padding: '4px 14px', borderRadius: 6, border: 'none', background: 'var(--accent-primary)', color: '#fff', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>Save</button>
+              <button onClick={() => { setEditing(false); setEditContent(post.content) }} style={{ padding: '4px 14px', borderRadius: 6, border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.8rem' }}>Cancel</button>
+            </div>
+          </div>
+        ) : (
+          <HashtagText text={displayContent} />
+        )}
       </div>
 
       <LinkPreview text={post.content} />

@@ -61,6 +61,7 @@ interface Request {
   commentCount: number
   fulfillmentCount: number
   supportCount: number
+  viewCount?: number
 }
 
 interface RequestsClientProps {
@@ -590,6 +591,12 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
                           <span className={styles.authorName}>{req.user.name || 'Unknown'}</span>
                         </Link>
                         <span className={styles.cardDate}>{formatDate(req.createdAt)}</span>
+                        {req.viewCount != null && req.viewCount > 0 && (
+                          <span style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                            <svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            {req.viewCount}
+                          </span>
+                        )}
                       </div>
 
                       <div className={styles.cardActions}>

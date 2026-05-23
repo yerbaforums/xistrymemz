@@ -53,6 +53,7 @@ model User {
   verifiedIdentity Boolean @default(false)
   verifiedAddress Boolean @default(false)
   onboardingCompleted Boolean @default(false)
+  setupProgress String?
   lookingForCollaborators Boolean @default(false)
   lastActiveAt DateTime?
   
@@ -80,6 +81,7 @@ model User {
   posts     Post[]
   postLikes PostLike[]
   postTips  PostTip[]
+  postReposts PostRepost[]
   wallPosts Post[] @relation("WallPostTarget")
   planUpdates PlanUpdate[]
   statusHistory RequestStatusHistory[]
@@ -142,6 +144,9 @@ model User {
   serviceOfferings     ServiceOffering[]
   availabilitySlots    Availability[]
   notifications Notification[]
+  contentViews         ContentView[]
+  videoRoomsCreated    VideoRoom[]
+  videoRoomParticipants VideoRoomParticipant[]
 
   // Fediverse
   federatedUrl      String?   @unique
@@ -394,6 +399,8 @@ model Request {
   isPublic   Boolean   @default(false)
   allowFulfillments Boolean @default(true)
   showDonationAddress Boolean @default(true)
+  viewCount  Int       @default(0)
+  contentViews ContentView[] @relation("RequestViews")
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
   fulfillments  RequestFulfillment[]
@@ -522,6 +529,8 @@ model Product {
   ratings           Rating[]
   escrowTxns        EscrowTransaction[]
   hashtags          ProductHashtag[]
+  viewCount        Int      @default(0)
+  contentViews     ContentView[] @relation("ProductViews")
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -662,11 +671,15 @@ model Post {
   likes           Int      @default(0)
   totalTips       Float    @default(0)
   tippers         Int      @default(0)
+  viewCount       Int      @default(0)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   hashtags        PostHashtag[]
   postTips        PostTip[]
   postLikes       PostLike[]
+  reposts         PostRepost[]  @relation("RepostPost")
+  originalReposts PostRepost[]  @relation("OriginalPost")
+  contentViews    ContentView[] @relation("PostViews")
 
   @@index([userId])
   @@index([targetUserId])
@@ -697,6 +710,21 @@ model PostTip {
   createdAt DateTime @default(now())
 
   @@index([postId])
+  @@index([userId])
+}
+
+model PostRepost {
+  id              String   @id @default(cuid())
+  userId          String
+  postId          String
+  originalPostId  String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post            Post     @relation("RepostPost", fields: [postId], references: [id], onDelete: Cascade)
+  originalPost    Post     @relation("OriginalPost", fields: [originalPostId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+
+  @@unique([userId, originalPostId])
+  @@index([originalPostId])
   @@index([userId])
 }
 
@@ -1495,9 +1523,16 @@ model ServiceOffering {
   imageUrl    String?
   isActive    Boolean  @default(true)
 
+  acceptsDonations  Boolean  @default(false)
+  donationAddress   String?
+  donationCurrency  String?
+  donationAddresses String?
+
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   appointments Appointment[]
+  viewCount   Int      @default(0)
+  contentViews ContentView[] @relation("ServiceOfferingViews")
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -1518,4 +1553,56 @@ model Availability {
 
   @@unique([userId, dayOfWeek, startTime, endTime])
   @@index([userId])
+}
+
+model VideoRoom {
+  id          String   @id @default(cuid())
+  name        String?
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  inviteCode  String   @unique @default(cuid())
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  endedAt     DateTime?
+  participants VideoRoomParticipant[]
+
+  @@index([createdById])
+  @@index([inviteCode])
+}
+
+model VideoRoomParticipant {
+  id        String   @id @default(cuid())
+  roomId    String
+  room      VideoRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinedAt  DateTime @default(now())
+  leftAt    DateTime?
+
+  @@unique([roomId, userId])
+  @@index([userId])
+}
+
+model ContentView {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  postId      String?
+  post        Post?    @relation("PostViews", fields: [postId], references: [id], onDelete: Cascade)
+  productId   String?
+  product     Product? @relation("ProductViews", fields: [productId], references: [id], onDelete: Cascade)
+  serviceOfferingId String?
+  serviceOffering   ServiceOffering? @relation("ServiceOfferingViews", fields: [serviceOfferingId], references: [id], onDelete: Cascade)
+  requestId   String?
+  request     Request? @relation("RequestViews", fields: [requestId], references: [id], onDelete: Cascade)
+  ipHash      String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([postId])
+  @@index([productId])
+  @@index([serviceOfferingId])
+  @@index([requestId])
+  @@index([userId])
+  @@index([createdAt])
 }

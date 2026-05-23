@@ -41,5 +41,13 @@
 .checkLabel { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem; color: var(--text-secondary); }
 .checkLabel input { width: 18px; height: 18px; accent-color: var(--accent-primary); cursor: pointer; }
 .formActions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px; }
+.dangerZone { margin-top: 24px; padding-top: 24px; border-top: 2px solid rgba(255, 68, 68, 0.3); }
+.dangerZone h3 { color: #f44; font-size: 1rem; margin-bottom: 4px; }
+.dangerZone p { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 12px; }
+.dangerActions { display: flex; gap: 12px; flex-wrap: wrap; }
+.unpublishBtn { padding: 10px 20px; background: transparent; border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-primary); cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: var(--transition); }
+.unpublishBtn:hover { border-color: #f90; color: #f90; }
+.deleteShopBtn { padding: 10px 20px; background: transparent; border: 1px solid #f44; border-radius: var(--radius-md); color: #f44; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: var(--transition); }
+.deleteShopBtn:hover { background: #f44; color: white; }
 @media (max-width: 768px) { .item { flex-direction: column; } .itemActions { flex-direction: row; flex-wrap: wrap; } .header { flex-direction: column; } .headerActions { width: 100%; justify-content: flex-start; } }
 @media (max-width: 600px) { .formRow { grid-template-columns: 1fr; } }

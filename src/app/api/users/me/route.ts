@@ -39,6 +39,7 @@ export async function GET() {
           donationCurrency: true,
           acceptsDonations: true,
           onboardingCompleted: true,
+          setupProgress: true,
           lookingForCollaborators: true
         }
       }),

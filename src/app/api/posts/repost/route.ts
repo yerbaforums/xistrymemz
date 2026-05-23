@@ -37,6 +37,14 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    await prisma.postRepost.create({
+      data: {
+        userId: session.user.id,
+        postId: post.id,
+        originalPostId: postId,
+      },
+    })
+
     return NextResponse.json({ post }, { status: 201 })
   } catch {
     return NextResponse.json({ error: 'Failed to repost' }, { status: 500 })

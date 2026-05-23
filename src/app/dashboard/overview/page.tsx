@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import FeedItem from '@/components/FeedItem'
 import DashboardTodo from '@/components/DashboardTodo'
+import { getClassGuides } from '@/lib/classOnboarding'
+import type { ClassSetupStep } from '@/lib/classOnboarding'
 import styles from '../page.module.css'
 import overviewStyles from './OverviewCards.module.css'
 import TipCard from './TipCard'
@@ -171,8 +173,33 @@ export default async function DashboardOverview() {
 
   const user = await prisma.user.findUnique({ 
     where: { id: userId },
-    select: { name: true, bio: true, shopSlug: true, schoolSlug: true, onboardingCompleted: true, walletAddress: true, paymentAddress: true, refundAddress: true, cryptoCurrency: true, donationAddress: true, donationCurrency: true, acceptsDonations: true }
+    select: { name: true, bio: true, shopSlug: true, schoolSlug: true, onboardingCompleted: true, setupProgress: true, walletAddress: true, paymentAddress: true, refundAddress: true, cryptoCurrency: true, donationAddress: true, donationCurrency: true, acceptsDonations: true, userClass: true }
   })
+
+  const userClasses = (user?.userClass || '').split(',').map(c => c.trim()).filter(Boolean)
+  const guides = getClassGuides(userClasses)
+  const allSteps = guides.flatMap(g => g.steps)
+
+  const [serviceCount, eventCount] = await Promise.all([
+    prisma.serviceOffering.count({ where: { userId } }),
+    prisma.event.count({ where: { organizerId: userId } }),
+  ])
+
+  const productTypeCounts: Record<string, number> = {}
+  for (const p of products) {
+    productTypeCounts[p.type] = (productTypeCounts[p.type] || 0) + 1
+  }
+
+  const featureCounts = {
+    product: (productTypeCounts['PRODUCT'] || 0),
+    rental: (productTypeCounts['RENTAL'] || 0),
+    service: serviceCount,
+    event: eventCount,
+    shop: user?.shopSlug ? 1 : 0,
+    school: user?.schoolSlug ? 1 : 0,
+  }
+
+  const incompleteSteps = allSteps.filter(step => featureCounts[step.feature] === 0)
 
   const allStats = await Promise.all([
     prisma.plan.count({ where: { userId } }),
@@ -183,6 +210,17 @@ export default async function DashboardOverview() {
     prisma.schoolContent.count({ where: { userId } }),
     prisma.post.count({ where: { userId } }),
   ])
+
+  // Analytics: total views across all content
+  const [postViews, productViews, serviceViews, requestViews] = await Promise.all([
+    prisma.post.aggregate({ where: { userId }, _sum: { viewCount: true } }),
+    prisma.product.aggregate({ where: { userId }, _sum: { viewCount: true } }),
+    prisma.serviceOffering.aggregate({ where: { userId }, _sum: { viewCount: true } }),
+    prisma.request.aggregate({ where: { userId }, _sum: { viewCount: true } }),
+  ])
+
+  const totalViews = (postViews._sum.viewCount ?? 0) + (productViews._sum.viewCount ?? 0) + (serviceViews._sum.viewCount ?? 0) + (requestViews._sum.viewCount ?? 0)
+  const totalListings = allStats[2] + serviceCount + rentalCount
 
   const [offersSent, offersReceived] = await Promise.all([
     prisma.barterOffer.count({ where: { makerId: userId } }),
@@ -230,6 +268,8 @@ export default async function DashboardOverview() {
     { label: 'Volunteer', value: eventVolunteerCount, max: 10, color: '#14B8A6', icon: '🙋', href: '/dashboard/events' },
     { label: 'Orders', value: orderStats.length, max: 50, color: '#EF4444', icon: '📦', href: '/orders' },
     { label: 'Earnings', value: Math.round(totalEarnings), max: 5000, color: '#F59E0B', icon: '💰', href: '' },
+    { label: 'Total Views', value: totalViews, max: Math.max(totalViews, 100), color: '#06B6D4', icon: '👁️', href: '' },
+    { label: 'Listings', value: totalListings, max: Math.max(totalListings, 20), color: '#84CC16', icon: '📋', href: '/dashboard/marketplace' },
   ]
 
   const quickActions = [
@@ -248,7 +288,7 @@ export default async function DashboardOverview() {
     <div className={styles.overview}>
       <div className={styles.welcomeHeader}>
         <h2>Welcome back, {session.user.name?.split(' ')[0] || 'User'}! 👋</h2>
-        <p>{allStats[6]} posts · {connectionCount} connections · {totalEarnings > 0 ? `$${totalEarnings.toFixed(0)} earned` : 'getting started'}</p>
+        <p>{allStats[6]} posts · {connectionCount} connections · {totalViews > 0 ? `${totalViews} views · ` : ''}{totalEarnings > 0 ? `$${totalEarnings.toFixed(0)} earned` : 'getting started'}</p>
       </div>
 
       {isNewUser && (

@@ -6,9 +6,10 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import ImageUploader from '@/components/ImageUploader'
+import { getClassGuides, getAllSetupStepIds, CLASS_SETUP_GUIDES } from '@/lib/classOnboarding'
 import styles from './page.module.css'
 
-type OnboardingStep = 'welcome' | 'profile' | 'tour' | 'community' | 'complete'
+type OnboardingStep = 'welcome' | 'profile' | 'class-setup' | 'tour' | 'community' | 'complete'
 
 const USER_CLASSES = [
   'Healer',
@@ -82,6 +83,28 @@ export default function OnboardingPage() {
   const [donationCurrency, setDonationCurrency] = useState('ETH')
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const [completedSetupSteps, setCompletedSetupSteps] = useState<string[]>([])
+
+  const toggleSetupStep = (id: string) => {
+    setCompletedSetupSteps(prev => {
+      if (prev.includes(id)) return prev
+      const next = [...prev, id]
+      persistSetupProgress(next)
+      return next
+    })
+  }
+
+  const persistSetupProgress = async (steps: string[]) => {
+    try {
+      await fetch('/api/users/setup-progress', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ completedSteps: steps })
+      })
+    } catch {
+      // silently fail — state is already updated
+    }
+  }
 
   const toggleOutlet = (id: string) => {
     setSelectedOutlets(prev =>
@@ -106,7 +129,18 @@ export default function OnboardingPage() {
           setName(data?.user?.name || '')
           setBio(data?.user?.bio || '')
           setAvatarImage(data?.user?.image || '')
+          setUserClass(data?.user?.userClass || '')
           setCheckingOnboarding(false)
+
+          // Restore setup progress from server
+          if (data?.user?.setupProgress) {
+            try {
+              const progress = JSON.parse(data.user.setupProgress)
+              if (Array.isArray(progress.completedSteps)) {
+                setCompletedSetupSteps(progress.completedSteps)
+              }
+            } catch {}
+          }
         }
       })
       .catch(() => setCheckingOnboarding(false))
@@ -185,6 +219,7 @@ export default function OnboardingPage() {
   const steps: { key: OnboardingStep; label: string }[] = [
     { key: 'welcome', label: 'Welcome' },
     { key: 'profile', label: 'Profile' },
+    { key: 'class-setup', label: 'Your Setup' },
     { key: 'tour', label: 'Explore' },
     { key: 'community', label: 'Community' },
     { key: 'complete', label: 'Complete' }
@@ -195,7 +230,20 @@ export default function OnboardingPage() {
   const nextStep = () => {
     const idx = currentStepIndex
     if (idx < steps.length - 1) {
-      setStep(steps[idx + 1].key)
+      const next = steps[idx + 1].key
+
+      // Auto-skip class-setup if all steps are already completed
+      if (next === 'class-setup') {
+        const userClasses = userClass.split(',').map(c => c.trim()).filter(Boolean)
+        const allStepIds = getAllSetupStepIds(userClasses)
+        const allDone = allStepIds.length > 0 && allStepIds.every(id => completedSetupSteps.includes(id))
+        if (allDone) {
+          setStep(steps[idx + 2]?.key || next)
+          return
+        }
+      }
+
+      setStep(next)
     }
   }
 
@@ -208,6 +256,12 @@ export default function OnboardingPage() {
 
   const skipAndGoToDashboard = async () => {
     try {
+      await persistSetupProgress(completedSetupSteps)
+      await fetch('/api/users/setup-progress', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ setupDismissed: true })
+      })
       await completeOnboarding()
       router.push('/dashboard')
     } catch {
@@ -533,6 +587,58 @@ export default function OnboardingPage() {
             </div>
           )}
 
+          {step === 'class-setup' && (
+            <div className={styles.stepContent}>
+              <h2>Set Up Your Space</h2>
+              <p>Based on your account types, here are the best ways to get started on XistrYmemZ.</p>
+              {getClassGuides(userClass.split(',').map(c => c.trim()).filter(Boolean)).map(guide => (
+                <div key={guide.icon} className={styles.classSection}>
+                  <div className={styles.classSectionHeader}>
+                    <span style={{ fontSize: '1.5rem' }}>{guide.icon}</span>
+                    <div>
+                      <h3 style={{ margin: 0 }}>{guide.subtitle}</h3>
+                    </div>
+                  </div>
+                  <div className={styles.setupGrid}>
+                    {guide.steps.map(step => {
+                      const done = completedSetupSteps.includes(step.id)
+                      return (
+                        <div key={step.id} className={`${styles.setupCard} ${done ? styles.setupCardDone : ''}`}>
+                          <div className={styles.setupCardHeader}>
+                            <span style={{ fontSize: '1.3rem' }}>{step.icon}</span>
+                            <div style={{ flex: 1 }}>
+                              <strong>{step.title}</strong>
+                              <p className={styles.setupCardDesc}>{step.description}</p>
+                            </div>
+                            {done ? (
+                              <span className={styles.setupCheck}>✓</span>
+                            ) : (
+                              <button
+                                type="button"
+                                className={styles.setupBtn}
+                                onClick={(e) => { e.stopPropagation(); toggleSetupStep(step.id); window.open(step.href, '_self') }}
+                              >
+                                Start
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
+              <div className={styles.actionBtns}>
+                <button onClick={() => { persistSetupProgress(completedSetupSteps); nextStep() }} className={styles.primaryBtn}>
+                  Continue
+                </button>
+                <button onClick={skipAndGoToDashboard} className={styles.secondaryBtn}>
+                  Skip for now
+                </button>
+              </div>
+            </div>
+          )}
+
           {step === 'tour' && (
             <div className={styles.stepContent}>
               <h2>Explore XistrYmemZ</h2>
@@ -662,17 +768,32 @@ export default function OnboardingPage() {
               <h2>You&apos;re All Set, {displayName}!</h2>
               <p>
                 Your profile is ready and you&apos;re now part of the XistrYmemZ community.
-                Here&apos;s where to go from here:
               </p>
               
-              <div className={styles.nextSteps}>
-                <h3>Recommended Next Steps:</h3>
+              {getClassGuides(userClass.split(',').map(c => c.trim()).filter(Boolean)).length > 0 && (
+                <div className={styles.nextSteps}>
+                  <h3>Your Personalized Next Steps:</h3>
+                  <div className={styles.completeStepsGrid}>
+                    {getClassGuides(userClass.split(',').map(c => c.trim()).filter(Boolean)).flatMap(g => g.steps).map(step => (
+                      <Link key={step.id} href={step.href} className={styles.completeStepCard} onClick={(e) => e.stopPropagation()}>
+                        <span style={{ fontSize: '1.3rem' }}>{step.icon}</span>
+                        <div>
+                          <strong>{step.title}</strong>
+                          <p>{step.description}</p>
+                        </div>
+                        <span className={styles.completeStepArrow}>→</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              <div className={styles.nextSteps} style={{ marginTop: 24 }}>
+                <h3>General Tips:</h3>
                 <ul>
-                  <li>Post something on the <strong>Feed</strong> to introduce yourself</li>
-                  <li>Browse the <strong>Marketplace</strong> to find products and services</li>
-                  <li>Create a <strong>Project</strong> to organize your goals</li>
+                  <li>Post on the <strong>Feed</strong> to introduce yourself</li>
+                  <li>Browse the <strong>Marketplace</strong> to find what you need</li>
                   <li>Explore the <strong>Community</strong> to connect with others</li>
-                  <li>Set up a <strong>Shop</strong> or <strong>School</strong> when you&apos;re ready to sell or teach</li>
                 </ul>
               </div>
               

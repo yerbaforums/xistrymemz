@@ -41,6 +41,22 @@ export async function GET(
       liked = !!like
     }
 
+    const replyCount = await prisma.post.count({
+      where: { parentId: id }
+    })
+
+    const repostCount = await prisma.postRepost.count({
+      where: { originalPostId: id }
+    })
+
+    let reposted = false
+    if (session?.user?.id) {
+      const repost = await prisma.postRepost.findUnique({
+        where: { userId_originalPostId: { userId: session.user.id, originalPostId: id } }
+      })
+      reposted = !!repost
+    }
+
     const replies = await prisma.post.findMany({
       where: { parentId: id },
       include: {
@@ -51,7 +67,7 @@ export async function GET(
       orderBy: { createdAt: 'asc' }
     })
 
-    return NextResponse.json({ post, likes: likesCount, liked, replies })
+    return NextResponse.json({ post, likes: likesCount, liked, replyCount, repostCount, reposted, replies })
   } catch (error) {
     console.error('Error fetching post:', error)
     return NextResponse.json({ error: 'Failed to fetch post' }, { status: 500 })
@@ -71,7 +87,7 @@ export async function PUT(
 
     const { id } = await params
     const body = await request.json()
-    const { likes } = body
+    const { likes, content } = body
 
     const post = await prisma.post.findUnique({
       where: { id }
@@ -88,6 +104,7 @@ export async function PUT(
     const updated = await prisma.post.update({
       where: { id },
       data: {
+        content: content !== undefined ? content : post.content,
         likes: likes !== undefined ? likes : post.likes
       },
       include: {

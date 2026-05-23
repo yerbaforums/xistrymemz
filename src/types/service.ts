@@ -83,4 +83,5 @@ export interface ServiceOffering {
   }
   createdAt: string
   updatedAt: string
+  viewCount?: number
 }

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { serviceOfferingSchema, validateBody } from '@/lib/schemas'
+import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 
 export const dynamic = 'force-dynamic'
 
@@ -74,6 +75,9 @@ export async function POST(request: NextRequest) {
         meetingLink: parsed.data.meetingLink || null,
         imageUrl: parsed.data.imageUrl || null,
         isActive: parsed.data.isActive ?? true,
+        acceptsDonations: parsed.data.acceptsDonations ?? false,
+        ...donationAddressesToLegacy((parsed.data.acceptsDonations ? (parsed.data.selectedDonationAddrs || []) : []) as any),
+        donationAddresses: serializeDonationAddresses((parsed.data.acceptsDonations ? parsed.data.selectedDonationAddrs || [] : []) as any) as any,
         userId: session.user.id,
       },
       include: {

@@ -38,6 +38,7 @@ export interface Product {
   hashtags?: { id: string; tag: string }[]
   createdAt: string
   updatedAt: string
+  viewCount?: number
 }
 
 export interface DonationAddr {
