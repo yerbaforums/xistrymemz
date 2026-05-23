@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
 
     const original = await prisma.post.findUnique({
       where: { id: postId },
-      select: { content: true, userId: true },
+      select: { id: true, userId: true },
     })
 
     if (!original) {
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     const post = await prisma.post.create({
       data: {
-        content: original.content,
+        content: '',
         userId: session.user.id,
         context: 'REPOST',
         referenceType: 'POST',

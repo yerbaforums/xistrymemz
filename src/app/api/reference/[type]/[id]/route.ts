@@ -8,7 +8,7 @@ export async function GET(
   try {
     const { type, id } = await params
 
-    let item: { id: string; title: string; image: string | null } | null = null
+    let item: Record<string, unknown> | null = null
 
     switch (type) {
       case 'PRODUCT': {
@@ -37,7 +37,15 @@ export async function GET(
           include: { user: { select: { id: true, name: true, image: true, username: true } } }
         })
         if (post) {
-          item = { id: post.id, title: post.content, image: post.imageUrl || null }
+          item = {
+            id: post.id,
+            title: post.content,
+            content: post.content,
+            image: post.imageUrl || null,
+            images: post.images,
+            user: post.user,
+            createdAt: post.createdAt.toISOString(),
+          }
         }
         break
       }

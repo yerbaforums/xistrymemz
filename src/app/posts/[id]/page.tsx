@@ -18,6 +18,7 @@ interface PostData {
   createdAt: string
   userId: string
   likes: number
+  context?: string | null
   referenceType?: string | null
   referenceId?: string | null
   referenceTitle?: string | null
@@ -70,6 +71,7 @@ export default function PostPage() {
   }
 
   const imageList = post.images ? (() => { try { const p = JSON.parse(post.images); return Array.isArray(p) ? p : [] } catch { return [] } })() : []
+  const isRepost = post.context === 'REPOST'
 
   return (
     <div style={{ maxWidth: 640, margin: '0 auto', padding: '24px 16px' }}>
@@ -83,6 +85,34 @@ export default function PostPage() {
         borderRadius: 12,
         padding: 20,
       }}>
+        {isRepost ? (
+          <>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontSize: '0.75rem', color: 'var(--text-secondary)',
+              marginBottom: 12,
+            }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+              </svg>
+              <span>
+                Reposted by <strong>{post.user.name || 'Unknown'}</strong>
+                {post.user.username && <span style={{ color: 'var(--text-muted)' }}> @{post.user.username}</span>}
+              </span>
+              <span style={{ marginLeft: 'auto', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                {new Date(post.createdAt).toLocaleDateString()}
+              </span>
+            </div>
+            {post.referenceType && post.referenceId && (
+              <SharedItemCard
+                referenceType={post.referenceType}
+                referenceId={post.referenceId}
+                referenceTitle={post.referenceTitle}
+              />
+            )}
+          </>
+        ) : (
+          <>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
           <Link href={getUserProfileUrl({ id: post.user.id, username: post.user.username })} style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: 'inherit' }}>
             <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-tertiary)', position: 'relative' }}>
@@ -117,6 +147,8 @@ export default function PostPage() {
             referenceId={post.referenceId}
             referenceTitle={post.referenceTitle}
           />
+        )}
+        </>
         )}
 
         <div style={{ marginTop: 12 }}>

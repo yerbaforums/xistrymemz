@@ -63,9 +63,35 @@ export default function FeedItem({ post }: { post: FeedPost }) {
   const borderStyle = contextKey === 'GROUPPOST' || contextKey === 'FORUMPOST'
     ? {}
     : { borderLeft: `4px solid var(--context-${contextKey.toLowerCase()})` }
+  const isRepost = contextKey === 'REPOST'
 
   return (
     <div className={`${styles.item} ${styles[ctxConfig.className] || ''}`} style={borderStyle}>
+      {isRepost ? (
+        <div style={{ paddingBottom: 4 }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            fontSize: '0.75rem', color: 'var(--text-secondary)',
+            marginBottom: 8,
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+            </svg>
+            <span>
+              Reposted by <strong>{post.user.name || 'Unknown'}</strong>
+              {post.user.username && <span style={{ color: 'var(--text-muted)' }}> @{post.user.username}</span>}
+            </span>
+          </div>
+          {post.referenceType && post.referenceId && (
+            <SharedItemCard
+              referenceType={post.referenceType}
+              referenceId={post.referenceId}
+              referenceTitle={post.referenceTitle}
+            />
+          )}
+        </div>
+      ) : (
+        <>
       <div className={styles.header}>
         <Link href={getUserProfileUrl(post.user)} className={styles.userLink}>
           <div className={styles.avatar}>
@@ -129,6 +155,8 @@ export default function FeedItem({ post }: { post: FeedPost }) {
           referenceId={post.referenceId}
           referenceTitle={post.referenceTitle}
         />
+      )}
+      </>
       )}
       {post.sourceType === 'POST' && post.userId && (
         <div style={{ marginTop: 8 }}>
