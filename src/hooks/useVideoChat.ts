@@ -31,15 +31,22 @@ export function useVideoChat(roomId?: string, currentUserId?: string) {
   const [peers, setPeers] = useState<Peer[]>([])
   const [error, setError] = useState('')
   const [connecting, setConnecting] = useState(false)
+  const [audioEnabled, setAudioEnabled] = useState(true)
+  const [videoEnabled, setVideoEnabled] = useState(true)
+  const [isScreenSharing, setIsScreenSharing] = useState(false)
+
   const peersRef = useRef<Map<string, Peer>>(new Map())
   const signalTimerRef = useRef<NodeJS.Timeout | null>(null)
   const localStreamRef = useRef<MediaStream | null>(null)
+  const originalVideoTrackRef = useRef<MediaStreamTrack | null>(null)
+  const screenStreamRef = useRef<MediaStream | null>(null)
 
   const getLocalStream = useCallback(async () => {
     if (localStreamRef.current) return localStreamRef.current
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
       localStreamRef.current = stream
+      originalVideoTrackRef.current = stream.getVideoTracks()[0] || null
       setLocalStream(stream)
       return stream
     } catch (err: any) {
@@ -53,6 +60,82 @@ export function useVideoChat(roomId?: string, currentUserId?: string) {
       return null
     }
   }, [])
+
+  const replaceVideoTrackForAllPeers = useCallback((newTrack: MediaStreamTrack) => {
+    for (const [, entry] of peersRef.current) {
+      const senders = entry.peer?.senders || []
+      try {
+        const sender = entry.peer._pc?.getSenders?.()?.find((s: any) => s.track?.kind === 'video')
+        if (sender) sender.replaceTrack(newTrack)
+      } catch {}
+    }
+  }, [])
+
+  const toggleAudio = useCallback(() => {
+    if (!localStreamRef.current) return
+    const newState = !audioEnabled
+    localStreamRef.current.getAudioTracks().forEach(t => { t.enabled = newState })
+    setAudioEnabled(newState)
+  }, [audioEnabled])
+
+  const toggleVideo = useCallback(() => {
+    if (!localStreamRef.current) return
+    if (isScreenSharing) return
+    const newState = !videoEnabled
+    localStreamRef.current.getVideoTracks().forEach(t => { t.enabled = newState })
+    setVideoEnabled(newState)
+  }, [videoEnabled, isScreenSharing])
+
+  const toggleScreenShare = useCallback(async () => {
+    if (!localStreamRef.current) return
+
+    if (isScreenSharing) {
+      if (originalVideoTrackRef.current) {
+        const sender = localStreamRef.current.getVideoTracks()[0]
+        if (sender) localStreamRef.current.removeTrack(sender)
+        localStreamRef.current.addTrack(originalVideoTrackRef.current)
+        replaceVideoTrackForAllPeers(originalVideoTrackRef.current)
+      }
+      if (screenStreamRef.current) {
+        screenStreamRef.current.getTracks().forEach(t => t.stop())
+        screenStreamRef.current = null
+      }
+      setIsScreenSharing(false)
+      setVideoEnabled(true)
+      setLocalStream(new MediaStream(localStreamRef.current.getTracks()))
+    } else {
+      try {
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true })
+        screenStreamRef.current = screenStream
+        const screenTrack = screenStream.getVideoTracks()[0]
+        const oldTrack = localStreamRef.current.getVideoTracks()[0]
+        if (oldTrack) {
+          if (!originalVideoTrackRef.current) originalVideoTrackRef.current = oldTrack
+          localStreamRef.current.removeTrack(oldTrack)
+        }
+        localStreamRef.current.addTrack(screenTrack)
+        replaceVideoTrackForAllPeers(screenTrack)
+        setVideoEnabled(true)
+        setIsScreenSharing(true)
+        setLocalStream(new MediaStream(localStreamRef.current.getTracks()))
+
+        screenTrack.onended = () => {
+          if (originalVideoTrackRef.current) {
+            localStreamRef.current!.removeTrack(screenTrack)
+            localStreamRef.current!.addTrack(originalVideoTrackRef.current)
+            replaceVideoTrackForAllPeers(originalVideoTrackRef.current)
+            setLocalStream(new MediaStream(localStreamRef.current!.getTracks()))
+            originalVideoTrackRef.current = null
+          }
+          screenStreamRef.current = null
+          setIsScreenSharing(false)
+          setVideoEnabled(true)
+        }
+      } catch {
+        // user cancelled screen share
+      }
+    }
+  }, [isScreenSharing, replaceVideoTrackForAllPeers])
 
   const pollSignals = useCallback(async (since: number): Promise<number> => {
     if (!roomId) return since
@@ -173,15 +256,13 @@ export function useVideoChat(roomId?: string, currentUserId?: string) {
       return
     }
 
-    // Create peers for all other participants
     for (const p of room.participants) {
-      if (p.userId === currentUserId) continue // skip self
+      if (p.userId === currentUserId) continue
       if (peersRef.current.has(p.userId)) continue
       const isInitiator = currentUserId === room.createdBy.id
       createPeer(p.userId, isInitiator, stream)
     }
 
-    // Start polling for signals
     let since = Date.now()
     const poll = async () => {
       since = await pollSignals(since)
@@ -198,19 +279,27 @@ export function useVideoChat(roomId?: string, currentUserId?: string) {
       signalTimerRef.current = null
     }
 
-    // Close all peers
-    for (const [id, entry] of peersRef.current) {
+    for (const [, entry] of peersRef.current) {
       entry.peer.destroy()
     }
     peersRef.current.clear()
     setPeers([])
 
-    // Stop local stream
+    if (screenStreamRef.current) {
+      screenStreamRef.current.getTracks().forEach(t => t.stop())
+      screenStreamRef.current = null
+    }
+
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(t => t.stop())
       localStreamRef.current = null
+      originalVideoTrackRef.current = null
       setLocalStream(null)
     }
+
+    setIsScreenSharing(false)
+    setAudioEnabled(true)
+    setVideoEnabled(true)
 
     if (roomId) {
       try {
@@ -227,6 +316,9 @@ export function useVideoChat(roomId?: string, currentUserId?: string) {
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach(t => t.stop())
       }
+      if (screenStreamRef.current) {
+        screenStreamRef.current.getTracks().forEach(t => t.stop())
+      }
     }
   }, [])
 
@@ -236,10 +328,16 @@ export function useVideoChat(roomId?: string, currentUserId?: string) {
     peers,
     error,
     connecting,
+    audioEnabled,
+    videoEnabled,
+    isScreenSharing,
     createRoom,
     joinRoom,
     startCall,
     leaveRoom,
     setRoom,
+    toggleAudio,
+    toggleVideo,
+    toggleScreenShare,
   }
 }

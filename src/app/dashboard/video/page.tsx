@@ -19,7 +19,7 @@ export default function VideoChatPage() {
   const [loading, setLoading] = useState(true)
   const [activeRoomId, setActiveRoomId] = useState<string | null>(null)
   const [inviteCode, setInviteCode] = useState<string | undefined>(undefined)
-  const [showModal, setShowModal] = useState(false)
+  const [showCall, setShowCall] = useState(false)
   const [joinInput, setJoinInput] = useState('')
   const [error, setError] = useState('')
 
@@ -28,8 +28,8 @@ export default function VideoChatPage() {
     const invite = params.get('invite')
     if (invite) {
       setJoinInput(invite)
-      setShowModal(true)
       setInviteCode(invite)
+      setShowCall(true)
     }
     fetchRooms()
   }, [])
@@ -47,8 +47,9 @@ export default function VideoChatPage() {
   }
 
   const handleCreateRoom = async () => {
-    setShowModal(true)
+    setActiveRoomId(null)
     setInviteCode(undefined)
+    setShowCall(true)
   }
 
   const handleJoinRoom = () => {
@@ -59,18 +60,20 @@ export default function VideoChatPage() {
     }
     const extracted = code.includes('invite=') ? code.split('invite=')[1].split('&')[0] : code
     setInviteCode(extracted)
-    setShowModal(true)
+    setShowCall(true)
   }
 
-  const handleCloseModal = () => {
-    setShowModal(false)
+  const handleJoinExisting = (room: RoomSummary) => {
+    setActiveRoomId(room.id)
+    setInviteCode(undefined)
+    setShowCall(true)
+  }
+
+  const handleCloseCall = () => {
+    setShowCall(false)
     setActiveRoomId(null)
     setInviteCode(undefined)
     fetchRooms()
-  }
-
-  if (showModal) {
-    return <VideoChatModal roomId={activeRoomId || undefined} inviteCode={inviteCode} onClose={handleCloseModal} />
   }
 
   return (
@@ -98,6 +101,17 @@ export default function VideoChatPage() {
         </div>
       </div>
       {error && <p className={styles.error}>{error}</p>}
+
+      {showCall && (
+        <div className={styles.callContainer}>
+          <VideoChatModal
+            roomId={activeRoomId || undefined}
+            inviteCode={inviteCode}
+            onClose={handleCloseCall}
+            mode="inline"
+          />
+        </div>
+      )}
 
       <div className={styles.section}>
         <h2>Your Active Rooms</h2>
@@ -129,7 +143,7 @@ export default function VideoChatPage() {
                   </div>
                 </div>
                 <button
-                  onClick={() => { setActiveRoomId(r.id); setShowModal(true) }}
+                  onClick={() => handleJoinExisting(r)}
                   className={styles.joinBtn}
                 >
                   Join

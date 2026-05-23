@@ -42,6 +42,12 @@ export async function GET(request: Request) {
       })
       recentEvents.forEach(h => trendingIds.add(h.hashtagId))
 
+      const recentServices = await prisma.serviceOfferingHashtag.findMany({
+        where: { createdAt: { gte: sevenDaysAgo } },
+        select: { hashtagId: true }
+      })
+      recentServices.forEach(h => trendingIds.add(h.hashtagId))
+
       if (trendingIds.size === 0) {
         return NextResponse.json({ hashtags: [] })
       }
@@ -73,17 +79,18 @@ export async function GET(request: Request) {
 
 async function enrichWithCounts(hashtags: { id: string; tag: string; postCount: number }[]) {
   return Promise.all(hashtags.map(async h => {
-    const [posts, products, events, forumPosts, groupPosts] = await Promise.all([
+    const [posts, products, events, forumPosts, groupPosts, services] = await Promise.all([
       prisma.postHashtag.count({ where: { hashtagId: h.id, sourceType: 'POST' } }),
       prisma.productHashtag.count({ where: { hashtagId: h.id } }),
       prisma.eventHashtag.count({ where: { hashtagId: h.id } }),
       prisma.postHashtag.count({ where: { hashtagId: h.id, sourceType: 'FORUMPOST' } }),
       prisma.postHashtag.count({ where: { hashtagId: h.id, sourceType: 'GROUPPOST' } }),
+      prisma.serviceOfferingHashtag.count({ where: { hashtagId: h.id } }),
     ])
     return {
       tag: h.tag,
       postCount: h.postCount,
-      entities: { posts, products, events, forumPosts, groupPosts }
+      entities: { posts, products, events, forumPosts, groupPosts, services }
     }
   }))
 }

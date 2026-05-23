@@ -8,7 +8,7 @@ import { useToast } from '@/context/ToastContext'
 import { MakeOfferModal } from '@/components/MakeOfferModal'
 import { getUserProfileUrl } from '@/lib/utils'
 import { getCryptoIcon, getCryptoName } from '@/lib/crypto-icons'
-import ShareToPostModal from '@/components/ShareToPostModal'
+import ShareSection from '@/components/ShareSection'
 import ViewCount from '@/components/ViewCount'
 import { useRecordView } from '@/hooks/useRecordView'
 
@@ -161,7 +161,6 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
   useRecordView('request', initialRequest?.id || '')
   const [comment, setComment] = useState('')
   const [loading, setLoading] = useState(false)
-  const [showShareModal, setShowShareModal] = useState(false)
   const [showCompleteModal, setShowCompleteModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showHistoryModal, setShowHistoryModal] = useState(false)
@@ -906,9 +905,14 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
           )}
 
           <div className={styles.quickActions} style={{ marginTop: 8 }}>
-            <button onClick={() => setShowShareModal(true)} className={styles.actionBtn}>
-              📝 Share via Post
-            </button>
+            <ShareSection
+              title={request.title}
+              description={request.description}
+              referenceType="REQUEST"
+              referenceId={request.id}
+              referenceTitle={request.title}
+              referenceImage={request.imageUrl}
+            />
           </div>
 
           {canRollback && (
@@ -1375,14 +1379,6 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
         listingTitle={request.title}
         listingType="REQUEST"
         listingOwnerName={request.user.name || undefined}
-      />
-
-      <ShareToPostModal
-        isOpen={showShareModal}
-        onClose={() => setShowShareModal(false)}
-        referenceType="REQUEST"
-        referenceId={request.id}
-        referenceTitle={request.title}
       />
     </div>
   )

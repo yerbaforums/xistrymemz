@@ -84,4 +84,11 @@ export interface ServiceOffering {
   createdAt: string
   updatedAt: string
   viewCount?: number
+  acceptsAppointments?: boolean
+  appointmentDuration?: number | null
+  appointmentLeadTime?: number | null
+  appointmentLocation?: string | null
+  appointmentMeetingLink?: string | null
+  appointmentFormFields?: { label: string; type: string; required: boolean }[] | null
+  hashtags?: { id: string; hashtag: { id: string; tag: string } }[]
 }

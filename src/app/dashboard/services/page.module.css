@@ -44,4 +44,12 @@
 .unpublishBtn:hover { border-color: #f90; color: #f90; }
 .deleteShopBtn { padding: 10px 20px; background: transparent; border: 1px solid #f44; border-radius: var(--radius-md); color: #f44; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: var(--transition); }
 .deleteShopBtn:hover { background: #f44; color: white; }
+.appointmentFields {
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+}
+
 @media (max-width: 768px) { .item { flex-direction: column; } .itemActions { flex-direction: row; flex-wrap: wrap; } .header { flex-direction: column; } .headerActions { width: 100%; justify-content: flex-start; } }

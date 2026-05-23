@@ -1,24 +1,30 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useVideoChat } from '@/hooks/useVideoChat'
+import styles from './VideoChatModal.module.css'
 
 interface VideoChatModalProps {
   roomId?: string
   inviteCode?: string
   onClose: () => void
+  mode?: 'modal' | 'inline'
 }
 
-export default function VideoChatModal({ roomId: initialRoomId, inviteCode, onClose }: VideoChatModalProps) {
+export default function VideoChatModal({ roomId: initialRoomId, inviteCode, onClose, mode = 'modal' }: VideoChatModalProps) {
   const { data: session } = useSession()
   const {
     room, localStream, peers, error, connecting,
-    createRoom, joinRoom, startCall, leaveRoom
+    audioEnabled, videoEnabled, isScreenSharing,
+    createRoom, joinRoom, startCall, leaveRoom,
+    toggleAudio, toggleVideo, toggleScreenShare
   } = useVideoChat(initialRoomId, session?.user?.id)
 
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const joinedRef = useRef(false)
+  const [isFullscreen, setIsFullscreen] = useState(mode === 'modal')
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (inviteCode && !joinedRef.current && !room) {
@@ -52,29 +58,45 @@ export default function VideoChatModal({ roomId: initialRoomId, inviteCode, onCl
     }
   }
 
+  const toggleFullscreen = () => {
+    if (!containerRef.current) return
+    if (!document.fullscreenElement) {
+      containerRef.current.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {})
+    } else {
+      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {})
+    }
+  }
+
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement)
+    document.addEventListener('fullscreenchange', handler)
+    return () => document.removeEventListener('fullscreenchange', handler)
+  }, [])
+
+  const wrapperClass = mode === 'modal'
+    ? styles.modalOverlay
+    : isFullscreen
+      ? styles.modalOverlay
+      : styles.inlineContainer
+
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 9999,
-      background: '#0a0a0a', display: 'flex', flexDirection: 'column',
-    }}>
+    <div ref={containerRef} className={wrapperClass}>
       {error && (
-        <div style={{
-          padding: 12, margin: 8, borderRadius: 8, background: 'rgba(239,68,68,0.15)',
-          color: '#ef4444', fontSize: '0.85rem',
-        }}>
-          {error}
-        </div>
+        <div className={styles.error}>{error}</div>
       )}
 
-      <div style={{
-        flex: 1, display: 'flex', flexWrap: 'wrap', gap: 8, padding: 8, alignContent: 'center', justifyContent: 'center',
-      }}>
+      <div className={styles.videoGrid}>
         {localStream && (
-          <div style={{ position: 'relative', width: 320, height: 240, borderRadius: 8, overflow: 'hidden', background: '#1a1a1a' }}>
+          <div className={styles.videoTile}>
             <video ref={localVideoRef} autoPlay playsInline muted
-              style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }} />
-            <span style={{ position: 'absolute', bottom: 6, left: 8, fontSize: '0.7rem', color: '#fff', background: 'rgba(0,0,0,0.5)', padding: '2px 8px', borderRadius: 4 }}>
-              You
+              className={`${styles.video} ${!videoEnabled && !isScreenSharing ? styles.videoOff : ''}`}
+              style={{ transform: isScreenSharing ? 'none' : 'scaleX(-1)' }} />
+            {!videoEnabled && !isScreenSharing && (
+              <div className={styles.videoPlaceholder}>📹 Camera Off</div>
+            )}
+            <span className={styles.videoLabel}>
+              {isScreenSharing ? '🖥️ Screen' : 'You'}
+              {!audioEnabled && ' 🔇'}
             </span>
           </div>
         )}
@@ -82,29 +104,45 @@ export default function VideoChatModal({ roomId: initialRoomId, inviteCode, onCl
           <PeerVideo key={p.userId} peer={p} />
         ))}
         {connecting && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 320, height: 240, borderRadius: 8, background: '#1a1a1a', color: '#888', fontSize: '0.85rem' }}>
-            Connecting...
-          </div>
+          <div className={styles.connectingTile}>Connecting...</div>
         )}
       </div>
 
-      <div style={{
-        padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
-        borderTop: '1px solid #222',
-      }}>
+      <div className={styles.controls}>
+        <button
+          onClick={toggleAudio}
+          className={`${styles.controlBtn} ${!audioEnabled ? styles.controlOff : ''}`}
+          title={audioEnabled ? 'Mute microphone' : 'Unmute microphone'}
+        >
+          {audioEnabled ? '🎤' : '🔇'}
+        </button>
+        <button
+          onClick={toggleVideo}
+          className={`${styles.controlBtn} ${!videoEnabled ? styles.controlOff : ''}`}
+          title={videoEnabled ? 'Turn off camera' : 'Turn on camera'}
+          disabled={isScreenSharing}
+        >
+          {videoEnabled ? '📹' : '📷'}
+        </button>
+        <button
+          onClick={toggleScreenShare}
+          className={`${styles.controlBtn} ${isScreenSharing ? styles.controlActive : ''}`}
+          title={isScreenSharing ? 'Stop sharing screen' : 'Share screen'}
+        >
+          {isScreenSharing ? '🖥️✓' : '🖥️'}
+        </button>
         {room?.inviteCode && (
-          <button onClick={copyInvite} style={{
-            padding: '8px 16px', borderRadius: 8, border: '1px solid #333', background: '#1a1a1a',
-            color: '#ccc', cursor: 'pointer', fontSize: '0.8rem',
-          }}>
-            📋 Copy Invite Link
+          <button onClick={copyInvite} className={styles.controlBtn} title="Copy invite link">
+            📋 Invite
           </button>
         )}
-        <button onClick={handleEndCall} style={{
-          padding: '10px 28px', borderRadius: 24, border: 'none', background: '#ef4444',
-          color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem',
-        }}>
-          🔴 End Call
+        {mode === 'inline' && (
+          <button onClick={toggleFullscreen} className={styles.controlBtn} title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}>
+            {isFullscreen ? '◧' : '◨'}
+          </button>
+        )}
+        <button onClick={handleEndCall} className={styles.endCallBtn} title="End call">
+          🔴 End
         </button>
       </div>
     </div>
@@ -121,18 +159,13 @@ function PeerVideo({ peer }: { peer: any }) {
   }, [peer.stream])
 
   return (
-    <div style={{ position: 'relative', width: 320, height: 240, borderRadius: 8, overflow: 'hidden', background: '#1a1a1a' }}>
+    <div className={styles.videoTile}>
       {peer.stream ? (
-        <video ref={videoRef} autoPlay playsInline
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <video ref={videoRef} autoPlay playsInline className={styles.video} />
       ) : (
-        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', fontSize: '0.8rem' }}>
-          Connecting...
-        </div>
+        <div className={styles.videoPlaceholder}>Connecting...</div>
       )}
-      <span style={{ position: 'absolute', bottom: 6, left: 8, fontSize: '0.7rem', color: '#fff', background: 'rgba(0,0,0,0.5)', padding: '2px 8px', borderRadius: 4 }}>
-        {peer.userId.slice(0, 8)}
-      </span>
+      <span className={styles.videoLabel}>{peer.userId.slice(0, 8)}</span>
     </div>
   )
 }

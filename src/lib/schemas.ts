@@ -106,6 +106,16 @@ export const serviceOfferingSchema = z.object({
     showQR: z.boolean().optional(),
     sortOrder: z.number().optional(),
   })).optional(),
+  acceptsAppointments: z.boolean().optional(),
+  appointmentDuration: z.coerce.number().int().min(5).optional().nullable(),
+  appointmentLeadTime: z.coerce.number().int().min(0).optional().nullable(),
+  appointmentLocation: z.string().max(200).optional().nullable(),
+  appointmentMeetingLink: z.string().url().optional().nullable().or(z.literal('')),
+  appointmentFormFields: z.array(z.object({
+    label: z.string().min(1),
+    type: z.enum(['text', 'textarea']),
+    required: z.boolean()
+  })).optional().nullable(),
 })
 
 export const groupSchema = z.object({

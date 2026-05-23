@@ -7,7 +7,7 @@ import { useToast } from '@/context/ToastContext'
 interface ShareToPostModalProps {
   isOpen: boolean
   onClose: () => void
-  referenceType: 'PRODUCT' | 'EVENT' | 'REQUEST' | 'PLAN' | 'SCHOOLCONTENT' | 'FORUMPOST' | 'GROUP' | 'SHOP' | 'SCHOOL'
+  referenceType: 'PRODUCT' | 'SERVICE' | 'EVENT' | 'REQUEST' | 'PLAN' | 'SCHOOLCONTENT' | 'FORUMPOST' | 'GROUP' | 'SHOP' | 'SCHOOL'
   referenceId: string
   referenceTitle: string
   referenceImage?: string | null

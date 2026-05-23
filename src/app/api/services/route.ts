@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { serviceOfferingSchema, validateBody } from '@/lib/schemas'
 import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
+import { extractHashtags } from '@/lib/hashtags'
 
 export const dynamic = 'force-dynamic'
 
@@ -78,12 +79,37 @@ export async function POST(request: NextRequest) {
         acceptsDonations: parsed.data.acceptsDonations ?? false,
         ...donationAddressesToLegacy((parsed.data.acceptsDonations ? (parsed.data.selectedDonationAddrs || []) : []) as any),
         donationAddresses: serializeDonationAddresses((parsed.data.acceptsDonations ? parsed.data.selectedDonationAddrs || [] : []) as any) as any,
+        acceptsAppointments: parsed.data.acceptsAppointments ?? false,
+        appointmentDuration: parsed.data.appointmentDuration || null,
+        appointmentLeadTime: parsed.data.appointmentLeadTime || null,
+        appointmentLocation: parsed.data.appointmentLocation || null,
+        appointmentMeetingLink: parsed.data.appointmentMeetingLink || null,
+        appointmentFormFields: parsed.data.appointmentFormFields || undefined,
         userId: session.user.id,
       },
       include: {
         user: { select: { id: true, name: true, image: true, username: true } },
       },
     })
+
+    // Extract hashtags from title + description
+    const allTags = [...new Set(extractHashtags([parsed.data.title, parsed.data.description || ''].join(' ')))]
+    if (allTags.length > 0) {
+      await Promise.all(allTags.map(async tag => {
+        const hashtag = await prisma.hashtag.upsert({
+          where: { tag },
+          create: { tag, postCount: 0 },
+          update: {},
+        })
+        await prisma.serviceOfferingHashtag.create({
+          data: { serviceOfferingId: service.id, hashtagId: hashtag.id, sourceType: 'SERVICE' },
+        }).catch(() => {})
+        await prisma.hashtag.update({
+          where: { id: hashtag.id },
+          data: { postCount: { increment: 1 } },
+        })
+      }))
+    }
 
     return NextResponse.json({ service }, { status: 201 })
   } catch (error) {

@@ -20,20 +20,21 @@ export async function GET(
     if (!hashtag) {
       return NextResponse.json({
         tag,
-        totals: { posts: 0, products: 0, events: 0, forumPosts: 0, groupPosts: 0 },
+        totals: { posts: 0, products: 0, events: 0, forumPosts: 0, groupPosts: 0, services: 0 },
         data: {}
       })
     }
 
-    const [postCount, productCount, eventCount, forumPostCount, groupPostCount] = await Promise.all([
+    const [postCount, productCount, eventCount, forumPostCount, groupPostCount, serviceCount] = await Promise.all([
       prisma.postHashtag.count({ where: { hashtagId: hashtag.id, sourceType: 'POST' } }),
       prisma.productHashtag.count({ where: { hashtagId: hashtag.id } }),
       prisma.eventHashtag.count({ where: { hashtagId: hashtag.id } }),
       prisma.postHashtag.count({ where: { hashtagId: hashtag.id, sourceType: 'FORUMPOST' } }),
       prisma.postHashtag.count({ where: { hashtagId: hashtag.id, sourceType: 'GROUPPOST' } }),
+      prisma.serviceOfferingHashtag.count({ where: { hashtagId: hashtag.id } }),
     ])
 
-    const totals = { posts: postCount, products: productCount, events: eventCount, forumPosts: forumPostCount, groupPosts: groupPostCount }
+    const totals = { posts: postCount, products: productCount, events: eventCount, forumPosts: forumPostCount, groupPosts: groupPostCount, services: serviceCount }
 
     const data: Record<string, any> = {}
 
@@ -87,6 +88,23 @@ export async function GET(
         skip: type === 'all' ? 0 : skip,
       })
       data.events = eventHashtags.map(eh => eh.event)
+    }
+
+    if (type === 'all' || type === 'services') {
+      const serviceHashtags = await prisma.serviceOfferingHashtag.findMany({
+        where: { hashtagId: hashtag.id },
+        include: {
+          serviceOffering: {
+            include: {
+              user: { select: { id: true, name: true, image: true } }
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+        take: type === 'all' ? 4 : limit,
+        skip: type === 'all' ? 0 : skip,
+      })
+      data.services = serviceHashtags.map(sh => sh.serviceOffering)
     }
 
     if (type === 'all' || type === 'forumPosts' || type === 'posts') {

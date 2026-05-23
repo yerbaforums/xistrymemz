@@ -64,6 +64,11 @@ export async function GET(
         if (g) item = { id: g.id, title: g.name, image: g.imageUrl }
         break
       }
+      case 'SERVICE': {
+        const s = await prisma.serviceOffering.findUnique({ where: { id } })
+        if (s) item = { id: s.id, title: s.title, image: s.imageUrl }
+        break
+      }
       case 'SHOP': {
         const shopUser = await prisma.user.findFirst({ where: { shopSlug: id } })
         if (shopUser) item = { id: id, title: shopUser.shopName || 'Shop', image: shopUser.shopImage }

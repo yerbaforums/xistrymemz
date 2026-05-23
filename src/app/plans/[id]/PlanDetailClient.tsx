@@ -10,7 +10,7 @@ import PlanResources from './PlanResources'
 import PlanSupport from './PlanSupport'
 import { parseGoals, parseMilestones, parseResources, stringifyGoals, stringifyMilestones, stringifyResources } from '@/lib/plan-utils'
 import { getUserProfileUrl } from '@/lib/utils'
-import ShareToPostModal from '@/components/ShareToPostModal'
+import ShareSection from '@/components/ShareSection'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
@@ -85,7 +85,6 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
   const [editedDescription, setEditedDescription] = useState(plan.description || '')
   const [editingOverview, setEditingOverview] = useState(false)
 
-  const [showShareModal, setShowShareModal] = useState(false)
   const [showRequestModal, setShowRequestModal] = useState(false)
   const [showEventModal, setShowEventModal] = useState(false)
   const [showCalendar, setShowCalendar] = useState(false)
@@ -479,9 +478,14 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                         </div>
                       )}
                       {plan.description && <p className={styles.description}>{plan.description}</p>}
-                      <button onClick={() => setShowShareModal(true)} style={{ marginTop: 8, padding: '6px 14px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.8rem' }}>
-                        📝 Share via Post
-                      </button>
+                      <ShareSection
+                        title={plan.title}
+                        description={plan.description}
+                        referenceType="PLAN"
+                        referenceId={plan.id}
+                        referenceTitle={plan.title}
+                        referenceImage={plan.imageUrl}
+                      />
                     </div>
                   </div>
 
@@ -909,13 +913,6 @@ donationDescription={plan.donationDescription}
         </div>
       )}
 
-      <ShareToPostModal
-        isOpen={showShareModal}
-        onClose={() => setShowShareModal(false)}
-        referenceType="PLAN"
-        referenceId={plan.id}
-        referenceTitle={plan.title}
-      />
-    </div>
+      </div>
   )
 }

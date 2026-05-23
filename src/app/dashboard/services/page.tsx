@@ -41,6 +41,11 @@ const EMPTY_FORM = {
   isActive: true,
   acceptsDonations: false,
   selectedDonationAddrs: [] as DonationAddr[],
+  acceptsAppointments: false,
+  appointmentDuration: '',
+  appointmentLeadTime: '',
+  appointmentLocation: '',
+  appointmentMeetingLink: '',
 }
 
 export default function DashboardServices() {
@@ -111,6 +116,11 @@ export default function DashboardServices() {
         (s as any).donationCurrency,
         (s as any).donationAddresses
       ),
+      acceptsAppointments: (s as any).acceptsAppointments || false,
+      appointmentDuration: (s as any).appointmentDuration?.toString() || '',
+      appointmentLeadTime: (s as any).appointmentLeadTime?.toString() || '',
+      appointmentLocation: (s as any).appointmentLocation || '',
+      appointmentMeetingLink: (s as any).appointmentMeetingLink || '',
     })
     setEditingId(s.id)
     setShowForm(true)
@@ -136,6 +146,11 @@ export default function DashboardServices() {
         isActive: form.isActive,
         acceptsDonations: form.acceptsDonations,
         selectedDonationAddrs: form.selectedDonationAddrs,
+        acceptsAppointments: form.acceptsAppointments,
+        appointmentDuration: form.acceptsAppointments && form.appointmentDuration ? parseInt(form.appointmentDuration) : null,
+        appointmentLeadTime: form.acceptsAppointments && form.appointmentLeadTime ? parseInt(form.appointmentLeadTime) : null,
+        appointmentLocation: form.acceptsAppointments ? (form.appointmentLocation || null) : null,
+        appointmentMeetingLink: form.acceptsAppointments ? (form.appointmentMeetingLink || null) : null,
       }
 
       const url = editingId ? `/api/services/${editingId}` : '/api/services'
@@ -397,6 +412,39 @@ export default function DashboardServices() {
                   selectedAddresses={form.selectedDonationAddrs}
                   onAddressesChange={(addrs) => setForm({...form, selectedDonationAddrs: addrs})}
                 />
+              )}
+
+              <label className={styles.checkLabel}>
+                <input type="checkbox" checked={form.acceptsAppointments} onChange={e => setForm({...form, acceptsAppointments: e.target.checked})} />
+                Accept Appointments
+              </label>
+              {form.acceptsAppointments && (
+                <div className={styles.appointmentFields}>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Default Session Duration (min)</label>
+                      <input type="number" value={form.appointmentDuration} onChange={e => setForm({...form, appointmentDuration: e.target.value})} placeholder={form.duration.toString()} min={5} step={5} />
+                      <small style={{color: 'var(--text-secondary)'}}>Leave blank to use service duration ({form.duration} min)</small>
+                    </div>
+                    <div className="form-group">
+                      <label>Minimum Lead Time (hours)</label>
+                      <input type="number" value={form.appointmentLeadTime} onChange={e => setForm({...form, appointmentLeadTime: e.target.value})} placeholder="24" min={0} />
+                      <small style={{color: 'var(--text-secondary)'}}>How far in advance must bookings be made</small>
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group" style={{ flex: 1 }}>
+                      <label>Appointment Location Override</label>
+                      <input type="text" value={form.appointmentLocation} onChange={e => setForm({...form, appointmentLocation: e.target.value})} placeholder="Leave blank to use service location" />
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group" style={{ flex: 1 }}>
+                      <label>Appointment Meeting Link Override</label>
+                      <input type="url" value={form.appointmentMeetingLink} onChange={e => setForm({...form, appointmentMeetingLink: e.target.value})} placeholder="Leave blank to use service meeting link" />
+                    </div>
+                  </div>
+                </div>
               )}
 
               <div className={styles.formActions}>

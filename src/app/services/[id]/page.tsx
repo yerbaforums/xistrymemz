@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
+import ShareSection from '@/components/ShareSection'
 import type { ServiceOffering, ServiceCategory } from '@/types/service'
 import { SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service'
 import ViewCount from '@/components/ViewCount'
@@ -53,6 +54,7 @@ export default function ServiceDetailPage() {
   }
 
   const cat = service.category as ServiceCategory
+  const hashtags = service.hashtags || []
 
   useRecordView('service', service?.id || '')
 
@@ -82,6 +84,16 @@ export default function ServiceDetailPage() {
 
           {service.description && (
             <p className={styles.description}>{service.description}</p>
+          )}
+
+          {hashtags.length > 0 && (
+            <div className={styles.hashtags}>
+              {hashtags.map(h => (
+                <Link key={h.id} href={`/search?tag=${encodeURIComponent(h.hashtag.tag)}`} className={styles.hashtag}>
+                  #{h.hashtag.tag}
+                </Link>
+              ))}
+            </div>
           )}
 
           <div className={styles.detailsGrid}>
@@ -116,6 +128,67 @@ export default function ServiceDetailPage() {
               <div className={styles.detailValue}>{formatDuration(service.duration)}</div>
             </div>
           </div>
+
+          {service.acceptsAppointments && (
+            <div className={styles.appointmentSection}>
+              <h3 className={styles.sectionTitle}>📅 Appointment Scheduling</h3>
+              <div className={styles.detailsGrid}>
+                {service.appointmentDuration && (
+                  <div className={styles.detailCard}>
+                    <div className={styles.detailIcon}>⏱️</div>
+                    <div className={styles.detailLabel}>Session Duration</div>
+                    <div className={styles.detailValue}>{formatDuration(service.appointmentDuration)}</div>
+                  </div>
+                )}
+                {service.appointmentLeadTime != null && (
+                  <div className={styles.detailCard}>
+                    <div className={styles.detailIcon}>⏳</div>
+                    <div className={styles.detailLabel}>Lead Time</div>
+                    <div className={styles.detailValue}>{service.appointmentLeadTime}h minimum</div>
+                  </div>
+                )}
+                {service.appointmentLocation && (
+                  <div className={styles.detailCard}>
+                    <div className={styles.detailIcon}>📍</div>
+                    <div className={styles.detailLabel}>Appointment Location</div>
+                    <div className={styles.detailValue}>{service.appointmentLocation}</div>
+                  </div>
+                )}
+                {service.appointmentMeetingLink && (
+                  <div className={styles.detailCard}>
+                    <div className={styles.detailIcon}>💻</div>
+                    <div className={styles.detailLabel}>Virtual Meeting Link</div>
+                    <div className={styles.detailValue}>
+                      <a href={service.appointmentMeetingLink} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-primary)', wordBreak: 'break-all' }}>
+                        {service.appointmentMeetingLink}
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+              {service.appointmentFormFields && service.appointmentFormFields.length > 0 && (
+                <div className={styles.formFieldsInfo}>
+                  <p className={styles.formFieldsLabel}>Booking form includes:</p>
+                  <ul className={styles.formFieldsList}>
+                    {service.appointmentFormFields.map((field, idx) => (
+                      <li key={idx}>
+                        {field.label} {field.required && <span style={{ color: 'var(--accent-primary)' }}>*</span>}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          <ShareSection
+            title={service.title}
+            description={service.description}
+            referenceType="SERVICE"
+            referenceId={service.id}
+            referenceTitle={service.title}
+            referenceImage={service.imageUrl}
+          />
         </div>
 
         <aside className={styles.sidebar}>
@@ -161,9 +234,9 @@ export default function ServiceDetailPage() {
           onClose={() => setShowBooking(false)}
           sellerId={service.userId}
           sellerName={service.user.name}
-          defaultDuration={service.duration}
-          defaultLocation={service.location}
-          defaultMeetingLink={service.meetingLink}
+          defaultDuration={service.appointmentDuration || service.duration}
+          defaultLocation={service.appointmentLocation || service.location}
+          defaultMeetingLink={service.appointmentMeetingLink || service.meetingLink}
           serviceCategory={service.category}
           serviceOfferingId={service.id}
           productTitle={service.title}

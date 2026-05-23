@@ -737,6 +737,7 @@ model Hashtag {
   posts     PostHashtag[]
   products  ProductHashtag[]
   events    EventHashtag[]
+  serviceOfferings ServiceOfferingHashtag[]
 
   @@index([postCount])
   @@index([tag])
@@ -1528,11 +1529,20 @@ model ServiceOffering {
   donationCurrency  String?
   donationAddresses String?
 
+  // Appointment scheduling
+  acceptsAppointments   Boolean  @default(false)
+  appointmentDuration   Int?
+  appointmentLeadTime   Int?
+  appointmentLocation   String?
+  appointmentMeetingLink String?
+  appointmentFormFields Json?
+
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   appointments Appointment[]
   viewCount   Int      @default(0)
   contentViews ContentView[] @relation("ServiceOfferingViews")
+  hashtags    ServiceOfferingHashtag[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -1540,6 +1550,19 @@ model ServiceOffering {
   @@index([userId])
   @@index([category])
   @@index([isActive])
+}
+
+model ServiceOfferingHashtag {
+  id                String          @id @default(cuid())
+  serviceOfferingId String
+  serviceOffering   ServiceOffering @relation(fields: [serviceOfferingId], references: [id], onDelete: Cascade)
+  hashtagId         String
+  hashtag           Hashtag         @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+  sourceType        String          @default("SERVICE")
+  createdAt         DateTime        @default(now())
+
+  @@unique([serviceOfferingId, hashtagId])
+  @@index([hashtagId])
 }
 
 model Availability {

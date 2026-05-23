@@ -53,6 +53,7 @@ export default function SharedItemCard({ referenceType, referenceId, referenceTi
 
   const typeToRoute: Record<string, string> = {
     PRODUCT: 'products',
+    SERVICE: 'services',
     EVENT: 'events',
     REQUEST: 'requests',
     PLAN: 'plans',
@@ -62,7 +63,7 @@ export default function SharedItemCard({ referenceType, referenceId, referenceTi
   }
 
   const TYPE_ICONS: Record<string, string> = {
-    PRODUCT: '🛒', EVENT: '📅', REQUEST: '📋', PLAN: '📐', POST: '🔁',
+    PRODUCT: '🛒', SERVICE: '🔧', EVENT: '📅', REQUEST: '📋', PLAN: '📐', POST: '🔁',
     SCHOOLCONTENT: '📖', FORUMPOST: '💬', GROUP: '👥',
   }
 

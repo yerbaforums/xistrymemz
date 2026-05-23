@@ -227,6 +227,61 @@
   font-size: 0.85rem;
 }
 
+.hashtags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.hashtag {
+  padding: 4px 12px;
+  border-radius: 16px;
+  background: var(--bg-tertiary);
+  color: var(--accent-primary);
+  font-size: 0.8rem;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.hashtag:hover {
+  opacity: 0.8;
+}
+
+.appointmentSection {
+  margin-bottom: 24px;
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin: 0 0 12px;
+}
+
+.formFieldsInfo {
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--bg-tertiary);
+}
+
+.formFieldsLabel {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin: 0 0 6px;
+}
+
+.formFieldsList {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.formFieldsList li {
+  margin-bottom: 2px;
+}
+
 @media (max-width: 768px) {
   .page { padding: 16px; }
   .layout { flex-direction: column; }

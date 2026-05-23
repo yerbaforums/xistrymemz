@@ -11,7 +11,7 @@ import Rating from '@/components/Rating'
 import { getUserProfileUrl } from '@/lib/utils'
 import { MakeOfferModal } from '@/components/MakeOfferModal'
 import { ComingSoonModal } from '@/components/ComingSoonModal'
-import ShareToPostModal from '@/components/ShareToPostModal'
+import ShareSection from '@/components/ShareSection'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import ViewCount from '@/components/ViewCount'
@@ -164,7 +164,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [showOfferModal, setShowOfferModal] = useState(false)
   const [showCartModal, setShowCartModal] = useState(false)
-  const [showShareModal, setShowShareModal] = useState(false)
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
   const [showEscrowComingSoon, setShowEscrowComingSoon] = useState(false)
   const [showMessageModal, setShowMessageModal] = useState(false)
@@ -956,49 +955,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <ViewCount count={product.viewCount || 0} size="md" />
           </div>
 
-          <div className={styles.shareCard}>
-            <h3>🔗 Share</h3>
-            <div className={styles.shareButtons}>
-              <button
-                className={styles.shareBtn}
-                onClick={() => {
-                  navigator.clipboard.writeText(window.location.href)
-                  setCopiedShare(true)
-                  setTimeout(() => setCopiedShare(false), 2000)
-                }}
-                title="Copy link"
-              >
-                {copiedShare ? '✓ Copied!' : '📋 Copy Link'}
-              </button>
-              {typeof navigator !== 'undefined' && 'share' in navigator && (
-                <button
-                  className={styles.shareBtn}
-                  onClick={() => {
-                    navigator.share({
-                      title: product.title,
-                      text: product.description || `Check out ${product.title}`,
-                      url: window.location.href,
-                    }).catch(() => {})
-                  }}
-                  title="Share"
-                >
-                  📤 Share
-                </button>
-              )}
-              <a
-                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out ${product.title} on XistrYmemZ`)}&url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.shareBtn}
-                title="Share on X"
-              >
-                𝕏 Post
-              </a>
-              <button onClick={() => setShowShareModal(true)} className={styles.shareBtn} title="Share via Post">
-                📝 Post
-              </button>
-            </div>
-          </div>
+          <ShareSection
+            title={product.title}
+            description={product.description}
+            referenceType="PRODUCT"
+            referenceId={product.id}
+            referenceTitle={product.title}
+            referenceImage={product.imageUrl}
+          />
         </div>
       </div>
 
@@ -1305,15 +1269,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         message="Are you sure you want to delete this listing? This cannot be undone."
         confirmLabel="Delete"
         variant="danger"
-      />
-
-      <ShareToPostModal
-        isOpen={showShareModal}
-        onClose={() => setShowShareModal(false)}
-        referenceType="PRODUCT"
-        referenceId={product.id}
-        referenceTitle={product.title}
-        referenceImage={product.imageUrl}
       />
 
       <BookAppointmentModal

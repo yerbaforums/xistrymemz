@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { serviceOfferingSchema, validateBody } from '@/lib/schemas'
 import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
+import { extractHashtags } from '@/lib/hashtags'
 
 export async function GET(
   request: Request,
@@ -16,6 +17,7 @@ export async function GET(
       where: { id },
       include: {
         user: { select: { id: true, name: true, image: true, username: true } },
+        hashtags: { include: { hashtag: { select: { id: true, tag: true } } } },
       },
     })
 
@@ -77,6 +79,12 @@ export async function PUT(
       updateData.donationCurrency = null
       updateData.donationAddresses = null
     }
+    if (d.acceptsAppointments !== undefined) updateData.acceptsAppointments = d.acceptsAppointments
+    if (d.appointmentDuration !== undefined) updateData.appointmentDuration = d.appointmentDuration || null
+    if (d.appointmentLeadTime !== undefined) updateData.appointmentLeadTime = d.appointmentLeadTime || null
+    if (d.appointmentLocation !== undefined) updateData.appointmentLocation = d.appointmentLocation || null
+    if (d.appointmentMeetingLink !== undefined) updateData.appointmentMeetingLink = d.appointmentMeetingLink || null
+    if (d.appointmentFormFields !== undefined) updateData.appointmentFormFields = d.appointmentFormFields
 
     const service = await prisma.serviceOffering.update({
       where: { id },
@@ -85,6 +93,45 @@ export async function PUT(
         user: { select: { id: true, name: true, image: true, username: true } },
       },
     })
+
+    // Re-process hashtags
+    const title = d.title ?? existing.title
+    const description = d.description ?? existing.description
+    const newTags = [...new Set(extractHashtags([title, description || ''].join(' ')))]
+    const existingTags = await prisma.serviceOfferingHashtag.findMany({
+      where: { serviceOfferingId: id },
+      include: { hashtag: true },
+    })
+    const oldTagNames = existingTags.map(e => e.hashtag.tag)
+
+    // Remove old tags that no longer match
+    for (const et of existingTags) {
+      if (!newTags.includes(et.hashtag.tag)) {
+        await prisma.serviceOfferingHashtag.delete({ where: { id: et.id } })
+        await prisma.hashtag.update({
+          where: { id: et.hashtagId },
+          data: { postCount: { decrement: 1 } },
+        })
+      }
+    }
+
+    // Add new tags
+    for (const tag of newTags) {
+      if (!oldTagNames.includes(tag)) {
+        const hashtag = await prisma.hashtag.upsert({
+          where: { tag },
+          create: { tag, postCount: 0 },
+          update: {},
+        })
+        await prisma.serviceOfferingHashtag.create({
+          data: { serviceOfferingId: id, hashtagId: hashtag.id, sourceType: 'SERVICE' },
+        }).catch(() => {})
+        await prisma.hashtag.update({
+          where: { id: hashtag.id },
+          data: { postCount: { increment: 1 } },
+        })
+      }
+    }
 
     return NextResponse.json({ service })
   } catch (error) {

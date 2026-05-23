@@ -12,7 +12,7 @@ import { hydrateDonationAddresses, serializeDonationAddresses, donationAddresses
 import { getUserProfileUrl } from '@/lib/utils'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
-import ShareToPostModal from '@/components/ShareToPostModal'
+import ShareSection from '@/components/ShareSection'
 import type { Event } from '@/types/event'
 import type { DonationAddr } from '@/types/product'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
@@ -32,7 +32,6 @@ function EventDetailContent() {
   const [joining, setJoining] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [showJoiners, setShowJoiners] = useState(false)
-  const [showShareModal, setShowShareModal] = useState(false)
   const [bulkMessage, setBulkMessage] = useState('')
   const [sendingBulk, setSendingBulk] = useState(false)
   const [bulkSuccess, setBulkSuccess] = useState('')
@@ -699,20 +698,16 @@ function EventDetailContent() {
           )}
 
           <div className={styles.statsCard}>
-            <button onClick={() => setShowShareModal(true)} style={{ width: '100%', padding: '8px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-primary)', cursor: 'pointer' }}>
-              📝 Share via Post
-            </button>
+            <ShareSection
+              title={event.title}
+              description={event.description}
+              referenceType="EVENT"
+              referenceId={event.id}
+              referenceTitle={event.title}
+            />
           </div>
         </div>
       </div>
-
-      <ShareToPostModal
-        isOpen={showShareModal}
-        onClose={() => setShowShareModal(false)}
-        referenceType="EVENT"
-        referenceId={event.id}
-        referenceTitle={event.title}
-      />
     </div>
   )
 }
