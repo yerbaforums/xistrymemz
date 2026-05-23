@@ -116,7 +116,7 @@
   border-radius: 6px;
   font-size: 0.7rem;
   font-weight: 600;
-  background: var(--accent-primary)15;
+  background: color-mix(in srgb, var(--accent-primary) 15%, transparent);
   color: var(--accent-primary);
 }
 

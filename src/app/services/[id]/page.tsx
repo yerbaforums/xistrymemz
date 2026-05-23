@@ -128,6 +128,8 @@ export default function ServiceDetailPage() {
       .catch(() => setLoading(false))
   }, [params.id])
 
+  useRecordView('service', service?.id || '')
+
   if (loading) {
     return <div className={styles.page}><div className={styles.loading}>Loading...</div></div>
   }
@@ -166,8 +168,6 @@ export default function ServiceDetailPage() {
   const userName = typeof service.user?.name === 'string' ? service.user.name : null
   const userImage = typeof service.user?.image === 'string' ? service.user.image : null
   const userUsername = typeof service.user?.username === 'string' ? service.user.username : null
-
-  useRecordView('service', typeof service.id === 'string' ? service.id : '')
 
   return (
     <ErrorBoundary>

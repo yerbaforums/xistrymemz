@@ -71,7 +71,7 @@ export default function ServiceCard({ service, onClick, style }: ServiceCardProp
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
           <span style={{
             fontSize: '0.7rem', padding: '2px 8px', borderRadius: 6,
-            background: 'var(--accent-primary)15',
+            background: 'color-mix(in srgb, var(--accent-primary) 15%, transparent)',
             color: 'var(--accent-primary)', fontWeight: 600,
             whiteSpace: 'nowrap'
           }}>

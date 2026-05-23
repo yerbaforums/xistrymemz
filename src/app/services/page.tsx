@@ -185,7 +185,7 @@ export default function ServicesPage() {
               <div>
                 <span style={{
                   fontSize: '0.75rem', padding: '3px 10px', borderRadius: 6,
-                  background: 'var(--accent-primary)15', color: 'var(--accent-primary)',
+                  background: 'color-mix(in srgb, var(--accent-primary) 15%, transparent)', color: 'var(--accent-primary)',
                   fontWeight: 600, display: 'inline-block', marginBottom: 8
                 }}>
                   {SERVICE_CATEGORY_ICONS[selCategory] || '📋'} {SERVICE_CATEGORY_LABELS[selCategory] || 'Other'}
