@@ -368,6 +368,7 @@ export default function ProfilePage() {
     website: '',
     image: '',
     coverImage: '',
+    coverStyle: '',
     userClass: ''
   })
   const [newPost, setNewPost] = useState('')
@@ -440,6 +441,7 @@ export default function ProfilePage() {
         website: data.user.website || '',
         image: data.user.image || '',
         coverImage: data.user.coverImage || '',
+        coverStyle: data.user.coverStyle || 'cover',
         userClass: data.user.userClass || ''
       })
     } catch (error) {

@@ -18,6 +18,7 @@ export async function GET(
       username: true,
       image: true,
       coverImage: true,
+      coverStyle: true,
       bio: true,
       location: true,
       neighborhood: true,
@@ -327,7 +328,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { name, username, bio, location, website, image, coverImage, userClass } = await request.json()
+    const { name, username, bio, location, website, image, coverImage, coverStyle, userClass } = await request.json()
 
     if (username !== undefined && username !== null && username !== '') {
       const normalized = username.toLowerCase().replace(/[^a-z0-9]/g, '')
@@ -372,6 +373,7 @@ export async function PUT(
     if (website !== undefined) updateData.website = website || null
     if (image !== undefined) updateData.image = image || null
     if (coverImage !== undefined) updateData.coverImage = coverImage || null
+    if (coverStyle !== undefined) updateData.coverStyle = coverStyle
     if (userClass !== undefined) updateData.userClass = userClass || null
 
     const updated = await prisma.user.update({
@@ -384,6 +386,7 @@ export async function PUT(
         email: true,
         image: true,
         coverImage: true,
+        coverStyle: true,
         bio: true,
         location: true,
         website: true,

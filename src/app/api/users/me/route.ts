@@ -40,7 +40,9 @@ export async function GET() {
           acceptsDonations: true,
           onboardingCompleted: true,
           setupProgress: true,
-          lookingForCollaborators: true
+          lookingForCollaborators: true,
+          coverImage: true,
+          coverStyle: true
         }
       }),
       prisma.userLink.findMany({
@@ -74,7 +76,8 @@ export async function PUT(request: Request) {
       name, username, image, bio, location, neighborhood, searchRadius, traveling, website, userClass,
       walletAddress, paymentAddress, refundAddress, cryptoCurrency,
       donationAddress, donationCurrency, acceptsDonations,
-      latitude, longitude, lookingForCollaborators
+      latitude, longitude, lookingForCollaborators,
+      coverImage, coverStyle
     } = validation.data
 
     if (username !== undefined && username !== null && username !== '') {
@@ -117,7 +120,9 @@ export async function PUT(request: Request) {
         donationAddress: donationAddress || null,
         donationCurrency: donationCurrency || 'ETH',
         acceptsDonations: acceptsDonations ?? false,
-        lookingForCollaborators: lookingForCollaborators ?? false
+        lookingForCollaborators: lookingForCollaborators ?? false,
+        coverImage: coverImage ?? null,
+        coverStyle: coverStyle ?? undefined
       },
       select: {
         id: true,
@@ -142,6 +147,8 @@ export async function PUT(request: Request) {
         donationCurrency: true,
         acceptsDonations: true,
         lookingForCollaborators: true,
+        coverImage: true,
+        coverStyle: true,
         createdAt: true
       }
     })

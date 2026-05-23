@@ -271,7 +271,9 @@ export const profileUpdateSchema = z.object({
   donationAddress: z.string().max(500).optional().nullable(),
   donationCurrency: z.string().max(10).optional(),
   acceptsDonations: z.boolean().optional(),
-  lookingForCollaborators: z.boolean().optional()
+  lookingForCollaborators: z.boolean().optional(),
+  coverImage: z.string().max(500).optional().nullable(),
+  coverStyle: z.string().max(20).optional().nullable()
 })
 
 export const ratingSchema = z.object({
