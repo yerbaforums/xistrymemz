@@ -11,6 +11,7 @@ import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { getUserProfileUrl } from '@/lib/utils'
 import LocationStatus from './LocationStatus'
 import { useTheme } from '@/context/ThemeContext'
+import { useNotificationSSE } from '@/hooks/useNotificationSSE'
 import type { ThemeAccent } from '@/context/ThemeContext'
 
 export default function Header() {
@@ -54,6 +55,15 @@ export default function Header() {
   useEffect(() => {
     if (session?.user) fetchNotificationCount()
   }, [session])
+
+  useNotificationSSE((event) => {
+    if (event.type === 'unread-count' && event.unreadCount !== undefined) {
+      setNotificationCount(prev => prev + event.unreadCount!)
+    }
+    if (event.type === 'notification') {
+      fetchNotificationCount()
+    }
+  })
 
   useEffect(() => {
     setMenuOpen(false)

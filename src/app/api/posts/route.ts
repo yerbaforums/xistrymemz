@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { postSchema, validateBody } from '@/lib/schemas'
 import { parseMentions } from '@/lib/mentions'
 import { extractHashtags } from '@/lib/hashtags'
+import { sseManager } from '@/lib/sse'
 
 export async function GET(request: NextRequest) {
   try {
@@ -189,6 +190,10 @@ export async function POST(request: NextRequest) {
               relatedId: post.id
             }))
         })
+        // Real-time SSE push for each mentioned user
+        mentionedUsers
+          .filter(u => u.id !== session.user.id)
+          .forEach(u => sseManager.emit(u.id, JSON.stringify({ type: 'notification' })))
       }
     }
 
