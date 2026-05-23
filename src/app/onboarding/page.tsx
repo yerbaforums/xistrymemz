@@ -47,10 +47,12 @@ const CLASS_ICONS: Record<string, string> = {
 
 const TOUR_OUTLETS = [
   { id: 'marketplace', icon: '🛒', name: 'Marketplace', description: 'Buy, sell, or barter products with the community. List items, accept donations, and make offers.', url: '/dashboard/marketplace' },
-  { id: 'projects', icon: '🚀', name: 'Projects', description: 'Organize goals with mileposts, track progress, and collaborate with others on shared plans.', url: '/plans/new' },
+  { id: 'services', icon: '🔧', name: 'Services', description: 'Offer your skills — tutoring, design, consultations. Accept appointments with built-in scheduling.', url: '/dashboard/services' },
+  { id: 'projects', icon: '🚀', name: 'Projects', description: 'Organize goals with milestones, track progress, and collaborate with others on shared plans.', url: '/plans/new' },
   { id: 'community', icon: '🌐', name: 'Community', description: 'Connect with members, join groups, discuss in forums, and build your network.', url: '/dashboard/community' },
   { id: 'requests', icon: '📝', name: 'Requests', description: 'Post tasks you need help with or browse open requests to contribute your skills.', url: '/dashboard/requests' },
   { id: 'events', icon: '📅', name: 'Events', description: 'Discover local events, join gatherings, or create your own events for others.', url: '/events/new' },
+  { id: 'video', icon: '📹', name: 'Video Chat', description: 'Start or join video rooms for collaboration, remote lessons, consultations, or social calls.', url: '/dashboard/video' },
   { id: 'rentals', icon: '🏠', name: 'Rentals', description: 'List tools, equipment, and spaces for rent, or find what you need nearby.', url: '/dashboard/rentals' },
   { id: 'shops', icon: '🏪', name: 'Shops', description: 'Open your own shop front with a branded storefront to showcase and sell products.', url: '/shop/setup' },
   { id: 'schools', icon: '📚', name: 'Schools', description: 'Create courses, publish articles and tutorials, or enroll in educational content.', url: '/school/setup' },
@@ -737,7 +739,7 @@ export default function OnboardingPage() {
                   </div>
                 </Link>
                 
-                <Link href="/dashboard/projects" className={styles.quickLink}>
+                <Link href="/plans/public" className={styles.quickLink}>
                   <span className={styles.linkIcon}>📋</span>
                   <div>
                     <strong>Public Projects</strong>

@@ -16,6 +16,8 @@ interface SavedItem {
 const TYPE_LABELS: Record<string, string> = {
   PLAN: 'Project',
   PRODUCT: 'Product',
+  SERVICE: 'Service',
+  RENTAL: 'Rental',
   REQUEST: 'Request',
   EVENT: 'Event',
   POST: 'Post',
@@ -25,6 +27,8 @@ const TYPE_LABELS: Record<string, string> = {
 const TYPE_LINKS: Record<string, string> = {
   PLAN: '/plans',
   PRODUCT: '/products',
+  SERVICE: '/services',
+  RENTAL: '/rentals',
   REQUEST: '/requests',
   EVENT: '/events',
   POST: '/posts',

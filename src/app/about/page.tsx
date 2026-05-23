@@ -31,31 +31,81 @@ export default function About() {
       <section className={styles.hero}>
         <img src="/logo.png" alt="XistrYmemZ" className={styles.logo} />
         <h1>XistrYmemZ</h1>
-        <p>A community platform for planning, requesting, and completing projects together.</p>
+        <p>The cooperative platform for building, sharing, and growing together.</p>
       </section>
 
       <section className={styles.content}>
         <div className={styles.block}>
-          <h2>What we do</h2>
+          <h2>What is XistrYmemZ?</h2>
           <p>
-            We connect creators, developers, and community members to collaborate on projects.
-            Create plans, submit requests, and track progress — together.
+            XistrYmemZ is an open-source community platform where creators, developers, tradespeople, 
+            and neighbors collaborate on projects, offer services, buy and sell, teach skills, and 
+            organize events — all in one place.
           </p>
         </div>
 
         <div className={styles.block}>
-          <h2>Get started</h2>
+          <h2>Core Features</h2>
+          <div className={styles.features}>
+            <div className={styles.feature}>
+              <h3>🚀 Projects & Plans</h3>
+              <p>Create detailed project plans with goals, milestones, and resources. Invite collaborators and track progress together.</p>
+            </div>
+            <div className={styles.feature}>
+              <h3>🛒 Marketplace</h3>
+              <p>Buy and sell products, list items for rent, and accept offers. Set up your own shop with custom branding.</p>
+            </div>
+            <div className={styles.feature}>
+              <h3>🔧 Services</h3>
+              <p>Offer your skills — from guitar lessons to web design. Accept appointments with built-in scheduling, set your hours, and manage bookings.</p>
+            </div>
+            <div className={styles.feature}>
+              <h3>📹 Video Chat</h3>
+              <p>Start or join video rooms for face-to-face collaboration, remote lessons, consultations, or just hanging out.</p>
+            </div>
+            <div className={styles.feature}>
+              <h3>📝 Requests & Barter</h3>
+              <p>Post what you need and accept offers from the community. Trade services, barter, and coordinate through the offer system.</p>
+            </div>
+            <div className={styles.feature}>
+              <h3>📅 Events & Planner</h3>
+              <p>Host community events, manage your appointment calendar, and keep track of upcoming commitments.</p>
+            </div>
+            <div className={styles.feature}>
+              <h3>🏫 Schools & Teaching</h3>
+              <p>Create educational content — articles, tutorials, courses, and video lessons. Build your school and grow a following.</p>
+            </div>
+            <div className={styles.feature}>
+              <h3># Hashtags</h3>
+              <p>Follow hashtags to discover new content across projects, services, events, and posts. Trending tags highlight what the community is talking about.</p>
+            </div>
+            <div className={styles.feature}>
+              <h3>👥 Community</h3>
+              <p>Join groups, connect with other members, participate in forums, and build your network — all within the platform.</p>
+            </div>
+            <div className={styles.feature}>
+              <h3>🔄 Share & Repost</h3>
+              <p>Share any project, service, event, or product to your feed. Repost content you find interesting to spread the word.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.block}>
+          <h2>Getting Started</h2>
+          <p>New here? Here&apos;s how to get going:</p>
           <div className={styles.links}>
-            <Link href="/auth/register">Create account</Link>
-            <Link href="/plans/public">Browse projects</Link>
-            <Link href="/community">Join community</Link>
+            <Link href="/auth/register">1. Create your account</Link>
+            <Link href="/onboarding">2. Complete your profile</Link>
+            <Link href="/plans/public">3. Browse projects</Link>
+            <Link href="/services">4. Explore services</Link>
+            <Link href="/community">5. Join the community</Link>
           </div>
         </div>
 
         {donations.length > 0 && (
           <div className={styles.block}>
             <h2>Support XistrYmemZ</h2>
-            <p>Help us keep the platform free and independent</p>
+            <p>Help us keep the platform free and independent. Donations are optional and go directly toward hosting, development, and community programs.</p>
             <div className={styles.donationList}>
               {donations.map(da => (
                 <div key={da.id} className={styles.donationItem}>
@@ -75,11 +125,12 @@ export default function About() {
         )}
 
         <div className={styles.block}>
-          <h2>Support</h2>
-          <p>Open source. Built with Next.js.</p>
+          <h2>Links</h2>
           <div className={styles.links}>
             <Link href="/help">Help center</Link>
-            <Link href="/contact">Contact</Link>
+            <Link href="/contact">Contact us</Link>
+            <Link href="/terms">Terms of service</Link>
+            <Link href="/privacy">Privacy policy</Link>
           </div>
         </div>
       </section>

@@ -12,7 +12,7 @@ export async function GET(request: Request) {
 
   const hashtagQuery = query.startsWith('#') ? query.slice(1).toLowerCase() : ''
 
-  const [plans, products, users, groups, events, requests, schoolContent, forumPosts, hashtags] = await Promise.all([
+  const [plans, products, services, users, groups, events, requests, schoolContent, forumPosts, hashtags] = await Promise.all([
     prisma.plan.findMany({
       where: {
         OR: [
@@ -33,6 +33,17 @@ export async function GET(request: Request) {
         ]
       },
       select: { id: true, title: true, description: true, price: true, type: true },
+      take: limit
+    }),
+    prisma.serviceOffering.findMany({
+      where: {
+        OR: [
+          { title: { contains: query } },
+          { description: { contains: query } },
+        ],
+        isActive: true
+      },
+      select: { id: true, title: true, description: true, category: true },
       take: limit
     }),
     prisma.user.findMany({
@@ -107,6 +118,7 @@ export async function GET(request: Request) {
   const results = {
     plans: plans.map(p => ({ ...p, type: 'plan', url: `/plans/${p.id}` })),
     products: products.map(p => ({ ...p, type: 'product', url: `/products/${p.id}` })),
+    services: services.map(s => ({ ...s, type: 'service', url: `/services/${s.id}` })),
     users: users.map(u => ({ ...u, type: 'user', url: `/profile/${u.username || u.id}` })),
     groups: groups.map(g => ({ ...g, type: 'group', url: `/groups/${g.id}`, memberCount: g._count.members })),
     events: events.map(e => ({ ...e, type: 'event', url: `/events/${e.id}` })),

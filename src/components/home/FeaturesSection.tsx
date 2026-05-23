@@ -11,9 +11,9 @@ const GROUPS = [
     features: [
       { icon: '🏪', title: 'Shop', desc: 'Create your storefront, list products or services, and accept payments.', href: '/shops' },
       { icon: '🛒', title: 'Products', desc: 'Sell physical goods, digital items, or offer services with flexible pricing.', href: '/products' },
+      { icon: '🔧', title: 'Services', desc: 'Offer your skills — tutoring, design, consultations. Accept appointments with built-in scheduling.', href: '/services' },
       { icon: '🏠', title: 'Rentals', desc: 'List items for rent with daily, weekly, monthly pricing and deposits.', href: '/rentals' },
-      { icon: '🤝', title: 'Offers & Barter', desc: 'Exchange items or services directly through barter. Make offers, negotiate, and close arrangements.', href: '/offers' },
-      { icon: '🚚', title: 'Courier', desc: 'Set up delivery services and manage local pickup or shipping.', href: '/courier/setup' },
+      { icon: '🤝', title: 'Offers & Barter', desc: 'Exchange items or services directly through barter. Make offers, negotiate, and close arrangements.', href: '/dashboard/offers' },
     ]
   },
   {
@@ -22,9 +22,12 @@ const GROUPS = [
     features: [
       { icon: '👥', title: 'Members Directory', desc: 'Discover and connect with members in your community and beyond.', href: '/community' },
       { icon: '🔗', title: 'Connections', desc: 'Build your network, follow activity, and collaborate with trusted peers.', href: '/connections' },
-      { icon: '👥', title: 'Groups', desc: 'Find your people. Join or create groups around interests, locations, or projects.', href: '/groups' },
+      { icon: '👥', title: 'Groups', desc: 'Find your people. Join or create groups around interests, locations, or projects.', href: '/community/groups' },
       { icon: '💬', title: 'Forum', desc: 'Discuss ideas, ask questions, and share knowledge with the community.', href: '/community/forum' },
       { icon: '📅', title: 'Events', desc: 'Create, discover, and join events. From meetups to workshops to conferences.', href: '/events' },
+      { icon: '📹', title: 'Video Chat', desc: 'Start or join video rooms for collaboration, lessons, consultations, or social calls.', href: '/dashboard/video' },
+      { icon: '#️⃣', title: 'Hashtags', desc: 'Follow hashtags to discover trending content across projects, services, and posts.', href: '/hashtags' },
+      { icon: '🔄', title: 'Share & Repost', desc: 'Share any project, service, or event to your feed or social media.', href: '/dashboard/feed' },
     ]
   },
   {
@@ -42,9 +45,8 @@ const GROUPS = [
     icon: '💰',
     features: [
       { icon: '🌍', title: 'Earth Passport', desc: 'Verified identity, reputation scores, and trust badges across the network.', href: '/about' },
-      { icon: '💰', title: 'Crypto-Friendly Donations', desc: 'Send and receive crypto donations with privacy and QR codes. More decentralized features in development.', href: '/profile/edit' },
+      { icon: '💰', title: 'Crypto-Friendly Donations', desc: 'Send and receive crypto donations with privacy and QR codes.', href: '/profile/edit' },
       { icon: '🎭', title: 'User Classes', desc: 'Choose from 14 identity classes — Healer, Builder, Explorer, Sage, and more — to express your role.', href: '/profile/edit' },
-      { icon: '📋', title: 'Templates', desc: 'Start fast with pre-built templates for shops, schools, and services.', href: '/templates' },
     ]
   }
 ]

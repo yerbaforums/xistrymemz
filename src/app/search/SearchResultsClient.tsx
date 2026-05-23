@@ -15,10 +15,12 @@ interface SearchResult {
 interface SearchResults {
   plans: SearchResult[]
   products: SearchResult[]
+  services: SearchResult[]
   users: SearchResult[]
   groups: SearchResult[]
   events: SearchResult[]
   requests: SearchResult[]
+  hashtags: { tag: string; postCount: number; type: string; url: string }[]
   schoolContent: SearchResult[]
 }
 
@@ -59,37 +61,50 @@ export default function SearchResultsClient() {
       return [
         ...results.plans.map(r => ({ ...r, section: '🚀 Projects' })),
         ...results.products.map(r => ({ ...r, section: '🛒 Products' })),
+        ...results.services.map(r => ({ ...r, section: '🔧 Services' })),
         ...results.users.map(r => ({ ...r, section: '👤 Users', title: r.title || 'Unknown' })),
         ...results.groups.map(r => ({ ...r, section: '👥 Groups' })),
         ...results.events.map(r => ({ ...r, section: '📅 Events' })),
         ...results.requests.map(r => ({ ...r, section: '📝 Requests' })),
+        ...(results.hashtags || []).map(h => ({ id: h.tag, title: `#${h.tag} (${h.postCount} posts)`, type: 'hashtag', url: h.url, section: '# Hashtags' })),
         ...results.schoolContent.map(r => ({ ...r, section: '🎓 School' })),
       ]
     }
-    return (results[filter as keyof SearchResults] || []).map(r => ({
+    if (filter === 'hashtags') {
+      return (results.hashtags || []).map(h => ({
+        id: h.tag, title: `#${h.tag} (${h.postCount} posts)`, type: 'hashtag', url: h.url, section: '# Hashtags'
+      }))
+    }
+    const sectionMap: Record<string, string> = {
+      plans: '🚀 Projects',
+      products: '🛒 Products',
+      services: '🔧 Services',
+      users: '👤 Users',
+      groups: '👥 Groups',
+      events: '📅 Events',
+      requests: '📝 Requests',
+      schoolContent: '🎓 School',
+    }
+    return ((results[filter as keyof SearchResults] || []) as SearchResult[]).map(r => ({
       ...r,
-      section: {
-        plans: '🚀 Projects',
-        products: '🛒 Products',
-        users: '👤 Users',
-        groups: '👥 Groups',
-        events: '📅 Events',
-        requests: '📝 Requests',
-        schoolContent: '🎓 School',
-      }[filter] || '',
+      section: sectionMap[filter] || '',
       title: filter === 'users' ? (r.title || 'Unknown') : r.title,
     }))
   }
 
   const filteredItems = filteredResults()
 
+  const totalCount = results ? Object.values(results).flat().length : 0
+
   const categories = [
-    { key: 'all', label: 'All', count: results ? Object.values(results).flat().length : 0 },
+    { key: 'all', label: 'All', count: totalCount },
     { key: 'plans', label: 'Projects', count: results?.plans?.length || 0 },
     { key: 'products', label: 'Products', count: results?.products?.length || 0 },
+    { key: 'services', label: 'Services', count: results?.services?.length || 0 },
     { key: 'users', label: 'Users', count: results?.users?.length || 0 },
     { key: 'groups', label: 'Groups', count: results?.groups?.length || 0 },
     { key: 'events', label: 'Events', count: results?.events?.length || 0 },
+    { key: 'hashtags', label: 'Hashtags', count: results?.hashtags?.length || 0 },
     { key: 'requests', label: 'Requests', count: results?.requests?.length || 0 },
     { key: 'schoolContent', label: 'School', count: results?.schoolContent?.length || 0 },
   ].filter(c => c.count > 0 || c.key === 'all')
@@ -103,7 +118,7 @@ export default function SearchResultsClient() {
           type="text"
           value={searchInput}
           onChange={e => setSearchInput(e.target.value)}
-          placeholder="Search anything..."
+          placeholder="Search projects, products, services, hashtags..."
           className={styles.searchInput}
           autoFocus
         />

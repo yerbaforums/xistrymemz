@@ -14,47 +14,63 @@ export default function Help() {
   const faqs = [
     {
       question: 'What is XistrYmemZ?',
-      answer: 'XistrYmemZ is a community platform where creators, developers, and community members can collaborate on projects. Create detailed plans, submit requests to help complete them, and track your progress with powerful tools.'
+      answer: 'XistrYmemZ is a cooperative community platform where you can create projects, offer services, buy and sell in the marketplace, teach skills, host events, and connect with others — all in one place.'
     },
     {
       question: 'How do I get started?',
-      answer: 'Sign up for a free account, complete your profile, and start exploring projects. You can browse public plans, join groups, or create your own project plan.'
+      answer: 'Sign up for a free account, complete your profile during onboarding, and start exploring. Browse public projects, discover services, join groups, or create your own content.'
     },
     {
-      question: 'Is it free to use?',
-      answer: 'Yes, XistrYmemZ is free to use. We offer optional premium memberships for additional features, but all core functionality is available at no cost.'
+      question: 'Is XistrYmemZ free?',
+      answer: 'Yes, all core features are free — project planning, service listings, events, community groups, messaging, video chat, and more. Some creators may charge for services or products, but the platform itself is free to use.'
     },
     {
-      question: 'How do I create a plan?',
-      answer: 'After logging in, navigate to the Plans section and click "New Plan". Fill in the details including title, description, goals, milestones, and funding options if needed.'
+      question: 'How do I create a project plan?',
+      answer: 'Go to your Dashboard, then Projects, and click "New Plan". Add goals, milestones, resources, and funding targets. Share your plan publicly to attract collaborators and supporters.'
     },
     {
-      question: 'How do requests work?',
-      answer: 'Requests are tasks that need to be completed within a project. You can browse public requests, submit your work, and earn recognition for helping complete projects.'
+      question: 'How do services work?',
+      answer: 'List your skills as a service — guitar lessons, web design, tutoring, anything. Set your rates, availability, and appointment settings. Others can book appointments with you directly through the platform.'
     },
     {
-      question: 'How do I join a group?',
-      answer: 'Visit the Groups section to browse available groups. Click on any group to view its details and request to join. Group admins will approve your request.'
+      question: 'How do appointments work?',
+      answer: 'When a service provider enables appointments, you can book a time slot directly from their service page. The planner in your dashboard tracks all your upcoming appointments and events.'
     },
     {
-      question: 'Can I sell products or services?',
-      answer: 'Yes! You can set up a shop to sell products and services to the community. Visit the Shop section after logging in to get started.'
+      question: 'What is Video Chat?',
+      answer: 'Video Chat lets you create or join video rooms for face-to-face collaboration, remote lessons, consultations, or social calls. Share your screen, mute your mic, or turn off your camera as needed.'
     },
     {
-      question: 'How do events work?',
-      answer: 'Community members can create and host events. Visit the Events section to see upcoming events or create your own.'
+      question: 'How do I sell products?',
+      answer: 'Set up your shop from the Dashboard to list products. Add images, pricing, and descriptions. Buyers can make offers through the barter system or purchase directly when checkout is enabled.'
+    },
+    {
+      question: 'What is the barter/offer system?',
+      answer: 'Instead of fixed pricing, you can accept offers on requests and products. Other members can propose trades, counter-offers, or monetary bids. Both parties agree before completing the transaction.'
+    },
+    {
+      question: 'How do hashtags work?',
+      answer: 'Use hashtags (#example) in your project descriptions, service listings, and posts. Follow hashtags to see related content in your feed. Trending hashtags help you discover popular topics.'
+    },
+    {
+      question: 'How do I share content?',
+      answer: 'Every project, service, product, event, and request has a Share section. Copy the link, share natively on your device, post to social media, or share directly to your XistrYmemZ feed.'
     },
     {
       question: 'What are schools?',
-      answer: 'Schools allow you to create educational content and courses for the community. Share your knowledge and help others learn new skills.'
+      answer: 'Schools let you create educational content — articles, tutorials, courses, and video lessons. Set up your school, organize content, and grow a following of students.'
     },
     {
-      question: 'How do I report inappropriate content?',
-      answer: 'If you see content that violates our community guidelines, please contact us through the Contact page or use the reporting feature available on each piece of content.'
+      question: 'How do rentals work?',
+      answer: 'List items for rent with daily, weekly, or monthly pricing, security deposits, and availability settings. Renters can browse available items and send booking requests.'
     },
     {
-      question: 'How can I contact support?',
-      answer: 'You can reach our support team through the Contact page. We aim to respond within 24-48 hours.'
+      question: 'How do I join a group?',
+      answer: 'Visit the Community section, browse Groups, and request to join any that interest you. Group admins approve requests. Groups have their own forums and shared content.'
+    },
+    {
+      question: 'How do I report content?',
+      answer: 'If you see content that violates our community guidelines, use the contact page to report it. Include the link and a description of the issue.'
     },
     {
       question: 'How do I reset my password?',
@@ -63,12 +79,16 @@ export default function Help() {
   ]
 
   const guides = [
-    { title: 'Getting Started', description: 'Learn the basics of using XistrYmemZ', link: '/about' },
-    { title: 'Creating Plans', description: 'How to create and manage project plans', link: '/plans' },
-    { title: 'Submitting Requests', description: 'Guide to requesting help on projects', link: '/requests' },
-    { title: 'Joining Groups', description: 'Find and join community groups', link: '/groups' },
-    { title: 'Setting Up Shop', description: 'Create your own store', link: '/shop/setup' },
-    { title: 'Hosting Events', description: 'Create and manage community events', link: '/events' }
+    { title: 'Getting Started', description: 'Set up your profile and explore the platform', link: '/onboarding' },
+    { title: 'Creating Projects', description: 'Plan, organize, and track projects', link: '/plans/new' },
+    { title: 'Offering Services', description: 'List your skills and accept appointments', link: '/dashboard/services' },
+    { title: 'Using Video Chat', description: 'Set up and join video rooms', link: '/dashboard/video' },
+    { title: 'Managing Appointments', description: 'Track bookings and availability', link: '/dashboard/appointments' },
+    { title: 'Setting Up Shop', description: 'Create and manage your storefront', link: '/shop/setup' },
+    { title: 'Hosting Events', description: 'Plan and host community events', link: '/events' },
+    { title: 'Creating Requests', description: 'Ask for help and accept offers', link: '/requests' },
+    { title: 'Hashtags & Discovery', description: 'Follow hashtags and find trending topics', link: '/hashtags' },
+    { title: 'Schools & Teaching', description: 'Create educational content', link: '/schools' },
   ]
 
   return (
@@ -98,7 +118,7 @@ export default function Help() {
           <div className={styles.faqList}>
             {faqs.map((faq, index) => (
               <div key={index} className={styles.faqItem}>
-                <button 
+                <button
                   className={styles.faqQuestion}
                   onClick={() => toggleFaq(index)}
                   aria-expanded={openFaq === index}

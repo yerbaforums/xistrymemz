@@ -29,7 +29,7 @@ function ResetPasswordContent() {
     setError('')
 
     if (password.length < 8) {
-      setError('Password must be at least 6 characters')
+      setError('Password must be at least 8 characters')
       return
     }
 

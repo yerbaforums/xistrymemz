@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useToast } from '@/context/ToastContext'
+import ImageUploader from '@/components/ImageUploader'
 import styles from './teaching.module.css'
 
 interface SchoolInfo {
@@ -39,7 +40,7 @@ export default function TeachingPage() {
   const [showContentForm, setShowContentForm] = useState(false)
   const [editingContent, setEditingContent] = useState<ContentItem | null>(null)
   const [saving, setSaving] = useState(false)
-  const [schoolForm, setSchoolForm] = useState({ schoolName: '', schoolAbout: '', schoolImage: '', schoolSlug: '' })
+  const [schoolForm, setSchoolForm] = useState({ schoolName: '', schoolAbout: '', schoolImage: '', schoolImages: [] as string[], schoolSlug: '' })
   const [contentForm, setContentForm] = useState({ title: '', content: '', contentType: 'article', price: '', isPaid: false })
 
   useEffect(() => { fetchAll() }, [])
@@ -60,6 +61,7 @@ export default function TeachingPage() {
         schoolName: schoolData.schoolName || '',
         schoolAbout: schoolData.schoolAbout || '',
         schoolImage: schoolData.schoolImage || '',
+        schoolImages: schoolData.schoolImage ? [schoolData.schoolImage] : [],
         schoolSlug: schoolData.schoolSlug || '',
       })
       setContent(Array.isArray(contentData) ? contentData : contentData?.content || [])
@@ -233,8 +235,8 @@ export default function TeachingPage() {
                 <textarea value={schoolForm.schoolAbout} onChange={e => setSchoolForm({...schoolForm, schoolAbout: e.target.value})} rows={3} />
               </div>
               <div className="form-group">
-                <label>Image URL</label>
-                <input type="text" value={schoolForm.schoolImage} onChange={e => setSchoolForm({...schoolForm, schoolImage: e.target.value})} />
+                <label>Image</label>
+                <ImageUploader images={schoolForm.schoolImages} onChange={(urls) => setSchoolForm({...schoolForm, schoolImages: urls, schoolImage: urls[0] || ''})} maxImages={1} />
               </div>
               <div className="form-group">
                 <label>URL Slug</label>

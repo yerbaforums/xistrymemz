@@ -27,10 +27,12 @@ export default function Header() {
   const [searchResults, setSearchResults] = useState<{
     plans: { id: string; title: string; type: string; url: string }[]
     products: { id: string; title: string; type: string; url: string }[]
+    services: { id: string; title: string; type: string; url: string }[]
     users: { id: string; name: string | null; type: string; url: string }[]
     groups: { id: string; name: string; type: string; url: string }[]
     events: { id: string; title: string; type: string; url: string }[]
     requests: { id: string; title: string; type: string; url: string }[]
+    hashtags: { tag: string; postCount: number; type: string; url: string }[]
     schoolContent: { id: string; title: string; type: string; url: string }[]
   } | null>(null)
   const [searching, setSearching] = useState(false)
@@ -231,6 +233,7 @@ export default function Header() {
                 <Link href="/dashboard/messages" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">💬 Messages</Link>
                 <Link href="/dashboard/feed" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">📡 Feed</Link>
                 <Link href="/dashboard/appointments" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🗓️ Planner</Link>
+                <Link href="/dashboard/video" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">📹 Video Chat</Link>
                 <Link href="/dashboard/offers" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🤝 Offers</Link>
                 <Link href="/dashboard/rentals" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🏠 Rentals</Link>
                 <Link href="/dashboard/teaching" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem">🏫 Teaching</Link>
@@ -360,6 +363,7 @@ export default function Header() {
                 <Link href="/dashboard/teaching" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🏫 Teaching</Link>
                 <Link href="/dashboard/events" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📅 Events</Link>
                 <Link href="/dashboard/appointments" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🗓️ Planner</Link>
+                <Link href="/dashboard/video" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📹 Video Chat</Link>
                 <Link href="/notifications" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🔔 Notifications</Link>
                 <Link href="/dashboard/saved" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>⭐ Saved</Link>
                 <Link href="/connections" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🔗 Connections</Link>
@@ -450,6 +454,16 @@ export default function Header() {
                                 ))}
                               </div>
                             )}
+                            {searchResults.services?.length > 0 && (
+                              <div className={styles.searchSection}>
+                                <div className={styles.searchSectionTitle}>🔧 Services</div>
+                                {searchResults.services.map(s => (
+                                  <Link key={s.id} href={s.url} className={styles.searchResult} onClick={() => setSearchOpen(false)}>
+                                    {s.title}
+                                  </Link>
+                                ))}
+                              </div>
+                            )}
                             {searchResults.users?.length > 0 && (
                               <div className={styles.searchSection}>
                                 <div className={styles.searchSectionTitle}>👤 Users</div>
@@ -470,6 +484,26 @@ export default function Header() {
                                 ))}
                               </div>
                             )}
+                            {searchResults.groups?.length > 0 && (
+                              <div className={styles.searchSection}>
+                                <div className={styles.searchSectionTitle}>👥 Groups</div>
+                                {searchResults.groups.map(g => (
+                                  <Link key={g.id} href={g.url} className={styles.searchResult} onClick={() => setSearchOpen(false)}>
+                                    {g.name}
+                                  </Link>
+                                ))}
+                              </div>
+                            )}
+                            {searchResults.hashtags?.length > 0 && (
+                              <div className={styles.searchSection}>
+                                <div className={styles.searchSectionTitle}># Hashtags</div>
+                                {searchResults.hashtags.map(h => (
+                                  <Link key={h.tag} href={h.url} className={styles.searchResult} onClick={() => setSearchOpen(false)}>
+                                    #{h.tag} <span style={{ color: 'var(--text-tertiary)', fontSize: '0.75rem' }}>({h.postCount} posts)</span>
+                                  </Link>
+                                ))}
+                              </div>
+                            )}
                             {searchResults.requests?.length > 0 && (
                               <div className={styles.searchSection}>
                                 <div className={styles.searchSectionTitle}><span aria-hidden="true">📝</span> Requests</div>
@@ -480,7 +514,7 @@ export default function Header() {
                                 ))}
                               </div>
                             )}
-                            {(!searchResults.plans?.length && !searchResults.products?.length && !searchResults.users?.length && !searchResults.events?.length && !searchResults.requests?.length && !searchResults.groups?.length && !searchResults.schoolContent?.length) && (
+                            {(!searchResults.plans?.length && !searchResults.products?.length && !searchResults.services?.length && !searchResults.users?.length && !searchResults.events?.length && !searchResults.requests?.length && !searchResults.groups?.length && !searchResults.hashtags?.length && !searchResults.schoolContent?.length) && (
                               <div className={styles.searchEmpty}>No results found for &quot;{searchQuery}&quot;</div>
                             )}
                             <Link href={`/search?q=${encodeURIComponent(searchQuery)}`} className={styles.seeAllResults} onClick={() => setSearchOpen(false)}>

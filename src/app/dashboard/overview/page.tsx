@@ -258,6 +258,7 @@ export default async function DashboardOverview() {
     { label: 'Projects', value: allStats[0], max: 20, color: '#8B5CF6', icon: '🚀', href: '/dashboard/projects' },
     { label: 'Requests', value: pendingRequests, max: 20, color: '#F59E0B', icon: '📝', href: '/dashboard/requests' },
     { label: 'Products', value: allStats[2], max: 50, color: '#10B981', icon: '🛒', href: '/dashboard/marketplace' },
+    { label: 'Services', value: serviceCount, max: 20, color: '#14B8A6', icon: '🔧', href: '/dashboard/services' },
     { label: 'Rentals', value: rentalCount, max: 20, color: '#3B82F6', icon: '🏠', href: '/dashboard/rentals' },
     { label: 'Teaching', value: allStats[5], max: 20, color: '#EC4899', icon: '🏫', href: '/dashboard/teaching' },
     { label: 'Offers In', value: offersReceived, max: 20, color: '#F97316', icon: '🤝', href: '/dashboard/offers' },
@@ -275,12 +276,13 @@ export default async function DashboardOverview() {
   const quickActions = [
     { label: 'New Project', icon: '🚀', href: '/plans' },
     { label: 'New Product', icon: '🛒', href: '/products/new' },
+    { label: 'New Service', icon: '🔧', href: '/dashboard/services' },
     { label: 'New Event', icon: '📅', href: '/events/new' },
     { label: 'Post Request', icon: '📝', href: '/requests' },
     { label: 'New Group', icon: '👥', href: '/groups/new' },
-    { label: 'List Item', icon: '📦', href: '/products/new' },
+    { label: 'Video Chat', icon: '📹', href: '/dashboard/video' },
+    { label: 'Planner', icon: '🗓️', href: '/dashboard/appointments' },
     { label: 'Community', icon: '💬', href: '/community' },
-    { label: 'Templates', icon: '📋', href: '/templates' },
     { label: 'Settings', icon: '⚙️', href: '/profile/settings' },
   ]
 
@@ -427,11 +429,17 @@ export default async function DashboardOverview() {
           <Link href="/products" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
             <span>🛒</span> Browse Marketplace
           </Link>
+          <Link href="/services" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
+            <span>🔧</span> Find Services
+          </Link>
+          <Link href="/hashtags" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
+            <span>#</span> Trending Tags
+          </Link>
           <Link href="/community" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
             <span>👥</span> Find Members
           </Link>
           <Link href="/community/groups" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
-            <span>👤</span> Explore Groups
+            <span>🏠</span> Explore Groups
           </Link>
         </div>
         {trendingPlans.length > 0 && (
