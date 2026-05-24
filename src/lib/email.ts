@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY || 're_placeholder'
+const RESEND_API_KEY = process.env.RESEND_API_KEY || ''
 const FROM_EMAIL = process.env.EMAIL_FROM || 'noreply@xistrymemz.xyz'
 const APP_NAME = 'XistrYmemZ'
 const BASE_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000'
@@ -8,8 +8,12 @@ const BASE_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000'
 let resend: Resend | null = null
 
 function getResend(): Resend | null {
-  if (RESEND_API_KEY === 're_placeholder') {
-    console.warn('RESEND_API_KEY not configured. Email sending disabled.')
+  if (!RESEND_API_KEY) {
+    if (process.env.NODE_ENV === 'production') {
+      console.error('[EMAIL] RESEND_API_KEY is not configured in production. Emails will not be sent.')
+    } else {
+      console.warn('[EMAIL] RESEND_API_KEY not configured. Email sending disabled.')
+    }
     return null
   }
   if (!resend) {

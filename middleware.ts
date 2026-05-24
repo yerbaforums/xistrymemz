@@ -1,30 +1,46 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+const ALLOWED_ORIGIN = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+
+function getOrigin(url: string): string | null {
+  try {
+    return new URL(url).origin;
+  } catch {
+    return null;
+  }
+}
+
+function isSameOrigin(request: NextRequest): boolean {
+  if (['GET', 'HEAD', 'OPTIONS'].includes(request.method)) {
+    return true;
+  }
+
+  const origin = request.headers.get('origin');
+  const referer = request.headers.get('referer');
+  const source = origin || referer || '';
+
+  if (!source) return false;
+
+  const sourceOrigin = getOrigin(source);
+  const allowedOrigin = getOrigin(ALLOWED_ORIGIN);
+
+  if (!sourceOrigin || !allowedOrigin) return false;
+  return sourceOrigin === allowedOrigin;
+}
+
+const CSRF_EXEMPT_PATHS = [
+  '/api/auth/',
+  '/api/fediverse/',
+  '/api/.well-known/',
+];
+
 interface RateLimitEntry {
   count: number;
   resetTime: number;
 }
 
-interface RateLimitOptions {
-  interval: number;
-  uniqueTokenPerInterval: number;
-}
-
-interface RateLimitSuccess {
-  success: true;
-  remaining: number;
-  reset: number;
-  total: number;
-}
-
-interface RateLimitExceeded {
-  success: false;
-  response: Response;
-}
-
-type RateLimitResult = RateLimitSuccess | RateLimitExceeded;
-
+const MAX_STORE_SIZE = 10000;
 const CLEANUP_INTERVAL = 5 * 60 * 1000;
 
 declare global {
@@ -48,7 +64,7 @@ function cleanOldEntries(): void {
   global.rateLimitLastCleanup = now;
   const store = global.rateLimitMemoryStore;
   if (!store) return;
-  
+
   const keysToDelete: string[] = [];
   store.forEach((entry, key) => {
     if (entry.resetTime < now) {
@@ -58,89 +74,71 @@ function cleanOldEntries(): void {
   keysToDelete.forEach((key) => store.delete(key));
 }
 
-function rateLimit(options: RateLimitOptions) {
-  return async (token: string): Promise<RateLimitResult> => {
-    const { interval, uniqueTokenPerInterval } = options;
+function evictOldest(store: Map<string, RateLimitEntry>): void {
+  if (store.size < MAX_STORE_SIZE) return;
+  let oldestKey: string | null = null;
+  let oldestTime = Infinity;
+  store.forEach((entry, key) => {
+    if (entry.resetTime < oldestTime) {
+      oldestTime = entry.resetTime;
+      oldestKey = key;
+    }
+  });
+  if (oldestKey) store.delete(oldestKey);
+}
+
+function rateLimit(interval: number, maxRequests: number) {
+  return async (token: string): Promise<{
+    success: boolean;
+    remaining: number;
+    reset: number;
+    total: number;
+  }> => {
     const now = Date.now();
     const key = `ratelimit_${token}`;
-    
+
     cleanOldEntries();
-    
+
     const store = global.rateLimitMemoryStore;
     if (!store) {
-      return {
-        success: true,
-        remaining: uniqueTokenPerInterval,
-        reset: now + interval,
-        total: uniqueTokenPerInterval,
-      };
+      return { success: true, remaining: maxRequests, reset: now + interval, total: maxRequests };
     }
-    
+
+    evictOldest(store);
+
     let entry = store.get(key);
-    
+
     if (!entry || entry.resetTime < now) {
       entry = { count: 0, resetTime: now + interval };
       store.set(key, entry);
     }
-    
+
     entry.count++;
-    
-    const remaining = Math.max(0, uniqueTokenPerInterval - entry.count);
+
+    const remaining = Math.max(0, maxRequests - entry.count);
     const reset = entry.resetTime;
-    
-    if (entry.count > uniqueTokenPerInterval) {
-      const retryAfter = Math.ceil((reset - now) / 1000);
-      return {
-        success: false,
-        response: new Response(
-          JSON.stringify({
-            error: 'Too Many Requests',
-            message: 'Rate limit exceeded. Please try again later.',
-            retryAfter,
-          }),
-          {
-            status: 429,
-            headers: {
-              'Content-Type': 'application/json',
-              'Retry-After': String(retryAfter),
-              'X-RateLimit-Limit': String(uniqueTokenPerInterval),
-              'X-RateLimit-Remaining': '0',
-              'X-RateLimit-Reset': String(reset),
-            },
-          }
-        ),
-      };
+
+    if (entry.count > maxRequests) {
+      return { success: false, remaining: 0, reset, total: maxRequests };
     }
-    
-    return {
-      success: true,
-      remaining,
-      reset,
-      total: uniqueTokenPerInterval,
-    };
+
+    return { success: true, remaining, reset, total: maxRequests };
   };
 }
 
-function getClientIP(request: Request | NextRequest): string {
+function getClientIP(request: NextRequest): string {
   const forwarded = request.headers.get('x-forwarded-for');
-  const realIP = request.headers.get('x-real-ip');
-  
   if (forwarded) {
     return forwarded.split(',')[0].trim();
   }
-  
-  if (realIP) {
-    return realIP;
-  }
-  
-  return 'unknown';
+  return '127.0.0.1';
 }
 
 const RATE_LIMIT_CONFIGS = {
-  auth: { interval: 60 * 1000, uniqueTokenPerInterval: 5 },
-  search: { interval: 60 * 1000, uniqueTokenPerInterval: 30 },
-  write: { interval: 60 * 1000, uniqueTokenPerInterval: 60 },
-  read: { interval: 60 * 1000, uniqueTokenPerInterval: 120 },
+  auth: { interval: 60 * 1000, maxRequests: 5 },
+  search: { interval: 60 * 1000, maxRequests: 30 },
+  write: { interval: 60 * 1000, maxRequests: 60 },
+  read: { interval: 60 * 1000, maxRequests: 120 },
 } as const;
 
 type RouteType = keyof typeof RATE_LIMIT_CONFIGS;
@@ -149,15 +147,17 @@ function getRouteType(path: string, method: string): RouteType | null {
   if (
     path.includes('/api/auth/login') ||
     path.includes('/api/auth/register') ||
+    path.includes('/api/auth/forgot-password') ||
+    path.includes('/api/auth/reset-password') ||
     path.includes('/api/auth/[...nextauth]')
   ) {
     return 'auth';
   }
-  
+
   if (path.startsWith('/api/search')) {
     return 'search';
   }
-  
+
   if (path.startsWith('/api/')) {
     const writeMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
     if (writeMethods.includes(method)) {
@@ -165,7 +165,7 @@ function getRouteType(path: string, method: string): RouteType | null {
     }
     return 'read';
   }
-  
+
   return null;
 }
 
@@ -180,32 +180,48 @@ export const config = {
 export default async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const method = request.method;
+
+  if (!CSRF_EXEMPT_PATHS.some(p => path.startsWith(p))) {
+    if (!isSameOrigin(request)) {
+      return NextResponse.json(
+        { error: 'Forbidden', message: 'Cross-site request rejected' },
+        { status: 403 }
+      );
+    }
+  }
+
   const routeType = getRouteType(path, method);
-  
+
   if (!routeType) {
     return NextResponse.next();
   }
-  
+
   const clientIP = getClientIP(request);
-  const limiter = rateLimit(RATE_LIMIT_CONFIGS[routeType]);
+  const config = RATE_LIMIT_CONFIGS[routeType];
+  const limiter = rateLimit(config.interval, config.maxRequests);
   const result = await limiter(clientIP);
-  
+
   if (!result.success) {
-    const headers = new Headers();
-    const errorResult = result as RateLimitExceeded;
-    errorResult.response.headers.forEach((value: string, key: string) => {
-      headers.set(key, value)
-    })
+    const retryAfter = Math.ceil((result.reset - Date.now()) / 1000);
     return NextResponse.json(
       { error: 'Too Many Requests', message: 'Rate limit exceeded. Please try again later.' },
-      { status: 429, headers }
-    )
+      {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'Retry-After': String(retryAfter),
+          'X-RateLimit-Limit': String(result.total),
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': String(result.reset),
+        },
+      }
+    );
   }
-  
+
   const response = NextResponse.next();
   response.headers.set('X-RateLimit-Limit', String(result.total));
   response.headers.set('X-RateLimit-Remaining', String(result.remaining));
   response.headers.set('X-RateLimit-Reset', String(result.reset));
-  
+
   return response;
 }

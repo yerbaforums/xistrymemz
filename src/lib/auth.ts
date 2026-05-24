@@ -7,6 +7,8 @@ import TwitterProvider from 'next-auth/providers/twitter'
 import FacebookProvider from 'next-auth/providers/facebook'
 import { prisma } from './prisma'
 import bcrypt from 'bcryptjs'
+import { randomBytes } from 'crypto'
+import { sendVerificationEmail } from './email'
 
 if (!process.env.NEXTAUTH_SECRET) {
   throw new Error('NEXTAUTH_SECRET environment variable is not set')
@@ -17,17 +19,14 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-      allowDangerousEmailAccountLinking: true,
     }),
     GitHubProvider({
       clientId: process.env.GITHUB_CLIENT_ID || '',
       clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
-      allowDangerousEmailAccountLinking: true,
     }),
     DiscordProvider({
       clientId: process.env.DISCORD_CLIENT_ID || '',
       clientSecret: process.env.DISCORD_CLIENT_SECRET || '',
-      allowDangerousEmailAccountLinking: true,
     }),
     TwitterProvider({
       clientId: process.env.TWITTER_CLIENT_ID || '',
@@ -36,7 +35,6 @@ export const authOptions: NextAuthOptions = {
     FacebookProvider({
       clientId: process.env.FACEBOOK_CLIENT_ID || '',
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET || '',
-      allowDangerousEmailAccountLinking: true,
     }),
     CredentialsProvider({
       name: 'credentials',
@@ -71,7 +69,7 @@ export const authOptions: NextAuthOptions = {
         const isAdminEmail = adminEmails.includes(user.email.toLowerCase())
         const isAdminName = user.name ? adminNames.includes(user.name.toLowerCase()) : false
 
-        if ((isAdminEmail || isAdminName) && user.role !== 'ADMIN') {
+        if ((isAdminEmail || isAdminName) && user.role === 'USER') {
           await prisma.user.update({
             where: { id: user.id },
             data: { role: 'ADMIN' }
@@ -110,7 +108,10 @@ export const authOptions: NextAuthOptions = {
         })
 
         if (existingUser) {
-          // Link OAuth provider to existing user
+          if (existingUser.password) {
+            return '/auth/login?error=OAuthAccountNotLinked'
+          }
+          // Link OAuth provider to existing OAuth-only user
           const existingLink = await prisma.oAuthProvider.findFirst({
             where: {
               userId: existingUser.id,
@@ -147,9 +148,14 @@ export const authOptions: NextAuthOptions = {
             username,
             password: '', // OAuth users have no password
             image: user.image || null,
-            verifiedEmail: true,
           }
         })
+
+        // Send verification email for OAuth signups
+        const verifyToken = randomBytes(32).toString('hex')
+        prisma.verificationToken.create({
+          data: { token: verifyToken, userId: newUser.id, expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) }
+        }).then(() => sendVerificationEmail(newUser.email, verifyToken)).catch(() => {})
 
         // Auto-connect with founder
         const founder = await prisma.user.findFirst({

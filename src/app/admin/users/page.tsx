@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import styles from './page.module.css'
 
@@ -43,6 +43,15 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState('ALL')
   const [updating, setUpdating] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState<string | null>(null)
+  const [resetting, setResetting] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<User | null>(null)
+
+  const showToast = useCallback((message: string, type: 'success' | 'error') => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 4000)
+  }, [])
 
   const fetchUsers = async (p = 1) => {
     setLoading(true)
@@ -87,11 +96,58 @@ export default function AdminUsersPage() {
       })
       if (res.ok) {
         setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u))
+        showToast(`User role changed to ${newRole}`, 'success')
+      } else {
+        const data = await res.json()
+        showToast(data.error || 'Failed to update role', 'error')
       }
     } catch (error) {
       console.error('Failed to update role:', error)
+      showToast('Failed to update role', 'error')
     } finally {
       setUpdating(null)
+    }
+  }
+
+  const handleDelete = async (userId: string) => {
+    setDeleting(userId)
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE'
+      })
+      if (res.ok) {
+        setUsers(users.filter(u => u.id !== userId))
+        showToast('User deleted', 'success')
+      } else {
+        const data = await res.json()
+        showToast(data.error || 'Failed to delete user', 'error')
+      }
+    } catch (error) {
+      console.error('Failed to delete user:', error)
+      showToast('Failed to delete user', 'error')
+    } finally {
+      setDeleting(null)
+      setConfirmDelete(null)
+    }
+  }
+
+  const handleResetPassword = async (userId: string) => {
+    setResetting(userId)
+    try {
+      const res = await fetch(`/api/admin/users/${userId}/reset-password`, {
+        method: 'POST'
+      })
+      if (res.ok) {
+        showToast('Password reset email sent', 'success')
+      } else {
+        const data = await res.json()
+        showToast(data.error || 'Failed to send reset email', 'error')
+      }
+    } catch (error) {
+      console.error('Failed to reset password:', error)
+      showToast('Failed to send reset email', 'error')
+    } finally {
+      setResetting(null)
     }
   }
 
@@ -101,6 +157,12 @@ export default function AdminUsersPage() {
 
   return (
     <div className={styles.page}>
+      {toast && (
+        <div className={`${styles.toast} ${toast.type === 'success' ? styles.toastSuccess : styles.toastError}`}>
+          {toast.message}
+        </div>
+      )}
+
       <div className={styles.header}>
         <div>
           <h1>User Management</h1>
@@ -199,23 +261,39 @@ export default function AdminUsersPage() {
                       <span className={styles.date}>{formatDate(user.createdAt)}</span>
                     </td>
                     <td>
-                      {user.role === 'ADMIN' ? (
+                      <div className={styles.actionGroup}>
+                        {user.role === 'ADMIN' ? (
+                          <button
+                            onClick={() => handleRoleChange(user.id, 'USER')}
+                            disabled={updating === user.id}
+                            className={styles.demoteBtn}
+                          >
+                            {updating === user.id ? '...' : 'Demote'}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleRoleChange(user.id, 'ADMIN')}
+                            disabled={updating === user.id}
+                            className={styles.promoteBtn}
+                          >
+                            {updating === user.id ? '...' : 'Promote'}
+                          </button>
+                        )}
                         <button
-                          onClick={() => handleRoleChange(user.id, 'USER')}
-                          disabled={updating === user.id}
-                          className={styles.demoteBtn}
+                          onClick={() => handleResetPassword(user.id)}
+                          disabled={resetting === user.id}
+                          className={styles.resetPwdBtn}
                         >
-                          {updating === user.id ? '...' : 'Demote'}
+                          {resetting === user.id ? '...' : 'Reset Pwd'}
                         </button>
-                      ) : (
                         <button
-                          onClick={() => handleRoleChange(user.id, 'ADMIN')}
-                          disabled={updating === user.id}
-                          className={styles.promoteBtn}
+                          onClick={() => setConfirmDelete(user)}
+                          disabled={deleting === user.id}
+                          className={styles.deleteBtn}
                         >
-                          {updating === user.id ? '...' : 'Promote'}
+                          {deleting === user.id ? '...' : 'Delete'}
                         </button>
-                      )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -245,6 +323,35 @@ export default function AdminUsersPage() {
             </div>
           )}
         </>
+      )}
+
+      {confirmDelete && (
+        <div className={styles.overlay} onClick={() => setConfirmDelete(null)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <h2 className={styles.modalTitle}>Delete User</h2>
+            <p className={styles.modalText}>
+              Are you sure you want to permanently delete <strong>{confirmDelete.name || confirmDelete.email}</strong>?
+            </p>
+            <p className={styles.modalWarning}>
+              This will permanently delete all of their plans, requests, products, posts, messages, and all other associated data. This action cannot be undone.
+            </p>
+            <div className={styles.modalActions}>
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className={styles.cancelBtn}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(confirmDelete.id)}
+                disabled={deleting === confirmDelete.id}
+                className={styles.confirmDeleteBtn}
+              >
+                {deleting === confirmDelete.id ? 'Deleting...' : 'Delete User'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

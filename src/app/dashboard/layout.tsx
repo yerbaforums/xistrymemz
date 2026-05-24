@@ -153,6 +153,7 @@ export default function DashboardLayout({
 }) {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const pathname = usePathname()
   const [onboardingChecked, setOnboardingChecked] = useState(false)
 
   useEffect(() => {
@@ -199,7 +200,6 @@ export default function DashboardLayout({
     return null
   }
 
-  const pathname = usePathname()
   const segments = pathname.split('/').filter(Boolean)
   const pageLabel = BREADCRUMB_LABELS[segments[1]] || segments[1]?.replace(/^./, c => c.toUpperCase()) || 'Dashboard'
 
