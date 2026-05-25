@@ -453,6 +453,111 @@
   background: var(--bg-tertiary);
 }
 
+/* Locale Switcher */
+.localeSwitcher {
+  position: relative;
+}
+
+.localeBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.localeBtn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background: rgba(0, 217, 255, 0.06);
+}
+
+.localeDropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 60px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  padding: 6px;
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-50%) translateY(-8px);
+  transition: all 0.2s ease;
+}
+
+.localeSwitcher:hover .localeDropdown,
+.localeSwitcher:focus-within .localeDropdown,
+.localeSwitcher.localeDropdownVisible .localeDropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.localeOption {
+  display: block;
+  padding: 8px 12px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  transition: var(--transition);
+}
+
+.localeOption:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+/* Mobile Language */
+.mobileLangRow {
+  display: flex;
+  gap: 8px;
+  padding: 10px 16px 14px;
+  justify-content: center;
+}
+
+.mobileLangLink {
+  padding: 8px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.mobileLangLink:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.mobileLangActive {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border-color: var(--accent-primary);
+}
+
+.mobileLangActive:hover {
+  color: var(--bg-primary);
+}
+
 /* Theme Toggle Button */
 .themeToggle {
   display: flex;
@@ -779,6 +884,10 @@
   }
 
   .themeToggle {
+    display: none;
+  }
+
+  .localeSwitcher {
     display: none;
   }
 }

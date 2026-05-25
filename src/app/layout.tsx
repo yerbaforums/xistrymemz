@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import "./globals.css";
@@ -12,40 +11,45 @@ import Footer from "@/components/Footer";
 import BackToTop from "@/components/BackToTop";
 import CreateFAB from "@/components/CreateFAB";
 
-export const metadata: Metadata = {
-  title: "XistrYmemZ - Plan. Request. Complete.",
-  description: "Collaborative planning platform. Create projects, connect with community, build businesses, and coordinate efforts globally.",
-  icons: [
-    {
-      rel: "icon",
-      url: "/favicon.ico",
-    },
-    {
-      rel: "icon",
-      type: "image/png",
-      url: "/favicon.png",
-    },
-  ],
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "XistrYmemZ",
-  },
-  manifest: "/manifest.json",
-  openGraph: {
-    title: "XistrYmemZ - Plan. Request. Complete.",
-    description: "Collaborative planning platform. Create projects, connect with community, build businesses, and coordinate efforts globally.",
-    type: "website",
-    siteName: "XistrYmemZ",
-    locale: "en_US",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "XistrYmemZ - Plan. Request. Complete.",
-    description: "Collaborative planning platform. Create projects, connect with community, build businesses, and coordinate efforts globally.",
-  },
-  keywords: ["collaborative planning", "community platform", "project management", "crypto payments", "business platform"],
+const OG_LOCALE_MAP: Record<string, string> = {
+  en: "en_US",
+  es: "es_ES",
+  fr: "fr_FR",
+  pt: "pt_BR",
 };
+
+export async function generateMetadata() {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
+  return {
+    title: messages.layout?.title || "XistrYmemZ - Plan. Request. Complete.",
+    description: messages.layout?.description || "Collaborative planning platform.",
+    icons: [
+      { rel: "icon", url: "/favicon.ico" },
+      { rel: "icon", type: "image/png", url: "/favicon.png" },
+    ],
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: "XistrYmemZ",
+    },
+    manifest: "/manifest.json",
+    openGraph: {
+      title: messages.layout?.title || "XistrYmemZ - Plan. Request. Complete.",
+      description: messages.layout?.description || "Collaborative planning platform.",
+      type: "website",
+      siteName: "XistrYmemZ",
+      locale: OG_LOCALE_MAP[locale] || "en_US",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: messages.layout?.title || "XistrYmemZ - Plan. Request. Complete.",
+      description: messages.layout?.description || "Collaborative planning platform.",
+    },
+    keywords: ["collaborative planning", "community platform", "project management", "crypto payments", "business platform"],
+  };
+}
 
 export default async function RootLayout({
   children,

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import styles from './Header.module.css'
 import CartButton from './CartButton'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
@@ -15,8 +15,16 @@ import { useTheme } from '@/context/ThemeContext'
 import { useNotificationSSE } from '@/hooks/useNotificationSSE'
 import type { ThemeAccent } from '@/context/ThemeContext'
 
+const LOCALES = [
+  { code: 'en', label: 'EN' },
+  { code: 'es', label: 'ES' },
+  { code: 'fr', label: 'FR' },
+  { code: 'pt', label: 'PT' },
+]
+
 export default function Header() {
   const t = useTranslations('header')
+  const currentLocale = useLocale()
   const { data: session, status } = useSession()
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -332,6 +340,21 @@ export default function Header() {
           </div>
 
           <div className={styles.mobileSection}>
+            <div className={styles.mobileSectionTitle}>Language</div>
+            <div className={styles.mobileLangRow}>
+              {LOCALES.map(l => (
+                <Link
+                  key={l.code}
+                  href={l.code === 'en' ? '/' : `/${l.code}`}
+                  className={`${styles.mobileLangLink} ${l.code === currentLocale ? styles.mobileLangActive : ''}`}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {l.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div className={styles.mobileSection}>
             <div className={styles.mobileSectionTitle}>Theme</div>
             <div className={styles.mobileThemeRow}>
               <button className={styles.mobileThemeToggle} onClick={toggleMode}>
@@ -415,6 +438,23 @@ export default function Header() {
         <div className={styles.rightSection}>
           {isAuthenticated && (
             <>
+              <div className={`${styles.localeSwitcher} ${openDropdown === 'locale' ? styles.localeDropdownVisible : ''}`}>
+                <button className={styles.localeBtn} onClick={() => toggleDropdown('locale')} aria-label="Switch language" title="Switch language">
+                  {currentLocale.toUpperCase()}
+                </button>
+                <div className={styles.localeDropdown}>
+                  {LOCALES.filter(l => l.code !== currentLocale).map(l => (
+                    <Link
+                      key={l.code}
+                      href={l.code === 'en' ? '/' : `/${l.code}`}
+                      className={styles.localeOption}
+                      onClick={() => closeDropdown()}
+                    >
+                      {l.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
               <button className={styles.themeToggle} onClick={toggleMode} aria-label={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`} title={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`}>
                 {mode === 'dark' ? <span aria-hidden="true">☀️</span> : <span aria-hidden="true">🌙</span>}
               </button>
@@ -619,6 +659,23 @@ export default function Header() {
 
           {!isAuthenticated && status !== 'loading' && (
             <>
+              <div className={`${styles.localeSwitcher} ${openDropdown === 'locale' ? styles.localeDropdownVisible : ''}`}>
+                <button className={styles.localeBtn} onClick={() => toggleDropdown('locale')} aria-label="Switch language" title="Switch language">
+                  {currentLocale.toUpperCase()}
+                </button>
+                <div className={styles.localeDropdown}>
+                  {LOCALES.filter(l => l.code !== currentLocale).map(l => (
+                    <Link
+                      key={l.code}
+                      href={l.code === 'en' ? '/' : `/${l.code}`}
+                      className={styles.localeOption}
+                      onClick={() => closeDropdown()}
+                    >
+                      {l.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
               <button className={styles.themeToggle} onClick={toggleMode} aria-label={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`} title={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`}>
                 {mode === 'dark' ? <span aria-hidden="true">☀️</span> : <span aria-hidden="true">🌙</span>}
               </button>
