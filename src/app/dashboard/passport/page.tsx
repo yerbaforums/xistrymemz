@@ -57,6 +57,8 @@ export default function PassportPage() {
   const [showCategoryForm, setShowCategoryForm] = useState(false)
   const [categoryForm, setCategoryForm] = useState({ name: '', icon: '📍', color: '#3b82f6' })
   const [categorySaving, setCategorySaving] = useState(false)
+  const [editingCategory, setEditingCategory] = useState<{ id: string; name: string; icon: string; color: string } | null>(null)
+  const [editingLocationId, setEditingLocationId] = useState<string | null>(null)
 
   // Map state
   const [mapReady, setMapReady] = useState(false)
@@ -153,13 +155,16 @@ export default function PassportPage() {
   }
 
   // Location CRUD
-  const handleAddLocation = async (e: React.FormEvent) => {
+  const handleSaveLocation = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!locationForm.name.trim() || !locationForm.location.trim()) return
     setLocationSaving(true)
     try {
-      const res = await fetch('/api/users/locations', {
-        method: 'POST',
+      const isEdit = !!editingLocationId
+      const url = isEdit ? `/api/users/locations/${editingLocationId}` : '/api/users/locations'
+      const method = isEdit ? 'PUT' : 'POST'
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: locationForm.name, location: locationForm.location,
@@ -169,18 +174,33 @@ export default function PassportPage() {
         })
       })
       if (res.ok) {
-        const newLoc = await res.json()
-        setSavedLocations(prev => [...prev, newLoc])
+        const saved = await res.json()
+        if (isEdit) {
+          setSavedLocations(prev => prev.map(l => l.id === editingLocationId ? { ...l, ...saved } : l))
+          toastSuccess('Location updated')
+        } else {
+          setSavedLocations(prev => [...prev, saved])
+          toastSuccess('Location added')
+        }
         setLocationForm({ name: '', location: '', latitude: '', longitude: '', categoryId: '' })
         setAddLat(''); setAddLng(''); setAddSearch('')
+        setEditingLocationId(null)
         setShowLocationForm(false)
-        toastSuccess('Location added')
       } else {
         const data = await res.json()
-        toastError(data.error || 'Failed to add location')
+        toastError(data.error || 'Failed')
       }
-    } catch { toastError('Failed to add location') }
+    } catch { toastError('Failed') }
     finally { setLocationSaving(false) }
+  }
+
+  const handleEditLocation = (loc: UserLocation) => {
+    setEditingLocationId(loc.id)
+    setLocationForm({ name: loc.name, location: loc.location, latitude: '', longitude: '', categoryId: loc.categoryId || '' })
+    setAddLat(loc.latitude ? String(loc.latitude) : '')
+    setAddLng(loc.longitude ? String(loc.longitude) : '')
+    setAddSearch('')
+    setShowLocationForm(true)
   }
 
   const handleSetPrimaryLocation = async (locId: string) => {
@@ -224,6 +244,32 @@ export default function PassportPage() {
     finally { setCategorySaving(false) }
   }
 
+  const handleUpdateCategory = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingCategory || !categoryForm.name.trim()) return
+    setCategorySaving(true)
+    try {
+      const res = await fetch(`/api/locations/categories/${editingCategory.id}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(categoryForm)
+      })
+      if (res.ok) {
+        const updated = await res.json()
+        setCategories(prev => prev.map(c => c.id === updated.id ? updated : c))
+        setEditingCategory(null)
+        setCategoryForm({ name: '', icon: '📍', color: '#3b82f6' })
+        setShowCategoryForm(false)
+        toastSuccess('Category updated')
+      } else { toastError('Failed to update category') }
+    } catch { toastError('Failed to update category') }
+    finally { setCategorySaving(false) }
+  }
+
+  const handleEditCategory = (cat: { id: string; name: string; icon: string; color: string }) => {
+    setEditingCategory(cat)
+    setCategoryForm({ name: cat.name, icon: cat.icon, color: cat.color })
+    setShowCategoryForm(true)
+  }
+
   const handleDeleteCategory = async (catId: string) => {
     if (!confirm('Delete this category? Locations will be uncategorized.')) return
     try {
@@ -239,6 +285,8 @@ export default function PassportPage() {
   if (loading) return <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>Loading...</div>
 
   return (
+    <>
+      <style>{`.leaflet-pane { z-index: 1; } .leaflet-top, .leaflet-bottom { z-index: 2; }`}</style>
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '1rem' }}>
       {/* Earth Passport Section */}
       <div style={{ background: 'linear-gradient(135deg, #0d1a0d 0%, #0d0d0d 100%)', border: '1px solid #2a4a2a', borderRadius: '12px', padding: '24px', marginBottom: '20px' }}>
@@ -283,6 +331,18 @@ export default function PassportPage() {
           <p style={{ color: '#6a8a6a', fontSize: '0.75rem', margin: '4px 0 0' }}>
             {traveling ? 'Your profile shows you as traveling. Community members will see you\'re on the move.' : 'Your profile shows your home location. Toggle this on when traveling.'}
           </p>
+          {traveling && savedLocations.length > 0 && (
+            <div style={{ marginTop: '12px', padding: '12px', background: 'rgba(255, 193, 7, 0.05)', borderRadius: '8px', border: '1px solid rgba(255, 193, 7, 0.15)' }}>
+              <label style={{ display: 'block', marginBottom: '6px', color: '#ffc107', fontSize: '0.8rem', fontWeight: 600 }}>✈️ Set Current Location From Saved</label>
+              <select onChange={e => {
+                const loc = savedLocations.find(l => l.id === e.target.value)
+                if (loc) { setLocation(loc.location); setLatitude(loc.latitude); setLongitude(loc.longitude); handleSavePassport() }
+              }} style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255, 193, 7, 0.3)', borderRadius: '8px', color: '#ffc107', fontSize: '0.875rem' }}>
+                <option value="">Select a saved location...</option>
+                {savedLocations.filter(l => l.latitude && l.longitude).map(l => <option key={l.id} value={l.id}>{l.name} — {l.location}</option>)}
+              </select>
+            </div>
+          )}
         </div>
 
         <div style={{ marginBottom: '16px' }}>
@@ -316,7 +376,7 @@ export default function PassportPage() {
       {/* Map */}
       {mapReady && (
         <div style={{ height: '300px', borderRadius: '12px', overflow: 'hidden', marginBottom: '20px', border: '1px solid var(--border-color)' }}>
-          <MapContainer center={latitude ? [latitude, longitude!] : savedLocations.find(l => l.latitude && l.longitude) ? [savedLocations.find(l => l.latitude && l.longitude)!.latitude!, savedLocations.find(l => l.latitude && l.longitude)!.longitude!] : [20, 0]}
+          <MapContainer key={`overview-${latitude}-${longitude}`} center={latitude ? [latitude, longitude!] : savedLocations.find(l => l.latitude && l.longitude) ? [savedLocations.find(l => l.latitude && l.longitude)!.latitude!, savedLocations.find(l => l.latitude && l.longitude)!.longitude!] : [20, 0]}
             zoom={latitude || savedLocations.some(l => l.latitude) ? 5 : 2} style={{ width: '100%', height: '100%' }}>
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
             {latitude && longitude && (
@@ -333,6 +393,14 @@ export default function PassportPage() {
               </Marker>
             ))}
           </MapContainer>
+        </div>
+      )}
+
+      {mapReady && (
+        <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px', padding: '8px 12px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+          <span>📍 Home</span>
+          {savedLocations.some(l => l.isPrimary) && <span>⭐ Primary</span>}
+          <span>📌 Saved</span>
         </div>
       )}
 
@@ -365,16 +433,18 @@ export default function PassportPage() {
                 <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: '2px' }}>{loc.latitude.toFixed(4)}, {loc.longitude.toFixed(4)}</div>
               )}
             </div>
-            <div style={{ display: 'flex', gap: '6px' }}>
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+              <button onClick={() => handleEditLocation(loc)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #4ade80', borderRadius: '6px', color: '#4ade80', cursor: 'pointer', fontSize: '0.8rem' }}>Edit</button>
               {!loc.isPrimary && <button onClick={() => handleSetPrimaryLocation(loc.id)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #7f7fff', borderRadius: '6px', color: '#7f7fff', cursor: 'pointer', fontSize: '0.8rem' }}>Set Primary</button>}
+              <button onClick={() => { setLocation(loc.location); setLatitude(loc.latitude); setLongitude(loc.longitude); setTraveling(false); handleSavePassport() }} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #f59e0b', borderRadius: '6px', color: '#f59e0b', cursor: 'pointer', fontSize: '0.8rem' }}>🏠 Set as Home</button>
               <button onClick={() => handleDeleteLocation(loc.id)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #ff6b6b', borderRadius: '6px', color: '#ff6b6b', cursor: 'pointer', fontSize: '0.8rem' }}>Delete</button>
             </div>
           </div>
         ))}
 
         {showLocationForm && (
-          <form onSubmit={handleAddLocation} style={{ marginTop: '16px', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <h3 style={{ marginTop: 0, fontSize: '1rem', color: '#c0c0ff' }}>Add New Location</h3>
+          <form onSubmit={handleSaveLocation} style={{ marginTop: '16px', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <h3 style={{ marginTop: 0, fontSize: '1rem', color: '#c0c0ff' }}>{editingLocationId ? 'Edit Location' : 'Add New Location'}</h3>
 
             <div style={{ marginBottom: '12px' }}>
               <label style={{ display: 'block', marginBottom: '6px', color: '#8888aa', fontSize: '0.875rem' }}>Location Name</label>
@@ -395,7 +465,7 @@ export default function PassportPage() {
               </div>
               {mapReady && (
                 <div style={{ height: '200px', borderRadius: '8px', overflow: 'hidden' }}>
-                  <MapContainer center={addLat && addLng ? [parseFloat(addLat), parseFloat(addLng)] : [20, 0]} zoom={addLat && addLng ? 14 : 2} style={{ width: '100%', height: '100%' }}>
+                  <MapContainer key={addLat + addLng || 'init'} center={addLat && addLng ? [parseFloat(addLat), parseFloat(addLng)] : [20, 0]} zoom={addLat && addLng ? 14 : 2} style={{ width: '100%', height: '100%' }}>
                     <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                     <MapClickHandlerComponent onClick={handleAddMapClick} />
                     {addLat && addLng && (
@@ -456,13 +526,14 @@ export default function PassportPage() {
             <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: cat.color, display: 'inline-block', flexShrink: 0 }} />
             <span style={{ fontSize: '1.2rem' }}>{cat.icon}</span>
             <div style={{ flex: 1 }}><div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#c0c0ff' }}>{cat.name}</div></div>
+            <button onClick={() => handleEditCategory(cat)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #4ade80', borderRadius: '6px', color: '#4ade80', cursor: 'pointer', fontSize: '0.8rem' }}>Edit</button>
             <button onClick={() => handleDeleteCategory(cat.id)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #ff6b6b', borderRadius: '6px', color: '#ff6b6b', cursor: 'pointer', fontSize: '0.8rem' }}>Delete</button>
           </div>
         ))}
 
         {showCategoryForm && (
-          <form onSubmit={handleAddCategory} style={{ marginTop: '16px', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <h3 style={{ marginTop: 0, fontSize: '1rem', color: '#c0c0ff' }}>New Category</h3>
+          <form onSubmit={editingCategory ? handleUpdateCategory : handleAddCategory} style={{ marginTop: '16px', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <h3 style={{ marginTop: 0, fontSize: '1rem', color: '#c0c0ff' }}>{editingCategory ? 'Edit Category' : 'New Category'}</h3>
             <div style={{ marginBottom: '12px' }}>
               <label style={{ display: 'block', marginBottom: '6px', color: '#8888aa', fontSize: '0.875rem' }}>Name</label>
               <input type="text" value={categoryForm.name} onChange={e => setCategoryForm({ ...categoryForm, name: e.target.value })} placeholder="e.g., Camping, Restaurants, Shops" required
@@ -481,16 +552,17 @@ export default function PassportPage() {
               </div>
             </div>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-              <button type="button" onClick={() => { setShowCategoryForm(false); setCategoryForm({ name: '', icon: '📍', color: '#3b82f6' }) }}
+              <button type="button" onClick={() => { setEditingCategory(null); setShowCategoryForm(false); setCategoryForm({ name: '', icon: '📍', color: '#3b82f6' }) }}
                 style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer' }}>Cancel</button>
               <button type="submit" disabled={!categoryForm.name.trim() || categorySaving}
                 style={{ padding: '8px 16px', background: '#7f7fff', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500 }}>
-                {categorySaving ? 'Saving...' : 'Add Category'}
+                {categorySaving ? 'Saving...' : editingCategory ? 'Save Changes' : 'Add Category'}
               </button>
             </div>
           </form>
         )}
       </div>
     </div>
+    </>
   )
 }
