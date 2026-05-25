@@ -337,7 +337,7 @@ function LinkCard({ link, styles }: { link: UserLink; styles: Record<string, str
 }
 
 export default function ProfilePage() {
-  const { data: session, status } = useSession()
+  const { data: session, status, update } = useSession()
   const router = useRouter()
   const params = useParams()
   const [user, setUser] = useState<ProfileUser | null>(null)
@@ -558,6 +558,7 @@ export default function ProfilePage() {
       if (updateRes.ok) {
         setEditForm(f => ({ ...f, image: url }))
         fetchProfile(getTargetId())
+        update()
         toastSuccess('Avatar updated!')
       } else {
         const errData = await updateRes.json().catch(() => ({ error: 'Failed to update profile' }))

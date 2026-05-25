@@ -1,4 +1,3 @@
-import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import "./globals.css";
 import "./themes.css";
@@ -10,6 +9,7 @@ import AppShell from "@/components/AppShell";
 import Footer from "@/components/Footer";
 import BackToTop from "@/components/BackToTop";
 import CreateFAB from "@/components/CreateFAB";
+import LocaleProvider from "@/components/LocaleProvider";
 
 const OG_LOCALE_MAP: Record<string, string> = {
   en: "en_US",
@@ -67,7 +67,7 @@ export default async function RootLayout({
         <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
       </head>
       <body>
-        <NextIntlClientProvider locale={locale} messages={messages}>
+        <LocaleProvider initialLocale={locale} initialMessages={messages}>
           <a href="#main-content" className="sr-only focus:not-sr-only">
             {messages.layout?.skipToContent || "Skip to main content"}
           </a>
@@ -84,7 +84,7 @@ export default async function RootLayout({
               </TariWalletProvider>
             </SiteSettingsProvider>
           </Providers>
-        </NextIntlClientProvider>
+        </LocaleProvider>
       </body>
     </html>
   );
