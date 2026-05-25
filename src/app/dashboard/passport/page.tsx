@@ -69,6 +69,7 @@ export default function PassportPage() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      import('leaflet/dist/leaflet.css')
       setTimeout(() => setMapReady(true), 200)
     }
   }, [])
@@ -142,6 +143,8 @@ export default function PassportPage() {
         setAddLat(String(result.latitude))
         setAddLng(String(result.longitude))
         setLocationForm(prev => ({ ...prev, location: result.displayName }))
+      } else {
+        toastError('No results found')
       }
     } catch {} finally { setAddSearchLoading(false) }
   }
@@ -151,6 +154,7 @@ export default function PassportPage() {
     setAddLng(String(lng))
     import('@/lib/geocoding').then(m => m.reverseGeocodeLocation(lat, lng)).then(addr => {
       if (addr) setLocationForm(prev => ({ ...prev, location: addr }))
+      else toastError('Could not find address')
     })
   }
 
@@ -289,55 +293,55 @@ export default function PassportPage() {
       <style>{`.leaflet-pane { z-index: 1; } .leaflet-top, .leaflet-bottom { z-index: 2; }`}</style>
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '1rem' }}>
       {/* Earth Passport Section */}
-      <div style={{ background: 'linear-gradient(135deg, #0d1a0d 0%, #0d0d0d 100%)', border: '1px solid #2a4a2a', borderRadius: '12px', padding: '24px', marginBottom: '20px' }}>
-        <h1 style={{ margin: '0 0 4px', color: '#7fff7f', fontSize: '1.5rem' }}>🌍 Earth Passport</h1>
-        <p style={{ color: '#6a8a6a', fontSize: '0.85rem', marginBottom: '20px' }}>
+      <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '24px', marginBottom: '20px' }}>
+        <h1 style={{ margin: '0 0 4px', color: 'var(--accent-success)', fontSize: '1.5rem' }}>🌍 Earth Passport</h1>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '20px' }}>
           Manage your home location, traveling status, and search radius for community discovery.
         </p>
 
         {/* Preview badge */}
-        <div style={{ marginBottom: '16px', padding: '12px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ marginBottom: '16px', padding: '12px', background: 'var(--bg-tertiary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, background: traveling ? 'rgba(255, 193, 7, 0.15)' : 'rgba(0, 217, 255, 0.1)', border: traveling ? '1px solid rgba(255, 193, 7, 0.3)' : '1px solid rgba(0, 217, 255, 0.2)', color: traveling ? '#ffc107' : '#00d9ff' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, background: traveling ? 'rgba(255, 193, 7, 0.15)' : 'rgba(0, 217, 255, 0.1)', border: traveling ? '1px solid rgba(255, 193, 7, 0.3)' : '1px solid rgba(0, 217, 255, 0.2)', color: traveling ? 'var(--accent-warning)' : 'var(--accent-primary)' }}>
               {traveling ? '✈️' : '📍'} {location || 'Your City'}{traveling && <span style={{ opacity: 0.6 }}> traveling</span>}
             </span>
-            <button onClick={() => setTraveling(!traveling)} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid #4ade80', borderRadius: '20px', color: '#4ade80', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 600 }}>
+            <button onClick={() => setTraveling(!traveling)} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--accent-success)', borderRadius: '20px', color: 'var(--accent-success)', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 600 }}>
               Switch to {traveling ? '📍 Home' : '✈️ Traveling'}
             </button>
           </div>
         </div>
 
         <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', color: '#88aa88' }}>Your Location (City, Country)</label>
-          <input type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder="City, Country" style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a4a2a', borderRadius: '8px', color: '#c0e0c0' }} />
+          <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>Your Location (City, Country)</label>
+          <input type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder="City, Country" style={{ width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }} />
         </div>
 
         <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', color: '#88aa88' }}>Neighborhood / Area</label>
-          <input type="text" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} placeholder="Your local neighborhood or district" style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a4a2a', borderRadius: '8px', color: '#c0e0c0' }} />
+          <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>Neighborhood / Area</label>
+          <input type="text" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} placeholder="Your local neighborhood or district" style={{ width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }} />
         </div>
 
         <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', color: '#88aa88' }}>Search Radius ({searchRadius}km)</label>
-          <input type="range" min="1" max="500" value={searchRadius} onChange={e => setSearchRadius(Number(e.target.value))} style={{ width: '100%', accentColor: '#4ade80' }} />
-          <p style={{ color: '#6a8a6a', fontSize: '0.75rem', margin: '4px 0 0' }}>Shows listings within this radius when using "Near Me" filters.</p>
+          <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>Search Radius ({searchRadius}km)</label>
+          <input type="range" min="1" max="500" value={searchRadius} onChange={e => setSearchRadius(Number(e.target.value))} style={{ width: '100%', accentColor: 'var(--accent-success)' }} />
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', margin: '4px 0 0' }}>Shows listings within this radius when using "Near Me" filters.</p>
         </div>
 
         <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: traveling ? '#ffc107' : '#88aa88' }}>
-            <input type="checkbox" checked={traveling} onChange={e => setTraveling(e.target.checked)} style={{ width: '18px', height: '18px', accentColor: '#ffc107' }} />
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: traveling ? 'var(--accent-warning)' : 'var(--text-secondary)' }}>
+            <input type="checkbox" checked={traveling} onChange={e => setTraveling(e.target.checked)} style={{ width: '18px', height: '18px', accentColor: 'var(--accent-warning)' }} />
             <span><strong>I'm currently traveling</strong></span>
           </label>
-          <p style={{ color: '#6a8a6a', fontSize: '0.75rem', margin: '4px 0 0' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', margin: '4px 0 0' }}>
             {traveling ? 'Your profile shows you as traveling. Community members will see you\'re on the move.' : 'Your profile shows your home location. Toggle this on when traveling.'}
           </p>
           {traveling && savedLocations.length > 0 && (
-            <div style={{ marginTop: '12px', padding: '12px', background: 'rgba(255, 193, 7, 0.05)', borderRadius: '8px', border: '1px solid rgba(255, 193, 7, 0.15)' }}>
-              <label style={{ display: 'block', marginBottom: '6px', color: '#ffc107', fontSize: '0.8rem', fontWeight: 600 }}>✈️ Set Current Location From Saved</label>
+            <div style={{ marginTop: '12px', padding: '12px', background: 'var(--bg-tertiary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+              <label style={{ display: 'block', marginBottom: '6px', color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 600 }}>✈️ Set Current Location From Saved</label>
               <select onChange={e => {
                 const loc = savedLocations.find(l => l.id === e.target.value)
                 if (loc) { setLocation(loc.location); setLatitude(loc.latitude); setLongitude(loc.longitude); handleSavePassport() }
-              }} style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255, 193, 7, 0.3)', borderRadius: '8px', color: '#ffc107', fontSize: '0.875rem' }}>
+              }} style={{ width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.875rem' }}>
                 <option value="">Select a saved location...</option>
                 {savedLocations.filter(l => l.latitude && l.longitude).map(l => <option key={l.id} value={l.id}>{l.name} — {l.location}</option>)}
               </select>
@@ -346,29 +350,29 @@ export default function PassportPage() {
         </div>
 
         <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', color: '#88aa88' }}>GPS Coordinates</label>
+          <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>GPS Coordinates</label>
           <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-            <button onClick={handleGeolocate} disabled={geoLoading} style={{ padding: '8px 16px', background: '#4ade80', color: '#0d1a0d', border: 'none', borderRadius: '8px', cursor: geoLoading ? 'not-allowed' : 'pointer', fontWeight: 600, fontSize: '0.875rem' }}>
+            <button onClick={handleGeolocate} disabled={geoLoading} style={{ padding: '8px 16px', background: 'var(--accent-success)', color: '#fff', border: 'none', borderRadius: '8px', cursor: geoLoading ? 'not-allowed' : 'pointer', fontWeight: 600, fontSize: '0.875rem' }}>
               {geoLoading ? 'Locating...' : '📍 Auto-Detect'}
             </button>
             {latitude && longitude && (
-              <button onClick={handleClearLocation} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid #ff6b6b', color: '#ff6b6b', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem' }}>Clear</button>
+              <button onClick={handleClearLocation} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--accent-secondary)', color: 'var(--accent-secondary)', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem' }}>Clear</button>
             )}
           </div>
           {latitude && longitude && (
-            <div style={{ display: 'flex', gap: '12px', padding: '10px', background: 'rgba(0,0,0,0.2)', borderRadius: '6px', marginBottom: '8px' }}>
-              <div style={{ flex: 1 }}><span style={{ fontSize: '0.7rem', color: '#6a8a6a' }}>Latitude</span><div style={{ fontFamily: 'monospace', color: '#88bb88', fontSize: '0.875rem' }}>{latitude.toFixed(6)}</div></div>
-              <div style={{ flex: 1 }}><span style={{ fontSize: '0.7rem', color: '#6a8a6a' }}>Longitude</span><div style={{ fontFamily: 'monospace', color: '#88bb88', fontSize: '0.875rem' }}>{longitude.toFixed(6)}</div></div>
+            <div style={{ display: 'flex', gap: '12px', padding: '10px', background: 'var(--bg-tertiary)', borderRadius: '6px', marginBottom: '8px' }}>
+              <div style={{ flex: 1 }}><span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Latitude</span><div style={{ fontFamily: 'monospace', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>{latitude.toFixed(6)}</div></div>
+              <div style={{ flex: 1 }}><span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Longitude</span><div style={{ fontFamily: 'monospace', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>{longitude.toFixed(6)}</div></div>
             </div>
           )}
           {!latitude && !longitude && (
-            <p style={{ color: '#6a8a6a', fontSize: '0.8rem', margin: 0, padding: '8px 10px', background: 'rgba(0,0,0,0.15)', borderRadius: '6px' }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', margin: 0, padding: '8px 10px', background: 'var(--bg-tertiary)', borderRadius: '6px' }}>
               No coordinates set. Use auto-detect above, or they will be derived from your location on save.
             </p>
           )}
         </div>
 
-        <button onClick={handleSavePassport} disabled={saving} style={{ padding: '10px 20px', background: '#4ade80', color: '#0d1a0d', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>
+        <button onClick={handleSavePassport} disabled={saving} style={{ padding: '10px 20px', background: 'var(--accent-success)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>
           {saving ? 'Saving...' : 'Save Passport'}
         </button>
       </div>
@@ -405,11 +409,11 @@ export default function PassportPage() {
       )}
 
       {/* Saved Locations Section */}
-      <div style={{ background: 'linear-gradient(135deg, #1a1a2a 0%, #0d0d1a 100%)', border: '1px solid #2a2a4a', borderRadius: '12px', padding: '24px', marginBottom: '20px' }}>
+      <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '24px', marginBottom: '20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ margin: 0, color: '#7f7fff' }}>📍 Saved Locations</h2>
+          <h2 style={{ margin: 0, color: 'var(--accent-primary)' }}>📍 Saved Locations</h2>
           <button onClick={() => { setShowLocationForm(true); setLocationForm({ name: '', location: '', latitude: '', longitude: '', categoryId: '' }) }}
-            style={{ padding: '8px 16px', background: '#7f7fff', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>
+            style={{ padding: '8px 16px', background: 'var(--accent-primary)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>
             + Add Location
           </button>
         </div>
@@ -421,11 +425,11 @@ export default function PassportPage() {
         )}
 
         {savedLocations.map(loc => (
-          <div key={loc.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', marginBottom: '8px', border: loc.isPrimary ? '1px solid #7f7fff' : '1px solid rgba(255,255,255,0.05)' }}>
+          <div key={loc.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', background: 'var(--bg-tertiary)', borderRadius: '10px', marginBottom: '8px', border: loc.isPrimary ? '1px solid var(--accent-primary)' : '1px solid var(--border-color)' }}>
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                <span style={{ fontWeight: 600, fontSize: '0.9rem', color: '#c0c0ff' }}>{loc.name}</span>
-                {loc.isPrimary && <span style={{ fontSize: '0.7rem', padding: '2px 8px', background: '#7f7fff', color: '#fff', borderRadius: '10px', fontWeight: 600 }}>Primary</span>}
+                <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)' }}>{loc.name}</span>
+                {loc.isPrimary && <span style={{ fontSize: '0.7rem', padding: '2px 8px', background: 'var(--accent-primary)', color: '#fff', borderRadius: '10px', fontWeight: 600 }}>Primary</span>}
                 {loc.category && <span style={{ fontSize: '0.7rem', padding: '2px 8px', background: `${loc.category.color}20`, color: loc.category.color, borderRadius: '10px', fontWeight: 500, border: `1px solid ${loc.category.color}40` }}>{loc.category.icon} {loc.category.name}</span>}
               </div>
               <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{loc.location}</div>
@@ -433,33 +437,43 @@ export default function PassportPage() {
                 <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: '2px' }}>{loc.latitude.toFixed(4)}, {loc.longitude.toFixed(4)}</div>
               )}
             </div>
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-              <button onClick={() => handleEditLocation(loc)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #4ade80', borderRadius: '6px', color: '#4ade80', cursor: 'pointer', fontSize: '0.8rem' }}>Edit</button>
-              {!loc.isPrimary && <button onClick={() => handleSetPrimaryLocation(loc.id)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #7f7fff', borderRadius: '6px', color: '#7f7fff', cursor: 'pointer', fontSize: '0.8rem' }}>Set Primary</button>}
-              <button onClick={() => { setLocation(loc.location); setLatitude(loc.latitude); setLongitude(loc.longitude); setTraveling(false); handleSavePassport() }} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #f59e0b', borderRadius: '6px', color: '#f59e0b', cursor: 'pointer', fontSize: '0.8rem' }}>🏠 Set as Home</button>
-              <button onClick={() => handleDeleteLocation(loc.id)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #ff6b6b', borderRadius: '6px', color: '#ff6b6b', cursor: 'pointer', fontSize: '0.8rem' }}>Delete</button>
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+              <button onClick={() => handleEditLocation(loc)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-success)', borderRadius: '6px', color: 'var(--accent-success)', cursor: 'pointer', fontSize: '0.8rem' }}>Edit</button>
+              {!loc.isPrimary && <button onClick={() => handleSetPrimaryLocation(loc.id)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-primary)', borderRadius: '6px', color: 'var(--accent-primary)', cursor: 'pointer', fontSize: '0.8rem' }}>Set Primary</button>}
+              <button onClick={() => { setLocation(loc.location); setLatitude(loc.latitude); setLongitude(loc.longitude); setTraveling(false); handleSavePassport() }} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-warning)', borderRadius: '6px', color: 'var(--accent-warning)', cursor: 'pointer', fontSize: '0.8rem' }}>🏠 Set as Home</button>
+              {categories.length > 0 && (
+                <select value={loc.categoryId || ''} onChange={e => {
+                  const categoryId = e.target.value || null
+                  fetch(`/api/users/locations/${loc.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ categoryId }) })
+                    .then(r => { if (r.ok) r.json().then(u => setSavedLocations(prev => prev.map(l => l.id === loc.id ? { ...l, categoryId, category: categories.find(c => c.id === categoryId) || null } : l))); else toastError('Failed') }).catch(() => {})
+                }} style={{ fontSize: '0.75rem', padding: '4px 6px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)' }}>
+                  <option value="">Category</option>
+                  {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>)}
+                </select>
+              )}
+              <button onClick={() => handleDeleteLocation(loc.id)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-secondary)', borderRadius: '6px', color: 'var(--accent-secondary)', cursor: 'pointer', fontSize: '0.8rem' }}>Delete</button>
             </div>
           </div>
         ))}
 
         {showLocationForm && (
-          <form onSubmit={handleSaveLocation} style={{ marginTop: '16px', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <h3 style={{ marginTop: 0, fontSize: '1rem', color: '#c0c0ff' }}>{editingLocationId ? 'Edit Location' : 'Add New Location'}</h3>
+          <form onSubmit={handleSaveLocation} style={{ marginTop: '16px', padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+            <h3 style={{ marginTop: 0, fontSize: '1rem', color: 'var(--accent-primary)' }}>{editingLocationId ? 'Edit Location' : 'Add New Location'}</h3>
 
             <div style={{ marginBottom: '12px' }}>
-              <label style={{ display: 'block', marginBottom: '6px', color: '#8888aa', fontSize: '0.875rem' }}>Location Name</label>
+              <label style={{ display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Location Name</label>
               <input type="text" value={locationForm.name} onChange={e => setLocationForm({ ...locationForm, name: e.target.value })} placeholder="e.g., Home, Office, Favorite Cafe..." required
-                style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a2a4a', borderRadius: '8px', color: '#c0c0ff', fontSize: '0.875rem' }} />
+                style={{ width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.875rem' }} />
             </div>
 
             <div style={{ marginBottom: '12px' }}>
-              <label style={{ display: 'block', marginBottom: '6px', color: '#8888aa', fontSize: '0.875rem' }}>Search or drop a pin</label>
+              <label style={{ display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Search or drop a pin</label>
               <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '8px' }}>
                 <input type="text" value={addSearch} onChange={e => setAddSearch(e.target.value)}
                   placeholder="e.g., Central Park, New York" onKeyDown={e => e.key === 'Enter' && handleAddSearch()}
-                  style={{ flex: 1, padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a2a4a', borderRadius: '8px', color: '#c0c0ff', fontSize: '0.875rem' }} />
+                  style={{ flex: 1, padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.875rem' }} />
                 <button type="button" onClick={handleAddSearch} disabled={addSearchLoading}
-                  style={{ padding: '10px 16px', background: '#7f7fff', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, fontSize: '0.875rem' }}>
+                  style={{ padding: '10px 16px', background: 'var(--accent-primary)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, fontSize: '0.875rem' }}>
                   {addSearchLoading ? '...' : 'Search'}
                 </button>
               </div>
@@ -479,15 +493,15 @@ export default function PassportPage() {
             </div>
 
             <div style={{ marginBottom: '12px' }}>
-              <label style={{ display: 'block', marginBottom: '6px', color: '#8888aa', fontSize: '0.875rem' }}>Address</label>
+              <label style={{ display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Address</label>
               <input type="text" value={locationForm.location} onChange={e => setLocationForm({ ...locationForm, location: e.target.value })} placeholder="Auto-filled from search or pin-drop" required
-                style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a2a4a', borderRadius: '8px', color: '#c0c0ff', fontSize: '0.875rem' }} />
+                style={{ width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.875rem' }} />
             </div>
 
             <div style={{ marginBottom: '12px' }}>
-              <label style={{ display: 'block', marginBottom: '6px', color: '#8888aa', fontSize: '0.875rem' }}>Category</label>
+              <label style={{ display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Category</label>
               <select value={locationForm.categoryId} onChange={e => setLocationForm({ ...locationForm, categoryId: e.target.value })}
-                style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a2a4a', borderRadius: '8px', color: '#c0c0ff', fontSize: '0.875rem' }}>
+                style={{ width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.875rem' }}>
                 <option value="">No category</option>
                 {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>)}
               </select>
@@ -495,10 +509,10 @@ export default function PassportPage() {
 
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
               <button type="button" onClick={() => { setShowLocationForm(false); setLocationForm({ name: '', location: '', latitude: '', longitude: '', categoryId: '' }); setAddLat(''); setAddLng(''); setAddSearch('') }}
-                style={{ padding: '8px 16px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem' }}>Cancel</button>
+                style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem' }}>Cancel</button>
               <button type="submit" disabled={locationSaving}
-                style={{ padding: '8px 16px', background: '#7f7fff', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500, fontSize: '0.875rem' }}>
-                {locationSaving ? 'Saving...' : 'Save Location'}
+                style={{ padding: '8px 16px', background: 'var(--accent-primary)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500, fontSize: '0.875rem' }}>
+                {locationSaving ? 'Saving...' : editingLocationId ? 'Save Changes' : 'Save Location'}
               </button>
             </div>
           </form>
@@ -506,11 +520,11 @@ export default function PassportPage() {
       </div>
 
       {/* Location Categories Section */}
-      <div style={{ background: 'linear-gradient(135deg, #1a1a2a 0%, #0d0d1a 100%)', border: '1px solid #2a2a4a', borderRadius: '12px', padding: '24px', marginBottom: '20px' }}>
+      <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '24px', marginBottom: '20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ margin: 0, color: '#7f7fff' }}>🗂️ Location Categories</h2>
-          <button onClick={() => setShowCategoryForm(!showCategoryForm)}
-            style={{ padding: '8px 16px', background: '#7f7fff', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>
+          <h2 style={{ margin: 0, color: 'var(--accent-primary)' }}>🗂️ Location Categories</h2>
+          <button onClick={() => { setShowCategoryForm(true); setEditingCategory(null); setCategoryForm({ name: '', icon: '📍', color: '#3b82f6' }) }}
+            style={{ padding: '8px 16px', background: 'var(--accent-primary)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>
             + Add Category
           </button>
         </div>
@@ -522,40 +536,48 @@ export default function PassportPage() {
         )}
 
         {categories.map(cat => (
-          <div key={cat.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', marginBottom: '8px', border: `1px solid ${cat.color}40` }}>
+          <div key={cat.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', background: 'var(--bg-tertiary)', borderRadius: '10px', marginBottom: '8px', border: `1px solid ${cat.color}40` }}>
             <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: cat.color, display: 'inline-block', flexShrink: 0 }} />
             <span style={{ fontSize: '1.2rem' }}>{cat.icon}</span>
-            <div style={{ flex: 1 }}><div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#c0c0ff' }}>{cat.name}</div></div>
-            <button onClick={() => handleEditCategory(cat)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #4ade80', borderRadius: '6px', color: '#4ade80', cursor: 'pointer', fontSize: '0.8rem' }}>Edit</button>
-            <button onClick={() => handleDeleteCategory(cat.id)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #ff6b6b', borderRadius: '6px', color: '#ff6b6b', cursor: 'pointer', fontSize: '0.8rem' }}>Delete</button>
+            <div style={{ flex: 1 }}><div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)' }}>{cat.name}</div></div>
+            <button onClick={() => handleEditCategory(cat)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-success)', borderRadius: '6px', color: 'var(--accent-success)', cursor: 'pointer', fontSize: '0.8rem' }}>Edit</button>
+            <button onClick={() => handleDeleteCategory(cat.id)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-secondary)', borderRadius: '6px', color: 'var(--accent-secondary)', cursor: 'pointer', fontSize: '0.8rem' }}>Delete</button>
           </div>
         ))}
 
         {showCategoryForm && (
-          <form onSubmit={editingCategory ? handleUpdateCategory : handleAddCategory} style={{ marginTop: '16px', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <h3 style={{ marginTop: 0, fontSize: '1rem', color: '#c0c0ff' }}>{editingCategory ? 'Edit Category' : 'New Category'}</h3>
+          <form onSubmit={editingCategory ? handleUpdateCategory : handleAddCategory} style={{ marginTop: '16px', padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+            <h3 style={{ marginTop: 0, fontSize: '1rem', color: 'var(--accent-primary)' }}>{editingCategory ? 'Edit Category' : 'New Category'}</h3>
             <div style={{ marginBottom: '12px' }}>
-              <label style={{ display: 'block', marginBottom: '6px', color: '#8888aa', fontSize: '0.875rem' }}>Name</label>
+              <label style={{ display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Name</label>
               <input type="text" value={categoryForm.name} onChange={e => setCategoryForm({ ...categoryForm, name: e.target.value })} placeholder="e.g., Camping, Restaurants, Shops" required
-                style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a2a4a', borderRadius: '8px', color: '#c0c0ff', fontSize: '0.875rem' }} />
+                style={{ width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.875rem' }} />
             </div>
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', marginBottom: '6px', color: '#8888aa', fontSize: '0.875rem' }}>Icon (emoji)</label>
-                <input type="text" value={categoryForm.icon} onChange={e => setCategoryForm({ ...categoryForm, icon: e.target.value })} placeholder="📍"
-                  style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a2a4a', borderRadius: '8px', color: '#c0c0ff', fontSize: '0.875rem' }} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', marginBottom: '6px', color: '#8888aa', fontSize: '0.875rem' }}>Color</label>
-                <input type="color" value={categoryForm.color} onChange={e => setCategoryForm({ ...categoryForm, color: e.target.value })}
-                  style={{ width: '100%', height: '40px', padding: '4px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a2a4a', borderRadius: '8px', cursor: 'pointer' }} />
+
+            {/* Icon picker */}
+            <div style={{ marginBottom: '12px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Icon</label>
+              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                {['📍','🏠','🏢','🏕️','⛺','🏖️','🏔️','🌲','🌊','🏛️','🍽️','☕','🍺','🛒','🏪','⛽','🅿️','🚉','🏥','💊','📚','🎭','🏟️','⛪','🌄','🌋','🏜️','🌵','🌸','🎪','⚽','🎯','🎨','🎵','🛠️','🚜','🐾','🌻'].map(ic => (
+                  <button key={ic} type="button" onClick={() => setCategoryForm({ ...categoryForm, icon: ic })}
+                    style={{ fontSize: '1.2rem', padding: '4px 6px', cursor: 'pointer', background: categoryForm.icon === ic ? 'var(--accent-primary)' : 'var(--bg-secondary)', border: categoryForm.icon === ic ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)', borderRadius: '6px', lineHeight: 1 }}>
+                    {ic}
+                  </button>
+                ))}
               </div>
             </div>
+
+            <div style={{ marginBottom: '12px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Color</label>
+              <input type="color" value={categoryForm.color} onChange={e => setCategoryForm({ ...categoryForm, color: e.target.value })}
+                style={{ width: '100%', height: '40px', padding: '4px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer' }} />
+            </div>
+
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
               <button type="button" onClick={() => { setEditingCategory(null); setShowCategoryForm(false); setCategoryForm({ name: '', icon: '📍', color: '#3b82f6' }) }}
                 style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer' }}>Cancel</button>
               <button type="submit" disabled={!categoryForm.name.trim() || categorySaving}
-                style={{ padding: '8px 16px', background: '#7f7fff', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500 }}>
+                style={{ padding: '8px 16px', background: 'var(--accent-primary)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500 }}>
                 {categorySaving ? 'Saving...' : editingCategory ? 'Save Changes' : 'Add Category'}
               </button>
             </div>
