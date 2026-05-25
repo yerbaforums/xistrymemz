@@ -111,6 +111,9 @@ export default function HeroSection() {
           <Link href="/directory" className={styles.btnSecondary}>
             📋 {t('heroBrowseDirectory')}
           </Link>
+          <Link href="/dashboard/passport" className={styles.btnSecondary}>
+            🌍 Passport
+          </Link>
           <Link href="/about" className={styles.btnSecondary}>
             {t('heroLearnMore')}
           </Link>
