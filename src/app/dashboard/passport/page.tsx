@@ -4,6 +4,14 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
+import dynamic from 'next/dynamic'
+
+const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
+const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
+const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false })
+const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false })
+
+const MapClickHandlerComponent = dynamic(() => import('@/components/MapClickHandler').then(m => m.default), { ssr: false })
 
 interface UserLocation {
   id: string
@@ -49,6 +57,19 @@ export default function PassportPage() {
   const [showCategoryForm, setShowCategoryForm] = useState(false)
   const [categoryForm, setCategoryForm] = useState({ name: '', icon: '📍', color: '#3b82f6' })
   const [categorySaving, setCategorySaving] = useState(false)
+
+  // Map state
+  const [mapReady, setMapReady] = useState(false)
+  const [addSearch, setAddSearch] = useState('')
+  const [addSearchLoading, setAddSearchLoading] = useState(false)
+  const [addLat, setAddLat] = useState<string>('')
+  const [addLng, setAddLng] = useState<string>('')
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setTimeout(() => setMapReady(true), 200)
+    }
+  }, [])
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/auth/login')
@@ -109,6 +130,28 @@ export default function PassportPage() {
     finally { setSaving(false) }
   }
 
+  const handleAddSearch = async () => {
+    if (!addSearch.trim()) return
+    setAddSearchLoading(true)
+    try {
+      const { geocodeLocation } = await import('@/lib/geocoding')
+      const result = await geocodeLocation(addSearch)
+      if (result) {
+        setAddLat(String(result.latitude))
+        setAddLng(String(result.longitude))
+        setLocationForm(prev => ({ ...prev, location: result.displayName }))
+      }
+    } catch {} finally { setAddSearchLoading(false) }
+  }
+
+  const handleAddMapClick = (lat: number, lng: number) => {
+    setAddLat(String(lat))
+    setAddLng(String(lng))
+    import('@/lib/geocoding').then(m => m.reverseGeocodeLocation(lat, lng)).then(addr => {
+      if (addr) setLocationForm(prev => ({ ...prev, location: addr }))
+    })
+  }
+
   // Location CRUD
   const handleAddLocation = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -120,8 +163,8 @@ export default function PassportPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: locationForm.name, location: locationForm.location,
-          latitude: locationForm.latitude ? parseFloat(locationForm.latitude) : null,
-          longitude: locationForm.longitude ? parseFloat(locationForm.longitude) : null,
+          latitude: addLat ? parseFloat(addLat) : null,
+          longitude: addLng ? parseFloat(addLng) : null,
           categoryId: locationForm.categoryId || null
         })
       })
@@ -129,6 +172,7 @@ export default function PassportPage() {
         const newLoc = await res.json()
         setSavedLocations(prev => [...prev, newLoc])
         setLocationForm({ name: '', location: '', latitude: '', longitude: '', categoryId: '' })
+        setAddLat(''); setAddLng(''); setAddSearch('')
         setShowLocationForm(false)
         toastSuccess('Location added')
       } else {
@@ -269,6 +313,29 @@ export default function PassportPage() {
         </button>
       </div>
 
+      {/* Map */}
+      {mapReady && (
+        <div style={{ height: '300px', borderRadius: '12px', overflow: 'hidden', marginBottom: '20px', border: '1px solid var(--border-color)' }}>
+          <MapContainer center={latitude ? [latitude, longitude!] : savedLocations.find(l => l.latitude && l.longitude) ? [savedLocations.find(l => l.latitude && l.longitude)!.latitude!, savedLocations.find(l => l.latitude && l.longitude)!.longitude!] : [20, 0]}
+            zoom={latitude || savedLocations.some(l => l.latitude) ? 5 : 2} style={{ width: '100%', height: '100%' }}>
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            {latitude && longitude && (
+              <Marker position={[latitude, longitude]}>
+                <Popup><strong>📍 Home</strong><br />{location || 'Your location'}</Popup>
+              </Marker>
+            )}
+            {savedLocations.filter(l => l.latitude && l.longitude).map(loc => (
+              <Marker key={loc.id} position={[loc.latitude!, loc.longitude!]}>
+                <Popup>
+                  <strong>{loc.name}</strong><br />{loc.location}
+                  {loc.category && <><br /><span style={{ color: loc.category.color }}>{loc.category.icon} {loc.category.name}</span></>}
+                </Popup>
+              </Marker>
+            ))}
+          </MapContainer>
+        </div>
+      )}
+
       {/* Saved Locations Section */}
       <div style={{ background: 'linear-gradient(135deg, #1a1a2a 0%, #0d0d1a 100%)', border: '1px solid #2a2a4a', borderRadius: '12px', padding: '24px', marginBottom: '20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -291,7 +358,7 @@ export default function PassportPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                 <span style={{ fontWeight: 600, fontSize: '0.9rem', color: '#c0c0ff' }}>{loc.name}</span>
                 {loc.isPrimary && <span style={{ fontSize: '0.7rem', padding: '2px 8px', background: '#7f7fff', color: '#fff', borderRadius: '10px', fontWeight: 600 }}>Primary</span>}
-                {loc.category && <span style={{ fontSize: '0.7rem', padding: '2px 8px', background: 'rgba(127,127,255,0.15)', color: '#c0c0ff', borderRadius: '10px', fontWeight: 500 }}>{loc.category.icon} {loc.category.name}</span>}
+                {loc.category && <span style={{ fontSize: '0.7rem', padding: '2px 8px', background: `${loc.category.color}20`, color: loc.category.color, borderRadius: '10px', fontWeight: 500, border: `1px solid ${loc.category.color}40` }}>{loc.category.icon} {loc.category.name}</span>}
               </div>
               <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{loc.location}</div>
               {loc.latitude && loc.longitude && (
@@ -308,16 +375,45 @@ export default function PassportPage() {
         {showLocationForm && (
           <form onSubmit={handleAddLocation} style={{ marginTop: '16px', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
             <h3 style={{ marginTop: 0, fontSize: '1rem', color: '#c0c0ff' }}>Add New Location</h3>
+
             <div style={{ marginBottom: '12px' }}>
               <label style={{ display: 'block', marginBottom: '6px', color: '#8888aa', fontSize: '0.875rem' }}>Location Name</label>
               <input type="text" value={locationForm.name} onChange={e => setLocationForm({ ...locationForm, name: e.target.value })} placeholder="e.g., Home, Office, Favorite Cafe..." required
                 style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a2a4a', borderRadius: '8px', color: '#c0c0ff', fontSize: '0.875rem' }} />
             </div>
+
             <div style={{ marginBottom: '12px' }}>
-              <label style={{ display: 'block', marginBottom: '6px', color: '#8888aa', fontSize: '0.875rem' }}>Address / Description</label>
-              <input type="text" value={locationForm.location} onChange={e => setLocationForm({ ...locationForm, location: e.target.value })} placeholder="e.g., 123 Main St, City, Country" required
+              <label style={{ display: 'block', marginBottom: '6px', color: '#8888aa', fontSize: '0.875rem' }}>Search or drop a pin</label>
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '8px' }}>
+                <input type="text" value={addSearch} onChange={e => setAddSearch(e.target.value)}
+                  placeholder="e.g., Central Park, New York" onKeyDown={e => e.key === 'Enter' && handleAddSearch()}
+                  style={{ flex: 1, padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a2a4a', borderRadius: '8px', color: '#c0c0ff', fontSize: '0.875rem' }} />
+                <button type="button" onClick={handleAddSearch} disabled={addSearchLoading}
+                  style={{ padding: '10px 16px', background: '#7f7fff', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, fontSize: '0.875rem' }}>
+                  {addSearchLoading ? '...' : 'Search'}
+                </button>
+              </div>
+              {mapReady && (
+                <div style={{ height: '200px', borderRadius: '8px', overflow: 'hidden' }}>
+                  <MapContainer center={addLat && addLng ? [parseFloat(addLat), parseFloat(addLng)] : [20, 0]} zoom={addLat && addLng ? 14 : 2} style={{ width: '100%', height: '100%' }}>
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                    <MapClickHandlerComponent onClick={handleAddMapClick} />
+                    {addLat && addLng && (
+                      <Marker position={[parseFloat(addLat), parseFloat(addLng)]}>
+                        <Popup>{locationForm.location || locationForm.name}</Popup>
+                      </Marker>
+                    )}
+                  </MapContainer>
+                </div>
+              )}
+            </div>
+
+            <div style={{ marginBottom: '12px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', color: '#8888aa', fontSize: '0.875rem' }}>Address</label>
+              <input type="text" value={locationForm.location} onChange={e => setLocationForm({ ...locationForm, location: e.target.value })} placeholder="Auto-filled from search or pin-drop" required
                 style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a2a4a', borderRadius: '8px', color: '#c0c0ff', fontSize: '0.875rem' }} />
             </div>
+
             <div style={{ marginBottom: '12px' }}>
               <label style={{ display: 'block', marginBottom: '6px', color: '#8888aa', fontSize: '0.875rem' }}>Category</label>
               <select value={locationForm.categoryId} onChange={e => setLocationForm({ ...locationForm, categoryId: e.target.value })}
@@ -326,20 +422,9 @@ export default function PassportPage() {
                 {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>)}
               </select>
             </div>
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', marginBottom: '6px', color: '#8888aa', fontSize: '0.875rem' }}>Latitude</label>
-                <input type="number" step="any" value={locationForm.latitude} onChange={e => setLocationForm({ ...locationForm, latitude: e.target.value })} placeholder="51.5074"
-                  style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a2a4a', borderRadius: '8px', color: '#c0c0ff', fontSize: '0.875rem' }} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', marginBottom: '6px', color: '#8888aa', fontSize: '0.875rem' }}>Longitude</label>
-                <input type="number" step="any" value={locationForm.longitude} onChange={e => setLocationForm({ ...locationForm, longitude: e.target.value })} placeholder="-0.1278"
-                  style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a2a4a', borderRadius: '8px', color: '#c0c0ff', fontSize: '0.875rem' }} />
-              </div>
-            </div>
+
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-              <button type="button" onClick={() => { setShowLocationForm(false); setLocationForm({ name: '', location: '', latitude: '', longitude: '', categoryId: '' }) }}
+              <button type="button" onClick={() => { setShowLocationForm(false); setLocationForm({ name: '', location: '', latitude: '', longitude: '', categoryId: '' }); setAddLat(''); setAddLng(''); setAddSearch('') }}
                 style={{ padding: '8px 16px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem' }}>Cancel</button>
               <button type="submit" disabled={locationSaving}
                 style={{ padding: '8px 16px', background: '#7f7fff', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500, fontSize: '0.875rem' }}>
@@ -367,8 +452,9 @@ export default function PassportPage() {
         )}
 
         {categories.map(cat => (
-          <div key={cat.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', marginBottom: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <span style={{ fontSize: '1.5rem' }}>{cat.icon}</span>
+          <div key={cat.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', marginBottom: '8px', border: `1px solid ${cat.color}40` }}>
+            <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: cat.color, display: 'inline-block', flexShrink: 0 }} />
+            <span style={{ fontSize: '1.2rem' }}>{cat.icon}</span>
             <div style={{ flex: 1 }}><div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#c0c0ff' }}>{cat.name}</div></div>
             <button onClick={() => handleDeleteCategory(cat.id)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #ff6b6b', borderRadius: '6px', color: '#ff6b6b', cursor: 'pointer', fontSize: '0.8rem' }}>Delete</button>
           </div>
