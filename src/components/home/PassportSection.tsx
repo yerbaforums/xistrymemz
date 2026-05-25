@@ -37,7 +37,7 @@ export default function PassportSection() {
             <p>{t('passportUserClassesDesc')}</p>
           </div>
         </div>
-        <Link href="/profile/edit" className={styles.cta}>
+        <Link href="/dashboard/passport" className={styles.cta}>
           {t('passportCta')}
         </Link>
       </div>
