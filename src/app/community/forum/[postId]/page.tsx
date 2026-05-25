@@ -9,6 +9,7 @@ import HashtagText from '@/components/HashtagText'
 import styles from '../../community.module.css'
 import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
+import TranslateButton from '@/components/TranslateButton'
 
 interface Author {
   id: string
@@ -413,7 +414,10 @@ export default function ForumThreadPage() {
               </div>
             </div>
           ) : (
-            <div><HashtagText text={post.content} mentionLinks /></div>
+            <>
+              <div><HashtagText text={post.content} mentionLinks /></div>
+              <TranslateButton text={post.content} />
+            </>
           )}
         </div>
 
@@ -550,7 +554,10 @@ export default function ForumThreadPage() {
                       </div>
                     </div>
                   ) : (
-                    <div><HashtagText text={reply.content} mentionLinks /></div>
+                    <>
+                      <div><HashtagText text={reply.content} mentionLinks /></div>
+                      <TranslateButton text={reply.content} />
+                    </>
                   )}
                 </div>
                 

@@ -1,10 +1,12 @@
 'use client'
 
 import { useRef, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import styles from './HeroSection.module.css'
 
 export default function HeroSection() {
+  const t = useTranslations('home')
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -94,28 +96,27 @@ export default function HeroSection() {
           <span>XistrYmemZ</span>
         </div>
         <h1 className={styles.title}>
-          The <span className={styles.accent}>Cosmic Whitepages</span> Cooperative
+          {t('heroTitle')}
         </h1>
         <p className={styles.subtitle}>
-          Build, share, and grow together — ad-free, AI-free, no data selling, no algorithms, no shadowbanning, no censorship.
-          Sign up and start creating something extraordinary with the community.
+          {t('heroSubtitle')}
         </p>
         <div className={styles.actions}>
           <Link href="/auth/register" className={styles.btnPrimary}>
-            Join the Coop <span className={styles.arrow}>→</span>
+            {t('heroCta')} <span className={styles.arrow}>→</span>
           </Link>
           <Link href="/shops" className={styles.btnSecondary}>
-            Browse Shops
+            {t('heroBrowseShops')}
           </Link>
           <Link href="/about" className={styles.btnSecondary}>
-            Learn More
+            {t('heroLearnMore')}
           </Link>
         </div>
         <div className={styles.searchWrap}>
           <span className={styles.searchIcon}>🔍</span>
           <input
             className={styles.searchInput}
-            placeholder="Search services, projects, people, hashtags..."
+            placeholder={t('heroSearchPlaceholder')}
             onKeyDown={e => {
               if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
                 window.location.href = `/search?q=${encodeURIComponent((e.target as HTMLInputElement).value.trim())}`
@@ -125,24 +126,19 @@ export default function HeroSection() {
         </div>
         <div className={styles.heroStats}>
           <div className={styles.stat}>
-            <span className={styles.statValue}>Open</span>
-            <span className={styles.statLabel}>Source</span>
+            <span className={styles.statValue}>{t('featureOpenSource')}</span>
           </div>
           <div className={styles.stat}>
-            <span className={styles.statValue}>Free</span>
-            <span className={styles.statLabel}>Forever</span>
+            <span className={styles.statValue}>{t('featureFreeForever')}</span>
           </div>
           <div className={styles.stat}>
-            <span className={styles.statValue}>Ad</span>
-            <span className={styles.statLabel}>Free</span>
+            <span className={styles.statValue}>{t('featureAdFree')}</span>
           </div>
           <div className={styles.stat}>
-            <span className={styles.statValue}>No Data</span>
-            <span className={styles.statLabel}>Sold</span>
+            <span className={styles.statValue}>{t('featureNoDataSold')}</span>
           </div>
           <div className={styles.stat}>
-            <span className={styles.statValue}>AI</span>
-            <span className={styles.statLabel}>Free</span>
+            <span className={styles.statValue}>{t('featureAiFree')}</span>
           </div>
         </div>
       </div>

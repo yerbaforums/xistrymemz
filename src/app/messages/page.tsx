@@ -6,6 +6,7 @@ import { useEffect, useState, useRef, Suspense } from 'react'
 import Link from 'next/link'
 import styles from './messages.module.css'
 import { getUserProfileUrl } from '@/lib/utils'
+import TranslateButton from '@/components/TranslateButton'
 
 interface User {
   id: string
@@ -233,6 +234,7 @@ function MessagesContent() {
                       )}
                       <div className={styles.messageBubble}>
                         <p>{message.content}</p>
+                        <TranslateButton text={message.content} />
                         <span className={styles.messageTime}>
                           {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import dynamic from 'next/dynamic'
 import styles from './HomeMap.module.css'
 import { useTheme } from '@/context/ThemeContext'
@@ -45,6 +46,7 @@ function calculateCenter(items: MapItem[]): [number, number] {
 }
 
 export default function HomeMap() {
+  const t = useTranslations('homeMap')
   const { mode } = useTheme()
   const [items, setItems] = useState<MapItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -65,13 +67,13 @@ export default function HomeMap() {
 
   return (
     <section className={styles.section}>
-      <h2 className={styles.title}>Global Activity Map</h2>
-      <p className={styles.subtitle}>Discover what&apos;s happening around the world</p>
+      <h2 className={styles.title}>{t('title')}</h2>
+      <p className={styles.subtitle}>{t('subtitle')}</p>
       <div className={styles.mapWrap}>
         {loading ? (
-          <div className={styles.loading}>Loading map...</div>
+          <div className={styles.loading}>{t('loading')}</div>
         ) : items.length === 0 ? (
-          <div className={styles.loading}>No locations yet</div>
+          <div className={styles.loading}>{t('noLocations')}</div>
         ) : (
           <MapContainer center={center} zoom={3} className={styles.map} scrollWheelZoom={false}>
             <TileLayer
@@ -92,9 +94,7 @@ export default function HomeMap() {
           </MapContainer>
         )}
       </div>
-      <p className={styles.footer}>
-        {items.length} pinned locations across Products, Events, Projects, Requests &amp; Shops
-      </p>
+      <p className={styles.footer}>{t('footer', { count: items.length })}</p>
     </section>
   )
 }

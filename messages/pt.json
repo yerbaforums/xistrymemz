@@ -93,6 +93,23 @@
     "builtWith": "Construído com OpenCode e Next.js",
     "copyright": "© {year} XistrYmemZ"
   },
+  "homeFooter": {
+    "about": "Sobre",
+    "help": "Ajuda",
+    "community": "Comunidade",
+    "forum": "Fórum",
+    "requests": "Solicitações",
+    "privacy": "Privacidade",
+    "terms": "Termos",
+    "copyright": "© {year} XistrYmemZ — Cooperativa Cósmica das Páginas Brancas"
+  },
+  "homeMap": {
+    "title": "Mapa de Atividade Global",
+    "subtitle": "Descubra o que está acontecendo ao redor do mundo",
+    "loading": "Carregando mapa...",
+    "noLocations": "Nenhuma localização ainda",
+    "footer": "{count} localizações fixadas em Produtos, Eventos, Projetos, Solicitações e Lojas"
+  },
   "home": {
     "heroTitle": "A Cooperativa da Lista Cósmica Universal",
     "heroSubtitle": "Construa, compartilhe e cresça juntos — sem anúncios, sem IA, sem venda de dados, sem algoritmos, sem shadowbans, sem censura. Cadastre-se e comece a criar algo extraordinário com a comunidade.",
@@ -172,6 +189,19 @@
     "ctaTitle": "Pronto para Conquistar Seu Lugar?",
     "ctaDesc": "Junte-se a {count} outros membros na cooperativa da lista cósmica. Crie seu perfil, lance seu primeiro projeto e comece a se conectar com pessoas que compartilham sua visão.",
     "ctaSignUp": "Cadastre-se e Comece a Construir",
-    "ctaBrowseProjects": "Explorar Projetos"
+    "ctaBrowseProjects": "Explorar Projetos",
+    "trendingHashtags": "Hashtags em Alta",
+    "exploreAllHashtags": "Explorar Todos os Hashtags",
+    "productsLabel": "Produtos",
+    "eventsLabel": "Eventos",
+    "noShopsYet": "Nenhuma loja ainda",
+    "noProductsYet": "Nenhum produto ainda",
+    "noRequestsYet": "Nenhuma solicitação ainda",
+    "noEventsYet": "Nenhum evento futuro",
+    "noProjectsYet": "Nenhum projeto ativo",
+    "byLabel": "por",
+    "trendingTags": "Tags em Alta",
+    "viewAllTags": "Ver Tudo",
+    "eventLabel": "Evento"
   }
 }

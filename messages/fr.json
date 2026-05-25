@@ -93,6 +93,23 @@
     "builtWith": "Construit avec OpenCode et Next.js",
     "copyright": "© {year} XistrYmemZ"
   },
+  "homeFooter": {
+    "about": "À propos",
+    "help": "Aide",
+    "community": "Communauté",
+    "forum": "Forum",
+    "requests": "Demandes",
+    "privacy": "Confidentialité",
+    "terms": "Conditions",
+    "copyright": "© {year} XistrYmemZ — Coopérative Cosmique des Pages Blanches"
+  },
+  "homeMap": {
+    "title": "Carte d'Activité Globale",
+    "subtitle": "Découvrez ce qui se passe dans le monde",
+    "loading": "Chargement de la carte...",
+    "noLocations": "Aucun emplacement pour l'instant",
+    "footer": "{count} emplacements épinglés dans Produits, Événements, Projets, Demandes et Boutiques"
+  },
   "home": {
     "heroTitle": "La Coopérative Cosmique des Annuaires",
     "heroSubtitle": "Construisez, partagez et grandissez ensemble — sans pub, sans IA, sans vente de données, sans algorithmes, sans shadowban, sans censure. Inscrivez-vous et commencez à créer quelque chose d'exceptionnel avec la communauté.",
@@ -172,6 +189,20 @@
     "ctaTitle": "Prêt à prendre votre place ?",
     "ctaDesc": "Rejoignez {count} autres membres sur la coopérative cosmique des annuaires. Créez votre profil, lancez votre premier projet et commencez à connecter avec des gens qui partagent votre vision.",
     "ctaSignUp": "S'inscrire et commencer à construire",
-    "ctaBrowseProjects": "Parcourir les projets"
+    "ctaBrowseProjects": "Parcourir les projets",
+    "heroSearchPlaceholder": "",
+    "trendingHashtags": "Hashtags Tendance",
+    "exploreAllHashtags": "Explorer Tous les Hashtags",
+    "productsLabel": "Produits",
+    "eventsLabel": "Événements",
+    "noShopsYet": "Aucune boutique pour l'instant",
+    "noProductsYet": "Aucun produit pour l'instant",
+    "noRequestsYet": "Aucune demande pour l'instant",
+    "noEventsYet": "Aucun événement à venir",
+    "noProjectsYet": "Aucun projet actif",
+    "byLabel": "par",
+    "trendingTags": "Tags Tendance",
+    "viewAllTags": "Voir Tout",
+    "eventLabel": "Événement"
   }
 }

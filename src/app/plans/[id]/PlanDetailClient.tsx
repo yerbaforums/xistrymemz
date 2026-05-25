@@ -16,6 +16,7 @@ import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import type { DonationAddr } from '@/types/product'
 import type { PlanGoal, PlanMilestone, PlanResource, PlanContribution, PlanJoiner } from '@/lib/plan-utils'
+import TranslateButton from '@/components/TranslateButton'
 
 interface Request {
   id: string; title: string; description: string | null; status: string
@@ -478,6 +479,7 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                         </div>
                       )}
                       {plan.description && <p className={styles.description}>{plan.description}</p>}
+                      {plan.description && <TranslateButton text={plan.description} />}
                       <ShareSection
                         title={plan.title}
                         description={plan.description}

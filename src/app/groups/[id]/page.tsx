@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import MentionInput, { type MentionInputHandle } from '@/components/MentionInput'
 import HashtagText from '@/components/HashtagText'
+import TranslateButton from '@/components/TranslateButton'
 import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import { useToast } from '@/context/ToastContext'
@@ -555,7 +556,12 @@ function GroupDetailContent() {
               <h1>{group.name}</h1>
               {group.isPrivate && <span className={styles.privateBadge}>🔒 Private</span>}
             </div>
-            {group.description && <p className={styles.description}>{group.description}</p>}
+            {group.description && (
+              <>
+                <p className={styles.description}>{group.description}</p>
+                <TranslateButton text={group.description} />
+              </>
+            )}
             <div className={styles.stats}>
               <div className={styles.stat}>
                 <span className={styles.statValue}>{group._count.members}</span>
@@ -674,6 +680,7 @@ function GroupDetailContent() {
                             </div>
                           </div>
                           <p className={styles.postContent}><HashtagText text={post.content} mentionLinks /></p>
+                          <TranslateButton text={post.content} />
                           {post.imageUrl && (
                             <div className={styles.postImage}>
                               <img src={post.imageUrl} alt="Post attachment" />

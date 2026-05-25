@@ -7,6 +7,7 @@ import LinkPreview, { URL_REGEX } from '@/components/LinkPreview'
 import PostActions from '@/components/PostActions'
 import SharedItemCard from '@/components/SharedItemCard'
 import ReplySection from '@/components/ReplySection'
+import TranslateButton from '@/components/TranslateButton'
 import ViewCount from '@/components/ViewCount'
 import { useState, useRef } from 'react'
 import { useSession } from 'next-auth/react'
@@ -161,6 +162,7 @@ export default function FeedItem({ post }: { post: FeedPost }) {
         ) : (
           <HashtagText text={displayContent} />
         )}
+        {!editing && <TranslateButton text={displayContent} />}
       </div>
 
       <LinkPreview text={post.content} />

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Skeleton from '@/components/Skeleton'
 import { useScrollReveal } from '@/hooks/useScrollReveal'
 import type { FeaturedShop, FeaturedProduct, PublicRequest, FeaturedEvent, PublicPlan } from './types'
+import { useTranslations } from 'next-intl'
 import styles from './PulseSection.module.css'
 
 interface Props {
@@ -22,16 +23,17 @@ interface Props {
 
 export default function PulseSection({ shops, products, requests, events, plans, loadingShops, loadingProducts, loadingRequests, loadingEvents, loadingPlans, trendingTags }: Props) {
   const { ref, visible } = useScrollReveal()
+  const t = useTranslations('home')
 
   return (
     <section ref={ref} className={`${styles.section} ${visible ? styles.visible : ''}`}>
-      <h2 className={styles.sectionTitle}>Community Pulse</h2>
-      <p className={styles.sectionSubtitle}>What&apos;s happening right now in the cooperative</p>
+      <h2 className={styles.sectionTitle}>{t('pulseTitle')}</h2>
+      <p className={styles.sectionSubtitle}>{t('pulseSubtitle')}</p>
       <div className={styles.grid}>
         <div className={styles.card}>
           <div className={styles.header}>
             <span className={styles.icon}>🏪</span>
-            <h3>Latest Shops</h3>
+            <h3>{t('latestShops')}</h3>
           </div>
           {loadingShops ? (
             <div className={styles.list}>{[1,2,3].map(i => <Skeleton key={i} width="100%" height="2.5rem" />)}</div>
@@ -47,13 +49,13 @@ export default function PulseSection({ shops, products, requests, events, plans,
                 </Link>
               ))}
             </div>
-          ) : <p className={styles.empty}>No shops yet</p>}
-          <Link href="/shops" className={styles.viewAll}>View all shops →</Link>
+          ) : <p className={styles.empty}>{t('noShopsYet')}</p>}
+          <Link href="/shops" className={styles.viewAll}>{t('viewAllShops')} →</Link>
         </div>
         <div className={styles.card}>
           <div className={styles.header}>
             <span className={styles.icon}>🛒</span>
-            <h3>Featured Products</h3>
+            <h3>{t('featuredProducts')}</h3>
           </div>
           {loadingProducts ? (
             <div className={styles.list}>{[1,2,3].map(i => <Skeleton key={i} width="100%" height="2.5rem" />)}</div>
@@ -66,19 +68,19 @@ export default function PulseSection({ shops, products, requests, events, plans,
                   </span>
                   <div className={styles.itemCol}>
                     <span className={styles.itemTitle}>{product.title}</span>
-                    <span className={styles.itemMeta}>by {product.user.name || 'Unknown'}</span>
+                    <span className={styles.itemMeta}>{t('byLabel')} {product.user.name || 'Unknown'}</span>
                   </div>
                   {product.price && <span className={styles.itemPrice}>${product.price}</span>}
                 </Link>
               ))}
             </div>
-          ) : <p className={styles.empty}>No products yet</p>}
-          <Link href="/products" className={styles.viewAll}>View all products →</Link>
+          ) : <p className={styles.empty}>{t('noProductsYet')}</p>}
+          <Link href="/products" className={styles.viewAll}>{t('viewAllProducts')} →</Link>
         </div>
         <div className={styles.card}>
           <div className={styles.header}>
             <span className={styles.icon}>📝</span>
-            <h3>Community Requests</h3>
+            <h3>{t('communityRequests')}</h3>
           </div>
           {loadingRequests ? (
             <div className={styles.list}>{[1,2,3].map(i => <Skeleton key={i} width="100%" height="2.5rem" />)}</div>
@@ -89,7 +91,7 @@ export default function PulseSection({ shops, products, requests, events, plans,
                   <span className={styles.itemIcon}>📝</span>
                   <div className={styles.itemCol}>
                     <span className={styles.itemTitle}>{req.title}</span>
-                    <span className={styles.itemMeta}>by {req.user?.name || 'Unknown'}</span>
+                    <span className={styles.itemMeta}>{t('byLabel')} {req.user?.name || 'Unknown'}</span>
                   </div>
                   {req.goalAmount && (
                     <span className={styles.itemPrice}>
@@ -99,13 +101,13 @@ export default function PulseSection({ shops, products, requests, events, plans,
                 </Link>
               ))}
             </div>
-          ) : <p className={styles.empty}>No requests yet</p>}
-          <Link href="/requests" className={styles.viewAll}>View all requests →</Link>
+          ) : <p className={styles.empty}>{t('noRequestsYet')}</p>}
+          <Link href="/requests" className={styles.viewAll}>{t('viewAllRequests')} →</Link>
         </div>
         <div className={styles.card}>
           <div className={styles.header}>
             <span className={styles.icon}>📅</span>
-            <h3>Upcoming Events</h3>
+            <h3>{t('upcomingEvents')}</h3>
           </div>
           {loadingEvents ? (
             <div className={styles.list}>{[1,2,3].map(i => <Skeleton key={i} width="100%" height="2.5rem" />)}</div>
@@ -116,7 +118,7 @@ export default function PulseSection({ shops, products, requests, events, plans,
                   <span className={styles.itemIcon}>📅</span>
                   <div className={styles.itemCol}>
                     <span className={styles.itemTitle}>{ev.title}</span>
-                    <span className={styles.itemMeta}>{ev.location || ev.eventCategory || 'Event'}</span>
+                    <span className={styles.itemMeta}>{ev.location || ev.eventCategory || t('eventLabel')}</span>
                   </div>
                   {ev.eventDate && (
                     <span className={styles.itemPrice}>{new Date(ev.eventDate).toLocaleDateString()}</span>
@@ -124,13 +126,13 @@ export default function PulseSection({ shops, products, requests, events, plans,
                 </Link>
               ))}
             </div>
-          ) : <p className={styles.empty}>No upcoming events</p>}
-          <Link href="/events" className={styles.viewAll}>Explore events →</Link>
+          ) : <p className={styles.empty}>{t('noEventsYet')}</p>}
+          <Link href="/events" className={styles.viewAll}>{t('exploreEvents')} →</Link>
         </div>
         <div className={styles.card}>
           <div className={styles.header}>
             <span className={styles.icon}>🚀</span>
-            <h3>Active Projects</h3>
+            <h3>{t('activeProjects')}</h3>
           </div>
           {loadingPlans ? (
             <div className={styles.list}>{[1,2,3].map(i => <Skeleton key={i} width="100%" height="2.5rem" />)}</div>
@@ -141,13 +143,13 @@ export default function PulseSection({ shops, products, requests, events, plans,
                   <span className={styles.itemIcon}>🚀</span>
                   <div className={styles.itemCol}>
                     <span className={styles.itemTitle}>{plan.title}</span>
-                    <span className={styles.itemMeta}>by {plan.user?.name || 'Unknown'}</span>
+                    <span className={styles.itemMeta}>{t('byLabel')} {plan.user?.name || 'Unknown'}</span>
                   </div>
                 </Link>
               ))}
             </div>
-          ) : <p className={styles.empty}>No active projects</p>}
-          <Link href="/plans/public" className={styles.viewAll}>Explore projects →</Link>
+          ) : <p className={styles.empty}>{t('noProjectsYet')}</p>}
+          <Link href="/plans/public" className={styles.viewAll}>{t('exploreProjects')} →</Link>
         </div>
       </div>
 
@@ -155,7 +157,7 @@ export default function PulseSection({ shops, products, requests, events, plans,
         <div className={styles.hashtagRow}>
           <div className={styles.hashtagRowHeader}>
             <span className={styles.hashtagRowIcon}>🏷️</span>
-            <span>Trending Tags</span>
+            <span>{t('trendingTags')}</span>
           </div>
           <div className={styles.hashtagRowCloud}>
             {trendingTags.slice(0, 8).map(h => (
@@ -163,7 +165,7 @@ export default function PulseSection({ shops, products, requests, events, plans,
                 #{h.tag}
               </Link>
             ))}
-            <Link href="/hashtags" className={styles.hashtagRowMore}>View All →</Link>
+            <Link href="/hashtags" className={styles.hashtagRowMore}>{t('viewAllTags')} →</Link>
           </div>
         </div>
       )}

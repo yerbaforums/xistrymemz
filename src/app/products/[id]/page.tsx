@@ -30,6 +30,7 @@ const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapCo
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
 const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false })
 const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false })
+import TranslateButton from '@/components/TranslateButton'
 
 interface Product {
   id: string
@@ -773,6 +774,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 <div className={styles.description}>
                   <h3>Description</h3>
                   <p>{product.description}</p>
+                  <TranslateButton text={product.description} />
                 </div>
               )}
 

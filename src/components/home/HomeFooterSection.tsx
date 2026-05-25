@@ -1,21 +1,23 @@
 'use client'
 
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import styles from './HomeFooterSection.module.css'
 
 export default function HomeFooterSection() {
+  const t = useTranslations('homeFooter')
   return (
     <section className={styles.section}>
       <div className={styles.links}>
-        <Link href="/about">About</Link>
-        <Link href="/help">Help</Link>
-        <Link href="/community">Community</Link>
-        <Link href="/community/forum">Forum</Link>
-        <Link href="/requests">Requests</Link>
-        <Link href="/privacy">Privacy</Link>
-        <Link href="/terms">Terms</Link>
+        <Link href="/about">{t('about')}</Link>
+        <Link href="/help">{t('help')}</Link>
+        <Link href="/community">{t('community')}</Link>
+        <Link href="/community/forum">{t('forum')}</Link>
+        <Link href="/requests">{t('requests')}</Link>
+        <Link href="/privacy">{t('privacy')}</Link>
+        <Link href="/terms">{t('terms')}</Link>
       </div>
-      <p className={styles.copyright}>&copy; {new Date().getFullYear()} XistrYmemZ — Cosmic Whitepages Cooperative</p>
+      <p className={styles.copyright}>{t('copyright', { year: new Date().getFullYear() })}</p>
     </section>
   )
 }

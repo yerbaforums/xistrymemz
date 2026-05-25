@@ -10,6 +10,7 @@ import type { ServiceOffering, ServiceCategory } from '@/types/service'
 import { SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service'
 import ViewCount from '@/components/ViewCount'
 import { useRecordView } from '@/hooks/useRecordView'
+import TranslateButton from '@/components/TranslateButton'
 import styles from './page.module.css'
 
 function formatDuration(mins: number) {
@@ -195,7 +196,10 @@ export default function ServiceDetailPage() {
             <h1 className={styles.title}>{title}</h1>
 
             {description && (
-              <p className={styles.description}>{description}</p>
+              <>
+                <p className={styles.description}>{description}</p>
+                <TranslateButton text={description} />
+              </>
             )}
 
             {hashtags.length > 0 && (

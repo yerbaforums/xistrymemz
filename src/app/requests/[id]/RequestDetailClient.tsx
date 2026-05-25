@@ -11,6 +11,7 @@ import { getCryptoIcon, getCryptoName } from '@/lib/crypto-icons'
 import ShareSection from '@/components/ShareSection'
 import ViewCount from '@/components/ViewCount'
 import { useRecordView } from '@/hooks/useRecordView'
+import TranslateButton from '@/components/TranslateButton'
 
 const CATEGORIES = [
   { value: 'GENERAL', label: 'General', icon: '\u{1F4CB}' },
@@ -641,6 +642,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
             {request.description && (
               <p className={styles.description}>{request.description}</p>
             )}
+            {request.description && <TranslateButton text={request.description} />}
 
             <div className={styles.meta}>
               {request.plan && (
@@ -1051,6 +1053,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                     </span>
                   </div>
                   <p className={styles.commentContent}>{c.content}</p>
+                  <TranslateButton text={c.content} />
                 </div>
               ))}
             </div>

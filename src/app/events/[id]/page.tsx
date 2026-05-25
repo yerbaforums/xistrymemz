@@ -16,6 +16,7 @@ import ShareSection from '@/components/ShareSection'
 import type { Event } from '@/types/event'
 import type { DonationAddr } from '@/types/product'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import TranslateButton from '@/components/TranslateButton'
 
 const QRCodeModal = dynamic(() => import('@/components/QRCodeModal').then(mod => mod.QRCodeModal), { ssr: false })
 
@@ -424,7 +425,10 @@ function EventDetailContent() {
                 )}
 
                 {event.description && (
-                  <p className={styles.description}>{event.description}</p>
+                  <>
+                    <p className={styles.description}>{event.description}</p>
+                    <TranslateButton text={event.description} />
+                  </>
                 )}
 
                 {event.hashtags && event.hashtags.length > 0 && (

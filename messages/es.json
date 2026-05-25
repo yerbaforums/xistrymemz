@@ -93,6 +93,23 @@
     "builtWith": "Construido con OpenCode y Next.js",
     "copyright": "© {year} XistrYmemZ"
   },
+  "homeFooter": {
+    "about": "Acerca de",
+    "help": "Ayuda",
+    "community": "Comunidad",
+    "forum": "Foro",
+    "requests": "Solicitudes",
+    "privacy": "Privacidad",
+    "terms": "Términos",
+    "copyright": "© {year} XistrYmemZ — Cooperativa Cósmica de Páginas Blancas"
+  },
+  "homeMap": {
+    "title": "Mapa de Actividad Global",
+    "subtitle": "Descubre lo que está sucediendo en todo el mundo",
+    "loading": "Cargando mapa...",
+    "noLocations": "Aún sin ubicaciones",
+    "footer": "{count} ubicaciones marcadas en Productos, Eventos, Proyectos, Solicitudes y Tiendas"
+  },
   "home": {
     "heroTitle": "La Cooperativa de Páginas Blancas Cósmicas",
     "heroSubtitle": "Construye, comparte y crece juntos — sin publicidad, sin IA, sin venta de datos, sin algoritmos, sin shadowbans, sin censura. Regístrate y empieza a crear algo extraordinario con la comunidad.",
@@ -172,6 +189,20 @@
     "ctaTitle": "¿Listo para Reclamar tu Lugar?",
     "ctaDesc": "Únete a {count} miembros en la cooperativa de páginas blancas cósmicas. Crea tu perfil, lanza tu primer proyecto y comienza a conectar con personas que comparten tu visión.",
     "ctaSignUp": "Regístrate y Empieza a Construir",
-    "ctaBrowseProjects": "Explorar Proyectos"
+    "ctaBrowseProjects": "Explorar Proyectos",
+    "heroSearchPlaceholder": "Buscar en XistrYmemZ...",
+    "trendingHashtags": "Hashtags Tendencias",
+    "exploreAllHashtags": "Explorar Todos los Hashtags",
+    "productsLabel": "Productos",
+    "eventsLabel": "Eventos",
+    "noShopsYet": "Aún sin tiendas",
+    "noProductsYet": "Aún sin productos",
+    "noRequestsYet": "Aún sin solicitudes",
+    "noEventsYet": "No hay próximos eventos",
+    "noProjectsYet": "No hay proyectos activos",
+    "byLabel": "por",
+    "trendingTags": "Etiquetas Tendencias",
+    "viewAllTags": "Ver Todo",
+    "eventLabel": "Evento"
   }
 }

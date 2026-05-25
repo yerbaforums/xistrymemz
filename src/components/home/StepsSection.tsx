@@ -1,22 +1,24 @@
 'use client'
 
 import { useScrollReveal } from '@/hooks/useScrollReveal'
+import { useTranslations } from 'next-intl'
 import styles from './StepsSection.module.css'
-
-const STEPS = [
-  { num: '01', title: 'Sign Up', desc: 'Create your account and claim your cosmic identity. No barriers, no gatekeeping.' },
-  { num: '02', title: 'Build Your Profile', desc: 'Add your bio, links, shop, school. Make yourself findable in the whitepages.' },
-  { num: '03', title: 'Connect & Create', desc: 'Join the network. Start projects, make requests, find collaborators.' },
-  { num: '04', title: 'Grow Together', desc: 'Build reputation, earn trust, expand your reach. The coop grows with you.' },
-]
 
 export default function StepsSection() {
   const { ref, visible } = useScrollReveal()
+  const t = useTranslations('home')
+
+  const STEPS = [
+    { num: '01', title: t('step1Title'), desc: t('step1Desc') },
+    { num: '02', title: t('step2Title'), desc: t('step2Desc') },
+    { num: '03', title: t('step3Title'), desc: t('step3Desc') },
+    { num: '04', title: t('step4Title'), desc: t('step4Desc') },
+  ]
 
   return (
     <section ref={ref} className={`${styles.section} ${visible ? styles.visible : ''}`}>
-      <h2 className={styles.sectionTitle}>How It Works</h2>
-      <p className={styles.sectionSubtitle}>Four steps to join the cooperative</p>
+      <h2 className={styles.sectionTitle}>{t('stepsTitle')}</h2>
+      <p className={styles.sectionSubtitle}>{t('stepsSubtitle')}</p>
       <div className={styles.grid}>
         {STEPS.map((step, i) => (
           <div key={step.num} className={styles.card}>

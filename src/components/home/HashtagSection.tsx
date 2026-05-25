@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import styles from './HashtagSection.module.css'
 
 interface HashtagEntity {
@@ -20,6 +21,8 @@ interface Props {
 }
 
 export default function HashtagSection({ tags }: Props) {
+  const t = useTranslations('home')
+
   if (tags.length === 0) return null
 
   const maxCount = Math.max(...tags.map(t => t.postCount))
@@ -29,7 +32,7 @@ export default function HashtagSection({ tags }: Props) {
 
   return (
     <section className={styles.section}>
-      <h2 className={styles.heading}>Trending Hashtags</h2>
+      <h2 className={styles.heading}>{t('trendingHashtags')}</h2>
       <div className={styles.cloud}>
         {tags.map((h, i) => {
           const size = 0.8 + (h.postCount / maxCount) * 0.6
@@ -48,10 +51,10 @@ export default function HashtagSection({ tags }: Props) {
                 <span className={styles.count}>{h.postCount}</span>
               )}
               {h.entities && h.entities.products > 0 && (
-                <span className={styles.entityBadge} title="Products">{h.entities.products}pr</span>
+                <span className={styles.entityBadge} title={t('productsLabel')}>{h.entities.products}pr</span>
               )}
               {h.entities && h.entities.events > 0 && (
-                <span className={styles.entityBadge} title="Events">{h.entities.events}ev</span>
+                <span className={styles.entityBadge} title={t('eventsLabel')}>{h.entities.events}ev</span>
               )}
             </Link>
           )
@@ -59,7 +62,7 @@ export default function HashtagSection({ tags }: Props) {
       </div>
       <div className={styles.footerLink}>
         <Link href="/hashtags" className={styles.exploreLink}>
-          Explore All Hashtags →
+          {t('exploreAllHashtags')} →
         </Link>
       </div>
     </section>

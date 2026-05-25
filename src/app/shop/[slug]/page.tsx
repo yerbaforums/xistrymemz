@@ -10,6 +10,7 @@ import { QRCodeModal } from '@/components/QRCodeModal'
 import { DonationActions } from '@/components/DonationActions'
 import ImageUploader from '@/components/ImageUploader'
 import MentionInput from '@/components/MentionInput'
+import TranslateButton from '@/components/TranslateButton'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
 import ShareToPostModal from '@/components/ShareToPostModal'
 import { CRYPTO_LOGOS } from '@/lib/constants'
@@ -419,6 +420,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
       {shop.shopAbout && (
         <div className={styles.aboutPreview}>
           <p>{shop.shopAbout}</p>
+          <TranslateButton text={shop.shopAbout} />
         </div>
       )}
 
@@ -586,6 +588,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                       </div>
                     </div>
                     <p className={styles.postContent}>{post.content}</p>
+                    <TranslateButton text={post.content} />
                     {post.imageUrl && (
                       <div className={styles.postImage}>
                         <img src={post.imageUrl} alt="" style={{maxWidth:'100%', borderRadius:'8px', marginTop:'8px'}} />
