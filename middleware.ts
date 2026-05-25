@@ -20,7 +20,7 @@ function isSameOrigin(request: NextRequest): boolean {
   const referer = request.headers.get('referer');
   const source = origin || referer || '';
 
-  if (!source) return false;
+  if (!source) return true;
 
   const sourceOrigin = getOrigin(source);
   const allowedOrigin = getOrigin(ALLOWED_ORIGIN);
