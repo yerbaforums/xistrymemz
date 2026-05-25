@@ -11,6 +11,7 @@ import { hydrateDonationAddresses, serializeDonationAddresses, donationAddresses
 import type { DonationAddr } from '@/types/product'
 import ImageUploader from '@/components/ImageUploader'
 import { useTranslations } from 'next-intl'
+import { SHOP_CATEGORIES } from '@/lib/shop-categories'
 import styles from './marketplace.module.css'
 
 interface Product {
@@ -110,6 +111,7 @@ function MarketplaceContent() {
     shopImage: '',
     shopImages: [] as string[],
     shopSlug: '',
+    shopCategory: 'OTHER',
     email: '',
     name: ''
   })
@@ -172,6 +174,7 @@ function MarketplaceContent() {
         shopImage: shopData.shopImage || '',
         shopImages: shopData.shopImage ? [shopData.shopImage] : [] as string[],
         shopSlug: shopData.shopSlug || '',
+        shopCategory: shopData.shopCategory || 'OTHER',
         email: shopData.email || '',
         name: shopData.name || ''
       })
@@ -481,6 +484,14 @@ function MarketplaceContent() {
                 <label>Shop URL Slug</label>
                 <input type="text" value={shopForm.shopSlug} onChange={e => setShopForm({...shopForm, shopSlug: e.target.value})} placeholder="my-shop" />
                 <small style={{color: 'var(--text-secondary)'}}>xistrymemz.com/shop/{shopForm.shopSlug || 'your-slug'}</small>
+              </div>
+              <div className="form-group">
+                <label>Shop Category</label>
+                <select value={shopForm.shopCategory} onChange={e => setShopForm({...shopForm, shopCategory: e.target.value})}>
+                  {SHOP_CATEGORIES.map(cat => (
+                    <option key={cat.value} value={cat.value}>{cat.icon} {cat.label}</option>
+                  ))}
+                </select>
               </div>
               <div className="form-group">
                 <label>Contact Email</label>

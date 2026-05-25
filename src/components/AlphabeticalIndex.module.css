@@ -1,0 +1,127 @@
+.wrapper {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.sidebar {
+  width: 200px;
+  min-width: 200px;
+  position: sticky;
+  top: 80px;
+  align-self: flex-start;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+
+.sidebarTitle {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+}
+
+.letterBar {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.letterBtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.35rem 0.6rem;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.15s, color 0.15s;
+  text-align: left;
+}
+
+.letterBtn:hover {
+  background: var(--bg-secondary);
+  color: var(--accent-primary);
+}
+
+.letterBtnActive {
+  color: var(--accent-primary);
+  background: var(--bg-secondary);
+  font-weight: 700;
+}
+
+.letterCount {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
+  padding: 1px 5px;
+  border-radius: 6px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.letterBtn:hover .letterCount {
+  background: var(--bg-primary);
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.letterSection {
+  margin-bottom: 1.5rem;
+  scroll-margin-top: 80px;
+}
+
+.letterHeader {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 2px solid var(--accent-primary);
+}
+
+.letterGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.75rem;
+}
+
+.emptyLetter {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  padding: 0.5rem 0;
+}
+
+/* Responsive: collapse sidebar to horizontal bar on small screens */
+@media (max-width: 768px) {
+  .wrapper {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    min-width: unset;
+    position: static;
+    max-height: unset;
+  }
+  .letterBar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+  .letterBtn {
+    padding: 0.25rem 0.4rem;
+    font-size: 0.7rem;
+  }
+  .letterCount {
+    display: none;
+  }
+  .letterGrid {
+    grid-template-columns: 1fr;
+  }
+}

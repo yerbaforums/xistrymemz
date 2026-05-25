@@ -29,8 +29,9 @@ model User {
   shopAbout        String?
   shopImage        String?
   shopCoverImage   String?
-  shopCoverStyle   String  @default("cover")
-  shopSlug         String? @unique
+  shopCoverStyle String  @default("cover")
+  shopSlug  String?   @unique
+  shopCategory String @default("OTHER")
   schoolName       String?
   schoolAbout      String?
   schoolImage      String?
@@ -873,6 +874,7 @@ model Group {
   coverImage      String?
   bannerColor     String?
   isPrivate       Boolean        @default(false)
+  category        String         @default("GENERAL")
   // Location-based group support
   location        String? // e.g., "San Francisco Bay Area"
   latitude        Float?

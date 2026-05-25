@@ -11,6 +11,7 @@ interface Shop {
   shopAbout: string | null
   shopImage: string | null
   shopSlug: string
+  shopCategory: string | null
   name: string | null
   location: string | null
   latitude: number | null
@@ -51,13 +52,6 @@ export default function ShopsPage() {
 
       {loading ? (
         <div className={styles.loading}>Loading shops...</div>
-      ) : shops.length === 0 ? (
-        <div className={styles.empty}>
-          <p>No shops yet. Be the first to create one!</p>
-          <Link href="/shop/setup" className={styles.createBtn}>
-            Create Shop
-          </Link>
-        </div>
       ) : (
         <ShopsClient initialShops={shops} />
       )}

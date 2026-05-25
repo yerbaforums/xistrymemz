@@ -121,7 +121,8 @@ export const serviceOfferingSchema = z.object({
 export const groupSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   description: z.string().max(1000).optional(),
-  privacy: z.enum(['PUBLIC', 'PRIVATE']).optional()
+  privacy: z.enum(['PUBLIC', 'PRIVATE']).optional(),
+  category: z.string().optional()
 })
 
 export const forumPostSchema = z.object({

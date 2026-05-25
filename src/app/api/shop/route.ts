@@ -17,6 +17,7 @@ export async function GET() {
       shopAbout: true,
       shopImage: true,
       shopSlug: true,
+      shopCategory: true,
       email: true,
       name: true
     }
@@ -33,12 +34,12 @@ export async function PUT(request: Request) {
   }
 
   const body = await request.json()
-  const { shopName, shopAbout, shopImage, shopCoverImage, shopCoverStyle, shopSlug, email } = body
+  const { shopName, shopAbout, shopImage, shopCoverImage, shopCoverStyle, shopSlug, shopCategory, email } = body
 
   if (!shopName?.trim()) {
     await prisma.user.update({
       where: { id: session.user.id },
-      data: { shopSlug: null, shopName: null, shopAbout: null, shopImage: null, shopCoverImage: null }
+      data: { shopSlug: null, shopName: null, shopAbout: null, shopImage: null, shopCoverImage: null, shopCategory: 'OTHER' }
     })
     return NextResponse.json({ error: 'Shop name is required', unpublished: true }, { status: 400 })
   }
@@ -54,6 +55,7 @@ export async function PUT(request: Request) {
       shopCoverImage,
       shopCoverStyle,
       shopSlug: slug,
+      shopCategory: shopCategory || 'OTHER',
       email
     }
   })
@@ -64,6 +66,7 @@ export async function PUT(request: Request) {
     shopImage: user.shopImage,
     shopCoverImage: user.shopCoverImage,
     shopSlug: user.shopSlug,
+    shopCategory: user.shopCategory,
     email: user.email
   })
 }
@@ -94,7 +97,8 @@ export async function DELETE(request: Request) {
         shopName: null,
         shopAbout: null,
         shopImage: null,
-        shopCoverImage: null
+        shopCoverImage: null,
+        shopCategory: 'OTHER'
       }
     })
     return NextResponse.json({ success: true, action: 'deleted' })

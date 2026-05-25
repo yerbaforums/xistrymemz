@@ -14,6 +14,7 @@ export async function GET() {
         shopAbout: true,
         shopImage: true,
         shopSlug: true,
+        shopCategory: true,
         name: true,
         location: true,
         latitude: true,

@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
+import AlphabeticalIndex, { type IndexItem } from '@/components/AlphabeticalIndex'
+import { GROUP_CATEGORIES } from '@/lib/shop-categories'
 
 interface Group {
   id: string
@@ -11,10 +13,13 @@ interface Group {
   description: string | null
   imageUrl: string | null
   isPrivate: boolean
+  category: string | null
   user: { id: string; name: string | null; image: string | null }
   _count: { members: number; posts: number }
   members?: { id: string; role: string; userId: string }[]
 }
+
+const catMap = new Map(GROUP_CATEGORIES.map(c => [c.value, c]))
 
 export default function GroupsPage() {
   const { error, success } = useToast()
@@ -27,15 +32,25 @@ export default function GroupsPage() {
   
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
+  const [category, setCategory] = useState('GENERAL')
   const [isPrivate, setIsPrivate] = useState(false)
   const [creating, setCreating] = useState(false)
 
-  const filteredGroups = groups.filter(g => {
+  const filteredGroups = useMemo(() => groups.filter(g => {
     const matchesSearch = !search || 
       g.name.toLowerCase().includes(search.toLowerCase()) ||
       (g.description?.toLowerCase().includes(search.toLowerCase()))
     return matchesSearch
-  })
+  }), [groups, search])
+
+  const indexItems: IndexItem[] = useMemo(() =>
+    filteredGroups.map(g => ({
+      id: g.id,
+      label: g.name,
+      category: g.category || 'GENERAL'
+    })),
+    [filteredGroups]
+  )
 
   useEffect(() => {
     fetch('/api/auth/session')
@@ -76,7 +91,7 @@ export default function GroupsPage() {
       const res = await fetch('/api/groups', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, description, privacy: isPrivate ? 'PRIVATE' : 'PUBLIC' })
+        body: JSON.stringify({ name, description, category, privacy: isPrivate ? 'PRIVATE' : 'PUBLIC' })
       })
       
       if (res.ok) {
@@ -85,6 +100,7 @@ export default function GroupsPage() {
         setShowModal(false)
         setName('')
         setDescription('')
+        setCategory('GENERAL')
         setIsPrivate(false)
         success('Group created!')
       } else {
@@ -102,6 +118,38 @@ export default function GroupsPage() {
   const isMember = (group: Group) => {
     return group.members?.some(m => m.userId === userId) || false
   }
+
+  const renderCard = useCallback((item: IndexItem) => {
+    const group = groups.find(g => g.id === item.id)
+    if (!group) return null
+    const cat = catMap.get(group.category || 'GENERAL')
+    return (
+      <Link href={`/groups/${group.id}`} key={group.id} className={styles.card}>
+        <div className={styles.cardImage}>
+          {group.imageUrl ? (
+            <img src={group.imageUrl} alt={group.name} />
+          ) : (
+            <div className={styles.placeholderIcon}>👥</div>
+          )}
+        </div>
+        <div className={styles.cardContent}>
+          <h3>{group.name}</h3>
+          {cat && <span className={styles.categoryBadge}>{cat.icon} {cat.label}</span>}
+          {group.description && (
+            <p className={styles.cardDesc}>{group.description}</p>
+          )}
+          <div className={styles.cardMeta}>
+            <span>👥 {group._count.members} members</span>
+            <span>📝 {group._count.posts} posts</span>
+          </div>
+          {group.isPrivate && <span className={styles.privateBadge}>🔒 Private</span>}
+        </div>
+        {userId && !isMember(group) && (
+          <div className={styles.joinHint}>Click to join</div>
+        )}
+      </Link>
+    )
+  }, [groups, userId])
 
   return (
     <div className={styles.page}>
@@ -158,33 +206,15 @@ export default function GroupsPage() {
           )}
         </div>
       ) : (
-        <div className={styles.grid}>
-          {filteredGroups.map(group => (
-            <Link href={`/groups/${group.id}`} key={group.id} className={styles.card}>
-              <div className={styles.cardImage}>
-                {group.imageUrl ? (
-                  <img src={group.imageUrl} alt={group.name} />
-                ) : (
-                  <div className={styles.placeholderIcon}>👥</div>
-                )}
-              </div>
-              <div className={styles.cardContent}>
-                <h3>{group.name}</h3>
-                {group.description && (
-                  <p className={styles.cardDesc}>{group.description}</p>
-                )}
-                <div className={styles.cardMeta}>
-                  <span>👥 {group._count.members} members</span>
-                  <span>📝 {group._count.posts} posts</span>
-                </div>
-                {group.isPrivate && <span className={styles.privateBadge}>🔒 Private</span>}
-              </div>
-              {userId && !isMember(group) && (
-                <div className={styles.joinHint}>Click to join</div>
-              )}
-            </Link>
-          ))}
-        </div>
+        <AlphabeticalIndex
+          items={indexItems}
+          renderCard={renderCard}
+          groupBy={item => {
+            const cat = catMap.get(item.category || 'GENERAL')
+            return cat ? `${cat.icon} ${cat.label}` : 'General'
+          }}
+          sidebarTitle="Browse by Category"
+        />
       )}
 
       {showModal && (
@@ -210,6 +240,14 @@ export default function GroupsPage() {
                   placeholder="What is this group about?"
                   rows={3}
                 />
+              </div>
+              <div className="form-group">
+                <label>Category</label>
+                <select value={category} onChange={e => setCategory(e.target.value)}>
+                  {GROUP_CATEGORIES.map(c => (
+                    <option key={c.value} value={c.value}>{c.icon} {c.label}</option>
+                  ))}
+                </select>
               </div>
               <div className="form-group">
                 <label className={styles.checkboxLabel}>

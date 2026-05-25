@@ -21,7 +21,13 @@ export async function GET(request: Request) {
 
     const groups = await prisma.group.findMany({
       where,
-      include: {
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        imageUrl: true,
+        isPrivate: true,
+        category: true,
         user: { select: { id: true, name: true, image: true } },
         _count: { select: { members: true, posts: true } },
         members: userId ? { where: { userId }, select: { id: true, role: true, userId: true } } : false
@@ -51,12 +57,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { name, description, privacy } = validation.data
+    const { name, description, privacy, category } = validation.data
 
     const group = await prisma.group.create({
       data: {
         name: name.trim(),
         description,
+        category: category || 'GENERAL',
         isPrivate: privacy === 'PRIVATE',
         userId: session.user.id,
         members: {

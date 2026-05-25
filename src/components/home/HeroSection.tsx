@@ -96,14 +96,14 @@ export default function HeroSection() {
           <span>XistrYmemZ</span>
         </div>
         <h1 className={styles.title}>
-          {t('heroTitle')}
+          {t('heroTitlePre')}<span className={styles.accent}>{t('heroTitleAccent')}</span>{t('heroTitlePost')}
         </h1>
         <p className={styles.subtitle}>
           {t('heroSubtitle')}
         </p>
         <div className={styles.actions}>
           <Link href="/auth/register" className={styles.btnPrimary}>
-            <span>{t('heroCta')}</span>
+            {t('heroCta')} <span className={styles.arrow}>→</span>
           </Link>
           <Link href="/shops" className={styles.btnSecondary}>
             {t('heroBrowseShops')}
@@ -126,19 +126,24 @@ export default function HeroSection() {
         </div>
         <div className={styles.heroStats}>
           <div className={styles.stat}>
-            <span className={styles.statValue}>{t('featureOpenSource')}</span>
+            <span className={styles.statValue}>{t('statOpenSourceValue')}</span>
+            <span className={styles.statLabel}>{t('statOpenSourceLabel')}</span>
           </div>
           <div className={styles.stat}>
-            <span className={styles.statValue}>{t('featureFreeForever')}</span>
+            <span className={styles.statValue}>{t('statFreeForeverValue')}</span>
+            <span className={styles.statLabel}>{t('statFreeForeverLabel')}</span>
           </div>
           <div className={styles.stat}>
-            <span className={styles.statValue}>{t('featureAdFree')}</span>
+            <span className={styles.statValue}>{t('statAdFreeValue')}</span>
+            <span className={styles.statLabel}>{t('statAdFreeLabel')}</span>
           </div>
           <div className={styles.stat}>
-            <span className={styles.statValue}>{t('featureNoDataSold')}</span>
+            <span className={styles.statValue}>{t('statNoDataSoldValue')}</span>
+            <span className={styles.statLabel}>{t('statNoDataSoldLabel')}</span>
           </div>
           <div className={styles.stat}>
-            <span className={styles.statValue}>{t('featureAiFree')}</span>
+            <span className={styles.statValue}>{t('statAiFreeValue')}</span>
+            <span className={styles.statLabel}>{t('statAiFreeLabel')}</span>
           </div>
         </div>
       </div>
