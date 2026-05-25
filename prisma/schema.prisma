@@ -8,218 +8,302 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(cuid())
-  email     String    @unique
-  username  String?   @unique
-  name      String?
-  password  String
-  image     String?
-  bio       String?
-  location  String?
-  neighborhood String?
-  latitude  Float?
-  longitude Float?
-  searchRadius Float   @default(50)
-  website   String?
-  coverImage String?
-  coverStyle String @default("cover")
-  userClass String?
-  role      String    @default("USER")
-  shopName  String?
-  shopAbout String?
-  shopImage String?
-  shopCoverImage String?
-  shopCoverStyle String  @default("cover")
-  shopSlug  String?   @unique
-  schoolName  String?
-  schoolAbout String?
-  schoolImage String?
+  id               String  @id @default(cuid())
+  email            String  @unique
+  username         String? @unique
+  name             String?
+  password         String
+  image            String?
+  bio              String?
+  location         String?
+  neighborhood     String?
+  latitude         Float?
+  longitude        Float?
+  searchRadius     Float   @default(50)
+  website          String?
+  coverImage       String?
+  coverStyle       String  @default("cover")
+  userClass        String?
+  role             String  @default("USER")
+  shopName         String?
+  shopAbout        String?
+  shopImage        String?
+  shopCoverImage   String?
+  shopCoverStyle   String  @default("cover")
+  shopSlug         String? @unique
+  schoolName       String?
+  schoolAbout      String?
+  schoolImage      String?
   schoolCoverImage String?
   schoolCoverStyle String  @default("cover")
-  schoolSlug  String?   @unique
-  walletAddress String?
-  paymentAddress String?
-  refundAddress String?
-  cryptoCurrency String?  @default("ETH")
-  balance         Float    @default(0)
-  
+  schoolSlug       String? @unique
+  walletAddress    String?
+  paymentAddress   String?
+  refundAddress    String?
+  cryptoCurrency   String? @default("ETH")
+  balance          Float   @default(0)
+
   // Passport & Identity
-  earthId         String?   @unique  // Unique Earth Passport ID
-  traveling       Boolean   @default(false) // Traveling mode vs Home mode
-  verificationLevel String @default("NONE") // NONE, BASIC, STANDARD, ADVANCED, PREMIUM
-  reputationScore Float    @default(0)
-  verifiedEmail   Boolean   @default(false)
-  verifiedPhone  Boolean   @default(false)
-  verifiedIdentity Boolean @default(false)
-  verifiedAddress Boolean @default(false)
-  onboardingCompleted Boolean @default(false)
-  setupProgress String?
-  lookingForCollaborators Boolean @default(false)
-  lastActiveAt DateTime?
-  
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  
+  earthId                 String?   @unique // Unique Earth Passport ID
+  traveling               Boolean   @default(false) // Traveling mode vs Home mode
+  verificationLevel       String    @default("NONE") // NONE, BASIC, STANDARD, ADVANCED, PREMIUM
+  reputationScore         Float     @default(0)
+  verifiedEmail           Boolean   @default(false)
+  verifiedPhone           Boolean   @default(false)
+  verifiedIdentity        Boolean   @default(false)
+  verifiedAddress         Boolean   @default(false)
+  onboardingCompleted     Boolean   @default(false)
+  setupProgress           String?
+  lookingForCollaborators Boolean   @default(false)
+  lastActiveAt            DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Multiple locations support
   primaryLocationId String?
   userLocations     UserLocation[]
-  
-  plans     Plan[]
-  planEditors PlanEditor[]
-  planContributions PlanContribution[]
-  requests  Request[]
-  fulfillments  RequestFulfillment[]
-  comments  Comment[]
-  joiners   PlanJoiner[]
-  products  Product[]
-  schoolContentsOwned   SchoolContent[] @relation("SchoolOwner")
-  schoolContentsAuthored SchoolContent[] @relation("SchoolAuthor")
-  sentConnections     Connection[] @relation("ConnectionRequester")
-  receivedConnections Connection[] @relation("ConnectionReceiver")
-  sentMessages        Message[] @relation("MessageSender")
-  receivedMessages    Message[] @relation("MessageReceiver")
-  posts     Post[]
-  postLikes PostLike[]
-  postTips  PostTip[]
-  postReposts PostRepost[]
-  wallPosts Post[] @relation("WallPostTarget")
-  planUpdates PlanUpdate[]
-  statusHistory RequestStatusHistory[]
-  requestSupports RequestSupport[]
-  groupsCreated   Group[]
-  groupMemberships GroupMember[]
-  groupPosts      GroupPost[]
-  groupBuys      GroupBuy[]
-  groupBuySupports GroupBuySupporter[]
-  payments       Payment[]
-  refunds        Refund[]
-  schoolPurchases SchoolPurchase[]
-  schoolSubscriptions SchoolSubscription[] @relation("SchoolSubscriber")
-  ratingsGiven    Rating[]
-  ratingsReceived Rating[] @relation("RatingReceiver")
-  courierServices CourierService[]
-  escrowAsSeller  EscrowTransaction[] @relation("EscrowSeller")
-  escrowAsBuyer  EscrowTransaction[] @relation("EscrowBuyer")
-  escrowAsCourier EscrowTransaction[] @relation("EscrowCourier")
-  wallets         UserWallet[]
-  adminWallets    AdminWallet[]
-  deposits        Deposit[]
-  forumPosts      ForumPost[]
-  forumReplies   ForumReply[]
-  forumPostTips  ForumPostTip[]
-  forumReplyTips ForumReplyTip[]
-  pollVotes    ForumPollVote[]
-  userEvents     UserEvent[]
-  schoolEvents   Event[] @relation("SchoolEvents")
-  shopEvents     Event[] @relation("ShopEvents")
-  organizedEvents Event[]
-  eventJoiners    EventJoiner[]
-  eventTickets   EventTicket[]
-  badges        Badge[]
-  passwordResetTokens PasswordResetToken[]
-  verificationTokens VerificationToken[]
-  userLinks         UserLink[]
-  files             File[]
-  backups           Backup[]
-  initiatedPacts    StoragePact[] @relation("PactInitiator")
-  receivedPacts     StoragePact[] @relation("PactPeer")
-  followsAsFollower Follow[]      @relation("Follower")
-  followsAsFollowed Follow[]      @relation("Followed")
-  outboxActivities  OutboxActivity[]
-  oauthProviders    OAuthProvider[]
-  savedItems        SavedItem[]
+
+  plans                  Plan[]
+  planEditors            PlanEditor[]
+  planContributions      PlanContribution[]
+  requests               Request[]
+  fulfillments           RequestFulfillment[]
+  comments               Comment[]
+  joiners                PlanJoiner[]
+  products               Product[]
+  schoolContentsOwned    SchoolContent[]        @relation("SchoolOwner")
+  schoolContentsAuthored SchoolContent[]        @relation("SchoolAuthor")
+  sentConnections        Connection[]           @relation("ConnectionRequester")
+  receivedConnections    Connection[]           @relation("ConnectionReceiver")
+  sentMessages           Message[]              @relation("MessageSender")
+  receivedMessages       Message[]              @relation("MessageReceiver")
+  posts                  Post[]
+  postLikes              PostLike[]
+  postTips               PostTip[]
+  postReposts            PostRepost[]
+  wallPosts              Post[]                 @relation("WallPostTarget")
+  planUpdates            PlanUpdate[]
+  statusHistory          RequestStatusHistory[]
+  requestSupports        RequestSupport[]
+  groupsCreated          Group[]
+  groupMemberships       GroupMember[]
+  groupPosts             GroupPost[]
+  groupBuys              GroupBuy[]
+  groupBuySupports       GroupBuySupporter[]
+  payments               Payment[]
+  refunds                Refund[]
+  schoolPurchases        SchoolPurchase[]
+  schoolSubscriptions    SchoolSubscription[]   @relation("SchoolSubscriber")
+  ratingsGiven           Rating[]
+  ratingsReceived        Rating[]               @relation("RatingReceiver")
+  courierServices        CourierService[]
+  escrowAsSeller         EscrowTransaction[]    @relation("EscrowSeller")
+  escrowAsBuyer          EscrowTransaction[]    @relation("EscrowBuyer")
+  escrowAsCourier        EscrowTransaction[]    @relation("EscrowCourier")
+  wallets                UserWallet[]
+  adminWallets           AdminWallet[]
+  deposits               Deposit[]
+  forumPosts             ForumPost[]
+  forumReplies           ForumReply[]
+  forumPostTips          ForumPostTip[]
+  forumReplyTips         ForumReplyTip[]
+  pollVotes              ForumPollVote[]
+  userEvents             UserEvent[]
+  schoolEvents           Event[]                @relation("SchoolEvents")
+  shopEvents             Event[]                @relation("ShopEvents")
+  organizedEvents        Event[]
+  eventJoiners           EventJoiner[]
+  eventTickets           EventTicket[]
+  badges                 Badge[]
+  passwordResetTokens    PasswordResetToken[]
+  verificationTokens     VerificationToken[]
+  userLinks              UserLink[]
+  files                  File[]
+  backups                Backup[]
+  initiatedPacts         StoragePact[]          @relation("PactInitiator")
+  receivedPacts          StoragePact[]          @relation("PactPeer")
+  followsAsFollower      Follow[]               @relation("Follower")
+  followsAsFollowed      Follow[]               @relation("Followed")
+  outboxActivities       OutboxActivity[]
+  oauthProviders         OAuthProvider[]
+  savedItems             SavedItem[]
 
   // Donation settings (legacy single address)
   donationAddress  String?
-  donationCurrency String   @default("ETH")
-  acceptsDonations Boolean  @default(false)
-  
+  donationCurrency String  @default("ETH")
+  acceptsDonations Boolean @default(false)
+
   // Multiple donation addresses
-  donationAddresses DonationAddress[]
-  badgesAwarded  Badge[]   @relation("BadgeAwardedBy")
-  barterOffersMade   BarterOffer[] @relation("BarterOfferMaker")
-  barterOffersReceived BarterOffer[] @relation("BarterOfferReceiver")
-  appointmentsAsBuyer  Appointment[] @relation("BuyerAppointments")
-  appointmentsAsSeller Appointment[] @relation("SellerAppointments")
-  serviceOfferings     ServiceOffering[]
-  availabilitySlots    Availability[]
-  notifications Notification[]
-  contentViews         ContentView[]
-  videoRoomsCreated    VideoRoom[]
+  donationAddresses     DonationAddress[]
+  badgesAwarded         Badge[]                @relation("BadgeAwardedBy")
+  barterOffersMade      BarterOffer[]          @relation("BarterOfferMaker")
+  barterOffersReceived  BarterOffer[]          @relation("BarterOfferReceiver")
+  appointmentsAsBuyer   Appointment[]          @relation("BuyerAppointments")
+  appointmentsAsSeller  Appointment[]          @relation("SellerAppointments")
+  serviceOfferings      ServiceOffering[]
+  availabilitySlots     Availability[]
+  notifications         Notification[]
+  contentViews          ContentView[]
+  videoRoomsCreated     VideoRoom[]
   videoRoomParticipants VideoRoomParticipant[]
+  locationCategories    LocationCategory[]
+  trips                 Trip[]
+  tripCollaborators     TripCollaborator[]
 
   // Fediverse
-  federatedUrl      String?   @unique
-  privateKey        String?
-  publicKey         String?
-  followersCount    Int       @default(0)
-  followingCount    Int       @default(0)
-  inboxUrl          String?
-  sharedInboxUrl    String?
+  federatedUrl   String? @unique
+  privateKey     String?
+  publicKey      String?
+  followersCount Int     @default(0)
+  followingCount Int     @default(0)
+  inboxUrl       String?
+  sharedInboxUrl String?
 }
 
 // User-defined locations for filtering content
 model UserLocation {
-  id          String   @id @default(cuid())
-  name        String   // User-defined name: "My Hometown", "Work", "SF Apartment"
-  location    String   // Actual location: "San Francisco, CA" or coordinates
-  latitude    Float?
-  longitude   Float?
-  isPrimary   Boolean  @default(false)
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String            @id @default(cuid())
+  name       String // User-defined name: "My Hometown", "Work", "SF Apartment"
+  location   String // Actual location: "San Francisco, CA" or coordinates
+  latitude   Float?
+  longitude  Float?
+  isPrimary  Boolean           @default(false)
+  categoryId String? // LocationCategory for grouping (camping, restaurants, shops, venues, etc.)
+  category   LocationCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tags       String? // Comma-separated tags
+  notes      String? // Personal notes about this location
+  imageUrl   String? // Photo of the location
+  userId     String
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tripStops  TripStop[]
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
 
   @@index([userId])
 }
 
+// Categories for grouping saved locations (camping spots, restaurants, shops, venues, etc.)
+model LocationCategory {
+  id        String         @id @default(cuid())
+  name      String // e.g. "Camping", "Restaurants", "Shops", "Venues"
+  icon      String         @default("📍") // Emoji icon
+  color     String         @default("#3b82f6") // Hex color for UI
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  locations UserLocation[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([name])
+}
+
+// A trip/road-trip plan with stops, dates, and collaborators
+model Trip {
+  id            String             @id @default(cuid())
+  title         String
+  description   String?
+  coverImage    String?
+  startDate     DateTime?
+  endDate       DateTime?
+  isPublic      Boolean            @default(false)
+  userId        String
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stops         TripStop[]
+  collaborators TripCollaborator[]
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@index([userId])
+  @@index([isPublic])
+}
+
+// Waypoints on a trip — each stop is a location on a specific day in a specific order
+model TripStop {
+  id              String        @id @default(cuid())
+  tripId          String
+  trip            Trip          @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  savedLocationId String? // Link to a saved location (optional — user can type a name)
+  savedLocation   UserLocation? @relation(fields: [savedLocationId], references: [id], onDelete: SetNull)
+  name            String // Display name (copied from saved location or typed manually)
+  location        String? // Address or place description
+  latitude        Float?
+  longitude       Float?
+  day             Int // Which day of the trip (0-indexed)
+  order           Int // Order within the day
+  notes           String?
+  arrivalTime     String? // HH:MM format
+  departureTime   String? // HH:MM format
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([tripId])
+  @@index([savedLocationId])
+}
+
+// Sharing trips with other users
+model TripCollaborator {
+  id        String   @id @default(cuid())
+  tripId    String
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String   @default("VIEWER") // VIEWER, EDITOR, OWNER
+  status    String   @default("PENDING") // PENDING, ACCEPTED, DECLINED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tripId, userId])
+  @@index([userId])
+}
+
 model Plan {
-  id             String     @id @default(cuid())
-  title          String
-  description    String?
-  imageUrl       String?
-  category       String?
-  goals          String?
-  mileposts      String?
-  milepostStatus String?   @default("[]")
-  resources      String?   @default("[]")
-  status         String     @default("DRAFT")
-  published      Boolean    @default(false)
-  pinned         Boolean    @default(false)
+  id                      String  @id @default(cuid())
+  title                   String
+  description             String?
+  imageUrl                String?
+  category                String?
+  goals                   String?
+  mileposts               String?
+  milepostStatus          String? @default("[]")
+  resources               String? @default("[]")
+  status                  String  @default("DRAFT")
+  published               Boolean @default(false)
+  pinned                  Boolean @default(false)
   lookingForCollaborators Boolean @default(false)
-  location       String?
-  locationDetails String?
-  latitude       Float?
-  longitude      Float?
-  schoolId       String?
-  shopId        String?
+  location                String?
+  locationDetails         String?
+  latitude                Float?
+  longitude               Float?
+  schoolId                String?
+  shopId                  String?
 
   // Donations & Funding
-  goalAmount        Float?   @default(0)
-  currentFunding    Float?   @default(0)
-  donationAddress   String?
-  donationCurrency  String   @default("ETH")
-  acceptsDonations  Boolean  @default(false)
+  goalAmount          Float?  @default(0)
+  currentFunding      Float?  @default(0)
+  donationAddress     String?
+  donationCurrency    String  @default("ETH")
+  acceptsDonations    Boolean @default(false)
   donationDescription String?
-  donationAddresses String?   // JSON: [{currency, address, label}]
+  donationAddresses   String? // JSON: [{currency, address, label}]
 
   // Volunteering
   needsVolunteers      Boolean @default(false)
-  volunteerRoles       String?  // JSON array: ["Setup","Cleanup","Photography"]
+  volunteerRoles       String? // JSON array: ["Setup","Cleanup","Photography"]
   volunteerDescription String?
 
-  userId         String
-  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  editors        PlanEditor[]
-  requests       Request[]
-  joiners        PlanJoiner[]
-  contributions  PlanContribution[]
-  events         Event[]
-  updates        PlanUpdate[]
-  statusHistory  PlanStatusHistory[]
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  userId        String
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  editors       PlanEditor[]
+  requests      Request[]
+  joiners       PlanJoiner[]
+  contributions PlanContribution[]
+  events        Event[]
+  updates       PlanUpdate[]
+  statusHistory PlanStatusHistory[]
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
 
   @@index([status])
   @@index([published])
@@ -229,13 +313,13 @@ model Plan {
 }
 
 model PlanStatusHistory {
-  id        String   @id @default(cuid())
-  planId    String
-  plan      Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  planId     String
+  plan       Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
   fromStatus String?
   toStatus   String
-  reason    String?
-  createdAt DateTime @default(now())
+  reason     String?
+  createdAt  DateTime @default(now())
 }
 
 model PlanEditor {
@@ -250,7 +334,7 @@ model PlanEditor {
 }
 
 model Event {
-  id              String   @id @default(cuid())
+  id              String    @id @default(cuid())
   title           String
   description     String?
   imageUrl        String?
@@ -261,45 +345,45 @@ model Event {
   locationDetails String?
   latitude        Float?
   longitude       Float?
-  maxJoiners      Int      @default(0)
-  pinned          Boolean  @default(false)
-  
+  maxJoiners      Int       @default(0)
+  pinned          Boolean   @default(false)
+
   // Ticketing
-  isTicketed      Boolean  @default(false)
-  ticketPrice     Float    @default(0)
-  currency       String   @default("USD")
-  
+  isTicketed  Boolean @default(false)
+  ticketPrice Float   @default(0)
+  currency    String  @default("USD")
+
   // Donations
-  acceptsDonations Boolean   @default(false)
-  donationAddress String?
-  donationCurrency  String   @default("ETH")
-  donationAddresses String?   // JSON: [{currency, address, label}]
-  
+  acceptsDonations  Boolean @default(false)
+  donationAddress   String?
+  donationCurrency  String  @default("ETH")
+  donationAddresses String? // JSON: [{currency, address, label}]
+
   // Volunteering
-  needsVolunteers    Boolean @default(false)
-  volunteerRoles    String?  // JSON array: ["Setup","Cleanup","Photography"]
+  needsVolunteers      Boolean @default(false)
+  volunteerRoles       String? // JSON array: ["Setup","Cleanup","Photography"]
   volunteerDescription String?
-  
-  planId          String?
-  plan            Plan?    @relation(fields: [planId], references: [id], onDelete: Cascade)
-  groupId         String?
-  group           Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  schoolId        String?
-  school          User?    @relation("SchoolEvents", fields: [schoolId], references: [id], onDelete: Cascade)
-  shopId          String?
-  shop            User?    @relation("ShopEvents", fields: [shopId], references: [id], onDelete: Cascade)
-  
-  organizerId     String
-  organizer       User     @relation(fields: [organizerId], references: [id], onDelete: Cascade)
-  
-  eventJoiners    EventJoiner[]
-  eventTickets    EventTicket[]
-  requests        Request[]
-  eventHashtags   EventHashtag[]
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+
+  planId   String?
+  plan     Plan?   @relation(fields: [planId], references: [id], onDelete: Cascade)
+  groupId  String?
+  group    Group?  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  schoolId String?
+  school   User?   @relation("SchoolEvents", fields: [schoolId], references: [id], onDelete: Cascade)
+  shopId   String?
+  shop     User?   @relation("ShopEvents", fields: [shopId], references: [id], onDelete: Cascade)
+
+  organizerId String
+  organizer   User   @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+
+  eventJoiners  EventJoiner[]
+  eventTickets  EventTicket[]
+  requests      Request[]
+  eventHashtags EventHashtag[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([planId])
   @@index([groupId])
   @@index([eventDate])
@@ -307,13 +391,13 @@ model Event {
 }
 
 model EventJoiner {
-  id        String   @id @default(cuid())
-  eventId   String
-  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role      String   @default("ATTENDEE")  // ATTENDEE or VOLUNTEER
-  joinedAt  DateTime @default(now())
+  id       String   @id @default(cuid())
+  eventId  String
+  event    Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role     String   @default("ATTENDEE") // ATTENDEE or VOLUNTEER
+  joinedAt DateTime @default(now())
 
   @@unique([eventId, userId])
   @@index([eventId])
@@ -321,27 +405,27 @@ model EventJoiner {
 }
 
 model EventTicket {
-  id              String   @id @default(cuid())
-  eventId         String
-  event           Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  quantity        Int      @default(1)
-  totalPaid       Float    @default(0)
-  paymentStatus   String   @default("PENDING")
-  purchasedAt     DateTime @default(now())
+  id            String   @id @default(cuid())
+  eventId       String
+  event         Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quantity      Int      @default(1)
+  totalPaid     Float    @default(0)
+  paymentStatus String   @default("PENDING")
+  purchasedAt   DateTime @default(now())
 
   @@unique([eventId, userId])
 }
 
 model PlanJoiner {
-  id        String   @id @default(cuid())
-  planId    String
-  plan      Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role      String   @default("ATTENDEE")  // ATTENDEE or VOLUNTEER
-  joinedAt  DateTime @default(now())
+  id       String   @id @default(cuid())
+  planId   String
+  plan     Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role     String   @default("ATTENDEE") // ATTENDEE or VOLUNTEER
+  joinedAt DateTime @default(now())
 
   @@unique([planId, userId])
 }
@@ -361,50 +445,50 @@ model PlanContribution {
 }
 
 model Request {
-  id           String    @id @default(cuid())
-  title        String
-  description String?
-  imageUrl     String?
-  status      String    @default("PENDING")
-  category    String    @default("GENERAL")
-  priority    String    @default("MEDIUM")
-  budget      Float?
-  goalAmount  Float?    @default(0)
-  currentFunding Float? @default(0)
-  payoutAddress    String?
-  payoutCurrency  String? @default("ETH")
-  deadline    DateTime?
-  location    String?
-  latitude   Float?
-  longitude  Float?
-  planId     String?
-  plan       Plan?     @relation(fields: [planId], references: [id], onDelete: Cascade)
-  productId  String?
-  product    Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
-  groupId    String?
-  group      Group?    @relation(fields: [groupId], references: [id], onDelete: SetNull)
-  schoolContentId String?
-  schoolContent   SchoolContent? @relation(fields: [schoolContentId], references: [id], onDelete: SetNull)
-  eventId    String?
-  event      Event?    @relation(fields: [eventId], references: [id], onDelete: SetNull)
-  userId     String
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  completedBy   String?
-  completedAt   DateTime?
-  comments       Comment[]
-  statusHistory   RequestStatusHistory[]
-  contributions  Contribution[]
-  likes      Int       @default(0)
-  reposts    Int       @default(0)
-  isPublic   Boolean   @default(false)
-  allowFulfillments Boolean @default(true)
-  showDonationAddress Boolean @default(true)
-  viewCount  Int       @default(0)
-  contentViews ContentView[] @relation("RequestViews")
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  fulfillments  RequestFulfillment[]
-  supports    RequestSupport[]
+  id                  String                 @id @default(cuid())
+  title               String
+  description         String?
+  imageUrl            String?
+  status              String                 @default("PENDING")
+  category            String                 @default("GENERAL")
+  priority            String                 @default("MEDIUM")
+  budget              Float?
+  goalAmount          Float?                 @default(0)
+  currentFunding      Float?                 @default(0)
+  payoutAddress       String?
+  payoutCurrency      String?                @default("ETH")
+  deadline            DateTime?
+  location            String?
+  latitude            Float?
+  longitude           Float?
+  planId              String?
+  plan                Plan?                  @relation(fields: [planId], references: [id], onDelete: Cascade)
+  productId           String?
+  product             Product?               @relation(fields: [productId], references: [id], onDelete: SetNull)
+  groupId             String?
+  group               Group?                 @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  schoolContentId     String?
+  schoolContent       SchoolContent?         @relation(fields: [schoolContentId], references: [id], onDelete: SetNull)
+  eventId             String?
+  event               Event?                 @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  userId              String
+  user                User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  completedBy         String?
+  completedAt         DateTime?
+  comments            Comment[]
+  statusHistory       RequestStatusHistory[]
+  contributions       Contribution[]
+  likes               Int                    @default(0)
+  reposts             Int                    @default(0)
+  isPublic            Boolean                @default(false)
+  allowFulfillments   Boolean                @default(true)
+  showDonationAddress Boolean                @default(true)
+  viewCount           Int                    @default(0)
+  contentViews        ContentView[]          @relation("RequestViews")
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+  fulfillments        RequestFulfillment[]
+  supports            RequestSupport[]
 
   @@index([status])
   @@index([category])
@@ -430,12 +514,12 @@ model RequestSupport {
 }
 
 model Contribution {
-  id         String   @id @default(cuid())
+  id        String   @id @default(cuid())
   amount    Float
   requestId String
   request   Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
   userId    String
-  createdAt DateTime  @default(now())
+  createdAt DateTime @default(now())
 }
 
 model Comment {
@@ -449,90 +533,90 @@ model Comment {
 }
 
 model RequestStatusHistory {
-  id           String   @id @default(cuid())
-  requestId    String
-  request      Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
-  fromStatus   String
-  toStatus     String
-  changedById  String
-  changedBy    User     @relation(fields: [changedById], references: [id], onDelete: Cascade)
-  reason       String?
-  createdAt    DateTime @default(now())
-}
-
-model RequestFulfillment {
   id          String   @id @default(cuid())
   requestId   String
   request     Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title       String
-  content     String
-  status      String   @default("PENDING")
+  fromStatus  String
+  toStatus    String
+  changedById String
+  changedBy   User     @relation(fields: [changedById], references: [id], onDelete: Cascade)
+  reason      String?
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+}
+
+model RequestFulfillment {
+  id        String   @id @default(cuid())
+  requestId String
+  request   Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  content   String
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Product {
-  id                String   @id @default(cuid())
-  title             String
-  description       String?
-  price             Float?
-  type              String   @default("PRODUCT")
-  category          String?
-  condition         String?
-  location          String?
-  locationDetails   String?
-  latitude          Float?
-  longitude         Float?
-  isGlobal          Boolean  @default(false)
-  isRemote          Boolean  @default(false)
-  imageUrl          String?
-  published        Boolean  @default(true)
-  pinned            Boolean  @default(false)
-  paymentMethods   String?
-  paymentType      String   @default("BOTH")
-  acceptsRequests  Boolean  @default(false)
-  acceptsOffers  Boolean  @default(true)
-  requestPrice     Float?
+  id              String  @id @default(cuid())
+  title           String
+  description     String?
+  price           Float?
+  type            String  @default("PRODUCT")
+  category        String?
+  condition       String?
+  location        String?
+  locationDetails String?
+  latitude        Float?
+  longitude       Float?
+  isGlobal        Boolean @default(false)
+  isRemote        Boolean @default(false)
+  imageUrl        String?
+  published       Boolean @default(true)
+  pinned          Boolean @default(false)
+  paymentMethods  String?
+  paymentType     String  @default("BOTH")
+  acceptsRequests Boolean @default(false)
+  acceptsOffers   Boolean @default(true)
+  requestPrice    Float?
 
   // Rental-specific fields
-  rentalDaily    Float?
-  rentalWeekly   Float?
-  rentalMonthly  Float?
-  rentalDeposit  Float?
-  rentalMinDays  Int      @default(1)
-  rentalMaxDays  Int?
+  rentalDaily     Float?
+  rentalWeekly    Float?
+  rentalMonthly   Float?
+  rentalDeposit   Float?
+  rentalMinDays   Int     @default(1)
+  rentalMaxDays   Int?
   rentalAvailable Boolean @default(true)
 
-  acceptsDonations    Boolean  @default(false)
-  donationAddress     String?
-  donationCurrency    String   @default("ETH")
-  donationAddresses   String?   // JSON: [{currency, address, label}]
+  acceptsDonations  Boolean @default(false)
+  donationAddress   String?
+  donationCurrency  String  @default("ETH")
+  donationAddresses String? // JSON: [{currency, address, label}]
 
   // Appointment scheduling
-  acceptsAppointments   Boolean  @default(false)
-  appointmentDuration   Int?     // minutes
-  appointmentLeadTime   Int?     // hours notice
-  appointmentLocation   String?
+  acceptsAppointments    Boolean @default(false)
+  appointmentDuration    Int? // minutes
+  appointmentLeadTime    Int? // hours notice
+  appointmentLocation    String?
   appointmentMeetingLink String?
-  appointmentFormFields Json?    // [{ label: string, type: "text"|"textarea", required: boolean }]
+  appointmentFormFields  Json? // [{ label: string, type: "text"|"textarea", required: boolean }]
 
-  sellerPayoutAddress String?  // Crypto address for direct payouts
+  sellerPayoutAddress  String? // Crypto address for direct payouts
   sellerCryptoCurrency String? // BTC, ETH, USDT, USDC, XMR, XTM, ARRR, DERO, ZANO, OTHER
-  userId           String
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  requests         Request[]
-  appointments     Appointment[]
-  groupPosts       GroupPost[]
-  groupProducts    GroupProduct[]
-  ratings           Rating[]
-  escrowTxns        EscrowTransaction[]
-  hashtags          ProductHashtag[]
-  viewCount        Int      @default(0)
-  contentViews     ContentView[] @relation("ProductViews")
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  userId               String
+  user                 User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  requests             Request[]
+  appointments         Appointment[]
+  groupPosts           GroupPost[]
+  groupProducts        GroupProduct[]
+  ratings              Rating[]
+  escrowTxns           EscrowTransaction[]
+  hashtags             ProductHashtag[]
+  viewCount            Int                 @default(0)
+  contentViews         ContentView[]       @relation("ProductViews")
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
 
   @@index([published])
   @@index([category])
@@ -542,97 +626,97 @@ model Product {
 }
 
 model SchoolContent {
-  id          String   @id @default(cuid())
-  title       String
-  content     String
-  contentType String   @default("article")
-  price       Float    @default(0)
-  currency    String   @default("USD")
-  isPaid     Boolean  @default(false)
-  isSubscription Boolean @default(false)
-  subscriptionPrice Float @default(0)
-  userId      String
-  user        User     @relation("SchoolOwner", fields: [userId], references: [id], onDelete: Cascade)
-  authorId    String
-  author      User     @relation("SchoolAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  pinned      Boolean  @default(false)
+  id                String           @id @default(cuid())
+  title             String
+  content           String
+  contentType       String           @default("article")
+  price             Float            @default(0)
+  currency          String           @default("USD")
+  isPaid            Boolean          @default(false)
+  isSubscription    Boolean          @default(false)
+  subscriptionPrice Float            @default(0)
+  userId            String
+  user              User             @relation("SchoolOwner", fields: [userId], references: [id], onDelete: Cascade)
+  authorId          String
+  author            User             @relation("SchoolAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  pinned            Boolean          @default(false)
   originalContentId String?
-  originalContent   SchoolContent? @relation("RepostedContent", fields: [originalContentId], references: [id], onDelete: SetNull)
-  reposts     SchoolContent[] @relation("RepostedContent")
-  purchases   SchoolPurchase[]
-  requests    Request[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  originalContent   SchoolContent?   @relation("RepostedContent", fields: [originalContentId], references: [id], onDelete: SetNull)
+  reposts           SchoolContent[]  @relation("RepostedContent")
+  purchases         SchoolPurchase[]
+  requests          Request[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
 }
 
 model SchoolPurchase {
-  id          String   @id @default(cuid())
-  type        String
-  amount      Float
-  currency    String   @default("USD")
-  status      String   @default("PENDING")
-  txHash      String?
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  contentId   String
-  content     SchoolContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
-  expiresAt   DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String        @id @default(cuid())
+  type      String
+  amount    Float
+  currency  String        @default("USD")
+  status    String        @default("PENDING")
+  txHash    String?
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contentId String
+  content   SchoolContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  expiresAt DateTime?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 
   @@unique([userId, contentId])
 }
 
 model SchoolSubscription {
-  id          String   @id @default(cuid())
+  id            String    @id @default(cuid())
   schoolOwnerId String
-  subscriberId String
-  subscriber  User     @relation("SchoolSubscriber", fields: [subscriberId], references: [id], onDelete: Cascade)
-  tier        String
-  price       Float
-  currency    String   @default("USD")
-  status      String   @default("ACTIVE")
-  startedAt   DateTime @default(now())
-  expiresAt   DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  subscriberId  String
+  subscriber    User      @relation("SchoolSubscriber", fields: [subscriberId], references: [id], onDelete: Cascade)
+  tier          String
+  price         Float
+  currency      String    @default("USD")
+  status        String    @default("ACTIVE")
+  startedAt     DateTime  @default(now())
+  expiresAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@unique([schoolOwnerId, subscriberId])
 }
 
 model Connection {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   requesterId String
-  requester   User      @relation("ConnectionRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  requester   User     @relation("ConnectionRequester", fields: [requesterId], references: [id], onDelete: Cascade)
   receiverId  String
-  receiver    User      @relation("ConnectionReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
-  status      String    @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  receiver    User     @relation("ConnectionReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  status      String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
   message     String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@unique([requesterId, receiverId])
 }
 
 model Message {
-  id           String    @id @default(cuid())
-  senderId     String
-  sender       User      @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
-  receiverId   String
-  receiver     User      @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
-  content      String
-  read         Boolean   @default(false)
-  createdAt    DateTime  @default(now())
+  id         String   @id @default(cuid())
+  senderId   String
+  sender     User     @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String
+  receiver   User     @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  content    String
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
 }
 
 model EmailSubscriber {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
+  id         String   @id @default(cuid())
+  email      String   @unique
+  name       String?
   subscribed Boolean  @default(true)
-  source    String   @default("landing_page")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  source     String   @default("landing_page")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model PlanUpdate {
@@ -651,29 +735,29 @@ model PlanUpdate {
 }
 
 model Post {
-  id              String   @id @default(cuid())
+  id              String        @id @default(cuid())
   content         String
   imageUrl        String?
-  pinned          Boolean  @default(false)
-  context         String   @default("PROFILE") // PROFILE | SHOP | SCHOOL | WALL
-  images          String?  // JSON array of URLs
-  mentions        String?  // JSON array of mentioned user IDs
+  pinned          Boolean       @default(false)
+  context         String        @default("PROFILE") // PROFILE | SHOP | SCHOOL | WALL
+  images          String? // JSON array of URLs
+  mentions        String? // JSON array of mentioned user IDs
   userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   targetUserId    String?
-  targetUser      User?    @relation("WallPostTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+  targetUser      User?         @relation("WallPostTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
   parentId        String?
-  parent          Post?    @relation("PostReplies", fields: [parentId], references: [id])
-  replies         Post[]   @relation("PostReplies")
-  referenceType   String?  // PRODUCT | SERVICE | EVENT | REQUEST | PLAN | POST
+  parent          Post?         @relation("PostReplies", fields: [parentId], references: [id])
+  replies         Post[]        @relation("PostReplies")
+  referenceType   String? // PRODUCT | SERVICE | EVENT | REQUEST | PLAN | POST
   referenceId     String?
   referenceTitle  String?
-  likes           Int      @default(0)
-  totalTips       Float    @default(0)
-  tippers         Int      @default(0)
-  viewCount       Int      @default(0)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  likes           Int           @default(0)
+  totalTips       Float         @default(0)
+  tippers         Int           @default(0)
+  viewCount       Int           @default(0)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
   hashtags        PostHashtag[]
   postTips        PostTip[]
   postLikes       PostLike[]
@@ -714,14 +798,14 @@ model PostTip {
 }
 
 model PostRepost {
-  id              String   @id @default(cuid())
-  userId          String
-  postId          String
-  originalPostId  String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  post            Post     @relation("RepostPost", fields: [postId], references: [id], onDelete: Cascade)
-  originalPost    Post     @relation("OriginalPost", fields: [originalPostId], references: [id], onDelete: Cascade)
-  createdAt       DateTime @default(now())
+  id             String   @id @default(cuid())
+  userId         String
+  postId         String
+  originalPostId String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post           Post     @relation("RepostPost", fields: [postId], references: [id], onDelete: Cascade)
+  originalPost   Post     @relation("OriginalPost", fields: [originalPostId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
 
   @@unique([userId, originalPostId])
   @@index([originalPostId])
@@ -729,14 +813,14 @@ model PostRepost {
 }
 
 model Hashtag {
-  id        String          @id @default(cuid())
-  tag       String          @unique
-  postCount Int             @default(0)
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-  posts     PostHashtag[]
-  products  ProductHashtag[]
-  events    EventHashtag[]
+  id               String                   @id @default(cuid())
+  tag              String                   @unique
+  postCount        Int                      @default(0)
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+  posts            PostHashtag[]
+  products         ProductHashtag[]
+  events           EventHashtag[]
   serviceOfferings ServiceOfferingHashtag[]
 
   @@index([postCount])
@@ -782,40 +866,40 @@ model EventHashtag {
 }
 
 model Group {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  imageUrl    String?
-  coverImage  String?
-  bannerColor String?
-  isPrivate   Boolean  @default(false)
+  id              String         @id @default(cuid())
+  name            String
+  description     String?
+  imageUrl        String?
+  coverImage      String?
+  bannerColor     String?
+  isPrivate       Boolean        @default(false)
   // Location-based group support
-  location       String?   // e.g., "San Francisco Bay Area"
-  latitude       Float?
-  longitude      Float?
-  isLocationBased Boolean @default(false)
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  members     GroupMember[]
-  posts      GroupPost[]
-  groupBuys  GroupBuy[]
-  events     Event[]
-  requests    Request[]
-  groupProducts GroupProduct[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  location        String? // e.g., "San Francisco Bay Area"
+  latitude        Float?
+  longitude       Float?
+  isLocationBased Boolean        @default(false)
+  userId          String
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  members         GroupMember[]
+  posts           GroupPost[]
+  groupBuys       GroupBuy[]
+  events          Event[]
+  requests        Request[]
+  groupProducts   GroupProduct[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
   @@index([location])
 }
 
 model GroupMember {
-  id        String   @id @default(cuid())
-  role      String   @default("MEMBER")
-  joinedAt  DateTime @default(now())
-  groupId   String
-  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id       String   @id @default(cuid())
+  role     String   @default("MEMBER")
+  joinedAt DateTime @default(now())
+  groupId  String
+  group    Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([groupId, userId])
 }
@@ -837,34 +921,34 @@ model GroupPost {
 }
 
 model GroupBuy {
-  id              String      @id @default(cuid())
-  title           String
-  description     String?
-  targetPrice     Float
-  currentPrice    Float       @default(0)
-  minSupporters   Int
-  currentSupporters Int       @default(0)
-  status          String      @default("ACTIVE")
-  productUrl      String?
-  productImage    String?
-  organizerId     String
-  organizer       User        @relation(fields: [organizerId], references: [id], onDelete: Cascade)
-  groupId         String
-  group           Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  supporters      GroupBuySupporter[]
-  completedAt     DateTime?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  id                String              @id @default(cuid())
+  title             String
+  description       String?
+  targetPrice       Float
+  currentPrice      Float               @default(0)
+  minSupporters     Int
+  currentSupporters Int                 @default(0)
+  status            String              @default("ACTIVE")
+  productUrl        String?
+  productImage      String?
+  organizerId       String
+  organizer         User                @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  groupId           String
+  group             Group               @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  supporters        GroupBuySupporter[]
+  completedAt       DateTime?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
 }
 
 model GroupBuySupporter {
-  id          String    @id @default(cuid())
-  groupBuyId  String
-  groupBuy    GroupBuy  @relation(fields: [groupBuyId], references: [id], onDelete: Cascade)
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  amount      Float     @default(1)
-  joinedAt    DateTime  @default(now())
+  id         String   @id @default(cuid())
+  groupBuyId String
+  groupBuy   GroupBuy @relation(fields: [groupBuyId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount     Float    @default(1)
+  joinedAt   DateTime @default(now())
 
   @@unique([groupBuyId, userId])
 }
@@ -894,67 +978,67 @@ model ContactMessage {
 }
 
 model Recommendation {
-  id         String   @id @default(cuid())
-  name       String?
-  email      String?
-  category   String   @default("general")
+  id             String   @id @default(cuid())
+  name           String?
+  email          String?
+  category       String   @default("general")
   recommendation String
-  read       Boolean  @default(false)
-  createdAt  DateTime @default(now())
+  read           Boolean  @default(false)
+  createdAt      DateTime @default(now())
 }
 
 model Payment {
-  id            String   @id @default(cuid())
-  type          String
-  amount        Float
-  currency      String   @default("USD")
-  status        String   @default("PENDING")
-  txHash        String?
-  fromAddress   String?
-  toAddress     String?
-  platformFee   Float    @default(0)
-  netAmount     Float    @default(0)
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  planId        String?
-  eventId       String?
-  productId     String?
-  description   String?
-  refunds       Refund[]
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id          String   @id @default(cuid())
+  type        String
+  amount      Float
+  currency    String   @default("USD")
+  status      String   @default("PENDING")
+  txHash      String?
+  fromAddress String?
+  toAddress   String?
+  platformFee Float    @default(0)
+  netAmount   Float    @default(0)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId      String?
+  eventId     String?
+  productId   String?
+  description String?
+  refunds     Refund[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model PlatformSettings {
-  id                 String   @id @default(cuid())
-  platformFeePercent Float    @default(10)
+  id                 String  @id @default(cuid())
+  platformFeePercent Float   @default(10)
   platformWallet     String?
-  adminPrivateKeys   String?  // Encrypted JSON of private keys (legacy)
+  adminPrivateKeys   String? // Encrypted JSON of private keys (legacy)
   remoteNodeUrl      String?
   remoteNodeApiKey   String?
-  enableCheckout   Boolean  @default(true)
-  enableWallet    Boolean  @default(true)
-  
+  enableCheckout     Boolean @default(true)
+  enableWallet       Boolean @default(true)
+
   // Site-wide donation addresses
-  donationAddresses String?   // JSON string: [{ currency, address, label, qrUrl?, showQR }]
-  
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  donationAddresses String? // JSON string: [{ currency, address, label, qrUrl?, showQR }]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model AdminWallet {
-  id          String   @id @default(cuid())
-  cryptoType  String   // ETH, BTC, XMR, etc.
-  address     String
-  privateKey  String?  // Encrypted
-  seedPhrase  String?  // Encrypted (for HD wallets)
-  publicKey   String?
-  isPrimary   Boolean  @default(false)
-  label       String?  // Optional label for the wallet
-  userId      String?  // Optional: if user generated this wallet
-  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  cryptoType String // ETH, BTC, XMR, etc.
+  address    String
+  privateKey String? // Encrypted
+  seedPhrase String? // Encrypted (for HD wallets)
+  publicKey  String?
+  isPrimary  Boolean  @default(false)
+  label      String? // Optional label for the wallet
+  userId     String? // Optional: if user generated this wallet
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model Refund {
@@ -976,15 +1060,15 @@ model Refund {
 model Rating {
   id            String   @id @default(cuid())
   type          String   @default("SELLER") // SELLER, BUYER, PRODUCT
-  rating        Int      // 1-5 stars
+  rating        Int // 1-5 stars
   comment       String?
   raterId       String
   rater         User     @relation(fields: [raterId], references: [id], onDelete: Cascade)
-  userId        String   // The user being rated
+  userId        String // The user being rated
   user          User     @relation("RatingReceiver", fields: [userId], references: [id], onDelete: Cascade)
   productId     String?
   product       Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
-  transactionId String?  // Optional reference to a transaction
+  transactionId String? // Optional reference to a transaction
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -992,153 +1076,153 @@ model Rating {
 }
 
 model Badge {
-  id          String   @id @default(cuid())
-  name        String   // Badge name: EARLY_ADOPTER, TRUSTED_CONNECTOR, VERIFIED_SELLER, COMMUNITY_BUILDER, MENTOR, GUIDE, PIONEER, EARTH_GUARDIAN, etc.
-  description String?  
-  imageUrl    String?
-  tier        String   @default("BRONZE") // BRONZE, SILVER, GOLD, PLATINUM, DIAMOND
-  userId      String   // Who earned this badge
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  awardedBy   String?  // User ID who awarded (null if system awarded)
-  awardedByUser User?   @relation("BadgeAwardedBy", fields: [awardedBy], references: [id], onDelete: SetNull)
-  createdAt   DateTime @default(now())
-  
+  id            String   @id @default(cuid())
+  name          String // Badge name: EARLY_ADOPTER, TRUSTED_CONNECTOR, VERIFIED_SELLER, COMMUNITY_BUILDER, MENTOR, GUIDE, PIONEER, EARTH_GUARDIAN, etc.
+  description   String?
+  imageUrl      String?
+  tier          String   @default("BRONZE") // BRONZE, SILVER, GOLD, PLATINUM, DIAMOND
+  userId        String // Who earned this badge
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  awardedBy     String? // User ID who awarded (null if system awarded)
+  awardedByUser User?    @relation("BadgeAwardedBy", fields: [awardedBy], references: [id], onDelete: SetNull)
+  createdAt     DateTime @default(now())
+
   @@unique([userId, name])
 }
 
 model EscrowTransaction {
-  id              String   @id @default(cuid())
-  amount          Float
-  currency        String   @default("USD")
-  cryptoAmount    Float?
-  cryptoCurrency  String?  // USDT, USDC, ETH, BTC, XMR, XTM, ARRR, DERO, ZANO, FIRO
-  txHash          String?  // Initial payment tx
-  releaseTxHash   String?  // Release to seller tx
-  status          String   @default("PENDING") // PENDING, FUNDED, RELEASED, DISPUTED, REFUNDED, CANCELLED
-  paymentType    String   @default("ESCROW") // ESCROW or DIRECT payment
-  feePercent      Float    @default(10)
-  platformFee     Float    @default(0)
-  netAmount       Float    @default(0)
-  description     String?
-  notes          String?  // Order notes
-   
+  id             String  @id @default(cuid())
+  amount         Float
+  currency       String  @default("USD")
+  cryptoAmount   Float?
+  cryptoCurrency String? // USDT, USDC, ETH, BTC, XMR, XTM, ARRR, DERO, ZANO, FIRO
+  txHash         String? // Initial payment tx
+  releaseTxHash  String? // Release to seller tx
+  status         String  @default("PENDING") // PENDING, FUNDED, RELEASED, DISPUTED, REFUNDED, CANCELLED
+  paymentType    String  @default("ESCROW") // ESCROW or DIRECT payment
+  feePercent     Float   @default(10)
+  platformFee    Float   @default(0)
+  netAmount      Float   @default(0)
+  description    String?
+  notes          String? // Order notes
+
   // Crypto payment fields
-  paymentAddress  String?  // Address buyer sends crypto to
-  fundingTxHash   String?  // Transaction hash that funded escrow
-  
-  productId       String?
-  product         Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
-  sellerId        String
-  seller          User     @relation("EscrowSeller", fields: [sellerId], references: [id], onDelete: Cascade)
-  buyerId         String
-  buyer           User     @relation("EscrowBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
-  courierId       String?
-  courier         User?    @relation("EscrowCourier", fields: [courierId], references: [id], onDelete: SetNull)
-  courierFee      Float?
-  courierService  String?  // e.g., "DELIVERY", "PICKUP", "EXPRESS"
-  deliveryAddress String?
-  deliveryStatus String   @default("PENDING") // PENDING, ACCEPTED, PICKED_UP, IN_TRANSIT, DELIVERED, COMPLETED, DECLINED
-  trackingNumber  String?
-  expectedDelivery DateTime?  // Expected delivery date
-  completedAt     DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  paymentAddress String? // Address buyer sends crypto to
+  fundingTxHash  String? // Transaction hash that funded escrow
+
+  productId        String?
+  product          Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+  sellerId         String
+  seller           User      @relation("EscrowSeller", fields: [sellerId], references: [id], onDelete: Cascade)
+  buyerId          String
+  buyer            User      @relation("EscrowBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
+  courierId        String?
+  courier          User?     @relation("EscrowCourier", fields: [courierId], references: [id], onDelete: SetNull)
+  courierFee       Float?
+  courierService   String? // e.g., "DELIVERY", "PICKUP", "EXPRESS"
+  deliveryAddress  String?
+  deliveryStatus   String    @default("PENDING") // PENDING, ACCEPTED, PICKED_UP, IN_TRANSIT, DELIVERED, COMPLETED, DECLINED
+  trackingNumber   String?
+  expectedDelivery DateTime? // Expected delivery date
+  completedAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }
 
 model CourierService {
-  id              String   @id @default(cuid())
-  name            String
-  description     String?
-  serviceType     String   @default("DELIVERY") // DELIVERY, PICKUP, EXPRESS, INTERNATIONAL
-  basePrice       Float
-  pricePerMile    Float    @default(0)
-  maxDistance     Float    @default(100)
-  availableAreas  String?  // JSON string of available zip codes/areas
-  isActive        Boolean  @default(true)
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String   @id @default(cuid())
+  name           String
+  description    String?
+  serviceType    String   @default("DELIVERY") // DELIVERY, PICKUP, EXPRESS, INTERNATIONAL
+  basePrice      Float
+  pricePerMile   Float    @default(0)
+  maxDistance    Float    @default(100)
+  availableAreas String? // JSON string of available zip codes/areas
+  isActive       Boolean  @default(true)
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model InviteCode {
-  id          String   @id @default(cuid())
-  code        String   @unique
-  type        String   @default("BETA") // BETA, EMAIL_LIST, GENERAL
-  maxUses     Int      @default(1)
-  usedCount   Int      @default(0)
-  expiresAt   DateTime?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
+  id        String    @id @default(cuid())
+  code      String    @unique
+  type      String    @default("BETA") // BETA, EMAIL_LIST, GENERAL
+  maxUses   Int       @default(1)
+  usedCount Int       @default(0)
+  expiresAt DateTime?
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
 }
 
 model UserWallet {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  cryptoType  String   // ETH, BTC, XMR, etc.
-  address     String
-  privateKey  String?  // Encrypted
-  publicKey   String?
-  isPrimary   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  deposits    Deposit[]
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cryptoType String // ETH, BTC, XMR, etc.
+  address    String
+  privateKey String? // Encrypted
+  publicKey  String?
+  isPrimary  Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deposits   Deposit[]
 
   @@unique([userId, address])
 }
 
 model Deposit {
-  id            String   @id @default(cuid())
+  id            String      @id @default(cuid())
   userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   walletId      String?
   wallet        UserWallet? @relation(fields: [walletId], references: [id])
   cryptoType    String
   amount        Float
-  txHash        String   @unique
+  txHash        String      @unique
   fromAddress   String?
-  status        String   @default("PENDING") // PENDING, CONFIRMED, FAILED
-  confirmations Int      @default(0)
-  createdAt     DateTime @default(now())
+  status        String      @default("PENDING") // PENDING, CONFIRMED, FAILED
+  confirmations Int         @default(0)
+  createdAt     DateTime    @default(now())
   confirmedAt   DateTime?
 }
 
 model ForumCategory {
-  id          String   @id @default(cuid())
+  id          String      @id @default(cuid())
   name        String
   description String?
-  slug        String   @unique
+  slug        String      @unique
   icon        String?
-  sortOrder   Int      @default(0)
+  sortOrder   Int         @default(0)
   posts       ForumPost[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 }
 
 model ForumPost {
-  id          String   @id @default(cuid())
+  id          String            @id @default(cuid())
   title       String
   content     String
   categoryId  String
-  category    ForumCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category    ForumCategory     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   authorId    String
-  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  pinned      Boolean  @default(false)
-  locked      Boolean  @default(false)
-  isPoll      Boolean  @default(false)
-  pollType    String   @default("single")  // "single" or "multi"
+  author      User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  pinned      Boolean           @default(false)
+  locked      Boolean           @default(false)
+  isPoll      Boolean           @default(false)
+  pollType    String            @default("single") // "single" or "multi"
   pollEndsAt  DateTime?
-  viewCount   Int      @default(0)
-  replyCount  Int      @default(0)
-  totalTips  Float    @default(0)
-  tippers     Int      @default(0)
+  viewCount   Int               @default(0)
+  replyCount  Int               @default(0)
+  totalTips   Float             @default(0)
+  tippers     Int               @default(0)
   replies     ForumReply[]
   postTips    ForumPostTip[]
   pollOptions ForumPollOption[]
   pollVotes   ForumPollVote[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 
   @@index([categoryId])
   @@index([authorId])
@@ -1146,9 +1230,9 @@ model ForumPost {
 }
 
 model ForumPollOption {
-  id         String   @id @default(cuid())
+  id         String          @id @default(cuid())
   optionText String
-  voteCount  Int      @default(0)
+  voteCount  Int             @default(0)
   sortOrder  Int
   postId     String
   post       ForumPost       @relation(fields: [postId], references: [id], onDelete: Cascade)
@@ -1158,9 +1242,9 @@ model ForumPollOption {
 }
 
 model ForumPollVote {
-  id        String          @id @default(cuid())
-  userId    String
-  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id       String          @id @default(cuid())
+  userId   String
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   optionId String
   option   ForumPollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
   postId   String
@@ -1172,78 +1256,78 @@ model ForumPollVote {
 }
 
 model ForumReply {
-  id          String   @id @default(cuid())
-  content     String
-  postId      String
-  post        ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  authorId    String
-  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  totalTips  Float    @default(0)
-  tippers     Int      @default(0)
-  replyTips   ForumReplyTip[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String          @id @default(cuid())
+  content   String
+  postId    String
+  post      ForumPost       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  totalTips Float           @default(0)
+  tippers   Int             @default(0)
+  replyTips ForumReplyTip[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 
   @@index([postId])
   @@index([authorId])
 }
 
 model ForumPostTip {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   postId    String
   post      ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   amount    Float
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 }
 
 model ForumReplyTip {
-  id        String   @id @default(cuid())
+  id        String     @id @default(cuid())
   replyId   String
   reply     ForumReply @relation(fields: [replyId], references: [id], onDelete: Cascade)
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   amount    Float
-  createdAt DateTime @default(now())
+  createdAt DateTime   @default(now())
 }
 
 model UserEvent {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   title       String
   description String?
   startDate   DateTime
   endDate     DateTime?
-  allDay      Boolean  @default(false)
+  allDay      Boolean   @default(false)
   location    String?
-  color       String   @default("#3b82f6")
+  color       String    @default("#3b82f6")
   userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  visibility  String   @default("PRIVATE") // PRIVATE, PUBLIC, CONNECTIONS
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  visibility  String    @default("PRIVATE") // PRIVATE, PUBLIC, CONNECTIONS
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model BarterOffer {
-  id            String      @id @default(cuid())
-  status        String      @default("PENDING") // PENDING, ACCEPTED, REJECTED, COUNTERED, WITHDRAWN, COMPLETED
-  offerType     String      // MAKE_OFFER (I offer my item), REQUEST_OFFER (I want offers)
-  listingType   String      // PRODUCT, REQUEST
-  listingId     String
-  listingTitle  String      // Cached listing title for easier display
-  offeredItem   String      // Description of item being offered
-  offeredValue Float?      // Estimated value of offered item
-  message      String?      // Optional message to listing owner
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id           String   @id @default(cuid())
+  status       String   @default("PENDING") // PENDING, ACCEPTED, REJECTED, COUNTERED, WITHDRAWN, COMPLETED
+  offerType    String // MAKE_OFFER (I offer my item), REQUEST_OFFER (I want offers)
+  listingType  String // PRODUCT, REQUEST
+  listingId    String
+  listingTitle String // Cached listing title for easier display
+  offeredItem  String // Description of item being offered
+  offeredValue Float? // Estimated value of offered item
+  message      String? // Optional message to listing owner
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  makerId       String
-  maker        User        @relation("BarterOfferMaker", fields: [makerId], references: [id], onDelete: Cascade)
-  receiverId   String
-  receiver    User        @relation("BarterOfferReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  makerId    String
+  maker      User   @relation("BarterOfferMaker", fields: [makerId], references: [id], onDelete: Cascade)
+  receiverId String
+  receiver   User   @relation("BarterOfferReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
 
-  parentOfferId String?    @db.VarChar(30)
-  parentOffer   BarterOffer? @relation("CounterOffer", fields: [parentOfferId], references: [id], onDelete: SetNull)
+  parentOfferId String?       @db.VarChar(30)
+  parentOffer   BarterOffer?  @relation("CounterOffer", fields: [parentOfferId], references: [id], onDelete: SetNull)
   counterOffers BarterOffer[] @relation("CounterOffer")
 
   @@index([makerId])
@@ -1254,16 +1338,16 @@ model BarterOffer {
 }
 
 model Notification {
-  id          String   @id @default(cuid())
-  type        String   // OFFER_RECEIVED, OFFER_ACCEPTED, OFFER_REJECTED, OFFER_WITHDRAWN, APPOINTMENT_REQUEST, APPOINTMENT_CONFIRMED, APPOINTMENT_DECLINED, APPOINTMENT_RESCHEDULED
-  title       String
-  message    String
-  link       String?
-  read        Boolean  @default(false)
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  relatedId  String?
-  createdAt  DateTime @default(now())
+  id        String   @id @default(cuid())
+  type      String // OFFER_RECEIVED, OFFER_ACCEPTED, OFFER_REJECTED, OFFER_WITHDRAWN, APPOINTMENT_REQUEST, APPOINTMENT_CONFIRMED, APPOINTMENT_DECLINED, APPOINTMENT_RESCHEDULED
+  title     String
+  message   String
+  link      String?
+  read      Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  relatedId String?
+  createdAt DateTime @default(now())
 
   @@index([userId])
   @@index([read])
@@ -1298,7 +1382,7 @@ model OAuthProvider {
   id                String   @id @default(cuid())
   userId            String
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  provider          String   // google, github, discord
+  provider          String // google, github, discord
   providerAccountId String
   profile           String?  @db.Text // JSON blob of OAuth profile
   createdAt         DateTime @default(now())
@@ -1313,7 +1397,7 @@ model SavedItem {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  itemType  String   // PLAN, PRODUCT, REQUEST, EVENT, FORUM_POST
+  itemType  String // PLAN, PRODUCT, REQUEST, EVENT, FORUM_POST
   itemId    String
   createdAt DateTime @default(now())
 
@@ -1326,10 +1410,10 @@ model UserLink {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type      String   // twitter, github, instagram, website, youtube, etc.
+  type      String // twitter, github, instagram, website, youtube, etc.
   url       String
   label     String?
-  icon      String?  // URL to icon image
+  icon      String? // URL to icon image
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
 
@@ -1340,10 +1424,10 @@ model DonationAddress {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  currency  String   // ETH, BTC, XMR, USDT, USDC, etc.
+  currency  String // ETH, BTC, XMR, USDT, USDC, etc.
   address   String
-  label     String?  // e.g., "Main ETH Wallet", "Cold Storage"
-  qrCodeUrl String?  // URL to QR code image
+  label     String? // e.g., "Main ETH Wallet", "Cold Storage"
+  qrCodeUrl String? // URL to QR code image
   showQR    Boolean  @default(true)
   sortOrder Int      @default(0)
   isPublic  Boolean  @default(true)
@@ -1355,17 +1439,17 @@ model DonationAddress {
 
 // IPFS-backed file storage for user uploads
 model File {
-  id          String   @id @default(cuid())
-  cid         String   @unique  // IPFS CID (Qm... or bafy...)
-  fileName    String
-  mimeType    String
-  size        Int
-  gatewayUrl  String   // https://gateway.pinata.cloud/ipfs/{cid}
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  modelName   String   // "User", "Product", "Post", "GroupPost", etc.
-  modelId     String   // The ID of the record
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  cid        String   @unique // IPFS CID (Qm... or bafy...)
+  fileName   String
+  mimeType   String
+  size       Int
+  gatewayUrl String // https://gateway.pinata.cloud/ipfs/{cid}
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  modelName  String // "User", "Product", "Post", "GroupPost", etc.
+  modelId    String // The ID of the record
+  createdAt  DateTime @default(now())
 
   @@index([userId])
   @@index([cid])
@@ -1374,16 +1458,16 @@ model File {
 
 // Database backups with torrent seeding
 model Backup {
-  id           String   @id @default(cuid())
-  cid          String   @unique  // IPFS CID of backup file
-  magnetLink   String   // Full magnet URI with trackers + IPFS webseed
-  torrentFile  String   // Path to .torrent file in public/backups/
-  fileName     String   // backup-2026-05-06.sql.gz
-  fileSize     Int      // Bytes
-  dbSize       Int      // Original DB size before compression
-  createdById  String
-  createdBy    User     @relation(fields: [createdById], references: [id])
-  createdAt    DateTime @default(now())
+  id          String   @id @default(cuid())
+  cid         String   @unique // IPFS CID of backup file
+  magnetLink  String // Full magnet URI with trackers + IPFS webseed
+  torrentFile String // Path to .torrent file in public/backups/
+  fileName    String // backup-2026-05-06.sql.gz
+  fileSize    Int // Bytes
+  dbSize      Int // Original DB size before compression
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
 
   @@index([createdById])
   @@index([createdAt])
@@ -1391,17 +1475,17 @@ model Backup {
 
 // PolySocial storage pacts (bilateral agreements)
 model StoragePact {
-  id           String   @id @default(cuid())
-  initiatorId  String
-  initiator    User     @relation("PactInitiator", fields: [initiatorId], references: [id])
-  peerId       String
-  peer         User     @relation("PactPeer", fields: [peerId], references: [id])
-  trustScore   Float    @default(1.0)
-  storageQuota Int      // MB
-  status       String   @default("ACTIVE")  // ACTIVE, PAUSED, TERMINATED
+  id             String   @id @default(cuid())
+  initiatorId    String
+  initiator      User     @relation("PactInitiator", fields: [initiatorId], references: [id])
+  peerId         String
+  peer           User     @relation("PactPeer", fields: [peerId], references: [id])
+  trustScore     Float    @default(1.0)
+  storageQuota   Int // MB
+  status         String   @default("ACTIVE") // ACTIVE, PAUSED, TERMINATED
   challengeNonce String // Base64 encoded
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@index([initiatorId])
   @@index([peerId])
@@ -1410,16 +1494,16 @@ model StoragePact {
 
 // Fediverse follow relationships
 model Follow {
-  id              String    @id @default(cuid())
-  followerId      String
-  follower        User      @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
-  followedId      String
-  followed        User?     @relation("Followed", fields: [followedId], references: [id], onDelete: SetNull)
-  remoteActorUrl  String?
-  remoteInboxUrl  String?
-  status          String    @default("PENDING")
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id             String   @id @default(cuid())
+  followerId     String
+  follower       User     @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  followedId     String
+  followed       User?    @relation("Followed", fields: [followedId], references: [id], onDelete: SetNull)
+  remoteActorUrl String?
+  remoteInboxUrl String?
+  status         String   @default("PENDING")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@unique([followerId, followedId])
   @@index([followerId])
@@ -1428,48 +1512,48 @@ model Follow {
 
 // Outbound ActivityPub activities queue
 model OutboxActivity {
-  id              String    @id @default(cuid())
-  userId          String
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  activityType    String
-  objectType      String?
-  objectId        String?
-  serialized      String
-  status          String    @default("PENDING")
-  retryCount      Int       @default(0)
-  lastError       String?
-  createdAt       DateTime  @default(now())
-  deliveredAt     DateTime?
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activityType String
+  objectType   String?
+  objectId     String?
+  serialized   String
+  status       String    @default("PENDING")
+  retryCount   Int       @default(0)
+  lastError    String?
+  createdAt    DateTime  @default(now())
+  deliveredAt  DateTime?
 
   @@index([status, createdAt])
 }
 
 // Incoming ActivityPub activities (dedup)
 model InboxActivity {
-  id              String    @id @default(cuid())
-  activityId      String    @unique
-  type            String
-  actor           String
-  objectId        String?
-  raw             String
-  processed       Boolean   @default(false)
-  processedAt     DateTime?
-  createdAt       DateTime  @default(now())
+  id          String    @id @default(cuid())
+  activityId  String    @unique
+  type        String
+  actor       String
+  objectId    String?
+  raw         String
+  processed   Boolean   @default(false)
+  processedAt DateTime?
+  createdAt   DateTime  @default(now())
 }
 
 // PolySocial events (account-scoped shards)
 model PolySocialEvent {
-  id           String   @id @default(cuid())
-  eventId      String   @unique  // blake3 hash
-  type         String   // post, follow, like, profile_update
-  authorDid    String
-  content      String   // Encrypted or plain text
-  replyTo      String?  // eventId of parent
-  tags         String[] // Hashtags
+  id            String   @id @default(cuid())
+  eventId       String   @unique // blake3 hash
+  type          String // post, follow, like, profile_update
+  authorDid     String
+  content       String // Encrypted or plain text
+  replyTo       String? // eventId of parent
+  tags          String[] // Hashtags
   trustDistance Int      @default(1)
-  signature    String
-  ipfsCid      String?  // If large content
-  createdAt    DateTime @default(now())
+  signature     String
+  ipfsCid       String? // If large content
+  createdAt     DateTime @default(now())
 
   @@index([authorDid])
   @@index([eventId])
@@ -1479,30 +1563,30 @@ model PolySocialEvent {
 }
 
 model Appointment {
-  id           String   @id @default(cuid())
-  title        String
-  description  String?
-  status       String   @default("PENDING") // PENDING | CONFIRMED | CANCELLED | COMPLETED | REJECTED
+  id            String   @id @default(cuid())
+  title         String
+  description   String?
+  status        String   @default("PENDING") // PENDING | CONFIRMED | CANCELLED | COMPLETED | REJECTED
   declineReason String?
-  startTime    DateTime
-  endTime      DateTime
-  duration     Int?     // minutes
-  location     String?
-  meetingLink  String?
-  formResponses Json?    // [{ label: string, value: string }]
-  category     String?  // Service category copied from ServiceOffering at booking time
+  startTime     DateTime
+  endTime       DateTime
+  duration      Int? // minutes
+  location      String?
+  meetingLink   String?
+  formResponses Json? // [{ label: string, value: string }]
+  category      String? // Service category copied from ServiceOffering at booking time
 
-  buyerId      String
-  buyer        User     @relation("BuyerAppointments", fields: [buyerId], references: [id], onDelete: Cascade)
-  sellerId     String
-  seller       User     @relation("SellerAppointments", fields: [sellerId], references: [id], onDelete: Cascade)
-  productId    String?
-  product      Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  buyerId           String
+  buyer             User             @relation("BuyerAppointments", fields: [buyerId], references: [id], onDelete: Cascade)
+  sellerId          String
+  seller            User             @relation("SellerAppointments", fields: [sellerId], references: [id], onDelete: Cascade)
+  productId         String?
+  product           Product?         @relation(fields: [productId], references: [id], onDelete: SetNull)
   serviceOfferingId String?
   serviceOffering   ServiceOffering? @relation(fields: [serviceOfferingId], references: [id], onDelete: SetNull)
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([buyerId])
   @@index([sellerId])
@@ -1513,39 +1597,39 @@ model Appointment {
 }
 
 model ServiceOffering {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   title       String
   description String?
-  category    String   // PERFORMANCE | RECORDING | PHOTOGRAPHY | DESIGN | CONSULTATION | LESSON_TUTORING | HEALTH_WELLNESS | EVENT_SERVICES | LAWN_GARDEN | CLEANING | MAINTENANCE_REPAIR | CONSTRUCTION | MOVING_HAULING | PET_CARE | CHILDCARE | TECH_SUPPORT | TRANSPORTATION | OTHER
-  duration    Int      // minutes
+  category    String // PERFORMANCE | RECORDING | PHOTOGRAPHY | DESIGN | CONSULTATION | LESSON_TUTORING | HEALTH_WELLNESS | EVENT_SERVICES | LAWN_GARDEN | CLEANING | MAINTENANCE_REPAIR | CONSTRUCTION | MOVING_HAULING | PET_CARE | CHILDCARE | TECH_SUPPORT | TRANSPORTATION | OTHER
+  duration    Int // minutes
   price       Float?
   location    String?
   meetingLink String?
   imageUrl    String?
-  isActive    Boolean  @default(true)
+  isActive    Boolean @default(true)
 
-  acceptsDonations  Boolean  @default(false)
+  acceptsDonations  Boolean @default(false)
   donationAddress   String?
   donationCurrency  String?
   donationAddresses String?
 
   // Appointment scheduling
-  acceptsAppointments   Boolean  @default(false)
-  appointmentDuration   Int?
-  appointmentLeadTime   Int?
-  appointmentLocation   String?
+  acceptsAppointments    Boolean @default(false)
+  appointmentDuration    Int?
+  appointmentLeadTime    Int?
+  appointmentLocation    String?
   appointmentMeetingLink String?
-  appointmentFormFields Json?
+  appointmentFormFields  Json?
 
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
   appointments Appointment[]
-  viewCount   Int      @default(0)
-  contentViews ContentView[] @relation("ServiceOfferingViews")
-  hashtags    ServiceOfferingHashtag[]
+  viewCount    Int                      @default(0)
+  contentViews ContentView[]            @relation("ServiceOfferingViews")
+  hashtags     ServiceOfferingHashtag[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([category])
@@ -1569,9 +1653,9 @@ model Availability {
   id        String  @id @default(cuid())
   userId    String
   user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  dayOfWeek Int     // 0=Sun, 1=Mon ... 6=Sat
-  startTime String  // "09:00"
-  endTime   String  // "17:00"
+  dayOfWeek Int // 0=Sun, 1=Mon ... 6=Sat
+  startTime String // "09:00"
+  endTime   String // "17:00"
   isActive  Boolean @default(true)
 
   @@unique([userId, dayOfWeek, startTime, endTime])
@@ -1579,14 +1663,14 @@ model Availability {
 }
 
 model VideoRoom {
-  id          String   @id @default(cuid())
-  name        String?
-  createdById String
-  createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
-  inviteCode  String   @unique @default(cuid())
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  endedAt     DateTime?
+  id           String                 @id @default(cuid())
+  name         String?
+  createdById  String
+  createdBy    User                   @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  inviteCode   String                 @unique @default(cuid())
+  isActive     Boolean                @default(true)
+  createdAt    DateTime               @default(now())
+  endedAt      DateTime?
   participants VideoRoomParticipant[]
 
   @@index([createdById])
@@ -1594,33 +1678,33 @@ model VideoRoom {
 }
 
 model VideoRoomParticipant {
-  id        String   @id @default(cuid())
-  roomId    String
-  room      VideoRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  joinedAt  DateTime @default(now())
-  leftAt    DateTime?
+  id       String    @id @default(cuid())
+  roomId   String
+  room     VideoRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinedAt DateTime  @default(now())
+  leftAt   DateTime?
 
   @@unique([roomId, userId])
   @@index([userId])
 }
 
 model ContentView {
-  id          String   @id @default(cuid())
-  userId      String?
-  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  postId      String?
-  post        Post?    @relation("PostViews", fields: [postId], references: [id], onDelete: Cascade)
-  productId   String?
-  product     Product? @relation("ProductViews", fields: [productId], references: [id], onDelete: Cascade)
+  id                String           @id @default(cuid())
+  userId            String?
+  user              User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  postId            String?
+  post              Post?            @relation("PostViews", fields: [postId], references: [id], onDelete: Cascade)
+  productId         String?
+  product           Product?         @relation("ProductViews", fields: [productId], references: [id], onDelete: Cascade)
   serviceOfferingId String?
   serviceOffering   ServiceOffering? @relation("ServiceOfferingViews", fields: [serviceOfferingId], references: [id], onDelete: Cascade)
-  requestId   String?
-  request     Request? @relation("RequestViews", fields: [requestId], references: [id], onDelete: Cascade)
-  ipHash      String?
-  userAgent   String?
-  createdAt   DateTime @default(now())
+  requestId         String?
+  request           Request?         @relation("RequestViews", fields: [requestId], references: [id], onDelete: Cascade)
+  ipHash            String?
+  userAgent         String?
+  createdAt         DateTime         @default(now())
 
   @@index([postId])
   @@index([productId])

@@ -322,3 +322,32 @@
   border-radius: 6px;
   cursor: pointer;
 }
+
+.calendarFilters {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.filterChip {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.filterChip input {
+  margin: 0;
+  accent-color: var(--accent-primary);
+}
+
+.filterChip:hover {
+  border-color: var(--accent-primary);
+}

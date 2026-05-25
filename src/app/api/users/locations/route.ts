@@ -15,7 +15,8 @@ export async function GET() {
     orderBy: [
       { isPrimary: 'desc' },
       { createdAt: 'asc' }
-    ]
+    ],
+    include: { category: true }
   })
 
   return NextResponse.json(locations)
@@ -29,7 +30,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json()
-  const { name, location, latitude, longitude } = body
+  const { name, location, latitude, longitude, categoryId, tags, notes, imageUrl } = body
 
   if (!name || !location) {
     return NextResponse.json({ error: 'Name and location are required' }, { status: 400 })
@@ -50,6 +51,10 @@ export async function POST(request: Request) {
       latitude: latitude || null,
       longitude: longitude || null,
       isPrimary,
+      categoryId: categoryId || null,
+      tags: tags || null,
+      notes: notes || null,
+      imageUrl: imageUrl || null,
       userId: session.user.id
     }
   })

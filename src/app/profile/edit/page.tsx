@@ -28,6 +28,11 @@ interface UserLocation {
   latitude: number | null
   longitude: number | null
   isPrimary: boolean
+  categoryId: string | null
+  tags: string | null
+  notes: string | null
+  imageUrl: string | null
+  category: { id: string; name: string; icon: string; color: string } | null
 }
 
 interface DonationAddr {
@@ -107,8 +112,12 @@ export default function ProfileEditPage() {
   // Locations
   const [savedLocations, setSavedLocations] = useState<UserLocation[]>([])
   const [showLocationForm, setShowLocationForm] = useState(false)
-  const [locationForm, setLocationForm] = useState({ name: '', location: '', latitude: '', longitude: '' })
+  const [locationForm, setLocationForm] = useState({ name: '', location: '', latitude: '', longitude: '', categoryId: '' })
   const [locationSaving, setLocationSaving] = useState(false)
+  const [categories, setCategories] = useState<{ id: string; name: string; icon: string; color: string }[]>([])
+  const [showCategoryForm, setShowCategoryForm] = useState(false)
+  const [categoryForm, setCategoryForm] = useState({ name: '', icon: '📍', color: '#3b82f6' })
+  const [categorySaving, setCategorySaving] = useState(false)
 
   const allCryptos = getAllCryptos()
 
@@ -152,13 +161,20 @@ export default function ProfileEditPage() {
       setTraveling(user.traveling || false)
       setLookingForCollaborators(user.lookingForCollaborators || false)
       setAcceptsDonations(user.acceptsDonations || false)
-      const [donationsRes, locationsRes] = await Promise.all([
+      const [donationsRes, locationsRes, categoriesRes] = await Promise.all([
         fetch('/api/users/donations'),
-        fetch('/api/users/locations')
+        fetch('/api/users/locations'),
+        fetch('/api/locations/categories')
       ])
       if (donationsRes.ok) {
         const donationsData = await donationsRes.json()
         setDonationAddresses(donationsData.addresses || [])
+      }
+      if (locationsRes.ok) {
+        setSavedLocations(await locationsRes.json())
+      }
+      if (categoriesRes.ok) {
+        setCategories(await categoriesRes.json())
       }
       if (locationsRes.ok) {
         const locationsData = await locationsRes.json()
@@ -212,13 +228,14 @@ export default function ProfileEditPage() {
           name: locationForm.name,
           location: locationForm.location,
           latitude: locationForm.latitude ? parseFloat(locationForm.latitude) : null,
-          longitude: locationForm.longitude ? parseFloat(locationForm.longitude) : null
+          longitude: locationForm.longitude ? parseFloat(locationForm.longitude) : null,
+          categoryId: locationForm.categoryId || null
         })
       })
       if (res.ok) {
         const newLoc = await res.json()
         setSavedLocations(prev => [...prev, newLoc])
-        setLocationForm({ name: '', location: '', latitude: '', longitude: '' })
+        setLocationForm({ name: '', location: '', latitude: '', longitude: '', categoryId: '' })
         setShowLocationForm(false)
         toastSuccess('Location added')
       } else {
@@ -248,6 +265,51 @@ export default function ProfileEditPage() {
       }
     } catch {
       toastError('Failed to update location')
+    }
+  }
+
+  // Category CRUD
+  const handleAddCategory = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!categoryForm.name.trim()) return
+    setCategorySaving(true)
+    try {
+      const res = await fetch('/api/locations/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(categoryForm)
+      })
+      if (res.ok) {
+        const cat = await res.json()
+        setCategories(prev => [...prev, cat].sort((a, b) => a.name.localeCompare(b.name)))
+        setCategoryForm({ name: '', icon: '📍', color: '#3b82f6' })
+        setShowCategoryForm(false)
+        toastSuccess('Category added')
+      } else {
+        const data = await res.json()
+        toastError(data.error || 'Failed to add category')
+      }
+    } catch {
+      toastError('Failed to add category')
+    } finally {
+      setCategorySaving(false)
+    }
+  }
+
+  const handleDeleteCategory = async (catId: string) => {
+    if (!confirm('Delete this category? Locations in this category will be uncategorized.')) return
+    try {
+      const res = await fetch(`/api/locations/categories/${catId}`, { method: 'DELETE' })
+      if (res.ok) {
+        setCategories(prev => prev.filter(c => c.id !== catId))
+        setSavedLocations(prev => prev.map(l => l.categoryId === catId ? { ...l, category: null, categoryId: null } : l))
+        toastSuccess('Category deleted')
+      } else {
+        const data = await res.json()
+        toastError(data.error || 'Failed to delete category')
+      }
+    } catch {
+      toastError('Failed to delete category')
     }
   }
 
@@ -632,7 +694,7 @@ export default function ProfileEditPage() {
               <h2 style={{margin: 0, color: '#7f7fff'}}>📍 Saved Locations</h2>
               <button
                 type="button"
-                onClick={() => { setShowLocationForm(true); setLocationForm({ name: '', location: '', latitude: '', longitude: '' }) }}
+                onClick={() => { setShowLocationForm(true); setLocationForm({ name: '', location: '', latitude: '', longitude: '', categoryId: '' }) }}
                 style={{padding: '8px 16px', background: '#7f7fff', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500}}
               >
                 + Add Location
@@ -651,6 +713,7 @@ export default function ProfileEditPage() {
                   <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px'}}>
                     <span style={{fontWeight: 600, fontSize: '0.9rem', color: '#c0c0ff'}}>{loc.name}</span>
                     {loc.isPrimary && <span style={{fontSize: '0.7rem', padding: '2px 8px', background: '#7f7fff', color: '#fff', borderRadius: '10px', fontWeight: 600}}>Primary</span>}
+                    {loc.category && <span style={{fontSize: '0.7rem', padding: '2px 8px', background: 'rgba(127,127,255,0.15)', color: '#c0c0ff', borderRadius: '10px', fontWeight: 500}}>{loc.category.icon} {loc.category.name}</span>}
                   </div>
                   <div style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>{loc.location}</div>
                   {loc.latitude && loc.longitude && (
@@ -708,6 +771,20 @@ export default function ProfileEditPage() {
                   />
                 </div>
 
+                <div style={{marginBottom: '12px'}}>
+                  <label style={{display: 'block', marginBottom: '6px', color: '#8888aa', fontSize: '0.875rem'}}>Category</label>
+                  <select
+                    value={locationForm.categoryId}
+                    onChange={e => setLocationForm({...locationForm, categoryId: e.target.value})}
+                    style={{width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a2a4a', borderRadius: '8px', color: '#c0c0ff', fontSize: '0.875rem'}}
+                  >
+                    <option value="">No category</option>
+                    {categories.map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+
                 <div style={{display: 'flex', gap: '12px', marginBottom: '12px'}}>
                   <div style={{flex: 1}}>
                     <label style={{display: 'block', marginBottom: '6px', color: '#8888aa', fontSize: '0.875rem'}}>Latitude (optional)</label>
@@ -736,7 +813,7 @@ export default function ProfileEditPage() {
                 <div style={{display: 'flex', gap: '8px', justifyContent: 'flex-end'}}>
                   <button
                     type="button"
-                    onClick={() => { setShowLocationForm(false); setLocationForm({ name: '', location: '', latitude: '', longitude: '' }) }}
+                    onClick={() => { setShowLocationForm(false); setLocationForm({ name: '', location: '', latitude: '', longitude: '', categoryId: '' }) }}
                     style={{padding: '8px 16px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem'}}
                   >
                     Cancel
@@ -747,6 +824,96 @@ export default function ProfileEditPage() {
                     style={{padding: '8px 16px', background: '#7f7fff', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500, fontSize: '0.875rem'}}
                   >
                     {locationSaving ? 'Saving...' : 'Save Location'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+
+          {/* Location Categories */}
+          <div style={{background: 'linear-gradient(135deg, #1a1a2a 0%, #0d0d1a 100%)', border: '1px solid #2a2a4a', borderRadius: '12px', padding: '24px', marginBottom: '20px'}}>
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+              <h2 style={{margin: 0, color: '#7f7fff'}}>🗂️ Location Categories</h2>
+              <button
+                type="button"
+                onClick={() => setShowCategoryForm(!showCategoryForm)}
+                style={{padding: '8px 16px', background: '#7f7fff', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500}}
+              >
+                + Add Category
+              </button>
+            </div>
+
+            {categories.length === 0 && !showCategoryForm && (
+              <p style={{color: 'var(--text-secondary)', textAlign: 'center', padding: '20px', fontSize: '0.875rem'}}>
+                No categories yet. Create categories to group your saved locations (e.g., Camping, Restaurants, Shops).
+              </p>
+            )}
+
+            {categories.map(cat => (
+              <div key={cat.id} style={{display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', marginBottom: '8px', border: '1px solid rgba(255,255,255,0.05)'}}>
+                <span style={{fontSize: '1.5rem'}}>{cat.icon}</span>
+                <div style={{flex: 1}}>
+                  <div style={{fontWeight: 600, fontSize: '0.9rem', color: '#c0c0ff'}}>{cat.name}</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteCategory(cat.id)}
+                  style={{padding: '6px 12px', background: 'transparent', border: '1px solid #ff6b6b', borderRadius: '6px', color: '#ff6b6b', cursor: 'pointer', fontSize: '0.8rem'}}
+                >
+                  Delete
+                </button>
+              </div>
+            ))}
+
+            {showCategoryForm && (
+              <form onSubmit={handleAddCategory} style={{marginTop: '16px', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)'}}>
+                <h3 style={{marginTop: 0, fontSize: '1rem', color: '#c0c0ff'}}>New Category</h3>
+                <div style={{marginBottom: '12px'}}>
+                  <label style={{display: 'block', marginBottom: '6px', color: '#8888aa', fontSize: '0.875rem'}}>Name</label>
+                  <input
+                    type="text"
+                    value={categoryForm.name}
+                    onChange={e => setCategoryForm({...categoryForm, name: e.target.value})}
+                    placeholder="e.g., Camping, Restaurants, Shops"
+                    required
+                    style={{width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a2a4a', borderRadius: '8px', color: '#c0c0ff', fontSize: '0.875rem'}}
+                  />
+                </div>
+                <div style={{display: 'flex', gap: '12px', marginBottom: '12px'}}>
+                  <div style={{flex: 1}}>
+                    <label style={{display: 'block', marginBottom: '6px', color: '#8888aa', fontSize: '0.875rem'}}>Icon (emoji)</label>
+                    <input
+                      type="text"
+                      value={categoryForm.icon}
+                      onChange={e => setCategoryForm({...categoryForm, icon: e.target.value})}
+                      placeholder="📍"
+                      style={{width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a2a4a', borderRadius: '8px', color: '#c0c0ff', fontSize: '0.875rem'}}
+                    />
+                  </div>
+                  <div style={{flex: 1}}>
+                    <label style={{display: 'block', marginBottom: '6px', color: '#8888aa', fontSize: '0.875rem'}}>Color</label>
+                    <input
+                      type="color"
+                      value={categoryForm.color}
+                      onChange={e => setCategoryForm({...categoryForm, color: e.target.value})}
+                      style={{width: '100%', height: '40px', padding: '4px', background: 'rgba(0,0,0,0.3)', border: '1px solid #2a2a4a', borderRadius: '8px', cursor: 'pointer'}}
+                    />
+                  </div>
+                </div>
+                <div style={{display: 'flex', gap: '8px', justifyContent: 'flex-end'}}>
+                  <button
+                    type="button"
+                    onClick={() => { setShowCategoryForm(false); setCategoryForm({ name: '', icon: '📍', color: '#3b82f6' }) }}
+                    style={{padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer'}}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!categoryForm.name.trim() || categorySaving}
+                    style={{padding: '8px 16px', background: '#7f7fff', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500}}
+                  >
+                    {categorySaving ? 'Saving...' : 'Add Category'}
                   </button>
                 </div>
               </form>

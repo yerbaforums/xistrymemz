@@ -21,6 +21,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   offers: 'Offers',
   events: 'Events',
   appointments: 'Planner',
+  planning: 'Planning',
   saved: 'Saved',
 }
 
@@ -49,6 +50,7 @@ function DashboardNav({ user }: { user: { name?: string | null; image?: string |
     { href: '/dashboard/shop', icon: '🏪', label: 'Shop' },
     { href: '/dashboard/events', icon: '📅', label: 'Events' },
     { href: '/dashboard/appointments', icon: '🗓️', label: 'Planner' },
+    { href: '/dashboard/planning', icon: '🗺️', label: 'Planning' },
   ]
 
   const secondaryNav = [

@@ -38,6 +38,13 @@ export default function CalendarWidget() {
   const [showAddEvent, setShowAddEvent] = useState(false)
   const [hoveredEvent, setHoveredEvent] = useState<CalendarEvent | null>(null)
   const [tooltipTimeout, setTooltipTimeout] = useState<NodeJS.Timeout | null>(null)
+  const [filters, setFilters] = useState({
+    personal: true,
+    trips: true,
+    planEvents: true,
+    connections: false
+  })
+  const [trips, setTrips] = useState<any[]>([])
   const [newEvent, setNewEvent] = useState({
     title: '',
     description: '',
@@ -55,9 +62,10 @@ export default function CalendarWidget() {
 
   const fetchEvents = async () => {
     try {
-      const [calRes, planRes] = await Promise.all([
+      const [calRes, planRes, tripsRes] = await Promise.all([
         fetch('/api/calendar/events'),
-        fetch('/api/plans/events/joined')
+        fetch('/api/plans/events/joined'),
+        fetch('/api/trips')
       ])
       
       if (!calRes.ok) throw new Error('Failed to fetch calendar events')
@@ -75,6 +83,11 @@ export default function CalendarWidget() {
         visibility: 'PUBLIC'
       }))
       setEvents(prev => [...prev, ...planEvents])
+
+      if (tripsRes.ok) {
+        const tripsData = await tripsRes.json()
+        setTrips([...(tripsData.owned || []), ...(tripsData.shared || [])])
+      }
     } catch (err) {
       console.error(err)
     }
@@ -124,10 +137,36 @@ export default function CalendarWidget() {
 
   const getEventsForDay = (day: number) => {
     const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-    return events.filter(e => {
+    const dayEvents = events.filter(e => {
+      if (!e.startDate) return false
       const eventDate = e.startDate.split('T')[0]
-      return eventDate === dateStr
+      if (eventDate !== dateStr) return false
+      // Apply filters
+      if (e.visibility === 'PRIVATE' && !filters.personal) return false
+      if (e.visibility === 'PUBLIC' && !filters.planEvents) return false
+      if (e.visibility === 'CONNECTIONS' && !filters.connections) return false
+      return true
     })
+    // Add trips to day events
+    const tripEvents: CalendarEvent[] = []
+    trips.forEach(t => {
+      if (!t.startDate || !filters.trips) return
+      const tripStart = t.startDate.split('T')[0]
+      const tripEnd = t.endDate ? t.endDate.split('T')[0] : tripStart
+      if (dateStr >= tripStart && dateStr <= tripEnd) {
+        tripEvents.push({
+          id: `trip-${t.id}`,
+          title: `🗺️ ${t.title}`,
+          startDate: t.startDate,
+          endDate: t.endDate,
+          allDay: true,
+          color: '#f59e0b',
+          userId: t.userId,
+          visibility: t.isPublic ? 'PUBLIC' : 'PRIVATE'
+        })
+      }
+    })
+    return [...dayEvents, ...tripEvents]
   }
 
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -142,6 +181,25 @@ export default function CalendarWidget() {
         <button onClick={() => setShowAddEvent(true)} className={styles.addEventBtn}>
           + Add Event
         </button>
+      </div>
+
+      <div className={styles.calendarFilters}>
+        <label className={styles.filterChip}>
+          <input type="checkbox" checked={filters.personal} onChange={e => setFilters(f => ({ ...f, personal: e.target.checked }))} />
+          🟦 Personal
+        </label>
+        <label className={styles.filterChip}>
+          <input type="checkbox" checked={filters.trips} onChange={e => setFilters(f => ({ ...f, trips: e.target.checked }))} />
+          🟡 Trips
+        </label>
+        <label className={styles.filterChip}>
+          <input type="checkbox" checked={filters.planEvents} onChange={e => setFilters(f => ({ ...f, planEvents: e.target.checked }))} />
+          🟢 Plan Events
+        </label>
+        <label className={styles.filterChip}>
+          <input type="checkbox" checked={filters.connections} onChange={e => setFilters(f => ({ ...f, connections: e.target.checked }))} />
+          🟠 Connections
+        </label>
       </div>
 
       <div className={styles.calendarNav}>
@@ -213,8 +271,9 @@ export default function CalendarWidget() {
 
       <div className={styles.legend}>
         <span className={styles.legendItem}>🟦 My Events</span>
-        <span className={styles.legendItem}>🟢 Public</span>
+        <span className={styles.legendItem}>🟢 Plan Events</span>
         <span className={styles.legendItem}>🟠 Connections</span>
+        <span className={styles.legendItem}>🟡 Trips</span>
       </div>
 
       {showAddEvent && (
