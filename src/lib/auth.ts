@@ -203,6 +203,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id
         token.username = (user as { username?: string }).username
         token.role = (user as { role?: string }).role || 'USER'
+        token.picture = (user as { image?: string | null }).image || null
         if ('rememberMe' in user) {
           token.rememberMe = (user as { rememberMe?: boolean }).rememberMe
         }
@@ -233,9 +234,7 @@ export const authOptions: NextAuthOptions = {
         ;(session.user as typeof session.user & { id: string; role?: string; username?: string }).id = userId
         ;(session.user as typeof session.user & { id: string; role?: string; username?: string }).role = (token.role as string) || 'USER'
         ;(session.user as typeof session.user & { id: string; role?: string; username?: string }).username = token.username as string | undefined
-        if (token.picture) {
-          session.user.image = token.picture as string
-        }
+        session.user.image = (token.picture as string) || null
       }
       return session
     }
