@@ -40,6 +40,20 @@ export async function geocodeLocation(location: string): Promise<GeocodingResult
   }
 }
 
+export async function reverseGeocodeLocation(lat: number, lng: number): Promise<string | null> {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
+      { headers: { 'User-Agent': 'XistrYmemZ/1.0' } }
+    )
+    if (!response.ok) return null
+    const data = await response.json()
+    return data?.display_name || null
+  } catch {
+    return null
+  }
+}
+
 export function calculateDistance(
   lat1: number,
   lon1: number,

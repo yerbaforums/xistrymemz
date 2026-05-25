@@ -359,6 +359,12 @@
   margin-bottom: 0.75rem;
 }
 
+.card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
 /* Category badges */
 .categoryBadge {
   display: inline-flex;

@@ -61,6 +61,7 @@ function DashboardNav({ user }: { user: { name?: string | null; image?: string |
     { href: '/dashboard/teaching', icon: '📚', label: 'Teaching' },
     { href: '/dashboard/offers', icon: '🤝', label: 'Offers' },
     { href: '/dashboard/saved', icon: '⭐', label: 'Saved' },
+    { href: '/directory', icon: '📋', label: 'Directory' },
     { href: '/dashboard/video', icon: '📹', label: 'Video Chat' },
   ]
 

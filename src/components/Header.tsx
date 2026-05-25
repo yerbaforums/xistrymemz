@@ -213,6 +213,8 @@ export default function Header() {
               <Link href="/requests" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📝</span> Requests</Link>
               <Link href="/events" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📅</span> Events</Link>
               <Link href="/rentals" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🏠</span> Rentals</Link>
+              <Link href="/directory" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📋</span> Directory</Link>
+              <Link href="/dashboard/planning" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🗺️</span> Planning</Link>
               <Link href="/hashtags" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"># Hashtags</Link>
               <div style={{ borderTop: '1px solid var(--border-color)', margin: '4px 0' }} />
               <div style={{ padding: '6px 14px', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('community')}</div>
@@ -238,6 +240,7 @@ export default function Header() {
                 <Link href="/dashboard/messages" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">💬</span> Messages</Link>
                 <Link href="/dashboard/feed" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📡</span> Feed</Link>
                 <Link href="/dashboard/appointments" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🗓️</span> Planner</Link>
+                <Link href="/dashboard/planning" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🗺️</span> Planning</Link>
                 <Link href="/dashboard/video" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📹</span> Video Chat</Link>
                 <Link href="/dashboard/offers" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🤝</span> Offers</Link>
                 <Link href="/dashboard/rentals" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🏠</span> Rentals</Link>
@@ -327,6 +330,8 @@ export default function Header() {
             <Link href="/requests" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">📝</span> Requests</Link>
             <Link href="/events" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">📅</span> Events</Link>
             <Link href="/rentals" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🏠</span> Rentals</Link>
+            <Link href="/directory" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">📋</span> Directory</Link>
+            <Link href="/dashboard/planning" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🗺️</span> Planning</Link>
             <Link href="/community" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">👤</span> Members</Link>
             <Link href="/community/forum" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">💬</span> Forum</Link>
             <Link href="/community/groups" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">👥</span> Groups</Link>
@@ -383,6 +388,7 @@ export default function Header() {
                 <Link href="/dashboard/teaching" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🏫</span> Teaching</Link>
                 <Link href="/dashboard/events" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">📅</span> Events</Link>
                 <Link href="/dashboard/appointments" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🗓️</span> Planner</Link>
+                <Link href="/dashboard/planning" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🗺️</span> Planning</Link>
                 <Link href="/dashboard/video" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">📹</span> Video Chat</Link>
                 <Link href="/notifications" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🔔</span> Notifications</Link>
                 <Link href="/dashboard/saved" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">⭐</span> Saved</Link>

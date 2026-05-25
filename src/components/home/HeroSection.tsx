@@ -108,6 +108,9 @@ export default function HeroSection() {
           <Link href="/shops" className={styles.btnSecondary}>
             {t('heroBrowseShops')}
           </Link>
+          <Link href="/directory" className={styles.btnSecondary}>
+            📋 {t('heroBrowseDirectory')}
+          </Link>
           <Link href="/about" className={styles.btnSecondary}>
             {t('heroLearnMore')}
           </Link>

@@ -61,6 +61,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     data: {
       ...(body.title !== undefined && { title: body.title.trim() }),
       ...(body.description !== undefined && { description: body.description }),
+      ...(body.notes !== undefined && { notes: body.notes }),
       ...(body.coverImage !== undefined && { coverImage: body.coverImage }),
       ...(body.startDate !== undefined && { startDate: body.startDate ? new Date(body.startDate) : null }),
       ...(body.endDate !== undefined && { endDate: body.endDate ? new Date(body.endDate) : null }),

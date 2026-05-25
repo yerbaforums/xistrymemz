@@ -32,8 +32,8 @@ export async function POST(request: Request) {
   const body = await request.json()
   const { name, location, latitude, longitude, categoryId, tags, notes, imageUrl } = body
 
-  if (!name || !location) {
-    return NextResponse.json({ error: 'Name and location are required' }, { status: 400 })
+  if (!name) {
+    return NextResponse.json({ error: 'Name is required' }, { status: 400 })
   }
 
   // Check if this is the user's first location

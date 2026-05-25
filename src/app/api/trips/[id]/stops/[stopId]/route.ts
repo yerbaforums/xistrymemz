@@ -43,7 +43,12 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       ...(body.notes !== undefined && { notes: body.notes }),
       ...(body.arrivalTime !== undefined && { arrivalTime: body.arrivalTime }),
       ...(body.departureTime !== undefined && { departureTime: body.departureTime }),
-      ...(body.savedLocationId !== undefined && { savedLocationId: body.savedLocationId })
+      ...(body.savedLocationId !== undefined && { savedLocationId: body.savedLocationId }),
+      ...(body.links !== undefined && { links: body.links }),
+      ...(body.shoppingList !== undefined && { shoppingList: body.shoppingList }),
+      ...(body.linkedRequests !== undefined && { linkedRequests: body.linkedRequests }),
+      ...(body.linkedEvents !== undefined && { linkedEvents: body.linkedEvents }),
+      ...(body.linkedProducts !== undefined && { linkedProducts: body.linkedProducts })
     }
   })
 

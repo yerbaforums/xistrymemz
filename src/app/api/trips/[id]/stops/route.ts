@@ -23,7 +23,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   }
 
   const body = await request.json()
-  const { name, location, latitude, longitude, day, order, notes, arrivalTime, departureTime, savedLocationId } = body
+  const { name, location, latitude, longitude, day, order, notes, arrivalTime, departureTime, savedLocationId, links, shoppingList } = body
 
   if (!name?.trim()) {
     return NextResponse.json({ error: 'Name is required' }, { status: 400 })
@@ -41,7 +41,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       notes: notes || null,
       arrivalTime: arrivalTime || null,
       departureTime: departureTime || null,
-      savedLocationId: savedLocationId || null
+      savedLocationId: savedLocationId || null,
+      links: links || undefined,
+      shoppingList: shoppingList || undefined
     }
   })
 
