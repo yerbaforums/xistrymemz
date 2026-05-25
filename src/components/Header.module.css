@@ -477,7 +477,7 @@
   background: rgba(0, 217, 255, 0.06);
 }
 
-/* Accent Color Picker (User Dropdown) */
+/* Accent Color Picker */
 .themeAccentPicker {
   display: flex;
   gap: 6px;
@@ -504,6 +504,11 @@
 .accentDotActive {
   border-color: var(--text-primary);
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+}
+
+.accentDot-Lg {
+  width: 28px;
+  height: 28px;
 }
 
 .accentDot[data-accent="cyan"] { background: #00d9ff; }
@@ -541,32 +546,6 @@
   padding: 10px 16px 14px;
   justify-content: center;
 }
-
-.mobileAccentDot {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  cursor: pointer;
-  padding: 0;
-  transition: var(--transition);
-}
-
-.mobileAccentDot:hover {
-  transform: scale(1.15);
-}
-
-.mobileAccentDotActive {
-  border-color: var(--text-primary);
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.25);
-}
-
-.mobileAccentDot[data-accent="cyan"] { background: #00d9ff; }
-.mobileAccentDot[data-accent="purple"] { background: #a855f7; }
-.mobileAccentDot[data-accent="green"] { background: #22c55e; }
-.mobileAccentDot[data-accent="orange"] { background: #f97316; }
-.mobileAccentDot[data-accent="pink"] { background: #ec4899; }
-.mobileAccentDot[data-accent="blue"] { background: #3b82f6; }
 
 /* Mobile Menu Button */
 .menuBtn {

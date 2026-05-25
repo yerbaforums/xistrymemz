@@ -173,9 +173,15 @@
   .nav {
     flex-direction: row;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
     min-width: 0;
     padding: 12px;
     gap: 8px;
+  }
+
+  .nav::-webkit-scrollbar {
+    display: none;
   }
 
   .profileStrip {
@@ -198,6 +204,7 @@
   .navItem {
     padding: 8px 12px;
     white-space: nowrap;
+    flex-shrink: 0;
   }
   
   .navItem span:last-child {

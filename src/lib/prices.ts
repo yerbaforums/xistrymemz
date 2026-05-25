@@ -74,9 +74,8 @@ export async function getCryptoPrices(): Promise<CryptoPrice[]> {
       await fetchPrices()
       data = getCached()
     } catch {
-      // return stale cache if available
       if (cache) data = { prices: cache.prices, changes: cache.changes }
-      else data = { prices: {}, changes: {} }
+      else data = { prices: { ...FALLBACK_PRICES }, changes: {} }
     }
   }
   return SYMBOLS.filter(s => data!.prices[s] != null).map(symbol => ({

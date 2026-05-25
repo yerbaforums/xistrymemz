@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 import "./globals.css";
 import "./themes.css";
 import { Providers } from "@/components/Providers";
@@ -29,6 +31,7 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "XistrYmemZ",
   },
+  manifest: "/manifest.json",
   openGraph: {
     title: "XistrYmemZ - Plan. Request. Complete.",
     description: "Collaborative planning platform. Create projects, connect with community, build businesses, and coordinate efforts globally.",
@@ -44,33 +47,40 @@ export const metadata: Metadata = {
   keywords: ["collaborative planning", "community platform", "project management", "crypto payments", "business platform"],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)" />
+        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
       </head>
       <body>
-        <a href="#main-content" className="sr-only focus:not-sr-only">
-          Skip to main content
-        </a>
-        <Providers>
-          <SiteSettingsProvider>
-            <TariWalletProvider>
-              <AppShell>
-                {children}
-                <ToastContainer />
-                <CreateFAB />
-                <BackToTop />
-              </AppShell>
-              <Footer />
-            </TariWalletProvider>
-          </SiteSettingsProvider>
-        </Providers>
+        <NextIntlClientProvider messages={messages}>
+          <a href="#main-content" className="sr-only focus:not-sr-only">
+            {messages.layout?.skipToContent || "Skip to main content"}
+          </a>
+          <Providers>
+            <SiteSettingsProvider>
+              <TariWalletProvider>
+                <AppShell>
+                  {children}
+                  <ToastContainer />
+                  <CreateFAB />
+                  <BackToTop />
+                </AppShell>
+                <Footer />
+              </TariWalletProvider>
+            </SiteSettingsProvider>
+          </Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );
