@@ -188,9 +188,34 @@ export default function Header() {
         {/* Desktop Navigation */}
         <nav className={styles.nav}>
           {isAuthenticated && (
-            <Link href="/dashboard/overview" className={`${styles.navToggle} ${styles.dashboardLink} ${isActive('/dashboard')}`} onClick={() => setMenuOpen(false)} aria-current={pathname?.startsWith('/dashboard') ? 'page' : undefined}>
-              <span aria-hidden="true">📊</span> Dashboard
-            </Link>
+            <div className={`${styles.navItem} ${openDropdown === 'dashboard' ? styles.dropdownVisible : ''}`}>
+              <button
+                className={`${styles.navToggle} ${styles.dashboardLink}`}
+                onClick={() => toggleDropdown('dashboard')}
+                onKeyDown={e => handleDropdownKeyDown(e, 'dashboard')}
+                aria-expanded={openDropdown === 'dashboard'}
+                aria-controls="nav-dropdown-dashboard"
+              >
+                <span aria-hidden="true">📊</span> Dashboard
+              </button>
+              <div className={styles.navDropdown} id="nav-dropdown-dashboard" role="menu" style={{ minWidth: 200 }}>
+                <div style={{ padding: '6px 14px', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Main</div>
+                <Link href="/dashboard/overview" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📊</span> Overview</Link>
+                <Link href="/dashboard/planning" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🗺️</span> Planning</Link>
+                <Link href="/dashboard/marketplace" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🛒</span> Marketplace</Link>
+                <Link href="/dashboard/services" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🔧</span> Services</Link>
+                <Link href="/dashboard/rentals" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🏠</span> Rentals</Link>
+                <Link href="/dashboard/shop" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🏪</span> Shop</Link>
+                <Link href="/dashboard/events" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📅</span> Events</Link>
+                <Link href="/dashboard/appointments" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🗓️</span> Planner</Link>
+                <div style={{ borderTop: '1px solid var(--border-color)', margin: '4px 0' }} />
+                <div style={{ padding: '6px 14px', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Personal</div>
+                <Link href="/dashboard/passport" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🌍</span> Passport</Link>
+                <Link href="/dashboard/feed" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📡</span> Feed</Link>
+                <Link href="/dashboard/messages" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">💬</span> Messages</Link>
+                <Link href="/dashboard/saved" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">⭐</span> Saved</Link>
+              </div>
+            </div>
           )}
 
           <div className={`${styles.navItem} ${openDropdown === 'explore' ? styles.dropdownVisible : ''}`}>
@@ -206,7 +231,7 @@ export default function Header() {
             <div className={styles.navDropdown} id="nav-dropdown-explore" role="menu" style={{ minWidth: 200 }}>
               <div style={{ padding: '6px 14px', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('browse')}</div>
               <Link href="/plans/public" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🚀</span> Projects</Link>
-              <Link href="/products" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🛒</span> Marketplace</Link>
+              <Link href="/products" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🛒</span> Products</Link>
               <Link href="/services" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🔧</span> Services</Link>
               <Link href="/shops" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🏪</span> Shops</Link>
               <Link href="/schools" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🏫</span> Schools</Link>
@@ -236,16 +261,11 @@ export default function Header() {
                 {t('more')}
               </button>
               <div className={styles.navDropdown} id="nav-dropdown-more" role="menu">
-                <Link href="/dashboard/messages" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">💬</span> Messages</Link>
-                <Link href="/dashboard/feed" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📡</span> Feed</Link>
-                <Link href="/dashboard/appointments" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🗓️</span> Planner</Link>
                 <Link href="/dashboard/video" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📹</span> Video Chat</Link>
                 <Link href="/dashboard/offers" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🤝</span> Offers</Link>
-                <Link href="/dashboard/rentals" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🏠</span> Rentals</Link>
                 <Link href="/dashboard/teaching" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🏫</span> Teaching</Link>
                 <Link href="/orders" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📦</span> Orders</Link>
                 <Link href="/notifications" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🔔</span> Notifications</Link>
-                <Link href="/dashboard/saved" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">⭐</span> Saved</Link>
                 <Link href="/connections" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🔗</span> Connections</Link>
                 <Link href="/courier/setup" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🚚</span> Courier</Link>
                 <Link href="/templates" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📋</span> Templates</Link>
@@ -329,6 +349,7 @@ export default function Header() {
             <Link href="/events" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">📅</span> Events</Link>
             <Link href="/rentals" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🏠</span> Rentals</Link>
             <Link href="/directory" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">📋</span> Directory</Link>
+            <Link href="/dashboard/passport" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🌍</span> Passport</Link>
             <Link href="/community" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">👤</span> Members</Link>
             <Link href="/community/forum" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">💬</span> Forum</Link>
             <Link href="/community/groups" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">👥</span> Groups</Link>
@@ -386,6 +407,7 @@ export default function Header() {
                 <Link href="/dashboard/events" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">📅</span> Events</Link>
                 <Link href="/dashboard/appointments" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🗓️</span> Planner</Link>
                 <Link href="/dashboard/planning" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🗺️</span> Planning</Link>
+                <Link href="/dashboard/passport" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🌍</span> Passport</Link>
                 <Link href="/dashboard/video" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">📹</span> Video Chat</Link>
                 <Link href="/notifications" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🔔</span> Notifications</Link>
                 <Link href="/dashboard/saved" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">⭐</span> Saved</Link>
@@ -599,12 +621,12 @@ export default function Header() {
                   aria-controls="user-menu-dropdown"
                 >
                   {session.user.image ? (
-                    <img src={session.user.image} alt={session.user.name || ''} className={styles.userAvatar} />
-                  ) : (
-                    <span className={styles.userInitial}>
-                      {(session.user.name || session.user.email || 'U')[0].toUpperCase()}
-                    </span>
-                  )}
+                    <img src={session.user.image} alt={session.user.name || ''} className={styles.userAvatar}
+                      onError={e => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).parentElement!.querySelector('span')!.style.display = 'flex' }} />
+                  ) : null}
+                  <span className={styles.userInitial} style={{ display: session.user.image ? 'none' : 'flex' }}>
+                    {(session.user.name || session.user.email || 'U')[0].toUpperCase()}
+                  </span>
                 </button>
                 <div className={styles.userDropdown} id="user-menu-dropdown" role="menu">
                   <div className={styles.userInfo}>

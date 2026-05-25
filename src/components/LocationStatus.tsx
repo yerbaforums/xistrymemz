@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useToast } from '@/context/ToastContext'
 
@@ -18,24 +18,32 @@ export default function LocationStatus() {
   const [loading, setLoading] = useState(true)
   const { error: toastError } = useToast()
 
-  useEffect(() => {
-    fetch('/api/users/me')
-      .then(res => res.ok ? res.json() : null)
-      .then(data => {
-        if (data?.user) {
-          setLoc({
-            location: data.user.location || null,
-            neighborhood: data.user.neighborhood || null,
-            latitude: data.user.latitude || null,
-            longitude: data.user.longitude || null,
-            searchRadius: data.user.searchRadius || 50,
-            traveling: data.user.traveling || false
-          })
-        }
-      })
-      .catch(() => { toastError('Failed to load location') })
-      .finally(() => setLoading(false))
+  const fetchLoc = useCallback(async () => {
+    try {
+      const res = await fetch('/api/users/me')
+      if (!res.ok) return
+      const data = await res.json()
+      if (data?.user) {
+        setLoc({
+          location: data.user.location || null,
+          neighborhood: data.user.neighborhood || null,
+          latitude: data.user.latitude || null,
+          longitude: data.user.longitude || null,
+          searchRadius: data.user.searchRadius || 50,
+          traveling: data.user.traveling || false
+        })
+      }
+    } catch { toastError('Failed to load location') }
+    finally { setLoading(false) }
   }, [])
+
+  useEffect(() => {
+    fetchLoc()
+    const interval = setInterval(fetchLoc, 60000)
+    const onFocus = () => fetchLoc()
+    window.addEventListener('focus', onFocus)
+    return () => { clearInterval(interval); window.removeEventListener('focus', onFocus) }
+  }, [fetchLoc])
 
   if (loading) {
     return (
@@ -65,7 +73,7 @@ export default function LocationStatus() {
 
   return (
     <Link
-      href="/profile/edit"
+      href="/dashboard/passport"
       title={loc.traveling ? `Traveling — ${displayLocation}` : `Home — ${displayLocation}`}
       style={{
         display: 'inline-flex',
