@@ -10,6 +10,7 @@ import DonationAddressPicker from '@/components/DonationAddressPicker'
 import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import type { DonationAddr } from '@/types/product'
 import ImageUploader from '@/components/ImageUploader'
+import { useTranslations } from 'next-intl'
 import styles from './marketplace.module.css'
 
 interface Product {
@@ -61,6 +62,7 @@ interface ShopSettings {
 }
 
 function MarketplaceContent() {
+  const t = useTranslations('dashboard')
   const searchParams = useSearchParams()
   const { success, error } = useToast()
   const editId = searchParams.get('edit')
@@ -379,25 +381,25 @@ function MarketplaceContent() {
   }
 
   if (loading) {
-    return <div className={styles.page}><div className={styles.loading}>Loading...</div></div>
+    return <div className={styles.page}><div className={styles.loading}>{t('loading')}</div></div>
   }
 
   return (
     <div className={styles.page}>
       <div className={styles.header}>
         <div>
-          <h1>🛒 My Marketplace</h1>
+          <h1>🛒 {t('marketplace')}</h1>
           <p className={styles.welcome}>Manage your products & shop</p>
         </div>
         <div className={styles.headerActions}>
           <button onClick={() => setShowShopModal(true)} className="btn-secondary">
-            ⚙️ Shop Settings
+            ⚙️ {t('settings')}
           </button>
           <Link href="/products" className="btn-secondary">
             🌐 View Public
           </Link>
           <button onClick={() => { resetProductForm(); setShowProductForm(true) }} className="btn-primary">
-            ➕ Add Product
+            ➕ {t('products')}
           </button>
         </div>
       </div>
@@ -421,7 +423,7 @@ function MarketplaceContent() {
       {filteredProducts.length === 0 && !showProductForm ? (
         <div className={styles.empty}>
           <p>No products yet. Add your first!</p>
-          <button onClick={() => { resetProductForm(); setShowProductForm(true) }} className="btn-primary">➕ Add Product</button>
+          <button onClick={() => { resetProductForm(); setShowProductForm(true) }} className="btn-primary">➕ {t('products')}</button>
         </div>
       ) : (
         <div className={styles.list}>
@@ -437,7 +439,7 @@ function MarketplaceContent() {
                     {product.published ? '✓ Published' : 'Draft'}
                   </span>
                 </div>
-                <p className={styles.itemDesc}>{product.description?.slice(0, 60) || 'No description'}</p>
+                <p className={styles.itemDesc}>{product.description?.slice(0, 60) || t('noDescription')}</p>
                 <div className={styles.itemMeta}>
                   <span className={`badge badge-${product.type.toLowerCase()}`}>{product.type}</span>
                   {product.category && <span className="badge badge-category">{product.category}</span>}
@@ -461,7 +463,7 @@ function MarketplaceContent() {
       {showShopModal && (
         <div className="modal-overlay" onClick={() => setShowShopModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <h2>⚙️ Shop Settings</h2>
+            <h2>⚙️ {t('settings')}</h2>
             <form onSubmit={handleShopSubmit}>
               <div className="form-group">
                 <label>Shop Name</label>
@@ -511,7 +513,7 @@ function MarketplaceContent() {
       {showProductForm && (
         <div className="modal-overlay" onClick={resetProductForm}>
           <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
-            <h2>{editingProduct ? '✏️ Edit Product' : '➕ Add New Product'}</h2>
+            <h2>{editingProduct ? '✏️ ' + t('products') : '➕ ' + t('products')}</h2>
             <form onSubmit={handleProductSubmit}>
               <div className="form-group">
                 <label>Title *</label>

@@ -103,7 +103,7 @@ export default function HeroSection() {
         </p>
         <div className={styles.actions}>
           <Link href="/auth/register" className={styles.btnPrimary}>
-            {t('heroCta')} <span className={styles.arrow}>→</span>
+            <span>{t('heroCta')}</span>
           </Link>
           <Link href="/shops" className={styles.btnSecondary}>
             {t('heroBrowseShops')}

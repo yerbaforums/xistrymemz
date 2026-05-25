@@ -8,6 +8,7 @@ import FeedItem from '@/components/FeedItem'
 import MentionInput, { type MentionInputHandle } from '@/components/MentionInput'
 import ImageUploader from '@/components/ImageUploader'
 import EmojiPicker from 'emoji-picker-react'
+import { useTranslations } from 'next-intl'
 
 interface FeedPost {
   id: string
@@ -44,6 +45,7 @@ function getSectionKey(post: FeedPost): string {
 const SECTION_ORDER = ['WALL', 'SHOP', 'SCHOOL', 'PROFILE', 'GROUPPOST', 'FORUMPOST']
 
 export default function DashboardFeed() {
+  const t = useTranslations('dashboard')
   const { data: session, status } = useSession()
   const [feed, setFeed] = useState<FeedPost[]>([])
   const [loading, setLoading] = useState(true)
@@ -141,7 +143,7 @@ export default function DashboardFeed() {
   if (loading) {
     return (
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '24px 16px' }}>
-        <p style={{ color: 'var(--text-secondary)' }}>Loading feed...</p>
+        <p style={{ color: 'var(--text-secondary)' }}>{t('loading')}</p>
       </div>
     )
   }
@@ -153,10 +155,10 @@ export default function DashboardFeed() {
         <span className="breadcrumb-sep"> / </span>
         <Link href="/dashboard" className="breadcrumb-link">Dashboard</Link>
         <span className="breadcrumb-sep"> / </span>
-        <span className="breadcrumb-current">Feed</span>
+        <span className="breadcrumb-current">{t('feed')}</span>
       </nav>
 
-      <h1 style={{ fontSize: '1.8rem', marginBottom: '24px' }}>Your Feed</h1>
+      <h1 style={{ fontSize: '1.8rem', marginBottom: '24px' }}>{t('title')}</h1>
 
       {session && (
         <form onSubmit={handleCreatePost} style={{
@@ -268,7 +270,7 @@ export default function DashboardFeed() {
                   fontSize: '0.9rem'
                 }}
               >
-                {loadingMore ? 'Loading...' : 'Load More'}
+                {loadingMore ? t('loading') : 'Load More'}
               </button>
             </div>
           )}

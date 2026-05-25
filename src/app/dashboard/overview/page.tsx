@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import FeedItem from '@/components/FeedItem'
@@ -54,6 +55,7 @@ export default async function DashboardOverview() {
     redirect('/auth/login')
   }
 
+  const t = await getTranslations('dashboard')
   const userId = session.user.id
 
   const [
@@ -255,19 +257,19 @@ export default async function DashboardOverview() {
   const isNewUser = allStats[6] === 0 && plans.length === 0 && allStats[2] === 0 && connectionCount === 0
 
   const stats: StatDef[] = [
-    { label: 'Projects', value: allStats[0], max: 20, color: '#8B5CF6', icon: '🚀', href: '/dashboard/projects' },
-    { label: 'Requests', value: pendingRequests, max: 20, color: '#F59E0B', icon: '📝', href: '/dashboard/requests' },
-    { label: 'Products', value: allStats[2], max: 50, color: '#10B981', icon: '🛒', href: '/dashboard/marketplace' },
-    { label: 'Services', value: serviceCount, max: 20, color: '#14B8A6', icon: '🔧', href: '/dashboard/services' },
-    { label: 'Rentals', value: rentalCount, max: 20, color: '#3B82F6', icon: '🏠', href: '/dashboard/rentals' },
-    { label: 'Teaching', value: allStats[5], max: 20, color: '#EC4899', icon: '🏫', href: '/dashboard/teaching' },
-    { label: 'Offers In', value: offersReceived, max: 20, color: '#F97316', icon: '🤝', href: '/dashboard/offers' },
-    { label: 'Offers Out', value: offersSent, max: 20, color: '#FB923C', icon: '📤', href: '/dashboard/offers' },
+    { label: t('projects'), value: allStats[0], max: 20, color: '#8B5CF6', icon: '🚀', href: '/dashboard/projects' },
+    { label: t('requests'), value: pendingRequests, max: 20, color: '#F59E0B', icon: '📝', href: '/dashboard/requests' },
+    { label: t('products'), value: allStats[2], max: 50, color: '#10B981', icon: '🛒', href: '/dashboard/marketplace' },
+    { label: t('services'), value: serviceCount, max: 20, color: '#14B8A6', icon: '🔧', href: '/dashboard/services' },
+    { label: t('rentals'), value: rentalCount, max: 20, color: '#3B82F6', icon: '🏠', href: '/dashboard/rentals' },
+    { label: t('teaching'), value: allStats[5], max: 20, color: '#EC4899', icon: '🏫', href: '/dashboard/teaching' },
+    { label: t('offers'), value: offersReceived, max: 20, color: '#F97316', icon: '🤝', href: '/dashboard/offers' },
+    { label: t('offers'), value: offersSent, max: 20, color: '#FB923C', icon: '📤', href: '/dashboard/offers' },
+    { label: t('events'), value: eventAttendeeCount, max: 20, color: '#6366F1', icon: '📅', href: '/dashboard/events' },
+    { label: t('orders'), value: orderStats.length, max: 50, color: '#EF4444', icon: '📦', href: '/orders' },
     { label: 'Connections', value: connectionCount, max: 100, color: '#06B6D4', icon: '👥', href: '/community' },
     { label: 'Groups', value: allStats[3], max: 20, color: '#84CC16', icon: '🏠', href: '/community/groups' },
-    { label: 'Events', value: eventAttendeeCount, max: 20, color: '#6366F1', icon: '📅', href: '/dashboard/events' },
     { label: 'Volunteer', value: eventVolunteerCount, max: 10, color: '#14B8A6', icon: '🙋', href: '/dashboard/events' },
-    { label: 'Orders', value: orderStats.length, max: 50, color: '#EF4444', icon: '📦', href: '/orders' },
     { label: 'Earnings', value: Math.round(totalEarnings), max: 5000, color: '#F59E0B', icon: '💰', href: '' },
     { label: 'Total Views', value: totalViews, max: Math.max(totalViews, 100), color: '#06B6D4', icon: '👁️', href: '' },
     { label: 'Listings', value: totalListings, max: Math.max(totalListings, 20), color: '#84CC16', icon: '📋', href: '/dashboard/marketplace' },
@@ -278,12 +280,12 @@ export default async function DashboardOverview() {
     { label: 'New Product', icon: '🛒', href: '/products/new' },
     { label: 'New Service', icon: '🔧', href: '/dashboard/services' },
     { label: 'New Event', icon: '📅', href: '/events/new' },
-    { label: 'Post Request', icon: '📝', href: '/requests' },
+    { label: t('requests'), icon: '📝', href: '/requests' },
     { label: 'New Group', icon: '👥', href: '/groups/new' },
-    { label: 'Video Chat', icon: '📹', href: '/dashboard/video' },
-    { label: 'Planner', icon: '🗓️', href: '/dashboard/appointments' },
+    { label: t('videoChat'), icon: '📹', href: '/dashboard/video' },
+    { label: t('planner'), icon: '🗓️', href: '/dashboard/appointments' },
     { label: 'Community', icon: '💬', href: '/community' },
-    { label: 'Settings', icon: '⚙️', href: '/profile/settings' },
+    { label: t('settings'), icon: '⚙️', href: '/profile/settings' },
   ]
 
   return (
@@ -297,7 +299,7 @@ export default async function DashboardOverview() {
         <div className={styles.firstVisitBanner}>
           <div className={styles.firstVisitIcon}>👋</div>
           <div className={styles.firstVisitContent}>
-            <h3>Welcome to your Dashboard!</h3>
+            <h3>{t('title')}</h3>
             <p>This is your command center. From here you can manage projects, listings, events, and everything else. Here are a few places to start:</p>
             <div className={styles.firstVisitLinks}>
               <Link href="/plans" className={styles.firstVisitLink}>🚀 Start a Project</Link>
@@ -346,7 +348,7 @@ export default async function DashboardOverview() {
       <div className={styles.activityGrid}>
         <div className={styles.activitySection}>
           <div className={styles.sectionHeader}>
-            <h3>📦 Recent Projects</h3>
+            <h3>📦 {t('projects')}</h3>
             <Link href="/dashboard/projects" className={styles.viewAll}>View all →</Link>
           </div>
           {plans.length > 0 ? (
@@ -372,7 +374,7 @@ export default async function DashboardOverview() {
 
         <div className={styles.activitySection}>
           <div className={styles.sectionHeader}>
-            <h3>📡 Your Feed</h3>
+            <h3>📡 {t('feed')}</h3>
             <Link href="/dashboard/feed" className={styles.viewAll}>View all →</Link>
           </div>
           {recentFeedPosts.length > 0 ? (
@@ -427,10 +429,10 @@ export default async function DashboardOverview() {
             <span>🚀</span> Browse Projects
           </Link>
           <Link href="/products" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
-            <span>🛒</span> Browse Marketplace
+            <span>🛒</span> {t('marketplace')}
           </Link>
           <Link href="/services" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
-            <span>🔧</span> Find Services
+            <span>🔧</span> {t('services')}
           </Link>
           <Link href="/hashtags" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
             <span>#</span> Trending Tags
@@ -445,7 +447,7 @@ export default async function DashboardOverview() {
         {trendingPlans.length > 0 && (
           <div style={{ marginTop: 12 }}>
             <h4 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 8 }}>
-              Latest Public Projects
+              {t('projects')}
             </h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {trendingPlans.map(p => (
@@ -505,7 +507,7 @@ export default async function DashboardOverview() {
 
       {user && (user.walletAddress || user.paymentAddress || user.refundAddress || (user.acceptsDonations && user.donationAddress)) && (
         <div className={styles.walletCompact}>
-          <h4>💳 Wallet</h4>
+          <h4>💳 {t('wallet')}</h4>
           {user.walletAddress && <code title={user.walletAddress}>{user.walletAddress.slice(0, 10)}...{user.walletAddress.slice(-4)}</code>}
           {user.paymentAddress && <code title={user.paymentAddress}>Pay: {user.paymentAddress.slice(0, 8)}...{user.paymentAddress.slice(-4)}</code>}
           {user.acceptsDonations && user.donationAddress && <code title={user.donationAddress}>Donate: {user.donationAddress.slice(0, 8)}...{user.donationAddress.slice(-4)}</code>}
@@ -517,9 +519,9 @@ export default async function DashboardOverview() {
         <div className={styles.promoGrid}>
           <div className={styles.promoCard}>
             <div className={styles.promoIcon}>📋</div>
-            <h4>Business Templates</h4>
+            <h4>{t('templates')}</h4>
             <p>Pre-built templates for shops, schools, or courier services</p>
-            <Link href="/templates" className={styles.promoBtn}>Browse</Link>
+            <Link href="/templates" className={styles.promoBtn}>{t('templates')}</Link>
           </div>
           {!user?.shopSlug && (
             <div className={styles.promoCard}>
@@ -527,7 +529,7 @@ export default async function DashboardOverview() {
               <h4>Start Selling</h4>
               <p>Create your shop and list products or services</p>
               <div>
-                <Link href="/templates" className={styles.promoBtnSecondary}>Templates</Link>
+                <Link href="/templates" className={styles.promoBtnSecondary}>{t('templates')}</Link>
                 <Link href="/shop/setup" className={styles.promoBtn}>Setup Shop</Link>
               </div>
             </div>
@@ -535,10 +537,10 @@ export default async function DashboardOverview() {
           {!user?.schoolSlug && (
             <div className={styles.promoCard}>
               <div className={styles.promoIcon}>🏫</div>
-              <h4>Teach & Earn</h4>
+              <h4>{t('teaching')}</h4>
               <p>Share knowledge and create educational content</p>
               <div>
-                <Link href="/templates" className={styles.promoBtnSecondary}>Templates</Link>
+                <Link href="/templates" className={styles.promoBtnSecondary}>{t('templates')}</Link>
                 <Link href="/school/setup" className={styles.promoBtn}>Create School</Link>
               </div>
             </div>

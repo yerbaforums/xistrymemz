@@ -2,11 +2,13 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 import styles from './settings.module.css'
 import { getUserProfileUrl } from '@/lib/utils'
 
 export default async function ProfileSettingsPage() {
   const session = await getServerSession(authOptions)
+  const t = await getTranslations('dashboard')
 
   if (!session) {
     redirect('/auth/login')
@@ -17,14 +19,14 @@ export default async function ProfileSettingsPage() {
       <div className={styles.container}>
         <main className={styles.main}>
           <div className={styles.header}>
-            <h1>Profile Settings</h1>
+            <h1>{t('title')}</h1>
             <p>Manage your account and profile information</p>
           </div>
 
           <div className={styles.grid}>
             <Link href={getUserProfileUrl({ id: session.user.id, username: (session.user as { username?: string }).username })} className={styles.card}>
               <span className={styles.cardIcon}>👤</span>
-              <h3>View My Profile</h3>
+              <h3>{t('profile')}</h3>
               <p>See how others view your profile</p>
             </Link>
 
@@ -36,19 +38,19 @@ export default async function ProfileSettingsPage() {
 
             <Link href="/settings/account" className={styles.card}>
               <span className={styles.cardIcon}>⚙️</span>
-              <h3>Account Settings</h3>
+              <h3>{t('settings')}</h3>
               <p>Change email, password, and security</p>
             </Link>
 
             <Link href="/settings/notifications" className={styles.card}>
               <span className={styles.cardIcon}>🔔</span>
-              <h3>Notifications</h3>
+              <h3>{t('notifications')}</h3>
               <p>Configure email and message alerts</p>
             </Link>
 
             <Link href="/wallet" className={styles.card}>
               <span className={styles.cardIcon}>💳</span>
-              <h3>Wallet</h3>
+              <h3>{t('wallet')}</h3>
               <p>Manage your crypto wallet and balances</p>
             </Link>
 

@@ -67,7 +67,7 @@ export default async function RootLayout({
         <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
       </head>
       <body>
-        <NextIntlClientProvider messages={messages}>
+        <NextIntlClientProvider locale={locale} messages={messages}>
           <a href="#main-content" className="sr-only focus:not-sr-only">
             {messages.layout?.skipToContent || "Skip to main content"}
           </a>
