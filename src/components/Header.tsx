@@ -214,7 +214,6 @@ export default function Header() {
               <Link href="/events" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📅</span> Events</Link>
               <Link href="/rentals" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🏠</span> Rentals</Link>
               <Link href="/directory" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📋</span> Directory</Link>
-              <Link href="/dashboard/planning" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🗺️</span> Planning</Link>
               <Link href="/hashtags" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"># Hashtags</Link>
               <div style={{ borderTop: '1px solid var(--border-color)', margin: '4px 0' }} />
               <div style={{ padding: '6px 14px', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('community')}</div>
@@ -240,7 +239,6 @@ export default function Header() {
                 <Link href="/dashboard/messages" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">💬</span> Messages</Link>
                 <Link href="/dashboard/feed" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📡</span> Feed</Link>
                 <Link href="/dashboard/appointments" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🗓️</span> Planner</Link>
-                <Link href="/dashboard/planning" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🗺️</span> Planning</Link>
                 <Link href="/dashboard/video" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📹</span> Video Chat</Link>
                 <Link href="/dashboard/offers" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🤝</span> Offers</Link>
                 <Link href="/dashboard/rentals" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🏠</span> Rentals</Link>
@@ -331,7 +329,6 @@ export default function Header() {
             <Link href="/events" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">📅</span> Events</Link>
             <Link href="/rentals" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🏠</span> Rentals</Link>
             <Link href="/directory" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">📋</span> Directory</Link>
-            <Link href="/dashboard/planning" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🗺️</span> Planning</Link>
             <Link href="/community" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">👤</span> Members</Link>
             <Link href="/community/forum" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">💬</span> Forum</Link>
             <Link href="/community/groups" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">👥</span> Groups</Link>
@@ -627,21 +624,36 @@ export default function Header() {
                     ))}
                   </div>
                   <div className={styles.userLinks}>
-                    <Link href={session?.user ? getUserProfileUrl({ id: session.user.id, username: (session.user as { username?: string }).username }) : '/auth/login'} className={styles.userLink} role="menuitem" onClick={closeDropdown}>My Profile</Link>
-                    <Link href="/profile/settings" className={styles.userLink} role="menuitem" onClick={closeDropdown}>Settings</Link>
+                    <div className={styles.userSectionLabel}>Profile</div>
+                    <Link href={session?.user ? getUserProfileUrl({ id: session.user.id, username: (session.user as { username?: string }).username }) : '/auth/login'} className={styles.userLink} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">👤</span> My Profile</Link>
+                    <Link href="/profile/settings" className={styles.userLink} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">⚙️</span> Settings</Link>
                     <Link href="/onboarding" className={styles.userLink} role="menuitem" onClick={closeDropdown}>🚀 Getting Started</Link>
-                    <Link href="/dashboard/overview" className={styles.userLink} role="menuitem" onClick={closeDropdown}>Dashboard</Link>
+
+                    <div className={styles.userDivider} />
+                    <div className={styles.userSectionLabel}>Dashboard</div>
+                    <Link href="/dashboard/overview" className={styles.userLink} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">📊</span> Overview</Link>
+                    <Link href="/dashboard/planning" className={styles.userLink} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">🗺️</span> Planning</Link>
+                    <Link href="/dashboard/messages" className={styles.userLink} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">💬</span> Messages</Link>
+                    <Link href="/dashboard/saved" className={styles.userLink} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">⭐</span> Saved</Link>
+
+                    <div className={styles.userDivider} />
+                    <div className={styles.userSectionLabel}>Content</div>
                     {settings.enableWallet ? (
-                      <Link href="/wallet" className={styles.userLink} role="menuitem" onClick={closeDropdown}>Wallet</Link>
+                      <Link href="/wallet" className={styles.userLink} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">💰</span> Wallet</Link>
                     ) : (
-                      <span className={`${styles.userLink} ${styles.disabled}`} role="menuitem" aria-disabled="true">Wallet (Coming Soon)</span>
+                      <span className={`${styles.userLink} ${styles.disabled}`} role="menuitem" aria-disabled="true"><span aria-hidden="true">💰</span> Wallet (Coming Soon)</span>
                     )}
-                    <Link href="/orders" className={styles.userLink} role="menuitem" onClick={closeDropdown}>Orders</Link>
-                    <Link href="/dashboard/messages" className={styles.userLink} role="menuitem" onClick={closeDropdown}>Messages</Link>
-                    <Link href="/saved" className={styles.userLink} role="menuitem" onClick={closeDropdown}>Saved</Link>
+                    <Link href="/orders" className={styles.userLink} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">📦</span> Orders</Link>
+
+                    <div className={styles.userDivider} />
+                    <div className={styles.userSectionLabel}>Business</div>
+                    <Link href="/courier/setup" className={styles.userLink} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">🚚</span> Courier</Link>
+                    <Link href="/templates" className={styles.userLink} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">📋</span> Templates</Link>
+
                     {isAdmin && (
                       <>
-                        <div className={styles.adminDivider}>Admin</div>
+                        <div className={styles.userDivider} />
+                        <div className={`${styles.userSectionLabel} ${styles.adminSection}`}>Admin</div>
                         <Link href="/admin/subscribers" className={`${styles.userLink} ${styles.adminLink}`} role="menuitem" onClick={closeDropdown}>📧 Subscribers</Link>
                         <Link href="/admin/orders" className={`${styles.userLink} ${styles.adminLink}`} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">📦</span> Orders</Link>
                         <Link href="/admin/wallets" className={`${styles.userLink} ${styles.adminLink}`} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">💳</span> Wallets</Link>

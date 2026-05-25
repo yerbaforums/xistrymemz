@@ -127,6 +127,13 @@ export const authOptions: NextAuthOptions = {
                 profile: profile ? JSON.stringify(profile) : null,
               }
             })
+            // Update user image from OAuth provider if not set
+            if (!existingUser.image && user.image) {
+              await prisma.user.update({
+                where: { id: existingUser.id },
+                data: { image: user.image }
+              })
+            }
           }
           return true
         }
@@ -219,7 +226,9 @@ export const authOptions: NextAuthOptions = {
           if (dbUser) {
             token.role = dbUser.role
             token.username = dbUser.username
-            token.picture = dbUser.image
+            if (dbUser.image) {
+              token.picture = dbUser.image
+            }
           }
         } catch (e) {
           token.role = 'USER'

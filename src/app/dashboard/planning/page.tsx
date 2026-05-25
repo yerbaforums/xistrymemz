@@ -156,7 +156,7 @@ export default function PlanningPage() {
             </div>
           ) : (
             <>
-              {trips.map(trip => (
+              {trips.filter(t => !searchQuery || t.title.toLowerCase().includes(searchQuery.toLowerCase())).map(trip => (
                 <div
                   key={trip.id}
                   className={`${styles.tripCard} ${selectedTrip?.id === trip.id ? styles.tripCardActive : ''}`}
@@ -170,7 +170,7 @@ export default function PlanningPage() {
                   </div>
                 </div>
               ))}
-              {sharedTrips.map(trip => (
+              {sharedTrips.filter(t => !searchQuery || t.title.toLowerCase().includes(searchQuery.toLowerCase())).map(trip => (
                 <div
                   key={trip.id}
                   className={`${styles.tripCard} ${selectedTrip?.id === trip.id ? styles.tripCardActive : ''}`}
@@ -232,6 +232,8 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
   const [editEnd, setEditEnd] = useState(trip.endDate?.split('T')[0] || '')
   const [editPublic, setEditPublic] = useState(trip.isPublic)
   const [inviteUsername, setInviteUsername] = useState('')
+  const [inviteResults, setInviteResults] = useState<any[]>([])
+  const [inviteSearching, setInviteSearching] = useState(false)
   const [addingCustomStop, setAddingCustomStop] = useState(false)
   const [customStopName, setCustomStopName] = useState('')
   const [customStopLoc, setCustomStopLoc] = useState('')
@@ -245,7 +247,7 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
   const [geoLoading, setGeoLoading] = useState(false)
   const [poiItems, setPoiItems] = useState<MapItem[]>([])
   const [activePoiTypes, setActivePoiTypes] = useState<Set<string>>(new Set())
-  const [expandedStopId, setExpandedStopId] = useState<string | null>(null)
+  const [expandedStopIds, setExpandedStopIds] = useState<Set<string>>(new Set())
   const [stopLinks, setStopLinks] = useState<Record<string, StopLink[]>>({})
   const [stopShopping, setStopShopping] = useState<Record<string, ShoppingItem[]>>({})
   const [newLinkUrl, setNewLinkUrl] = useState('')
@@ -379,6 +381,7 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
   }
 
   const handleRemoveStop = async (stopId: string) => {
+    if (!window.confirm('Remove this stop?')) return
     const res = await fetch(`/api/trips/${trip.id}/stops/${stopId}`, { method: 'DELETE' })
     if (res.ok) { setTrip(prev => ({ ...prev, stops: (prev.stops || []).filter(s => s.id !== stopId) })); onUpdate() }
   }
@@ -447,20 +450,22 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
     if (res.ok) { const updated = await res.json(); setTrip(prev => ({ ...prev, stops: [...(prev.stops || []), updated] })); onUpdate() }
   }
 
-  const handleInvite = async () => {
-    if (!inviteUsername.trim()) return
+  const handleInviteSearch = async (q: string) => {
+    setInviteUsername(q)
+    if (q.length < 2) { setInviteResults([]); return }
+    setInviteSearching(true)
     try {
-      const userRes = await fetch(`/api/users/search?q=${encodeURIComponent(inviteUsername.trim())}`)
-      if (!userRes.ok) return
-      const users = await userRes.json()
-      const found = users?.[0]
-      if (!found?.id) return
-      const res = await fetch(`/api/trips/${trip.id}/collaborators`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: found.id, role: 'EDITOR' })
-      })
-      if (res.ok) { setInviteUsername(''); onUpdate(); const refreshed = await fetch(`/api/trips/${trip.id}`).then(r => r.json()); setTrip(refreshed) }
-    } catch {}
+      const res = await fetch(`/api/users/search?q=${encodeURIComponent(q)}`)
+      if (res.ok) setInviteResults(await res.json())
+    } catch {} finally { setInviteSearching(false) }
+  }
+
+  const handleInviteUser = async (userId: string) => {
+    const res = await fetch(`/api/trips/${trip.id}/collaborators`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, role: 'EDITOR' })
+    })
+    if (res.ok) { setInviteUsername(''); setInviteResults([]); onUpdate(); const refreshed = await fetch(`/api/trips/${trip.id}`).then(r => r.json()); setTrip(refreshed) }
   }
 
   const handleCollabAction = async (collabId: string, action: string) => {
@@ -749,14 +754,24 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
 
                       {canEdit && (
                         <div style={{ marginTop: '0.5rem' }}>
-                          <button className={`${styles.btn} ${styles.btnSmall}`} onClick={() => setExpandedStopId(expandedStopId === stop.id ? null : stop.id)}>
-                            {expandedStopId === stop.id ? '▲ Collapse' : '▼ Details'}
+                          <button className={`${styles.btn} ${styles.btnSmall}`} onClick={() => {
+                            const next = new Set(expandedStopIds)
+                            if (next.has(stop.id)) next.delete(stop.id)
+                            else next.add(stop.id)
+                            setExpandedStopIds(next)
+                          }}>
+                            {expandedStopIds.has(stop.id) ? '▲ Collapse' : '▼ Details'}
                           </button>
                         </div>
                       )}
 
-                      {expandedStopId === stop.id && canEdit && (
+                      {expandedStopIds.has(stop.id) && canEdit && (
                         <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'var(--bg-tertiary)', borderRadius: '8px' }}>
+                          {/* Name */}
+                          <div className={styles.formGroup}>
+                            <label className={styles.formLabel}>Name</label>
+                            <input className={styles.formInput} value={stop.name} onChange={e => handleUpdateStopField(stop.id, { name: e.target.value })} placeholder="Stop name" />
+                          </div>
                           {/* Notes */}
                           <div className={styles.formGroup}>
                             <label className={styles.formLabel}>Notes</label>
@@ -939,9 +954,20 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
               </button>
             ))}
           </div>
+          <div style={{ marginBottom: '0.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+            {canEdit && 'Click on the map to add a stop at that location · '}
+            Toggle POI layers above to browse nearby places
+          </div>
           <div className={styles.mapContainer}>
             <MapContainer center={coords.length > 0 ? [coords[0][0], coords[0][1]] : [20, 0]} zoom={coords.length > 0 ? 5 : 2} style={{ width: '100%', height: '100%' }} ref={mapRef}>
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              {canEdit && <MapClickHandlerComponent onClick={(lat, lng) => {
+                setCustomStopLat(lat); setCustomStopLng(lng)
+                setAddingCustomStop(true); setActiveTab('stops')
+                import('@/lib/geocoding').then(m => m.reverseGeocodeLocation(lat, lng)).then(addr => {
+                  if (addr) setCustomStopLoc(addr)
+                })
+              }} />}
               {trip.stops?.filter(s => s.latitude && s.longitude).map(s => (
                 <Marker key={s.id} position={[s.latitude!, s.longitude!]}>
                   <Popup>
@@ -1011,16 +1037,30 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
           </div>
 
           {isOwner && (
-            <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <input
-                className={styles.formInput}
-                placeholder="Invite by username..."
-                value={inviteUsername}
-                onChange={e => setInviteUsername(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleInvite()}
-                style={{ maxWidth: '300px' }}
-              />
-              <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleInvite}>Invite</button>
+            <div style={{ marginTop: '1rem', position: 'relative' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <input
+                  className={styles.formInput}
+                  placeholder="Search by username..."
+                  value={inviteUsername}
+                  onChange={e => handleInviteSearch(e.target.value)}
+                  style={{ maxWidth: '300px' }}
+                />
+              </div>
+              {inviteResults.length > 0 && (
+                <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, maxWidth: '300px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', zIndex: 100, marginTop: '4px', maxHeight: '200px', overflowY: 'auto' }}>
+                  {inviteResults.map((u: any) => (
+                    <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.75rem', cursor: 'pointer', borderBottom: '1px solid var(--border-color)' }}
+                      onClick={() => handleInviteUser(u.id)}>
+                      {u.image ? <img src={u.image} alt="" style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
+                        : <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent-primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem' }}>{(u.name || u.username || '?')[0]}</div>}
+                      <span style={{ fontSize: '0.85rem', flex: 1 }}>{u.name || u.username || 'Unknown'}</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--accent-primary)' }}>+ Invite</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {inviteSearching && <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>Searching...</p>}
             </div>
           )}
 
