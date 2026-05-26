@@ -128,8 +128,10 @@ export default function PassportPage() {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ traveling: next })
-    }).then(r => { if (r.ok) toastSuccess(next ? 'Traveling mode on' : 'Home mode restored') })
-      .catch(() => toastError('Failed to update traveling status'))
+    }).then(r => {
+      if (r.ok) toastSuccess(next ? 'Traveling mode on' : 'Home mode restored')
+      else toastError('Failed to update traveling status')
+    }).catch(() => toastError('Failed to update traveling status'))
   }
 
   const handleSavePassport = async () => {
