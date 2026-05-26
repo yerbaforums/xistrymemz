@@ -221,11 +221,12 @@ export const authOptions: NextAuthOptions = {
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: userId },
-            select: { role: true, username: true, image: true }
+            select: { role: true, username: true, image: true, name: true }
           })
           if (dbUser) {
             token.role = dbUser.role
             token.username = dbUser.username
+            token.name = dbUser.name
             if (dbUser.image) {
               token.picture = dbUser.image
             }
@@ -242,7 +243,8 @@ export const authOptions: NextAuthOptions = {
         const userId = (token.id as string) || (token.sub as string)
         ;(session.user as typeof session.user & { id: string; role?: string; username?: string }).id = userId
         ;(session.user as typeof session.user & { id: string; role?: string; username?: string }).role = (token.role as string) || 'USER'
-        ;(session.user as typeof session.user & { id: string; role?: string; username?: string }).username = token.username as string | undefined
+        ;(session.user as typeof session.user & { id: string; role?: string; username?: string; name?: string | null }).username = token.username as string | undefined
+        ;(session.user as typeof session.user & { id: string; role?: string; username?: string; name?: string | null }).name = token.name as string | undefined
         session.user.image = (token.picture as string) || null
       }
       return session

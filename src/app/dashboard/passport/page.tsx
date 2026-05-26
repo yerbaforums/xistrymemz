@@ -121,6 +121,17 @@ export default function PassportPage() {
 
   const handleClearLocation = () => { setLatitude(null); setLongitude(null) }
 
+  const handleTravelToggle = () => {
+    const next = !traveling
+    setTraveling(next)
+    fetch('/api/users/me', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ traveling: next })
+    }).then(r => { if (r.ok) toastSuccess(next ? 'Traveling mode on' : 'Home mode restored') })
+      .catch(() => toastError('Failed to update traveling status'))
+  }
+
   const handleSavePassport = async () => {
     setSaving(true)
     try {
@@ -339,7 +350,7 @@ export default function PassportPage() {
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, background: traveling ? 'rgba(255, 193, 7, 0.15)' : 'rgba(0, 217, 255, 0.1)', border: traveling ? '1px solid rgba(255, 193, 7, 0.3)' : '1px solid rgba(0, 217, 255, 0.2)', color: traveling ? 'var(--accent-warning)' : 'var(--accent-primary)' }}>
               {traveling ? '✈️' : '📍'} {location || 'Your City'}{traveling && <span style={{ opacity: 0.6 }}> traveling</span>}
             </span>
-            <button onClick={() => setTraveling(!traveling)} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--accent-success)', borderRadius: '20px', color: 'var(--accent-success)', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 600 }}>
+            <button onClick={handleTravelToggle} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--accent-success)', borderRadius: '20px', color: 'var(--accent-success)', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 600 }}>
               Switch to {traveling ? '📍 Home' : '✈️ Traveling'}
             </button>
           </div>
@@ -386,7 +397,7 @@ export default function PassportPage() {
 
         <div style={{ marginBottom: '12px' }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: traveling ? 'var(--accent-warning)' : 'var(--text-secondary)' }}>
-            <input type="checkbox" checked={traveling} onChange={e => setTraveling(e.target.checked)} style={{ width: '18px', height: '18px', accentColor: 'var(--accent-warning)' }} />
+            <input type="checkbox" checked={traveling} onClick={handleTravelToggle} style={{ width: '18px', height: '18px', accentColor: 'var(--accent-warning)' }} />
             <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>I'm currently traveling</span>
           </label>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', margin: '4px 0 0' }}>
