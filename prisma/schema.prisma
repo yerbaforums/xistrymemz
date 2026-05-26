@@ -85,6 +85,8 @@ model User {
   postReposts            PostRepost[]
   wallPosts              Post[]                 @relation("WallPostTarget")
   planUpdates            PlanUpdate[]
+  planUpdateLikes        PlanUpdateLike[]
+  planUpdateComments     PlanUpdateComment[]
   statusHistory          RequestStatusHistory[]
   requestSupports        RequestSupport[]
   groupsCreated          Group[]
@@ -733,6 +735,7 @@ model PlanUpdate {
   id        String   @id @default(cuid())
   content   String
   imageUrl  String?
+  images    String?  // JSON array of image URLs
   pinned    Boolean  @default(false)
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -742,6 +745,28 @@ model PlanUpdate {
   reposts   Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  likesRelation PlanUpdateLike[]
+  comments     PlanUpdateComment[]
+}
+
+model PlanUpdateLike {
+  id           String     @id @default(cuid())
+  planUpdateId String
+  planUpdate   PlanUpdate @relation(fields: [planUpdateId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  @@unique([planUpdateId, userId])
+}
+
+model PlanUpdateComment {
+  id           String     @id @default(cuid())
+  content      String
+  planUpdateId String
+  planUpdate   PlanUpdate @relation(fields: [planUpdateId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
 }
 
 model Post {
