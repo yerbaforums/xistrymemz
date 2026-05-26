@@ -30,6 +30,7 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [isTraveling, setIsTraveling] = useState(false)
   const [notificationCount, setNotificationCount] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const headerRef = useRef<HTMLElement>(null)
@@ -82,6 +83,16 @@ export default function Header() {
     setMenuOpen(false)
     setOpenDropdown(null)
   }, [pathname])
+
+  useEffect(() => {
+    const handler = (e: CustomEvent) => setIsTraveling(e.detail.traveling)
+    window.addEventListener('traveling-changed', handler as EventListener)
+    fetch('/api/users/me', { credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.user?.traveling !== undefined) setIsTraveling(d.user.traveling) })
+      .catch(() => {})
+    return () => window.removeEventListener('traveling-changed', handler as EventListener)
+  }, [])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -614,22 +625,27 @@ export default function Header() {
               )}
 
               <div className={`${styles.userMenu} ${openDropdown === 'user' ? styles.userDropdownVisible : ''}`}>
-                <button
-                  className={styles.userBtn}
-                  aria-label="User menu"
-                  onClick={() => toggleDropdown('user')}
-                  onKeyDown={e => handleDropdownKeyDown(e, 'user')}
-                  aria-expanded={openDropdown === 'user'}
-                  aria-controls="user-menu-dropdown"
-                >
-                  {session.user.image ? (
-                    <img src={session.user.image} alt={session.user.name || ''} className={styles.userAvatar} />
-                  ) : (
-                    <span className={styles.userInitial}>
-                      {(session.user.name || session.user.email || 'U')[0].toUpperCase()}
-                    </span>
+                <div style={{ position: 'relative' }}>
+                  <button
+                    className={styles.userBtn}
+                    aria-label="User menu"
+                    onClick={() => toggleDropdown('user')}
+                    onKeyDown={e => handleDropdownKeyDown(e, 'user')}
+                    aria-expanded={openDropdown === 'user'}
+                    aria-controls="user-menu-dropdown"
+                  >
+                    {session.user.image ? (
+                      <Image src={session.user.image} alt={session.user.name || ''} width={36} height={36} className={styles.userAvatar} />
+                    ) : (
+                      <span className={styles.userInitial}>
+                        {(session.user.name || session.user.email || 'U')[0].toUpperCase()}
+                      </span>
+                    )}
+                  </button>
+                  {isTraveling && (
+                    <span style={{ position: 'absolute', bottom: -4, right: -4, fontSize: '11px', lineHeight: 1, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>✈️</span>
                   )}
-                </button>
+                </div>
                 <div className={styles.userDropdown} id="user-menu-dropdown" role="menu">
                   <div className={styles.userInfo}>
                     <strong>{session.user.name || 'User'}</strong>
