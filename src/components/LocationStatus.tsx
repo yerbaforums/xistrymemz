@@ -40,7 +40,7 @@ export default function LocationStatus() {
 
   useEffect(() => {
     fetchLoc()
-    const interval = setInterval(fetchLoc, 60000)
+    const interval = setInterval(fetchLoc, 5000)
     const onFocus = () => fetchLoc()
     const onTravel = () => fetchLoc()
     window.addEventListener('focus', onFocus)

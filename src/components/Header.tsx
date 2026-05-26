@@ -30,8 +30,6 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
-  const [headerUser, setHeaderUser] = useState<{ name: string; image: string } | null>(null)
-  const [imgError, setImgError] = useState(false)
   const [notificationCount, setNotificationCount] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const headerRef = useRef<HTMLElement>(null)
@@ -69,19 +67,7 @@ export default function Header() {
     if (session?.user) fetchNotificationCount()
   }, [session])
 
-  // Poll fresh user data from DB every 30s + listen for traveling-changed
-  useEffect(() => {
-    if (status !== 'authenticated') return
-    const fetchUser = () => fetch('/api/users/me', { credentials: 'include' })
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.user) setHeaderUser({ name: d.user.name || '', image: d.user.image || '' }) })
-      .catch(() => {})
-    fetchUser()
-    const interval = setInterval(fetchUser, 30000)
-    const onTravel = () => fetchUser()
-    window.addEventListener('traveling-changed', onTravel)
-    return () => { clearInterval(interval); window.removeEventListener('traveling-changed', onTravel) }
-  }, [status])
+
 
   useNotificationSSE((event) => {
     if (event.type === 'unread-count' && event.unreadCount !== undefined) {
@@ -188,11 +174,6 @@ export default function Header() {
       setSearching(false)
     }
   }, [])
-
-  const displayName = headerUser?.name || session?.user?.name || null
-  const displayImage = headerUser?.image || session?.user?.image || null
-
-  useEffect(() => { setImgError(false) }, [displayImage])
 
   if (isAuthPage) return null
 
@@ -641,18 +622,17 @@ export default function Header() {
                   aria-expanded={openDropdown === 'user'}
                   aria-controls="user-menu-dropdown"
                 >
-                  {displayImage && !imgError ? (
-                    <img src={displayImage} alt={displayName || ''} className={styles.userAvatar}
-                      onError={() => setImgError(true)} />
+                  {session.user.image ? (
+                    <img src={session.user.image} alt={session.user.name || ''} className={styles.userAvatar} />
                   ) : (
                     <span className={styles.userInitial}>
-                      {(displayName || session.user.email || 'U')[0].toUpperCase()}
+                      {(session.user.name || session.user.email || 'U')[0].toUpperCase()}
                     </span>
                   )}
                 </button>
                 <div className={styles.userDropdown} id="user-menu-dropdown" role="menu">
                   <div className={styles.userInfo}>
-                    <strong>{displayName || 'User'}</strong>
+                    <strong>{session.user.name || 'User'}</strong>
                     <span className={styles.userEmail}>{session.user.email}</span>
                   </div>
                   <div className={styles.themeAccentPicker}>
