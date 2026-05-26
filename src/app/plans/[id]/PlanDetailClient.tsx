@@ -498,8 +498,16 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                         <span>Overall Progress</span>
                         <span>{overallProgress}%</span>
                       </div>
-                      <div className={styles.progressTrack}>
-                        <div className={styles.progressFill} style={{ width: `${overallProgress}%` }} />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <svg width="48" height="48" viewBox="0 0 36 36">
+                          <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--bg-tertiary)" strokeWidth="3" />
+                          <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--accent-success)" strokeWidth="3" strokeDasharray={`${overallProgress}, 100`} />
+                        </svg>
+                        <div style={{ flex: 1 }}>
+                          <div className={styles.progressTrack}>
+                            <div className={styles.progressFill} style={{ width: `${overallProgress}%` }} />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -526,6 +534,18 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                       <span className={styles.statChipIcon}>📝</span>
                       <span>{plan.requests.length} Requests</span>
                     </div>
+                    {plan.goalAmount && plan.goalAmount > 0 && (
+                      <div className={styles.statChip}>
+                        <span className={styles.statChipIcon}>💰</span>
+                        <span>${plan.currentFunding || 0} / ${plan.goalAmount}</span>
+                      </div>
+                    )}
+                    {plan.needsVolunteers && (
+                      <div className={styles.statChip}>
+                        <span className={styles.statChipIcon}>🤝</span>
+                        <span>Volunteers Needed</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Quick Actions */}
