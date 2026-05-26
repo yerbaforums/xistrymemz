@@ -381,42 +381,7 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
                         <Image src={plan.user.image} alt={plan.user.name || 'User'} fill sizes="28px" />
                       ) : (
                         <span>{(plan.user.name?.[0] || 'U').toUpperCase()}</span>
-    )}
-
-      {showCreateModal && (
-        <div className={styles.overlay} onClick={() => setShowCreateModal(false)}>
-          <div className={styles.modal} onClick={e => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h2>Create New Project</h2>
-              <button className={styles.modalClose} onClick={() => setShowCreateModal(false)}>✕</button>
-            </div>
-            <form onSubmit={handleCreate}>
-              <div className={styles.formGroup}>
-                <label>Project Title *</label>
-                <input type="text" value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="e.g., Launch my online store" required />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Description</label>
-                <textarea value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="What is this project about?" rows={3} />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Goals (one per line)</label>
-                <textarea value={newGoals} onChange={e => setNewGoals(e.target.value)} placeholder="What do you want to achieve?" rows={3} />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Milestones (one per line)</label>
-                <textarea value={newMileposts} onChange={e => setNewMileposts(e.target.value)} placeholder="Key milestones..." rows={3} />
-              </div>
-              <div className={styles.modalActions}>
-                <button type="button" onClick={() => setShowCreateModal(false)} className="btn-ghost">Cancel</button>
-                <button type="submit" disabled={!newTitle.trim() || creating} className="btn-primary">
-                  {creating ? 'Creating...' : 'Create Project'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+                    )}
                     </div>
                     <span className={styles.authorName}>{plan.user.name || 'You'}</span>
                   </div>
@@ -450,6 +415,41 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
               </Link>
             )
           })}
+        </div>
+      )}
+
+      {showCreateModal && (
+        <div className={styles.overlay} onClick={() => setShowCreateModal(false)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2>Create New Project</h2>
+              <button className={styles.modalClose} onClick={() => setShowCreateModal(false)}>✕</button>
+            </div>
+            <form onSubmit={handleCreate}>
+              <div className={styles.formGroup}>
+                <label>Project Title *</label>
+                <input type="text" value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="e.g., Launch my online store" required />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Description</label>
+                <textarea value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="What is this project about?" rows={3} />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Goals (one per line)</label>
+                <textarea value={newGoals} onChange={e => setNewGoals(e.target.value)} placeholder="What do you want to achieve?" rows={3} />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Milestones (one per line)</label>
+                <textarea value={newMileposts} onChange={e => setNewMileposts(e.target.value)} placeholder="Key milestones..." rows={3} />
+              </div>
+              <div className={styles.modalActions}>
+                <button type="button" onClick={() => setShowCreateModal(false)} className="btn-ghost">Cancel</button>
+                <button type="submit" disabled={!newTitle.trim() || creating} className="btn-primary">
+                  {creating ? 'Creating...' : 'Create Project'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

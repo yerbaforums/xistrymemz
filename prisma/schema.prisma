@@ -75,6 +75,7 @@ model User {
   products               Product[]
   schoolContentsOwned    SchoolContent[]        @relation("SchoolOwner")
   schoolContentsAuthored SchoolContent[]        @relation("SchoolAuthor")
+  schoolContentLikes     SchoolContentLike[]
   sentConnections        Connection[]           @relation("ConnectionRequester")
   receivedConnections    Connection[]           @relation("ConnectionReceiver")
   sentMessages           Message[]              @relation("MessageSender")
@@ -642,6 +643,8 @@ model SchoolContent {
   title             String
   content           String
   contentType       String           @default("article")
+  images            String?          // JSON array of image URLs
+  videoUrl          String?
   price             Float            @default(0)
   currency          String           @default("USD")
   isPaid            Boolean          @default(false)
@@ -657,8 +660,19 @@ model SchoolContent {
   reposts           SchoolContent[]  @relation("RepostedContent")
   purchases         SchoolPurchase[]
   requests          Request[]
+  likes             SchoolContentLike[]
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
+}
+
+model SchoolContentLike {
+  id        String       @id @default(cuid())
+  contentId String
+  content   SchoolContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now())
+  @@unique([contentId, userId])
 }
 
 model SchoolPurchase {
