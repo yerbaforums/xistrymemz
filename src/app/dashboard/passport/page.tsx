@@ -413,7 +413,7 @@ export default function PassportPage() {
               <label style={{ display: 'block', marginBottom: '6px', color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 600 }}>✈️ Set Current Location From Saved</label>
               <select onChange={e => {
                 const loc = savedLocations.find(l => l.id === e.target.value)
-                if (loc) { setLocation(loc.location); setLatitude(loc.latitude); setLongitude(loc.longitude); handleSavePassport(); handleStampLocation(loc.id) }
+                if (loc) { setLocation(loc.location); setLatitude(loc.latitude); setLongitude(loc.longitude); handleSavePassport() }
               }} style={{ width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.875rem' }}>
                 <option value="">Select a saved location...</option>
                 {savedLocations.filter(l => l.latitude && l.longitude).map(l => <option key={l.id} value={l.id}>{l.name} — {l.location}</option>)}
@@ -538,7 +538,7 @@ export default function PassportPage() {
               ) : (
                 <button onClick={handleRemovePrimary} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-secondary)', borderRadius: '6px', color: 'var(--accent-secondary)', cursor: 'pointer', fontSize: '0.8rem' }}>Unset Primary</button>
               )}
-              <button onClick={() => { setLocation(loc.location); setLatitude(loc.latitude); setLongitude(loc.longitude); setTraveling(false); handleSavePassport(); handleStampLocation(loc.id) }} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-warning)', borderRadius: '6px', color: 'var(--accent-warning)', cursor: 'pointer', fontSize: '0.8rem' }}>🏠 Set as Home</button>
+              <button onClick={() => { setLocation(loc.location); setLatitude(loc.latitude); setLongitude(loc.longitude); setTraveling(false); handleSavePassport() }} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-warning)', borderRadius: '6px', color: 'var(--accent-warning)', cursor: 'pointer', fontSize: '0.8rem' }}>🏠 Set as Home</button>
               {categories.length > 0 && (
                 <select value={loc.categoryId || ''} onChange={e => {
                   const categoryId = e.target.value || null
@@ -549,7 +549,7 @@ export default function PassportPage() {
                   {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>)}
                 </select>
               )}
-              <button onClick={() => handleStampLocation(loc.id)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-primary)', borderRadius: '6px', color: 'var(--accent-primary)', cursor: 'pointer', fontSize: '0.8rem' }}>📌 Stamp</button>
+              <button onClick={() => handleStampLocation(loc.id)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-primary)', borderRadius: '6px', color: 'var(--accent-primary)', cursor: 'pointer', fontSize: '0.8rem' }}>💮 Stamp</button>
               <button onClick={() => handleDeleteLocation(loc.id)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-secondary)', borderRadius: '6px', color: 'var(--accent-secondary)', cursor: 'pointer', fontSize: '0.8rem' }}>Delete</button>
             </div>
           </div>
