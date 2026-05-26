@@ -69,6 +69,8 @@ export default function PassportPage() {
   const [addSearchLoading, setAddSearchLoading] = useState(false)
   const [addLat, setAddLat] = useState<string>('')
   const [addLng, setAddLng] = useState<string>('')
+  const [stampPage, setStampPage] = useState(0)
+  const stampsPerPage = 8
 
   const [L, setL] = useState<any>(null)
 
@@ -178,6 +180,19 @@ export default function PassportPage() {
       if (addr) setLocationForm(prev => ({ ...prev, location: addr }))
       else toastError('Could not find address')
     })
+  }
+
+  const handleRemoveStamp = async (locId: string) => {
+    try {
+      const res = await fetch(`/api/users/locations/${locId}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lastVisitedAt: null })
+      })
+      if (res.ok) {
+        setSavedLocations(prev => prev.map(l => l.id === locId ? { ...l, lastVisitedAt: null } : l))
+        toastSuccess('Stamp removed')
+      } else toastError('Failed')
+    } catch { toastError('Failed') }
   }
 
   const handleStampLocation = async (locId: string) => {
@@ -472,33 +487,53 @@ export default function PassportPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
             <span style={{ fontSize: '1.5rem' }}>📖</span>
             <h2 style={{ margin: 0, color: 'var(--accent-primary)', fontSize: '1.2rem' }}>My Passport Book</h2>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', padding: '2px 8px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>{savedLocations.length} stamps</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', padding: '2px 8px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>{savedLocations.filter(l => l.lastVisitedAt).length} stamps</span>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
-            {[...savedLocations].reverse().map(loc => (
-              <div key={loc.id} style={{
-                background: 'var(--bg-secondary)', borderRadius: '12px', padding: '12px',
-                border: `2px solid ${loc.category?.color || '#3b82f6'}40`,
-                display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '6px',
-                position: 'relative', overflow: 'hidden'
-              }}>
-                <div style={{
-                  width: '40px', height: '40px', borderRadius: '50%',
-                  background: `${loc.category?.color || '#3b82f6'}20`,
-                  border: `2px solid ${loc.category?.color || '#3b82f6'}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '1.2rem'
-                }}>
-                  {loc.category?.icon || '📍'}
-                </div>
-                <div style={{ fontWeight: 600, fontSize: '0.8rem', color: 'var(--text-primary)', lineHeight: 1.2 }}>{loc.name}</div>
-                <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
-                  {(loc as any).lastVisitedAt ? new Date((loc as any).lastVisitedAt).toLocaleDateString() : new Date(loc.createdAt).toLocaleDateString()}
-                </div>
-                {loc.isPrimary && <span style={{ fontSize: '0.6rem', padding: '1px 6px', background: 'var(--accent-primary)', color: '#fff', borderRadius: '6px', fontWeight: 600 }}>Primary</span>}
+          {(() => {
+            const stamped = savedLocations.filter(l => l.lastVisitedAt)
+            if (stamped.length === 0) return <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '20px', fontSize: '0.85rem' }}>No stamps yet. Use 💮 Stamp on a saved location.</p>
+            const totalPages = Math.ceil(stamped.length / stampsPerPage)
+            const page = Math.min(stampPage, totalPages - 1)
+            const pageItems = [...stamped].reverse().slice(page * stampsPerPage, (page + 1) * stampsPerPage)
+            return <>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
+                {pageItems.map(loc => (
+                  <div key={loc.id} style={{
+                    background: 'var(--bg-secondary)', borderRadius: '12px', padding: '12px',
+                    border: `2px solid ${loc.category?.color || '#3b82f6'}40`,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '6px',
+                    position: 'relative'
+                  }}>
+                    <button onClick={() => handleRemoveStamp(loc.id)}
+                      style={{ position: 'absolute', top: '4px', right: '4px', width: '20px', height: '20px', borderRadius: '50%', border: 'none', background: 'var(--bg-tertiary)', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.65rem', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>✕</button>
+                    <div style={{
+                      width: '40px', height: '40px', borderRadius: '50%',
+                      background: `${loc.category?.color || '#3b82f6'}20`,
+                      border: `2px solid ${loc.category?.color || '#3b82f6'}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '1.2rem'
+                    }}>
+                      {loc.category?.icon || '📍'}
+                    </div>
+                    <div style={{ fontWeight: 600, fontSize: '0.8rem', color: 'var(--text-primary)', lineHeight: 1.2 }}>{loc.name}</div>
+                    <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                      {new Date(loc.lastVisitedAt!).toLocaleDateString()}
+                    </div>
+                    {loc.isPrimary && <span style={{ fontSize: '0.6rem', padding: '1px 6px', background: 'var(--accent-primary)', color: '#fff', borderRadius: '6px', fontWeight: 600 }}>Primary</span>}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+              {totalPages > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '16px' }}>
+                  <button onClick={() => setStampPage(p => Math.max(0, p - 1))} disabled={page === 0}
+                    style={{ padding: '4px 12px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.8rem', opacity: page === 0 ? 0.5 : 1 }}>← Prev</button>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', padding: '4px 8px' }}>Page {page + 1} of {totalPages}</span>
+                  <button onClick={() => setStampPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}
+                    style={{ padding: '4px 12px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.8rem', opacity: page >= totalPages - 1 ? 0.5 : 1 }}>Next →</button>
+                </div>
+              )}
+            </>
+          })()}
         </div>
       )}
 
@@ -531,26 +566,30 @@ export default function PassportPage() {
                 <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: '2px' }}>{loc.latitude.toFixed(4)}, {loc.longitude.toFixed(4)}</div>
               )}
             </div>
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
-              <button onClick={() => handleEditLocation(loc)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-success)', borderRadius: '6px', color: 'var(--accent-success)', cursor: 'pointer', fontSize: '0.8rem' }}>Edit</button>
-              {!loc.isPrimary ? (
-                <button onClick={() => handleSetPrimaryLocation(loc.id)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-primary)', borderRadius: '6px', color: 'var(--accent-primary)', cursor: 'pointer', fontSize: '0.8rem' }}>Set Primary</button>
-              ) : (
-                <button onClick={handleRemovePrimary} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-secondary)', borderRadius: '6px', color: 'var(--accent-secondary)', cursor: 'pointer', fontSize: '0.8rem' }}>Unset Primary</button>
-              )}
-              <button onClick={() => { setLocation(loc.location); setLatitude(loc.latitude); setLongitude(loc.longitude); setTraveling(false); handleSavePassport() }} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-warning)', borderRadius: '6px', color: 'var(--accent-warning)', cursor: 'pointer', fontSize: '0.8rem' }}>🏠 Set as Home</button>
-              {categories.length > 0 && (
-                <select value={loc.categoryId || ''} onChange={e => {
-                  const categoryId = e.target.value || null
-                  fetch(`/api/users/locations/${loc.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ categoryId }) })
-                    .then(r => { if (r.ok) r.json().then(u => setSavedLocations(prev => prev.map(l => l.id === loc.id ? { ...l, categoryId, category: categories.find(c => c.id === categoryId) || null } : l))); else toastError('Failed') }).catch(() => {})
-                }} style={{ fontSize: '0.75rem', padding: '4px 6px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)' }}>
-                  <option value="">Category</option>
-                  {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>)}
-                </select>
-              )}
-              <button onClick={() => handleStampLocation(loc.id)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-primary)', borderRadius: '6px', color: 'var(--accent-primary)', cursor: 'pointer', fontSize: '0.8rem' }}>💮 Stamp</button>
-              <button onClick={() => handleDeleteLocation(loc.id)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-secondary)', borderRadius: '6px', color: 'var(--accent-secondary)', cursor: 'pointer', fontSize: '0.8rem' }}>Delete</button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                <button onClick={() => handleEditLocation(loc)} style={{ padding: '4px 10px', background: 'var(--bg-tertiary)', border: '1px solid var(--accent-success)', borderRadius: '6px', color: 'var(--accent-success)', cursor: 'pointer', fontSize: '0.75rem' }}>✏️ Edit</button>
+                <button onClick={() => { setLocation(loc.location); setLatitude(loc.latitude); setLongitude(loc.longitude); setTraveling(false); handleSavePassport() }} style={{ padding: '4px 10px', background: 'var(--bg-tertiary)', border: '1px solid var(--accent-warning)', borderRadius: '6px', color: 'var(--accent-warning)', cursor: 'pointer', fontSize: '0.75rem' }}>🏠 Home</button>
+                {!loc.isPrimary ? (
+                  <button onClick={() => handleSetPrimaryLocation(loc.id)} style={{ padding: '4px 10px', background: 'var(--bg-tertiary)', border: '1px solid var(--accent-primary)', borderRadius: '6px', color: 'var(--accent-primary)', cursor: 'pointer', fontSize: '0.75rem' }}>⭐ Primary</button>
+                ) : (
+                  <button onClick={handleRemovePrimary} style={{ padding: '4px 10px', background: 'var(--bg-tertiary)', border: '1px solid var(--accent-secondary)', borderRadius: '6px', color: 'var(--accent-secondary)', cursor: 'pointer', fontSize: '0.75rem' }}>Unset Primary</button>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' }}>
+                <button onClick={() => handleStampLocation(loc.id)} style={{ padding: '4px 10px', background: 'var(--bg-tertiary)', border: '1px solid var(--accent-primary)', borderRadius: '6px', color: 'var(--accent-primary)', cursor: 'pointer', fontSize: '0.75rem' }}>💮 Stamp</button>
+                {categories.length > 0 && (
+                  <select value={loc.categoryId || ''} onChange={e => {
+                    const categoryId = e.target.value || null
+                    fetch(`/api/users/locations/${loc.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ categoryId }) })
+                      .then(r => { if (r.ok) r.json().then(u => setSavedLocations(prev => prev.map(l => l.id === loc.id ? { ...l, categoryId, category: categories.find(c => c.id === categoryId) || null } : l))); else toastError('Failed') }).catch(() => {})
+                  }} style={{ fontSize: '0.7rem', padding: '4px 6px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)' }}>
+                    <option value="">Category</option>
+                    {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>)}
+                  </select>
+                )}
+                <button onClick={() => handleDeleteLocation(loc.id)} style={{ padding: '4px 10px', background: 'var(--bg-tertiary)', border: '1px solid var(--accent-secondary)', borderRadius: '6px', color: 'var(--accent-secondary)', cursor: 'pointer', fontSize: '0.75rem' }}>🗑️ Delete</button>
+              </div>
             </div>
           </div>
         ))}

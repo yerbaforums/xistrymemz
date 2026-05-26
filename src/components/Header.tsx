@@ -30,7 +30,7 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
-  const [patchedUser, setPatchedUser] = useState<{ name?: string | null; image?: string | null } | null>(null)
+  const [headerUser, setHeaderUser] = useState<{ name: string; image: string } | null>(null)
   const [notificationCount, setNotificationCount] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const headerRef = useRef<HTMLElement>(null)
@@ -68,14 +68,19 @@ export default function Header() {
     if (session?.user) fetchNotificationCount()
   }, [session])
 
-  // Always fetch fresh user data from DB (bypasses stale JWT session)
+  // Poll fresh user data from DB every 30s + listen for traveling-changed
   useEffect(() => {
-    if (!isAuthenticated) return
-    fetch('/api/users/me')
+    if (status !== 'authenticated') return
+    const fetchUser = () => fetch('/api/users/me')
       .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data?.user) setPatchedUser({ name: data.user.name, image: data.user.image }) })
+      .then(d => { if (d?.user) setHeaderUser({ name: d.user.name || '', image: d.user.image || '' }) })
       .catch(() => {})
-  }, [isAuthenticated])
+    fetchUser()
+    const interval = setInterval(fetchUser, 30000)
+    const onTravel = () => fetchUser()
+    window.addEventListener('traveling-changed', onTravel)
+    return () => { clearInterval(interval); window.removeEventListener('traveling-changed', onTravel) }
+  }, [status])
 
   useNotificationSSE((event) => {
     if (event.type === 'unread-count' && event.unreadCount !== undefined) {
@@ -183,8 +188,8 @@ export default function Header() {
     }
   }, [])
 
-  const displayName = patchedUser?.name || session?.user?.name || null
-  const displayImage = patchedUser?.image || session?.user?.image || null
+  const displayName = headerUser?.name || session?.user?.name || null
+  const displayImage = headerUser?.image || session?.user?.image || null
 
   if (isAuthPage) return null
 
