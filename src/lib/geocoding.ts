@@ -54,6 +54,13 @@ export async function reverseGeocodeLocation(lat: number, lng: number): Promise<
   }
 }
 
+export function shortenLocation(loc: string): string {
+  const parts = loc.split(',').map(s => s.trim()).filter(Boolean)
+  if (parts.length >= 3) return `${parts[0]}, ${parts[parts.length - 2]}, ${parts[parts.length - 1]}`
+  if (parts.length === 2) return loc
+  return parts[0] || loc
+}
+
 export function calculateDistance(
   lat1: number,
   lon1: number,

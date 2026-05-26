@@ -24,6 +24,8 @@ interface UserLocation {
   tags: string | null
   notes: string | null
   imageUrl: string | null
+  lastVisitedAt: string | null
+  createdAt: string
   category: { id: string; name: string; icon: string; color: string } | null
 }
 
@@ -62,14 +64,18 @@ export default function PassportPage() {
 
   // Map state
   const [mapReady, setMapReady] = useState(false)
+  const [mapExpanded, setMapExpanded] = useState(false)
   const [addSearch, setAddSearch] = useState('')
   const [addSearchLoading, setAddSearchLoading] = useState(false)
   const [addLat, setAddLat] = useState<string>('')
   const [addLng, setAddLng] = useState<string>('')
 
+  const [L, setL] = useState<any>(null)
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       import('leaflet/dist/leaflet.css')
+      import('leaflet').then(mod => setL(mod))
       setTimeout(() => setMapReady(true), 200)
     }
   }, [])
@@ -156,6 +162,19 @@ export default function PassportPage() {
       if (addr) setLocationForm(prev => ({ ...prev, location: addr }))
       else toastError('Could not find address')
     })
+  }
+
+  const handleStampLocation = async (locId: string) => {
+    try {
+      const res = await fetch(`/api/users/locations/${locId}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lastVisitedAt: new Date().toISOString() })
+      })
+      if (res.ok) {
+        setSavedLocations(prev => prev.map(l => l.id === locId ? { ...l, lastVisitedAt: new Date().toISOString() } : l))
+        toastSuccess('📍 Location stamped!')
+      }
+    } catch {}
   }
 
   // Location CRUD
@@ -311,37 +330,55 @@ export default function PassportPage() {
           </div>
         </div>
 
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>Your Location (City, Country)</label>
-          <input type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder="City, Country" style={{ width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }} />
+        <div style={{ marginBottom: '12px' }}>
+          <label style={{ display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Your Location (City, Country)</label>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <input type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder="City, Country"
+              style={{ flex: 1, minWidth: '200px', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }} />
+            <button onClick={handleGeolocate} disabled={geoLoading}
+              style={{ padding: '8px 14px', background: 'var(--accent-success)', color: '#fff', border: 'none', borderRadius: '8px', cursor: geoLoading ? 'not-allowed' : 'pointer', fontWeight: 600, fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
+              {geoLoading ? '...' : '📍 Auto-Detect'}
+            </button>
+            {latitude && longitude && (
+              <button onClick={handleClearLocation}
+                style={{ padding: '8px 14px', background: 'transparent', border: '1px solid var(--accent-secondary)', color: 'var(--accent-secondary)', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}>Clear</button>
+            )}
+          </div>
+          {latitude && longitude && (
+            <div style={{ display: 'flex', gap: '16px', marginTop: '6px', padding: '6px 10px', background: 'var(--bg-tertiary)', borderRadius: '6px' }}>
+              <div><span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Lat </span><span style={{ fontFamily: 'monospace', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{latitude.toFixed(4)}</span></div>
+              <div><span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Lng </span><span style={{ fontFamily: 'monospace', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{longitude.toFixed(4)}</span></div>
+            </div>
+          )}
         </div>
 
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>Neighborhood / Area</label>
-          <input type="text" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} placeholder="Your local neighborhood or district" style={{ width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }} />
+        <div style={{ marginBottom: '12px' }}>
+          <label style={{ display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Neighborhood / Area</label>
+          <input type="text" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} placeholder="Your local neighborhood or district"
+            style={{ width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }} />
         </div>
 
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>Search Radius ({searchRadius}km)</label>
+        <div style={{ marginBottom: '12px' }}>
+          <label style={{ display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Search Radius ({searchRadius}km)</label>
           <input type="range" min="1" max="500" value={searchRadius} onChange={e => setSearchRadius(Number(e.target.value))} style={{ width: '100%', accentColor: 'var(--accent-success)' }} />
           <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', margin: '4px 0 0' }}>Shows listings within this radius when using "Near Me" filters.</p>
         </div>
 
-        <div style={{ marginBottom: '16px' }}>
+        <div style={{ marginBottom: '12px' }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: traveling ? 'var(--accent-warning)' : 'var(--text-secondary)' }}>
             <input type="checkbox" checked={traveling} onChange={e => setTraveling(e.target.checked)} style={{ width: '18px', height: '18px', accentColor: 'var(--accent-warning)' }} />
-            <span><strong>I'm currently traveling</strong></span>
+            <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>I'm currently traveling</span>
           </label>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', margin: '4px 0 0' }}>
             {traveling ? 'Your profile shows you as traveling. Community members will see you\'re on the move.' : 'Your profile shows your home location. Toggle this on when traveling.'}
           </p>
           {traveling && savedLocations.length > 0 && (
-            <div style={{ marginTop: '12px', padding: '12px', background: 'var(--bg-tertiary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+            <div style={{ marginTop: '10px', padding: '10px', background: 'var(--bg-tertiary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
               <label style={{ display: 'block', marginBottom: '6px', color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 600 }}>✈️ Set Current Location From Saved</label>
               <select onChange={e => {
                 const loc = savedLocations.find(l => l.id === e.target.value)
-                if (loc) { setLocation(loc.location); setLatitude(loc.latitude); setLongitude(loc.longitude); handleSavePassport() }
-              }} style={{ width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.875rem' }}>
+                if (loc) { setLocation(loc.location); setLatitude(loc.latitude); setLongitude(loc.longitude); handleSavePassport(); handleStampLocation(loc.id) }
+              }} style={{ width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.875rem' }}>
                 <option value="">Select a saved location...</option>
                 {savedLocations.filter(l => l.latitude && l.longitude).map(l => <option key={l.id} value={l.id}>{l.name} — {l.location}</option>)}
               </select>
@@ -349,62 +386,83 @@ export default function PassportPage() {
           )}
         </div>
 
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>GPS Coordinates</label>
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-            <button onClick={handleGeolocate} disabled={geoLoading} style={{ padding: '8px 16px', background: 'var(--accent-success)', color: '#fff', border: 'none', borderRadius: '8px', cursor: geoLoading ? 'not-allowed' : 'pointer', fontWeight: 600, fontSize: '0.875rem' }}>
-              {geoLoading ? 'Locating...' : '📍 Auto-Detect'}
-            </button>
-            {latitude && longitude && (
-              <button onClick={handleClearLocation} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--accent-secondary)', color: 'var(--accent-secondary)', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem' }}>Clear</button>
-            )}
-          </div>
-          {latitude && longitude && (
-            <div style={{ display: 'flex', gap: '12px', padding: '10px', background: 'var(--bg-tertiary)', borderRadius: '6px', marginBottom: '8px' }}>
-              <div style={{ flex: 1 }}><span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Latitude</span><div style={{ fontFamily: 'monospace', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>{latitude.toFixed(6)}</div></div>
-              <div style={{ flex: 1 }}><span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Longitude</span><div style={{ fontFamily: 'monospace', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>{longitude.toFixed(6)}</div></div>
-            </div>
-          )}
-          {!latitude && !longitude && (
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', margin: 0, padding: '8px 10px', background: 'var(--bg-tertiary)', borderRadius: '6px' }}>
-              No coordinates set. Use auto-detect above, or they will be derived from your location on save.
-            </p>
-          )}
-        </div>
-
-        <button onClick={handleSavePassport} disabled={saving} style={{ padding: '10px 20px', background: 'var(--accent-success)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>
-          {saving ? 'Saving...' : 'Save Passport'}
+        <button onClick={handleSavePassport} disabled={saving} style={{ padding: '10px 20px', background: 'var(--accent-success)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>
+          {saving ? 'Saving...' : '💾 Save Passport'}
         </button>
       </div>
 
       {/* Map */}
-      {mapReady && (
-        <div style={{ height: '300px', borderRadius: '12px', overflow: 'hidden', marginBottom: '20px', border: '1px solid var(--border-color)' }}>
-          <MapContainer key={`overview-${latitude}-${longitude}`} center={latitude ? [latitude, longitude!] : savedLocations.find(l => l.latitude && l.longitude) ? [savedLocations.find(l => l.latitude && l.longitude)!.latitude!, savedLocations.find(l => l.latitude && l.longitude)!.longitude!] : [20, 0]}
-            zoom={latitude || savedLocations.some(l => l.latitude) ? 5 : 2} style={{ width: '100%', height: '100%' }}>
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            {latitude && longitude && (
-              <Marker position={[latitude, longitude]}>
-                <Popup><strong>📍 Home</strong><br />{location || 'Your location'}</Popup>
-              </Marker>
-            )}
-            {savedLocations.filter(l => l.latitude && l.longitude).map(loc => (
-              <Marker key={loc.id} position={[loc.latitude!, loc.longitude!]}>
-                <Popup>
-                  <strong>{loc.name}</strong><br />{loc.location}
-                  {loc.category && <><br /><span style={{ color: loc.category.color }}>{loc.category.icon} {loc.category.name}</span></>}
-                </Popup>
-              </Marker>
-            ))}
-          </MapContainer>
-        </div>
+      {mapReady && L && (
+        <>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.75rem', color: 'var(--text-muted)', padding: '6px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+              <span>📍 Home</span>
+              {savedLocations.some(l => l.isPrimary) && <span>⭐ Primary</span>}
+              <span>📌 Saved</span>
+            </div>
+            <button onClick={() => setMapExpanded(!mapExpanded)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.75rem' }}>
+              {mapExpanded ? '🗺️ Collapse' : '🗺️ Expand'}
+            </button>
+          </div>
+          <div style={{ height: mapExpanded ? '550px' : '300px', borderRadius: '12px', overflow: 'hidden', marginBottom: '20px', border: '1px solid var(--border-color)', transition: 'height 0.2s' }}>
+            <MapContainer key={`overview-${latitude}-${longitude}`} center={latitude ? [latitude, longitude!] : savedLocations.find(l => l.latitude && l.longitude) ? [savedLocations.find(l => l.latitude && l.longitude)!.latitude!, savedLocations.find(l => l.latitude && l.longitude)!.longitude!] : [20, 0]}
+              zoom={latitude || savedLocations.some(l => l.latitude) ? 5 : 2} style={{ width: '100%', height: '100%' }}>
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              {latitude && longitude && (
+                <Marker position={[latitude, longitude]} icon={L.divIcon({ html: '<div style="width:30px;height:30px;border-radius:50%;background:var(--accent-success);display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.3)">📍</div>', className: '', iconSize: [30, 30] })}>
+                  <Popup><strong>📍 Home</strong><br />{location || 'Your location'}</Popup>
+                </Marker>
+              )}
+              {savedLocations.filter(l => l.latitude && l.longitude).map(loc => (
+                <Marker key={loc.id} position={[loc.latitude!, loc.longitude!]}
+                  icon={L.divIcon({
+                    html: `<div style="width:28px;height:28px;border-radius:50%;background:${loc.category?.color || '#3b82f6'};display:flex;align-items:center;justify-content:center;font-size:13px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.3)">${loc.isPrimary ? '⭐' : '📌'}</div>`,
+                    className: '', iconSize: [28, 28]
+                  })}>
+                  <Popup>
+                    <strong>{loc.name}</strong><br />{loc.location}
+                    {loc.category && <><br /><span style={{ color: loc.category.color }}>{loc.category.icon} {loc.category.name}</span></>}
+                  </Popup>
+                </Marker>
+              ))}
+            </MapContainer>
+          </div>
+        </>
       )}
 
-      {mapReady && (
-        <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px', padding: '8px 12px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-          <span>📍 Home</span>
-          {savedLocations.some(l => l.isPrimary) && <span>⭐ Primary</span>}
-          <span>📌 Saved</span>
+      {/* Passport Book Section */}
+      {savedLocations.length > 0 && (
+        <div style={{ background: 'linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%)', border: '2px solid var(--border-color)', borderRadius: '16px', padding: '24px', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+            <span style={{ fontSize: '1.5rem' }}>📖</span>
+            <h2 style={{ margin: 0, color: 'var(--accent-primary)', fontSize: '1.2rem' }}>My Passport Book</h2>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', padding: '2px 8px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>{savedLocations.length} stamps</span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
+            {[...savedLocations].reverse().map(loc => (
+              <div key={loc.id} style={{
+                background: 'var(--bg-secondary)', borderRadius: '12px', padding: '12px',
+                border: `2px solid ${loc.category?.color || '#3b82f6'}40`,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '6px',
+                position: 'relative', overflow: 'hidden'
+              }}>
+                <div style={{
+                  width: '40px', height: '40px', borderRadius: '50%',
+                  background: `${loc.category?.color || '#3b82f6'}20`,
+                  border: `2px solid ${loc.category?.color || '#3b82f6'}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '1.2rem'
+                }}>
+                  {loc.category?.icon || '📍'}
+                </div>
+                <div style={{ fontWeight: 600, fontSize: '0.8rem', color: 'var(--text-primary)', lineHeight: 1.2 }}>{loc.name}</div>
+                <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                  {(loc as any).lastVisitedAt ? new Date((loc as any).lastVisitedAt).toLocaleDateString() : new Date(loc.createdAt).toLocaleDateString()}
+                </div>
+                {loc.isPrimary && <span style={{ fontSize: '0.6rem', padding: '1px 6px', background: 'var(--accent-primary)', color: '#fff', borderRadius: '6px', fontWeight: 600 }}>Primary</span>}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -440,7 +498,7 @@ export default function PassportPage() {
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
               <button onClick={() => handleEditLocation(loc)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-success)', borderRadius: '6px', color: 'var(--accent-success)', cursor: 'pointer', fontSize: '0.8rem' }}>Edit</button>
               {!loc.isPrimary && <button onClick={() => handleSetPrimaryLocation(loc.id)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-primary)', borderRadius: '6px', color: 'var(--accent-primary)', cursor: 'pointer', fontSize: '0.8rem' }}>Set Primary</button>}
-              <button onClick={() => { setLocation(loc.location); setLatitude(loc.latitude); setLongitude(loc.longitude); setTraveling(false); handleSavePassport() }} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-warning)', borderRadius: '6px', color: 'var(--accent-warning)', cursor: 'pointer', fontSize: '0.8rem' }}>🏠 Set as Home</button>
+              <button onClick={() => { setLocation(loc.location); setLatitude(loc.latitude); setLongitude(loc.longitude); setTraveling(false); handleSavePassport(); handleStampLocation(loc.id) }} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-warning)', borderRadius: '6px', color: 'var(--accent-warning)', cursor: 'pointer', fontSize: '0.8rem' }}>🏠 Set as Home</button>
               {categories.length > 0 && (
                 <select value={loc.categoryId || ''} onChange={e => {
                   const categoryId = e.target.value || null
@@ -451,6 +509,7 @@ export default function PassportPage() {
                   {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>)}
                 </select>
               )}
+              <button onClick={() => handleStampLocation(loc.id)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-primary)', borderRadius: '6px', color: 'var(--accent-primary)', cursor: 'pointer', fontSize: '0.8rem' }}>📌 Stamp</button>
               <button onClick={() => handleDeleteLocation(loc.id)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-secondary)', borderRadius: '6px', color: 'var(--accent-secondary)', cursor: 'pointer', fontSize: '0.8rem' }}>Delete</button>
             </div>
           </div>

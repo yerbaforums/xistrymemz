@@ -82,7 +82,7 @@ export async function PUT(
   }
 
   const body = await request.json()
-  const { name, location, latitude, longitude, categoryId, tags, notes, imageUrl } = body
+  const { name, location, latitude, longitude, categoryId, tags, notes, imageUrl, lastVisitedAt } = body
 
   // Update this location
   const updated = await prisma.userLocation.update({
@@ -95,7 +95,8 @@ export async function PUT(
       categoryId: categoryId !== undefined ? categoryId : existingLocation.categoryId,
       tags: tags !== undefined ? tags : existingLocation.tags,
       notes: notes !== undefined ? notes : existingLocation.notes,
-      imageUrl: imageUrl !== undefined ? imageUrl : existingLocation.imageUrl
+      imageUrl: imageUrl !== undefined ? imageUrl : existingLocation.imageUrl,
+      lastVisitedAt: lastVisitedAt !== undefined ? new Date(lastVisitedAt) : existingLocation.lastVisitedAt
     }
   })
 

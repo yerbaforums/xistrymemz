@@ -173,13 +173,14 @@ model UserLocation {
   categoryId String? // LocationCategory for grouping (camping, restaurants, shops, venues, etc.)
   category   LocationCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   tags       String? // Comma-separated tags
-  notes      String? // Personal notes about this location
-  imageUrl   String? // Photo of the location
-  userId     String
-  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tripStops  TripStop[]
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @updatedAt
+  notes        String?    // Personal notes about this location
+  imageUrl     String?    // Photo of the location
+  lastVisitedAt DateTime? // Date the user last checked in / visited this location
+  userId       String
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tripStops    TripStop[]
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
 
   @@index([userId])
 }

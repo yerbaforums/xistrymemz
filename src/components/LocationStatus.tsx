@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useToast } from '@/context/ToastContext'
+import { shortenLocation } from '@/lib/geocoding'
 
 interface LocationData {
   location: string | null
@@ -68,7 +69,8 @@ export default function LocationStatus() {
 
   if (!loc) return null
 
-  const displayLocation = loc.location || loc.neighborhood || null
+  const rawLocation = loc.location || loc.neighborhood || null
+  const displayLocation = rawLocation ? shortenLocation(rawLocation) : null
   if (!displayLocation) return null
 
   return (
