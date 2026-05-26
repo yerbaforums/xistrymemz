@@ -21,7 +21,7 @@ export default function LocationStatus() {
 
   const fetchLoc = useCallback(async () => {
     try {
-      const res = await fetch('/api/users/me')
+      const res = await fetch('/api/users/me', { credentials: 'include' })
       if (!res.ok) return
       const data = await res.json()
       if (data?.user) {

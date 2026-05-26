@@ -31,6 +31,7 @@ export default function Header() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
   const [headerUser, setHeaderUser] = useState<{ name: string; image: string } | null>(null)
+  const [imgError, setImgError] = useState(false)
   const [notificationCount, setNotificationCount] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const headerRef = useRef<HTMLElement>(null)
@@ -71,7 +72,7 @@ export default function Header() {
   // Poll fresh user data from DB every 30s + listen for traveling-changed
   useEffect(() => {
     if (status !== 'authenticated') return
-    const fetchUser = () => fetch('/api/users/me')
+    const fetchUser = () => fetch('/api/users/me', { credentials: 'include' })
       .then(r => r.ok ? r.json() : null)
       .then(d => { if (d?.user) setHeaderUser({ name: d.user.name || '', image: d.user.image || '' }) })
       .catch(() => {})
@@ -190,6 +191,8 @@ export default function Header() {
 
   const displayName = headerUser?.name || session?.user?.name || null
   const displayImage = headerUser?.image || session?.user?.image || null
+
+  useEffect(() => { setImgError(false) }, [displayImage])
 
   if (isAuthPage) return null
 
@@ -638,9 +641,9 @@ export default function Header() {
                   aria-expanded={openDropdown === 'user'}
                   aria-controls="user-menu-dropdown"
                 >
-                  {displayImage ? (
+                  {displayImage && !imgError ? (
                     <img src={displayImage} alt={displayName || ''} className={styles.userAvatar}
-                      onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                      onError={() => setImgError(true)} />
                   ) : (
                     <span className={styles.userInitial}>
                       {(displayName || session.user.email || 'U')[0].toUpperCase()}
