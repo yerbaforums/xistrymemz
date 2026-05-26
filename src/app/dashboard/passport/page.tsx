@@ -124,19 +124,24 @@ export default function PassportPage() {
   const handleClearLocation = () => { setLatitude(null); setLongitude(null) }
 
   const handleTravelToggle = () => {
-    const next = !traveling
-    setTraveling(next)
-    fetch('/api/users/me', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ traveling: next })
-    }).then(r => {
-      if (r.ok) {
-        toastSuccess(next ? 'Traveling mode on' : 'Home mode restored')
-        window.dispatchEvent(new CustomEvent('traveling-changed', { detail: { traveling: next } }))
-      } else toastError('Failed to update traveling status')
-    }).catch(() => toastError('Failed to update traveling status'))
+    setTraveling(prev => {
+      const next = !prev
+      fetch('/api/users/me', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ traveling: next })
+      }).then(r => {
+        if (r.ok) {
+          toastSuccess(next ? 'Traveling mode on' : 'Home mode restored')
+          window.dispatchEvent(new CustomEvent('traveling-changed', { detail: { traveling: next } }))
+        } else {
+          toastError('Failed to update traveling status')
+          setTraveling(prev) // revert on failure
+        }
+      }).catch(() => toastError('Failed to update traveling status'))
+      return next
+    })
   }
 
   const handleSavePassport = async () => {
