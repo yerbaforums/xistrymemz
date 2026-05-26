@@ -40,6 +40,10 @@ interface Plan {
   mileposts: string | null
   images: string | null
   videoUrl: string | null
+  needsVolunteers: boolean
+  volunteerRoles: string | null
+  volunteerDescription: string | null
+  lookingForCollaborators: boolean
   status: string
   published: boolean
   pinned: boolean
@@ -543,6 +547,8 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
                             {catIcon} {plan.category.charAt(0) + plan.category.slice(1).toLowerCase()}
                           </span>
                         )}
+                        {plan.needsVolunteers && <span className={styles.volunteerBadge}>🤝 Volunteers</span>}
+                        {plan.lookingForCollaborators && <span className={styles.collabBadge}>👥 Collaborators</span>}
                       </div>
                       <div className={styles.publicStats}>
                         <span title="Members">

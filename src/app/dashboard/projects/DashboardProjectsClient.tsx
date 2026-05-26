@@ -12,6 +12,8 @@ interface Plan {
   category: string | null
   goals: string | null
   resources: string | null
+  needsVolunteers: boolean
+  lookingForCollaborators: boolean
   status: string
   published: boolean
   pinned: boolean
@@ -267,6 +269,8 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
                       {status.icon} {status.label}
                     </span>
                     {plan.category && <span className={styles.categoryBadge} style={{ borderColor: (CATEGORY_COLORS[plan.category] || '#888') + '40', color: CATEGORY_COLORS[plan.category] || '#888', background: (CATEGORY_COLORS[plan.category] || '#888') + '20' }}>{CATEGORY_ICONS[plan.category] || '📌'} {plan.category.charAt(0) + plan.category.slice(1).toLowerCase()}</span>}
+                    {plan.needsVolunteers && <span className={styles.dashVolunteerBadge}>🤝</span>}
+                    {plan.lookingForCollaborators && <span className={styles.dashCollabBadge}>👥</span>}
                   </div>
                   <div className={styles.stats}>
                     <span className={styles.statItem} title="Requests">
