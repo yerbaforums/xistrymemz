@@ -16,7 +16,10 @@ interface SchoolInfo {
 interface ContentItem {
   id: string
   title: string
+  content: string
   contentType: string
+  images: string | null
+  videoUrl: string | null
   price: number
   isPaid: boolean
   createdAt: string
@@ -41,20 +44,18 @@ export default function TeachingPage() {
   const [editingContent, setEditingContent] = useState<ContentItem | null>(null)
   const [saving, setSaving] = useState(false)
   const [schoolForm, setSchoolForm] = useState({ schoolName: '', schoolAbout: '', schoolImage: '', schoolImages: [] as string[], schoolSlug: '' })
-  const [contentForm, setContentForm] = useState({ title: '', content: '', contentType: 'article', price: '', isPaid: false })
+  const [contentForm, setContentForm] = useState({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: '', videoUrl: '' })
 
   useEffect(() => { fetchAll() }, [])
 
   const fetchAll = async () => {
     try {
-      const [schoolRes, contentRes, purchasesRes] = await Promise.all([
+      const [schoolRes, purchasesRes] = await Promise.all([
         fetch('/api/school'),
-        fetch('/api/my-products'),
         fetch('/api/school/purchases'),
       ])
       const schoolData = await schoolRes.json()
-      const contentData = await contentRes.json()
-      const purchasesData = await purchasesRes.json()
+      const purchasesData = purchasesRes.ok ? await purchasesRes.json() : { purchases: [] }
 
       setSchool(schoolData)
       setSchoolForm({
@@ -64,7 +65,11 @@ export default function TeachingPage() {
         schoolImages: schoolData.schoolImage ? [schoolData.schoolImage] : [],
         schoolSlug: schoolData.schoolSlug || '',
       })
-      setContent(Array.isArray(contentData) ? contentData : contentData?.content || [])
+
+      if (schoolData.schoolSlug) {
+        const contentRes = await fetch(`/api/school/${schoolData.schoolSlug}/content`)
+        if (contentRes.ok) setContent(await contentRes.json())
+      }
       setStudents(purchasesData?.purchases || [])
       setSubscribers(purchasesData?.subscriptions || [])
     } catch (e) {
@@ -93,14 +98,21 @@ export default function TeachingPage() {
     e.preventDefault()
     setSaving(true)
     try {
-      const url = editingContent ? `/api/school/content/${editingContent.id}` : '/api/school/content'
-      const method = editingContent ? 'PUT' : 'POST'
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...contentForm, price: contentForm.price ? parseFloat(contentForm.price) : 0 })
-      })
-      if (res.ok) { success(editingContent ? 'Content updated!' : 'Content created!'); fetchAll(); setShowContentForm(false); setEditingContent(null) }
+      if (!school?.schoolSlug) { error('No school slug'); return }
+      const isEdit = !!editingContent
+      const url = isEdit ? `/api/school/${school.schoolSlug}/content/${editingContent!.id}` : `/api/school/${school.schoolSlug}/content`
+      const method = isEdit ? 'PUT' : 'POST'
+      const body: Record<string, unknown> = {
+        title: contentForm.title,
+        content: contentForm.content || ' ',
+        contentType: contentForm.contentType,
+        price: contentForm.price ? parseFloat(contentForm.price) : 0,
+        isPaid: contentForm.isPaid,
+      }
+      if (contentForm.images) body.images = contentForm.images
+      if (contentForm.videoUrl) body.videoUrl = contentForm.videoUrl
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      if (res.ok) { success(isEdit ? 'Content updated!' : 'Content created!'); fetchAll(); setShowContentForm(false); setEditingContent(null) }
       else { const err = await res.json(); error(err.error || 'Failed') }
     } catch { error('Failed') }
     finally { setSaving(false) }
@@ -109,7 +121,8 @@ export default function TeachingPage() {
   const handleDeleteContent = async (id: string, title: string) => {
     if (!confirm(`Delete "${title}"?`)) return
     try {
-      const res = await fetch(`/api/school/content/${id}`, { method: 'DELETE' })
+      if (!school?.schoolSlug) { error('No school slug'); return }
+      const res = await fetch(`/api/school/${school.schoolSlug}/content/${id}`, { method: 'DELETE' })
       if (res.ok) { success('Deleted'); fetchAll() }
       else error('Failed')
     } catch { error('Failed') }
@@ -126,7 +139,7 @@ export default function TeachingPage() {
         </div>
         <div className={styles.headerActions}>
           <button onClick={() => setShowSchoolForm(true)} className="btn-secondary">⚙️ School Settings</button>
-          <button onClick={() => { setEditingContent(null); setContentForm({ title: '', content: '', contentType: 'article', price: '', isPaid: false }); setShowContentForm(true) }} className="btn-primary">➕ New Content</button>
+          <button onClick={() => { setEditingContent(null); setContentForm({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: '', videoUrl: '' }); setShowContentForm(true) }} className="btn-primary">➕ New Content</button>
         </div>
       </div>
 
@@ -192,7 +205,7 @@ export default function TeachingPage() {
                 <div className={styles.contentActions}>
                   <button onClick={() => {
                     setEditingContent(c)
-                    setContentForm({ title: c.title, content: '', contentType: c.contentType, price: c.price.toString(), isPaid: c.isPaid })
+                    setContentForm({ title: c.title, content: (c as any).content || '', contentType: c.contentType, price: c.price.toString(), isPaid: c.isPaid, images: (c as any).images || '', videoUrl: (c as any).videoUrl || '' })
                     setShowContentForm(true)
                   }} className={styles.smallBtn}>✏️</button>
                   <button onClick={() => handleDeleteContent(c.id, c.title)} className={styles.smallBtnDanger}>🗑️</button>
@@ -271,6 +284,18 @@ export default function TeachingPage() {
                   <option value="tutorial">Tutorial</option>
                   <option value="guide">Guide</option>
                 </select>
+              </div>
+              <div className="form-group">
+                <label>Content Body</label>
+                <textarea value={contentForm.content} onChange={e => setContentForm({...contentForm, content: e.target.value})} rows={6} placeholder="Write your content here..." style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.9rem', resize: 'vertical'}} />
+              </div>
+              <div className="form-group">
+                <label>Images (JSON array of URLs)</label>
+                <input type="text" value={contentForm.images} onChange={e => setContentForm({...contentForm, images: e.target.value})} placeholder='["https://..."]' style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)'}} />
+              </div>
+              <div className="form-group">
+                <label>Video URL</label>
+                <input type="text" value={contentForm.videoUrl} onChange={e => setContentForm({...contentForm, videoUrl: e.target.value})} placeholder="https://youtube.com/..." style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)'}} />
               </div>
               <div className="form-group">
                 <label>Price</label>
