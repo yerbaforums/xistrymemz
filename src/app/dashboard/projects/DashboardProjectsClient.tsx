@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import styles from './projects.module.css'
@@ -11,6 +11,7 @@ interface Plan {
   description: string | null
   category: string | null
   goals: string | null
+  resources: string | null
   status: string
   published: boolean
   pinned: boolean
@@ -35,11 +36,34 @@ const STATUS_CONFIG: Record<string, { icon: string; label: string; color: string
 }
 
 const CATEGORIES = [
-  'TECHNOLOGY', 'CREATIVE', 'EDUCATION', 'ENVIRONMENT',
-  'SOCIAL', 'BUSINESS', 'HEALTH', 'ENTERTAINMENT', 'SPORTS', 'OTHER'
+  'TECHNOLOGY', 'CREATIVE', 'EDUCATION', 'ENVIRONMENT', 'NATURE',
+  'GARDENING', 'COMMUNITY', 'SCIENCE', 'MUSIC', 'FOOD', 'TRAVEL',
+  'FASHION', 'PHOTOGRAPHY', 'WRITING', 'GAMING', 'PETS', 'DIY',
+  'HEALTH', 'SOCIAL', 'BUSINESS', 'SPORTS', 'ENTERTAINMENT', 'OTHER'
 ]
 
-type SortOption = 'newest' | 'oldest' | 'mostActive' | 'mostPopular'
+const CATEGORY_COLORS: Record<string, string> = {
+  TECHNOLOGY: '#00d9ff', CREATIVE: '#ff3366', EDUCATION: '#00ff88',
+  ENVIRONMENT: '#22c55e', NATURE: '#16a34a', GARDENING: '#65a30d',
+  COMMUNITY: '#f59e0b', SCIENCE: '#8b5cf6', MUSIC: '#ec4899',
+  FOOD: '#f97316', TRAVEL: '#14b8a6', FASHION: '#e879f9',
+  PHOTOGRAPHY: '#a855f7', WRITING: '#3b82f6', GAMING: '#7c3aed',
+  PETS: '#d97706', DIY: '#eab308', HEALTH: '#ef4444',
+  SOCIAL: '#f59e0b', BUSINESS: '#8b5cf6', SPORTS: '#f97316',
+  ENTERTAINMENT: '#ec4899', OTHER: '#888888'
+}
+
+const CATEGORY_ICONS: Record<string, string> = {
+  TECHNOLOGY: '💻', CREATIVE: '🎨', EDUCATION: '📚', ENVIRONMENT: '🌿',
+  NATURE: '🌲', GARDENING: '🌱', COMMUNITY: '🏘️', SCIENCE: '🔬',
+  MUSIC: '🎵', FOOD: '🍽️', TRAVEL: '✈️', FASHION: '👗',
+  PHOTOGRAPHY: '📷', WRITING: '✍️', GAMING: '🎮', PETS: '🐾',
+  DIY: '🛠️', HEALTH: '❤️',
+  SOCIAL: '🤝', BUSINESS: '💼', SPORTS: '⚽',
+  ENTERTAINMENT: '🎭', OTHER: '📌'
+}
+
+type SortOption = 'custom' | 'newest' | 'oldest' | 'mostActive' | 'mostPopular'
 type ViewMode = 'grid' | 'list'
 
 export default function DashboardProjectsClient({ initialPlans }: DashboardProjectsClientProps) {
@@ -48,6 +72,21 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
   const [categoryFilter, setCategoryFilter] = useState('ALL')
   const [sortBy, setSortBy] = useState<SortOption>('newest')
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
+  const [orderedIds, setOrderedIds] = useState<string[]>(() => initialPlans.map(p => p.id))
+  const dragItem = useRef<number | null>(null)
+  const dragOverItem = useRef<number | null>(null)
+
+  const dragStart = (i: number) => { dragItem.current = i }
+  const dragEnter = (i: number) => { dragOverItem.current = i }
+  const dragEnd = () => {
+    if (dragItem.current === null || dragOverItem.current === null) { dragItem.current = null; dragOverItem.current = null; return }
+    const newIds = [...orderedIds]
+    const [removed] = newIds.splice(dragItem.current, 1)
+    newIds.splice(dragOverItem.current, 0, removed)
+    setOrderedIds(newIds)
+    dragItem.current = null
+    dragOverItem.current = null
+  }
 
   const filteredPlans = useMemo(() => {
     let result = [...initialPlans]
@@ -69,23 +108,28 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
       result = result.filter(p => p.category === categoryFilter)
     }
 
-    switch (sortBy) {
-      case 'newest':
-        result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        break
-      case 'oldest':
-        result.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-        break
-      case 'mostActive':
-        result.sort((a, b) => b.requestCount - a.requestCount)
-        break
-      case 'mostPopular':
-        result.sort((a, b) => b.joinerCount - a.joinerCount)
-        break
+    if (sortBy === 'custom' && orderedIds.length > 0) {
+      const orderMap = new Map(orderedIds.map((id, i) => [id, i]))
+      result.sort((a, b) => (orderMap.get(a.id) ?? 999) - (orderMap.get(b.id) ?? 999))
+    } else {
+      switch (sortBy) {
+        case 'newest':
+          result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          break
+        case 'oldest':
+          result.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+          break
+        case 'mostActive':
+          result.sort((a, b) => b.requestCount - a.requestCount)
+          break
+        case 'mostPopular':
+          result.sort((a, b) => b.joinerCount - a.joinerCount)
+          break
+      }
     }
 
     return result
-  }, [initialPlans, searchQuery, statusFilter, categoryFilter, sortBy])
+  }, [initialPlans, searchQuery, statusFilter, categoryFilter, sortBy, orderedIds])
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -115,7 +159,7 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
           <p className={styles.subtitle}>Manage your projects and collaborations</p>
         </div>
         <div className={styles.headerActions}>
-          <Link href="/plans/public" className="btn-secondary">Explore Projects</Link>
+          <Link href="/projects" className="btn-secondary">Explore Projects</Link>
           <Link href="/plans" className="btn-primary">+ New Project</Link>
         </div>
       </div>
@@ -151,12 +195,13 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
         </div>
         <div className={styles.filterDropdowns}>
           <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className={styles.filterSelect}>
-            <option value="ALL">All Categories</option>
+            <option value="ALL">🌟 All Categories</option>
             {CATEGORIES.map(cat => (
-              <option key={cat} value={cat}>{cat.charAt(0) + cat.slice(1).toLowerCase()}</option>
+              <option key={cat} value={cat}>{CATEGORY_ICONS[cat] || '📌'} {cat.charAt(0) + cat.slice(1).toLowerCase()}</option>
             ))}
           </select>
           <select value={sortBy} onChange={e => setSortBy(e.target.value as SortOption)} className={styles.filterSelect}>
+            <option value="custom">🖐️ Custom Order</option>
             <option value="newest">Newest First</option>
             <option value="oldest">Oldest First</option>
             <option value="mostActive">Most Active</option>
@@ -200,6 +245,11 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
               <div
                 key={plan.id}
                 className={`${styles.card} ${plan.pinned ? styles.pinnedCard : ''}`}
+                draggable={sortBy === 'custom'}
+                onDragStart={() => dragStart(index)}
+                onDragEnter={() => dragEnter(index)}
+                onDragEnd={dragEnd}
+                onDragOver={(e) => e.preventDefault()}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 {plan.pinned && (
@@ -216,7 +266,7 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
                     <span className={styles.statusBadge} style={{ backgroundColor: status.color + '20', color: status.color, borderColor: status.color + '40' }}>
                       {status.icon} {status.label}
                     </span>
-                    {plan.category && <span className={styles.categoryBadge}>{plan.category}</span>}
+                    {plan.category && <span className={styles.categoryBadge} style={{ borderColor: (CATEGORY_COLORS[plan.category] || '#888') + '40', color: CATEGORY_COLORS[plan.category] || '#888', background: (CATEGORY_COLORS[plan.category] || '#888') + '20' }}>{CATEGORY_ICONS[plan.category] || '📌'} {plan.category.charAt(0) + plan.category.slice(1).toLowerCase()}</span>}
                   </div>
                   <div className={styles.stats}>
                     <span className={styles.statItem} title="Requests">
@@ -254,6 +304,26 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
                     </ul>
                   </div>
                 )}
+
+                {plan.resources && (() => {
+                  try {
+                    const resources = JSON.parse(plan.resources)
+                    if (!Array.isArray(resources) || resources.length === 0) return null
+                    return (
+                      <div className={styles.resources}>
+                        <strong>Resources</strong>
+                        <div className={styles.resourceList}>
+                          {resources.slice(0, 4).map((r: any, i: number) => (
+                            <a key={i} href={r.url || '#'} target="_blank" rel="noopener noreferrer" className={styles.resourceItem}>
+                              {r.type === 'DOC' ? '📄' : r.type === 'CHECKLIST' ? '✅' : r.type === 'REFERENCE' ? '📚' : r.type === 'FILE' ? '📎' : '🔗'}
+                              {r.title || 'Resource'}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  } catch { return null }
+                })()}
 
                 <div className={styles.cardMeta}>
                   {plan.location && (

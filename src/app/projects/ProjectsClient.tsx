@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
-import styles from '../page.module.css'
+import styles from '../plans/page.module.css'
 import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
 
@@ -38,6 +38,8 @@ interface Plan {
   category: string | null
   goals: string | null
   mileposts: string | null
+  images: string | null
+  videoUrl: string | null
   status: string
   published: boolean
   pinned: boolean
@@ -293,9 +295,9 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
       <div className={styles.filterGroup}>
         <label className={styles.filterLabel}>Category</label>
         <select className={styles.filterSelect} value={category} onChange={e => setCategory(e.target.value)}>
-          <option value="ALL">All Categories</option>
+          <option value="ALL">🌟 All Categories</option>
           {CATEGORIES.map(cat => (
-            <option key={cat} value={cat}>{CATEGORY_ICONS[cat]} {cat.charAt(0) + cat.slice(1).toLowerCase()}</option>
+            <option key={cat} value={cat}>{CATEGORY_ICONS[cat] || '📌'} {cat.charAt(0) + cat.slice(1).toLowerCase()}</option>
           ))}
         </select>
       </div>

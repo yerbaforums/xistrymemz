@@ -35,6 +35,7 @@ export default async function DashboardProjects() {
     description: plan.description,
     category: plan.category,
     goals: plan.goals,
+    resources: plan.resources,
     status: plan.status,
     published: plan.published,
     pinned: plan.pinned,

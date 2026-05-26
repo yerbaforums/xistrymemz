@@ -243,7 +243,7 @@ export default function Header() {
             </button>
             <div className={styles.navDropdown} id="nav-dropdown-explore" role="menu" style={{ minWidth: 200 }}>
               <div style={{ padding: '6px 14px', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('browse')}</div>
-              <Link href="/plans/public" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🚀</span> Projects</Link>
+              <Link href="/projects" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🚀</span> Projects</Link>
               <Link href="/products" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🛒</span> Products</Link>
               <Link href="/services" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🔧</span> Services</Link>
               <Link href="/shops" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🏪</span> Shops</Link>
@@ -353,7 +353,7 @@ export default function Header() {
           <div className={styles.mobileSection}>
             <div className={styles.mobileSectionTitle}>Explore</div>
             <Link href="/" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🏠</span> Home</Link>
-            <Link href="/plans/public" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🚀</span> Projects</Link>
+            <Link href="/projects" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🚀</span> Projects</Link>
             <Link href="/products" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🛒</span> Marketplace</Link>
             <Link href="/services" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🔧</span> Services</Link>
             <Link href="/shops" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🏪</span> Shops</Link>

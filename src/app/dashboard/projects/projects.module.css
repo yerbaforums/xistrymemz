@@ -302,6 +302,46 @@
   color: var(--accent-primary);
 }
 
+.resources {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.resources strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.resourceList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.resourceItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.resourceItem:hover {
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
 .cardMeta {
   display: flex;
   gap: 12px;

@@ -13,6 +13,7 @@ export interface PlanMilestone {
   dueDate?: string | null
   order: number
   completed: boolean
+  priority?: 'low' | 'medium' | 'high' | 'critical'
 }
 
 export type ResourceType = 'LINK' | 'DOC' | 'CHECKLIST' | 'REFERENCE' | 'FILE'

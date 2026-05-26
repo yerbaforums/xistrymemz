@@ -11,6 +11,20 @@ interface PlanMilestonesProps {
   onChange: (milestones: PlanMilestone[]) => void
 }
 
+const PRIORITY_ORDER: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 }
+const PRIORITY_COLORS: Record<string, string> = { critical: '#ef4444', high: '#f97316', medium: '#eab308', low: '#22c55e' }
+const PRIORITY_ICONS: Record<string, string> = { critical: '🔴', high: '🟠', medium: '🟡', low: '🟢' }
+
+function isOverdue(ms: PlanMilestone): boolean {
+  return !!ms.dueDate && !ms.completed && new Date(ms.dueDate) < new Date()
+}
+
+function urgencyScore(ms: PlanMilestone): number {
+  if (ms.completed) return 99
+  if (isOverdue(ms)) return -1
+  return (PRIORITY_ORDER[ms.priority || 'medium'] ?? 3)
+}
+
 export default function PlanMilestones({ milestones, isOwner, onChange }: PlanMilestonesProps) {
   const [newTitle, setNewTitle] = useState('')
 
@@ -21,23 +35,19 @@ export default function PlanMilestones({ milestones, isOwner, onChange }: PlanMi
       id: `m_${Date.now()}`,
       title,
       order: milestones.length,
-      completed: false
+      completed: false,
+      priority: 'medium'
     }
     onChange([...milestones, newMs])
     setNewTitle('')
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleAdd()
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAdd() }
   }
 
   const handleToggle = (id: string) => {
-    onChange(milestones.map(m =>
-      m.id === id ? { ...m, completed: !m.completed } : m
-    ))
+    onChange(milestones.map(m => m.id === id ? { ...m, completed: !m.completed } : m))
   }
 
   const handleEdit = (id: string, title: string) => {
@@ -48,14 +58,21 @@ export default function PlanMilestones({ milestones, isOwner, onChange }: PlanMi
     onChange(milestones.map(m => m.id === id ? { ...m, dueDate: dueDate || null } : m))
   }
 
+  const handlePriorityChange = (id: string, priority: string) => {
+    onChange(milestones.map(m => m.id === id ? { ...m, priority: priority as PlanMilestone['priority'] } : m))
+  }
+
   const handleRemove = (id: string) => {
     onChange(milestones.filter(m => m.id !== id).map((m, i) => ({ ...m, order: i })))
   }
 
   const completedCount = milestones.filter(m => m.completed).length
+  const overdueCount = milestones.filter(m => isOverdue(m)).length
 
   const sorted = [...milestones].sort((a, b) => {
-    if (a.completed !== b.completed) return a.completed ? 1 : -1
+    const ua = urgencyScore(a)
+    const ub = urgencyScore(b)
+    if (ua !== ub) return ua - ub
     return a.order - b.order
   })
 
@@ -66,24 +83,26 @@ export default function PlanMilestones({ milestones, isOwner, onChange }: PlanMi
           <h3>Milestones</h3>
           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
             {completedCount} of {milestones.length} completed
+            {overdueCount > 0 && <span style={{ color: '#ef4444', marginLeft: '8px' }}>🔴 {overdueCount} overdue</span>}
           </span>
         </div>
       </div>
 
       {milestones.length > 0 && (
-        <div style={{ marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <div style={{ flex: 1, height: '6px', background: 'var(--bg-primary)', borderRadius: '3px', overflow: 'hidden' }}>
-            <div style={{
-              height: '100%',
-              width: `${milestones.length > 0 ? (completedCount / milestones.length) * 100 : 0}%`,
-              background: 'linear-gradient(90deg, var(--accent-primary), var(--accent-success))',
-              borderRadius: '3px',
-              transition: 'width 0.3s ease'
-            }} />
+        <div style={{ marginBottom: '16px' }}>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <div style={{ flex: 1, height: '8px', background: overdueCount > 0 ? 'rgba(239,68,68,0.2)' : 'var(--bg-primary)', borderRadius: '4px', overflow: 'hidden', position: 'relative' }}>
+              <div style={{ height: '100%', width: `${milestones.length > 0 ? (completedCount / milestones.length) * 100 : 0}%`, background: 'linear-gradient(90deg, var(--accent-primary), var(--accent-success))', borderRadius: '4px', transition: 'width 0.3s ease' }} />
+            </div>
+            <span style={{ fontSize: '0.75rem', color: overdueCount > 0 ? '#ef4444' : 'var(--text-muted)', minWidth: '40px', textAlign: 'right', fontWeight: overdueCount > 0 ? 600 : 400 }}>
+              {milestones.length > 0 ? Math.round((completedCount / milestones.length) * 100) : 0}%
+            </span>
           </div>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', minWidth: '40px', textAlign: 'right' }}>
-            {milestones.length > 0 ? Math.round((completedCount / milestones.length) * 100) : 0}%
-          </span>
+          {overdueCount > 0 && (
+            <div style={{ fontSize: '0.7rem', color: '#ef4444', marginTop: '4px', display: 'flex', gap: '4px', alignItems: 'center' }}>
+              <span>⚠️</span> <span>{overdueCount} milestone{overdueCount !== 1 ? 's' : ''} past due date — prioritize completion</span>
+            </div>
+          )}
         </div>
       )}
 
@@ -94,87 +113,77 @@ export default function PlanMilestones({ milestones, isOwner, onChange }: PlanMi
       )}
 
       <PlanSortableList
-        items={milestones}
+        items={sorted}
         onChange={onChange}
-        renderItem={(ms, index, { handleDragStart, handleDragOver, handleDragLeave, handleDrop, isDragOver, isDragging }) => (
-          <div
-            key={ms.id}
-            className={`${ms.completed ? styles.completedItem : styles.sortableItem} ${isDragging ? styles.dragging : ''} ${isDragOver ? styles.dragOver : ''}`}
-            draggable={isOwner}
-            onDragStart={(e) => isOwner && handleDragStart(e, index)}
-            onDragOver={(e) => isOwner && handleDragOver(e, index)}
-            onDragLeave={handleDragLeave}
-            onDrop={(e) => isOwner && handleDrop(e, index)}
-          >
-            {isOwner && (
-              <div className={styles.dragHandle} title="Drag to reorder">
-                ⠿
+        renderItem={(ms, index, { handleDragStart, handleDragOver, handleDragLeave, handleDrop, isDragOver, isDragging }) => {
+          const overdue = isOverdue(ms)
+          const priColor = PRIORITY_COLORS[ms.priority || 'medium'] || '#888'
+          const priIcon = PRIORITY_ICONS[ms.priority || 'medium'] || '🟡'
+          return (
+            <div
+              key={ms.id}
+              className={`${ms.completed ? styles.completedItem : styles.sortableItem} ${isDragging ? styles.dragging : ''} ${isDragOver ? styles.dragOver : ''} ${overdue ? styles.overdue : ''}`}
+              draggable={isOwner}
+              onDragStart={(e) => isOwner && handleDragStart(e, index)}
+              onDragOver={(e) => isOwner && handleDragOver(e, index)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => isOwner && handleDrop(e, index)}
+              style={overdue ? { borderLeftColor: '#ef4444', borderLeftWidth: '3px' } : { borderLeftColor: priColor, borderLeftWidth: '3px' }}
+            >
+              {isOwner && <div className={styles.dragHandle} title="Drag to reorder">⠿</div>}
+              <div className={styles.checkboxWrap}>
+                <input type="checkbox" checked={ms.completed} onChange={() => handleToggle(ms.id)} disabled={!isOwner} />
               </div>
-            )}
-            <div className={styles.checkboxWrap}>
-              <input
-                type="checkbox"
-                checked={ms.completed}
-                onChange={() => handleToggle(ms.id)}
-                disabled={!isOwner}
-              />
+              <div className={styles.itemBody}>
+                <div className={styles.itemTitle}>
+                  {isOwner ? (
+                    <input value={ms.title} onChange={(e) => handleEdit(ms.id, e.target.value)} className={ms.completed ? styles.completedText : ''} />
+                  ) : (
+                    <span className={ms.completed ? styles.completedText : ''}>{ms.title}</span>
+                  )}
+                  {ms.completed && <span className={styles.completedIndicator}>✓</span>}
+                  {overdue && <span className={styles.overdueBadge}>⚠️ OVERDUE</span>}
+                </div>
+                <div className={styles.itemMeta}>
+                  {isOwner && (
+                    <>
+                      <select value={ms.priority || 'medium'} onChange={(e) => handlePriorityChange(ms.id, e.target.value)} className={styles.prioritySelect} style={{ borderColor: priColor + '40', color: priColor }}>
+                        <option value="low">🟢 Low</option>
+                        <option value="medium">🟡 Medium</option>
+                        <option value="high">🟠 High</option>
+                        <option value="critical">🔴 Critical</option>
+                      </select>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                        📅
+                        <input type="date" value={ms.dueDate ? ms.dueDate.split('T')[0] : ''} onChange={(e) => handleDateChange(ms.id, e.target.value)} className={styles.dateInput} />
+                      </label>
+                    </>
+                  )}
+                  {!isOwner && ms.dueDate && (
+                    <span style={{ fontSize: '0.75rem', color: overdue ? '#ef4444' : 'var(--text-muted)' }}>
+                      📅 {new Date(ms.dueDate).toLocaleDateString()}
+                      {overdue && ' ⚠️'}
+                    </span>
+                  )}
+                  {!isOwner && ms.priority && (
+                    <span style={{ fontSize: '0.75rem', color: priColor }}>{priIcon} {ms.priority}</span>
+                  )}
+                </div>
+              </div>
+              {isOwner && (
+                <div className={styles.itemActions}>
+                  <button onClick={() => handleRemove(ms.id)} className={styles.actionBtnDanger} title="Remove milestone">✕</button>
+                </div>
+              )}
             </div>
-            <div className={styles.itemBody}>
-              <div className={styles.itemTitle}>
-                {isOwner ? (
-                  <input
-                    value={ms.title}
-                    onChange={(e) => handleEdit(ms.id, e.target.value)}
-                    className={ms.completed ? styles.completedText : ''}
-                  />
-                ) : (
-                  <span className={ms.completed ? styles.completedText : ''}>{ms.title}</span>
-                )}
-                {ms.completed && <span className={styles.completedIdicator}>✓</span>}
-              </div>
-              <div className={styles.itemMeta}>
-                {isOwner ? (
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    📅
-                    <input
-                      type="date"
-                      value={ms.dueDate ? ms.dueDate.split('T')[0] : ''}
-                      onChange={(e) => handleDateChange(ms.id, e.target.value)}
-                      className={styles.dateInput}
-                    />
-                  </label>
-                ) : ms.dueDate ? (
-                  <span>📅 {new Date(ms.dueDate).toLocaleDateString()}</span>
-                ) : null}
-              </div>
-            </div>
-            {isOwner && (
-              <div className={styles.itemActions}>
-                <button
-                  onClick={() => handleRemove(ms.id)}
-                  className={styles.actionBtnDanger}
-                  title="Remove milestone"
-                >
-                  ✕
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+          )
+        }}
       />
 
       {isOwner && (
         <div className={styles.addForm}>
-          <input
-            type="text"
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Add a new milestone..."
-          />
-          <button onClick={handleAdd} disabled={!newTitle.trim()} className={styles.addBtn}>
-            Add Milestone
-          </button>
+          <input type="text" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} onKeyDown={handleKeyDown} placeholder="Add a new milestone..." />
+          <button onClick={handleAdd} disabled={!newTitle.trim()} className={styles.addBtn}>Add Milestone</button>
         </div>
       )}
     </div>
