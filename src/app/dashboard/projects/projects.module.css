@@ -1,5 +1,8 @@
 .page {
   animation: fadeIn 0.3s ease-out;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 8px;
 }
 
 @keyframes fadeIn {
@@ -520,6 +523,30 @@
   color: var(--text-muted);
   white-space: nowrap;
 }
+
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal {
+  background: var(--bg-primary); border: 1px solid var(--border-color);
+  border-radius: 12px; padding: 24px; width: 90%; max-width: 520px;
+  max-height: 85vh; overflow-y: auto;
+}
+.modalHeader {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
+}
+.modalHeader h2 { margin: 0; font-size: 1.2rem; }
+.modalClose { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; padding: 4px; }
+.formGroup { margin-bottom: 16px; }
+.formGroup label { display: block; margin-bottom: 6px; color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; }
+.formGroup input, .formGroup textarea {
+  width: 100%; padding: 10px; background: var(--bg-tertiary);
+  border: 1px solid var(--border-color); border-radius: 8px;
+  color: var(--text-primary); font-size: 0.9rem;
+}
+.formGroup textarea { resize: vertical; min-height: 60px; }
+.modalActions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
 
 @media (max-width: 1024px) {
   .cardGrid {

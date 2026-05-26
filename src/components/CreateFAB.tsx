@@ -8,7 +8,7 @@ import styles from './CreateFAB.module.css'
 
 const ACTIONS = [
   { label: 'New Post', icon: '✏️', href: null, action: 'post' },
-  { label: 'New Project', icon: '🚀', href: '/plans' },
+  { label: 'New Project', icon: '🚀', href: '/dashboard/projects' },
   { label: 'New Product', icon: '🛒', href: '/products/new' },
   { label: 'New Event', icon: '📅', href: '/events/new' },
   { label: 'New Group', icon: '👥', href: '/groups/new' },

@@ -410,7 +410,7 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
 
   return (
     <div className={styles.page}>
-        <Link href="/plans" className={styles.backLink}>← Back to Projects</Link>
+        <Link href="/dashboard/projects" className={styles.backLink}>← Back to Projects</Link>
 
         <div className={styles.creatorInfo}>
           <Link href={getUserProfileUrl(plan.user)} className={styles.creatorLink}>

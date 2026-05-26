@@ -276,7 +276,7 @@ export default async function DashboardOverview() {
   ]
 
   const quickActions = [
-    { label: 'New Project', icon: '🚀', href: '/plans' },
+    { label: 'New Project', icon: '🚀', href: '/dashboard/projects' },
     { label: 'New Product', icon: '🛒', href: '/products/new' },
     { label: 'New Service', icon: '🔧', href: '/dashboard/services' },
     { label: 'New Event', icon: '📅', href: '/events/new' },
@@ -302,7 +302,7 @@ export default async function DashboardOverview() {
             <h3>{t('title')}</h3>
             <p>This is your command center. From here you can manage projects, listings, events, and everything else. Here are a few places to start:</p>
             <div className={styles.firstVisitLinks}>
-              <Link href="/plans" className={styles.firstVisitLink}>🚀 Start a Project</Link>
+              <Link href="/dashboard/projects" className={styles.firstVisitLink}>🚀 Start a Project</Link>
               <Link href="/products/new" className={styles.firstVisitLink}>🛒 List a Product</Link>
               <Link href="/community" className={styles.firstVisitLink}>👥 Find People</Link>
               <Link href="/profile/edit" className={styles.firstVisitLink}>⚙️ Complete Profile</Link>
@@ -367,7 +367,7 @@ export default async function DashboardOverview() {
           ) : (
             <div className={styles.emptyState}>
               <p>No projects yet</p>
-              <Link href="/plans" className={styles.emptyAction}>Create your first project</Link>
+              <Link href="/dashboard/projects" className={styles.emptyAction}>Create your first project</Link>
             </div>
           )}
         </div>

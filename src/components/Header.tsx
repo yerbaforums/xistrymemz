@@ -411,7 +411,7 @@ export default function Header() {
                 <div className={styles.mobileSectionTitle}>Dashboard</div>
                 <Link href="/dashboard/overview" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">📊</span> Overview</Link>
                 <Link href="/dashboard/feed" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">📡</span> Feed</Link>
-                <Link href="/plans" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🚀 My Projects</Link>
+                <Link href="/dashboard/projects" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🚀 My Projects</Link>
                 <Link href="/requests" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📝 My Requests</Link>
                 <Link href="/dashboard/offers" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🤝</span> Offers</Link>
                 <Link href="/dashboard/services" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🔧</span> Services</Link>

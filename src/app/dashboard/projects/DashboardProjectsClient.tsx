@@ -3,6 +3,7 @@
 import { useState, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useToast } from '@/context/ToastContext'
 import styles from './projects.module.css'
 
 interface Plan {
@@ -74,9 +75,16 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
   const [categoryFilter, setCategoryFilter] = useState('ALL')
   const [sortBy, setSortBy] = useState<SortOption>('newest')
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
-  const [orderedIds, setOrderedIds] = useState<string[]>(() => initialPlans.map(p => p.id))
   const dragItem = useRef<number | null>(null)
   const dragOverItem = useRef<number | null>(null)
+  const [plans, setPlans] = useState(initialPlans)
+  const [orderedIds, setOrderedIds] = useState<string[]>(() => plans.map(p => p.id))
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [newTitle, setNewTitle] = useState('')
+  const [newDesc, setNewDesc] = useState('')
+  const [newGoals, setNewGoals] = useState('')
+  const [newMileposts, setNewMileposts] = useState('')
+  const [creating, setCreating] = useState(false)
 
   const dragStart = (i: number) => { dragItem.current = i }
   const dragEnter = (i: number) => { dragOverItem.current = i }
@@ -91,7 +99,7 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
   }
 
   const filteredPlans = useMemo(() => {
-    let result = [...initialPlans]
+    let result = [...plans]
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase()
@@ -131,7 +139,7 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
     }
 
     return result
-  }, [initialPlans, searchQuery, statusFilter, categoryFilter, sortBy, orderedIds])
+  }, [plans, searchQuery, statusFilter, categoryFilter, sortBy, orderedIds])
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -145,8 +153,33 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
   }
 
+  const { success: toastSuccess, error: toastError } = useToast()
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newTitle.trim()) return
+    setCreating(true)
+    try {
+      const goalItems = newGoals.split('\n').map(l => l.trim()).filter(Boolean).map((text, i) => ({ id: `cg_${i}`, text, order: i, status: 'active' as const }))
+      const milestoneItems = newMileposts.split('\n').map(l => l.trim()).filter(Boolean).map((title, i) => ({ id: `cm_${i}`, title, order: i, completed: false }))
+      const res = await fetch('/api/plans', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: newTitle.trim(), description: newDesc || null, goals: JSON.stringify(goalItems), mileposts: JSON.stringify(milestoneItems) })
+      })
+      if (res.ok) {
+        const plan = await res.json()
+        const newPlan: Plan = { id: plan.id, title: plan.title, description: plan.description, category: null, goals: plan.goals, resources: null, needsVolunteers: false, lookingForCollaborators: false, status: plan.status, published: false, pinned: false, location: null, createdAt: plan.createdAt, updatedAt: plan.updatedAt, requestCount: 0, joinerCount: 0, user: { id: '', name: 'You', image: null }, events: [] }
+        setPlans(prev => [newPlan, ...prev])
+        setShowCreateModal(false)
+        setNewTitle(''); setNewDesc(''); setNewGoals(''); setNewMileposts('')
+        toastSuccess('Project created!')
+      } else toastError('Failed to create')
+    } catch { toastError('Failed to create') }
+    finally { setCreating(false) }
+  }
+
   const statusCounts = {
-    ALL: initialPlans.length,
+    ALL: plans.length,
     DRAFT: initialPlans.filter(p => p.status === 'DRAFT').length,
     ACTIVE: initialPlans.filter(p => p.status === 'ACTIVE').length,
     COMPLETED: initialPlans.filter(p => p.status === 'COMPLETED').length,
@@ -162,7 +195,7 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
         </div>
         <div className={styles.headerActions}>
           <Link href="/projects" className="btn-secondary">Explore Projects</Link>
-          <Link href="/plans" className="btn-primary">+ New Project</Link>
+          <button onClick={() => setShowCreateModal(true)} className="btn-primary">+ New Project</button>
         </div>
       </div>
 
@@ -237,7 +270,7 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
           <div className={styles.emptyIcon}>📋</div>
           <h3>No projects found</h3>
           <p>Try adjusting your search or filters, or create a new project.</p>
-          <Link href="/plans" className="btn-primary">Create Your First Project</Link>
+          <button onClick={() => setShowCreateModal(true)} className="btn-primary">Create Your First Project</button>
         </div>
       ) : viewMode === 'grid' ? (
         <div className={styles.cardGrid}>
@@ -348,7 +381,42 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
                         <Image src={plan.user.image} alt={plan.user.name || 'User'} fill sizes="28px" />
                       ) : (
                         <span>{(plan.user.name?.[0] || 'U').toUpperCase()}</span>
-                      )}
+    )}
+
+      {showCreateModal && (
+        <div className={styles.overlay} onClick={() => setShowCreateModal(false)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2>Create New Project</h2>
+              <button className={styles.modalClose} onClick={() => setShowCreateModal(false)}>✕</button>
+            </div>
+            <form onSubmit={handleCreate}>
+              <div className={styles.formGroup}>
+                <label>Project Title *</label>
+                <input type="text" value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="e.g., Launch my online store" required />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Description</label>
+                <textarea value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="What is this project about?" rows={3} />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Goals (one per line)</label>
+                <textarea value={newGoals} onChange={e => setNewGoals(e.target.value)} placeholder="What do you want to achieve?" rows={3} />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Milestones (one per line)</label>
+                <textarea value={newMileposts} onChange={e => setNewMileposts(e.target.value)} placeholder="Key milestones..." rows={3} />
+              </div>
+              <div className={styles.modalActions}>
+                <button type="button" onClick={() => setShowCreateModal(false)} className="btn-ghost">Cancel</button>
+                <button type="submit" disabled={!newTitle.trim() || creating} className="btn-primary">
+                  {creating ? 'Creating...' : 'Create Project'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
                     </div>
                     <span className={styles.authorName}>{plan.user.name || 'You'}</span>
                   </div>

@@ -414,7 +414,7 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
         </div>
         <div className={styles.publicHeaderMeta}>
           <span className={styles.totalCount}>{initialPlans.length} projects</span>
-          <Link href="/plans" className={styles.createPlanBtn}>+ New Project</Link>
+          <Link href="/dashboard/projects" className={styles.createPlanBtn}>+ New Project</Link>
         </div>
       </div>
 
