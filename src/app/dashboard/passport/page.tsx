@@ -226,6 +226,21 @@ export default function PassportPage() {
     setShowLocationForm(true)
   }
 
+  const handleRemovePrimary = async () => {
+    const primary = savedLocations.find(l => l.isPrimary)
+    if (!primary) return
+    try {
+      const res = await fetch(`/api/users/locations/${primary.id}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isPrimary: false })
+      })
+      if (res.ok) {
+        setSavedLocations(prev => prev.map(l => ({ ...l, isPrimary: false })))
+        toastSuccess('Primary location removed')
+      } else { toastError('Failed') }
+    } catch { toastError('Failed') }
+  }
+
   const handleSetPrimaryLocation = async (locId: string) => {
     try {
       const res = await fetch(`/api/users/locations/${locId}`, {
@@ -354,8 +369,13 @@ export default function PassportPage() {
 
         <div style={{ marginBottom: '12px' }}>
           <label style={{ display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Neighborhood / Area</label>
-          <input type="text" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} placeholder="Your local neighborhood or district"
-            style={{ width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }} />
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <input type="text" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} placeholder="Your local neighborhood or district"
+              style={{ flex: 1, padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }} />
+            {neighborhood && (
+              <button onClick={() => setNeighborhood('')} style={{ padding: '8px 14px', background: 'transparent', border: '1px solid var(--accent-secondary)', color: 'var(--accent-secondary)', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>Clear</button>
+            )}
+          </div>
         </div>
 
         <div style={{ marginBottom: '12px' }}>
@@ -398,7 +418,7 @@ export default function PassportPage() {
             <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.75rem', color: 'var(--text-muted)', padding: '6px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
               <span>📍 Home</span>
               {savedLocations.some(l => l.isPrimary) && <span>⭐ Primary</span>}
-              <span>📌 Saved</span>
+              <span>🏕️ Categories</span>
             </div>
             <button onClick={() => setMapExpanded(!mapExpanded)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.75rem' }}>
               {mapExpanded ? '🗺️ Collapse' : '🗺️ Expand'}
@@ -416,7 +436,7 @@ export default function PassportPage() {
               {savedLocations.filter(l => l.latitude && l.longitude).map(loc => (
                 <Marker key={loc.id} position={[loc.latitude!, loc.longitude!]}
                   icon={L.divIcon({
-                    html: `<div style="width:28px;height:28px;border-radius:50%;background:${loc.category?.color || '#3b82f6'};display:flex;align-items:center;justify-content:center;font-size:13px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.3)">${loc.isPrimary ? '⭐' : '📌'}</div>`,
+                    html: `<div style="width:28px;height:28px;border-radius:50%;background:${loc.category?.color || '#3b82f6'};display:flex;align-items:center;justify-content:center;font-size:13px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.3)">${loc.isPrimary ? '⭐' : (loc.category?.icon || '📍')}</div>`,
                     className: '', iconSize: [28, 28]
                   })}>
                   <Popup>
@@ -497,7 +517,11 @@ export default function PassportPage() {
             </div>
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
               <button onClick={() => handleEditLocation(loc)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-success)', borderRadius: '6px', color: 'var(--accent-success)', cursor: 'pointer', fontSize: '0.8rem' }}>Edit</button>
-              {!loc.isPrimary && <button onClick={() => handleSetPrimaryLocation(loc.id)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-primary)', borderRadius: '6px', color: 'var(--accent-primary)', cursor: 'pointer', fontSize: '0.8rem' }}>Set Primary</button>}
+              {!loc.isPrimary ? (
+                <button onClick={() => handleSetPrimaryLocation(loc.id)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-primary)', borderRadius: '6px', color: 'var(--accent-primary)', cursor: 'pointer', fontSize: '0.8rem' }}>Set Primary</button>
+              ) : (
+                <button onClick={handleRemovePrimary} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-secondary)', borderRadius: '6px', color: 'var(--accent-secondary)', cursor: 'pointer', fontSize: '0.8rem' }}>Unset Primary</button>
+              )}
               <button onClick={() => { setLocation(loc.location); setLatitude(loc.latitude); setLongitude(loc.longitude); setTraveling(false); handleSavePassport(); handleStampLocation(loc.id) }} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-warning)', borderRadius: '6px', color: 'var(--accent-warning)', cursor: 'pointer', fontSize: '0.8rem' }}>🏠 Set as Home</button>
               {categories.length > 0 && (
                 <select value={loc.categoryId || ''} onChange={e => {

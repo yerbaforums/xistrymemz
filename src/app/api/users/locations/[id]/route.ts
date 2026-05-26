@@ -82,23 +82,34 @@ export async function PUT(
   }
 
   const body = await request.json()
-  const { name, location, latitude, longitude, categoryId, tags, notes, imageUrl, lastVisitedAt } = body
+  const { name, location, latitude, longitude, categoryId, tags, notes, imageUrl, lastVisitedAt, isPrimary } = body
 
-  // Update this location
-  const updated = await prisma.userLocation.update({
-    where: { id },
-    data: {
-      name: name || existingLocation.name,
-      location: location || existingLocation.location,
-      latitude: latitude !== undefined ? latitude : existingLocation.latitude,
-      longitude: longitude !== undefined ? longitude : existingLocation.longitude,
-      categoryId: categoryId !== undefined ? categoryId : existingLocation.categoryId,
-      tags: tags !== undefined ? tags : existingLocation.tags,
-      notes: notes !== undefined ? notes : existingLocation.notes,
-      imageUrl: imageUrl !== undefined ? imageUrl : existingLocation.imageUrl,
-      lastVisitedAt: lastVisitedAt !== undefined ? new Date(lastVisitedAt) : existingLocation.lastVisitedAt
+  const updateData: any = {
+    name: name || existingLocation.name,
+    location: location || existingLocation.location,
+    latitude: latitude !== undefined ? latitude : existingLocation.latitude,
+    longitude: longitude !== undefined ? longitude : existingLocation.longitude,
+    categoryId: categoryId !== undefined ? categoryId : existingLocation.categoryId,
+    tags: tags !== undefined ? tags : existingLocation.tags,
+    notes: notes !== undefined ? notes : existingLocation.notes,
+    imageUrl: imageUrl !== undefined ? imageUrl : existingLocation.imageUrl,
+    lastVisitedAt: lastVisitedAt !== undefined ? new Date(lastVisitedAt) : existingLocation.lastVisitedAt
+  }
+
+  if (isPrimary === false) {
+    // Unset primary: clear isPrimary on this location and user's primaryLocationId
+    updateData.isPrimary = false
+    const updated = await prisma.userLocation.update({ where: { id }, data: updateData })
+    if (existingLocation.isPrimary) {
+      await prisma.user.update({
+        where: { id: session.user.id },
+        data: { primaryLocationId: null }
+      })
     }
-  })
+    return NextResponse.json(updated)
+  }
+
+  const updated = await prisma.userLocation.update({ where: { id }, data: updateData })
 
   // Set as primary
   await prisma.userLocation.updateMany({
@@ -114,7 +125,7 @@ export async function PUT(
   // Update user's primaryLocationId
   await prisma.user.update({
     where: { id: session.user.id },
-    data: { 
+    data: {
       primaryLocationId: id,
       location: updated.location,
       latitude: updated.latitude,
