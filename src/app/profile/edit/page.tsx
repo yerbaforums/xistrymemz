@@ -59,7 +59,7 @@ const SOCIAL_TYPES = [
 ]
 
 export default function ProfileEditPage() {
-  const { data: session, status } = useSession()
+  const { data: session, status, update } = useSession()
   const router = useRouter()
 
   const [loading, setLoading] = useState(true)
@@ -192,6 +192,7 @@ export default function ProfileEditPage() {
       })
 
       if (!res.ok) throw new Error('Failed to update')
+      await update()
 
       const oldUsername = userData?.username
       const newUsername = username?.toLowerCase().replace(/[^a-z0-9]/g, '') || ''
@@ -333,7 +334,7 @@ export default function ProfileEditPage() {
       <div style={{maxWidth: '800px', margin: '0 auto', padding: '20px'}}>
         <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px'}}>
           <h1>Edit Profile</h1>
-          <Link href={getUserProfileUrl(userData || { id: session?.user?.id || '', username: (session?.user as { username?: string })?.username })} className={styles.editBtn}>
+          <Link href={getUserProfileUrl({ id: session?.user?.id || '', username: username || undefined })} className={styles.editBtn}>
             View Profile
           </Link>
         </div>

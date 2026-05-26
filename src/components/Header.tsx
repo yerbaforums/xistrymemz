@@ -622,11 +622,12 @@ export default function Header() {
                 >
                   {session.user.image ? (
                     <img src={session.user.image} alt={session.user.name || ''} className={styles.userAvatar}
-                      onError={e => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).parentElement!.querySelector('span')!.style.display = 'flex' }} />
-                  ) : null}
-                  <span className={styles.userInitial} style={{ display: session.user.image ? 'none' : 'flex' }}>
-                    {(session.user.name || session.user.email || 'U')[0].toUpperCase()}
-                  </span>
+                      onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                  ) : (
+                    <span className={styles.userInitial}>
+                      {(session.user.name || session.user.email || 'U')[0].toUpperCase()}
+                    </span>
+                  )}
                 </button>
                 <div className={styles.userDropdown} id="user-menu-dropdown" role="menu">
                   <div className={styles.userInfo}>
