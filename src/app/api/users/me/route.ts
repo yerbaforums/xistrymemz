@@ -98,32 +98,33 @@ export async function PUT(request: Request) {
       }
     }
 
+    const updateData: Record<string, unknown> = {}
+    if (name !== undefined) updateData.name = name || null
+    if (username !== undefined) updateData.username = username ? username.toLowerCase().replace(/[^a-z0-9]/g, '') : null
+    if (image !== undefined) updateData.image = image || null
+    if (bio !== undefined) updateData.bio = bio || null
+    if (location !== undefined) updateData.location = location || null
+    if (neighborhood !== undefined) updateData.neighborhood = neighborhood || null
+    if (searchRadius !== undefined) updateData.searchRadius = searchRadius || 50
+    if (traveling !== undefined) updateData.traveling = traveling || false
+    if (latitude !== undefined) updateData.latitude = latitude ?? null
+    if (longitude !== undefined) updateData.longitude = longitude ?? null
+    if (website !== undefined) updateData.website = website || null
+    if (walletAddress !== undefined) updateData.walletAddress = walletAddress || null
+    if (paymentAddress !== undefined) updateData.paymentAddress = paymentAddress || null
+    if (refundAddress !== undefined) updateData.refundAddress = refundAddress || null
+    if (cryptoCurrency !== undefined) updateData.cryptoCurrency = cryptoCurrency || 'ETH'
+    if (userClass !== undefined) updateData.userClass = userClass || null
+    if (donationAddress !== undefined) updateData.donationAddress = donationAddress || null
+    if (donationCurrency !== undefined) updateData.donationCurrency = donationCurrency || 'ETH'
+    if (acceptsDonations !== undefined) updateData.acceptsDonations = acceptsDonations ?? false
+    if (lookingForCollaborators !== undefined) updateData.lookingForCollaborators = lookingForCollaborators ?? false
+    if (coverImage !== undefined) updateData.coverImage = coverImage ?? null
+    if (coverStyle !== undefined) updateData.coverStyle = coverStyle ?? undefined
+
     const updated = await prisma.user.update({
       where: { id: session.user.id },
-      data: {
-        name: name || null,
-        username: username ? username.toLowerCase().replace(/[^a-z0-9]/g, '') : null,
-        image: image || null,
-        bio: bio || null,
-        location: location || null,
-        neighborhood: neighborhood || null,
-        searchRadius: searchRadius || 50,
-        traveling: traveling || false,
-        latitude: latitude ?? null,
-        longitude: longitude ?? null,
-        website: website || null,
-        walletAddress: walletAddress || null,
-        paymentAddress: paymentAddress || null,
-        refundAddress: refundAddress || null,
-        cryptoCurrency: cryptoCurrency || 'ETH',
-        userClass: userClass || null,
-        donationAddress: donationAddress || null,
-        donationCurrency: donationCurrency || 'ETH',
-        acceptsDonations: acceptsDonations ?? false,
-        lookingForCollaborators: lookingForCollaborators ?? false,
-        coverImage: coverImage ?? null,
-        coverStyle: coverStyle ?? undefined
-      },
+      data: updateData,
       select: {
         id: true,
         name: true,

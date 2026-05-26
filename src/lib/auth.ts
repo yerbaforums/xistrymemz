@@ -208,6 +208,8 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id
+        token.email = user.email
+        token.name = user.name
         token.username = (user as { username?: string }).username
         token.role = (user as { role?: string }).role || 'USER'
         token.picture = (user as { image?: string | null }).image || null
@@ -232,7 +234,7 @@ export const authOptions: NextAuthOptions = {
             }
           }
         } catch (e) {
-          token.role = 'USER'
+          console.error('JWT DB refresh failed:', e)
         }
       }
 
@@ -241,11 +243,12 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         const userId = (token.id as string) || (token.sub as string)
-        ;(session.user as typeof session.user & { id: string; role?: string; username?: string }).id = userId
-        ;(session.user as typeof session.user & { id: string; role?: string; username?: string }).role = (token.role as string) || 'USER'
-        ;(session.user as typeof session.user & { id: string; role?: string; username?: string; name?: string | null }).username = token.username as string | undefined
-        ;(session.user as typeof session.user & { id: string; role?: string; username?: string; name?: string | null }).name = token.name as string | undefined
-        session.user.image = (token.picture as string) || null
+        ;(session.user as Record<string, unknown>).id = userId
+        ;(session.user as Record<string, unknown>).email = token.email as string
+        ;(session.user as Record<string, unknown>).role = (token.role as string) || 'USER'
+        ;(session.user as Record<string, unknown>).username = token.username as string | undefined
+        ;(session.user as Record<string, unknown>).name = token.name as string | null
+        ;(session.user as Record<string, unknown>).image = (token.picture as string) || null
       }
       return session
     }

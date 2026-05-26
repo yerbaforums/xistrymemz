@@ -397,7 +397,7 @@ export default function PassportPage() {
 
         <div style={{ marginBottom: '12px' }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: traveling ? 'var(--accent-warning)' : 'var(--text-secondary)' }}>
-            <input type="checkbox" checked={traveling} onClick={handleTravelToggle} style={{ width: '18px', height: '18px', accentColor: 'var(--accent-warning)' }} />
+            <input type="checkbox" checked={traveling} onChange={handleTravelToggle} style={{ width: '18px', height: '18px', accentColor: 'var(--accent-warning)' }} />
             <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>I'm currently traveling</span>
           </label>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', margin: '4px 0 0' }}>

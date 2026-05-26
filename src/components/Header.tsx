@@ -30,6 +30,7 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [patchedUser, setPatchedUser] = useState<{ name?: string | null; image?: string | null } | null>(null)
   const [notificationCount, setNotificationCount] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const headerRef = useRef<HTMLElement>(null)
@@ -66,6 +67,17 @@ export default function Header() {
   useEffect(() => {
     if (session?.user) fetchNotificationCount()
   }, [session])
+
+  // Safety net: if session has null name/image, fetch fresh data from DB
+  useEffect(() => {
+    if (!isAuthenticated || !session?.user) return
+    const needsPatch = !session.user.image || !session.user.name
+    if (!needsPatch) { setPatchedUser(null); return }
+    fetch('/api/users/me')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.user) setPatchedUser({ name: data.user.name, image: data.user.image }) })
+      .catch(() => {})
+  }, [session, isAuthenticated])
 
   useNotificationSSE((event) => {
     if (event.type === 'unread-count' && event.unreadCount !== undefined) {
@@ -172,6 +184,9 @@ export default function Header() {
       setSearching(false)
     }
   }, [])
+
+  const displayName = patchedUser?.name || session?.user?.name || null
+  const displayImage = patchedUser?.image || session?.user?.image || null
 
   if (isAuthPage) return null
 
@@ -620,18 +635,18 @@ export default function Header() {
                   aria-expanded={openDropdown === 'user'}
                   aria-controls="user-menu-dropdown"
                 >
-                  {session.user.image ? (
-                    <img src={session.user.image} alt={session.user.name || ''} className={styles.userAvatar}
+                  {displayImage ? (
+                    <img src={displayImage} alt={displayName || ''} className={styles.userAvatar}
                       onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
                   ) : (
                     <span className={styles.userInitial}>
-                      {(session.user.name || session.user.email || 'U')[0].toUpperCase()}
+                      {(displayName || session.user.email || 'U')[0].toUpperCase()}
                     </span>
                   )}
                 </button>
                 <div className={styles.userDropdown} id="user-menu-dropdown" role="menu">
                   <div className={styles.userInfo}>
-                    <strong>{session.user.name || 'User'}</strong>
+                    <strong>{displayName || 'User'}</strong>
                     <span className={styles.userEmail}>{session.user.email}</span>
                   </div>
                   <div className={styles.themeAccentPicker}>
