@@ -68,16 +68,14 @@ export default function Header() {
     if (session?.user) fetchNotificationCount()
   }, [session])
 
-  // Safety net: if session has null name/image, fetch fresh data from DB
+  // Always fetch fresh user data from DB (bypasses stale JWT session)
   useEffect(() => {
-    if (!isAuthenticated || !session?.user) return
-    const needsPatch = !session.user.image || !session.user.name
-    if (!needsPatch) { setPatchedUser(null); return }
+    if (!isAuthenticated) return
     fetch('/api/users/me')
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data?.user) setPatchedUser({ name: data.user.name, image: data.user.image }) })
       .catch(() => {})
-  }, [session, isAuthenticated])
+  }, [isAuthenticated])
 
   useNotificationSSE((event) => {
     if (event.type === 'unread-count' && event.unreadCount !== undefined) {

@@ -127,10 +127,13 @@ export default function PassportPage() {
     fetch('/api/users/me', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ traveling: next })
     }).then(r => {
-      if (r.ok) toastSuccess(next ? 'Traveling mode on' : 'Home mode restored')
-      else toastError('Failed to update traveling status')
+      if (r.ok) {
+        toastSuccess(next ? 'Traveling mode on' : 'Home mode restored')
+        window.dispatchEvent(new CustomEvent('traveling-changed', { detail: { traveling: next } }))
+      } else toastError('Failed to update traveling status')
     }).catch(() => toastError('Failed to update traveling status'))
   }
 

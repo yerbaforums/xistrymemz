@@ -42,8 +42,10 @@ export default function LocationStatus() {
     fetchLoc()
     const interval = setInterval(fetchLoc, 60000)
     const onFocus = () => fetchLoc()
+    const onTravel = () => fetchLoc()
     window.addEventListener('focus', onFocus)
-    return () => { clearInterval(interval); window.removeEventListener('focus', onFocus) }
+    window.addEventListener('traveling-changed', onTravel)
+    return () => { clearInterval(interval); window.removeEventListener('focus', onFocus); window.removeEventListener('traveling-changed', onTravel) }
   }, [fetchLoc])
 
   if (loading) {
