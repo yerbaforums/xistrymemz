@@ -279,7 +279,7 @@ export default function CommunityPage() {
   )
 
   if (status === 'loading' || loading) {
-    return <div className={styles.container}><div className={styles.loading}>Loading community...</div></div>
+    return <SkeletonList count={3} />
   }
 
   return (
@@ -420,9 +420,7 @@ export default function CommunityPage() {
           </div>
           
           {filteredMembers.length === 0 && (
-            <div className={styles.empty}>
-              <p>No members found matching your search.</p>
-            </div>
+            <EmptyState icon="👥" title="No members found" description="No members found matching your search." />
           )}
         </div>
       )}
@@ -472,12 +470,7 @@ export default function CommunityPage() {
               })}
             </div>
           ) : (
-            <div className={styles.empty}>
-              <p>You haven&apos;t connected with anyone yet.</p>
-              <button onClick={() => setActiveTab('members')} className={styles.browseBtn}>
-                Browse Members
-              </button>
-            </div>
+            <EmptyState icon="👥" title="No connections yet" description="You haven't connected with anyone yet." />
           )}
         </div>
       )}
@@ -520,9 +513,7 @@ export default function CommunityPage() {
               ))}
             </div>
           ) : (
-            <div className={styles.empty}>
-              <p>No pending connection requests.</p>
-            </div>
+            <EmptyState icon="👥" title="No pending requests" description="No pending connection requests." />
           )}
         </div>
       )}
@@ -555,12 +546,7 @@ export default function CommunityPage() {
           </div>
           
           {groups.length === 0 && (
-            <div className={styles.empty}>
-              <p>No groups available yet.</p>
-              <Link href="/community/groups" className={styles.createGroupLink}>
-                Create the first group →
-              </Link>
-            </div>
+            <EmptyState icon="👥" title="No groups yet" description="No groups available yet." />
           )}
         </div>
       )}
@@ -597,12 +583,7 @@ export default function CommunityPage() {
           </div>
           
           {filteredRequests.length === 0 && (
-            <div className={styles.empty}>
-              <p>No requests found.</p>
-              <Link href="/requests" className={styles.createGroupLink}>
-                Browse all requests →
-              </Link>
-            </div>
+            <EmptyState icon="📦" title="No requests found" description="No requests found." />
           )}
         </div>
       )}
@@ -691,9 +672,7 @@ export default function CommunityPage() {
               </Link>
             ))}
             {forumPosts.length === 0 && (
-              <div className={styles.empty}>
-                <p>No posts yet. Be the first to post!</p>
-              </div>
+              <EmptyState icon="💬" title="No posts yet" description="Be the first to post!" />
             )}
           </div>
 

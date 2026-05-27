@@ -4,33 +4,55 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
 
+interface HashtagEntityCounts {
+  posts: number
+  products: number
+  events: number
+  services: number
+  schoolContents: number
+  plans: number
+  requests: number
+  groups: number
+  forumPosts: number
+  groupPosts: number
+}
+
 interface HashtagItem {
   tag: string
   postCount: number
-  entities: {
-    posts: number
-    products: number
-    events: number
-    forumPosts: number
-    groupPosts: number
-  }
+  entities: HashtagEntityCounts
 }
 
 type SortMode = 'trending' | 'alphabetical' | 'count'
+type EntityFilter = 'all' | 'products' | 'events' | 'services' | 'schoolContents' | 'plans' | 'requests' | 'groups' | 'posts'
+
+const ENTITY_FILTERS: { key: EntityFilter; label: string; icon: string }[] = [
+  { key: 'all', label: 'All', icon: '🏷️' },
+  { key: 'posts', label: 'Posts', icon: '📝' },
+  { key: 'products', label: 'Products', icon: '🛍️' },
+  { key: 'events', label: 'Events', icon: '📅' },
+  { key: 'services', label: 'Services', icon: '🔧' },
+  { key: 'schoolContents', label: 'School', icon: '🎓' },
+  { key: 'plans', label: 'Plans', icon: '📋' },
+  { key: 'requests', label: 'Requests', icon: '🙋' },
+  { key: 'groups', label: 'Groups', icon: '👥' },
+]
 
 export default function HashtagsPage() {
   const [tags, setTags] = useState<HashtagItem[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<SortMode>('trending')
+  const [entityFilter, setEntityFilter] = useState<EntityFilter>('all')
 
   useEffect(() => {
     setLoading(true)
-    const params = search
-      ? `search=${encodeURIComponent(search)}&limit=100`
-      : sort === 'trending'
-        ? 'mode=trending&limit=100'
-        : 'limit=100'
+    const params = new URLSearchParams()
+    if (search) params.set('search', search)
+    if (sort === 'trending') params.set('mode', 'trending')
+    if (entityFilter !== 'all') params.set('entity', entityFilter)
+    params.set('limit', '100')
+
     fetch(`/api/hashtags?${params}`)
       .then(r => r.json())
       .then(data => {
@@ -38,7 +60,7 @@ export default function HashtagsPage() {
       })
       .catch(() => setTags([]))
       .finally(() => setLoading(false))
-  }, [search, sort])
+  }, [search, sort, entityFilter])
 
   const sorted = [...tags].sort((a, b) => {
     if (sort === 'alphabetical') return a.tag.localeCompare(b.tag)
@@ -47,7 +69,16 @@ export default function HashtagsPage() {
   })
 
   const totalEntities = (t: HashtagItem) =>
-    t.entities.posts + t.entities.products + t.entities.events + t.entities.forumPosts + t.entities.groupPosts
+    Object.values(t.entities).reduce((sum, count) => sum + count, 0)
+
+  const entityLabel = (key: string, count: number) => {
+    const labels: Record<string, string> = {
+      products: 'pr', events: 'ev', posts: 'po',
+      services: 'sv', schoolContents: 'sc', plans: 'pl',
+      requests: 'rq', groups: 'gr',
+    }
+    return labels[key] ? `${count}${labels[key]}` : ''
+  }
 
   return (
     <div className={styles.page}>
@@ -92,6 +123,18 @@ export default function HashtagsPage() {
         </div>
       </div>
 
+      <div className={styles.entityFilters}>
+        {ENTITY_FILTERS.map(f => (
+          <button
+            key={f.key}
+            className={`${styles.entityFilter} ${entityFilter === f.key ? styles.entityFilterActive : ''}`}
+            onClick={() => setEntityFilter(f.key)}
+          >
+            {f.icon} {f.label}
+          </button>
+        ))}
+      </div>
+
       {loading ? (
         <div className={styles.loadingGrid}>
           {Array.from({ length: 12 }).map((_, i) => (
@@ -112,9 +155,13 @@ export default function HashtagsPage() {
               >
                 <span className={styles.pillTag}>#{h.tag}</span>
                 <span className={styles.pillCount}>{totalEntities(h)}</span>
-                {h.entities.products > 0 && <span className={styles.pillEntity} title="Products">{h.entities.products}pr</span>}
-                {h.entities.events > 0 && <span className={styles.pillEntity} title="Events">{h.entities.events}ev</span>}
-                {h.entities.posts > 0 && <span className={styles.pillEntity} title="Posts">{h.entities.posts}po</span>}
+                {Object.entries(h.entities).map(([key, count]) =>
+                  count > 0 ? (
+                    <span key={key} className={styles.pillEntity} title={key}>
+                      {entityLabel(key, count)}
+                    </span>
+                  ) : null
+                )}
               </Link>
             )
           })}

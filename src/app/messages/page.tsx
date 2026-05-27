@@ -7,6 +7,8 @@ import Link from 'next/link'
 import styles from './messages.module.css'
 import { getUserProfileUrl } from '@/lib/utils'
 import TranslateButton from '@/components/TranslateButton'
+import Skeleton, { SkeletonCard, SkeletonList } from '@/components/Skeleton'
+import { EmptyState } from '@/components/EmptyState'
 
 interface User {
   id: string
@@ -133,7 +135,7 @@ function MessagesContent() {
   }
 
   if (status === 'loading' || loading) {
-    return <div className={styles.container}><div className={styles.loading}>Loading messages...</div></div>
+    return <SkeletonList count={3} />
   }
 
   return (
@@ -184,12 +186,7 @@ function MessagesContent() {
               ))}
             </div>
           ) : (
-            <div className={styles.noConversations}>
-              <p>No conversations yet</p>
-              <a href="/community" className={styles.startConvBtn}>
-                Connect with members
-              </a>
-            </div>
+            <EmptyState icon="💬" title="No conversations yet" description="Connect with community members to start chatting." />
           )}
         </div>
 
@@ -276,7 +273,7 @@ function MessagesContent() {
 
 export default function MessagesPage() {
   return (
-    <Suspense fallback={<div className={styles.container}><div className={styles.loading}>Loading messages...</div></div>}>
+    <Suspense fallback={<SkeletonList count={3} />}>
       <MessagesContent />
     </Suspense>
   )

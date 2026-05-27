@@ -48,9 +48,17 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
     orderBy: [{ pinned: 'desc' }, { createdAt: 'desc' }],
     take: 20,
     include: {
-      user: { select: { id: true, name: true, image: true, schoolName: true, schoolSlug: true } }
+      user: { select: { id: true, name: true, image: true, schoolName: true, schoolSlug: true } },
+      hashtags: {
+        include: { hashtag: { select: { id: true, tag: true } } }
+      }
     }
   })
+
+  const contentsWithHashtags = schoolContents.map(sc => ({
+    ...sc,
+    hashtags: sc.hashtags.map(h => h.hashtag)
+  }))
 
   const posts = await prisma.post.findMany({
     where: { userId: user.id },
@@ -88,7 +96,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
     contentCount: user._count.schoolContentsOwned + user._count.schoolContentsAuthored,
     avgRating: avgRating._avg.rating || 0,
     ratingCount: avgRating._count.rating,
-    schoolContents,
+    schoolContents: contentsWithHashtags,
     posts
   })
 }

@@ -11,7 +11,8 @@ export const planSchema = z.object({
   donationAddress: z.string().max(500).optional().nullable(),
   donationCurrency: z.string().max(10).optional(),
   donationDescription: z.string().max(1000).optional().nullable(),
-  donationAddresses: z.string().optional().nullable()
+  donationAddresses: z.string().optional().nullable(),
+  hashtags: z.array(z.string()).optional()
 })
 
 export const requestSchema = z.object({
@@ -30,7 +31,8 @@ export const requestSchema = z.object({
   currentFunding: z.number().optional().nullable(),
   location: z.string().optional(),
   isPublic: z.boolean().optional(),
-  createGroup: z.boolean().optional()
+  createGroup: z.boolean().optional(),
+  hashtags: z.array(z.string()).optional()
 })
 
 export const productSchema = z.object({
@@ -122,7 +124,8 @@ export const groupSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   description: z.string().max(1000).optional(),
   privacy: z.enum(['PUBLIC', 'PRIVATE']).optional(),
-  category: z.string().optional()
+  category: z.string().optional(),
+  hashtags: z.array(z.string()).optional()
 })
 
 export const forumPostSchema = z.object({

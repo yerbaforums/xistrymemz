@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { extractAndLinkHashtags, extractHashtags, linkHashtags } from '@/services/hashtagService'
 
 export async function GET(request: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -45,7 +46,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
   }
 
   const body = await request.json()
-  const { title, content, contentType } = body
+  const { title, content, contentType, hashtags: explicitHashtags } = body
 
   if (!title || !content) {
     return NextResponse.json({ error: 'Title and content required' }, { status: 400 })
@@ -60,6 +61,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
       authorId: session.user.id
     }
   })
+
+  if (Array.isArray(explicitHashtags) && explicitHashtags.length > 0) {
+    await linkHashtags('SCHOOLCONTENT', schoolContent.id, explicitHashtags)
+  } else {
+    await extractAndLinkHashtags(title + ' ' + content, 'SCHOOLCONTENT', schoolContent.id)
+  }
 
   return NextResponse.json(schoolContent)
 }

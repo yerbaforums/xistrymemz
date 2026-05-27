@@ -1,6 +1,7 @@
 'use client'
 
 import { Component, type ReactNode } from 'react'
+import Button from '@/components/ui/Button'
 
 interface Props {
   children: ReactNode
@@ -34,12 +35,11 @@ export class ErrorBoundary extends Component<Props, State> {
           <p style={{ color: 'var(--text-secondary)', marginBottom: 16 }}>
             {this.state.error?.message || 'An unexpected error occurred'}
           </p>
-          <button
+          <Button
             onClick={() => this.setState({ hasError: false, error: null })}
-            className="btn-primary"
           >
             Try Again
-          </button>
+          </Button>
         </div>
       )
     }

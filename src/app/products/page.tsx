@@ -19,6 +19,8 @@ import ProductGrid from '@/components/ProductGrid'
 import ProductMapView from '@/components/ProductMapView'
 import type { Product } from '@/types/product'
 import ImageUploader from '@/components/ImageUploader'
+import Skeleton, { SkeletonCard, SkeletonList } from '@/components/Skeleton'
+import { EmptyState } from '@/components/EmptyState'
 
 const DEBOUNCE_MS = 300
 
@@ -680,16 +682,13 @@ export default function ProductsPage() {
           )}
 
           {myProductsLoading ? (
-            <div className={styles.myListingsEmpty}>Loading your listings...</div>
+            <SkeletonList count={3} />
           ) : myProducts.filter(p => {
             if (myFilter === 'published' && !p.published) return false
             if (myFilter === 'draft' && p.published) return false
             return true
           }).length === 0 ? (
-            <div className={styles.myListingsEmpty}>
-              <p>No listings yet.</p>
-              <button onClick={() => { setMyForm({ title: '', description: '', price: '', type: 'PRODUCT', category: '', condition: '', location: '', isGlobal: false, imageUrl: '', imageUrls: [] as string[], published: true, acceptsOffers: true, acceptsRequests: false, acceptsDonations: false, selectedDonationAddrs: [] as DonationAddr[], hashtags: '' }); setEditProduct(null); setShowMyForm(true) }} className="btn-primary">Create Your First Listing</button>
-            </div>
+            <EmptyState icon="📦" title="No listings yet" description="Create your first listing to get started." />
           ) : (
             <div className={styles.myListingsGrid}>
               {myProducts.filter(p => {

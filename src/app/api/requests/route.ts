@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { requestSchema, validateBody } from '@/lib/schemas'
+import { extractAndLinkHashtags, linkHashtags } from '@/services/hashtagService'
 
 export async function GET(request: Request) {
   try {
@@ -110,7 +111,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { title, description, imageUrl, planId, productId, groupId, schoolContentId, eventId, category, priority, budget, goalAmount, currentFunding, location, isPublic, createGroup } = validation.data
+    const { title, description, imageUrl, planId, productId, groupId, schoolContentId, eventId, category, priority, budget, goalAmount, currentFunding, location, isPublic, createGroup, hashtags } = validation.data
 
     if (planId) {
       const plan = await prisma.plan.findFirst({
@@ -192,6 +193,13 @@ export async function POST(request: Request) {
         user: { select: { id: true, name: true, username: true, email: true, image: true, shopSlug: true } }
       }
     })
+
+    if (Array.isArray(hashtags) && hashtags.length > 0) {
+      await linkHashtags('REQUEST', req.id, hashtags)
+    } else {
+      const text = [title, description || ''].join(' ')
+      await extractAndLinkHashtags(text, 'REQUEST', req.id)
+    }
 
     if (createGroup) {
       const groupName = `${title} Discussion`

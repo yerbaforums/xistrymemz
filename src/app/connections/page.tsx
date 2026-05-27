@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { getUserProfileUrl } from '@/lib/utils'
+import Skeleton, { SkeletonCard, SkeletonList } from '@/components/Skeleton'
+import { EmptyState } from '@/components/EmptyState'
 
 interface ConnectionUser {
   id: string
@@ -104,7 +106,7 @@ export default function ConnectionsPage() {
   }
 
   if (status === 'loading' || loading) {
-    return <div style={{ padding: '40px', textAlign: 'center' }}>Loading...</div>
+    return <SkeletonList count={3} />
   }
 
   const pendingTotal = pendingReceived.length + pendingSent.length
@@ -293,27 +295,7 @@ export default function ConnectionsPage() {
       )}
 
       {pendingTotal === 0 && (
-        <div style={{ textAlign: 'center', padding: '60px 24px', background: 'var(--bg-secondary)', borderRadius: '12px' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🤝</div>
-          <h2>No pending requests</h2>
-          <p style={{ color: 'var(--text-secondary)', margin: '0 0 24px' }}>
-            When you send or receive connection requests, they&apos;ll appear here
-          </p>
-          <Link 
-            href="/community" 
-            style={{ 
-              display: 'inline-block', 
-              padding: '12px 24px', 
-              background: 'var(--accent-primary)', 
-              color: 'var(--bg-primary)', 
-              borderRadius: '8px', 
-              textDecoration: 'none',
-              fontWeight: '600'
-            }}
-          >
-            Explore Community
-          </Link>
-        </div>
+        <EmptyState icon="🤝" title="No pending requests" description="When you send or receive connection requests, they'll appear here" />
       )}
     </div>
   )

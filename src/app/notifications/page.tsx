@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import styles from './page.module.css'
+import Skeleton, { SkeletonCard, SkeletonList } from '@/components/Skeleton'
+import { EmptyState } from '@/components/EmptyState'
 
 interface Notification {
   id: string
@@ -113,11 +115,9 @@ export default function NotificationsPage() {
       </div>
 
       {loading ? (
-        <div className={styles.loading}>Loading...</div>
+        <SkeletonList count={5} />
       ) : notifications.length === 0 ? (
-        <div className={styles.empty}>
-          {filter === 'unread' ? 'No unread notifications.' : 'No notifications yet.'}
-        </div>
+        <EmptyState icon="🔔" title="No notifications" description={filter === 'unread' ? "No unread notifications." : "No notifications yet."} />
       ) : (
         <div className={styles.list}>
           {notifications.map(notification => (

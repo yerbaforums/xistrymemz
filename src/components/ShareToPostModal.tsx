@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useToast } from '@/context/ToastContext'
+import styles from './ShareToPostModal.module.css'
 
 interface ShareToPostModalProps {
   isOpen: boolean
@@ -62,27 +63,17 @@ export default function ShareToPostModal({ isOpen, onClose, referenceType, refer
   const hasSchool = !!(session?.user as any)?.schoolSlug
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 1000,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'rgba(0,0,0,0.5)'
-    }} onClick={onClose}>
-      <div style={{
-        background: 'var(--bg-secondary)', borderRadius: 12, padding: 24,
-        maxWidth: 500, width: '90%', maxHeight: '80vh', overflow: 'auto'
-      }} onClick={e => e.stopPropagation()}>
-        <h3 style={{ margin: '0 0 16px', fontSize: '1.1rem' }}>Share to Post</h3>
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modal} onClick={e => e.stopPropagation()}>
+        <h3 className={styles.title}>Share to Post</h3>
 
-        <div style={{
-          display: 'flex', gap: 12, padding: 12, borderRadius: 8,
-          background: 'var(--bg-tertiary)', marginBottom: 16, alignItems: 'center'
-        }}>
+        <div className={styles.preview}>
           {referenceImage && (
-            <img src={referenceImage} alt="" style={{ width: 48, height: 48, borderRadius: 6, objectFit: 'cover' }} />
+            <img src={referenceImage} alt="" className={styles.previewImage} />
           )}
           <div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 600 }}>{referenceType}</div>
-            <div style={{ fontWeight: 500, fontSize: '0.9rem' }}>{referenceTitle}</div>
+            <div className={styles.previewType}>{referenceType}</div>
+            <div className={styles.previewTitle}>{referenceTitle}</div>
           </div>
         </div>
 
@@ -91,16 +82,12 @@ export default function ShareToPostModal({ isOpen, onClose, referenceType, refer
           onChange={e => setContent(e.target.value)}
           placeholder="Add a comment (optional)..."
           rows={3}
-          style={{
-            width: '100%', padding: 10, borderRadius: 8, border: '1px solid var(--border-color)',
-            background: 'var(--bg-tertiary)', color: 'var(--text-primary)', resize: 'vertical',
-            marginBottom: 12, fontSize: '0.9rem'
-          }}
+          className={styles.textarea}
         />
 
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: 8 }}>Post to:</div>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        <div className={styles.destinationSection}>
+          <div className={styles.destinationLabel}>Post to:</div>
+          <div className={styles.destinationRow}>
             {DESTINATIONS.map(d => {
               const disabled = (d.key === 'SHOP' && !hasShop) || (d.key === 'SCHOOL' && !hasSchool)
               return (
@@ -109,13 +96,7 @@ export default function ShareToPostModal({ isOpen, onClose, referenceType, refer
                   type="button"
                   disabled={disabled}
                   onClick={() => setDestination(d.key)}
-                  style={{
-                    padding: '6px 14px', borderRadius: 6, fontSize: '0.8rem',
-                    border: `1px solid ${destination === d.key ? 'var(--accent-primary)' : 'var(--border-color)'}`,
-                    background: destination === d.key ? 'var(--accent-primary)' : 'transparent',
-                    color: destination === d.key ? '#fff' : disabled ? 'var(--text-secondary)' : 'var(--text-primary)',
-                    cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.5 : 1
-                  }}
+                  className={`${styles.destinationBtn} ${destination === d.key ? styles.destinationBtnActive : ''}`}
                 >
                   {d.label}
                 </button>
@@ -124,13 +105,11 @@ export default function ShareToPostModal({ isOpen, onClose, referenceType, refer
           </div>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-          <button type="button" onClick={onClose}
-            style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-primary)', cursor: 'pointer' }}>
+        <div className={styles.actions}>
+          <button type="button" onClick={onClose} className={styles.cancelBtn}>
             Cancel
           </button>
-          <button type="button" onClick={handleShare} disabled={posting}
-            style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: 'var(--accent-primary)', color: '#fff', cursor: posting ? 'not-allowed' : 'pointer', opacity: posting ? 0.6 : 1 }}>
+          <button type="button" onClick={handleShare} disabled={posting} className={styles.shareBtn}>
             {posting ? 'Posting...' : 'Share'}
           </button>
         </div>

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { planSchema, validateBody } from '@/lib/schemas'
+import { extractAndLinkHashtags, linkHashtags } from '@/services/hashtagService'
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions)
@@ -72,7 +73,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: validation.error }, { status: 400 })
   }
 
-  const { title, description, imageUrl, goals, mileposts, lookingForCollaborators, acceptsDonations, donationAddress, donationCurrency, donationDescription, donationAddresses } = validation.data
+  const { title, description, imageUrl, goals, mileposts, lookingForCollaborators, acceptsDonations, donationAddress, donationCurrency, donationDescription, donationAddresses, hashtags } = validation.data
 
   const plan = await prisma.plan.create({
     data: {
@@ -93,6 +94,13 @@ export async function POST(request: Request) {
       donationAddresses: donationAddresses || null
     }
   })
+
+  if (Array.isArray(hashtags) && hashtags.length > 0) {
+    await linkHashtags('PLAN', plan.id, hashtags)
+  } else {
+    const text = [title, description || ''].join(' ')
+    await extractAndLinkHashtags(text, 'PLAN', plan.id)
+  }
 
   return NextResponse.json(plan)
 }

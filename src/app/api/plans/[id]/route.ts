@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { extractAndLinkHashtags, linkHashtags } from '@/services/hashtagService'
 
 export async function GET(
   request: Request,
@@ -102,6 +103,14 @@ export async function PUT(
         donationAddresses: body.donationAddresses !== undefined ? (body.donationAddresses || null) : existingPlan.donationAddresses
       }
     })
+
+    if (body.hashtags !== undefined && Array.isArray(body.hashtags)) {
+      await linkHashtags('PLAN', id, body.hashtags)
+    } else {
+      const title = body.title ?? existingPlan.title
+      const description = body.description ?? existingPlan.description
+      await extractAndLinkHashtags(title + ' ' + (description || ''), 'PLAN', id)
+    }
 
     return NextResponse.json(plan)
   } catch (error) {

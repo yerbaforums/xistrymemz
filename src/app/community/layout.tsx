@@ -2,28 +2,11 @@
 
 import { useSession } from 'next-auth/react'
 import { useRouter, usePathname } from 'next/navigation'
-import { useEffect, Component, ErrorInfo, ReactNode } from 'react'
+import { useEffect } from 'react'
 import Link from 'next/link'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 import styles from './layout.module.css'
 import sidebarStyles from './layout-sidebar.module.css'
-
-class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
-  state = { hasError: false }
-  static getDerivedStateFromError() { return { hasError: true } }
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) { console.error('Community ErrorBoundary:', error, errorInfo) }
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div style={{ padding: '48px 24px', textAlign: 'center' }}>
-          <h2 style={{ marginBottom: '12px' }}>Something went wrong</h2>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>Please try refreshing the page.</p>
-          <button onClick={() => window.location.reload()} className="btn-primary">Refresh Page</button>
-        </div>
-      )
-    }
-    return this.props.children
-  }
-}
 
 function CommunityNav() {
   const pathname = usePathname()

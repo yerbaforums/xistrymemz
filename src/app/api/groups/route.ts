@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { groupSchema, validateBody } from '@/lib/schemas'
+import { extractAndLinkHashtags, linkHashtags } from '@/services/hashtagService'
 
 export async function GET(request: Request) {
   try {
@@ -57,7 +58,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { name, description, privacy, category } = validation.data
+    const { name, description, privacy, category, hashtags } = validation.data
 
     const group = await prisma.group.create({
       data: {
@@ -78,6 +79,13 @@ export async function POST(request: Request) {
         _count: { select: { members: true, posts: true } }
       }
     })
+
+    if (Array.isArray(hashtags) && hashtags.length > 0) {
+      await linkHashtags('GROUP', group.id, hashtags)
+    } else {
+      const text = [name, description || ''].join(' ')
+      await extractAndLinkHashtags(text, 'GROUP', group.id)
+    }
 
     return NextResponse.json(group)
   } catch (error) {

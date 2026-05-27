@@ -6,6 +6,8 @@ import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import AlphabeticalIndex, { type IndexItem } from '@/components/AlphabeticalIndex'
 import { GROUP_CATEGORIES } from '@/lib/shop-categories'
+import Skeleton, { SkeletonCard, SkeletonList } from '@/components/Skeleton'
+import { EmptyState } from '@/components/EmptyState'
 
 interface Group {
   id: string
@@ -193,18 +195,9 @@ export default function GroupsPage() {
       </div>
 
       {loading ? (
-        <div className={styles.loading}>Loading groups...</div>
+        <SkeletonList count={3} />
       ) : filteredGroups.length === 0 ? (
-        <div className={styles.empty}>
-          <div className={styles.emptyIcon}>👥</div>
-          <h3>No groups found</h3>
-          <p>{filter === 'my' ? "You haven't joined any groups yet" : "Be the first to create a group!"}</p>
-          {filter === 'all' && userId && (
-            <button onClick={() => setShowModal(true)} className={styles.createBtn}>
-              Create Group
-            </button>
-          )}
-        </div>
+        <EmptyState icon="👥" title="No groups found" description={filter === 'my' ? "You haven't joined any groups yet" : "Be the first to create a group!"} />
       ) : (
         <AlphabeticalIndex
           items={indexItems}

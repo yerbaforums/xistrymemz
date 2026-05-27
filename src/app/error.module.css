@@ -1,0 +1,45 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  text-align: center;
+}
+
+.inner {
+  max-width: 480px;
+}
+
+.icon {
+  font-size: 4rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  color: var(--text-primary);
+}
+
+.message {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 0 0 2rem;
+}
+
+.retryBtn {
+  padding: 12px 24px;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.retryBtn:hover {
+  box-shadow: var(--shadow-glow);
+}

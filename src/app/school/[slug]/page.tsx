@@ -12,6 +12,7 @@ import ImageUploader from '@/components/ImageUploader'
 import MentionInput from '@/components/MentionInput'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
 import ShareToPostModal from '@/components/ShareToPostModal'
+import HashtagInput from '@/components/HashtagInput'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
 import Rating from '@/components/Rating'
@@ -44,6 +45,7 @@ interface SchoolContent {
   isSubscription: boolean
   pinned: boolean
   createdAt: string
+  hashtags?: { id: string; tag: string }[]
   user: {
     id: string
     name: string | null
@@ -158,6 +160,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
   const [posting, setPosting] = useState(false)
   const [showContentForm, setShowContentForm] = useState(false)
   const [contentForm, setContentForm] = useState({ title: '', content: '', contentType: 'article', price: '', isPaid: false })
+  const [contentHashtags, setContentHashtags] = useState<string[]>([])
   const [creatingContent, setCreatingContent] = useState(false)
   const [selectedContent, setSelectedContent] = useState<SchoolContent | null>(null)
   const [resolvedSlug, setResolvedSlug] = useState<string | null>(null)
@@ -215,12 +218,13 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
       const res = await fetch(`/api/school/${resolvedSlug}/content`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(contentForm)
+        body: JSON.stringify({ ...contentForm, hashtags: contentHashtags })
       })
       if (res.ok) {
         success('Content published!')
         setShowContentForm(false)
         setContentForm({ title: '', content: '', contentType: 'article', price: '', isPaid: false })
+        setContentHashtags([])
         if (resolvedSlug) fetch(`/api/school/${resolvedSlug}`).then(r => r.json()).then(data => setSchool(data))
       } else {
         const err = await res.json()
@@ -433,6 +437,10 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                   <label>Content</label>
                   <textarea value={contentForm.content} onChange={e => setContentForm({ ...contentForm, content: e.target.value })} rows={6} required />
                 </div>
+                <div className={styles.formGroup}>
+                  <label>Hashtags</label>
+                  <HashtagInput value={contentHashtags} onChange={setContentHashtags} placeholder="Add hashtags or type # in content..." />
+                </div>
                 <div className={styles.formRow}>
                   <label className={styles.checkboxLabel}>
                     <input type="checkbox" checked={contentForm.isPaid} onChange={e => setContentForm({ ...contentForm, isPaid: e.target.checked })} />
@@ -488,6 +496,15 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                       </div>
                     )}
                     <p className={styles.contentPreview}>{item.content.slice(0, 120)}...</p>
+                    {item.hashtags && item.hashtags.length > 0 && (
+                      <div className={styles.hashtagRow}>
+                        {item.hashtags.map((h: any) => (
+                          <Link key={h.id} href={`/hashtag/${h.tag}`} className={styles.hashtagPill} onClick={(e) => e.stopPropagation()}>
+                            #{h.tag}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

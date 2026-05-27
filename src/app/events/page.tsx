@@ -7,6 +7,8 @@ import { calculateDistance, geocodeLocation } from '@/lib/geocoding'
 import { useToast } from '@/context/ToastContext'
 import { usePassportLocation } from '@/hooks/usePassportLocation'
 import type { Event } from '@/types/event'
+import Skeleton, { SkeletonCard, SkeletonList } from '@/components/Skeleton'
+import { EmptyState } from '@/components/EmptyState'
 
 import dynamic from 'next/dynamic'
 
@@ -504,19 +506,9 @@ export default function EventsPage() {
 
               <div className={styles.gridView}>
                 {loading ? (
-                  <div className={styles.loading}>Loading events...</div>
+                  <SkeletonCard />
                 ) : filteredEvents.length === 0 ? (
-                  <div className={styles.emptyState}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <circle cx="11" cy="11" r="8"/>
-                      <path d="M21 21l-4.35-4.35"/>
-                      <path d="M8 11h6"/>
-                    </svg>
-                    <h3>No events found</h3>
-                    <p>Try adjusting your filters or create a new event.</p>
-                    {userId && (<Link href="/events/new" className="btn-primary">Create Event</Link>)}
-                    <button onClick={clearFilters} className={styles.clearBtn} style={{ marginTop: '16px' }}>Clear Filters</button>
-                  </div>
+                  <EmptyState icon="📅" title="No events found" description="Try adjusting your filters or create a new event." />
                 ) : (
                   filteredEvents.map(event => (
                     <div key={event.id} className={`${styles.eventCard} ${selectedEvent?.id === event.id ? styles.selected : ''}`} onClick={() => { setSelectedEvent(event); if (event.latitude && event.longitude && mapRef.current) { mapRef.current.setView([event.latitude, event.longitude], 15, { animate: true }) } }}>

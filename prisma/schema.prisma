@@ -315,6 +315,7 @@ model Plan {
   events        Event[]
   updates       PlanUpdate[]
   statusHistory PlanStatusHistory[]
+  hashtags      PlanHashtag[]
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
 
@@ -502,6 +503,7 @@ model Request {
   updatedAt           DateTime               @updatedAt
   fulfillments        RequestFulfillment[]
   supports            RequestSupport[]
+  hashtags            RequestHashtag[]
 
   @@index([status])
   @@index([category])
@@ -661,6 +663,7 @@ model SchoolContent {
   purchases         SchoolPurchase[]
   requests          Request[]
   likes             SchoolContentLike[]
+  hashtags          SchoolContentHashtag[]
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
 }
@@ -871,9 +874,61 @@ model Hashtag {
   products         ProductHashtag[]
   events           EventHashtag[]
   serviceOfferings ServiceOfferingHashtag[]
+  schoolContents   SchoolContentHashtag[]
+  plans            PlanHashtag[]
+  requests         RequestHashtag[]
+  groups           GroupHashtag[]
 
   @@index([postCount])
   @@index([tag])
+}
+
+model SchoolContentHashtag {
+  id              String        @id @default(cuid())
+  schoolContentId String
+  schoolContent   SchoolContent @relation(fields: [schoolContentId], references: [id], onDelete: Cascade)
+  hashtagId       String
+  hashtag         Hashtag       @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+  createdAt       DateTime      @default(now())
+
+  @@unique([schoolContentId, hashtagId])
+  @@index([hashtagId])
+}
+
+model PlanHashtag {
+  id        String   @id @default(cuid())
+  planId    String
+  plan      Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  hashtagId String
+  hashtag   Hashtag  @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([planId, hashtagId])
+  @@index([hashtagId])
+}
+
+model RequestHashtag {
+  id        String   @id @default(cuid())
+  requestId String
+  request   Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  hashtagId String
+  hashtag   Hashtag  @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([requestId, hashtagId])
+  @@index([hashtagId])
+}
+
+model GroupHashtag {
+  id        String   @id @default(cuid())
+  groupId   String
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  hashtagId String
+  hashtag   Hashtag  @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([groupId, hashtagId])
+  @@index([hashtagId])
 }
 
 model PostHashtag {
@@ -936,6 +991,7 @@ model Group {
   events          Event[]
   requests        Request[]
   groupProducts   GroupProduct[]
+  hashtags        GroupHashtag[]
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 

@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
+import { SkeletonCard } from '@/components/Skeleton'
+import { EmptyState } from '@/components/EmptyState'
 import styles from './page.module.css'
 import AlphabeticalIndex from '@/components/AlphabeticalIndex'
 import type { IndexItem } from '@/components/AlphabeticalIndex'
@@ -151,9 +153,11 @@ export default function DirectoryPage() {
       </div>
 
       {loading ? (
-        <div className={styles.loading}>Loading...</div>
+        <div className={styles.results}>
+          {[1, 2, 3, 4].map(i => <SkeletonCard key={i} />)}
+        </div>
       ) : sortedItems.length === 0 ? (
-        <div className={styles.emptyState}>No results found.</div>
+        <EmptyState icon="📋" title="No results found" description="Try a different filter or search term" />
       ) : (
         <AlphabeticalIndex
           items={indexItems}

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { extractAndLinkHashtags, linkHashtags } from '@/services/hashtagService'
 
 export async function GET(request: Request, { params }: { params: Promise<{ slug: string; id: string }> }) {
   const { id } = await params
@@ -46,6 +47,15 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
   if (body.videoUrl !== undefined) data.videoUrl = body.videoUrl
 
   const updated = await prisma.schoolContent.update({ where: { id }, data })
+
+  if (body.hashtags !== undefined && Array.isArray(body.hashtags)) {
+    await linkHashtags('SCHOOLCONTENT', id, body.hashtags)
+  } else {
+    const title = data.title || existing.title
+    const content = data.content || existing.content
+    await extractAndLinkHashtags(String(title) + ' ' + String(content), 'SCHOOLCONTENT', id)
+  }
+
   return NextResponse.json(updated)
 }
 

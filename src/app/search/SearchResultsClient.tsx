@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Skeleton, { SkeletonCard } from '@/components/Skeleton'
+import { EmptyState } from '@/components/EmptyState'
 import styles from './page.module.css'
 
 interface SearchResult {
@@ -146,18 +148,20 @@ export default function SearchResultsClient() {
         </div>
       )}
 
-      {loading && <div className={styles.loading}>Searching...</div>}
+      {loading && (
+        <div className={styles.loading}>
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+      )}
 
       {!loading && filteredItems.length === 0 && (
-        <div className={styles.empty}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="48" height="48">
-            <circle cx="11" cy="11" r="8"/>
-            <path d="M21 21l-4.35-4.35"/>
-            <path d="M8 11h6"/>
-          </svg>
-          <h3>No results found</h3>
-          <p>Try a different search term</p>
-        </div>
+        <EmptyState
+          icon="🔍"
+          title="No results found"
+          description="Try a different search term"
+        />
       )}
 
       {!loading && filteredItems.length > 0 && (

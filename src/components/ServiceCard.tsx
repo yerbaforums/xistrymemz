@@ -13,7 +13,7 @@ function formatDuration(mins: number) {
 
 interface ServiceCardProps {
   service: ServiceOffering
-  onClick: () => void
+  onClick?: () => void
   style?: React.CSSProperties
 }
 

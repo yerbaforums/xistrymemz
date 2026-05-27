@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { extractAndLinkHashtags, linkHashtags } from '@/services/hashtagService'
 
 async function canAccessRequest(userId: string, roleId: string, requestId: string) {
   const req = await prisma.request.findFirst({
@@ -141,6 +142,14 @@ export async function PUT(
           reason: body.statusReason || 'Status updated'
         }
       })
+    }
+
+    if (body.hashtags !== undefined && Array.isArray(body.hashtags)) {
+      await linkHashtags('REQUEST', id, body.hashtags)
+    } else {
+      const title = body.title ?? existingRequest.title
+      const description = body.description ?? existingRequest.description
+      await extractAndLinkHashtags(title + ' ' + (description || ''), 'REQUEST', id)
     }
 
     return NextResponse.json(req)

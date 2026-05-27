@@ -5,15 +5,21 @@ import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import FeedItem from '@/components/FeedItem'
 import ProductCard from '@/components/ProductCard'
+import ServiceCard from '@/components/ServiceCard'
 import type { Product } from '@/types/product'
 import styles from './page.module.css'
 
-type TabType = 'all' | 'posts' | 'products' | 'events'
+type TabType = 'all' | 'posts' | 'products' | 'events' | 'services' | 'schoolContents' | 'plans' | 'requests' | 'groups'
 
 interface Totals {
   posts: number
   products: number
   events: number
+  services: number
+  schoolContents: number
+  plans: number
+  requests: number
+  groups: number
   forumPosts: number
   groupPosts: number
 }
@@ -23,6 +29,11 @@ const TABS: { key: TabType; label: string }[] = [
   { key: 'posts', label: 'Posts' },
   { key: 'products', label: 'Products' },
   { key: 'events', label: 'Events' },
+  { key: 'services', label: 'Services' },
+  { key: 'schoolContents', label: 'School' },
+  { key: 'plans', label: 'Plans' },
+  { key: 'requests', label: 'Requests' },
+  { key: 'groups', label: 'Groups' },
 ]
 
 const POST_SECTION_CONFIG: Record<string, { label: string; icon: string; order: number }> = {
@@ -39,6 +50,11 @@ export default function HashtagPage() {
   const [posts, setPosts] = useState<any[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [events, setEvents] = useState<any[]>([])
+  const [services, setServices] = useState<any[]>([])
+  const [schoolContents, setSchoolContents] = useState<any[]>([])
+  const [plans, setPlans] = useState<any[]>([])
+  const [requests, setRequests] = useState<any[]>([])
+  const [groups, setGroups] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -51,32 +67,49 @@ export default function HashtagPage() {
         setPosts(res.data?.posts || [])
         setProducts(res.data?.products || [])
         setEvents(res.data?.events || [])
+        setServices(res.data?.services || [])
+        setSchoolContents(res.data?.schoolContents || [])
+        setPlans(res.data?.plans || [])
+        setRequests(res.data?.requests || [])
+        setGroups(res.data?.groups || [])
       })
       .catch(() => {
         setTotals(null)
         setPosts([])
         setProducts([])
         setEvents([])
+        setServices([])
+        setSchoolContents([])
+        setPlans([])
+        setRequests([])
+        setGroups([])
       })
       .finally(() => setLoading(false))
   }, [tag, activeTab])
 
   const totalCount = totals
-    ? totals.posts + totals.products + totals.events + totals.forumPosts + totals.groupPosts
+    ? totals.posts + totals.products + totals.events + totals.services +
+      totals.schoolContents + totals.plans + totals.requests + totals.groups +
+      totals.forumPosts + totals.groupPosts
     : 0
 
   const showProducts = activeTab === 'all' || activeTab === 'products'
   const showEvents = activeTab === 'all' || activeTab === 'events'
+  const showServices = activeTab === 'all' || activeTab === 'services'
+  const showSchoolContents = activeTab === 'all' || activeTab === 'schoolContents'
+  const showPlans = activeTab === 'all' || activeTab === 'plans'
+  const showRequests = activeTab === 'all' || activeTab === 'requests'
+  const showGroups = activeTab === 'all' || activeTab === 'groups'
 
   const groupedPosts = useMemo(() => {
     if (!posts.length) return []
-    const groups: Record<string, any[]> = {}
+    const groupsMap: Record<string, any[]> = {}
     for (const post of posts) {
       const key = post._sourceType || 'post'
-      if (!groups[key]) groups[key] = []
-      groups[key].push(post)
+      if (!groupsMap[key]) groupsMap[key] = []
+      groupsMap[key].push(post)
     }
-    return Object.entries(groups)
+    return Object.entries(groupsMap)
       .map(([key, items]) => ({
         key,
         config: POST_SECTION_CONFIG[key] || { label: 'Posts', icon: '👤', order: 99 },
@@ -103,6 +136,11 @@ export default function HashtagPage() {
             {totals.posts > 0 && ` · ${totals.posts} post${totals.posts !== 1 ? 's' : ''}`}
             {totals.products > 0 && ` · ${totals.products} product${totals.products !== 1 ? 's' : ''}`}
             {totals.events > 0 && ` · ${totals.events} event${totals.events !== 1 ? 's' : ''}`}
+            {totals.services > 0 && ` · ${totals.services} service${totals.services !== 1 ? 's' : ''}`}
+            {totals.schoolContents > 0 && ` · ${totals.schoolContents} lesson${totals.schoolContents !== 1 ? 's' : ''}`}
+            {totals.plans > 0 && ` · ${totals.plans} plan${totals.plans !== 1 ? 's' : ''}`}
+            {totals.requests > 0 && ` · ${totals.requests} request${totals.requests !== 1 ? 's' : ''}`}
+            {totals.groups > 0 && ` · ${totals.groups} group${totals.groups !== 1 ? 's' : ''}`}
             {totals.forumPosts > 0 && ` · ${totals.forumPosts} forum post${totals.forumPosts !== 1 ? 's' : ''}`}
             {totals.groupPosts > 0 && ` · ${totals.groupPosts} group post${totals.groupPosts !== 1 ? 's' : ''}`}
           </p>
@@ -119,8 +157,7 @@ export default function HashtagPage() {
             {tab.label}
             {totals && tab.key !== 'all' && (
               <span className={styles.tabCount}>
-                {totals[tab.key === 'posts' ? 'posts' : tab.key === 'products' ? 'products' : 'events'] +
-                  (tab.key === 'posts' ? totals.forumPosts + totals.groupPosts : 0)}
+                {totals[tab.key as keyof Totals] || 0}
               </span>
             )}
           </button>
@@ -190,48 +227,153 @@ export default function HashtagPage() {
             </section>
           )}
 
-          {activeTab !== 'products' && activeTab !== 'events' && groupedPosts.length > 0 && (
+          {showServices && services.length > 0 && (
             <section>
-              {activeTab === 'all' && groupedPosts.length > 1 && (
-                <h2 className={styles.sectionTitle}>Posts</h2>
-              )}
-              <div className={styles.postList}>
-                {groupedPosts.map(({ key, config, items }) => (
-                  <div key={key} style={{ marginBottom: '20px' }}>
-                    {groupedPosts.length > 1 && (
-                      <h3 style={{
-                        fontSize: '0.95rem',
-                        fontWeight: 600,
-                        marginBottom: '12px',
-                        color: 'var(--text-secondary)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px'
-                      }}>
-                        {config.icon} {config.label}
-                        <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>
-                          ({items.length})
-                        </span>
-                      </h3>
-                    )}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      {items.map((post: any) => {
-                        const sourceType = key === 'FORUMPOST' ? 'FORUMPOST' : key === 'GROUPPOST' ? 'GROUPPOST' : 'POST'
-                        return (
-                          <FeedItem
-                            key={post.id}
-                            post={{
-                              ...post,
-                              user: post.user || { id: '', name: null, image: null },
-                              sourceType,
-                            }}
-                          />
-                        )
-                      })}
-                    </div>
-                  </div>
+              {activeTab === 'all' && <h2 className={styles.sectionTitle}>Services</h2>}
+              <div className={styles.serviceGrid}>
+                {services.map((service: any) => (
+                  <ServiceCard key={service.id} service={service} />
                 ))}
               </div>
+              {activeTab === 'all' && totals && totals.services > services.length && (
+                <div className={styles.viewAllRow}>
+                  <button onClick={() => setActiveTab('services')} className={styles.viewAllBtn}>
+                    View all {totals.services} services →
+                  </button>
+                </div>
+              )}
+            </section>
+          )}
+
+          {showSchoolContents && schoolContents.length > 0 && (
+            <section>
+              {activeTab === 'all' && <h2 className={styles.sectionTitle}>School Content</h2>}
+              <div className={styles.schoolContentList}>
+                {schoolContents.map((item: any) => (
+                  <Link key={item.id} href={`/school/${item.user?.schoolSlug || item.slug}`} className={styles.schoolContentCard}>
+                    <div className={styles.schoolContentHeader}>
+                      <span className={styles.schoolContentType}>{item.contentType}</span>
+                      {item.isPaid && <span className={styles.schoolContentPrice}>${item.price}</span>}
+                      {!item.isPaid && <span className={styles.schoolContentFree}>Free</span>}
+                    </div>
+                    <h3 className={styles.schoolContentTitle}>{item.title}</h3>
+                    <p className={styles.schoolContentMeta}>
+                      by {item.author?.name || 'Unknown'} · {item.user?.schoolName || ''}
+                    </p>
+                    <p className={styles.schoolContentDesc}>
+                      {item.content?.slice(0, 120)}{item.content?.length > 120 ? '...' : ''}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+              {activeTab === 'all' && totals && totals.schoolContents > schoolContents.length && (
+                <div className={styles.viewAllRow}>
+                  <button onClick={() => setActiveTab('schoolContents')} className={styles.viewAllBtn}>
+                    View all {totals.schoolContents} lessons →
+                  </button>
+                </div>
+              )}
+            </section>
+          )}
+
+          {showPlans && plans.length > 0 && (
+            <section>
+              {activeTab === 'all' && <h2 className={styles.sectionTitle}>Plans</h2>}
+              <div className={styles.planList}>
+                {plans.map((plan: any) => (
+                  <Link key={plan.id} href={`/plans/${plan.id}`} className={styles.planCard}>
+                    <h3 className={styles.planCardTitle}>{plan.title}</h3>
+                    {plan.description && (
+                      <p className={styles.planCardDesc}>{plan.description.slice(0, 120)}{plan.description.length > 120 ? '...' : ''}</p>
+                    )}
+                    <div className={styles.planCardMeta}>
+                      <span className={`badge badge-${plan.status === 'COMPLETED' ? 'completed' : plan.status === 'ACTIVE' ? 'active' : 'draft'}`}>
+                        {plan.status}
+                      </span>
+                      <span>{plan._count?.requests || 0} requests</span>
+                      <span>{plan._count?.joiners || 0} joiners</span>
+                      {plan.user?.name && <span>by {plan.user.name}</span>}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              {activeTab === 'all' && totals && totals.plans > plans.length && (
+                <div className={styles.viewAllRow}>
+                  <button onClick={() => setActiveTab('plans')} className={styles.viewAllBtn}>
+                    View all {totals.plans} plans →
+                  </button>
+                </div>
+              )}
+            </section>
+          )}
+
+          {showRequests && requests.length > 0 && (
+            <section>
+              {activeTab === 'all' && <h2 className={styles.sectionTitle}>Requests</h2>}
+              <div className={styles.requestList}>
+                {requests.map((req: any) => (
+                  <Link key={req.id} href={`/requests/${req.id}`} className={styles.requestCard}>
+                    <div className={styles.requestCardHeader}>
+                      <span className={`badge ${req.status === 'APPROVED' ? 'badge-completed' : req.status === 'REJECTED' ? 'badge-archived' : 'badge-active'}`}>
+                        {req.status}
+                      </span>
+                      <span className={styles.requestCategory}>{req.category}</span>
+                    </div>
+                    <h3 className={styles.requestCardTitle}>{req.title}</h3>
+                    {req.description && (
+                      <p className={styles.requestCardDesc}>{req.description.slice(0, 100)}{req.description.length > 100 ? '...' : ''}</p>
+                    )}
+                    <div className={styles.requestCardMeta}>
+                      <span>{req._count?.comments || 0} comments</span>
+                      {req.user?.name && <span>by {req.user.name}</span>}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              {activeTab === 'all' && totals && totals.requests > requests.length && (
+                <div className={styles.viewAllRow}>
+                  <button onClick={() => setActiveTab('requests')} className={styles.viewAllBtn}>
+                    View all {totals.requests} requests →
+                  </button>
+                </div>
+              )}
+            </section>
+          )}
+
+          {showGroups && groups.length > 0 && (
+            <section>
+              {activeTab === 'all' && <h2 className={styles.sectionTitle}>Groups</h2>}
+              <div className={styles.groupList}>
+                {groups.map((group: any) => (
+                  <Link key={group.id} href={`/groups/${group.id}`} className={styles.groupCard}>
+                    <div className={styles.groupCardHeader}>
+                      {group.imageUrl && (
+                        <img src={group.imageUrl} alt="" className={styles.groupCardImage} />
+                      )}
+                      <div>
+                        <h3 className={styles.groupCardName}>{group.name}</h3>
+                        <span className={styles.groupCardCategory}>{group.category}</span>
+                      </div>
+                    </div>
+                    {group.description && (
+                      <p className={styles.groupCardDesc}>{group.description.slice(0, 120)}{group.description.length > 120 ? '...' : ''}</p>
+                    )}
+                    <div className={styles.groupCardMeta}>
+                      <span>{group._count?.members || 0} members</span>
+                      <span>{group._count?.posts || 0} posts</span>
+                      {group.isPrivate && <span className={styles.privateBadge}>🔒 Private</span>}
+                      {group.user?.name && <span>by {group.user.name}</span>}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              {activeTab === 'all' && totals && totals.groups > groups.length && (
+                <div className={styles.viewAllRow}>
+                  <button onClick={() => setActiveTab('groups')} className={styles.viewAllBtn}>
+                    View all {totals.groups} groups →
+                  </button>
+                </div>
+              )}
             </section>
           )}
 
@@ -244,6 +386,53 @@ export default function HashtagPage() {
             </div>
           )}
         </div>
+      )}
+
+      {activeTab !== 'products' && activeTab !== 'events' && activeTab !== 'services' &&
+       activeTab !== 'schoolContents' && activeTab !== 'plans' && activeTab !== 'requests' &&
+       activeTab !== 'groups' && groupedPosts.length > 0 && (
+        <section>
+          {activeTab === 'all' && groupedPosts.length > 1 && (
+            <h2 className={styles.sectionTitle}>Posts</h2>
+          )}
+          <div className={styles.postList}>
+            {groupedPosts.map(({ key, config, items }) => (
+              <div key={key} style={{ marginBottom: '20px' }}>
+                {groupedPosts.length > 1 && (
+                  <h3 style={{
+                    fontSize: '0.95rem',
+                    fontWeight: 600,
+                    marginBottom: '12px',
+                    color: 'var(--text-secondary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}>
+                    {config.icon} {config.label}
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>
+                      ({items.length})
+                    </span>
+                  </h3>
+                )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {items.map((post: any) => {
+                    const sourceType = key === 'FORUMPOST' ? 'FORUMPOST' : key === 'GROUPPOST' ? 'GROUPPOST' : 'POST'
+                    return (
+                      <FeedItem
+                        key={post.id}
+                        post={{
+                          ...post,
+                          user: post.user || { id: '', name: null, image: null },
+                          sourceType,
+                        }}
+                      />
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
     </div>
   )

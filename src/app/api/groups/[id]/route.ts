@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { extractAndLinkHashtags, linkHashtags } from '@/services/hashtagService'
 
 export async function GET(
   request: Request,
@@ -88,7 +89,7 @@ export async function PUT(
     }
 
     const { id } = await params
-    const { name, description, imageUrl, coverImage, bannerColor, isPrivate } = await request.json()
+    const { name, description, imageUrl, coverImage, bannerColor, isPrivate, hashtags } = await request.json()
 
     const member = await prisma.groupMember.findFirst({
       where: { groupId: id, userId: session.user.id, role: 'ADMIN' }
@@ -110,6 +111,14 @@ export async function PUT(
       where: { id },
       data
     })
+
+    if (Array.isArray(hashtags)) {
+      await linkHashtags('GROUP', id, hashtags)
+    } else {
+      const groupName = name || group.name
+      const groupDesc = description || group.description || ''
+      await extractAndLinkHashtags(groupName + ' ' + groupDesc, 'GROUP', id)
+    }
 
     return NextResponse.json(group)
   } catch (error) {

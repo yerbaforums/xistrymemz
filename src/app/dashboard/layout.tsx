@@ -5,6 +5,8 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { SkeletonCard } from '@/components/Skeleton'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 import styles from './layout.module.css'
 import sidebarStyles from './layout-sidebar.module.css'
 
@@ -124,33 +126,6 @@ function DashboardNav({ user }: { user: { name?: string | null; image?: string |
   )
 }
 
-function ErrorBoundary({ children }: { children: React.ReactNode }) {
-  const [hasError, setHasError] = useState(false)
-  
-  useEffect(() => {
-    const handler = (event: ErrorEvent) => {
-      console.error('Dashboard error:', event.error)
-      setHasError(true)
-    }
-    window.addEventListener('error', handler)
-    return () => window.removeEventListener('error', handler)
-  }, [])
-
-  if (hasError) {
-    return (
-      <div className={styles.errorState}>
-        <h2>Something went wrong</h2>
-        <p>An error occurred while loading the dashboard.</p>
-        <button onClick={() => setHasError(false)} className={styles.retryBtn}>
-          Try Again
-        </button>
-      </div>
-    )
-  }
-
-  return <>{children}</>
-}
-
 export default function DashboardLayout({
   children,
 }: {
@@ -195,7 +170,10 @@ export default function DashboardLayout({
     return (
       <div className={styles.layout}>
         <div className={styles.container}>
-          <div className={styles.loading}>Loading dashboard...</div>
+          <div className={styles.loading}>
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
         </div>
       </div>
     )
