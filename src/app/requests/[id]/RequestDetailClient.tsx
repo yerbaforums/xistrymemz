@@ -8,7 +8,7 @@ import { useToast } from '@/context/ToastContext'
 import { MakeOfferModal } from '@/components/MakeOfferModal'
 import { getUserProfileUrl } from '@/lib/utils'
 import { getCryptoIcon, getCryptoName } from '@/lib/crypto-icons'
-import ShareSection from '@/components/ShareSection'
+import EntityActions from '@/components/EntityActions'
 import ViewCount from '@/components/ViewCount'
 import { useRecordView } from '@/hooks/useRecordView'
 import TranslateButton from '@/components/TranslateButton'
@@ -907,13 +907,13 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
           )}
 
           <div className={styles.quickActions} style={{ marginTop: 8 }}>
-            <ShareSection
+            <EntityActions
+              entityType="REQUEST"
+              entityId={request.id}
               title={request.title}
-              description={request.description}
-              referenceType="REQUEST"
-              referenceId={request.id}
-              referenceTitle={request.title}
-              referenceImage={request.imageUrl}
+              authorId={request.user.id}
+              image={request.imageUrl}
+              variant="bar"
             />
           </div>
 

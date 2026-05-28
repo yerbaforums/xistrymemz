@@ -4,7 +4,8 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 
 export type ActionEntityType =
   | 'POST' | 'PRODUCT' | 'SERVICE' | 'EVENT' | 'PLAN'
-  | 'REQUEST' | 'SCHOOLCONTENT' | 'GROUP' | 'SHOP' | 'FORUMPOST'
+  | 'REQUEST' | 'SCHOOLCONTENT' | 'GROUP' | 'SHOP' | 'SCHOOL'
+  | 'FORUMPOST' | 'PROFILE'
 
 interface AuthorSettings {
   enableTips: boolean

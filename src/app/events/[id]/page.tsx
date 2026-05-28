@@ -12,7 +12,7 @@ import { hydrateDonationAddresses, serializeDonationAddresses, donationAddresses
 import { getUserProfileUrl } from '@/lib/utils'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
-import ShareSection from '@/components/ShareSection'
+import EntityActions from '@/components/EntityActions'
 import type { Event } from '@/types/event'
 import type { DonationAddr } from '@/types/product'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
@@ -702,12 +702,12 @@ function EventDetailContent() {
           )}
 
           <div className={styles.statsCard}>
-            <ShareSection
+            <EntityActions
+              entityType="EVENT"
+              entityId={event.id}
               title={event.title}
-              description={event.description}
-              referenceType="EVENT"
-              referenceId={event.id}
-              referenceTitle={event.title}
+              authorId={event.userId}
+              variant="bar"
             />
           </div>
         </div>

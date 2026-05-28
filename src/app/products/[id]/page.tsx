@@ -11,7 +11,7 @@ import Rating from '@/components/Rating'
 import { getUserProfileUrl } from '@/lib/utils'
 import { MakeOfferModal } from '@/components/MakeOfferModal'
 import { ComingSoonModal } from '@/components/ComingSoonModal'
-import ShareSection from '@/components/ShareSection'
+import EntityActions from '@/components/EntityActions'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import ViewCount from '@/components/ViewCount'
@@ -957,13 +957,13 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <ViewCount count={product.viewCount || 0} size="md" />
           </div>
 
-          <ShareSection
+          <EntityActions
+            entityType="PRODUCT"
+            entityId={product.id}
             title={product.title}
-            description={product.description}
-            referenceType="PRODUCT"
-            referenceId={product.id}
-            referenceTitle={product.title}
-            referenceImage={product.imageUrl}
+            authorId={product.user.id}
+            image={product.imageUrl}
+            variant="bar"
           />
         </div>
       </div>

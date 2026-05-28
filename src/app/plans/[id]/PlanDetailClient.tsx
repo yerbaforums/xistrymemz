@@ -10,7 +10,7 @@ import PlanResources from './PlanResources'
 import PlanSupport from './PlanSupport'
 import { parseGoals, parseMilestones, parseResources, stringifyGoals, stringifyMilestones, stringifyResources } from '@/lib/plan-utils'
 import { getUserProfileUrl } from '@/lib/utils'
-import ShareSection from '@/components/ShareSection'
+import EntityActions from '@/components/EntityActions'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
@@ -480,13 +480,13 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                       )}
                       {plan.description && <p className={styles.description}>{plan.description}</p>}
                       {plan.description && <TranslateButton text={plan.description} />}
-                      <ShareSection
+                      <EntityActions
+                        entityType="PLAN"
+                        entityId={plan.id}
                         title={plan.title}
-                        description={plan.description}
-                        referenceType="PLAN"
-                        referenceId={plan.id}
-                        referenceTitle={plan.title}
-                        referenceImage={plan.imageUrl}
+                        authorId={plan.user.id}
+                        image={plan.imageUrl}
+                        variant="bar"
                       />
                     </div>
                   </div>

@@ -12,7 +12,7 @@ import ImageUploader from '@/components/ImageUploader'
 import MentionInput from '@/components/MentionInput'
 import TranslateButton from '@/components/TranslateButton'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
-import ShareToPostModal from '@/components/ShareToPostModal'
+import EntityActions from '@/components/EntityActions'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
 import Rating from '@/components/Rating'
@@ -705,14 +705,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
         sellerName={shop.user.name}
       />
 
-      <ShareToPostModal
-        isOpen={showShareModal}
-        onClose={() => setShowShareModal(false)}
-        referenceType="SHOP"
-        referenceId={shop.shopSlug || ''}
-        referenceTitle={shop.shopName || 'Shop'}
-        referenceImage={shop.shopImage}
-      />
+      <EntityActions entityType="SHOP" entityId={shop.shopSlug || ''} title={shop.shopName || 'Shop'} authorId={shop.user.id} variant="bar" />
     </div>
   )
 }

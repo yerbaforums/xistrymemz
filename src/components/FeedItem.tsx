@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import HashtagText from '@/components/HashtagText'
 import LinkPreview, { URL_REGEX } from '@/components/LinkPreview'
-import PostActions from '@/components/PostActions'
+import EntityActions from '@/components/EntityActions'
 import SharedItemCard from '@/components/SharedItemCard'
 import ReplySection from '@/components/ReplySection'
 import TranslateButton from '@/components/TranslateButton'
@@ -192,14 +192,16 @@ export default function FeedItem({ post }: { post: FeedPost }) {
       )}
       {post.sourceType === 'POST' && post.userId && (
         <div style={{ marginTop: 8 }}>
-          <PostActions
-            postId={post.id}
-            postAuthorId={post.userId}
+          <EntityActions
+            entityType="POST"
+            entityId={post.id}
+            title={post.content?.slice(0, 100) || 'Post'}
+            authorId={post.user?.id || post.userId}
             initialLikes={post.likes || 0}
-            liked={post.liked}
-            showTip={true}
-            replyCount={post.replyCount ?? 0}
-            onReply={() => setShowReplies(!showReplies)}
+            liked={post.liked || false}
+            viewCount={post.viewCount || 0}
+            replyCount={post.replyCount || 0}
+            variant="full"
           />
           <ReplySection postId={post.id} postAuthorId={post.userId} expandReply={showReplies} />
         </div>

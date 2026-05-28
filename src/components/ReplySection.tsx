@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useToast } from '@/context/ToastContext'
-import PostActions from './PostActions'
+import EntityActions from '@/components/EntityActions'
 
 interface Reply {
   id: string
@@ -122,11 +122,13 @@ export default function ReplySection({ postId, postAuthorId, expandReply }: Repl
                   </span>
                 </div>
                 <p style={{ margin: 0, fontSize: '0.85rem', lineHeight: 1.4 }}>{reply.content}</p>
-                <PostActions
-                  postId={reply.id}
-                  postAuthorId={reply.user.id}
-                  initialLikes={reply.likes}
-                  showTip={true}
+                <EntityActions
+                  entityType="POST"
+                  entityId={reply.id}
+                  title={reply.content?.slice(0, 80) || 'Reply'}
+                  authorId={reply.user.id}
+                  initialLikes={reply.likes || 0}
+                  variant="compact"
                 />
               </div>
             </div>

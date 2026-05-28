@@ -10,7 +10,6 @@ import Rating from '@/components/Rating'
 import { getUserProfileUrl } from '@/lib/utils'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { DonationActions } from '@/components/DonationActions'
-import { ShareProfileModal } from '@/components/ShareProfileModal'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
 import ActiveStatus from '@/components/ActiveStatus'
@@ -18,7 +17,7 @@ import LookingForCollaboratorsBadge from '@/components/LookingForCollaboratorsBa
 import HashtagText from '@/components/HashtagText'
 import MentionInput from '@/components/MentionInput'
 import ImageUploader from '@/components/ImageUploader'
-import PostActions from '@/components/PostActions'
+import EntityActions from '@/components/EntityActions'
 import SharedItemCard from '@/components/SharedItemCard'
 import ReplySection from '@/components/ReplySection'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
@@ -1213,13 +1212,14 @@ export default function ProfilePage() {
                           />
                         )}
                         <div className={styles.postFooter}>
-                          <PostActions
-                            postId={post.id}
-                            postAuthorId={post.userId}
+                          <EntityActions
+                            entityType="POST"
+                            entityId={post.id}
+                            title={post.content?.slice(0, 100) || 'Post'}
+                            authorId={post.userId}
                             initialLikes={post.likes}
                             liked={likedPosts.has(post.id)}
-                            showTip={true}
-                            onLike={handleToggleLike}
+                            variant="full"
                           />
                           <ReplySection postId={post.id} postAuthorId={post.userId} />
                         </div>
@@ -1768,12 +1768,7 @@ export default function ProfilePage() {
         </div>
       )}
 
-      <ShareProfileModal
-        isOpen={showShareModal}
-        onClose={() => setShowShareModal(false)}
-        username={user.username || ''}
-        displayName={user.name || 'User'}
-      />
+      <EntityActions entityType="PROFILE" entityId={user.id} title={user.name || 'User'} authorId={user.id} variant="modal-trigger" />
 
       <ConfirmDialog
         isOpen={confirmDeletePost !== null}

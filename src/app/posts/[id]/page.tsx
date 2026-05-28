@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import HashtagText from '@/components/HashtagText'
-import PostActions from '@/components/PostActions'
+import EntityActions from '@/components/EntityActions'
 import ReplySection from '@/components/ReplySection'
 import SharedItemCard from '@/components/SharedItemCard'
 import ViewCount from '@/components/ViewCount'
@@ -157,14 +157,14 @@ export default function PostPage() {
         )}
 
         <div style={{ marginTop: 12 }}>
-          <PostActions
-            postId={post.id}
-            postAuthorId={post.userId}
+          <EntityActions
+            entityType="POST"
+            entityId={post.id}
+            title={post.content?.slice(0, 100) || 'Post'}
+            authorId={post.userId}
             initialLikes={likes}
             liked={liked}
-            showTip={true}
-            replyCount={0}
-            onReply={() => setExpandReply(true)}
+            variant="full"
           />
         </div>
       </div>

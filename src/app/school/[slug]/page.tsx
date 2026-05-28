@@ -11,7 +11,7 @@ import { DonationActions } from '@/components/DonationActions'
 import ImageUploader from '@/components/ImageUploader'
 import MentionInput from '@/components/MentionInput'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
-import ShareToPostModal from '@/components/ShareToPostModal'
+import EntityActions from '@/components/EntityActions'
 import HashtagInput from '@/components/HashtagInput'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
@@ -661,22 +661,9 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
         sellerName={school.user.name}
       />
 
-      <ShareToPostModal
-        isOpen={showShareModal}
-        onClose={() => setShowShareModal(false)}
-        referenceType="SCHOOL"
-        referenceId={school.schoolSlug || ''}
-        referenceTitle={school.schoolName || 'School'}
-        referenceImage={school.schoolImage}
-      />
+      <EntityActions entityType="SCHOOL" entityId={school.schoolSlug || ''} title={school.schoolName || 'School'} authorId={school.user.id} variant="bar" />
 
-      <ShareToPostModal
-        isOpen={shareContent !== null}
-        onClose={() => setShareContent(null)}
-        referenceType="SCHOOLCONTENT"
-        referenceId={shareContent?.id || ''}
-        referenceTitle={shareContent?.title || ''}
-      />
+      <EntityActions entityType="SCHOOLCONTENT" entityId={shareContent?.id || ''} title={shareContent?.title || ''} authorId={school.user.id} variant="bar" />
       </div>
     </div>
   )

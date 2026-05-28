@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
-import ShareSection from '@/components/ShareSection'
+import EntityActions from '@/components/EntityActions'
 import type { ServiceOffering, ServiceCategory } from '@/types/service'
 import { SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service'
 import ViewCount from '@/components/ViewCount'
@@ -297,13 +297,13 @@ export default function ServiceDetailPage() {
               </div>
             )}
 
-            <ShareSection
+            <EntityActions
+              entityType="SERVICE"
+              entityId={service.id}
               title={title}
-              description={description}
-              referenceType="SERVICE"
-              referenceId={service.id}
-              referenceTitle={title}
-              referenceImage={imageUrl}
+              authorId={service.userId}
+              image={imageUrl}
+              variant="bar"
             />
           </div>
 

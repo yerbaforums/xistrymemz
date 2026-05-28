@@ -19,7 +19,7 @@ interface EntityActionsProps {
   saved?: boolean
   viewCount?: number
   replyCount?: number
-  variant?: 'bar' | 'compact' | 'full'
+  variant?: 'bar' | 'compact' | 'full' | 'modal-trigger'
   onEdit?: () => void
 }
 
@@ -132,6 +132,86 @@ export default function EntityActions({
 
   const btnClass = `${styles.btn} ${variant === 'compact' ? styles.btnCompact : variant === 'full' ? styles.btnFull : ''}`
 
+  const modals = (
+    <>
+      {showTipModal && (
+        <div className={styles.overlay} onClick={() => setShowTipModal(false)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <h3 className={styles.modalTitle}>💎 Send Tip</h3>
+            <p className={styles.modalDesc}>Support this content with a crypto tip</p>
+            <div className={styles.tipRow}>
+              {['XTM', 'XMR', 'BTC', 'ETH', 'USDT'].map(coin => (
+                <button key={coin} className={styles.tipBtn} onClick={() => {
+                  fetch('/api/actions/tip', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ entityType, entityId, amount: 1, currency: coin }),
+                  }).then(r => { if (r.ok) { success(`Tipped 1 ${coin}!`); setShowTipModal(false) } else error('Tip failed') })
+                }}>{coin}</button>
+              ))}
+            </div>
+            <button className={styles.closeBtn} onClick={() => setShowTipModal(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
+      {showShareModal && (
+        <div className={styles.overlay} onClick={() => setShowShareModal(false)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>Share</h3>
+              <button onClick={() => setShowShareModal(false)} className={styles.xBtn}>×</button>
+            </div>
+            <div className={styles.preview}>
+              {image && <img src={image} alt="" className={styles.previewImg} />}
+              <div>
+                <div className={styles.previewType}>{entityType}</div>
+                <div className={styles.previewTitle}>{title}</div>
+              </div>
+            </div>
+            <div className={styles.copyRow}>
+              <input type="text" readOnly value={url} className={styles.copyInput} />
+              <button onClick={copyLink} className={styles.copyBtn}>Copy</button>
+            </div>
+            <button onClick={nativeShare} className={styles.nativeBtn}>📤 Share via device</button>
+            <div className={styles.socialGrid}>
+              {SOCIAL_PLATFORMS.map(p => (
+                <a key={p.key} href={`${p.url}?${p.key === 'x' ? `text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}` : p.key === 'facebook' ? `u=${encodeURIComponent(url)}` : p.key === 'linkedin' ? `url=${encodeURIComponent(url)}` : p.key === 'reddit' ? `url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}` : p.key === 'telegram' ? `url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}` : p.key === 'whatsapp' ? `text=${encodeURIComponent(title + ' ' + url)}` : p.key === 'mastodon' ? `text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}` : `subject=${encodeURIComponent(title)}&body=${encodeURIComponent(url)}`}`} target="_blank" rel="noopener noreferrer" className={styles.socialBtn}>{p.label}</a>
+              ))}
+            </div>
+            <div className={styles.divider} />
+            <button onClick={() => setShowFeedModal(true)} className={styles.feedBtn}>📝 Share to Feed</button>
+          </div>
+        </div>
+      )}
+      {showFeedModal && (
+        <div className={styles.overlay} onClick={() => setShowFeedModal(false)} style={{ zIndex: 1001 }}>
+          <div className={styles.feedModal} onClick={e => e.stopPropagation()}>
+            <h4 className={styles.feedTitle}>Share to Post</h4>
+            <textarea value={feedContent} onChange={e => setFeedContent(e.target.value)} placeholder="Add a comment (optional)..." rows={3} className={styles.feedTextarea} />
+            <div className={styles.destRow}>
+              {(['PROFILE', 'SHOP', 'SCHOOL'] as const).map(d => {
+                const disabled = (d === 'SHOP' && !hasShop) || (d === 'SCHOOL' && !hasSchool)
+                return <button key={d} disabled={disabled} onClick={() => setFeedDestination(d)} className={`${styles.destBtn} ${feedDestination === d ? styles.destActive : ''}`}>{d === 'PROFILE' ? 'My Profile' : d === 'SHOP' ? 'My Shop' : 'My School'}</button>
+              })}
+            </div>
+            <div className={styles.feedActions}>
+              <button onClick={() => setShowFeedModal(false)} className={styles.cancelBtn}>Cancel</button>
+              <button onClick={handleShareToFeed} disabled={posting} className={styles.shareBtn}>{posting ? 'Posting...' : 'Share'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+
+  if (variant === 'modal-trigger') {
+    return (
+      <>
+        <button onClick={() => setShowShareModal(true)} className={styles.triggerBtn} title="Share">🔗</button>
+        {modals}
+      </>
+    )
+  }
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.bar}>
@@ -232,88 +312,7 @@ export default function EntityActions({
         </div>
       )}
 
-      {showTipModal && (
-        <div className={styles.overlay} onClick={() => setShowTipModal(false)}>
-          <div className={styles.modal} onClick={e => e.stopPropagation()}>
-            <h3 className={styles.modalTitle}>💎 Send Tip</h3>
-            <p className={styles.modalDesc}>Support this content with a crypto tip</p>
-            <div className={styles.tipRow}>
-              {['XTM', 'XMR', 'BTC', 'ETH', 'USDT'].map(coin => (
-                <button key={coin} className={styles.tipBtn} onClick={() => {
-                  fetch('/api/actions/tip', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ entityType, entityId, amount: 1, currency: coin }),
-                  }).then(r => { if (r.ok) { success(`Tipped 1 ${coin}!`); setShowTipModal(false) } else error('Tip failed') })
-                }}>
-                  {coin}
-                </button>
-              ))}
-            </div>
-            <button className={styles.closeBtn} onClick={() => setShowTipModal(false)}>Cancel</button>
-          </div>
-        </div>
-      )}
-
-      {showShareModal && (
-        <div className={styles.overlay} onClick={() => setShowShareModal(false)}>
-          <div className={styles.modal} onClick={e => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Share</h3>
-              <button onClick={() => setShowShareModal(false)} className={styles.xBtn}>×</button>
-            </div>
-
-            <div className={styles.preview}>
-              {image && <img src={image} alt="" className={styles.previewImg} />}
-              <div>
-                <div className={styles.previewType}>{entityType}</div>
-                <div className={styles.previewTitle}>{title}</div>
-              </div>
-            </div>
-
-            <div className={styles.copyRow}>
-              <input type="text" readOnly value={url} className={styles.copyInput} />
-              <button onClick={copyLink} className={styles.copyBtn}>Copy</button>
-            </div>
-
-            <button onClick={nativeShare} className={styles.nativeBtn}>📤 Share via device</button>
-
-            <div className={styles.socialGrid}>
-              {SOCIAL_PLATFORMS.map(p => (
-                <a key={p.key} href={`${p.url}${p.key === 'x' ? `?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}` : p.key === 'facebook' ? `?u=${encodeURIComponent(url)}` : p.key === 'linkedin' ? `?url=${encodeURIComponent(url)}` : p.key === 'reddit' ? `?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}` : p.key === 'telegram' ? `?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}` : p.key === 'whatsapp' ? `?text=${encodeURIComponent(title + ' ' + url)}` : p.key === 'mastodon' ? `?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}` : `?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(url)}`}`} target="_blank" rel="noopener noreferrer" className={styles.socialBtn}>
-                  {p.label}
-                </a>
-              ))}
-            </div>
-
-            <div className={styles.divider} />
-            <button onClick={() => setShowFeedModal(true)} className={styles.feedBtn}>📝 Share to Feed</button>
-          </div>
-        </div>
-      )}
-
-      {showFeedModal && (
-        <div className={styles.overlay} onClick={() => setShowFeedModal(false)} style={{ zIndex: 1001 }}>
-          <div className={styles.feedModal} onClick={e => e.stopPropagation()}>
-            <h4 className={styles.feedTitle}>Share to Post</h4>
-            <textarea value={feedContent} onChange={e => setFeedContent(e.target.value)} placeholder="Add a comment (optional)..." rows={3} className={styles.feedTextarea} />
-            <div className={styles.destRow}>
-              {(['PROFILE', 'SHOP', 'SCHOOL'] as const).map(d => {
-                const disabled = (d === 'SHOP' && !hasShop) || (d === 'SCHOOL' && !hasSchool)
-                return (
-                  <button key={d} disabled={disabled} onClick={() => setFeedDestination(d)} className={`${styles.destBtn} ${feedDestination === d ? styles.destActive : ''}`}>
-                    {d === 'PROFILE' ? 'My Profile' : d === 'SHOP' ? 'My Shop' : 'My School'}
-                  </button>
-                )
-              })}
-            </div>
-            <div className={styles.feedActions}>
-              <button onClick={() => setShowFeedModal(false)} className={styles.cancelBtn}>Cancel</button>
-              <button onClick={handleShareToFeed} disabled={posting} className={styles.shareBtn}>{posting ? 'Posting...' : 'Share'}</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {modals}
     </div>
   )
 }
