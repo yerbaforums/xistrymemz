@@ -56,6 +56,14 @@ export async function GET() {
       productCategoryCounts,
       serviceCategoryCounts,
       dailyViewsRaw,
+      visitsToday,
+      visits7d,
+      visits30d,
+      totalVisits,
+      visitsByCountry,
+      visitsByReferrerType,
+      topReferrerDomains,
+      dailyVisits,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
@@ -107,6 +115,40 @@ export async function GET() {
         where: { category: { not: undefined } },
       }),
       prisma.contentView.findMany({
+        where: { createdAt: { gte: thirtyDaysAgo } },
+        select: { createdAt: true },
+      }).then(rows => {
+        const byDate: Record<string, number> = {}
+        for (const r of rows) {
+          const key = r.createdAt.toISOString().slice(0, 10)
+          byDate[key] = (byDate[key] || 0) + 1
+        }
+        return Object.entries(byDate).map(([date, count]) => ({ date, count })).sort((a, b) => a.date.localeCompare(b.date))
+      }),
+      prisma.pageVisit.count({ where: { createdAt: { gte: today } } }),
+      prisma.pageVisit.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
+      prisma.pageVisit.count({ where: { createdAt: { gte: thirtyDaysAgo } } }),
+      prisma.pageVisit.count(),
+      prisma.pageVisit.groupBy({
+        by: ['country'],
+        _count: true,
+        orderBy: { _count: { country: 'desc' } },
+        where: { country: { not: null } },
+        take: 15,
+      }),
+      prisma.pageVisit.groupBy({
+        by: ['referrerType'],
+        _count: true,
+        orderBy: { _count: { referrerType: 'desc' } },
+      }),
+      prisma.pageVisit.groupBy({
+        by: ['referrerDomain'],
+        _count: true,
+        orderBy: { _count: { referrerDomain: 'desc' } },
+        where: { referrerDomain: { not: null } },
+        take: 10,
+      }),
+      prisma.pageVisit.findMany({
         where: { createdAt: { gte: thirtyDaysAgo } },
         select: { createdAt: true },
       }).then(rows => {
@@ -233,6 +275,16 @@ export async function GET() {
       dailyViews: dailyViewsRaw,
       dailyContent,
       dailyUsers,
+      traffic: {
+        visitsToday,
+        visits7d,
+        visits30d,
+        totalVisits,
+        byCountry: visitsByCountry.map(r => ({ country: r.country, count: r._count })),
+        byReferrerType: visitsByReferrerType.map(r => ({ type: r.referrerType, count: r._count })),
+        topDomains: topReferrerDomains.map(r => ({ domain: r.referrerDomain, count: r._count })),
+        dailyVisits,
+      },
     })
   } catch (error) {
     console.error('Admin analytics error:', error)

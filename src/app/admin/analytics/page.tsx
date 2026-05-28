@@ -50,6 +50,16 @@ interface AnalyticsData {
   dailyViews: ViewData[]
   dailyContent: ContentDay[]
   dailyUsers: ViewData[]
+  traffic: {
+    visitsToday: number
+    visits7d: number
+    visits30d: number
+    totalVisits: number
+    byCountry: { country: string | null; count: number }[]
+    byReferrerType: { type: string | null; count: number }[]
+    topDomains: { domain: string | null; count: number }[]
+    dailyVisits: ViewData[]
+  }
 }
 
 const DATE_RANGES = ['24h', '7d', '30d', 'All'] as const
@@ -144,6 +154,13 @@ function pRequests(d: ContentDay) {
 }
 
 const MAX_CLASSES = 14
+
+const REFERRER_COLORS: Record<string, string> = {
+  direct: '#8B5CF6',
+  search: '#10B981',
+  social: '#3B82F6',
+  other: '#F59E0B',
+}
 
 export default function AdminAnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null)
@@ -281,6 +298,66 @@ export default function AdminAnalyticsPage() {
               max={Math.max(...data.productCategoryCounts.map(c => c.count), 1)}
               color="#10B981"
             />
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>🌐 Traffic Sources</h2>
+        <div className={styles.statsGrid}>
+          <StatsCard icon="👁️" label="Visits Today" value={data.traffic.visitsToday} />
+          <StatsCard icon="📈" label="Visits (7d)" value={data.traffic.visits7d} />
+          <StatsCard icon="📊" label="Visits (30d)" value={data.traffic.visits30d} />
+          <StatsCard icon="📋" label="All Time Visits" value={data.traffic.totalVisits} />
+        </div>
+        <div className={styles.twoCol}>
+          <div className={styles.card}>
+            <h3 className={styles.cardTitle}>Traffic Source</h3>
+            {data.traffic.byReferrerType.length > 0 ? (
+              <SimpleBar
+                items={data.traffic.byReferrerType.map(r => ({ label: r.type || 'unknown', value: r.count }))}
+                max={Math.max(...data.traffic.byReferrerType.map(r => r.count), 1)}
+                color="var(--accent-primary)"
+              />
+            ) : <div className={styles.empty}>No traffic data yet</div>}
+          </div>
+          <div className={styles.card}>
+            <h3 className={styles.cardTitle}>Daily Visits</h3>
+            <SparkChart data={data.traffic.dailyVisits} color="#8B5CF6" label="visits" />
+          </div>
+        </div>
+        <div className={styles.twoCol} style={{ marginTop: 16 }}>
+          <div className={styles.card}>
+            <h3 className={styles.cardTitle}>Top Countries</h3>
+            {data.traffic.byCountry.length > 0 ? (
+              <table className={styles.table}>
+                <thead><tr><th>Country</th><th>Visits</th></tr></thead>
+                <tbody>
+                  {data.traffic.byCountry.map(c => (
+                    <tr key={c.country || 'unknown'}>
+                      <td>{c.country ? <span className={styles.countryCell}>{c.country}</span> : <span className={styles.unknown}>Unknown</span>}</td>
+                      <td>{c.count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : <div className={styles.empty}>No traffic data yet</div>}
+          </div>
+          <div className={styles.card}>
+            <h3 className={styles.cardTitle}>Top Referring Domains</h3>
+            {data.traffic.topDomains.length > 0 ? (
+              <table className={styles.table}>
+                <thead><tr><th>Domain</th><th>Visits</th></tr></thead>
+                <tbody>
+                  {data.traffic.topDomains.map(d => (
+                    <tr key={d.domain || 'unknown'}>
+                      <td>{d.domain || '—'}</td>
+                      <td>{d.count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : <div className={styles.empty}>No referral data yet</div>}
           </div>
         </div>
       </div>

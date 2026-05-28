@@ -245,6 +245,15 @@
   text-decoration: underline;
 }
 
+.countryCell {
+  font-weight: 500;
+}
+
+.unknown {
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
 .spacing {
   height: 32px;
 }

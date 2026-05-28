@@ -156,6 +156,7 @@ model User {
   availabilitySlots     Availability[]
   notifications         Notification[]
   contentViews          ContentView[]
+  pageVisits            PageVisit[]
   videoRoomsCreated     VideoRoom[]
   videoRoomParticipants VideoRoomParticipant[]
   entityLikes           EntityLike[]
@@ -1847,6 +1848,26 @@ model ContentView {
   @@index([entityType, entityId])
   @@index([userId])
   @@index([createdAt])
+}
+
+model PageVisit {
+  id             String   @id @default(cuid())
+  userId         String?
+  user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  ipHash         String?
+  country        String?
+  referrer       String?
+  referrerDomain String?
+  referrerType   String?  // direct | search | social | other
+  landingPage    String?
+  userAgent      String?
+  createdAt      DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([country])
+  @@index([referrerDomain])
+  @@index([referrerType])
+  @@index([userId])
 }
 
 model EntityLike {
