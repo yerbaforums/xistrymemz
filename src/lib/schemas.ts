@@ -277,7 +277,13 @@ export const profileUpdateSchema = z.object({
   acceptsDonations: z.boolean().optional(),
   lookingForCollaborators: z.boolean().optional(),
   coverImage: z.string().max(500).optional().nullable(),
-  coverStyle: z.string().max(20).optional().nullable()
+  coverStyle: z.string().max(20).optional().nullable(),
+  showShop: z.boolean().optional(),
+  showSchool: z.boolean().optional(),
+  enableTips: z.boolean().optional(),
+  enableReplies: z.boolean().optional(),
+  enableLikes: z.boolean().optional(),
+  showViewCount: z.boolean().optional()
 })
 
 export const ratingSchema = z.object({

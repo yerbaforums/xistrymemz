@@ -98,6 +98,12 @@ export default function ProfileEditPage() {
   const [donationForm, setDonationForm] = useState({ currency: 'ETH', address: '', label: '', showQR: true })
   const [donationSaving, setDonationSaving] = useState(false)
   const [acceptsDonations, setAcceptsDonations] = useState(false)
+  const [showShop, setShowShop] = useState(true)
+  const [showSchool, setShowSchool] = useState(true)
+  const [enableTips, setEnableTips] = useState(true)
+  const [enableReplies, setEnableReplies] = useState(true)
+  const [enableLikes, setEnableLikes] = useState(true)
+  const [showViewCount, setShowViewCount] = useState(true)
 
   // Links
   const [links, setLinks] = useState<UserLink[]>([])

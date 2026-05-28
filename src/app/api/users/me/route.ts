@@ -42,7 +42,13 @@ export async function GET() {
           setupProgress: true,
           lookingForCollaborators: true,
           coverImage: true,
-          coverStyle: true
+          coverStyle: true,
+          showShop: true,
+          showSchool: true,
+          enableTips: true,
+          enableReplies: true,
+          enableLikes: true,
+          showViewCount: true
         }
       }),
       prisma.userLink.findMany({
@@ -77,7 +83,8 @@ export async function PUT(request: Request) {
       walletAddress, paymentAddress, refundAddress, cryptoCurrency,
       donationAddress, donationCurrency, acceptsDonations,
       latitude, longitude, lookingForCollaborators,
-      coverImage, coverStyle
+      coverImage, coverStyle,
+      showShop, showSchool, enableTips, enableReplies, enableLikes, showViewCount
     } = validation.data
 
     if (username !== undefined && username !== null && username !== '') {
@@ -121,6 +128,12 @@ export async function PUT(request: Request) {
     if (lookingForCollaborators !== undefined) updateData.lookingForCollaborators = lookingForCollaborators ?? false
     if (coverImage !== undefined) updateData.coverImage = coverImage ?? null
     if (coverStyle !== undefined) updateData.coverStyle = coverStyle ?? undefined
+    if (showShop !== undefined) updateData.showShop = showShop ?? true
+    if (showSchool !== undefined) updateData.showSchool = showSchool ?? true
+    if (enableTips !== undefined) updateData.enableTips = enableTips ?? true
+    if (enableReplies !== undefined) updateData.enableReplies = enableReplies ?? true
+    if (enableLikes !== undefined) updateData.enableLikes = enableLikes ?? true
+    if (showViewCount !== undefined) updateData.showViewCount = showViewCount ?? true
 
     const updated = await prisma.user.update({
       where: { id: session.user.id },
@@ -150,6 +163,12 @@ export async function PUT(request: Request) {
         lookingForCollaborators: true,
         coverImage: true,
         coverStyle: true,
+        showShop: true,
+        showSchool: true,
+        enableTips: true,
+        enableReplies: true,
+        enableLikes: true,
+        showViewCount: true,
         createdAt: true
       }
     })

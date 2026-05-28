@@ -29,9 +29,9 @@ model User {
   shopAbout        String?
   shopImage        String?
   shopCoverImage   String?
-  shopCoverStyle String  @default("cover")
-  shopSlug  String?   @unique
-  shopCategory String @default("OTHER")
+  shopCoverStyle   String  @default("cover")
+  shopSlug         String? @unique
+  shopCategory     String  @default("OTHER")
   schoolName       String?
   schoolAbout      String?
   schoolImage      String?
@@ -56,6 +56,13 @@ model User {
   onboardingCompleted     Boolean   @default(false)
   setupProgress           String?
   lookingForCollaborators Boolean   @default(false)
+  // Feature visibility toggles
+  showShop                Boolean   @default(true)
+  showSchool              Boolean   @default(true)
+  enableTips              Boolean   @default(true)
+  enableReplies           Boolean   @default(true)
+  enableLikes             Boolean   @default(true)
+  showViewCount           Boolean   @default(true)
   lastActiveAt            DateTime?
 
   createdAt DateTime @default(now())
@@ -151,39 +158,42 @@ model User {
   contentViews          ContentView[]
   videoRoomsCreated     VideoRoom[]
   videoRoomParticipants VideoRoomParticipant[]
-  locationCategories    LocationCategory[]
-  trips                 Trip[]
-  tripCollaborators     TripCollaborator[]
+  entityLikes           EntityLike[]
+  entityTips            EntityTip[]
+  entityReplies         EntityReply[]
 
   // Fediverse
-  federatedUrl   String? @unique
-  privateKey     String?
-  publicKey      String?
-  followersCount Int     @default(0)
-  followingCount Int     @default(0)
-  inboxUrl       String?
-  sharedInboxUrl String?
+  federatedUrl       String?            @unique
+  privateKey         String?
+  publicKey          String?
+  followersCount     Int                @default(0)
+  followingCount     Int                @default(0)
+  inboxUrl           String?
+  sharedInboxUrl     String?
+  locationCategories LocationCategory[]
+  trips              Trip[]
+  tripCollaborators  TripCollaborator[]
 }
 
 // User-defined locations for filtering content
 model UserLocation {
-  id         String            @id @default(cuid())
-  name       String // User-defined name: "My Hometown", "Work", "SF Apartment"
-  location   String // Actual location: "San Francisco, CA" or coordinates
-  latitude   Float?
-  longitude  Float?
-  isPrimary  Boolean           @default(false)
-  categoryId String? // LocationCategory for grouping (camping, restaurants, shops, venues, etc.)
-  category   LocationCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  tags       String? // Comma-separated tags
-  notes        String?    // Personal notes about this location
-  imageUrl     String?    // Photo of the location
+  id            String            @id @default(cuid())
+  name          String // User-defined name: "My Hometown", "Work", "SF Apartment"
+  location      String // Actual location: "San Francisco, CA" or coordinates
+  latitude      Float?
+  longitude     Float?
+  isPrimary     Boolean           @default(false)
+  categoryId    String? // LocationCategory for grouping (camping, restaurants, shops, venues, etc.)
+  category      LocationCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tags          String? // Comma-separated tags
+  notes         String? // Personal notes about this location
+  imageUrl      String? // Photo of the location
   lastVisitedAt DateTime? // Date the user last checked in / visited this location
-  userId       String
-  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tripStops    TripStop[]
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  userId        String
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tripStops     TripStop[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 
   @@index([userId])
 }
@@ -241,11 +251,11 @@ model TripStop {
   notes           String?
   arrivalTime     String? // HH:MM format
   departureTime   String? // HH:MM format
-  links           Json?   // [{url, label}]
-  shoppingList    Json?   // [{name, quantity, checked}]
-  linkedRequests  Json?   // [{id, title}]
-  linkedEvents    Json?   // [{id, title}]
-  linkedProducts  Json?   // [{id, title}]
+  links           Json? // [{url, label}]
+  shoppingList    Json? // [{name, quantity, checked}]
+  linkedRequests  Json? // [{id, title}]
+  linkedEvents    Json? // [{id, title}]
+  linkedProducts  Json? // [{id, title}]
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
@@ -641,40 +651,41 @@ model Product {
 }
 
 model SchoolContent {
-  id                String           @id @default(cuid())
+  id                String                 @id @default(cuid())
   title             String
   content           String
-  contentType       String           @default("article")
-  images            String?          // JSON array of image URLs
+  contentType       String                 @default("article")
+  images            String? // JSON array of image URLs
   videoUrl          String?
-  price             Float            @default(0)
-  currency          String           @default("USD")
-  isPaid            Boolean          @default(false)
-  isSubscription    Boolean          @default(false)
-  subscriptionPrice Float            @default(0)
+  price             Float                  @default(0)
+  currency          String                 @default("USD")
+  isPaid            Boolean                @default(false)
+  isSubscription    Boolean                @default(false)
+  subscriptionPrice Float                  @default(0)
   userId            String
-  user              User             @relation("SchoolOwner", fields: [userId], references: [id], onDelete: Cascade)
+  user              User                   @relation("SchoolOwner", fields: [userId], references: [id], onDelete: Cascade)
   authorId          String
-  author            User             @relation("SchoolAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  pinned            Boolean          @default(false)
+  author            User                   @relation("SchoolAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  pinned            Boolean                @default(false)
   originalContentId String?
-  originalContent   SchoolContent?   @relation("RepostedContent", fields: [originalContentId], references: [id], onDelete: SetNull)
-  reposts           SchoolContent[]  @relation("RepostedContent")
+  originalContent   SchoolContent?         @relation("RepostedContent", fields: [originalContentId], references: [id], onDelete: SetNull)
+  reposts           SchoolContent[]        @relation("RepostedContent")
   purchases         SchoolPurchase[]
   requests          Request[]
   likes             SchoolContentLike[]
   hashtags          SchoolContentHashtag[]
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
 }
 
 model SchoolContentLike {
-  id        String       @id @default(cuid())
+  id        String        @id @default(cuid())
   contentId String
   content   SchoolContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
   userId    String
-  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime     @default(now())
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
+
   @@unique([contentId, userId])
 }
 
@@ -749,21 +760,21 @@ model EmailSubscriber {
 }
 
 model PlanUpdate {
-  id        String   @id @default(cuid())
-  content   String
-  imageUrl  String?
-  images    String?  // JSON array of image URLs
-  pinned    Boolean  @default(false)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  planId    String
-  plan      Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
-  likes     Int      @default(0)
-  reposts   Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String              @id @default(cuid())
+  content       String
+  imageUrl      String?
+  images        String? // JSON array of image URLs
+  pinned        Boolean             @default(false)
+  userId        String
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId        String
+  plan          Plan                @relation(fields: [planId], references: [id], onDelete: Cascade)
+  likes         Int                 @default(0)
+  reposts       Int                 @default(0)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
   likesRelation PlanUpdateLike[]
-  comments     PlanUpdateComment[]
+  comments      PlanUpdateComment[]
 }
 
 model PlanUpdateLike {
@@ -773,6 +784,7 @@ model PlanUpdateLike {
   userId       String
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt    DateTime   @default(now())
+
   @@unique([planUpdateId, userId])
 }
 
@@ -1770,7 +1782,7 @@ model Availability {
 
 model Backlink {
   id           String   @id @default(cuid())
-  sourceType   String   // PLAN | PRODUCT | POST | EVENT | SCHOOLCONTENT | REQUEST | SERVICE | GROUP | SHOP | SCHOOL
+  sourceType   String // PLAN | PRODUCT | POST | EVENT | SCHOOLCONTENT | REQUEST | SERVICE | GROUP | SHOP | SCHOOL
   sourceId     String
   targetType   String
   targetId     String
@@ -1814,6 +1826,8 @@ model ContentView {
   id                String           @id @default(cuid())
   userId            String?
   user              User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  entityType        String? // POST | PRODUCT | SERVICE | EVENT | PLAN | REQUEST | SCHOOLCONTENT | GROUP | SHOP
+  entityId          String?
   postId            String?
   post              Post?            @relation("PostViews", fields: [postId], references: [id], onDelete: Cascade)
   productId         String?
@@ -1830,6 +1844,48 @@ model ContentView {
   @@index([productId])
   @@index([serviceOfferingId])
   @@index([requestId])
+  @@index([entityType, entityId])
   @@index([userId])
   @@index([createdAt])
+}
+
+model EntityLike {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entityType String // POST | PRODUCT | SERVICE | EVENT | PLAN | REQUEST | SCHOOLCONTENT | GROUP | SHOP | FORUMPOST
+  entityId   String
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, entityType, entityId])
+  @@index([entityType, entityId])
+  @@index([userId])
+}
+
+model EntityTip {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entityType String // POST | PRODUCT | SERVICE | EVENT | PLAN | REQUEST | SCHOOLCONTENT | GROUP | SHOP
+  entityId   String
+  amount     Float
+  currency   String   @default("XTM")
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([userId])
+}
+
+model EntityReply {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entityType String // POST | PRODUCT | SERVICE | EVENT | PLAN | REQUEST | SCHOOLCONTENT | GROUP | SHOP | FORUMPOST
+  entityId   String
+  content    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([entityType, entityId])
+  @@index([userId])
 }
