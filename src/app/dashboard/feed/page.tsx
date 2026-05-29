@@ -25,6 +25,13 @@ interface FeedPost {
   context?: string | null
   groupName?: string
   groupId?: string
+  repostCount?: number
+  reposted?: boolean
+}
+
+interface TrendingTag {
+  tag: string
+  count: number
 }
 
 const SECTION_CONFIG: Record<string, { label: string; icon: string }> = {
@@ -58,6 +65,7 @@ export default function DashboardFeed() {
   const [postImages, setPostImages] = useState<string[]>([])
   const [posting, setPosting] = useState(false)
   const [showEmoji, setShowEmoji] = useState(false)
+  const [trendingTags, setTrendingTags] = useState<TrendingTag[]>([])
   const mentionRef = useRef<MentionInputHandle>(null)
 
   const handleCreatePost = async (e: React.FormEvent) => {
@@ -118,6 +126,10 @@ export default function DashboardFeed() {
     if (status === 'loading') return
     if (!session?.user?.id) { redirect('/auth/login'); return }
     fetchFeed(true)
+    fetch('/api/hashtags?mode=trending&limit=12')
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setTrendingTags(Array.isArray(data) ? data : data?.tags || []))
+      .catch(() => {})
   }, [session, status])
 
   const loadMore = () => {
@@ -212,6 +224,51 @@ export default function DashboardFeed() {
           </div>
         </form>
       )}
+
+      {trendingTags.length > 0 && (
+        <div style={{
+          marginBottom: 20, padding: '12px 16px',
+          background: 'var(--bg-secondary)',
+          border: '1px solid var(--border-color)',
+          borderRadius: 12,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>🏷️ Trending Hashtags</span>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {trendingTags.map((tag) => (
+              <Link
+                key={tag.tag}
+                href={`/hashtag/${tag.tag}`}
+                style={{
+                  padding: '4px 12px', borderRadius: 20, fontSize: '0.8rem',
+                  background: 'rgba(0, 217, 255, 0.08)',
+                  border: '1px solid rgba(0, 217, 255, 0.15)',
+                  color: 'var(--accent-primary)',
+                  textDecoration: 'none', transition: 'var(--transition)',
+                }}
+              >
+                #{tag.tag} <span style={{ opacity: 0.6, fontSize: '0.7rem' }}>({tag.count})</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div style={{
+        marginBottom: 20, padding: '12px 16px',
+        background: 'var(--bg-secondary)',
+        border: '1px solid var(--border-color)',
+        borderRadius: 12,
+        display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
+      }}>
+        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>⚡ Quick Links</span>
+        <Link href="/hashtags" style={{ fontSize: '0.8rem', color: 'var(--accent-primary)', textDecoration: 'none' }}>🏷️ Browse Hashtags</Link>
+        <Link href="/products" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textDecoration: 'none' }}>🛒 Marketplace</Link>
+        <Link href="/events" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textDecoration: 'none' }}>📅 Events</Link>
+        <Link href="/community" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textDecoration: 'none' }}>👥 Community</Link>
+        <Link href="/dashboard/passport" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textDecoration: 'none' }}>🌍 Passport</Link>
+      </div>
 
       {feed.length > 0 ? (
         <>

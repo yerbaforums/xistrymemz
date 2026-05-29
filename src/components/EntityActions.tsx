@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useEntityActions, type ActionEntityType } from '@/hooks/useEntityActions'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
@@ -63,6 +63,21 @@ export default function EntityActions({
   const [repostCount, setRepostCount] = useState(initRepostCount || 0)
   const [reposted, setReposted] = useState(initReposted || false)
   const [reposting, setReposting] = useState(false)
+  const [fetchedDonations, setFetchedDonations] = useState<DonationAddr[]>([])
+  const [loadingDonations, setLoadingDonations] = useState(false)
+
+  const activeDonations = donationAddresses || fetchedDonations
+
+  useEffect(() => {
+    if (showTipModal && !donationAddresses && authorId) {
+      setLoadingDonations(true)
+      fetch(`/api/users/donations?userId=${authorId}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => setFetchedDonations(data?.addresses || []))
+        .catch(() => setFetchedDonations([]))
+        .finally(() => setLoadingDonations(false))
+    }
+  }, [showTipModal])
 
   const [showShareModal, setShowShareModal] = useState(false)
   const [showFeedModal, setShowFeedModal] = useState(false)
@@ -197,11 +212,13 @@ export default function EntityActions({
                   ))}
                 </div>
               </>
-            ) : donationAddresses && donationAddresses.length > 0 ? (
+            ) : loadingDonations ? (
+              <p className={styles.modalDesc}>Loading donation addresses...</p>
+            ) : activeDonations.length > 0 ? (
               <>
                 <p className={styles.modalDesc}>Support via donation address:</p>
                 <div className={styles.donationAddrList}>
-                  {donationAddresses.map(da => (
+                  {activeDonations.map(da => (
                     <div key={da.id} className={styles.donationAddrRow}>
                       <span className={styles.donationAddrCurrency}>{da.currency}</span>
                       <code className={styles.donationAddrCode}>{da.address.length > 20 ? da.address.slice(0, 10) + '...' + da.address.slice(-6) : da.address}</code>
