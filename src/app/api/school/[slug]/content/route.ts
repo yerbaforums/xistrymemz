@@ -19,10 +19,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
   const contents = await prisma.schoolContent.findMany({
     where: { userId: user.id },
     include: { 
-      author: { select: { name: true } },
-      user: { select: { schoolName: true, schoolSlug: true } }
+      author: { select: { id: true, name: true } },
+      user: { select: { schoolName: true, schoolSlug: true } },
+      hashtags: { include: { hashtag: true } }
     },
-    orderBy: { createdAt: 'desc' }
+    orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }]
   })
 
   return NextResponse.json(contents)
@@ -46,7 +47,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
   }
 
   const body = await request.json()
-  const { title, content, contentType, images, videoUrl, price, isPaid, hashtags: explicitHashtags } = body
+  const { title, content, contentType, images, videoUrl, price, isPaid, section, sortOrder, hashtags: explicitHashtags } = body
 
   if (!title || !content) {
     return NextResponse.json({ error: 'Title and content required' }, { status: 400 })
@@ -61,6 +62,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
       videoUrl: videoUrl || null,
       price: isPaid ? (parseFloat(price) || 0) : 0,
       isPaid: isPaid || false,
+      contentSection: section || null,
+      sortOrder: sortOrder || 0,
       userId: user.id,
       authorId: session.user.id
     }

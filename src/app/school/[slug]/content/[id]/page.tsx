@@ -17,14 +17,76 @@ interface ContentData {
   isPaid: boolean
   pinned: boolean
   createdAt: string
+  contentSection: string | null
+  sortOrder: number
   author: { id: string; name: string | null; image: string | null }
   user: { id: string; schoolName: string | null; schoolSlug: string | null; image: string | null }
   hashtags: { hashtag: { id: string; tag: string } }[]
   _count: { likes: number }
 }
 
+interface QuizQuestion {
+  question: string
+  options: string[]
+  correct: string
+}
+
 const CONTENT_TYPE_ICONS: Record<string, string> = {
-  article: '📄', lesson: '📖', note: '📝', guide: '🗺️', course: '🎓', resource: '📦'
+  article: '📄', lesson: '📖', note: '📝', guide: '🗺️', course: '🎓', resource: '📦', quiz: '📝'
+}
+
+function QuizSection({ content }: { content: string }) {
+  const questions: QuizQuestion[] = content.split('\n').filter(Boolean).map(line => {
+    const parts = line.split('|')
+    return { question: parts[0], options: parts.slice(1, 5), correct: parts[5]?.trim() || '' }
+  }).filter(q => q.question && q.options.length >= 2)
+
+  const [answers, setAnswers] = useState<Record<number, string>>({})
+  const [submitted, setSubmitted] = useState(false)
+  const [showResults, setShowResults] = useState(false)
+
+  if (questions.length === 0) return <p>No quiz questions found.</p>
+
+  const score = questions.filter((q, i) => answers[i] === q.correct).length
+
+  return (
+    <div className={styles.quizWrap}>
+      <h3>Quiz: {questions.length} question{questions.length > 1 ? 's' : ''}</h3>
+      {questions.map((q, i) => (
+        <div key={i} className={`${styles.quizQuestion} ${submitted ? (answers[i] === q.correct ? styles.quizCorrect : styles.quizWrong) : ''}`}>
+          <p className={styles.quizQText}>{i + 1}. {q.question}</p>
+          <div className={styles.quizOptions}>
+            {q.options.filter(Boolean).map((opt, j) => {
+              const isSelected = answers[i] === opt
+              const isRight = submitted && opt === q.correct
+              const isWrong = submitted && isSelected && opt !== q.correct
+              return (
+                <button
+                  key={j}
+                  className={`${styles.quizOpt} ${isSelected ? styles.quizOptSelected : ''} ${isRight ? styles.quizOptCorrect : ''} ${isWrong ? styles.quizOptWrong : ''}`}
+                  onClick={() => !submitted && setAnswers({ ...answers, [i]: opt })}
+                  disabled={submitted}
+                >
+                  {opt}
+                  {isRight && ' ✓'}
+                  {isWrong && ' ✗'}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      ))}
+      {!submitted ? (
+        <button className={styles.quizSubmitBtn} onClick={() => { setSubmitted(true); setShowResults(true) }} disabled={Object.keys(answers).length < questions.length}>
+          Submit ({Object.keys(answers).length}/{questions.length} answered)
+        </button>
+      ) : (
+        <div className={styles.quizResult}>
+          Score: {score}/{questions.length} ({Math.round((score / questions.length) * 100)}%)
+        </div>
+      )}
+    </div>
+  )
 }
 
 export default function SchoolContentDetailPage() {
@@ -50,6 +112,8 @@ export default function SchoolContentDetailPage() {
   if (!content) return <div className={styles.error}>Content not found</div>
 
   const images: string[] = content.images ? JSON.parse(content.images) : []
+  const isHtml = content.content.startsWith('<')
+  const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').trim()
 
   return (
     <div className={styles.page}>
@@ -69,6 +133,7 @@ export default function SchoolContentDetailPage() {
           <span className={`badge ${content.isPaid ? 'badge-active' : 'badge-draft'}`}>
             {content.isPaid ? `$${content.price || 0}` : 'Free'}
           </span>
+          {content.contentSection && <span className={styles.sectionBadge}>{content.contentSection}</span>}
         </div>
         <h1 className={styles.title}>{content.title}</h1>
         <div className={styles.meta}>
@@ -77,11 +142,17 @@ export default function SchoolContentDetailPage() {
         </div>
       </div>
 
-      <div className={styles.body}>
-        {content.content.split('\n').map((line, i) => (
-          <p key={i}>{line}</p>
-        ))}
-      </div>
+      {content.contentType === 'quiz' ? (
+        <QuizSection content={content.content} />
+      ) : (
+        <div className={styles.body}>
+          {isHtml ? (
+            <div dangerouslySetInnerHTML={{ __html: content.content }} />
+          ) : (
+            content.content.split('\n').map((line, i) => <p key={i}>{line}</p>)
+          )}
+        </div>
+      )}
 
       {images.length > 0 && (
         <div className={styles.imageGrid}>
@@ -123,7 +194,7 @@ export default function SchoolContentDetailPage() {
               <Link key={item.id} href={`/school/${slug}/content/${item.id}`} className={styles.relatedCard}>
                 <div className={styles.relatedBadge}>{CONTENT_TYPE_ICONS[item.contentType] || '📄'} {item.contentType}</div>
                 <h3 className={styles.relatedName}>{item.title}</h3>
-                <p className={styles.relatedPreview}>{item.content.slice(0, 80)}...</p>
+                <p className={styles.relatedPreview}>{stripHtml(item.content).slice(0, 80)}...</p>
               </Link>
             ))}
           </div>

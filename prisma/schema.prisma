@@ -668,6 +668,8 @@ model SchoolContent {
   authorId          String
   author            User                   @relation("SchoolAuthor", fields: [authorId], references: [id], onDelete: Cascade)
   pinned            Boolean                @default(false)
+  contentSection    String?
+  sortOrder         Int                    @default(0)
   originalContentId String?
   originalContent   SchoolContent?         @relation("RepostedContent", fields: [originalContentId], references: [id], onDelete: SetNull)
   reposts           SchoolContent[]        @relation("RepostedContent")

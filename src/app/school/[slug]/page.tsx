@@ -14,6 +14,7 @@ import MentionInput from '@/components/MentionInput'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
 import EntityActions from '@/components/EntityActions'
 import HashtagInput from '@/components/HashtagInput'
+import RichEditor from '@/components/RichEditor'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
 import Rating from '@/components/Rating'
@@ -162,7 +163,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
   const [posting, setPosting] = useState(false)
   const [showContentForm, setShowContentForm] = useState(false)
-  const [contentForm, setContentForm] = useState({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: [] as string[], videoUrl: '' })
+  const [contentForm, setContentForm] = useState({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: [] as string[], videoUrl: '', section: '', sortOrder: 0 })
   const [contentHashtags, setContentHashtags] = useState<string[]>([])
   const [creatingContent, setCreatingContent] = useState(false)
   const [editingContentId, setEditingContentId] = useState<string | null>(null)
@@ -234,7 +235,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
         success(isEdit ? 'Content updated!' : 'Content published!')
         setShowContentForm(false)
         setEditingContentId(null)
-        setContentForm({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: [], videoUrl: '' })
+        setContentForm({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: [], videoUrl: '', section: '', sortOrder: 0 })
         setContentHashtags([])
         if (resolvedSlug) fetch(`/api/school/${resolvedSlug}`).then(r => r.json()).then(data => setSchool(data))
       } else {
@@ -256,7 +257,9 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
       price: item.price?.toString() || '',
       isPaid: item.isPaid,
       images: item.images ? JSON.parse(item.images) : [],
-      videoUrl: item.videoUrl || ''
+      videoUrl: item.videoUrl || '',
+      section: (item as any).contentSection || '',
+      sortOrder: (item as any).sortOrder || 0
     })
     setContentHashtags(item.hashtags?.map((h: any) => h.tag || h.hashtag?.tag).filter(Boolean) || [])
     setEditingContentId(item.id)
@@ -477,15 +480,25 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                 </div>
                 <div className={styles.formGroup}>
                   <label>Content</label>
-                  <textarea value={contentForm.content} onChange={e => setContentForm({ ...contentForm, content: e.target.value })} rows={6} required />
+                  <RichEditor value={contentForm.content} onChange={(html) => setContentForm({ ...contentForm, content: html })} placeholder="Start writing..." />
                 </div>
                 <div className={styles.formGroup}>
-                  <label>Images</label>
+                  <label>Images Gallery</label>
                   <ImageUploader images={contentForm.images} onChange={(urls) => setContentForm({ ...contentForm, images: urls })} maxImages={5} />
                 </div>
                 <div className={styles.formGroup}>
                   <label>Video URL (optional)</label>
                   <input type="url" value={contentForm.videoUrl} onChange={e => setContentForm({ ...contentForm, videoUrl: e.target.value })} placeholder="https://youtube.com/watch?v=..." />
+                </div>
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup} style={{ flex: 1 }}>
+                    <label>Course Section (optional)</label>
+                    <input type="text" value={contentForm.section} onChange={e => setContentForm({ ...contentForm, section: e.target.value })} placeholder="e.g. Module 1: Basics" />
+                  </div>
+                  <div className={styles.formGroup} style={{ flex: 1 }}>
+                    <label>Sort Order</label>
+                    <input type="number" value={contentForm.sortOrder} onChange={e => setContentForm({ ...contentForm, sortOrder: parseInt(e.target.value) || 0 })} placeholder="0" />
+                  </div>
                 </div>
                 <div className={styles.formGroup}>
                   <label>Hashtags</label>
@@ -500,9 +513,21 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                     <input type="number" value={contentForm.price} onChange={e => setContentForm({ ...contentForm, price: e.target.value })} placeholder="Price ($)" step="0.01" className={styles.priceInput} />
                   )}
                 </div>
+                {contentForm.contentType === 'quiz' && (
+                  <div className={styles.formGroup}>
+                    <label>Quiz Questions (one per line: Question|Option1|Option2|Option3|Option4|CorrectAnswer)</label>
+                    <textarea
+                      value={contentForm.content}
+                      onChange={e => setContentForm({ ...contentForm, content: e.target.value })}
+                      rows={6}
+                      placeholder="What is 2+2?|3|4|5|6|4&#10;What color is the sky?|Red|Blue|Green|Yellow|Blue"
+                    />
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>Format: Question|Option1|Option2|Option3|Option4|CorrectAnswer (one per line)</p>
+                  </div>
+                )}
                 <div className={styles.formActions}>
                   <button type="submit" className="btn-primary" disabled={creatingContent}>{creatingContent ? 'Saving...' : (editingContentId ? 'Update' : 'Publish')}</button>
-                  <button type="button" className="btn-ghost" onClick={() => { setShowContentForm(false); setEditingContentId(null); setContentForm({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: [], videoUrl: '' }); setContentHashtags([]) }}>Cancel</button>
+                  <button type="button" className="btn-ghost" onClick={() => { setShowContentForm(false); setEditingContentId(null); setContentForm({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: [], videoUrl: '', section: '', sortOrder: 0 }); setContentHashtags([]) }}>Cancel</button>
                 </div>
               </form>
             )}
@@ -521,46 +546,66 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
             )}
             {school.schoolContents.length > 0 ? (
               <div className={styles.contentList}>
-                {school.schoolContents
-                  .filter(item => contentFilter === 'all' || item.contentType === contentFilter)
-                  .map(item => (
-                  <div key={item.id} className={`${styles.contentCard} ${item.pinned ? styles.pinnedCard : ''}`}>
-                    <div className={styles.contentCardTop}>
-                      <span className={styles.contentTypeIcon}>{CONTENT_TYPE_ICONS[item.contentType] || '📄'}</span>
-                      <span className={`badge badge-${item.isPaid ? 'active' : 'draft'}`}>
-                        {item.isPaid ? `$${item.price || 0}` : 'Free'}
-                      </span>
-                      {item.pinned && <span className={styles.pinnedBadge}>📌</span>}
+                {(() => {
+                  const filtered = school.schoolContents.filter(item => contentFilter === 'all' || item.contentType === contentFilter)
+                  const sections = new Map<string, typeof filtered>()
+                  const uncategorized: typeof filtered = []
+                  for (const item of filtered) {
+                    const section = (item as any).contentSection || ''
+                    if (section) {
+                      if (!sections.has(section)) sections.set(section, [])
+                      sections.get(section)!.push(item)
+                    } else {
+                      uncategorized.push(item)
+                    }
+                  }
+                  const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').trim()
+                  const renderCard = (item: any) => (
+                    <div key={item.id} className={`${styles.contentCard} ${item.pinned ? styles.pinnedCard : ''}`}>
+                      <div className={styles.contentCardTop}>
+                        <span className={styles.contentTypeIcon}>{CONTENT_TYPE_ICONS[item.contentType] || '📄'}</span>
+                        <span className={`badge badge-${item.isPaid ? 'active' : 'draft'}`}>
+                          {item.isPaid ? `$${item.price || 0}` : 'Free'}
+                        </span>
+                        {item.pinned && <span className={styles.pinnedBadge}>📌</span>}
+                        {isOwner && (
+                          <button onClick={() => handlePin('schoolContent', item.id, item.pinned)} className={styles.pinBtn} title={item.pinned ? 'Unpin' : 'Pin to top'}>
+                            {item.pinned ? '📌' : '📍'}
+                          </button>
+                        )}
+                      </div>
+                      <h3 onClick={() => router.push(`/school/${resolvedSlug}/content/${item.id}`)} style={{cursor: 'pointer'}}>{item.title}</h3>
+                      <p className={styles.contentPreview}>{stripHtml(item.content).slice(0, 120)}...</p>
                       {isOwner && (
-                        <button
-                          onClick={() => handlePin('schoolContent', item.id, item.pinned)}
-                          className={styles.pinBtn}
-                          title={item.pinned ? 'Unpin' : 'Pin to top'}
-                        >
-                          {item.pinned ? '📌' : '📍'}
-                        </button>
+                        <div className={styles.ownerActions}>
+                          <button onClick={() => handleEditContent(item)} className={styles.editContentBtn}>✏️ Edit</button>
+                          <button onClick={() => setDeletingContent(item.id)} className={styles.deleteContentBtn}>🗑️ Delete</button>
+                        </div>
+                      )}
+                      <EntityActions entityType="SCHOOLCONTENT" entityId={item.id} title={item.title} authorId={school.user.id} variant="bar" />
+                      {item.hashtags && item.hashtags.length > 0 && (
+                        <div className={styles.hashtagRow}>
+                          {item.hashtags.map((h: any) => (
+                            <Link key={h.id} href={`/hashtag/${h.tag}`} className={styles.hashtagPill} onClick={(e) => e.stopPropagation()}>
+                              #{h.tag}
+                            </Link>
+                          ))}
+                        </div>
                       )}
                     </div>
-                    <h3 onClick={() => router.push(`/school/${resolvedSlug}/content/${item.id}`)} style={{cursor: 'pointer'}}>{item.title}</h3>
-                    <p className={styles.contentPreview}>{item.content.slice(0, 120)}...</p>
-                    {isOwner && (
-                      <div className={styles.ownerActions}>
-                        <button onClick={() => handleEditContent(item)} className={styles.editContentBtn}>✏️ Edit</button>
-                        <button onClick={() => setDeletingContent(item.id)} className={styles.deleteContentBtn}>🗑️ Delete</button>
-                      </div>
-                    )}
-                    <EntityActions entityType="SCHOOLCONTENT" entityId={item.id} title={item.title} authorId={school.user.id} variant="bar" />
-                    {item.hashtags && item.hashtags.length > 0 && (
-                      <div className={styles.hashtagRow}>
-                        {item.hashtags.map((h: any) => (
-                          <Link key={h.id} href={`/hashtag/${h.tag}`} className={styles.hashtagPill} onClick={(e) => e.stopPropagation()}>
-                            #{h.tag}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  )
+                  return (
+                    <>
+                      {uncategorized.map(renderCard)}
+                      {[...sections.entries()].map(([sectionName, items]) => (
+                        <div key={sectionName} className={styles.sectionGroup}>
+                          <h3 className={styles.sectionTitle}>{sectionName}</h3>
+                          {items.map(renderCard)}
+                        </div>
+                      ))}
+                    </>
+                  )
+                })()}
               </div>
             ) : (
               <div className={styles.empty}><p>No content published yet</p></div>

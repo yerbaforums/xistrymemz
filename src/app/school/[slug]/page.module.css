@@ -587,6 +587,18 @@
 
 .empty { text-align: center; padding: 48px 24px; color: var(--text-muted); }
 
+.sectionGroup {
+  margin-bottom: 8px;
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  margin: 24px 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--accent-success);
+  color: var(--accent-success);
+}
+
 .hashtagRow {
   display: flex;
   flex-wrap: wrap;

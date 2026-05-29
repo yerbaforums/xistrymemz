@@ -11,7 +11,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
     include: { 
       author: { select: { id: true, name: true, image: true } },
       user: { select: { id: true, schoolName: true, schoolSlug: true, image: true } },
-      hashtags: { include: { hashtag: true } },
+      hashtags: { include: { hashtag: { select: { id: true, tag: true } } } },
       _count: { select: { likes: true } },
       originalContent: {
         include: {
@@ -46,6 +46,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
   if (body.pinned !== undefined) data.pinned = body.pinned
   if (body.images !== undefined) data.images = body.images
   if (body.videoUrl !== undefined) data.videoUrl = body.videoUrl
+  if (body.section !== undefined) data.contentSection = body.section
+  if (body.sortOrder !== undefined) data.sortOrder = body.sortOrder
 
   const updated = await prisma.schoolContent.update({ where: { id }, data })
 

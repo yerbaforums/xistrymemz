@@ -45,8 +45,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
 
   const schoolContents = await prisma.schoolContent.findMany({
     where: { OR: [{ userId: user.id }, { authorId: user.id }] },
-    orderBy: [{ pinned: 'desc' }, { createdAt: 'desc' }],
-    take: 20,
+    orderBy: [{ pinned: 'desc' }, { sortOrder: 'asc' }, { createdAt: 'desc' }],
+    take: 50,
     include: {
       user: { select: { id: true, name: true, image: true, schoolName: true, schoolSlug: true } },
       hashtags: {
