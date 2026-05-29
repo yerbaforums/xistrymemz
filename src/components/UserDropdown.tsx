@@ -25,8 +25,12 @@ export default function UserDropdown({ session, open, onClose, traveling }: User
   return (
     <div className={styles.userDropdown} id="user-menu-dropdown" role="menu">
       <div className={styles.userInfo}>
+        {session.user?.image ? (
+          <Image src={session.user.image} alt={session.user?.name || ''} width={36} height={36} className={styles.userAvatar} />
+        ) : (
+          <span className={styles.userInitial}>{(session.user?.name || 'U')[0].toUpperCase()}</span>
+        )}
         <strong>{session.user?.name || 'User'}</strong>
-        <span className={styles.userEmail}>{session.user?.email}</span>
       </div>
       <div className={styles.themeAccentPicker}>
         {(['cyan', 'purple', 'green', 'orange', 'pink', 'blue'] as ThemeAccent[]).map(c => (

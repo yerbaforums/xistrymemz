@@ -66,6 +66,7 @@ const nextConfig = {
       },
     ],
   },
+  poweredByHeader: false,
   serverExternalPackages: ['@prisma/client', 'prisma', 'geoip-lite'],
   experimental: {
     optimizePackageImports: ['next-auth'],

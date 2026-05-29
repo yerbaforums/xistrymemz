@@ -13,6 +13,7 @@ import { getUserProfileUrl } from '@/lib/utils'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
 import EntityActions from '@/components/EntityActions'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 import type { Event } from '@/types/event'
 import type { DonationAddr } from '@/types/product'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
@@ -58,12 +59,18 @@ function EventDetailContent() {
   })
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [confirmDeleteModal, setConfirmDeleteModal] = useState(false)
   const router = useRouter()
 
   const confirmDelete = async () => {
     if (!event) return
-    if (!window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) return
+    setConfirmDeleteModal(true)
+  }
+
+  const handleDeleteConfirmed = async () => {
+    if (!event) return
     setDeleting(true)
+    setConfirmDeleteModal(false)
     try {
       const res = await fetch(`/api/events/${event.id}`, { method: 'DELETE' })
       if (res.ok) {
@@ -712,6 +719,16 @@ function EventDetailContent() {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={confirmDeleteModal}
+        onClose={() => setConfirmDeleteModal(false)}
+        onConfirm={handleDeleteConfirmed}
+        title="Delete Event"
+        message="Are you sure you want to delete this event? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   )
 }

@@ -55,7 +55,6 @@ ${body}
 export async function sendPasswordResetEmail(email: string, token: string): Promise<void> {
   const client = getResend()
   if (!client) {
-    console.log(`[EMAIL] Password reset for ${email}: ${BASE_URL}/auth/reset-password?token=${token}`)
     return
   }
 
@@ -89,7 +88,6 @@ export async function sendPasswordResetEmail(email: string, token: string): Prom
 export async function sendVerificationEmail(email: string, token: string): Promise<void> {
   const client = getResend()
   if (!client) {
-    console.log(`[EMAIL] Verification for ${email}: ${BASE_URL}/auth/verify-email?token=${token}`)
     return
   }
 
@@ -123,7 +121,6 @@ export async function sendVerificationEmail(email: string, token: string): Promi
 export async function sendWelcomeEmail(email: string, name: string): Promise<void> {
   const client = getResend()
   if (!client) {
-    console.log(`[EMAIL] Welcome email for ${email}`)
     return
   }
 

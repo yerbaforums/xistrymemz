@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import styles from './CreateFAB.module.css'
 
@@ -13,11 +13,13 @@ const ACTIONS = [
   { label: 'New Event', icon: '📅', href: '/events/new' },
   { label: 'New Group', icon: '👥', href: '/groups/new' },
   { label: 'New Request', icon: '📝', href: '/requests' },
+  { label: 'New Service', icon: '🔧', href: '/dashboard/services' },
 ]
 
 export default function CreateFAB() {
   const { data: session, status } = useSession()
   const pathname = usePathname()
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   useEffect(() => {
     setOpen(false)
@@ -50,7 +52,7 @@ export default function CreateFAB() {
                   className={styles.menuItem}
                   onClick={() => {
                     setOpen(false)
-                    window.location.href = '/dashboard/feed'
+                    router.push('/dashboard/feed')
                   }}
                 >
                   <span className={styles.menuIcon}>{action.icon}</span>

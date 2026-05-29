@@ -27,7 +27,6 @@ export async function POST(request: NextRequest) {
     })
 
     if (admin && admin.email) {
-      console.log(`New recommendation from ${email || 'anonymous'} [${category}]: ${recommendation.substring(0, 100)}...`)
     }
 
     return NextResponse.json({ 

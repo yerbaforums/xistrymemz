@@ -96,6 +96,7 @@ export default function SchoolContentDetailPage() {
   const [content, setContent] = useState<ContentData | null>(null)
   const [related, setRelated] = useState<ContentData[]>([])
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState(false)
 
   useEffect(() => {
     Promise.all([
@@ -104,11 +105,12 @@ export default function SchoolContentDetailPage() {
     ]).then(([data, all]) => {
       setContent(data)
       setRelated(all.filter((c: ContentData) => c.id !== data.id).slice(0, 4))
-    }).catch(() => {})
+    }).catch(() => setFetchError(true))
       .finally(() => setLoading(false))
   }, [slug, id])
 
   if (loading) return <div className={styles.loading}>Loading...</div>
+  if (fetchError) return <div className={styles.error}>Failed to load content</div>
   if (!content) return <div className={styles.error}>Content not found</div>
 
   const images: string[] = content.images ? JSON.parse(content.images) : []

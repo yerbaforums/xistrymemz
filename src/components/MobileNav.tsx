@@ -3,7 +3,7 @@
 import { signOut } from 'next-auth/react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { NAV } from '@/lib/navigation'
 import { useTheme, type ThemeAccent } from '@/context/ThemeContext'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
@@ -27,6 +27,7 @@ interface MobileNavProps {
 
 export default function MobileNav({ open, onClose, isAdmin, isAuthenticated, session }: MobileNavProps) {
   const currentLocale = useLocale()
+  const t = useTranslations('header')
   const { mode, accent, setAccent, toggleMode } = useTheme()
   const { settings } = useSiteSettings()
 
@@ -147,8 +148,8 @@ export default function MobileNav({ open, onClose, isAdmin, isAuthenticated, ses
       ) : (
         <div className={styles.mobileSection}>
           <div className={styles.mobileAuthButtons}>
-            <Link href="/auth/login" className={styles.mobileLoginBtn} onClick={onClose}>Log In</Link>
-            <Link href="/auth/register" className={styles.mobileSignupBtn} onClick={onClose}>Sign Up</Link>
+            <Link href="/auth/login" className={styles.mobileLoginBtn} onClick={onClose}>{t('login')}</Link>
+            <Link href="/auth/register" className={styles.mobileSignupBtn} onClick={onClose}>{t('signUp')}</Link>
           </div>
         </div>
       )}
