@@ -157,19 +157,19 @@ export default function EntityActions({
     if (!session || posting) return
     setPosting(true)
     try {
+      const profileUrl = typeof window !== 'undefined' ? window.location.href : ''
+      const isProfile = entityType === 'PROFILE'
+      const mention = isProfile && description ? `@${description}` : ''
+      const body = isProfile
+        ? { content: `${feedContent.trim() ? feedContent.trim() + ' — ' : ''}${mention} ${profileUrl}`.trim(), context: 'PROFILE' }
+        : { content: feedContent.trim() || `Shared a ${entityType.toLowerCase()}`, context: feedDestination, referenceType: entityType, referenceId: entityId, referenceTitle: title }
       const res = await fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: feedContent.trim() || `Shared a ${entityType.toLowerCase()}`,
-          context: feedDestination,
-          referenceType: entityType,
-          referenceId: entityId,
-          referenceTitle: title,
-        }),
+        body: JSON.stringify(body),
       })
       if (res.ok) {
-        success('Posted!')
+        success(isProfile ? 'Mention posted!' : 'Posted!')
         setFeedContent('')
         setShowFeedModal(false)
         setShowShareModal(false)
@@ -273,14 +273,16 @@ export default function EntityActions({
       {showFeedModal && (
         <div className={styles.overlay} onClick={() => setShowFeedModal(false)} style={{ zIndex: 1001 }}>
           <div className={styles.feedModal} onClick={e => e.stopPropagation()}>
-            <h4 className={styles.feedTitle}>Share to Post</h4>
-            <textarea value={feedContent} onChange={e => setFeedContent(e.target.value)} placeholder="Add a comment (optional)..." rows={3} className={styles.feedTextarea} />
-            <div className={styles.destRow}>
-              {(['PROFILE', 'SHOP', 'SCHOOL'] as const).map(d => {
-                const disabled = (d === 'SHOP' && !hasShop) || (d === 'SCHOOL' && !hasSchool)
-                return <button key={d} disabled={disabled} onClick={() => setFeedDestination(d)} className={`${styles.destBtn} ${feedDestination === d ? styles.destActive : ''}`}>{d === 'PROFILE' ? 'My Profile' : d === 'SHOP' ? 'My Shop' : 'My School'}</button>
-              })}
-            </div>
+            <h4 className={styles.feedTitle}>{entityType === 'PROFILE' ? 'Mention in a Post' : 'Share to Post'}</h4>
+            <textarea value={feedContent} onChange={e => setFeedContent(e.target.value)} placeholder={entityType === 'PROFILE' ? 'Add a comment about this profile (optional)...' : 'Add a comment (optional)...'} rows={3} className={styles.feedTextarea} />
+            {entityType !== 'PROFILE' && (
+              <div className={styles.destRow}>
+                {(['PROFILE', 'SHOP', 'SCHOOL'] as const).map(d => {
+                  const disabled = (d === 'SHOP' && !hasShop) || (d === 'SCHOOL' && !hasSchool)
+                  return <button key={d} disabled={disabled} onClick={() => setFeedDestination(d)} className={`${styles.destBtn} ${feedDestination === d ? styles.destActive : ''}`}>{d === 'PROFILE' ? 'My Profile' : d === 'SHOP' ? 'My Shop' : 'My School'}</button>
+                })}
+              </div>
+            )}
             <div className={styles.feedActions}>
               <button onClick={() => setShowFeedModal(false)} className={styles.cancelBtn}>Cancel</button>
               <button onClick={handleShareToFeed} disabled={posting} className={styles.shareBtn}>{posting ? 'Posting...' : 'Share'}</button>

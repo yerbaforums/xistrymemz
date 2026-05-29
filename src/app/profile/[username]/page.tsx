@@ -970,7 +970,7 @@ export default function ProfilePage() {
 
            
             <div className={styles.actions}>
-              {user?.id && <EntityActions entityType="PROFILE" entityId={user.id} title={user.name || 'User'} authorId={user.id} variant="modal-trigger" triggerClassName={styles.shareBtn} />}
+              {user?.id && <EntityActions entityType="PROFILE" entityId={user.id} title={user.name || 'User'} authorId={user.id} description={user.username || user.name || ''} variant="modal-trigger" triggerClassName={styles.shareBtn} />}
               {isOwnProfile && (
                <Link href="/profile/settings" className={styles.settingsIconBtn} title="Profile Settings">
                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
