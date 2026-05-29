@@ -308,6 +308,7 @@ export default async function DashboardOverview() {
               <div className={styles.firstVisitLinks}>
                 <Link href="/profile/edit" className={styles.firstVisitLink}>⚙️ Complete Profile</Link>
                 <Link href={userClasses.length > 0 ? `/onboarding` : `/onboarding`} className={styles.firstVisitLink}>🚀 Set Up Your Class</Link>
+                <Link href="/dashboard/feed" className={styles.firstVisitLink}>✏️ Write Your First Post</Link>
                 <Link href="/products/new" className={styles.firstVisitLink}>🛒 List a Product</Link>
                 <Link href="/community" className={styles.firstVisitLink}>👥 Find People</Link>
               </div>

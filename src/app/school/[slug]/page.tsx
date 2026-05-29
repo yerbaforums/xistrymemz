@@ -576,6 +576,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                       </div>
                       <h3 onClick={() => router.push(`/school/${resolvedSlug}/content/${item.id}`)} style={{cursor: 'pointer'}}>{item.title}</h3>
                       <p className={styles.contentPreview}>{stripHtml(item.content).slice(0, 120)}...</p>
+                      <span className={styles.readTime}>{Math.max(1, Math.round(stripHtml(item.content).split(/\s+/).length / 200))} min read</span>
                       {isOwner && (
                         <div className={styles.ownerActions}>
                           <button onClick={() => handleEditContent(item)} className={styles.editContentBtn}>✏️ Edit</button>

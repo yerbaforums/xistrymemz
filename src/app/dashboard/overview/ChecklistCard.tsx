@@ -12,6 +12,7 @@ interface ChecklistProps {
   connectionCount: number
   hasShop: boolean
   hasSchool: boolean
+  contentCount?: number
 }
 
 const NEXT_STEPS = [
@@ -25,7 +26,8 @@ const NEXT_STEPS = [
 
 export default function ChecklistCard({
   hasName, hasBio, postCount, productCount,
-  groupCount, connectionCount, hasShop, hasSchool
+  groupCount, connectionCount, hasShop, hasSchool,
+  contentCount = 0
 }: ChecklistProps) {
   const items = [
     { done: hasName && hasBio, label: 'Complete your profile', href: '/profile/edit', desc: 'Add a name and bio' },
@@ -34,6 +36,7 @@ export default function ChecklistCard({
     { done: groupCount > 0, label: 'Join a group', href: '/community/groups', desc: 'Find your people' },
     { done: connectionCount > 0, label: 'Connect with someone', href: '/community', desc: 'Build your network' },
     { done: hasShop || hasSchool, label: 'Set up Shop or School', href: '/templates', desc: 'Create a storefront or course' },
+    { done: hasSchool && contentCount > 0, label: 'Create your first school content', href: '/dashboard/teaching', desc: 'Publish a lesson or article' },
   ]
 
   const doneCount = items.filter(i => i.done).length

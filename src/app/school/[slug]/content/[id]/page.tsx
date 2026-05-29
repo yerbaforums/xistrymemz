@@ -139,6 +139,7 @@ export default function SchoolContentDetailPage() {
         <div className={styles.meta}>
           <span>by {content.author.name || 'Unknown'}</span>
           <span>{new Date(content.createdAt).toLocaleDateString()}</span>
+          <span>{Math.max(1, Math.round(content.content.replace(/<[^>]*>/g, '').split(/\s+/).length / 200))} min read</span>
         </div>
       </div>
 

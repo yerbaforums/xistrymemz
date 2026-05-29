@@ -66,7 +66,7 @@ const nextConfig = {
       },
     ],
   },
-  serverExternalPackages: ['@prisma/client', 'prisma'],
+  serverExternalPackages: ['@prisma/client', 'prisma', 'geoip-lite'],
   experimental: {
     optimizePackageImports: ['next-auth'],
   },

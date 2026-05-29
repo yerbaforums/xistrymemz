@@ -19,24 +19,12 @@ export default function CreateFAB() {
   const { data: session, status } = useSession()
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
-  const [visible, setVisible] = useState(false)
-
   useEffect(() => {
     setOpen(false)
   }, [pathname])
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setVisible(window.scrollY > 200)
-    }
-    handleScroll()
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
   if (status !== 'authenticated' || !session) return null
   if (pathname?.startsWith('/auth')) return null
-  if (!visible) return null
 
   return (
     <div className={styles.container}>

@@ -276,13 +276,16 @@ export default function DashboardFeed() {
           )}
         </>
       ) : (
-        <div style={{ textAlign: 'center', padding: '60px 24px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)' }}>
+          <div style={{ textAlign: 'center', padding: '60px 24px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)' }}>
           <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📡</div>
           <h3 style={{ marginBottom: '8px', color: 'var(--text-primary)' }}>Your feed is empty</h3>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '20px', fontSize: '0.9rem' }}>
-            Connect with others and follow hashtags to populate your feed
+            Share something with the community or connect with others!
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link href="/dashboard/feed" className="btn-primary" style={{ padding: '10px 24px', borderRadius: 'var(--radius-md)', fontWeight: 600, textDecoration: 'none' }}>
+              ✏️ Create Your First Post
+            </Link>
             <Link href="/community" className="btn-secondary" style={{ padding: '10px 20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.85rem' }}>
               👥 Find People
             </Link>

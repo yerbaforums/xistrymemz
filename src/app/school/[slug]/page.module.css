@@ -558,6 +558,13 @@
   border-color: var(--accent-success);
 }
 
+.readTime {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 4px;
+}
+
 .ownerActions {
   display: flex;
   gap: 8px;
