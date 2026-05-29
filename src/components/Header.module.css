@@ -671,6 +671,33 @@
   justify-content: center;
 }
 
+.mobileAccentDot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: var(--transition);
+  outline: none;
+}
+
+.mobileAccentDot:hover {
+  transform: scale(1.15);
+}
+
+.mobileAccentDotActive {
+  border-color: var(--text-primary);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+}
+
+.mobileAccentDot[data-accent="cyan"] { background: #00d9ff; }
+.mobileAccentDot[data-accent="purple"] { background: #a855f7; }
+.mobileAccentDot[data-accent="green"] { background: #22c55e; }
+.mobileAccentDot[data-accent="orange"] { background: #f97316; }
+.mobileAccentDot[data-accent="pink"] { background: #ec4899; }
+.mobileAccentDot[data-accent="blue"] { background: #3b82f6; }
+
 /* Mobile Menu Button */
 .menuBtn {
   display: none;

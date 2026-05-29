@@ -1,0 +1,126 @@
+.page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 64px;
+  color: var(--text-secondary);
+}
+
+.header {
+  margin: 24px 0;
+}
+
+.badges {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.typeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.title {
+  font-size: 1.75rem;
+  margin: 0 0 8px;
+  line-height: 1.3;
+}
+
+.meta {
+  display: flex;
+  gap: 16px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.body {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.body p {
+  line-height: 1.8;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+.imageGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.imageWrap {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.imageWrap img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.videoWrap {
+  margin-bottom: 24px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.video {
+  width: 100%;
+  max-height: 500px;
+  display: block;
+}
+
+.hashtagRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.hashtagPill {
+  display: inline-flex;
+  padding: 4px 12px;
+  background: rgba(0, 217, 255, 0.08);
+  border: 1px solid rgba(0, 217, 255, 0.15);
+  border-radius: 16px;
+  font-size: 0.8rem;
+  color: var(--accent-primary);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.hashtagPill:hover {
+  background: rgba(0, 217, 255, 0.15);
+}
+
+.actions {
+  border-top: 1px solid var(--border-color);
+  padding-top: 20px;
+}

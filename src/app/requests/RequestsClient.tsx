@@ -608,7 +608,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
 
                       <div className={styles.cardActions}>
                         {canManage && (
-                          <button onClick={() => { setEditingRequest(req); setEditForm({ title: req.title, description: req.description || '', category: req.category, priority: req.priority, budget: req.budget?.toString() || '', goalAmount: req.goalAmount?.toString() || '', location: req.location || '', isPublic: req.isPublic, allowFulfillments: req.allowFulfillments, showDonationAddress: req.showDonationAddress, images: (req as any).imageUrl ? [(req as any).imageUrl] : [] }) }} className={styles.editBtn}>Edit</button>
+                          <button onClick={() => { setEditingRequest(req); setEditForm({ title: req.title, description: req.description || '', category: req.category, priority: req.priority, budget: req.budget?.toString() || '', goalAmount: req.goalAmount?.toString() || '', location: req.location || '', isPublic: req.isPublic, allowFulfillments: req.allowFulfillments, showDonationAddress: req.showDonationAddress, images: (req as any).imageUrl ? [(req as any).imageUrl] : [], hashtags: (req as any).hashtags || [] }) }} className={styles.editBtn}>Edit</button>
                         )}
                         {canManage && <button onClick={() => handleDelete(req.id)} className={styles.deleteBtn}>Delete</button>}
                         <Link href={`/requests/${req.id}`} className={styles.viewDetailsBtn}>View Details →</Link>

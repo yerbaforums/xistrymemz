@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
@@ -143,6 +144,7 @@ function CompactDonation({ donation }: { donation: DonationAddr }) {
 }
 
 export default function SchoolDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const router = useRouter()
   const { data: session } = useSession()
   const { success, error } = useToast()
   const [school, setSchool] = useState<SchoolData | null>(null)
@@ -155,14 +157,11 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
   const [newPost, setNewPost] = useState('')
   const [newPostImages, setNewPostImages] = useState<string[]>([])
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
-  const [showShareModal, setShowShareModal] = useState(false)
-  const [shareContent, setShareContent] = useState<SchoolContent | null>(null)
   const [posting, setPosting] = useState(false)
   const [showContentForm, setShowContentForm] = useState(false)
   const [contentForm, setContentForm] = useState({ title: '', content: '', contentType: 'article', price: '', isPaid: false })
   const [contentHashtags, setContentHashtags] = useState<string[]>([])
   const [creatingContent, setCreatingContent] = useState(false)
-  const [selectedContent, setSelectedContent] = useState<SchoolContent | null>(null)
   const [resolvedSlug, setResolvedSlug] = useState<string | null>(null)
 
   useEffect(() => { params.then(p => setResolvedSlug(p.slug)) }, [params])
@@ -379,7 +378,6 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
           <div className={styles.actions}>
             <Link href={getUserProfileUrl(school.user)} className={styles.viewOwnerBtn}>View Instructor</Link>
             <button onClick={() => setShowAppointmentModal(true)} className={styles.viewOwnerBtn} style={{ fontSize: '0.8rem' }}>📅 Book</button>
-            {school.schoolSlug && <button onClick={() => setShowShareModal(true)} className={styles.viewOwnerBtn}>🔗 Share</button>}
             {isOwner && (
               <button onClick={() => { setShowEditModal(true); setActiveTab('about'); }} className={styles.editBtn}>Edit School</button>
             )}
@@ -387,7 +385,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
         </div>
       </div>
 
-      {school.schoolAbout && (
+      {activeTab !== 'about' && school.schoolAbout && (
         <div className={styles.aboutPreview}><p>{school.schoolAbout}</p></div>
       )}
 
@@ -476,26 +474,9 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                         </button>
                       )}
                     </div>
-                    <h3 onClick={() => setSelectedContent(selectedContent?.id === item.id ? null : item)}>{item.title}</h3>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setShareContent(item) }}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.9rem', padding: '4px 8px', borderRadius: 4, color: 'var(--text-secondary)', transition: 'all 0.15s' }}
-                      title="Share to Feed"
-                    >
-                      🔗
-                    </button>
-                    {selectedContent?.id === item.id && (
-                      <div className={styles.contentBody}>
-                        {item.content.split('\n').map((line, i) => (
-                          <p key={i}>{line}</p>
-                        ))}
-                        <div className={styles.contentMeta}>
-                          <span>by {item.user?.name || 'Unknown'}</span>
-                          <span>{new Date(item.createdAt).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                    )}
+                    <h3 onClick={() => router.push(`/school/${resolvedSlug}/content/${item.id}`)} style={{cursor: 'pointer'}}>{item.title}</h3>
                     <p className={styles.contentPreview}>{item.content.slice(0, 120)}...</p>
+                    <EntityActions entityType="SCHOOLCONTENT" entityId={item.id} title={item.title} authorId={school.user.id} variant="bar" />
                     {item.hashtags && item.hashtags.length > 0 && (
                       <div className={styles.hashtagRow}>
                         {item.hashtags.map((h: any) => (
@@ -661,9 +642,6 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
         sellerName={school.user.name}
       />
 
-      <EntityActions entityType="SCHOOL" entityId={school.schoolSlug || ''} title={school.schoolName || 'School'} authorId={school.user.id} variant="bar" />
-
-      <EntityActions entityType="SCHOOLCONTENT" entityId={shareContent?.id || ''} title={shareContent?.title || ''} authorId={school.user.id} variant="bar" />
       </div>
     </div>
   )

@@ -9,8 +9,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
   const content = await prisma.schoolContent.findUnique({
     where: { id },
     include: { 
-      author: { select: { name: true } },
-      user: { select: { schoolName: true, schoolSlug: true } },
+      author: { select: { id: true, name: true, image: true } },
+      user: { select: { id: true, schoolName: true, schoolSlug: true, image: true } },
+      hashtags: { include: { hashtag: true } },
       _count: { select: { likes: true } },
       originalContent: {
         include: {
