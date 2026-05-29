@@ -66,6 +66,10 @@ export default function EntityActions({
   const [fetchedDonations, setFetchedDonations] = useState<DonationAddr[]>([])
   const [loadingDonations, setLoadingDonations] = useState(false)
 
+  const [showShareModal, setShowShareModal] = useState(false)
+  const [showFeedModal, setShowFeedModal] = useState(false)
+  const [showTipModal, setShowTipModal] = useState(false)
+
   const activeDonations = donationAddresses || fetchedDonations
 
   useEffect(() => {
@@ -78,10 +82,6 @@ export default function EntityActions({
         .finally(() => setLoadingDonations(false))
     }
   }, [showTipModal])
-
-  const [showShareModal, setShowShareModal] = useState(false)
-  const [showFeedModal, setShowFeedModal] = useState(false)
-  const [showTipModal, setShowTipModal] = useState(false)
   const [qrAddr, setQrAddr] = useState<{ address: string; currency: string } | null>(null)
   const [feedContent, setFeedContent] = useState('')
   const [feedDestination, setFeedDestination] = useState<'PROFILE' | 'SHOP' | 'SCHOOL'>('PROFILE')
