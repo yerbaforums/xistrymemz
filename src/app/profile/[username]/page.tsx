@@ -383,7 +383,6 @@ export default function ProfilePage() {
   const coverInputRef = useRef<HTMLInputElement>(null)
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set())
   const [copiedShare, setCopiedShare] = useState(false)
-  const [showShareModal, setShowShareModal] = useState(false)
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
   const [confirmDeletePost, setConfirmDeletePost] = useState<string | null>(null)
   const [confirmDisconnect, setConfirmDisconnect] = useState(false)
@@ -400,7 +399,13 @@ export default function ProfilePage() {
   }
 
   const handleShareProfile = async () => {
-    setShowShareModal(true)
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      setCopiedShare(true)
+      setTimeout(() => setCopiedShare(false), 2000)
+    } catch {
+      /* ignore */
+    }
   }
 
   const getTargetId = () => {
@@ -1767,8 +1772,6 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
-
-      <EntityActions entityType="PROFILE" entityId={user.id} title={user.name || 'User'} authorId={user.id} variant="modal-trigger" />
 
       <ConfirmDialog
         isOpen={confirmDeletePost !== null}

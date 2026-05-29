@@ -554,3 +554,54 @@
 .closeBtn:hover {
   background: var(--bg-tertiary);
 }
+
+.donationAddrList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.donationAddrRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.donationAddrCurrency {
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  min-width: 36px;
+}
+
+.donationAddrCode {
+  flex: 1;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.donationAddrBtn {
+  padding: 4px 8px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  transition: var(--transition);
+  line-height: 1;
+}
+
+.donationAddrBtn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}

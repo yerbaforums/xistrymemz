@@ -5,6 +5,8 @@ import { useSession } from 'next-auth/react'
 import { useEntityActions, type ActionEntityType } from '@/hooks/useEntityActions'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { useToast } from '@/context/ToastContext'
+import { QRCodeModal } from '@/components/QRCodeModal'
+import type { DonationAddr } from '@/types/product'
 import styles from './EntityActions.module.css'
 
 interface EntityActionsProps {
@@ -21,6 +23,7 @@ interface EntityActionsProps {
   replyCount?: number
   variant?: 'bar' | 'compact' | 'full' | 'modal-trigger'
   onEdit?: () => void
+  donationAddresses?: DonationAddr[]
 }
 
 const SOCIAL_PLATFORMS = [
@@ -38,7 +41,7 @@ export default function EntityActions({
   entityType, entityId, title, authorId, description, image,
   initialLikes, liked: initLiked, saved: initSaved,
   viewCount: initViewCount, replyCount: initReplyCount,
-  variant = 'bar', onEdit,
+  variant = 'bar', onEdit, donationAddresses,
 }: EntityActionsProps) {
   const { data: session } = useSession()
   const { settings } = useSiteSettings()
@@ -57,6 +60,7 @@ export default function EntityActions({
   const [showShareModal, setShowShareModal] = useState(false)
   const [showFeedModal, setShowFeedModal] = useState(false)
   const [showTipModal, setShowTipModal] = useState(false)
+  const [qrAddr, setQrAddr] = useState<{ address: string; currency: string } | null>(null)
   const [feedContent, setFeedContent] = useState('')
   const [feedDestination, setFeedDestination] = useState<'PROFILE' | 'SHOP' | 'SCHOOL'>('PROFILE')
   const [posting, setPosting] = useState(false)
@@ -70,7 +74,7 @@ export default function EntityActions({
   const hasSchool = !!(session?.user as any)?.schoolSlug
   const canLike = authorSettings?.enableLikes !== false
   const canReply = authorSettings?.enableReplies !== false
-  const canTip = authorSettings?.enableTips !== false && walletEnabled && !isOwner
+  const canTip = authorSettings?.enableTips !== false && !isOwner
   const showViews = authorSettings?.showViewCount !== false
 
   const url = typeof window !== 'undefined' ? window.location.href : ''
@@ -138,17 +142,37 @@ export default function EntityActions({
         <div className={styles.overlay} onClick={() => setShowTipModal(false)}>
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
             <h3 className={styles.modalTitle}>💎 Send Tip</h3>
-            <p className={styles.modalDesc}>Support this content with a crypto tip</p>
-            <div className={styles.tipRow}>
-              {['XTM', 'XMR', 'BTC', 'ETH', 'USDT'].map(coin => (
-                <button key={coin} className={styles.tipBtn} onClick={() => {
-                  fetch('/api/actions/tip', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ entityType, entityId, amount: 1, currency: coin }),
-                  }).then(r => { if (r.ok) { success(`Tipped 1 ${coin}!`); setShowTipModal(false) } else error('Tip failed') })
-                }}>{coin}</button>
-              ))}
-            </div>
+            {walletEnabled ? (
+              <>
+                <p className={styles.modalDesc}>Support this content with a crypto tip</p>
+                <div className={styles.tipRow}>
+                  {['XTM', 'XMR', 'BTC', 'ETH', 'USDT'].map(coin => (
+                    <button key={coin} className={styles.tipBtn} onClick={() => {
+                      fetch('/api/actions/tip', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ entityType, entityId, amount: 1, currency: coin }),
+                      }).then(r => { if (r.ok) { success(`Tipped 1 ${coin}!`); setShowTipModal(false) } else error('Tip failed') })
+                    }}>{coin}</button>
+                  ))}
+                </div>
+              </>
+            ) : donationAddresses && donationAddresses.length > 0 ? (
+              <>
+                <p className={styles.modalDesc}>Support via donation address:</p>
+                <div className={styles.donationAddrList}>
+                  {donationAddresses.map(da => (
+                    <div key={da.id} className={styles.donationAddrRow}>
+                      <span className={styles.donationAddrCurrency}>{da.currency}</span>
+                      <code className={styles.donationAddrCode}>{da.address.length > 20 ? da.address.slice(0, 10) + '...' + da.address.slice(-6) : da.address}</code>
+                      <button onClick={() => { navigator.clipboard.writeText(da.address); success('Address copied!') }} className={styles.donationAddrBtn} title="Copy address">📋</button>
+                      <button onClick={() => setQrAddr({ address: da.address, currency: da.currency })} className={styles.donationAddrBtn} title="Show QR">📱</button>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <p className={styles.modalDesc}>No donation addresses available.</p>
+            )}
             <button className={styles.closeBtn} onClick={() => setShowTipModal(false)}>Cancel</button>
           </div>
         </div>
@@ -181,6 +205,9 @@ export default function EntityActions({
             <button onClick={() => setShowFeedModal(true)} className={styles.feedBtn}>📝 Share to Feed</button>
           </div>
         </div>
+      )}
+      {qrAddr && (
+        <QRCodeModal isOpen={true} onClose={() => setQrAddr(null)} currency={qrAddr.currency} address={qrAddr.address} />
       )}
       {showFeedModal && (
         <div className={styles.overlay} onClick={() => setShowFeedModal(false)} style={{ zIndex: 1001 }}>
