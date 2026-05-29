@@ -529,6 +529,62 @@
 .donationLabel { font-size: 0.8rem; font-weight: 600; color: var(--text-primary); }
 .donationAddress { font-size: 0.7rem; color: var(--text-muted); }
 
+.filterRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.filterBtn {
+  padding: 6px 14px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.filterBtn:hover {
+  border-color: var(--accent-success);
+  color: var(--accent-success);
+}
+
+.filterActive {
+  background: var(--accent-success);
+  color: var(--bg-primary);
+  border-color: var(--accent-success);
+}
+
+.ownerActions {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.editContentBtn, .deleteContentBtn {
+  padding: 4px 12px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.editContentBtn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.deleteContentBtn:hover {
+  border-color: var(--accent-secondary);
+  color: var(--accent-secondary);
+}
+
 .empty { text-align: center; padding: 48px 24px; color: var(--text-muted); }
 
 .hashtagRow {

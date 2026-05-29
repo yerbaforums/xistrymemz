@@ -32,13 +32,17 @@ export default function SchoolContentDetailPage() {
   const slug = params.slug as string
   const id = params.id as string
   const [content, setContent] = useState<ContentData | null>(null)
+  const [related, setRelated] = useState<ContentData[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`/api/school/${slug}/content/${id}`)
-      .then(res => res.ok ? res.json() : Promise.reject())
-      .then(data => setContent(data))
-      .catch(() => {})
+    Promise.all([
+      fetch(`/api/school/${slug}/content/${id}`).then(r => r.ok ? r.json() : Promise.reject()),
+      fetch(`/api/school/${slug}/content`).then(r => r.ok ? r.json() : [])
+    ]).then(([data, all]) => {
+      setContent(data)
+      setRelated(all.filter((c: ContentData) => c.id !== data.id).slice(0, 4))
+    }).catch(() => {})
       .finally(() => setLoading(false))
   }, [slug, id])
 
@@ -108,6 +112,23 @@ export default function SchoolContentDetailPage() {
       <div className={styles.actions}>
         <EntityActions entityType="SCHOOLCONTENT" entityId={content.id} title={content.title} authorId={content.author.id} variant="bar" />
       </div>
+
+      <Link href={`/school/${slug}`} className={styles.backLink}>← Back to {content.user.schoolName || 'School'}</Link>
+
+      {related.length > 0 && (
+        <div className={styles.related}>
+          <h2 className={styles.relatedTitle}>More from {content.user.schoolName || 'this school'}</h2>
+          <div className={styles.relatedGrid}>
+            {related.map(item => (
+              <Link key={item.id} href={`/school/${slug}/content/${item.id}`} className={styles.relatedCard}>
+                <div className={styles.relatedBadge}>{CONTENT_TYPE_ICONS[item.contentType] || '📄'} {item.contentType}</div>
+                <h3 className={styles.relatedName}>{item.title}</h3>
+                <p className={styles.relatedPreview}>{item.content.slice(0, 80)}...</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

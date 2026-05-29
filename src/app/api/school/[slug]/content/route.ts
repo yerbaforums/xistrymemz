@@ -46,7 +46,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
   }
 
   const body = await request.json()
-  const { title, content, contentType, hashtags: explicitHashtags } = body
+  const { title, content, contentType, images, videoUrl, price, isPaid, hashtags: explicitHashtags } = body
 
   if (!title || !content) {
     return NextResponse.json({ error: 'Title and content required' }, { status: 400 })
@@ -57,6 +57,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
       title,
       content,
       contentType: contentType || 'article',
+      images: images || null,
+      videoUrl: videoUrl || null,
+      price: isPaid ? (parseFloat(price) || 0) : 0,
+      isPaid: isPaid || false,
       userId: user.id,
       authorId: session.user.id
     }

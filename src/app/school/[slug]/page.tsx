@@ -17,6 +17,7 @@ import HashtagInput from '@/components/HashtagInput'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
 import Rating from '@/components/Rating'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 interface UserLink {
   id: string
@@ -41,6 +42,8 @@ interface SchoolContent {
   title: string
   content: string
   contentType: string
+  images: string | null
+  videoUrl: string | null
   price: number | null
   isPaid: boolean
   isSubscription: boolean
@@ -159,9 +162,12 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
   const [posting, setPosting] = useState(false)
   const [showContentForm, setShowContentForm] = useState(false)
-  const [contentForm, setContentForm] = useState({ title: '', content: '', contentType: 'article', price: '', isPaid: false })
+  const [contentForm, setContentForm] = useState({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: [] as string[], videoUrl: '' })
   const [contentHashtags, setContentHashtags] = useState<string[]>([])
   const [creatingContent, setCreatingContent] = useState(false)
+  const [editingContentId, setEditingContentId] = useState<string | null>(null)
+  const [contentFilter, setContentFilter] = useState<string>('all')
+  const [deletingContent, setDeletingContent] = useState<string | null>(null)
   const [resolvedSlug, setResolvedSlug] = useState<string | null>(null)
 
   useEffect(() => { params.then(p => setResolvedSlug(p.slug)) }, [params])
@@ -214,25 +220,63 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
     if (!contentForm.title.trim() || !contentForm.content.trim() || !resolvedSlug) return
     setCreatingContent(true)
     try {
-      const res = await fetch(`/api/school/${resolvedSlug}/content`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...contentForm, hashtags: contentHashtags })
-      })
+      const isEdit = editingContentId !== null
+      const url = isEdit ? `/api/school/${resolvedSlug}/content/${editingContentId}` : `/api/school/${resolvedSlug}/content`
+      const method = isEdit ? 'PUT' : 'POST'
+      const body = {
+        ...contentForm,
+        images: contentForm.images.length > 0 ? JSON.stringify(contentForm.images) : null,
+        videoUrl: contentForm.videoUrl || null,
+        hashtags: contentHashtags
+      }
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       if (res.ok) {
-        success('Content published!')
+        success(isEdit ? 'Content updated!' : 'Content published!')
         setShowContentForm(false)
-        setContentForm({ title: '', content: '', contentType: 'article', price: '', isPaid: false })
+        setEditingContentId(null)
+        setContentForm({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: [], videoUrl: '' })
         setContentHashtags([])
         if (resolvedSlug) fetch(`/api/school/${resolvedSlug}`).then(r => r.json()).then(data => setSchool(data))
       } else {
         const err = await res.json()
-        error(err.error || 'Failed to create content')
+        error(err.error || `Failed to ${isEdit ? 'update' : 'create'} content`)
       }
     } catch {
-      error('Failed to create content')
+      error('Failed to save content')
     } finally {
       setCreatingContent(false)
+    }
+  }
+
+  const handleEditContent = (item: SchoolContent) => {
+    setContentForm({
+      title: item.title,
+      content: item.content,
+      contentType: item.contentType,
+      price: item.price?.toString() || '',
+      isPaid: item.isPaid,
+      images: item.images ? JSON.parse(item.images) : [],
+      videoUrl: item.videoUrl || ''
+    })
+    setContentHashtags(item.hashtags?.map((h: any) => h.tag || h.hashtag?.tag).filter(Boolean) || [])
+    setEditingContentId(item.id)
+    setShowContentForm(true)
+  }
+
+  const handleDeleteContent = async (id: string) => {
+    if (!resolvedSlug) return
+    try {
+      const res = await fetch(`/api/school/${resolvedSlug}/content/${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        success('Content deleted')
+        setDeletingContent(null)
+        if (resolvedSlug) fetch(`/api/school/${resolvedSlug}`).then(r => r.json()).then(data => setSchool(data))
+      } else {
+        const err = await res.json()
+        error(err.error || 'Failed to delete')
+      }
+    } catch {
+      error('Failed to delete')
     }
   }
 
@@ -436,6 +480,14 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                   <textarea value={contentForm.content} onChange={e => setContentForm({ ...contentForm, content: e.target.value })} rows={6} required />
                 </div>
                 <div className={styles.formGroup}>
+                  <label>Images</label>
+                  <ImageUploader images={contentForm.images} onChange={(urls) => setContentForm({ ...contentForm, images: urls })} maxImages={5} />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Video URL (optional)</label>
+                  <input type="url" value={contentForm.videoUrl} onChange={e => setContentForm({ ...contentForm, videoUrl: e.target.value })} placeholder="https://youtube.com/watch?v=..." />
+                </div>
+                <div className={styles.formGroup}>
                   <label>Hashtags</label>
                   <HashtagInput value={contentHashtags} onChange={setContentHashtags} placeholder="Add hashtags or type # in content..." />
                 </div>
@@ -449,14 +501,29 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                   )}
                 </div>
                 <div className={styles.formActions}>
-                  <button type="submit" className="btn-primary" disabled={creatingContent}>{creatingContent ? 'Publishing...' : 'Publish'}</button>
-                  <button type="button" className="btn-ghost" onClick={() => setShowContentForm(false)}>Cancel</button>
+                  <button type="submit" className="btn-primary" disabled={creatingContent}>{creatingContent ? 'Saving...' : (editingContentId ? 'Update' : 'Publish')}</button>
+                  <button type="button" className="btn-ghost" onClick={() => { setShowContentForm(false); setEditingContentId(null); setContentForm({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: [], videoUrl: '' }); setContentHashtags([]) }}>Cancel</button>
                 </div>
               </form>
             )}
+            {school.schoolContents.length > 0 && (
+              <div className={styles.filterRow}>
+                {['all', 'article', 'lesson', 'note', 'guide', 'course', 'resource'].map(type => (
+                  <button
+                    key={type}
+                    className={`${styles.filterBtn} ${contentFilter === type ? styles.filterActive : ''}`}
+                    onClick={() => setContentFilter(type)}
+                  >
+                    {type === 'all' ? 'All' : `${CONTENT_TYPE_ICONS[type] || '📄'} ${type}`}
+                  </button>
+                ))}
+              </div>
+            )}
             {school.schoolContents.length > 0 ? (
               <div className={styles.contentList}>
-                {school.schoolContents.map(item => (
+                {school.schoolContents
+                  .filter(item => contentFilter === 'all' || item.contentType === contentFilter)
+                  .map(item => (
                   <div key={item.id} className={`${styles.contentCard} ${item.pinned ? styles.pinnedCard : ''}`}>
                     <div className={styles.contentCardTop}>
                       <span className={styles.contentTypeIcon}>{CONTENT_TYPE_ICONS[item.contentType] || '📄'}</span>
@@ -476,6 +543,12 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                     </div>
                     <h3 onClick={() => router.push(`/school/${resolvedSlug}/content/${item.id}`)} style={{cursor: 'pointer'}}>{item.title}</h3>
                     <p className={styles.contentPreview}>{item.content.slice(0, 120)}...</p>
+                    {isOwner && (
+                      <div className={styles.ownerActions}>
+                        <button onClick={() => handleEditContent(item)} className={styles.editContentBtn}>✏️ Edit</button>
+                        <button onClick={() => setDeletingContent(item.id)} className={styles.deleteContentBtn}>🗑️ Delete</button>
+                      </div>
+                    )}
                     <EntityActions entityType="SCHOOLCONTENT" entityId={item.id} title={item.title} authorId={school.user.id} variant="bar" />
                     {item.hashtags && item.hashtags.length > 0 && (
                       <div className={styles.hashtagRow}>
@@ -640,6 +713,16 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
         onClose={() => setShowAppointmentModal(false)}
         sellerId={school.user.id}
         sellerName={school.user.name}
+      />
+
+      <ConfirmDialog
+        isOpen={deletingContent !== null}
+        onClose={() => setDeletingContent(null)}
+        onConfirm={() => { if (deletingContent) handleDeleteContent(deletingContent) }}
+        title="Delete Content"
+        message="Delete this content item? This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
       />
 
       </div>
