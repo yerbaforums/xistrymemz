@@ -7,6 +7,7 @@ import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { useToast } from '@/context/ToastContext'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import type { DonationAddr } from '@/types/product'
+import { CRYPTO_LOGOS } from '@/lib/constants'
 import styles from './EntityActions.module.css'
 
 interface EntityActionsProps {
@@ -26,17 +27,18 @@ interface EntityActionsProps {
   variant?: 'bar' | 'compact' | 'full' | 'modal-trigger'
   onEdit?: () => void
   donationAddresses?: DonationAddr[]
+  triggerClassName?: string
 }
 
 const SOCIAL_PLATFORMS = [
-  { key: 'x', label: 'X', url: 'https://twitter.com/intent/tweet' },
-  { key: 'facebook', label: 'Facebook', url: 'https://www.facebook.com/sharer/sharer.php' },
-  { key: 'linkedin', label: 'LinkedIn', url: 'https://www.linkedin.com/sharing/share-offsite/' },
-  { key: 'reddit', label: 'Reddit', url: 'https://www.reddit.com/submit' },
-  { key: 'telegram', label: 'Telegram', url: 'https://t.me/share/url' },
-  { key: 'whatsapp', label: 'WhatsApp', url: 'https://wa.me/' },
-  { key: 'mastodon', label: 'Mastodon', url: 'https://s2f.kytta.dev/' },
-  { key: 'email', label: 'Email', url: 'mailto:' },
+  { key: 'x', label: 'X', url: 'https://twitter.com/intent/tweet', icon: '/social-logos/twitter.svg' },
+  { key: 'facebook', label: 'Facebook', url: 'https://www.facebook.com/sharer/sharer.php', icon: '/social-logos/facebook.svg' },
+  { key: 'linkedin', label: 'LinkedIn', url: 'https://www.linkedin.com/sharing/share-offsite/', icon: '/social-logos/linkedin.svg' },
+  { key: 'reddit', label: 'Reddit', url: 'https://www.reddit.com/submit', icon: '/social-logos/reddit.svg' },
+  { key: 'telegram', label: 'Telegram', url: 'https://t.me/share/url', icon: '/social-logos/telegram.svg' },
+  { key: 'whatsapp', label: 'WhatsApp', url: 'https://wa.me/', icon: '/social-logos/whatsapp.svg' },
+  { key: 'mastodon', label: 'Mastodon', url: 'https://s2f.kytta.dev/', icon: '/social-logos/mastodon.svg' },
+  { key: 'email', label: 'Email', url: 'mailto:', icon: '/social-logos/email.svg' },
 ]
 
 export default function EntityActions({
@@ -44,7 +46,7 @@ export default function EntityActions({
   initialLikes, liked: initLiked, saved: initSaved,
   viewCount: initViewCount, replyCount: initReplyCount,
   repostCount: initRepostCount, reposted: initReposted,
-  variant = 'bar', onEdit, donationAddresses,
+  variant = 'bar', onEdit, donationAddresses, triggerClassName,
 }: EntityActionsProps) {
   const { data: session } = useSession()
   const { settings } = useSiteSettings()
@@ -220,9 +222,10 @@ export default function EntityActions({
                 <div className={styles.donationAddrList}>
                   {activeDonations.map(da => (
                     <div key={da.id} className={styles.donationAddrRow}>
+                      {CRYPTO_LOGOS[da.currency] && <img src={`/crypto-logos/${CRYPTO_LOGOS[da.currency]}`} alt="" width={16} height={16} style={{borderRadius:'50%'}} />}
                       <span className={styles.donationAddrCurrency}>{da.currency}</span>
                       <code className={styles.donationAddrCode}>{da.address.length > 20 ? da.address.slice(0, 10) + '...' + da.address.slice(-6) : da.address}</code>
-                      <button onClick={() => { navigator.clipboard.writeText(da.address); success('Address copied!') }} className={styles.donationAddrBtn} title="Copy address">📋</button>
+                      <button onClick={() => { navigator.clipboard.writeText(da.address); success('Address copied!') }} className={styles.copyBtn} style={{padding:'4px 10px',fontSize:'0.75rem'}}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy</button>
                       <button onClick={() => setQrAddr({ address: da.address, currency: da.currency })} className={styles.donationAddrBtn} title="Show QR">📱</button>
                     </div>
                   ))}
@@ -256,7 +259,7 @@ export default function EntityActions({
             <button onClick={nativeShare} className={styles.nativeBtn}>📤 Share via device</button>
             <div className={styles.socialGrid}>
               {SOCIAL_PLATFORMS.map(p => (
-                <a key={p.key} href={`${p.url}?${p.key === 'x' ? `text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}` : p.key === 'facebook' ? `u=${encodeURIComponent(url)}` : p.key === 'linkedin' ? `url=${encodeURIComponent(url)}` : p.key === 'reddit' ? `url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}` : p.key === 'telegram' ? `url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}` : p.key === 'whatsapp' ? `text=${encodeURIComponent(title + ' ' + url)}` : p.key === 'mastodon' ? `text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}` : `subject=${encodeURIComponent(title)}&body=${encodeURIComponent(url)}`}`} target="_blank" rel="noopener noreferrer" className={styles.socialBtn}>{p.label}</a>
+                <a key={p.key} href={`${p.url}?${p.key === 'x' ? `text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}` : p.key === 'facebook' ? `u=${encodeURIComponent(url)}` : p.key === 'linkedin' ? `url=${encodeURIComponent(url)}` : p.key === 'reddit' ? `url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}` : p.key === 'telegram' ? `url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}` : p.key === 'whatsapp' ? `text=${encodeURIComponent(title + ' ' + url)}` : p.key === 'mastodon' ? `text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}` : `subject=${encodeURIComponent(title)}&body=${encodeURIComponent(url)}`}`} target="_blank" rel="noopener noreferrer" className={styles.socialBtn}>{p.icon && <img src={p.icon} alt="" width={16} height={16} style={{borderRadius:'3px'}} />} {p.label}</a>
               ))}
             </div>
             <div className={styles.divider} />
@@ -291,7 +294,7 @@ export default function EntityActions({
   if (variant === 'modal-trigger') {
     return (
       <>
-        <button onClick={() => setShowShareModal(true)} className={styles.triggerBtn} title="Share">🔗</button>
+        <button onClick={() => setShowShareModal(true)} className={triggerClassName || styles.triggerBtn} title="Share">🔗 Share</button>
         {modals}
       </>
     )
