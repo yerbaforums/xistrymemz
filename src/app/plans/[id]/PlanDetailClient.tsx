@@ -17,6 +17,7 @@ import { hydrateDonationAddresses, serializeDonationAddresses, donationAddresses
 import type { DonationAddr } from '@/types/product'
 import type { PlanGoal, PlanMilestone, PlanResource, PlanContribution, PlanJoiner } from '@/lib/plan-utils'
 import TranslateButton from '@/components/TranslateButton'
+import HashtagInput from '@/components/HashtagInput'
 
 interface Request {
   id: string; title: string; description: string | null; status: string
@@ -84,6 +85,7 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
 
   const [editedTitle, setEditedTitle] = useState(plan.title)
   const [editedDescription, setEditedDescription] = useState(plan.description || '')
+  const [planHashtags, setPlanHashtags] = useState<string[]>([])
   const [editingOverview, setEditingOverview] = useState(false)
 
   const [showRequestModal, setShowRequestModal] = useState(false)
@@ -164,7 +166,7 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
   const handleSaveOverview = async () => {
     setLoading(true)
     try {
-      const updated = await saveField({ title: editedTitle, description: editedDescription || null })
+      const updated = await saveField({ title: editedTitle, description: editedDescription || null, hashtags: planHashtags })
       setPlan({ ...plan, ...updated })
       setEditingOverview(false)
     } catch (err) {
@@ -460,6 +462,10 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                   </div>
                   <input type="text" value={editedTitle} onChange={e => setEditedTitle(e.target.value)} className={styles.titleInput} />
                   <textarea value={editedDescription} onChange={e => setEditedDescription(e.target.value)} className={styles.descInput} rows={3} />
+                  <div className={styles.field} style={{ marginTop: '12px' }}>
+                    <label>Hashtags</label>
+                    <HashtagInput value={planHashtags} onChange={setPlanHashtags} placeholder="Add hashtags..." />
+                  </div>
                 </div>
               ) : (
                 <>

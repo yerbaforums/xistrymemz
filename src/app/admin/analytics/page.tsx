@@ -62,6 +62,31 @@ interface AnalyticsData {
   }
 }
 
+interface Visit {
+  id: string
+  ipHash: string | null
+  country: string | null
+  city: string | null
+  region: string | null
+  latitude: number | null
+  longitude: number | null
+  landingPage: string | null
+  referrer: string | null
+  referrerDomain: string | null
+  referrerType: string | null
+  userAgent: string | null
+  createdAt: string
+  userId: string | null
+  user: { id: string; name: string | null; username: string | null; image: string | null } | null
+}
+
+interface VisitsResponse {
+  visits: Visit[]
+  total: number
+  page: number
+  totalPages: number
+}
+
 const DATE_RANGES = ['24h', '7d', '30d', 'All'] as const
 
 function SimpleBar({ items, max, color }: { items: { label: string; value: number }[]; max: number; color: string }) {
@@ -162,10 +187,52 @@ const REFERRER_COLORS: Record<string, string> = {
   other: '#F59E0B',
 }
 
+function formatTime(iso: string): string {
+  const d = new Date(iso)
+  const now = Date.now()
+  const diff = now - d.getTime()
+  if (diff < 60000) return 'just now'
+  if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`
+  return d.toLocaleDateString()
+}
+
+function truncateIP(hash: string | null): string {
+  if (!hash) return '—'
+  return hash.slice(0, 12) + '…'
+}
+
 export default function AdminAnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [dateRange, setDateRange] = useState<typeof DATE_RANGES[number]>('7d')
+
+  const [visits, setVisits] = useState<Visit[]>([])
+  const [visitsTotal, setVisitsTotal] = useState(0)
+  const [visitsPage, setVisitsPage] = useState(1)
+  const [visitsPages, setVisitsPages] = useState(0)
+  const [visitsLoading, setVisitsLoading] = useState(false)
+  const [ipFilter, setIpFilter] = useState('')
+  const [pageFilter, setPageFilter] = useState('')
+  const [countryFilter, setCountryFilter] = useState('')
+
+  useEffect(() => {
+    setVisitsLoading(true)
+    const params = new URLSearchParams()
+    params.set('page', String(visitsPage))
+    if (ipFilter) params.set('ip', ipFilter)
+    if (pageFilter) params.set('pagePath', pageFilter)
+    if (countryFilter) params.set('country', countryFilter)
+    fetch(`/api/admin/analytics/visits?${params}`)
+      .then(r => r.json())
+      .then((d: VisitsResponse) => {
+        setVisits(d.visits)
+        setVisitsTotal(d.total)
+        setVisitsPages(d.totalPages)
+        setVisitsLoading(false)
+      })
+      .catch(() => setVisitsLoading(false))
+  }, [visitsPage, ipFilter, pageFilter, countryFilter])
 
   useEffect(() => {
     setLoading(true)
@@ -429,6 +496,57 @@ export default function AdminAnalyticsPage() {
               color="#F59E0B"
             />
           </div>
+        </div>
+      </div>
+
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>🕵️ Recent Visits</h2>
+        <div className={styles.card}>
+          <div className={styles.filterBar}>
+            <input className={styles.filterInput} type="text" placeholder="Filter by visitor hash..." value={ipFilter} onChange={e => { setIpFilter(e.target.value); setVisitsPage(1) }} />
+            <input className={styles.filterInput} type="text" placeholder="Filter by page..." value={pageFilter} onChange={e => { setPageFilter(e.target.value); setVisitsPage(1) }} />
+            <input className={styles.filterInput} type="text" placeholder="Filter by country..." value={countryFilter} onChange={e => { setCountryFilter(e.target.value); setVisitsPage(1) }} />
+          </div>
+          {visitsLoading ? (
+            <div className={styles.empty}>Loading visits...</div>
+          ) : visits.length === 0 ? (
+            <div className={styles.empty}>No visits recorded yet</div>
+          ) : (
+            <>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Visitor</th>
+                    <th>Page</th>
+                    <th>Referrer</th>
+                    <th>Location</th>
+                    <th>Time</th>
+                    <th>User</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visits.map(v => (
+                    <tr key={v.id}>
+                      <td><code className={styles.hashCode}>{truncateIP(v.ipHash)}</code></td>
+                      <td className={styles.pageCell}>{v.landingPage || '/'}</td>
+                      <td className={styles.pageCell}>{v.referrerDomain || '—'}</td>
+                      <td>{[v.city, v.region, v.country].filter(Boolean).join(', ') || '—'}</td>
+                      <td className={styles.timeCell}>{formatTime(v.createdAt)}</td>
+                      <td>{v.user ? <span className={styles.userName}>{v.user.name || v.user.username || 'User'}</span> : '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className={styles.pagination}>
+                <span className={styles.paginationInfo}>{visitsTotal} total visits</span>
+                <div className={styles.paginationButtons}>
+                  <button className={styles.pageBtn} disabled={visitsPage <= 1} onClick={() => setVisitsPage(p => p - 1)}>← Prev</button>
+                  <span className={styles.pageIndicator}>Page {visitsPage} of {visitsPages || 1}</span>
+                  <button className={styles.pageBtn} disabled={visitsPage >= visitsPages} onClick={() => setVisitsPage(p => p + 1)}>Next →</button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 

@@ -288,264 +288,232 @@ export default async function DashboardOverview() {
     { label: t('settings'), icon: '⚙️', href: '/profile/settings' },
   ]
 
+  const coreQuickActions = quickActions.slice(0, 6)
+
   return (
     <div className={styles.overview}>
       <div className={styles.welcomeHeader}>
         <h2>Welcome back, {session.user.name?.split(' ')[0] || 'User'}! 👋</h2>
-        <p>{allStats[6]} posts · {connectionCount} connections · {totalViews > 0 ? `${totalViews} views · ` : ''}{totalEarnings > 0 ? `$${totalEarnings.toFixed(0)} earned` : 'getting started'}</p>
+        <p>{isNewUser ? 'Let&apos;s get started — here are your first steps.' : `${allStats[6]} posts · ${connectionCount} connections${totalViews > 0 ? ` · ${totalViews} views` : ''}${totalEarnings > 0 ? ` · $${totalEarnings.toFixed(0)} earned` : ''}`}</p>
       </div>
 
-      {isNewUser && (
-        <div className={styles.firstVisitBanner}>
-          <div className={styles.firstVisitIcon}>👋</div>
-          <div className={styles.firstVisitContent}>
-            <h3>{t('title')}</h3>
-            <p>This is your command center. From here you can manage projects, listings, events, and everything else. Here are a few places to start:</p>
-            <div className={styles.firstVisitLinks}>
-              <Link href="/dashboard/projects" className={styles.firstVisitLink}>🚀 Start a Project</Link>
-              <Link href="/products/new" className={styles.firstVisitLink}>🛒 List a Product</Link>
-              <Link href="/community" className={styles.firstVisitLink}>👥 Find People</Link>
-              <Link href="/profile/edit" className={styles.firstVisitLink}>⚙️ Complete Profile</Link>
+      {/* New user: simplified view with prioritized next step */}
+      {isNewUser ? (
+        <>
+          <div className={styles.firstVisitBanner}>
+            <div className={styles.firstVisitIcon}>👋</div>
+            <div className={styles.firstVisitContent}>
+              <h3>{t('title')}</h3>
+              <p>This is your command center. Start by completing your profile and joining the community:</p>
+              <div className={styles.firstVisitLinks}>
+                <Link href="/profile/edit" className={styles.firstVisitLink}>⚙️ Complete Profile</Link>
+                <Link href={userClasses.length > 0 ? `/onboarding` : `/onboarding`} className={styles.firstVisitLink}>🚀 Set Up Your Class</Link>
+                <Link href="/products/new" className={styles.firstVisitLink}>🛒 List a Product</Link>
+                <Link href="/community" className={styles.firstVisitLink}>👥 Find People</Link>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-
-      <FeatureBanner />
-      <TipCard />
-
-      <div className={styles.overviewStats}>
-        {stats.map(stat => (
-          stat.href ? (
-            <Link key={stat.label} href={stat.href} className={styles.overviewStatCard}>
-              <div className={styles.statGauge}>
-                <StatGauge value={stat.value} max={stat.max} color={stat.color} icon={stat.icon} size={80} />
-              </div>
-              <span className={styles.overviewStatLabel}>{stat.label}</span>
-            </Link>
-          ) : (
-            <div key={stat.label} className={styles.overviewStatCard} style={{ cursor: 'default' }}>
-              <div className={styles.statGauge}>
-                <StatGauge value={stat.value} max={stat.max} color={stat.color} icon={stat.icon} size={80} />
-              </div>
-              <span className={styles.overviewStatLabel}>{stat.label}</span>
+          <ChecklistCard
+            hasName={!!user?.name}
+            hasBio={!!user?.bio}
+            postCount={allStats[6]}
+            productCount={allStats[2]}
+            groupCount={allStats[3]}
+            connectionCount={connectionCount}
+            hasShop={!!user?.shopSlug}
+            hasSchool={!!user?.schoolSlug}
+          />
+          <div className={styles.quickActions}>
+            <h3>Quick Actions</h3>
+            <div className={styles.actionButtons}>
+              {coreQuickActions.map(a => (
+                <Link key={a.label} href={a.href} className={styles.actionBtn}>
+                  <span>{a.icon}</span> {a.label}
+                </Link>
+              ))}
             </div>
-          )
-        ))}
-      </div>
-
-      <div className={styles.quickActions}>
-        <h3>Quick Actions</h3>
-        <div className={styles.actionButtons}>
-          {quickActions.map(a => (
-            <Link key={a.label} href={a.href} className={styles.actionBtn}>
-              <span>{a.icon}</span> {a.label}
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      <div className={styles.activityGrid}>
-        <div className={styles.activitySection}>
-          <div className={styles.sectionHeader}>
-            <h3>📦 {t('projects')}</h3>
-            <Link href="/dashboard/projects" className={styles.viewAll}>View all →</Link>
           </div>
-          {plans.length > 0 ? (
-            <div className={styles.activityList}>
-              {plans.map(plan => (
-                <Link key={plan.id} href={`/plans/${plan.id}`} className={styles.activityItem}>
-                  <div className={styles.activityIcon}>🚀</div>
-                  <div className={styles.activityInfo}>
-                    <span className={styles.activityTitle}>{plan.title}</span>
-                    <span className={styles.activityMeta}>{plan.status} · {new Date(plan.createdAt).toLocaleDateString()}</span>
+          <DashboardTodo />
+        </>
+      ) : (
+        <>
+          {/* Active user: full dashboard */}
+          <FeatureBanner />
+          <TipCard />
+
+          <div className={styles.overviewStats}>
+            {stats.map(stat => (
+              stat.href ? (
+                <Link key={stat.label} href={stat.href} className={styles.overviewStatCard}>
+                  <div className={styles.statGauge}>
+                    <StatGauge value={stat.value} max={stat.max} color={stat.color} icon={stat.icon} size={80} />
                   </div>
-                  <span className={`badge badge-${plan.status.toLowerCase()}`} style={{ fontSize: '0.65rem' }}>{plan.status}</span>
+                  <span className={styles.overviewStatLabel}>{stat.label}</span>
                 </Link>
-              ))}
-            </div>
-          ) : (
-            <div className={styles.emptyState}>
-              <p>No projects yet</p>
-              <Link href="/dashboard/projects" className={styles.emptyAction}>Create your first project</Link>
-            </div>
-          )}
-        </div>
-
-        <div className={styles.activitySection}>
-          <div className={styles.sectionHeader}>
-            <h3>📡 {t('feed')}</h3>
-            <Link href="/dashboard/feed" className={styles.viewAll}>View all →</Link>
-          </div>
-          {recentFeedPosts.length > 0 ? (
-            <div className={styles.feedCompact}>
-              {recentFeedPosts.map(post => (
-                <FeedItem key={post.id} post={{
-                  id: post.id,
-                  content: post.content,
-                  images: post.images,
-                  createdAt: post.createdAt.toISOString(),
-                  user: post.user,
-                  likes: 0,
-                  sourceType: 'POST'
-                }} />
-              ))}
-            </div>
-          ) : (
-            <div className={styles.emptyState}>
-              <p>No recent posts</p>
-              <Link href="/dashboard/feed" className={styles.emptyAction}>Explore feed</Link>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 20 }}>
-        <ChecklistCard
-          hasName={!!user?.name}
-          hasBio={!!user?.bio}
-          postCount={allStats[6]}
-          productCount={allStats[2]}
-          groupCount={allStats[3]}
-          connectionCount={connectionCount}
-          hasShop={!!user?.shopSlug}
-          hasSchool={!!user?.schoolSlug}
-        />
-        <AchievementCard
-          postCount={allStats[6]}
-          connectionCount={connectionCount}
-          productCount={allStats[2]}
-          planCount={allStats[0]}
-          groupCount={allStats[3]}
-          hasShop={!!user?.shopSlug}
-          hasSchool={!!user?.schoolSlug}
-        />
-      </div>
-
-      <div className={styles.discoverSection}>
-        <h3 style={{ margin: '24px 0 12px', fontSize: '1rem' }}>🌍 Discover</h3>
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <Link href="/plans/public" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
-            <span>🚀</span> Browse Projects
-          </Link>
-          <Link href="/products" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
-            <span>🛒</span> {t('marketplace')}
-          </Link>
-          <Link href="/services" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
-            <span>🔧</span> {t('services')}
-          </Link>
-          <Link href="/hashtags" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
-            <span>#</span> Trending Tags
-          </Link>
-          <Link href="/community" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
-            <span>👥</span> Find Members
-          </Link>
-          <Link href="/community/groups" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
-            <span>🏠</span> Explore Groups
-          </Link>
-        </div>
-        {trendingPlans.length > 0 && (
-          <div style={{ marginTop: 12 }}>
-            <h4 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 8 }}>
-              {t('projects')}
-            </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {trendingPlans.map(p => (
-                <Link key={p.id} href={`/plans/${p.id}`} className={styles.activityItem} style={{ padding: '8px 12px' }}>
-                  <span className={styles.activityTitle}>{p.title}</span>
-                  <span className={styles.activityMeta}>by {p.user.name || 'Unknown'}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-        {recentListings.length > 0 && (
-          <div style={{ marginTop: 12 }}>
-            <h4 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 8 }}>
-              Recent Listings
-            </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {recentListings.map(p => (
-                <Link key={p.id} href={`/products/${p.id}`} className={styles.activityItem} style={{ padding: '8px 12px' }}>
-                  <span className={styles.activityTitle}>{p.title}</span>
-                  <span className={styles.activityMeta}>${p.price}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {connectionFeed.length > 0 && (
-        <div style={{ marginTop: 12 }}>
-          <div className={styles.activitySection}>
-            <div className={styles.sectionHeader}>
-              <h3>🤝 Activity from Connections</h3>
-              <Link href="/community" className={styles.viewAll}>View all →</Link>
-            </div>
-            <div className={styles.activityList}>
-              {connectionFeed.map(item => (
-                <Link 
-                  key={`${item.feedType}-${item.id}`} 
-                  href={item.feedType === 'plan' ? `/plans/${item.id}` : `/products/${item.id}`} 
-                  className={styles.activityItem}
-                >
-                  <div className={styles.activityIcon}>{item.feedType === 'plan' ? '🚀' : '🛒'}</div>
-                  <div className={styles.activityInfo}>
-                    <span className={styles.activityTitle}>{item.title}</span>
-                    <span className={styles.activityMeta}>by {item.userName || 'Unknown'} · {new Date(item.createdAt).toLocaleDateString()}</span>
+              ) : (
+                <div key={stat.label} className={styles.overviewStatCard} style={{ cursor: 'default' }}>
+                  <div className={styles.statGauge}>
+                    <StatGauge value={stat.value} max={stat.max} color={stat.color} icon={stat.icon} size={80} />
                   </div>
+                  <span className={styles.overviewStatLabel}>{stat.label}</span>
+                </div>
+              )
+            ))}
+          </div>
+
+          <div className={styles.quickActions}>
+            <h3>Quick Actions</h3>
+            <div className={styles.actionButtons}>
+              {coreQuickActions.map(a => (
+                <Link key={a.label} href={a.href} className={styles.actionBtn}>
+                  <span>{a.icon}</span> {a.label}
                 </Link>
               ))}
             </div>
           </div>
-        </div>
-      )}
 
-      <StreakCard postCount={allStats[6]} connectionCount={connectionCount} />
-      <DashboardTodo />
+          <div className={styles.activityGrid}>
+            <div className={styles.activitySection}>
+              <div className={styles.sectionHeader}>
+                <h3>📦 {t('projects')}</h3>
+                <Link href="/dashboard/projects" className={styles.viewAll}>View all →</Link>
+              </div>
+              {plans.length > 0 ? (
+                <div className={styles.activityList}>
+                  {plans.map(plan => (
+                    <Link key={plan.id} href={`/plans/${plan.id}`} className={styles.activityItem}>
+                      <div className={styles.activityIcon}>🚀</div>
+                      <div className={styles.activityInfo}>
+                        <span className={styles.activityTitle}>{plan.title}</span>
+                        <span className={styles.activityMeta}>{plan.status} · {new Date(plan.createdAt).toLocaleDateString()}</span>
+                      </div>
+                      <span className={`badge badge-${plan.status.toLowerCase()}`} style={{ fontSize: '0.65rem' }}>{plan.status}</span>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className={styles.emptyState}>
+                  <p>No projects yet</p>
+                  <Link href="/dashboard/projects" className={styles.emptyAction}>Create your first project</Link>
+                </div>
+              )}
+            </div>
 
-      {user && (user.walletAddress || user.paymentAddress || user.refundAddress || (user.acceptsDonations && user.donationAddress)) && (
-        <div className={styles.walletCompact}>
-          <h4>💳 {t('wallet')}</h4>
-          {user.walletAddress && <code title={user.walletAddress}>{user.walletAddress.slice(0, 10)}...{user.walletAddress.slice(-4)}</code>}
-          {user.paymentAddress && <code title={user.paymentAddress}>Pay: {user.paymentAddress.slice(0, 8)}...{user.paymentAddress.slice(-4)}</code>}
-          {user.acceptsDonations && user.donationAddress && <code title={user.donationAddress}>Donate: {user.donationAddress.slice(0, 8)}...{user.donationAddress.slice(-4)}</code>}
-          <Link href="/profile/edit" style={{ marginLeft: 'auto', fontSize: '0.75rem', color: 'var(--accent-primary)', textDecoration: 'none' }}>Manage</Link>
-        </div>
-      )}
-
-      {(!user?.shopSlug || !user?.schoolSlug) && (
-        <div className={styles.promoGrid}>
-          <div className={styles.promoCard}>
-            <div className={styles.promoIcon}>📋</div>
-            <h4>{t('templates')}</h4>
-            <p>Pre-built templates for shops, schools, or courier services</p>
-            <Link href="/templates" className={styles.promoBtn}>{t('templates')}</Link>
+            <div className={styles.activitySection}>
+              <div className={styles.sectionHeader}>
+                <h3>📡 {t('feed')}</h3>
+                <Link href="/dashboard/feed" className={styles.viewAll}>View all →</Link>
+              </div>
+              {recentFeedPosts.length > 0 ? (
+                <div className={styles.feedCompact}>
+                  {recentFeedPosts.map(post => (
+                    <FeedItem key={post.id} post={{
+                      id: post.id,
+                      content: post.content,
+                      images: post.images,
+                      createdAt: post.createdAt.toISOString(),
+                      user: post.user,
+                      likes: 0,
+                      sourceType: 'POST'
+                    }} />
+                  ))}
+                </div>
+              ) : (
+                <div className={styles.emptyState}>
+                  <p>No recent posts</p>
+                  <Link href="/dashboard/feed" className={styles.emptyAction}>Explore feed</Link>
+                </div>
+              )}
+            </div>
           </div>
-          {!user?.shopSlug && (
-            <div className={styles.promoCard}>
-              <div className={styles.promoIcon}>🏪</div>
-              <h4>Start Selling</h4>
-              <p>Create your shop and list products or services</p>
-              <div>
-                <Link href="/templates" className={styles.promoBtnSecondary}>{t('templates')}</Link>
-                <Link href="/shop/setup" className={styles.promoBtn}>Setup Shop</Link>
+
+          <details className={styles.collapsibleSection}>
+            <summary className={styles.collapsibleSummary}>📊 More Stats &amp; Tools</summary>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 16 }}>
+              <ChecklistCard
+                hasName={!!user?.name}
+                hasBio={!!user?.bio}
+                postCount={allStats[6]}
+                productCount={allStats[2]}
+                groupCount={allStats[3]}
+                connectionCount={connectionCount}
+                hasShop={!!user?.shopSlug}
+                hasSchool={!!user?.schoolSlug}
+              />
+              <AchievementCard
+                postCount={allStats[6]}
+                connectionCount={connectionCount}
+                productCount={allStats[2]}
+                planCount={allStats[0]}
+                groupCount={allStats[3]}
+                hasShop={!!user?.shopSlug}
+                hasSchool={!!user?.schoolSlug}
+              />
+            </div>
+
+            <div className={styles.discoverSection} style={{ marginTop: 16 }}>
+              <h3 style={{ marginBottom: 12, fontSize: '1rem' }}>🌍 Discover</h3>
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                <Link href="/plans/public" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
+                  <span>🚀</span> Browse Projects
+                </Link>
+                <Link href="/products" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
+                  <span>🛒</span> {t('marketplace')}
+                </Link>
+                <Link href="/services" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
+                  <span>🔧</span> {t('services')}
+                </Link>
+                <Link href="/hashtags" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
+                  <span>#</span> Trending Tags
+                </Link>
+                <Link href="/community" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
+                  <span>👥</span> Find Members
+                </Link>
+                <Link href="/community/groups" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
+                  <span>🏠</span> Explore Groups
+                </Link>
               </div>
             </div>
-          )}
-          {!user?.schoolSlug && (
-            <div className={styles.promoCard}>
-              <div className={styles.promoIcon}>🏫</div>
-              <h4>{t('teaching')}</h4>
-              <p>Share knowledge and create educational content</p>
-              <div>
-                <Link href="/templates" className={styles.promoBtnSecondary}>{t('templates')}</Link>
-                <Link href="/school/setup" className={styles.promoBtn}>Create School</Link>
+
+            {connectionFeed.length > 0 && (
+              <div className={styles.activitySection} style={{ marginTop: 16 }}>
+                <div className={styles.sectionHeader}>
+                  <h3>🤝 Activity from Connections</h3>
+                  <Link href="/community" className={styles.viewAll}>View all →</Link>
+                </div>
+                <div className={styles.activityList}>
+                  {connectionFeed.map(item => (
+                    <Link 
+                      key={`${item.feedType}-${item.id}`} 
+                      href={item.feedType === 'plan' ? `/plans/${item.id}` : `/products/${item.id}`} 
+                      className={styles.activityItem}
+                    >
+                      <div className={styles.activityIcon}>{item.feedType === 'plan' ? '🚀' : '🛒'}</div>
+                      <div className={styles.activityInfo}>
+                        <span className={styles.activityTitle}>{item.title}</span>
+                        <span className={styles.activityMeta}>by {item.userName || 'Unknown'} · {new Date(item.createdAt).toLocaleDateString()}</span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+
+            <StreakCard postCount={allStats[6]} connectionCount={connectionCount} />
+
+            {user && (user.walletAddress || user.paymentAddress || user.refundAddress || (user.acceptsDonations && user.donationAddress)) && (
+              <div className={styles.walletCompact} style={{ marginTop: 16 }}>
+                <h4>💳 {t('wallet')}</h4>
+                {user.walletAddress && <code title={user.walletAddress}>{user.walletAddress.slice(0, 10)}...{user.walletAddress.slice(-4)}</code>}
+                {user.paymentAddress && <code title={user.paymentAddress}>Pay: {user.paymentAddress.slice(0, 8)}...{user.paymentAddress.slice(-4)}</code>}
+                {user.acceptsDonations && user.donationAddress && <code title={user.donationAddress}>Donate: {user.donationAddress.slice(0, 8)}...{user.donationAddress.slice(-4)}</code>}
+                <Link href="/profile/edit" style={{ marginLeft: 'auto', fontSize: '0.75rem', color: 'var(--accent-primary)', textDecoration: 'none' }}>Manage</Link>
+              </div>
+            )}
+          </details>
+
+          <DashboardTodo />
+        </>
       )}
     </div>
   )

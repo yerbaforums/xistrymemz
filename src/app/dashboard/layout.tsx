@@ -7,26 +7,9 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { SkeletonCard } from '@/components/Skeleton'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { DASHBOARD_SIDEBAR_PRIMARY, DASHBOARD_SIDEBAR_SECONDARY, BREADCRUMB_LABELS } from '@/lib/navigation'
 import styles from './layout.module.css'
 import sidebarStyles from './layout-sidebar.module.css'
-
-const BREADCRUMB_LABELS: Record<string, string> = {
-  overview: 'Overview',
-  feed: 'Feed',
-  projects: 'Projects',
-  requests: 'Requests',
-  marketplace: 'Marketplace',
-  services: 'Services',
-  rentals: 'Rentals',
-  shop: 'Shop',
-  teaching: 'Teaching',
-  offers: 'Offers',
-  events: 'Events',
-  appointments: 'Planner',
-  planning: 'Planning',
-  passport: 'Passport',
-  saved: 'Saved',
-}
 
 function DashboardNav({ user }: { user: { name?: string | null; image?: string | null; username?: string | null } }) {
   const pathname = usePathname()
@@ -44,30 +27,8 @@ function DashboardNav({ user }: { user: { name?: string | null; image?: string |
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
   
-  const primaryNav = [
-    { href: '/dashboard/overview', icon: '📊', label: 'Overview' },
-    { href: '/dashboard/feed', icon: '📡', label: 'Feed' },
-    { href: '/dashboard/marketplace', icon: '🛒', label: 'Marketplace' },
-    { href: '/dashboard/services', icon: '🔧', label: 'Services' },
-    { href: '/dashboard/rentals', icon: '🏠', label: 'Rentals' },
-    { href: '/dashboard/shop', icon: '🏪', label: 'Shop' },
-    { href: '/dashboard/events', icon: '📅', label: 'Events' },
-    { href: '/dashboard/appointments', icon: '🗓️', label: 'Planner' },
-    { href: '/dashboard/planning', icon: '🗺️', label: 'Planning' },
-  ]
-
-  const secondaryNav = [
-    { href: '/dashboard/messages', icon: '💬', label: 'Messages' },
-    { href: '/dashboard/community', icon: '🌐', label: 'Community' },
-    { href: '/dashboard/projects', icon: '🚀', label: 'Projects' },
-    { href: '/dashboard/requests', icon: '📝', label: 'Requests' },
-    { href: '/dashboard/teaching', icon: '📚', label: 'Teaching' },
-    { href: '/dashboard/offers', icon: '🤝', label: 'Offers' },
-    { href: '/dashboard/passport', icon: '🌍', label: 'Passport' },
-    { href: '/dashboard/saved', icon: '⭐', label: 'Saved' },
-    { href: '/directory', icon: '📋', label: 'Directory' },
-    { href: '/dashboard/video', icon: '📹', label: 'Video Chat' },
-  ]
+  const primaryNav = DASHBOARD_SIDEBAR_PRIMARY
+  const secondaryNav = DASHBOARD_SIDEBAR_SECONDARY
 
   const userInitial = (user?.name || 'U')[0].toUpperCase()
   const profileHref = `/profile/${user?.username || ''}`

@@ -103,10 +103,10 @@ export default function HeroSection() {
         </p>
         <div className={styles.actions}>
           <Link href="/auth/register" className={styles.btnPrimary}>
-            {t('heroCta')} <span className={styles.arrow}>→</span>
+            🚀 {t('heroCta')} <span className={styles.arrow}>→</span>
           </Link>
           <Link href="/shops" className={styles.btnSecondary}>
-            {t('heroBrowseShops')}
+            🛍️ {t('heroBrowseShops')}
           </Link>
           <Link href="/directory" className={styles.btnSecondary}>
             📋 {t('heroBrowseDirectory')}
@@ -114,8 +114,11 @@ export default function HeroSection() {
           <Link href="/dashboard/passport" className={styles.btnSecondary}>
             🌍 Passport
           </Link>
+          <Link href="/hashtags" className={styles.btnSecondary}>
+            🏷️ Hashtags
+          </Link>
           <Link href="/about" className={styles.btnSecondary}>
-            {t('heroLearnMore')}
+            📖 {t('heroLearnMore')}
           </Link>
         </div>
         <div className={styles.searchWrap}>

@@ -166,6 +166,12 @@ export default function ProfileEditPage() {
       setTraveling(user.traveling || false)
       setLookingForCollaborators(user.lookingForCollaborators || false)
       setAcceptsDonations(user.acceptsDonations || false)
+      setShowShop(user.showShop ?? true)
+      setShowSchool(user.showSchool ?? true)
+      setEnableTips(user.enableTips ?? true)
+      setEnableReplies(user.enableReplies ?? true)
+      setEnableLikes(user.enableLikes ?? true)
+      setShowViewCount(user.showViewCount ?? true)
       setLinks(data.links || [])
 
       try { const r = await fetch('/api/users/donations'); if (r.ok) setDonationAddresses((await r.json()).addresses || []) } catch {}
@@ -193,7 +199,8 @@ export default function ProfileEditPage() {
             walletAddress, paymentAddress, refundAddress, cryptoCurrency,
             acceptsDonations, neighborhood, searchRadius,
             latitude: latitude ?? null, longitude: longitude ?? null,
-            traveling, lookingForCollaborators
+            traveling, lookingForCollaborators,
+            showShop, showSchool, enableTips, enableReplies, enableLikes, showViewCount
           })
       })
 
@@ -675,6 +682,56 @@ export default function ProfileEditPage() {
             </form>
           )}
         </div>
+
+      {/* Feature Visibility Toggles */}
+      <div style={{background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '24px', marginTop: '20px'}}>
+        <h2 style={{marginBottom: '20px'}}>Feature Visibility</h2>
+        <p style={{color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '16px', lineHeight: 1.5}}>
+          Control which features and content sections are visible on your profile and content.
+        </p>
+
+        <div style={{marginBottom: '12px'}}>
+          <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'}}>
+            <input type="checkbox" checked={showShop} onChange={e => setShowShop(e.target.checked)} style={{width: '18px', height: '18px', accentColor: 'var(--accent-primary)'}} />
+            <span>🛍️ Show shop on profile</span>
+          </label>
+        </div>
+
+        <div style={{marginBottom: '12px'}}>
+          <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'}}>
+            <input type="checkbox" checked={showSchool} onChange={e => setShowSchool(e.target.checked)} style={{width: '18px', height: '18px', accentColor: 'var(--accent-primary)'}} />
+            <span>🏫 Show school on profile</span>
+          </label>
+        </div>
+
+        <div style={{marginBottom: '12px'}}>
+          <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'}}>
+            <input type="checkbox" checked={enableTips} onChange={e => setEnableTips(e.target.checked)} style={{width: '18px', height: '18px', accentColor: 'var(--accent-primary)'}} />
+            <span>💎 Enable tips on content</span>
+          </label>
+        </div>
+
+        <div style={{marginBottom: '12px'}}>
+          <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'}}>
+            <input type="checkbox" checked={enableReplies} onChange={e => setEnableReplies(e.target.checked)} style={{width: '18px', height: '18px', accentColor: 'var(--accent-primary)'}} />
+            <span>💬 Enable replies on content</span>
+          </label>
+        </div>
+
+        <div style={{marginBottom: '12px'}}>
+          <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'}}>
+            <input type="checkbox" checked={enableLikes} onChange={e => setEnableLikes(e.target.checked)} style={{width: '18px', height: '18px', accentColor: 'var(--accent-primary)'}} />
+            <span>❤️ Enable likes on content</span>
+          </label>
+        </div>
+
+        <div>
+          <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'}}>
+            <input type="checkbox" checked={showViewCount} onChange={e => setShowViewCount(e.target.checked)} style={{width: '18px', height: '18px', accentColor: 'var(--accent-primary)'}} />
+            <span>👁️ Show view count</span>
+          </label>
+        </div>
+      </div>
 
       {/* Social Links Section */}
       <div style={{background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '24px', marginTop: '20px'}}>

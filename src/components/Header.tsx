@@ -1,6 +1,6 @@
 'use client'
 
-import { signOut, useSession } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
@@ -9,11 +9,11 @@ import { useTranslations, useLocale } from 'next-intl'
 import styles from './Header.module.css'
 import CartButton from './CartButton'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
-import { getUserProfileUrl } from '@/lib/utils'
 import LocationStatus from './LocationStatus'
 import { useTheme } from '@/context/ThemeContext'
 import { useNotificationSSE } from '@/hooks/useNotificationSSE'
-import type { ThemeAccent } from '@/context/ThemeContext'
+import MobileNav from './MobileNav'
+import UserDropdown from './UserDropdown'
 
 const LOCALES = [
   { code: 'en', label: 'EN' },
@@ -49,7 +49,7 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false)
 
   const { settings } = useSiteSettings()
-  const { mode, accent, setMode, setAccent, toggleMode } = useTheme()
+  const { mode, toggleMode } = useTheme()
   const isAuthenticated = status === 'authenticated'
   const isAuthPage = pathname?.startsWith('/auth')
 
@@ -322,150 +322,13 @@ export default function Header() {
         {/* Mobile nav overlay */}
         {menuOpen && <div className={styles.overlay} onClick={() => setMenuOpen(false)} />}
 
-        {/* Mobile nav drawer */}
-        <div className={`${styles.mobileNav} ${menuOpen ? styles.mobileNavOpen : ''}`} id="mobile-nav-drawer" role="dialog" aria-modal="true" aria-label="Navigation menu">
-          <div className={styles.mobileNavHeader}>
-            <Image src="/logo.png" alt="XistrYmemZ" width={28} height={28} />
-            <span>XistrYmemZ</span>
-            <button className={styles.mobileClose} onClick={() => setMenuOpen(false)} aria-label="Close menu">✕</button>
-          </div>
-
-          <div className={styles.mobileSearchWrap}>
-            <form
-              onSubmit={e => {
-                e.preventDefault()
-                const q = (e.currentTarget.elements[0] as HTMLInputElement).value
-                if (q.trim().length >= 2) {
-                  setMenuOpen(false)
-                  window.location.href = `/search?q=${encodeURIComponent(q.trim())}`
-                }
-              }}
-            >
-              <input
-                type="search"
-                placeholder="Search the site..."
-                className={styles.mobileSearchInput}
-                aria-label="Search the site"
-              />
-            </form>
-          </div>
-
-          <div className={styles.mobileSection}>
-            <div className={styles.mobileSectionTitle}>Explore</div>
-            <Link href="/" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🏠</span> Home</Link>
-            <Link href="/projects" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🚀</span> Projects</Link>
-            <Link href="/products" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🛒</span> Marketplace</Link>
-            <Link href="/services" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🔧</span> Services</Link>
-            <Link href="/shops" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🏪</span> Shops</Link>
-            <Link href="/schools" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🏫</span> Schools</Link>
-            <Link href="/requests" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">📝</span> Requests</Link>
-            <Link href="/events" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">📅</span> Events</Link>
-            <Link href="/rentals" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🏠</span> Rentals</Link>
-            <Link href="/directory" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">📋</span> Directory</Link>
-            <Link href="/dashboard/passport" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🌍</span> Passport</Link>
-            <Link href="/community" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">👤</span> Members</Link>
-            <Link href="/community/forum" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">💬</span> Forum</Link>
-            <Link href="/community/groups" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">👥</span> Groups</Link>
-            <Link href="/connections" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🔗</span> Connections</Link>
-            <Link href="/hashtags" className={styles.mobileLink} onClick={() => setMenuOpen(false)}># Hashtags</Link>
-          </div>
-
-          <div className={styles.mobileSection}>
-            <div className={styles.mobileSectionTitle}>Language</div>
-            <div className={styles.mobileLangRow}>
-              {LOCALES.map(l => (
-                <Link
-                  key={l.code}
-                  href={l.code === 'en' ? '/' : `/${l.code}`}
-                  className={`${styles.mobileLangLink} ${l.code === currentLocale ? styles.mobileLangActive : ''}`}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  {l.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-          <div className={styles.mobileSection}>
-            <div className={styles.mobileSectionTitle}>Theme</div>
-            <div className={styles.mobileThemeRow}>
-              <button className={styles.mobileThemeToggle} onClick={toggleMode}>
-                {mode === 'dark' ? <><span aria-hidden="true">☀️</span> Light Mode</> : <><span aria-hidden="true">🌙</span> Dark Mode</>}
-              </button>
-            </div>
-            <div className={styles.mobileAccentRow}>
-              {(['cyan', 'purple', 'green', 'orange', 'pink', 'blue'] as ThemeAccent[]).map(c => (
-                <button
-                  key={c}
-                  className={`${styles.mobileAccentDot} ${accent === c ? styles.mobileAccentDotActive : ''}`}
-                  data-accent={c}
-                  onClick={() => { setAccent(c); setMenuOpen(false) }}
-                  aria-label={`${c} accent`}
-                />
-              ))}
-            </div>
-          </div>
-
-          {isAuthenticated ? (
-            <>
-              <div className={styles.mobileSection}>
-                <div className={styles.mobileSectionTitle}>Dashboard</div>
-                <Link href="/dashboard/overview" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">📊</span> Overview</Link>
-                <Link href="/dashboard/feed" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">📡</span> Feed</Link>
-                <Link href="/dashboard/projects" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🚀 My Projects</Link>
-                <Link href="/requests" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>📝 My Requests</Link>
-                <Link href="/dashboard/offers" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🤝</span> Offers</Link>
-                <Link href="/dashboard/services" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🔧</span> Services</Link>
-                <Link href="/dashboard/rentals" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🏠</span> Rentals</Link>
-                <Link href="/dashboard/teaching" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🏫</span> Teaching</Link>
-                <Link href="/dashboard/events" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">📅</span> Events</Link>
-                <Link href="/dashboard/appointments" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🗓️</span> Planner</Link>
-                <Link href="/dashboard/planning" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🗺️</span> Planning</Link>
-                <Link href="/dashboard/passport" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🌍</span> Passport</Link>
-                <Link href="/dashboard/video" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">📹</span> Video Chat</Link>
-                <Link href="/notifications" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🔔</span> Notifications</Link>
-                <Link href="/dashboard/saved" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">⭐</span> Saved</Link>
-                <Link href="/connections" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🔗</span> Connections</Link>
-                <Link href="/dashboard/messages" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">💬</span> Messages</Link>
-                <Link href="/courier/setup" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🚚</span> Courier</Link>
-                <Link href="/templates" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">📋</span> Templates</Link>
-                {settings.enableWallet ? (
-                  <Link href="/wallet" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">💳</span> Wallet</Link>
-                ) : (
-                  <span className={`${styles.mobileLink} ${styles.disabled}`}><span aria-hidden="true">💳</span> Wallet (Coming Soon)</span>
-                )}
-                <Link href={session?.user ? getUserProfileUrl({ id: session.user.id, username: (session.user as { username?: string }).username }) : '/auth/login'} className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">👤</span> Profile</Link>
-                <Link href="/profile/settings" className={styles.mobileLink} onClick={() => setMenuOpen(false)}><span aria-hidden="true">⚙️</span> Settings</Link>
-                <Link href="/onboarding" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>🚀 Getting Started</Link>
-              </div>
-
-              {isAdmin && (
-                <div className={styles.mobileSection}>
-                  <div className={`${styles.mobileSectionTitle} ${styles.adminSection}`}>Admin</div>
-                  <Link href="/admin/subscribers" className={`${styles.mobileLink} ${styles.adminLink}`} onClick={() => setMenuOpen(false)}>📧 Subscribers</Link>
-                  <Link href="/admin/orders" className={`${styles.mobileLink} ${styles.adminLink}`} onClick={() => setMenuOpen(false)}><span aria-hidden="true">📦</span> Orders</Link>
-                  <Link href="/admin/wallets" className={`${styles.mobileLink} ${styles.adminLink}`} onClick={() => setMenuOpen(false)}><span aria-hidden="true">💳</span> Wallets</Link>
-                  <Link href="/admin/messages" className={`${styles.mobileLink} ${styles.adminLink}`} onClick={() => setMenuOpen(false)}><span aria-hidden="true">💬</span> Messages</Link>
-                  <Link href="/admin/invite-codes" className={`${styles.mobileLink} ${styles.adminLink}`} onClick={() => setMenuOpen(false)}><span aria-hidden="true">🎟️</span> Invite Codes</Link>
-                  <Link href="/admin/users" className={`${styles.mobileLink} ${styles.adminLink}`} onClick={() => setMenuOpen(false)}>👤 Users</Link>
-                  <Link href="/admin/settings" className={`${styles.mobileLink} ${styles.adminLink}`} onClick={() => setMenuOpen(false)}><span aria-hidden="true">⚙️</span> Settings</Link>
-                </div>
-              )}
-
-              <div className={styles.mobileSection}>
-                <button className={styles.mobileSignOut} onClick={() => { setMenuOpen(false); signOut() }}>
-                  {t('signOut')}
-                </button>
-              </div>
-            </>
-          ) : (
-            <div className={styles.mobileSection}>
-              <div className={styles.mobileAuthButtons}>
-                <Link href="/auth/login" className={styles.mobileLoginBtn} onClick={() => setMenuOpen(false)}>{t('login')}</Link>
-                <Link href="/auth/register" className={styles.mobileSignupBtn} onClick={() => setMenuOpen(false)}>{t('signUp')}</Link>
-              </div>
-            </div>
-          )}
-        </div>
+        <MobileNav
+          open={menuOpen}
+          onClose={() => setMenuOpen(false)}
+          isAdmin={isAdmin}
+          isAuthenticated={isAuthenticated}
+          session={session}
+        />
 
         {/* Right section: search + auth */}
         <div className={styles.rightSection}>
@@ -646,66 +509,12 @@ export default function Header() {
                     <span style={{ position: 'absolute', bottom: -4, right: -4, fontSize: '11px', lineHeight: 1, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>✈️</span>
                   )}
                 </div>
-                <div className={styles.userDropdown} id="user-menu-dropdown" role="menu">
-                  <div className={styles.userInfo}>
-                    <strong>{session.user.name || 'User'}</strong>
-                    <span className={styles.userEmail}>{session.user.email}</span>
-                  </div>
-                  <div className={styles.themeAccentPicker}>
-                    {(['cyan', 'purple', 'green', 'orange', 'pink', 'blue'] as ThemeAccent[]).map(c => (
-                      <button
-                        key={c}
-                        className={`${styles.accentDot} ${accent === c ? styles.accentDotActive : ''}`}
-                        data-accent={c}
-                        onClick={() => setAccent(c)}
-                        aria-label={`${c} accent theme`}
-                        title={`${c} accent theme`}
-                      />
-                    ))}
-                  </div>
-                  <div className={styles.userLinks}>
-                    <div className={styles.userSectionLabel}>Profile</div>
-                    <Link href={session?.user ? getUserProfileUrl({ id: session.user.id, username: (session.user as { username?: string }).username }) : '/auth/login'} className={styles.userLink} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">👤</span> My Profile</Link>
-                    <Link href="/profile/settings" className={styles.userLink} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">⚙️</span> Settings</Link>
-                    <Link href="/onboarding" className={styles.userLink} role="menuitem" onClick={closeDropdown}>🚀 Getting Started</Link>
-
-                    <div className={styles.userDivider} />
-                    <div className={styles.userSectionLabel}>Dashboard</div>
-                    <Link href="/dashboard/overview" className={styles.userLink} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">📊</span> Overview</Link>
-                    <Link href="/dashboard/planning" className={styles.userLink} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">🗺️</span> Planning</Link>
-                    <Link href="/dashboard/messages" className={styles.userLink} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">💬</span> Messages</Link>
-                    <Link href="/dashboard/saved" className={styles.userLink} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">⭐</span> Saved</Link>
-
-                    <div className={styles.userDivider} />
-                    <div className={styles.userSectionLabel}>Content</div>
-                    {settings.enableWallet ? (
-                      <Link href="/wallet" className={styles.userLink} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">💰</span> Wallet</Link>
-                    ) : (
-                      <span className={`${styles.userLink} ${styles.disabled}`} role="menuitem" aria-disabled="true"><span aria-hidden="true">💰</span> Wallet (Coming Soon)</span>
-                    )}
-                    <Link href="/orders" className={styles.userLink} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">📦</span> Orders</Link>
-
-                    <div className={styles.userDivider} />
-                    <div className={styles.userSectionLabel}>Business</div>
-                    <Link href="/courier/setup" className={styles.userLink} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">🚚</span> Courier</Link>
-                    <Link href="/templates" className={styles.userLink} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">📋</span> Templates</Link>
-
-                    {isAdmin && (
-                      <>
-                        <div className={styles.userDivider} />
-                        <div className={`${styles.userSectionLabel} ${styles.adminSection}`}>Admin</div>
-                        <Link href="/admin/subscribers" className={`${styles.userLink} ${styles.adminLink}`} role="menuitem" onClick={closeDropdown}>📧 Subscribers</Link>
-                        <Link href="/admin/orders" className={`${styles.userLink} ${styles.adminLink}`} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">📦</span> Orders</Link>
-                        <Link href="/admin/wallets" className={`${styles.userLink} ${styles.adminLink}`} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">💳</span> Wallets</Link>
-                        <Link href="/admin/messages" className={`${styles.userLink} ${styles.adminLink}`} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">💬</span> Messages</Link>
-                        <Link href="/admin/invite-codes" className={`${styles.userLink} ${styles.adminLink}`} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">🎟️</span> Invite Codes</Link>
-                        <Link href="/admin/users" className={`${styles.userLink} ${styles.adminLink}`} role="menuitem" onClick={closeDropdown}>👤 Users</Link>
-                        <Link href="/admin/settings" className={`${styles.userLink} ${styles.adminLink}`} role="menuitem" onClick={closeDropdown}><span aria-hidden="true">⚙️</span> Settings</Link>
-                      </>
-                    )}
-                  </div>
-                  <button onClick={() => signOut()} className={styles.signOutBtn} role="menuitem">{t('signOut')}</button>
-                </div>
+                <UserDropdown
+                  session={session}
+                  open={openDropdown === 'user'}
+                  onClose={closeDropdown}
+                  traveling={isTraveling}
+                />
               </div>
             </>
           )}

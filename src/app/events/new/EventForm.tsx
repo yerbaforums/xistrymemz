@@ -10,6 +10,7 @@ import ImageUploader from '@/components/ImageUploader'
 import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import type { DonationAddr } from '@/types/product'
 import { getEventTemplateById } from '@/lib/event-templates'
+import HashtagInput from '@/components/HashtagInput'
 
 const CATEGORIES = [
   { value: 'GENERAL', label: 'General' },
@@ -78,26 +79,12 @@ export function EventForm() {
     }
   }, [searchParams])
 
-  const [hashtagInput, setHashtagInput] = useState('')
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
     }))
-  }
-
-  const handleAddHashtag = () => {
-    const tag = hashtagInput.trim().replace(/^#/, '')
-    if (tag && !formData.hashtags.includes(tag)) {
-      setFormData(prev => ({ ...prev, hashtags: [...prev.hashtags, tag] }))
-    }
-    setHashtagInput('')
-  }
-
-  const handleRemoveHashtag = (tag: string) => {
-    setFormData(prev => ({ ...prev, hashtags: prev.hashtags.filter(t => t !== tag) }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -356,31 +343,7 @@ export function EventForm() {
 
       <div className={styles.field}>
         <label>Hashtags</label>
-        <div className={styles.hashtagInputRow}>
-          <input
-            type="text"
-            value={hashtagInput}
-            onChange={e => setHashtagInput(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === 'Enter') {
-                e.preventDefault()
-                handleAddHashtag()
-              }
-            }}
-            placeholder="Type a hashtag and press Enter"
-          />
-          <button type="button" onClick={handleAddHashtag} className={styles.addHashtagBtn}>Add</button>
-        </div>
-        {formData.hashtags.length > 0 && (
-          <div className={styles.hashtagList}>
-            {formData.hashtags.map(tag => (
-              <span key={tag} className={styles.hashtagChip}>
-                #{tag}
-                <button type="button" onClick={() => handleRemoveHashtag(tag)} className={styles.removeHashtagBtn}>&times;</button>
-              </span>
-            ))}
-          </div>
-        )}
+        <HashtagInput value={formData.hashtags} onChange={(tags) => setFormData(prev => ({ ...prev, hashtags: tags }))} placeholder="Add hashtags..." />
       </div>
 
       <details className={styles.eventSettings}>

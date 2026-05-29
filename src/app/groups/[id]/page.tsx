@@ -12,6 +12,7 @@ import Breadcrumbs from '@/components/Breadcrumbs'
 import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
 import ImageUploader from '@/components/ImageUploader'
+import HashtagInput from '@/components/HashtagInput'
 
 interface Member {
   id: string
@@ -134,7 +135,7 @@ function GroupDetailContent() {
   const [loadingActivity, setLoadingActivity] = useState(false)
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set())
   const [showEditModal, setShowEditModal] = useState(false)
-  const [editForm, setEditForm] = useState({ name: '', description: '', imageUrl: '', coverImage: '', isPrivate: false })
+  const [editForm, setEditForm] = useState({ name: '', description: '', imageUrl: '', coverImage: '', isPrivate: false, hashtags: [] as string[] })
   const [saving, setSaving] = useState(false)
   const [showBuyModal, setShowBuyModal] = useState(false)
   const [buyForm, setBuyForm] = useState({ title: '', description: '', targetPrice: '', minSupporters: '5', productUrl: '', productImage: '', linkedProductId: '' })
@@ -161,7 +162,8 @@ function GroupDetailContent() {
           description: data.description || '',
           imageUrl: data.imageUrl || '',
           coverImage: data.coverImage || '',
-          isPrivate: data.isPrivate || false
+          isPrivate: data.isPrivate || false,
+          hashtags: data.hashtags || []
         })
       })
       .catch(() => error('Failed to load group'))
@@ -276,7 +278,7 @@ function GroupDetailContent() {
       const res = await fetch(`/api/groups/${params.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editForm)
+        body: JSON.stringify({ ...editForm, hashtags: editForm.hashtags })
       })
       if (res.ok) {
         const data = await res.json()
@@ -1021,6 +1023,10 @@ function GroupDetailContent() {
                   <input type="checkbox" checked={editForm.isPrivate} onChange={e => setEditForm({ ...editForm, isPrivate: e.target.checked })} />
                   Private Group
                 </label>
+              </div>
+              <div className="form-group">
+                <label>Hashtags</label>
+                <HashtagInput value={editForm.hashtags} onChange={(tags) => setEditForm({ ...editForm, hashtags: tags })} placeholder="Add hashtags..." />
               </div>
               <div className={styles.modalActions}>
                 <button type="submit" className="btn-primary" disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>

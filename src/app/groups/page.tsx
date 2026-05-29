@@ -8,6 +8,7 @@ import AlphabeticalIndex, { type IndexItem } from '@/components/AlphabeticalInde
 import { GROUP_CATEGORIES } from '@/lib/shop-categories'
 import Skeleton, { SkeletonCard, SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
+import HashtagInput from '@/components/HashtagInput'
 
 interface Group {
   id: string
@@ -36,6 +37,7 @@ export default function GroupsPage() {
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState('GENERAL')
   const [isPrivate, setIsPrivate] = useState(false)
+  const [groupHashtags, setGroupHashtags] = useState<string[]>([])
   const [creating, setCreating] = useState(false)
 
   const filteredGroups = useMemo(() => groups.filter(g => {
@@ -93,7 +95,7 @@ export default function GroupsPage() {
       const res = await fetch('/api/groups', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, description, category, privacy: isPrivate ? 'PRIVATE' : 'PUBLIC' })
+        body: JSON.stringify({ name, description, category, privacy: isPrivate ? 'PRIVATE' : 'PUBLIC', hashtags: groupHashtags })
       })
       
       if (res.ok) {
@@ -104,6 +106,7 @@ export default function GroupsPage() {
         setDescription('')
         setCategory('GENERAL')
         setIsPrivate(false)
+        setGroupHashtags([])
         success('Group created!')
       } else {
         const err = await res.json()
@@ -251,6 +254,10 @@ export default function GroupsPage() {
                   />
                   Private Group (invite only)
                 </label>
+              </div>
+              <div className="form-group">
+                <label>Hashtags</label>
+                <HashtagInput value={groupHashtags} onChange={setGroupHashtags} placeholder="Add hashtags..." />
               </div>
               <div className={styles.modalActions}>
                 <button type="button" onClick={() => setShowModal(false)} className="btn-ghost">

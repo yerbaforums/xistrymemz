@@ -11,6 +11,7 @@ import { getCryptoIcon, getCryptoColor } from '@/lib/crypto-icons'
 import { useToast } from '@/context/ToastContext'
 import { calculateDistance, geocodeLocation } from '@/lib/geocoding'
 import { usePassportLocation } from '@/hooks/usePassportLocation'
+import HashtagInput from '@/components/HashtagInput'
 
 interface DonationAddr {
   id: string
@@ -92,12 +93,12 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
   const [sortBy, setSortBy] = useState('newest')
   const [showCreate, setShowCreate] = useState(false)
   const [editingRequest, setEditingRequest] = useState<Request | null>(null)
-  const [editForm, setEditForm] = useState({ title: '', description: '', category: 'GENERAL', priority: 'MEDIUM', budget: '', goalAmount: '', location: '', isPublic: true, allowFulfillments: true, showDonationAddress: true, images: [] as string[] })
+  const [editForm, setEditForm] = useState({ title: '', description: '', category: 'GENERAL', priority: 'MEDIUM', budget: '', goalAmount: '', location: '', isPublic: true, allowFulfillments: true, showDonationAddress: true, images: [] as string[], hashtags: [] as string[] })
   const [saving, setSaving] = useState(false)
   const [newRequest, setNewRequest] = useState({
     title: '', description: '', category: 'GENERAL', priority: 'MEDIUM',
     budget: '', goalAmount: '', location: '', isPublic: true, allowFulfillments: true, showDonationAddress: true, createGroup: false,
-    images: [] as string[]
+    images: [] as string[], hashtags: [] as string[]
   })
   const [creating, setCreating] = useState(false)
   const [selectedDonation, setSelectedDonation] = useState<DonationAddr | null>(null)
@@ -225,7 +226,8 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
           isPublic: newRequest.isPublic,
           allowFulfillments: newRequest.allowFulfillments,
           showDonationAddress: newRequest.showDonationAddress,
-          createGroup: newRequest.createGroup
+          createGroup: newRequest.createGroup,
+          hashtags: newRequest.hashtags
         })
       })
       if (res.ok) {
@@ -236,7 +238,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
           commentCount: 0, fulfillmentCount: 0, supportCount: 0
         }, ...requests])
         setShowCreate(false)
-        setNewRequest({ title: '', description: '', category: 'GENERAL', priority: 'MEDIUM', budget: '', goalAmount: '', location: '', isPublic: true, allowFulfillments: true, showDonationAddress: true, createGroup: false, images: [] })
+        setNewRequest({ title: '', description: '', category: 'GENERAL', priority: 'MEDIUM', budget: '', goalAmount: '', location: '', isPublic: true, allowFulfillments: true, showDonationAddress: true, createGroup: false, images: [], hashtags: [] })
         success('Request created!')
       } else {
         const err = await res.json()
@@ -263,7 +265,8 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
           location: editForm.location || null,
           isPublic: editForm.isPublic,
           allowFulfillments: editForm.allowFulfillments,
-          showDonationAddress: editForm.showDonationAddress
+          showDonationAddress: editForm.showDonationAddress,
+          hashtags: editForm.hashtags
         })
       })
       if (res.ok) {
@@ -457,6 +460,10 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
                 <input type="number" placeholder="Goal Amount (optional)" value={newRequest.goalAmount} onChange={e => setNewRequest({ ...newRequest, goalAmount: e.target.value })} className={styles.input} />
               </div>
               <input type="text" placeholder="Location (optional)" value={newRequest.location} onChange={e => setNewRequest({ ...newRequest, location: e.target.value })} className={styles.input} />
+              <div className={styles.field} style={{ marginBottom: '12px' }}>
+                <label className={styles.filterLabel}>Hashtags</label>
+                <HashtagInput value={newRequest.hashtags} onChange={(tags) => setNewRequest({ ...newRequest, hashtags: tags })} placeholder="Add hashtags..." />
+              </div>
               <label className={styles.checkbox}>
                 <input type="checkbox" checked={newRequest.isPublic} onChange={e => setNewRequest({ ...newRequest, isPublic: e.target.checked })} />
                 Make public (visible to everyone)
@@ -640,6 +647,10 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
               <input type="number" placeholder="Goal Amount" value={editForm.goalAmount} onChange={e => setEditForm({ ...editForm, goalAmount: e.target.value })} className={styles.input} />
             </div>
             <input type="text" placeholder="Location" value={editForm.location} onChange={e => setEditForm({ ...editForm, location: e.target.value })} className={styles.input} />
+            <div className={styles.field} style={{ marginBottom: '12px' }}>
+              <label className={styles.filterLabel}>Hashtags</label>
+              <HashtagInput value={editForm.hashtags} onChange={(tags) => setEditForm({ ...editForm, hashtags: tags })} placeholder="Add hashtags..." />
+            </div>
             <label className={styles.checkbox}>
               <input type="checkbox" checked={editForm.isPublic} onChange={e => setEditForm({ ...editForm, isPublic: e.target.checked })} />
               Public

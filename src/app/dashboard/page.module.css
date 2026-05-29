@@ -1956,5 +1956,30 @@
 .firstVisitLink:hover {
   border-color: var(--accent-primary);
   color: var(--accent-primary);
-  background: rgba(0, 217, 255, 0.05);
+  background: color-mix(in srgb, var(--accent-primary) 5%, transparent);
+}
+
+.collapsibleSection {
+  margin-top: 24px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
+  padding: 16px;
+}
+
+.collapsibleSummary {
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  list-style: none;
+  user-select: none;
+}
+
+.collapsibleSummary::-webkit-details-marker {
+  display: none;
+}
+
+.collapsibleSummary:hover {
+  color: var(--accent-primary);
 }

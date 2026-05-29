@@ -24,16 +24,16 @@ interface Totals {
   groupPosts: number
 }
 
-const TABS: { key: TabType; label: string }[] = [
-  { key: 'all', label: 'All' },
-  { key: 'posts', label: 'Posts' },
-  { key: 'products', label: 'Products' },
-  { key: 'events', label: 'Events' },
-  { key: 'services', label: 'Services' },
-  { key: 'schoolContents', label: 'School' },
-  { key: 'plans', label: 'Plans' },
-  { key: 'requests', label: 'Requests' },
-  { key: 'groups', label: 'Groups' },
+const TABS: { key: TabType; label: string; icon: string }[] = [
+  { key: 'all', label: 'All', icon: '🏷️' },
+  { key: 'posts', label: 'Posts', icon: '📝' },
+  { key: 'products', label: 'Products', icon: '🛍️' },
+  { key: 'events', label: 'Events', icon: '📅' },
+  { key: 'services', label: 'Services', icon: '🔧' },
+  { key: 'schoolContents', label: 'School', icon: '🎓' },
+  { key: 'plans', label: 'Plans', icon: '📋' },
+  { key: 'requests', label: 'Requests', icon: '🙋' },
+  { key: 'groups', label: 'Groups', icon: '👥' },
 ]
 
 const POST_SECTION_CONFIG: Record<string, { label: string; icon: string; order: number }> = {
@@ -154,7 +154,7 @@ export default function HashtagPage() {
             className={`${styles.tab} ${activeTab === tab.key ? styles.tabActive : ''}`}
             onClick={() => setActiveTab(tab.key)}
           >
-            {tab.label}
+            {tab.icon} {tab.label}
             {totals && tab.key !== 'all' && (
               <span className={styles.tabCount}>
                 {totals[tab.key as keyof Totals] || 0}
