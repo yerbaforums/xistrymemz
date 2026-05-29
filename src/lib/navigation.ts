@@ -2,6 +2,7 @@ export interface NavItem {
   href: string
   icon: string
   label: string
+  walletRequired?: boolean
 }
 
 export interface NavSection {
