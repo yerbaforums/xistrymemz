@@ -10,6 +10,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { useToast } from '@/context/ToastContext'
 import ImageUploader from '@/components/ImageUploader'
 import AvailabilityEditor from '@/components/AvailabilityEditor'
+import Skeleton from '@/components/Skeleton'
 import styles from '../[username]/profile.module.css'
 
 interface UserLink {
@@ -339,7 +340,7 @@ export default function ProfileEditPage() {
   }
 
   if (loading) {
-    return <div style={{padding: '40px', textAlign: 'center'}}>Loading...</div>
+    return <Skeleton />
   }
 
   return (

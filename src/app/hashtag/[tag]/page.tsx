@@ -7,6 +7,7 @@ import FeedItem from '@/components/FeedItem'
 import ProductCard from '@/components/ProductCard'
 import ServiceCard from '@/components/ServiceCard'
 import type { Product } from '@/types/product'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 import styles from './page.module.css'
 
 type TabType = 'all' | 'posts' | 'products' | 'events' | 'services' | 'schoolContents' | 'plans' | 'requests' | 'groups'
@@ -42,7 +43,7 @@ const POST_SECTION_CONFIG: Record<string, { label: string; icon: string; order: 
   GROUPPOST: { label: 'Group Posts', icon: '👥', order: 2 },
 }
 
-export default function HashtagPage() {
+function HashtagPage() {
   const params = useParams()
   const tag = typeof params.tag === 'string' ? params.tag.toLowerCase() : ''
   const [activeTab, setActiveTab] = useState<TabType>('all')
@@ -436,4 +437,8 @@ export default function HashtagPage() {
       )}
     </div>
   )
+}
+
+export default function HashtagPageWrapper() {
+  return <ErrorBoundary><HashtagPage /></ErrorBoundary>
 }

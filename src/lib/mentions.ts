@@ -14,20 +14,6 @@ export function parseMentions(text: string): string[] {
   return mentions
 }
 
-export function renderMentions(text: string, userMap: Map<string, string>): string {
-  return text.replace(MENTION_REGEX, (_, username: string) => {
-    const uid = userMap.get(username.toLowerCase())
-    if (uid) {
-      return `<a href="/profile/${uid}" class="mention-link" data-userid="${uid}">@${username}</a>`
-    }
-    return `@${username}`
-  })
-}
-
-export function linkMentions(text: string): string {
-  return text.replace(MENTION_REGEX, '<a href="/profile/$1" class="mention-link">@$1</a>')
-}
-
 export function getSelectionAfterAt(
   element: HTMLTextAreaElement
 ): { start: number; query: string } | null {

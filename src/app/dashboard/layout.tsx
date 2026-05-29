@@ -60,6 +60,7 @@ function DashboardNav({ user }: { user: { name?: string | null; image?: string |
           key={item.href} 
           href={item.href} 
           className={`${sidebarStyles.navItem} ${pathname === item.href ? sidebarStyles.active : ''}`}
+          aria-label={item.label}
         >
           <span>{item.icon}</span>
           <span>{item.label}</span>
@@ -76,6 +77,7 @@ function DashboardNav({ user }: { user: { name?: string | null; image?: string |
               key={item.href} 
               href={item.href} 
               className={`${sidebarStyles.navItem} ${pathname === item.href ? sidebarStyles.active : ''}`}
+              aria-label={item.label}
             >
               <span>{item.icon}</span>
               <span>{item.label}</span>

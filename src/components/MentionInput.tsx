@@ -30,7 +30,7 @@ export interface MentionInputHandle {
 }
 
 const HASHES_REGEX = /#([\w]{1,30})$/g
-const MENTION_REGEX = /@(\w{1,30})$/g
+const MENTION_REGEX = /@(\w{2,50})$/g
 
 const MentionInput = forwardRef<MentionInputHandle, MentionInputProps>(function MentionInput({
   value,

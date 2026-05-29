@@ -15,6 +15,7 @@ import RoleBadge from '@/components/RoleBadge'
 import ActiveStatus from '@/components/ActiveStatus'
 import LookingForCollaboratorsBadge from '@/components/LookingForCollaboratorsBadge'
 import HashtagText from '@/components/HashtagText'
+import LinkPreview from '@/components/LinkPreview'
 import MentionInput from '@/components/MentionInput'
 import ImageUploader from '@/components/ImageUploader'
 import EntityActions from '@/components/EntityActions'
@@ -1191,6 +1192,7 @@ export default function ProfilePage() {
                           </div>
                         </div>
 <p className={styles.postContent}><HashtagText text={post.content} mentionLinks /></p>
+                    <LinkPreview text={post.content} />
 
                         {post.referenceType && post.referenceId && (
                           <SharedItemCard

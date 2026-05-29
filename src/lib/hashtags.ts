@@ -13,9 +13,3 @@ export function extractHashtags(text: string): string[] {
   }
   return tags
 }
-
-export function linkHashtags(text: string): string {
-  return text.replace(HASHTAG_REGEX, (_, tag: string) => {
-    return `<a href="/hashtag/${tag.toLowerCase()}" class="hashtag-link">#${tag}</a>`
-  })
-}

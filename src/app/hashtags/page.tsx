@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 interface HashtagEntityCounts {
   posts: number
@@ -38,7 +39,7 @@ const ENTITY_FILTERS: { key: EntityFilter; label: string; icon: string }[] = [
   { key: 'groups', label: 'Groups', icon: '👥' },
 ]
 
-export default function HashtagsPage() {
+function HashtagsPage() {
   const [tags, setTags] = useState<HashtagItem[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -177,4 +178,8 @@ export default function HashtagsPage() {
       )}
     </div>
   )
+}
+
+export default function HashtagsPageWrapper() {
+  return <ErrorBoundary><HashtagsPage /></ErrorBoundary>
 }
