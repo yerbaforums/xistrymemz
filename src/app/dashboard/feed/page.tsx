@@ -32,6 +32,7 @@ const SECTION_CONFIG: Record<string, { label: string; icon: string }> = {
   SHOP: { label: 'Shop Posts', icon: '🏪' },
   SCHOOL: { label: 'School Posts', icon: '📚' },
   PROFILE: { label: 'Posts', icon: '👤' },
+  REPOST: { label: 'Reposts', icon: '🔁' },
   GROUPPOST: { label: 'Group Posts', icon: '👥' },
   FORUMPOST: { label: 'Forum Posts', icon: '💬' },
 }
@@ -42,7 +43,7 @@ function getSectionKey(post: FeedPost): string {
   return post.context || 'PROFILE'
 }
 
-const SECTION_ORDER = ['WALL', 'SHOP', 'SCHOOL', 'PROFILE', 'GROUPPOST', 'FORUMPOST']
+const SECTION_ORDER = ['WALL', 'SHOP', 'SCHOOL', 'REPOST', 'PROFILE', 'GROUPPOST', 'FORUMPOST']
 
 export default function DashboardFeed() {
   const t = useTranslations('dashboard')
