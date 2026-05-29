@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useEntityActions, type ActionEntityType } from '@/hooks/useEntityActions'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
@@ -153,15 +153,29 @@ export default function EntityActions({
     }
   }
 
+  const profilePrefilled = useRef(false)
+
+  useEffect(() => {
+    if (showFeedModal && entityType === 'PROFILE' && !profilePrefilled.current && description) {
+      const profileUrl = typeof window !== 'undefined' ? window.location.href : ''
+      setFeedContent(`@${description} ${profileUrl}`)
+      profilePrefilled.current = true
+    }
+  }, [showFeedModal])
+
+  const closeFeedModal = () => {
+    setShowFeedModal(false)
+    setFeedContent('')
+    profilePrefilled.current = false
+  }
+
   const handleShareToFeed = async () => {
     if (!session || posting) return
     setPosting(true)
     try {
-      const profileUrl = typeof window !== 'undefined' ? window.location.href : ''
       const isProfile = entityType === 'PROFILE'
-      const mention = isProfile && description ? `@${description}` : ''
       const body = isProfile
-        ? { content: `${feedContent.trim() ? feedContent.trim() + ' — ' : ''}${mention} ${profileUrl}`.trim(), context: 'PROFILE' }
+        ? { content: feedContent.trim() || `@${description || 'user'}`, context: 'PROFILE' }
         : { content: feedContent.trim() || `Shared a ${entityType.toLowerCase()}`, context: feedDestination, referenceType: entityType, referenceId: entityId, referenceTitle: title }
       const res = await fetch('/api/posts', {
         method: 'POST',
@@ -170,8 +184,7 @@ export default function EntityActions({
       })
       if (res.ok) {
         success(isProfile ? 'Mention posted!' : 'Posted!')
-        setFeedContent('')
-        setShowFeedModal(false)
+        closeFeedModal()
         setShowShareModal(false)
       } else {
         const err = await res.json()
@@ -271,7 +284,7 @@ export default function EntityActions({
         <QRCodeModal isOpen={true} onClose={() => setQrAddr(null)} currency={qrAddr.currency} address={qrAddr.address} />
       )}
       {showFeedModal && (
-        <div className={styles.overlay} onClick={() => setShowFeedModal(false)} style={{ zIndex: 1001 }}>
+        <div className={styles.overlay} onClick={closeFeedModal} style={{ zIndex: 1001 }}>
           <div className={styles.feedModal} onClick={e => e.stopPropagation()}>
             <h4 className={styles.feedTitle}>{entityType === 'PROFILE' ? 'Mention in a Post' : 'Share to Post'}</h4>
             <textarea value={feedContent} onChange={e => setFeedContent(e.target.value)} placeholder={entityType === 'PROFILE' ? 'Add a comment about this profile (optional)...' : 'Add a comment (optional)...'} rows={3} className={styles.feedTextarea} />
@@ -284,7 +297,7 @@ export default function EntityActions({
               </div>
             )}
             <div className={styles.feedActions}>
-              <button onClick={() => setShowFeedModal(false)} className={styles.cancelBtn}>Cancel</button>
+              <button onClick={closeFeedModal} className={styles.cancelBtn}>Cancel</button>
               <button onClick={handleShareToFeed} disabled={posting} className={styles.shareBtn}>{posting ? 'Posting...' : 'Share'}</button>
             </div>
           </div>

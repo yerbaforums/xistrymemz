@@ -9,6 +9,7 @@ import AppShell from "@/components/AppShell";
 import Footer from "@/components/Footer";
 import BackToTop from "@/components/BackToTop";
 import CreateFAB from "@/components/CreateFAB";
+import BottomNav from "@/components/BottomNav";
 import LocaleProvider from "@/components/LocaleProvider";
 
 const OG_LOCALE_MAP: Record<string, string> = {
@@ -78,8 +79,8 @@ export default async function RootLayout({
                   {children}
                   <ToastContainer />
                   <CreateFAB />
-                  <BackToTop />
                 </AppShell>
+                <BottomNav />
                 <Footer />
               </TariWalletProvider>
             </SiteSettingsProvider>

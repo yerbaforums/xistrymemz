@@ -16,6 +16,8 @@ import EntityActions from '@/components/EntityActions'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
 import Rating from '@/components/Rating'
+import HashtagText from '@/components/HashtagText'
+import LinkPreview from '@/components/LinkPreview'
 import { SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service'
 import dynamic from 'next/dynamic'
 
@@ -587,7 +589,8 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                         )}
                       </div>
                     </div>
-                    <p className={styles.postContent}>{post.content}</p>
+                    <p className={styles.postContent}><HashtagText text={post.content} mentionLinks /></p>
+                    <LinkPreview text={post.content} />
                     <TranslateButton text={post.content} />
                     {post.imageUrl && (
                       <div className={styles.postImage}>

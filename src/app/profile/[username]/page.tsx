@@ -1190,14 +1190,8 @@ export default function ProfilePage() {
                             </button>
                           </div>
                         </div>
-                        <p className={styles.postContent}><HashtagText text={post.content} /></p>
-                        {getPostImages(post.images).length > 0 && (
-                          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
-                            {getPostImages(post.images).map((url, i) => (
-                              <img key={i} src={url} alt="" style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 8, objectFit: 'cover' }} loading="lazy" />
-                            ))}
-                          </div>
-                        )}
+<p className={styles.postContent}><HashtagText text={post.content} mentionLinks /></p>
+
                         {post.referenceType && post.referenceId && (
                           <SharedItemCard
                             referenceType={post.referenceType}

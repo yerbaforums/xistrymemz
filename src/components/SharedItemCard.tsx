@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import HashtagText from '@/components/HashtagText'
+import styles from './SharedItemCard.module.css'
 
 interface SharedItemCardProps {
   referenceType: string
@@ -32,6 +33,11 @@ function getImages(images: string | null): string[] {
   }
 }
 
+const TYPE_ICONS: Record<string, string> = {
+  PRODUCT: '🛒', SERVICE: '🔧', EVENT: '📅', REQUEST: '📋', PLAN: '📐', POST: '🔁',
+  SCHOOLCONTENT: '📖', FORUMPOST: '💬', GROUP: '👥',
+}
+
 export default function SharedItemCard({ referenceType, referenceId, referenceTitle: cachedTitle }: SharedItemCardProps) {
   const [item, setItem] = useState<RefItem | null>(null)
   const [loading, setLoading] = useState(true)
@@ -52,19 +58,9 @@ export default function SharedItemCard({ referenceType, referenceId, referenceTi
   }, [referenceType, referenceId, cachedTitle])
 
   const typeToRoute: Record<string, string> = {
-    PRODUCT: 'products',
-    SERVICE: 'services',
-    EVENT: 'events',
-    REQUEST: 'requests',
-    PLAN: 'plans',
-    SCHOOLCONTENT: 'school',
-    FORUMPOST: 'community/forum',
-    GROUP: 'groups',
-  }
-
-  const TYPE_ICONS: Record<string, string> = {
-    PRODUCT: '🛒', SERVICE: '🔧', EVENT: '📅', REQUEST: '📋', PLAN: '📐', POST: '🔁',
-    SCHOOLCONTENT: '📖', FORUMPOST: '💬', GROUP: '👥',
+    PRODUCT: 'products', SERVICE: 'services', EVENT: 'events',
+    REQUEST: 'requests', PLAN: 'plans', SCHOOLCONTENT: 'school',
+    FORUMPOST: 'community/forum', GROUP: 'groups',
   }
 
   const route = typeToRoute[referenceType]
@@ -73,40 +69,28 @@ export default function SharedItemCard({ referenceType, referenceId, referenceTi
   if (referenceType === 'POST') {
     const imageList = getImages(item?.images || null)
     return (
-      <Link href={`/posts/${referenceId}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
-        <div style={{
-          padding: 12, borderRadius: 8,
-          border: '1px solid var(--border-color)', background: 'var(--bg-tertiary)',
-          marginTop: 8,
-        }}>
+      <Link href={`/posts/${referenceId}`} className={styles.postLink}>
+        <div className={styles.postCard}>
           {loading ? (
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Loading post...</div>
+            <div className={styles.loading}>Loading post...</div>
           ) : item ? (
-            <>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 600, marginBottom: 8 }}>
-                🔁 Repost
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <div style={{ width: 24, height: 24, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'var(--bg-secondary)' }}>
+            <div className={styles.postCardBody}>
+              <div className={styles.repostBadge}>🔁 Repost</div>
+              <div className={styles.postHeader}>
+                <div className={styles.postAvatar}>
                   {item.user?.image ? (
                     <Image src={item.user.image} alt="" width={24} height={24} style={{ objectFit: 'cover' }} />
                   ) : (
-                    <div style={{ width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                      {item.user?.name?.[0] || 'U'}
-                    </div>
+                    <span>{item.user?.name?.[0] || 'U'}</span>
                   )}
                 </div>
-                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  {item.user?.name || 'Unknown'}
-                </div>
+                <span className={styles.postAuthor}>{item.user?.name || 'Unknown'}</span>
                 {item.user?.username && (
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    @{item.user.username}
-                  </div>
+                  <span className={styles.postUsername}>@{item.user.username}</span>
                 )}
               </div>
               {item.content && (
-                <div style={{ fontSize: '0.88rem', lineHeight: 1.6, color: 'var(--text-primary)', marginBottom: imageList.length > 0 ? 8 : 0 }}>
+                <div className={styles.postContent}>
                   <HashtagText text={item.content} />
                 </div>
               )}
@@ -124,9 +108,9 @@ export default function SharedItemCard({ referenceType, referenceId, referenceTi
                   {new Date(item.createdAt).toLocaleDateString()}
                 </div>
               )}
-            </>
+            </div>
           ) : (
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Post not found</div>
+            <div className={styles.notFound}>Post not found</div>
           )}
         </div>
       </Link>
@@ -134,30 +118,23 @@ export default function SharedItemCard({ referenceType, referenceId, referenceTi
   }
 
   return (
-    <Link href={href} style={{ textDecoration: 'none', color: 'inherit' }}>
-      <div style={{
-        display: 'flex', gap: 10, padding: 10, borderRadius: 8,
-        border: '1px solid var(--border-color)', background: 'var(--bg-tertiary)',
-        marginTop: 8, alignItems: 'center'
-      }}>
-        {item?.image && (
-          <img src={item.image} alt="" style={{ width: 40, height: 40, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
-        )}
-        {!item?.image && !loading && (
-          <div style={{ width: 40, height: 40, borderRadius: 6, background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', flexShrink: 0 }}>
-            {TYPE_ICONS[referenceType] || '📎'}
+    <Link href={href} className={styles.cardLink}>
+      <div className={styles.card}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 10 }}>
+          {item?.image ? (
+            <img src={item.image} alt="" style={{ width: 40, height: 40, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
+          ) : (
+            <div className={styles.cardIcon}>
+              {TYPE_ICONS[referenceType] || '📎'}
+            </div>
+          )}
+          <div className={styles.cardInfo}>
+            <div className={styles.cardType}>{TYPE_ICONS[referenceType]} {referenceType}</div>
+            <div className={styles.cardTitle}>
+              {loading ? 'Loading...' : (item?.title || referenceType)}
+            </div>
           </div>
-        )}
-        {loading && (
-          <div style={{ width: 40, height: 40, borderRadius: 6, background: 'var(--bg-secondary)', flexShrink: 0 }} />
-        )}
-        <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 600 }}>
-            {TYPE_ICONS[referenceType]} {referenceType}
-          </div>
-          <div style={{ fontSize: '0.85rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {loading ? 'Loading...' : (item?.title || referenceType)}
-          </div>
+          <span className={styles.cardArrow}>→</span>
         </div>
       </div>
     </Link>

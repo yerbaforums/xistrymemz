@@ -437,4 +437,8 @@ a:focus-visible {
   input, textarea, select {
     min-height: 44px;
   }
+
+  .page, main, [class*="page"] {
+    padding-bottom: 80px;
+  }
 }

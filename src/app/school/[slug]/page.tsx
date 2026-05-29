@@ -18,6 +18,8 @@ import RichEditor from '@/components/RichEditor'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
 import Rating from '@/components/Rating'
+import HashtagText from '@/components/HashtagText'
+import LinkPreview from '@/components/LinkPreview'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 interface UserLink {
@@ -652,7 +654,8 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                         )}
                       </div>
                     </div>
-                    <p className={styles.postContent}>{post.content}</p>
+                    <p className={styles.postContent}><HashtagText text={post.content} mentionLinks /></p>
+                    <LinkPreview text={post.content} />
                     {post.imageUrl && (
                       <div className={styles.postImage}>
                         <img src={post.imageUrl} alt="" style={{maxWidth:'100%', borderRadius:'8px', marginTop:'8px'}} />
