@@ -37,6 +37,8 @@ interface FeedPost {
   referenceId?: string | null
   referenceTitle?: string | null
   viewCount?: number
+  repostCount?: number
+  reposted?: boolean
 }
 
 const CONTEXT_CONFIG: Record<string, { label: string; icon: string; className: string }> = {
@@ -201,6 +203,8 @@ export default function FeedItem({ post }: { post: FeedPost }) {
             liked={post.liked || false}
             viewCount={post.viewCount || 0}
             replyCount={post.replyCount || 0}
+            repostCount={post.repostCount || 0}
+            reposted={post.reposted || false}
             variant="full"
           />
           <ReplySection postId={post.id} postAuthorId={post.userId} expandReply={showReplies} />

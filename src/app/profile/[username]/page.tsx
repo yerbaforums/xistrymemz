@@ -134,6 +134,8 @@ interface Post {
   referenceType?: string | null
   referenceId?: string | null
   referenceTitle?: string | null
+  repostCount?: number
+  reposted?: boolean
   user: {
     id: string
     name: string | null
@@ -1224,6 +1226,8 @@ export default function ProfilePage() {
                             authorId={post.userId}
                             initialLikes={post.likes}
                             liked={likedPosts.has(post.id)}
+                            repostCount={post.repostCount || 0}
+                            reposted={post.reposted || false}
                             variant="full"
                           />
                           <ReplySection postId={post.id} postAuthorId={post.userId} />

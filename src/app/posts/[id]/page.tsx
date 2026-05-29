@@ -21,6 +21,8 @@ interface PostData {
   userId: string
   likes: number
   viewCount?: number
+  repostCount?: number
+  reposted?: boolean
   context?: string | null
   referenceType?: string | null
   referenceId?: string | null
@@ -164,6 +166,8 @@ export default function PostPage() {
             authorId={post.userId}
             initialLikes={likes}
             liked={liked}
+            repostCount={post.repostCount || 0}
+            reposted={post.reposted || false}
             variant="full"
           />
         </div>
