@@ -28,6 +28,11 @@ const TYPE_ICONS: Record<string, string> = {
   APPOINTMENT_CONFIRMED: '✅',
   APPOINTMENT_DECLINED: '❌',
   APPOINTMENT_RESCHEDULED: '🔄',
+  CONNECTION_REQUEST: '👋',
+  CONNECTION_ACCEPTED: '🤝',
+  NEW_MESSAGE: '💬',
+  NEW_FOLLOWER: '👤',
+  SYSTEM: '🔔',
 }
 
 export default function NotificationsPage() {

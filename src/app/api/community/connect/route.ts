@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { connectionSchema, validateBody } from '@/lib/schemas'
+import { sseManager } from '@/lib/sse'
 
 export async function POST(request: Request) {
   try {
@@ -47,6 +48,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Connection already exists' }, { status: 400 })
     }
 
+    const requester = await prisma.user.findUnique({ where: { id: userId }, select: { name: true } })
+
     const connection = await prisma.connection.create({
       data: {
         requesterId: userId,
@@ -65,6 +68,18 @@ export async function POST(request: Request) {
         }
       })
     }
+
+    await prisma.notification.create({
+      data: {
+        userId: receiverId,
+        type: 'CONNECTION_REQUEST',
+        title: 'New Connection Request',
+        message: `${requester?.name || 'Someone'} wants to connect with you`,
+        link: `/connections`,
+        relatedId: connection.id,
+      }
+    })
+    sseManager.emit(receiverId, JSON.stringify({ type: 'notification' }))
 
     return NextResponse.json({ connection, message: 'Connection request sent!' })
   } catch (error) {
@@ -151,6 +166,8 @@ export async function PUT(request: Request) {
       return NextResponse.json({ message: 'Connection request rejected' })
     }
 
+    const receiver = await prisma.user.findUnique({ where: { id: userId }, select: { name: true } })
+
     const updated = await prisma.connection.update({
       where: { id: connectionId },
       data: { status: 'ACCEPTED' },
@@ -159,6 +176,20 @@ export async function PUT(request: Request) {
         receiver: { select: { id: true, name: true, image: true, username: true } }
       }
     })
+
+    if (connection.requesterId) {
+      await prisma.notification.create({
+        data: {
+          userId: connection.requesterId,
+          type: 'CONNECTION_ACCEPTED',
+          title: 'Connection Accepted',
+          message: `${receiver?.name || 'Someone'} accepted your connection request`,
+          link: `/connections`,
+          relatedId: connection.id,
+        }
+      })
+      sseManager.emit(connection.requesterId, JSON.stringify({ type: 'notification' }))
+    }
 
     return NextResponse.json({ connection: updated, message: 'Connection accepted!' })
   } catch (error) {

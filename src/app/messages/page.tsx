@@ -69,6 +69,15 @@ function MessagesContent() {
   }, [selectedUser])
 
   useEffect(() => {
+    if (!selectedUser) return
+    const interval = setInterval(() => {
+      fetchMessages(selectedUser.id)
+      fetchConversations()
+    }, 10000)
+    return () => clearInterval(interval)
+  }, [selectedUser])
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
@@ -149,7 +158,7 @@ function MessagesContent() {
         <div className={styles.conversationsList}>
           <div className={styles.conversationsHeader}>
             <h2>Conversations</h2>
-            <a href="/community" className={styles.newMessageBtn}>+ New</a>
+            <Link href="/community?ref=messages" className={styles.newMessageBtn}>+ Find People</Link>
           </div>
           
           {conversations.length > 0 ? (

@@ -11,11 +11,23 @@ import { DASHBOARD_SIDEBAR_PRIMARY, DASHBOARD_SIDEBAR_SECONDARY, BREADCRUMB_LABE
 import styles from './layout.module.css'
 import sidebarStyles from './layout-sidebar.module.css'
 
-function DashboardNav({ user }: { user: { name?: string | null; image?: string | null; username?: string | null } }) {
+function DashboardNav({ user }: { user: { id?: string | null; name?: string | null; image?: string | null; username?: string | null } }) {
   const pathname = usePathname()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!user?.id) return
+    fetch('/api/messages/conversations')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        const total = (data?.conversations || []).reduce((sum: number, c: { unreadCount: number }) => sum + (c.unreadCount || 0), 0)
+        setUnreadCount(total)
+      })
+      .catch(() => {})
+  }, [user?.id])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -80,7 +92,12 @@ function DashboardNav({ user }: { user: { name?: string | null; image?: string |
               aria-label={item.label}
             >
               <span>{item.icon}</span>
-              <span>{item.label}</span>
+              <span>
+                {item.label}
+                {item.label === 'Messages' && unreadCount > 0 && (
+                  <span style={{ marginLeft: 8, background: 'var(--accent-primary)', color: 'var(--bg-primary)', fontSize: '0.65rem', padding: '1px 6px', borderRadius: 10, fontWeight: 600 }}>{unreadCount}</span>
+                )}
+              </span>
             </Link>
           ))}
         </div>

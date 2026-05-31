@@ -16,7 +16,7 @@
 
 .subtitle {
   color: var(--text-secondary);
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .loading {
@@ -70,58 +70,112 @@
   box-shadow: var(--shadow-glow);
 }
 
+.filterRow {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.filterBtn {
+  padding: 6px 14px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.filterBtn:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.filterActive {
+  background: var(--accent-primary) !important;
+  color: var(--bg-primary) !important;
+  border-color: var(--accent-primary) !important;
+}
+
 .list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
+}
+
+.emptySmall {
+  text-align: center;
+  padding: 32px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
 }
 
 .card {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
+  gap: 14px;
+  padding: 14px 16px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
+  text-decoration: none;
   transition: var(--transition);
 }
 
 .card:hover {
   border-color: var(--accent-primary);
+  background: var(--bg-tertiary);
+}
+
+.cardIcon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
 }
 
 .cardBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardTitle {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+
+.cardMeta {
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
 }
 
 .badge {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 600;
   text-transform: uppercase;
-  padding: 3px 10px;
-  border-radius: 12px;
+  padding: 2px 8px;
+  border-radius: 10px;
   background: rgba(0, 217, 255, 0.1);
   color: var(--accent-primary);
 }
 
-.date {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-.viewLink {
-  font-size: 0.85rem;
-  color: var(--accent-primary);
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.viewLink:hover {
-  text-decoration: underline;
+.dot {
+  opacity: 0.4;
 }
 
 .removeBtn {
@@ -133,6 +187,7 @@
   padding: 4px 8px;
   border-radius: var(--radius-sm);
   transition: var(--transition);
+  flex-shrink: 0;
 }
 
 .removeBtn:hover {
