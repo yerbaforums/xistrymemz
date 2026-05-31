@@ -945,9 +945,8 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
             {POI_TYPES.map(pt => (
               <button
                 key={pt.key}
-                className={`${styles.btn} ${activePoiTypes.has(pt.key) ? styles.btnPrimary : ''}`}
+                className={`${styles.btn} ${activePoiTypes.has(pt.key) ? styles.btnPrimary : ''} ${styles.fs085}`}
                 onClick={() => TogglePoiType(pt.key)}
-                className={styles.fs085}
               >
                 {pt.icon} {pt.label}
               </button>
