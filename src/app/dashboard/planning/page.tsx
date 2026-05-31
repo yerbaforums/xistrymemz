@@ -801,10 +801,10 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
                               </div>
                             ))}
                             <div className={`${styles.flex} ${styles.gap4} ${styles.mt8}`}>
-                              <input className={styles.formInput} value={newShopItem} onChange={e => setNewShopItem(e.target.value)}
-                                placeholder="Item name" className={styles.flex1} onKeyDown={e => e.key === 'Enter' && handleAddShoppingItem(stop.id)} />
-                              <input className={styles.formInput} value={newShopQty} onChange={e => setNewShopQty(e.target.value)}
-                                placeholder="Qty" className={styles.w60} />
+                              <input className={`${styles.formInput} ${styles.flex1}`} value={newShopItem} onChange={e => setNewShopItem(e.target.value)}
+                                placeholder="Item name" onKeyDown={e => e.key === 'Enter' && handleAddShoppingItem(stop.id)} />
+                              <input className={`${styles.formInput} ${styles.w60}`} value={newShopQty} onChange={e => setNewShopQty(e.target.value)}
+                                placeholder="Qty" />
                               <button className={`${styles.btn} ${styles.btnPrimary} ${styles.btnSmall}`} onClick={() => handleAddShoppingItem(stop.id)}>+</button>
                             </div>
                           </div>
