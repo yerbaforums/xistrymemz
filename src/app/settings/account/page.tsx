@@ -35,9 +35,9 @@ export default function AccountSettingsPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to update email')
       await update()
-      addToast?.({ type: 'success', message: 'Email updated successfully' })
+      addToast?.('Email updated successfully', 'success')
     } catch (err) {
-      addToast?.({ type: 'error', message: err instanceof Error ? err.message : 'Failed to update' })
+      addToast?.(err instanceof Error ? err.message : 'Failed to update', 'error')
     } finally {
       setSaving(false)
     }
@@ -46,11 +46,11 @@ export default function AccountSettingsPage() {
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault()
     if (newPassword !== confirmPassword) {
-      addToast?.({ type: 'error', message: 'Passwords do not match' })
+      addToast?.('Passwords do not match', 'error')
       return
     }
     if (newPassword.length < 6) {
-      addToast?.({ type: 'error', message: 'Password must be at least 6 characters' })
+      addToast?.('Password must be at least 6 characters', 'error')
       return
     }
     setChangingPassword(true)
@@ -65,9 +65,9 @@ export default function AccountSettingsPage() {
       setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
-      addToast?.({ type: 'success', message: 'Password changed successfully' })
+      addToast?.('Password changed successfully', 'success')
     } catch (err) {
-      addToast?.({ type: 'error', message: err instanceof Error ? err.message : 'Failed to change password' })
+      addToast?.(err instanceof Error ? err.message : 'Failed to change password', 'error')
     } finally {
       setChangingPassword(false)
     }

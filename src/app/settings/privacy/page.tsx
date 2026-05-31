@@ -83,9 +83,9 @@ export default function PrivacySettingsPage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to save')
-      addToast?.({ type: 'success', message: 'Privacy settings saved' })
+      addToast?.('Privacy settings saved', 'success')
     } catch (err) {
-      addToast?.({ type: 'error', message: err instanceof Error ? err.message : 'Failed to save' })
+      addToast?.(err instanceof Error ? err.message : 'Failed to save', 'error')
     } finally {
       setSaving(false)
     }
