@@ -8,6 +8,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import styles from './Header.module.css'
 import CartButton from './CartButton'
+import { useQuickCreate } from '@/components/QuickCreateModal'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import LocationStatus from './LocationStatus'
 import { useTheme } from '@/context/ThemeContext'
@@ -34,6 +35,7 @@ export default function Header() {
   const [notificationCount, setNotificationCount] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const headerRef = useRef<HTMLElement>(null)
+  const quickCreate = useQuickCreate()
   const [searchResults, setSearchResults] = useState<{
     plans: { id: string; title: string; type: string; url: string }[]
     products: { id: string; title: string; type: string; url: string }[]
@@ -243,7 +245,7 @@ export default function Header() {
                 <span aria-hidden="true">➕</span> Create
               </button>
               <div className={styles.navDropdown} id="nav-dropdown-create" role="menu" style={{ minWidth: 200 }}>
-                <Link href="/dashboard/feed" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">✏️</span> New Post</Link>
+                <button onClick={() => { closeDropdown(); quickCreate.open('post') }} className={styles.navLink} role="menuitem" style={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.875rem', padding: '8px 12px', color: 'var(--text-secondary)' }}><span aria-hidden="true">✏️</span> New Post</button>
                 <Link href="/dashboard/projects" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🚀</span> New Project</Link>
                 <Link href="/products/new" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🛒</span> New Product</Link>
                 <Link href="/events/new" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📅</span> New Event</Link>

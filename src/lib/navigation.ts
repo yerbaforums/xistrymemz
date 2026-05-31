@@ -106,6 +106,7 @@ export const NAV: NavConfig = {
 
 export const DASHBOARD_SIDEBAR_PRIMARY: NavItem[] = [
   { href: '/dashboard/overview', icon: '📊', label: 'Overview' },
+  { href: '/dashboard/studio', icon: '🎨', label: 'Studio' },
   { href: '/dashboard/feed', icon: '📡', label: 'Feed' },
   { href: '/dashboard/marketplace', icon: '🛒', label: 'Marketplace' },
   { href: '/dashboard/services', icon: '🔧', label: 'Services' },
@@ -131,6 +132,7 @@ export const DASHBOARD_SIDEBAR_SECONDARY: NavItem[] = [
 
 export const BREADCRUMB_LABELS: Record<string, string> = {
   overview: 'Overview',
+  studio: 'Studio',
   feed: 'Feed',
   projects: 'Projects',
   requests: 'Requests',

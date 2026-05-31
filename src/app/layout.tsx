@@ -9,6 +9,7 @@ import AppShell from "@/components/AppShell";
 import Footer from "@/components/Footer";
 import BackToTop from "@/components/BackToTop";
 import CreateFAB from "@/components/CreateFAB";
+import { QuickCreateProvider } from "@/components/QuickCreateModal";
 import BottomNav from "@/components/BottomNav";
 import LocaleProvider from "@/components/LocaleProvider";
 
@@ -75,13 +76,15 @@ export default async function RootLayout({
           <Providers>
             <SiteSettingsProvider>
               <TariWalletProvider>
-                <AppShell>
-                  {children}
-                  <ToastContainer />
-                  <CreateFAB />
-                </AppShell>
-                <BottomNav />
-                <Footer />
+                <QuickCreateProvider>
+                  <AppShell>
+                    {children}
+                    <ToastContainer />
+                    <CreateFAB />
+                  </AppShell>
+                  <BottomNav />
+                  <Footer />
+                </QuickCreateProvider>
               </TariWalletProvider>
             </SiteSettingsProvider>
           </Providers>

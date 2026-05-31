@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useQuickCreate } from '@/components/QuickCreateModal'
 import styles from './CreateFAB.module.css'
 
 const ACTIONS = [
@@ -21,6 +22,7 @@ export default function CreateFAB() {
   const pathname = usePathname()
   const router = useRouter()
   const [open, setOpen] = useState(false)
+  const quickCreate = useQuickCreate()
   useEffect(() => {
     setOpen(false)
   }, [pathname])
@@ -52,7 +54,7 @@ export default function CreateFAB() {
                   className={styles.menuItem}
                   onClick={() => {
                     setOpen(false)
-                    router.push('/dashboard/feed')
+                    quickCreate.open('post')
                   }}
                 >
                   <span className={styles.menuIcon}>{action.icon}</span>
