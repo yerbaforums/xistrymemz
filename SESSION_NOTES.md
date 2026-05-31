@@ -1,146 +1,111 @@
 # Session Working Notes
 
-## Current State (39f7eb2 — committed and pushed)
+## Current State (45bb5df — committed and pushed)
 
-### ✅ Complete — Infrastructure & Foundation
+### ✅ Complete — Creative Hub (Batch 1)
 
-**Analytics & Navigation:**
-- Geo-analytics: city/region/coordinates via geoip-lite, admin visits API with pagination/filters, Recent Visits UI
-- Nav config centralized in `src/lib/navigation.ts`
-- MobileNav and UserDropdown extracted from Header.tsx
-- Dashboard overview: simplified view for new users, collapsible stats for returning users
-- CSS modernization: `--text-tertiary`, `--space-7`, `var(--transition)`, `color-mix()`
+**QuickCreateModal:**
+- New `QuickCreateModal` component with 5 tabs: Post, Content, Product, Event, Project
+- `QuickCreateProvider` context wraps the app, accessible via `useQuickCreate()` hook
+- Post tab: textarea + image uploader, creates inline without navigation
+- Content tab: title, type selector, template picker (6 templates), content body, images, price
+- Product tab: title, price, category, description, images
+- Event tab: title, date/time, location, description
+- Project tab: title, status, description
 
-**Feature Visibility Toggles:**
-- 6 toggle switches (showShop, showSchool, enableTips, enableReplies, enableLikes, showViewCount) on profile edit page
-- API backend already handles these fields
+**Content Templates:**
+- `src/lib/content-templates.ts` with 6 templates: Lesson Plan, Course Outline, Tutorial, Article Starter, Resource List, Quick Note
+- Each template has type, name, description, icon, and pre-filled starter content
+- `CONTENT_TYPE_MAP` for consistent type labels across the app
 
-**HashtagInput Embedding:**
-- Replaced manual hashtag input in EventForm with HashtagInput component
-- Added hashtags to PlanDetailClient (plan overview edit)
-- Added hashtags to RequestsClient (create + edit forms)
-- Added hashtags to groups (create modal in groups/page + edit modal in groups/[id]/page)
+**Dashboard Studio (`/dashboard/studio`):**
+- Unified view of ALL user content: posts, school content, products, plans/projects, events
+- Fetches from multiple APIs, sorts by date, shows titles + view counts + prices
+- Type filter bar with counts per type
+- Stats row: Total Items, Total Views, Total Value
+- Empty state with "Create Something" CTA
+- Added "Studio" to dashboard sidebar (primary nav, right after Overview)
+- Added "🎨 Creative Studio" to dashboard overview quick actions
 
-**UI Polish:**
-- Emoji icons on hero section CTAs + 🏷️ Hashtags link
-- Emoji icons on hashtag tab bar (📝 🛍️ 📅 🔧 🎓 📋 🙋 👥)
-- Copy Link icon changed to two-overlapping-documents (distinct from Share)
-- Mobile nav accent dot CSS fixed (was white boxes)
+**Nav Integration:**
+- `+ Create` dropdown in header nav (accent-colored button) — "New Post" opens QuickCreateModal
+- CreateFAB "New Post" action opens QuickCreateModal instead of navigating
+- MobileNav: "✨ Quick Create" button at top of Dashboard section opens modal
+- Dashboard "Dashboard" label is now a `<Link href="/dashboard/overview">` (click navigates, dropdown still works on hover)
 
-### ✅ Complete — School Content Overhaul
+### ✅ Complete — UX Refinements
 
-**School Content Detail Page:**
-- New route: `/school/[slug]/content/[id]`
-- Full content body, type badge, price/free badge, images gallery, video player, hashtags, author info
-- Related content section (shows other content from same school)
-- API: single-content GET with hashtags, author image, section/order fields
+**Dashboard Overview:**
+- Added "Recent Studio Activity" section showing 5 most recent items across Plans, Products, School Content
+- Added "Write Your First Post" link uses `#feed-post-form` hash for auto-scroll on feed page
+- Feed empty state "Create Your First Post" now scrolls to and focuses the post form instead of linking to same page
 
-**School Page Redundancy Fixes:**
-- Hide contentPreview when card expanded (no more inline expansion — now navigates)
-- Hide aboutPreview when About tab is active
-- Removed floating EntityActions bars at bottom
-- Added compact EntityActions per content card
-- Cleaned up unused state (showShareModal, shareContent, selectedContent)
+**School Content:**
+- Template picker injected into school content creation form (shows when content field is empty)
+- Content cards now show image thumbnail (first image, 140px tall) when available
 
-**Content Creation Enhancements:**
-- RichEditor component (bold, italic, headings H2/H3, UL/OL, inline image/video embed, source view)
-- ImageUploader (up to 5 images) + video URL field in content form
-- Course section grouping (contentSection field, sortOrder field)
-- Prisma: added `contentSection` (String?) and `sortOrder` (Int) to SchoolContent
-- Content type filter bar (All / Article / Lesson / Note / Guide / Course / Resource)
-- Edit/delete content (owner-only, with ConfirmDialog for delete)
-- Content list sorted by section + sortOrder, grouped under section headers
+**User Menu:**
+- Avatar uses `<Image fill>` instead of explicit width/height — properly fits 36x36 button
+- UserDropdown avatar also uses `fill` with a proper sized container
+- Dropdown has `max-height: calc(100vh - 80px)` and `overflow-y: auto` — no longer cuts off at bottom
 
-**Quiz Engine:**
-- Quiz content type with `Question|Opt1|Opt2|Opt3|Opt4|Correct` format
-- Interactive quiz UI on detail page (selectable answers, score, correct/wrong highlighting)
-- Quiz creation via textarea when contentType === 'quiz'
+### ✅ Complete — Saved Items Revamp
 
-**API Updates:**
-- Content create endpoint handles images/videoUrl/section/sortOrder
-- Content update endpoint handles section/sortOrder
-- Content list endpoint returns hashtags, sorted by sortOrder then createdAt
+**API Enrichment:**
+- `GET /api/saved` now resolves entity titles by querying all 9 entity types in batch
+- Added `DELETE` handler to `/api/saved/route.ts` (fixes toggleSave unsave from entity pages)
+- Added missing types: SERVICE, SCHOOLCONTENT, GROUP (total 9 valid types)
 
-### ✅ Complete — Fixes
+**Rich Saved Page:**
+- Cards now show type icon, entity title (or "Untitled"), type badge, and save date
+- Type filter bar with counts per type
+- Empty state for individual type filters
+- Updated CSS with cleaner card layout and hover states
 
-- TS build error: missing `hashtags` in setEditForm call in RequestsClient.tsx
-- TS build error: `walletRequired` missing from NavItem type
-- Copy Link icon conflict with Share icon
-- Mobile nav accent dots rendering as white boxes
-- EntityActions redundancies (native share button vs copy, icon conflicts)
+### ✅ Complete — Connections & Communications
 
----
+**Connection Notifications:**
+- Sending a connection request creates a CONNECTION_REQUEST notification for the receiver + SSE emit
+- Accepting a connection creates a CONNECTION_ACCEPTED notification for the requester + SSE emit
+- More notification type icons: CONNECTION_REQUEST 👋, CONNECTION_ACCEPTED 🤝, NEW_MESSAGE 💬, NEW_FOLLOWER 👤, SYSTEM 🔔
 
-### ⏳ Next Pass: Creator-First Experience (General → Specialized)
-
-The goal: get users **creating content quickly** and **displaying it valuably**.
-
-**Phase A: Quick-Create Everywhere**
-
-| # | Change | Files | Effort |
-|---|--------|-------|--------|
-| 1 | Add `+ Create` dropdown button in Header (desktop) and MobileNav | `Header.tsx`, `MobileNav.tsx` | Medium |
-| 2 | New Post → opens inline modal instead of navigating away | `CreateFAB.tsx`, new `QuickPostModal.tsx` | Medium |
-| 3 | First-visit banner on dashboard: add "Write your first post" prompt | `dashboard/overview/page.tsx` | Small |
-| 4 | FAB visible on load (no scroll threshold) for new users | `CreateFAB.tsx` | Small |
-| 5 | Dashboard checklist: "Create your first school content" item | `dashboard/overview/page.tsx` | Small |
-| 6 | Feed empty state: prominent "Create your first post" CTA | `dashboard/feed/page.tsx` | Small |
-
-**Phase B: Content Templates & Starter Kits**
-
-| # | Change | Files | Effort |
-|---|--------|-------|--------|
-| 7 | Pre-built content templates for schools (lesson plan, course outline, tutorial, guide) | `src/lib/content-templates.ts` (new) | Medium |
-| 8 | "Quick Start" button on school setup that pre-fills 3 starter content items | `school/setup/page.tsx` + API | Medium |
-| 9 | Template picker in school content creation form | `school/[slug]/page.tsx` | Medium |
-
-**Phase C: Rich Content Display**
-
-| # | Change | Files | Effort |
-|---|--------|-------|--------|
-| 10 | Content series navigation (prev/next) on detail page | detail page | Small |
-| 11 | Content progress tracking (mark as complete, continue later) | detail page + Prisma | Medium |
-| 12 | Reading time estimate on content cards + detail page | page.tsx + util | Small |
-| 13 | Better content cards with type-specific icons and richer previews | CSS + school page | Small |
-
-**Phase D: Dashboard Content Hub**
-
-| # | Change | Files | Effort |
-|---|--------|-------|--------|
-| 14 | Unified "My Content" section on dashboard showing all user-created content | `dashboard/overview/page.tsx` | Medium |
-| 15 | Content stats (views, likes, comments per content item) | dashboard + API | Medium |
-| 16 | Quick-edit from dashboard (inline edit without navigating away) | dashboard + modal | Medium |
-
-**Phase E: Project/Plan Pages Revamp**
-
-| # | Change | Files | Effort |
-|---|--------|-------|--------|
-| 17 | Apply same RichEditor to plan description editing | `PlanDetailClient.tsx` | Small |
-| 18 | Plan content view pages (dedicated URLs for plan resources/materials) | new routes | Medium |
-| 19 | Share EntityActions + rich content display to project pages | PlanDetailClient + EntityActions | Small |
+**Message Improvements:**
+- Added polling (every 10s) when a conversation is open — new messages appear without manual refresh
+- "+ New" button changed to "+ Find People" linking to `/community?ref=messages`
+- Dashboard sidebar shows unread message count badge on "Messages" in the More section
 
 ---
 
-### Priority Order (recommended execution)
+### ⏳ Planned / Future Work
 
-1. **Small wins** — #3, #4, #5, #6, #13 (dashboard prompts + card polish) → immediate impact, minimal code
-2. **Header Create button** — #1 (biggest visibility gap, users can't find how to create)
-3. **Quick post modal** — #2 (first real content creation should be frictionless)
-4. **Content templates** — #7, #8, #9 (scaffolding for new creators)
-5. **Content series + progress** — #10, #11, #12 (valuable display for viewers)
-6. **Dashboard content hub** — #14, #15, #16 (surface creator stats)
-7. **Project revamp** — #17, #18, #19
+**High Priority:**
+- Federated protocol foundations (ActivityPub/WebFinger endpoints, user key generation)
+- Unified API response format (`{success, data, error}` envelope)
+- Service layer extraction (pilot: school content service with federation hook points)
+
+**Medium Priority:**
+- Content series navigation (prev/next) on school content detail page
+- Content progress tracking (mark complete, continue later)
+- Quick-edit from Studio page (inline edit without navigating)
+- Reading time estimate on content cards
+
+**Lower Priority:**
+- Project/plan pages revamp (RichEditor, dedicated content URLs)
+- Student management for schools
+- Drag-and-drop donation address reordering
+
+---
 
 ### Git Log
 ```
-39f7eb2 fix: add walletRequired to NavItem type
-bf91f20 feat: rich text editor, course sections, quiz engine, content ordering
-93b3c2e feat: expand school content features - images/video in creation, edit/delete, type filtering, related content
-c2b2808 feat: school content detail page, fix redundancies, fix TS build error, fix copy link icon, fix mobile nav accent CSS
-d1c3605 feat: geo-analytics, nav refactor, dashboard personalization, feature toggles, hashtag forms, UI polish, and accent/mobile nav fixes
-8c07887 feat: add traffic source analytics (country, referrer) to admin panel
-d5fc86e feat: inject EntityActions into all entity pages, remove old action components
-ed4f5f6 feat: universal entity actions + per-user feature toggles
-b5c84da feat: share bar, backlink system, and related items
-c9b626c feat: universal hashtag system + school content hashtag integration + UI/UX passes 1-4
+45bb5df feat: saved API enrichment + rich cards with filter, connection notifications, message polling, sidebar unread, more notification icons
+4eb9fff feat: Recent Studio section on overview, template picker in school form, mobile quick create
+e7ab2d8 fix: user menu avatar sizing with Image fill, dropdown max-height scroll
+3442b7c feat: Creative Hub - QuickCreateModal, Studio page, content templates, nav integration
+5c92498 feat: header Create dropdown, feed empty state fix, content card thumbnails, dashboard first-visit link
+3fdc717 fix: sidebar aria-labels, Skeleton loading, ErrorBoundary on hashtags, regex align, LinkPreview on profiles, dead code removal
+a4a6ec6 feat: profile share pre-fill, mention links fix, SharedItemCard CSS, bottom nav
+7496d4d fix: security, UX polish, and launch readiness fixes
+2599499 fix: profile share-to-post creates @mention post instead of reference
+127ad67 feat: crypto logos in tip modal, copy button style, social platform icons, profile share modal
 ```
