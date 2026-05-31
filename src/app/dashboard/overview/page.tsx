@@ -68,7 +68,8 @@ export default async function DashboardOverview() {
     orderStats,
     rentalCount,
     teachingEarnings,
-    sellerEarnings
+    sellerEarnings,
+    recentSchoolContent
   ] = await Promise.all([
     prisma.plan.findMany({ 
       where: { userId }, 
@@ -130,6 +131,12 @@ export default async function DashboardOverview() {
         status: 'RELEASED'
       },
       _sum: { netAmount: true }
+    }),
+    prisma.schoolContent.findMany({
+      where: { userId },
+      select: { id: true, title: true, contentType: true, createdAt: true, isPaid: true, price: true },
+      orderBy: { createdAt: 'desc' },
+      take: 5
     })
   ])
 
@@ -427,6 +434,41 @@ export default async function DashboardOverview() {
                 </div>
               )}
             </div>
+          </div>
+
+          <div className={styles.activitySection} style={{ marginTop: 20 }}>
+            <div className={styles.sectionHeader}>
+              <h3>🎨 Recent Studio Items</h3>
+              <Link href="/dashboard/studio" className={styles.viewAll}>Open Studio →</Link>
+            </div>
+            {(() => {
+              const studioItems = [
+                ...plans.map(p => ({ type: '🚀', label: 'Project', title: p.title, date: p.createdAt, href: `/plans/${p.id}` })),
+                ...products.map(p => ({ type: '🛒', label: 'Product', title: p.title, date: p.createdAt, href: `/products/${p.id}` })),
+                ...recentSchoolContent.map((c: any) => ({ type: c.contentType === 'course' ? '🎓' : '📖', label: c.contentType || 'Content', title: c.title, date: c.createdAt, href: '#' })),
+              ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5)
+              if (studioItems.length === 0) {
+                return (
+                  <div className={styles.emptyState}>
+                    <p>No content yet</p>
+                    <Link href="/dashboard/studio" className={styles.emptyAction}>Create something</Link>
+                  </div>
+                )
+              }
+              return (
+                <div className={styles.activityList}>
+                  {studioItems.map((item, i) => (
+                    <Link key={i} href={item.href} className={styles.activityItem}>
+                      <div className={styles.activityIcon}>{item.type}</div>
+                      <div className={styles.activityInfo}>
+                        <span className={styles.activityTitle}>{item.title}</span>
+                        <span className={styles.activityMeta}>{item.label} · {new Date(item.date).toLocaleDateString()}</span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )
+            })()}
           </div>
 
           <details className={styles.collapsibleSection}>

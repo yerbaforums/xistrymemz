@@ -15,6 +15,7 @@ import BookAppointmentModal from '@/components/BookAppointmentModal'
 import EntityActions from '@/components/EntityActions'
 import HashtagInput from '@/components/HashtagInput'
 import RichEditor from '@/components/RichEditor'
+import { CONTENT_TEMPLATES } from '@/lib/content-templates'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
 import Rating from '@/components/Rating'
@@ -480,6 +481,23 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                     <option value="resource">Resource</option>
                   </select>
                 </div>
+                {!contentForm.content && (() => {
+                  const templates = CONTENT_TEMPLATES.filter(t => t.contentType === contentForm.contentType)
+                  if (templates.length === 0) return null
+                  return (
+                    <div className={styles.formGroup}>
+                      <label>Starter Templates</label>
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                        {templates.map(t => (
+                          <button key={t.id} type="button" onClick={() => setContentForm({ ...contentForm, content: t.starterContent })}
+                            style={{ padding: '8px 14px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: 6, transition: 'var(--transition)' }}>
+                            <span>{t.icon}</span> {t.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })()}
                 <div className={styles.formGroup}>
                   <label>Content</label>
                   <RichEditor value={contentForm.content} onChange={(html) => setContentForm({ ...contentForm, content: html })} placeholder="Start writing..." />

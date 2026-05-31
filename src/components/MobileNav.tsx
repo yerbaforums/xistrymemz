@@ -8,6 +8,7 @@ import { NAV } from '@/lib/navigation'
 import { useTheme, type ThemeAccent } from '@/context/ThemeContext'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { getUserProfileUrl } from '@/lib/utils'
+import { useQuickCreate } from '@/components/QuickCreateModal'
 import styles from './Header.module.css'
 
 const LOCALES = [
@@ -30,6 +31,7 @@ export default function MobileNav({ open, onClose, isAdmin, isAuthenticated, ses
   const t = useTranslations('header')
   const { mode, accent, setAccent, toggleMode } = useTheme()
   const { settings } = useSiteSettings()
+  const quickCreate = useQuickCreate()
 
   return (
     <div className={`${styles.mobileNav} ${open ? styles.mobileNavOpen : ''}`} id="mobile-nav-drawer" role="dialog" aria-modal="true" aria-label="Navigation menu">
@@ -114,6 +116,9 @@ export default function MobileNav({ open, onClose, isAdmin, isAuthenticated, ses
         <>
           <div className={styles.mobileSection}>
             <div className={styles.mobileSectionTitle}>Dashboard</div>
+            <button onClick={() => { onClose(); quickCreate.open() }} className={styles.mobileLink} style={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10, background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', cursor: 'pointer', fontSize: '0.9rem', padding: '10px 14px', borderRadius: 'var(--radius-md)', fontWeight: 600 }}>
+              ✨ Quick Create
+            </button>
             {NAV.dashboard.filter(item => !('walletRequired' in item) || (item as any).walletRequired !== true || settings.enableWallet).map(item => (
               <Link key={item.href} href={item.href} className={styles.mobileLink} onClick={onClose}>
                 <span aria-hidden="true">{item.icon}</span> {item.label}
