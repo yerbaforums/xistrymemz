@@ -9,6 +9,7 @@ import { usePassportLocation } from '@/hooks/usePassportLocation'
 import type { Event } from '@/types/event'
 import Skeleton, { SkeletonCard, SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
+import Button from '@/components/ui/Button'
 
 import dynamic from 'next/dynamic'
 
