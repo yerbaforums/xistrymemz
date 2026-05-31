@@ -346,6 +346,7 @@
   justify-content: center;
   overflow: hidden;
   transition: var(--transition);
+  position: relative;
 }
 
 .userBtn:hover {
@@ -370,6 +371,8 @@
   top: calc(100% + 8px);
   right: 0;
   min-width: 220px;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);

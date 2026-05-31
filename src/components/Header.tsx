@@ -204,15 +204,13 @@ export default function Header() {
         <nav className={styles.nav}>
           {isAuthenticated && (
             <div className={`${styles.navItem} ${openDropdown === 'dashboard' ? styles.dropdownVisible : ''}`}>
-              <button
+              <Link
+                href="/dashboard/overview"
                 className={`${styles.navToggle} ${styles.dashboardLink}`}
-                onClick={() => toggleDropdown('dashboard')}
-                onKeyDown={e => handleDropdownKeyDown(e, 'dashboard')}
-                aria-expanded={openDropdown === 'dashboard'}
-                aria-controls="nav-dropdown-dashboard"
+                onClick={() => { setOpenDropdown(null); setMenuOpen(false) }}
               >
                 <span aria-hidden="true">📊</span> Dashboard
-              </button>
+              </Link>
               <div className={styles.navDropdown} id="nav-dropdown-dashboard" role="menu" style={{ minWidth: 200 }}>
                 <div style={{ padding: '6px 14px', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Main</div>
                 <Link href="/dashboard/overview" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📊</span> Overview</Link>
@@ -523,7 +521,7 @@ export default function Header() {
                     aria-controls="user-menu-dropdown"
                   >
                     {session.user.image ? (
-                      <Image src={session.user.image} alt={session.user.name || ''} width={36} height={36} className={styles.userAvatar} />
+                      <Image src={session.user.image} alt={session.user.name || ''} fill className={styles.userAvatar} />
                     ) : (
                       <span className={styles.userInitial}>
                         {(session.user.name || session.user.email || 'U')[0].toUpperCase()}

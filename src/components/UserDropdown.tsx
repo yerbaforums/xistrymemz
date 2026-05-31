@@ -26,7 +26,9 @@ export default function UserDropdown({ session, open, onClose, traveling }: User
     <div className={styles.userDropdown} id="user-menu-dropdown" role="menu">
       <div className={styles.userInfo}>
         {session.user?.image ? (
-          <Image src={session.user.image} alt={session.user?.name || ''} width={36} height={36} className={styles.userAvatar} />
+          <div style={{ width: 36, height: 36, position: 'relative', borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
+            <Image src={session.user.image} alt={session.user?.name || ''} fill className={styles.userAvatar} />
+          </div>
         ) : (
           <span className={styles.userInitial}>{(session.user?.name || 'U')[0].toUpperCase()}</span>
         )}
