@@ -541,12 +541,12 @@ export default function EventsPage() {
                         {event.maxJoiners > 0 && (<span>👥 {(event.joiners || []).length}/{event.maxJoiners} joined</span>)}
                         {event.userName && <span>👤 {event.userName}</span>}
                       </div>
-                      <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                      <div className={styles.eventCardActions}>
                         {event.maxJoiners === 0 || (event.joiners || []).length < event.maxJoiners ? (
-                          <button onClick={(e) => { e.stopPropagation(); if (event.joined) { handleLeave(event.id) } else { handleJoin(event.id) } }} disabled={joining === event.id} variant={event.joined ? "secondary" : "primary"} style={{ flex: 1 }}>
+                          <Button onClick={(e) => { e.stopPropagation(); if (event.joined) { handleLeave(event.id) } else { handleJoin(event.id) } }} disabled={joining === event.id} variant={event.joined ? "secondary" : "primary"}>
                             {joining === event.id ? '...' : event.joined ? 'Leave' : 'Join Event'}
-                          </button>
-                        ) : (<span className="badge badge-full" style={{ flex: 1, textAlign: 'center', padding: '8px' }}>Event Full</span>)}
+                          </Button>
+                        ) : (<Badge variant="warning">Event Full</Badge>)}
                         <Link href={`/events/${event.id}`} className={styles.viewBtn} onClick={e => e.stopPropagation()}>View Details</Link>
                       </div>
                     </div>
