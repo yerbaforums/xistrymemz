@@ -910,10 +910,10 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
                               </div>
                             ))}
                             <div className={`${styles.flex} ${styles.gap4} ${styles.mt8}`}>
-                              <input className={styles.formInput} value={newLinkUrl} onChange={e => setNewLinkUrl(e.target.value)}
-                                placeholder="URL" className={styles.flex1} onKeyDown={e => e.key === 'Enter' && handleAddLink(stop.id)} />
-                              <input className={styles.formInput} value={newLinkLabel} onChange={e => setNewLinkLabel(e.target.value)}
-                                placeholder="Label" className={styles.w120} />
+                              <input className={`${styles.formInput} ${styles.flex1}`} value={newLinkUrl} onChange={e => setNewLinkUrl(e.target.value)}
+                                placeholder="URL" onKeyDown={e => e.key === 'Enter' && handleAddLink(stop.id)} />
+                              <input className={`${styles.formInput} ${styles.w120}`} value={newLinkLabel} onChange={e => setNewLinkLabel(e.target.value)}
+                                placeholder="Label" />
                               <button className={`${styles.btn} ${styles.btnPrimary} ${styles.btnSmall}`} onClick={() => handleAddLink(stop.id)}>+</button>
                             </div>
                           </div>
