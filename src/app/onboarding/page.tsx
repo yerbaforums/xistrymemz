@@ -578,12 +578,20 @@ export default function OnboardingPage() {
                 )}
               </div>
               
+              <p className={styles.formHint} style={{ marginTop: 16 }}>
+                You can always return to{' '}
+                <Link href="/profile/settings" style={{ color: 'var(--accent-primary)' }}>
+                  settings
+                </Link>{' '}
+                later.
+              </p>
+
               <div className={styles.actionBtns}>
                 <button onClick={handleSaveProfile} className={styles.primaryBtn} disabled={loading}>
                   {loading ? 'Saving...' : 'Continue'}
                 </button>
-                <button onClick={nextStep} className={styles.secondaryBtn}>
-                  Skip
+                <button onClick={handleSaveProfile} className={styles.secondaryBtn} disabled={loading}>
+                  {loading ? 'Saving...' : 'Skip'}
                 </button>
               </div>
             </div>
@@ -618,7 +626,7 @@ export default function OnboardingPage() {
                               <button
                                 type="button"
                                 className={styles.setupBtn}
-                                onClick={(e) => { e.stopPropagation(); toggleSetupStep(step.id); window.open(step.href, '_self') }}
+                                onClick={(e) => { e.stopPropagation(); toggleSetupStep(step.id); window.open(step.href, '_blank') }}
                               >
                                 Start
                               </button>

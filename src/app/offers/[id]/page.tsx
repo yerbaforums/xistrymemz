@@ -8,6 +8,7 @@ import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
 import { CounterOfferModal } from '@/components/CounterOfferModal'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 interface BarterOffer {
   id: string
@@ -142,7 +143,8 @@ export default function OfferDetailPage({
   const messageUser = isMaker ? offer.receiver : offer.maker
 
   return (
-    <div className={styles.page}>
+    <ErrorBoundary>
+      <div className={styles.page}>
       <Link href="/dashboard/offers" className={styles.backLink}>
         ← Back to Offers
       </Link>
@@ -331,5 +333,6 @@ export default function OfferDetailPage({
         />
       )}
     </div>
+    </ErrorBoundary>
   )
 }

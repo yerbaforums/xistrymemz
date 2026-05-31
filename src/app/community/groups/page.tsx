@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import styles from './groups.module.css'
 import Button from '@/components/ui/Button'
+import { EmptyState } from '@/components/EmptyState'
 
 interface Group {
   id: string
@@ -109,10 +110,7 @@ export default function GroupsPage() {
       {loading ? (
         <div className={styles.loading}>Loading groups...</div>
       ) : sortedGroups.length === 0 ? (
-        <div className={styles.empty}>
-          <p>{search ? 'No groups match your search' : 'No groups yet'}</p>
-          <Link href="/groups/new" ><Button variant="primary">Create the first group</Button></Link>
-        </div>
+        <EmptyState icon="👥" title={search ? 'No groups match your search' : 'No groups yet'} />
       ) : (
         <div className={styles.grid}>
           {sortedGroups.map(group => (

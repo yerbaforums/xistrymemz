@@ -719,9 +719,9 @@ donationDescription={plan.donationDescription}
                   {plan.events.map(event => (
                     <div key={event.id} className={styles.eventCard}>
                       <div className={styles.eventInfo}>
-                        <h3>{event.title}</h3>
+                        <h3><Link href={`/events/${event.id}`} className={styles.eventTitleLink}>{event.title}</Link></h3>
                         {event.description && <p>{event.description}</p>}
-                        {event.eventCategory && <span className={`badge badge-${event.eventCategory.toLowerCase()}`}>{event.eventCategory}</span>}
+                        {event.eventCategory && <span className={styles.eventBadge}>{event.eventCategory}</span>}
                         {event.eventDate && <p className={styles.eventDate}>📅 {new Date(event.eventDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>}
                         {event.location && <p className={styles.eventLocation}>📍 {event.location}</p>}
                         {event.locationDetails && <p className={styles.eventLocationDetails}>{event.locationDetails}</p>}

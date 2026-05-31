@@ -14,6 +14,7 @@ import { getUserProfileUrl } from '@/lib/utils'
 import ImageUploader from '@/components/ImageUploader'
 import HashtagInput from '@/components/HashtagInput'
 import Button from '@/components/ui/Button'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 interface Member {
   id: string
@@ -531,7 +532,8 @@ function GroupDetailContent() {
   const isReqOwner = (req: GroupRequest) => myUserId === req.user.id
 
   return (
-    <div className={styles.page}>
+    <ErrorBoundary>
+      <div className={styles.page}>
       <Breadcrumbs items={[
         { label: 'Home', href: '/' },
         { label: 'Groups', href: '/groups' },
@@ -1180,6 +1182,7 @@ function GroupDetailContent() {
         </div>
       )}
     </div>
+    </ErrorBoundary>
   )
 }
 

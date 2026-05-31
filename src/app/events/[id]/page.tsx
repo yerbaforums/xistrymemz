@@ -18,6 +18,7 @@ import type { Event } from '@/types/event'
 import type { DonationAddr } from '@/types/product'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import TranslateButton from '@/components/TranslateButton'
+import Skeleton from '@/components/Skeleton'
 
 const QRCodeModal = dynamic(() => import('@/components/QRCodeModal').then(mod => mod.QRCodeModal), { ssr: false })
 
@@ -61,6 +62,8 @@ function EventDetailContent() {
   const [deleting, setDeleting] = useState(false)
   const [confirmDeleteModal, setConfirmDeleteModal] = useState(false)
   const router = useRouter()
+  const [relatedEvents, setRelatedEvents] = useState<Event[]>([])
+  const [relatedLoading, setRelatedLoading] = useState(false)
 
   const confirmDelete = async () => {
     if (!event) return
@@ -182,6 +185,21 @@ function EventDetailContent() {
       .then(data => {
         setEvent(data)
         setLoading(false)
+        if (data) {
+          setRelatedLoading(true)
+          fetch('/api/events')
+            .then(res => res.ok ? res.json() : [])
+            .then(events => {
+              const items = Array.isArray(events)
+                ? events
+                    .filter((e: Event) => e.id !== data.id && (!data.eventCategory || e.eventCategory === data.eventCategory))
+                    .slice(0, 3)
+                : []
+              setRelatedEvents(items)
+              setRelatedLoading(false)
+            })
+            .catch(() => setRelatedLoading(false))
+        }
       })
       .catch(() => setLoading(false))
   }, [params.id])
@@ -421,8 +439,8 @@ function EventDetailContent() {
                   </Link>
                   {event.organizer?.role && <RoleBadge role={event.organizer.role} />}
                 </p>
-                {event.planTitle && (
-                  <p className={styles.planRef}>From: {event.planTitle}</p>
+                {event.planTitle && event.planId && (
+                  <p className={styles.planRef}>From: <Link href={`/plans/${event.planId}`} className={styles.planLink}>{event.planTitle}</Link></p>
                 )}
                 
                 {event.imageUrl && (
@@ -729,6 +747,45 @@ function EventDetailContent() {
         confirmLabel="Delete"
         variant="danger"
       />
+
+      {relatedEvents.length > 0 && (
+        <div className={styles.relatedSection}>
+          <h2 className={styles.relatedTitle}>More Events</h2>
+          <div className={styles.relatedGrid}>
+            {relatedEvents.map(re => (
+              <Link key={re.id} href={`/events/${re.id}`} className={styles.relatedCard}>
+                {re.imageUrl && (
+                  <div className={styles.relatedCardImage}>
+                    <img src={re.imageUrl} alt={re.title} />
+                  </div>
+                )}
+                <div className={styles.relatedCardBody}>
+                  {re.eventCategory && <span className={styles.relatedCardType}>{re.eventCategory}</span>}
+                  <span className={styles.relatedCardTitle}>{re.title}</span>
+                  {re.eventDate && <span className={styles.relatedCardDate}>{new Date(re.eventDate).toLocaleDateString()}</span>}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+      {relatedLoading && (
+        <div className={styles.relatedSection}>
+          <h2 className={styles.relatedTitle}>More Events</h2>
+          <div className={styles.relatedGrid}>
+            {[1,2,3].map(i => (
+              <div key={i} className={styles.relatedCard}>
+                <Skeleton height="120px" borderRadius="8px 8px 0 0" />
+                <div className={styles.relatedCardBody}>
+                  <Skeleton width="40%" height="0.75rem" />
+                  <Skeleton width="80%" height="0.9rem" />
+                  <Skeleton width="50%" height="0.75rem" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

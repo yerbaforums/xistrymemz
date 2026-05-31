@@ -31,6 +31,8 @@ const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLaye
 const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false })
 const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false })
 import TranslateButton from '@/components/TranslateButton'
+import Skeleton from '@/components/Skeleton'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 interface Product {
   id: string
@@ -174,6 +176,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [cryptoPrices, setCryptoPrices] = useState<Record<string, number>>({})
   const [copiedShare, setCopiedShare] = useState(false)
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
+  const [relatedLoading, setRelatedLoading] = useState(false)
 
   useEffect(() => {
     getCryptoPrices().then(prices => {
@@ -237,6 +241,19 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           })
           .then(shop => setSellerShop(shop))
         setLoading(false)
+        if (data.category) {
+          setRelatedLoading(true)
+          fetch(`/api/products?category=${encodeURIComponent(data.category)}&limit=5`)
+            .then(res => res.json())
+            .then(related => {
+              const items = Array.isArray(related?.products) 
+                ? related.products.filter((p: Product) => p.id !== data.id).slice(0, 4)
+                : []
+              setRelatedProducts(items)
+              setRelatedLoading(false)
+            })
+            .catch(() => setRelatedLoading(false))
+        }
       })
       .catch((err) => {
         if (err.message === 'not-found') {
@@ -510,7 +527,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   }
 
   return (
-    <div className={styles.page}>
+    <ErrorBoundary>
+      <div className={styles.page}>
       <Breadcrumbs items={[
         { label: 'Home', href: '/' },
         { label: 'Marketplace', href: '/products' },
@@ -1286,6 +1304,46 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         defaultMeetingLink={product.appointmentMeetingLink}
         formFields={product.appointmentFormFields as { label: string; type: 'text' | 'textarea'; required: boolean }[] | null}
       />
+
+      {relatedProducts.length > 0 && (
+        <div className={styles.relatedSection}>
+          <h2 className={styles.relatedTitle}>Related Products</h2>
+          <div className={styles.relatedGrid}>
+            {relatedProducts.map(rp => (
+              <Link key={rp.id} href={`/products/${rp.id}`} className={styles.relatedCard}>
+                {rp.imageUrl && (
+                  <div className={styles.relatedCardImage}>
+                    <img src={rp.imageUrl} alt={rp.title} />
+                  </div>
+                )}
+                <div className={styles.relatedCardBody}>
+                  <span className={styles.relatedCardType}>{rp.type}</span>
+                  <span className={styles.relatedCardTitle}>{rp.title}</span>
+                  {rp.price != null && <span className={styles.relatedCardPrice}>${rp.price}</span>}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+      {relatedLoading && (
+        <div className={styles.relatedSection}>
+          <h2 className={styles.relatedTitle}>Related Products</h2>
+          <div className={styles.relatedGrid}>
+            {[1,2,3,4].map(i => (
+              <div key={i} className={styles.relatedCard}>
+                <Skeleton height="140px" borderRadius="8px 8px 0 0" />
+                <div className={styles.relatedCardBody}>
+                  <Skeleton width="40%" height="0.75rem" />
+                  <Skeleton width="80%" height="0.9rem" />
+                  <Skeleton width="30%" height="1rem" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
+    </ErrorBoundary>
   )
 }

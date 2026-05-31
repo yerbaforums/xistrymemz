@@ -48,7 +48,11 @@ interface StatDef {
   href: string
 }
 
-export default async function DashboardOverview() {
+export default async function DashboardOverview({
+  searchParams,
+}: {
+  searchParams?: { showAll?: string }
+}) {
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.id) {
@@ -62,7 +66,6 @@ export default async function DashboardOverview() {
     _plans,
     _requests,
     products,
-    groupMemberships,
     connectionCount,
     connectionActivity,
     orderStats,
@@ -87,11 +90,6 @@ export default async function DashboardOverview() {
       where: { userId }, 
       select: { id: true, title: true, type: true, createdAt: true },
       orderBy: { createdAt: 'desc' },
-      take: 5
-    }),
-    prisma.groupMember.findMany({ 
-      where: { userId }, 
-      include: { group: { select: { id: true, name: true } } },
       take: 5
     }),
     prisma.connection.count({ 
@@ -139,9 +137,6 @@ export default async function DashboardOverview() {
       take: 5
     })
   ])
-
-  void products
-  void groupMemberships
 
   const connectedUserIds = connectionActivity.map(c => 
     c.requesterId === userId ? c.receiverId : c.requesterId
@@ -253,9 +248,6 @@ export default async function DashboardOverview() {
 
   const plans = _plans
   const requests = _requests
-
-  void products
-  void groupMemberships
   
   const pendingRequests = requests.filter((r: { status: string }) => r.status === 'PENDING').length
   const eventAttendeeCount = eventJoinerCounts.find(r => r.role === 'ATTENDEE')?._count ?? 0
@@ -293,10 +285,13 @@ export default async function DashboardOverview() {
     { label: t('videoChat'), icon: '📹', href: '/dashboard/video' },
     { label: t('planner'), icon: '🗓️', href: '/dashboard/appointments' },
     { label: 'Community', icon: '💬', href: '/community' },
+    { label: 'Orders', icon: '📦', href: '/orders' },
+    { label: 'Cart', icon: '🛒', href: '/checkout' },
     { label: t('settings'), icon: '⚙️', href: '/profile/settings' },
   ]
 
-  const coreQuickActions = quickActions.slice(0, 6)
+  const showAll = searchParams?.showAll === 'true'
+  const coreQuickActions = showAll ? quickActions : quickActions.slice(0, 6)
 
   return (
     <div className={styles.overview}>
@@ -341,6 +336,17 @@ export default async function DashboardOverview() {
                 </Link>
               ))}
             </div>
+            {quickActions.length > 6 && (
+              <div style={{ marginTop: 10, textAlign: 'center' }}>
+                <Link
+                  href={showAll ? '/dashboard/overview' : '/dashboard/overview?showAll=true'}
+                  className={styles.actionBtn}
+                  style={{ display: 'inline-flex', padding: '8px 20px', fontSize: '0.8rem' }}
+                >
+                  {showAll ? 'Show Less' : `Show All (${quickActions.length})`}
+                </Link>
+              </div>
+            )}
           </div>
           <DashboardTodo />
         </>
@@ -379,6 +385,17 @@ export default async function DashboardOverview() {
                 </Link>
               ))}
             </div>
+            {quickActions.length > 6 && (
+              <div style={{ marginTop: 10, textAlign: 'center' }}>
+                <Link
+                  href={showAll ? '/dashboard/overview' : '/dashboard/overview?showAll=true'}
+                  className={styles.actionBtn}
+                  style={{ display: 'inline-flex', padding: '8px 20px', fontSize: '0.8rem' }}
+                >
+                  {showAll ? 'Show Less' : `Show All (${quickActions.length})`}
+                </Link>
+              </div>
+            )}
           </div>
 
           <div className={styles.activityGrid}>

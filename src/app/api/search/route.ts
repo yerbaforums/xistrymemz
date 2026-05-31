@@ -5,6 +5,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const query = searchParams.get('q') || ''
   const limit = parseInt(searchParams.get('limit') || '10')
+  const offset = parseInt(searchParams.get('offset') || '0')
 
   if (!query || query.length < 2) {
     return NextResponse.json({ results: {} })
@@ -23,6 +24,7 @@ export async function GET(request: Request) {
         status: { in: ['ACTIVE', 'COMPLETED'] }
       },
       select: { id: true, title: true, description: true, status: true },
+      skip: offset,
       take: limit
     }),
     prisma.product.findMany({
@@ -33,6 +35,7 @@ export async function GET(request: Request) {
         ]
       },
       select: { id: true, title: true, description: true, price: true, type: true },
+      skip: offset,
       take: limit
     }),
     prisma.serviceOffering.findMany({
@@ -44,6 +47,7 @@ export async function GET(request: Request) {
         isActive: true
       },
       select: { id: true, title: true, description: true, category: true },
+      skip: offset,
       take: limit
     }),
     prisma.user.findMany({
@@ -54,6 +58,7 @@ export async function GET(request: Request) {
         ]
       },
       select: { id: true, name: true, image: true, bio: true, username: true },
+      skip: offset,
       take: limit
     }),
     prisma.group.findMany({
@@ -65,6 +70,7 @@ export async function GET(request: Request) {
         isPrivate: false
       },
       select: { id: true, name: true, description: true, _count: { select: { members: true } } },
+      skip: offset,
       take: limit
     }),
     prisma.event.findMany({
@@ -75,6 +81,7 @@ export async function GET(request: Request) {
         ]
       },
       select: { id: true, title: true, eventDate: true, location: true, eventCategory: true },
+      skip: offset,
       take: limit
     }),
     prisma.request.findMany({
@@ -86,6 +93,7 @@ export async function GET(request: Request) {
         isPublic: true
       },
       select: { id: true, title: true, description: true, status: true, category: true },
+      skip: offset,
       take: limit
     }),
     prisma.schoolContent.findMany({
@@ -96,6 +104,7 @@ export async function GET(request: Request) {
         ]
       },
       select: { id: true, title: true, contentType: true, price: true },
+      skip: offset,
       take: limit
     }),
     prisma.forumPost.findMany({
@@ -106,11 +115,13 @@ export async function GET(request: Request) {
         ]
       },
       select: { id: true, title: true, content: true, createdAt: true, authorId: true },
+      skip: offset,
       take: limit
     }),
     hashtagQuery ? prisma.hashtag.findMany({
       where: { tag: { contains: hashtagQuery } },
       orderBy: { postCount: 'desc' },
+      skip: offset,
       take: limit
     }) : Promise.resolve([])
   ])

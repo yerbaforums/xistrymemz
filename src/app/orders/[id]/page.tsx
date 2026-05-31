@@ -7,6 +7,7 @@ import Link from 'next/link'
 import styles from '../page.module.css'
 import { useToast } from '@/context/ToastContext'
 import Button from '@/components/ui/Button'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 interface EscrowTransaction {
   id: string
@@ -211,7 +212,8 @@ export default function OrderDetailPage() {
   }
 
   return (
-    <div className={styles.container}>
+    <ErrorBoundary>
+      <div className={styles.container}>
       <div className={styles.header}>
         <Link href="/orders" className={styles.backLink}>Back to Orders</Link>
         <h1>Order #{order.id.slice(0, 10)}</h1>
@@ -515,5 +517,6 @@ export default function OrderDetailPage() {
         </div>
       )}
     </div>
+    </ErrorBoundary>
   )
 }

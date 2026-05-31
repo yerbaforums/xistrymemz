@@ -7,6 +7,7 @@ import MentionInput, { type MentionInputHandle } from '@/components/MentionInput
 import { getUserProfileUrl } from '@/lib/utils'
 import HashtagText from '@/components/HashtagText'
 import ImageUploader from '@/components/ImageUploader'
+import { EmptyState } from '@/components/EmptyState'
 import styles from './forum.module.css'
 
 interface Post {
@@ -330,7 +331,7 @@ export default function ForumPage() {
               <button onClick={fetchForumData} className={styles.postBtn}>Retry</button>
             </div>
           ) : sortedPosts.length === 0 ? (
-            <div className={styles.empty}>No posts yet. Be the first to post!</div>
+            <EmptyState icon="💬" title="No posts yet" description="Be the first to post!" />
           ) : (
             <div className={styles.posts}>
               {sortedPosts.map(post => (

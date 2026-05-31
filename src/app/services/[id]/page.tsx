@@ -12,6 +12,7 @@ import ViewCount from '@/components/ViewCount'
 import { useRecordView } from '@/hooks/useRecordView'
 import TranslateButton from '@/components/TranslateButton'
 import styles from './page.module.css'
+import Skeleton from '@/components/Skeleton'
 
 function formatDuration(mins: number) {
   if (mins < 60) return `${mins} min`
@@ -117,14 +118,33 @@ export default function ServiceDetailPage() {
   const [service, setService] = useState<ServiceOffering | null>(null)
   const [loading, setLoading] = useState(true)
   const [showBooking, setShowBooking] = useState(false)
+  const [relatedServices, setRelatedServices] = useState<ServiceOffering[]>([])
+  const [relatedLoading, setRelatedLoading] = useState(false)
 
   useEffect(() => {
     if (!params.id) return
     fetch(`/api/services/${params.id}`)
       .then(r => r.json())
       .then(data => {
-        setService(sanitizeService(data.service) || null)
+        const svc = sanitizeService(data.service) || null
+        setService(svc)
         setLoading(false)
+        if (svc) {
+          setRelatedLoading(true)
+          const url = svc.category
+            ? `/api/services?category=${encodeURIComponent(svc.category)}`
+            : '/api/services'
+          fetch(url)
+            .then(r => r.json())
+            .then(related => {
+              const items = Array.isArray(related?.services)
+                ? related.services.filter((s: ServiceOffering) => s.id !== svc.id).slice(0, 3)
+                : []
+              setRelatedServices(items)
+              setRelatedLoading(false)
+            })
+            .catch(() => setRelatedLoading(false))
+        }
       })
       .catch(() => setLoading(false))
   }, [params.id])
@@ -357,6 +377,49 @@ export default function ServiceDetailPage() {
             serviceOfferingId={service.id}
             productTitle={title}
           />
+        )}
+
+        {relatedServices.length > 0 && (
+          <div className={styles.relatedSection}>
+            <h2 className={styles.relatedTitle}>Similar Services</h2>
+            <div className={styles.relatedGrid}>
+              {relatedServices.map(rs => (
+                <Link key={rs.id} href={`/services/${rs.id}`} className={styles.relatedCard}>
+                  {rs.imageUrl ? (
+                    <div className={styles.relatedCardImage}>
+                      <img src={rs.imageUrl} alt={rs.title} />
+                    </div>
+                  ) : (
+                    <div className={styles.relatedCardImagePlaceholder}>
+                      {SERVICE_CATEGORY_ICONS[rs.category as ServiceCategory] || '📋'}
+                    </div>
+                  )}
+                  <div className={styles.relatedCardBody}>
+                    <span className={styles.relatedCardType}>{SERVICE_CATEGORY_LABELS[rs.category as ServiceCategory] || rs.category}</span>
+                    <span className={styles.relatedCardTitle}>{rs.title}</span>
+                    {rs.price != null && <span className={styles.relatedCardPrice}>${rs.price}</span>}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+        {relatedLoading && (
+          <div className={styles.relatedSection}>
+            <h2 className={styles.relatedTitle}>Similar Services</h2>
+            <div className={styles.relatedGrid}>
+              {[1,2,3].map(i => (
+                <div key={i} className={styles.relatedCard}>
+                  <Skeleton height="120px" borderRadius="8px 8px 0 0" />
+                  <div className={styles.relatedCardBody}>
+                    <Skeleton width="40%" height="0.75rem" />
+                    <Skeleton width="80%" height="0.9rem" />
+                    <Skeleton width="30%" height="1rem" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </div>
     </ErrorBoundary>

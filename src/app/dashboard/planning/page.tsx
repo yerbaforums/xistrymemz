@@ -862,8 +862,8 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
                           {linkingStopId === stop.id && linkType && (
                             <div className={styles.linkSearchPanel}>
                               <div className={`${styles.flex} ${styles.gap4} ${styles.mb8}`}>
-                                <input className={styles.formInput} value={linkSearch} onChange={e => handleLinkSearch(e.target.value, linkType)}
-                                  placeholder={`Search ${linkType}s...`} className={styles.flex1} />
+                                <input className={`${styles.formInput} ${styles.flex1}`} value={linkSearch} onChange={e => handleLinkSearch(e.target.value, linkType)}
+                                  placeholder={`Search ${linkType}s...`} />
                                 <button className={`${styles.btn} ${styles.btnSmall}`} onClick={() => { setLinkingStopId(null); setLinkType(null) }}>✕</button>
                               </div>
                               {linkSearching && <p className={`${styles.fs08} ${styles.textMuted}`}>Searching...</p>}

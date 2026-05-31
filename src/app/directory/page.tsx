@@ -12,6 +12,7 @@ interface DirItem {
   id: string; title: string; image: string | null
   url: string; meta?: string; type: string; category?: string
   extra?: string; location?: string; owner?: string
+  createdAt?: string
 }
 
 const TYPE_TABS = [
@@ -75,6 +76,7 @@ export default function DirectoryPage() {
   const sortedItems = useMemo(() => {
     const sorted = [...items]
     if (sortBy === 'title') sorted.sort((a, b) => a.title.localeCompare(b.title))
+    if (sortBy === 'newest') sorted.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
     return sorted
   }, [items, sortBy])
 

@@ -32,8 +32,11 @@ export default function SearchResultsClient() {
   const query = searchParams.get('q') || ''
   const [results, setResults] = useState<SearchResults | null>(null)
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [filter, setFilter] = useState('all')
   const [searchInput, setSearchInput] = useState(query)
+  const [offset, setOffset] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -42,20 +45,54 @@ export default function SearchResultsClient() {
     }
   }
 
+  const mergeResults = (current: SearchResults | null, incoming: SearchResults): SearchResults => {
+    if (!current) return incoming
+    const merged: SearchResults = {} as SearchResults
+    for (const key of Object.keys(incoming) as (keyof SearchResults)[]) {
+      const existing = current[key] || []
+      const incomingArr = incoming[key] || []
+      const existingIds = new Set(existing.map((i: any) => i.id))
+      merged[key] = [...existing, ...incomingArr.filter((i: any) => !existingIds.has(i.id))] as any
+    }
+    return merged
+  }
+
+  const countResults = (r: SearchResults): number => {
+    return Object.values(r).flat().length
+  }
+
   useEffect(() => {
     if (query.length < 2) {
       setResults(null)
       return
     }
     setLoading(true)
-    fetch(`/api/search?q=${encodeURIComponent(query)}&limit=50`)
+    setOffset(0)
+    setHasMore(true)
+    fetch(`/api/search?q=${encodeURIComponent(query)}&limit=50&offset=0`)
       .then(res => res.json())
       .then(data => {
         setResults(data.results)
+        setHasMore(countResults(data.results) >= 50)
         setLoading(false)
       })
       .catch(() => setLoading(false))
   }, [query])
+
+  const loadMore = () => {
+    if (loadingMore) return
+    const newOffset = offset + 50
+    setOffset(newOffset)
+    setLoadingMore(true)
+    fetch(`/api/search?q=${encodeURIComponent(query)}&limit=50&offset=${newOffset}`)
+      .then(res => res.json())
+      .then(data => {
+        setResults(prev => mergeResults(prev, data.results))
+        setHasMore(countResults(data.results) >= 50)
+        setLoadingMore(false)
+      })
+      .catch(() => setLoadingMore(false))
+  }
 
   const filteredResults = () => {
     if (!results) return []
@@ -182,6 +219,18 @@ export default function SearchResultsClient() {
               </div>
             )
           })}
+        </div>
+      )}
+
+      {!loading && hasMore && filteredItems.length > 0 && (
+        <div className={styles.loadMoreWrap}>
+          <button
+            className={styles.loadMoreBtn}
+            onClick={loadMore}
+            disabled={loadingMore}
+          >
+            {loadingMore ? <span className={styles.spinner} /> : 'Load More'}
+          </button>
         </div>
       )}
     </div>

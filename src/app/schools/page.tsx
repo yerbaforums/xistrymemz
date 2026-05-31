@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
+import { EmptyState } from '@/components/EmptyState'
 
 interface School {
   id: string
@@ -167,12 +168,7 @@ export default function SchoolsPage() {
         <div className={styles.loading}>Loading...</div>
       ) : view === 'schools' ? (
         schools.length === 0 ? (
-          <div className={styles.empty}>
-            <p>No schools found. Be the first to create one!</p>
-            <Link href="/school/setup" className={styles.createBtn}>
-              Create School
-            </Link>
-          </div>
+          <EmptyState icon="🏫" title="No schools found" description="Be the first to create one!" />
         ) : (
           <div className={styles.schoolsGrid}>
             {schools.map(school => (
@@ -195,12 +191,7 @@ export default function SchoolsPage() {
         )
       ) : (
         contents.length === 0 ? (
-          <div className={styles.empty}>
-            <p>No content found. Be the first to create content!</p>
-            <Link href="/school/setup" className={styles.createBtn}>
-              Create Content
-            </Link>
-          </div>
+          <EmptyState icon="📚" title="No content found" description="Be the first to create content!" />
         ) : (
           <div className={styles.contentGrid}>
             {contents.map(item => (

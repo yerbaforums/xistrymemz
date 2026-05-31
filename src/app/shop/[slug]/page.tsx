@@ -305,6 +305,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
 
   return (
     <div className={styles.page}>
+      <Link href="/shops" className={styles.backLink}>← Back to Shops</Link>
       <nav className="breadcrumbs">
         <Link href="/" className="breadcrumb-link">Home</Link>
         <span className="breadcrumb-sep"> / </span>
