@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback } from 'react'
+import { PRODUCT_CONDITIONS } from '@/lib/product-categories'
 import styles from './ProductFilters.module.css'
 
 interface ProductFiltersProps {
@@ -40,7 +41,7 @@ export default function ProductFilters({
   onZipCodeChange, onRadiusChange, onGeocode, onClear,
   onUsePassportLocation,
 }: ProductFiltersProps) {
-  const conditions = ['NEW', 'LIKE_NEW', 'GOOD', 'FAIR']
+  const conditions = [...PRODUCT_CONDITIONS]
 
   return (
     <aside className={styles.sidebar}>

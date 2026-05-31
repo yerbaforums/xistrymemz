@@ -7,43 +7,10 @@ import Link from 'next/link'
 import Image from 'next/image'
 import ImageUploader from '@/components/ImageUploader'
 import { getClassGuides, getAllSetupStepIds, CLASS_SETUP_GUIDES } from '@/lib/classOnboarding'
+import { USER_CLASSES, CLASS_ICONS } from '@/lib/user-classes'
 import styles from './page.module.css'
 
 type OnboardingStep = 'welcome' | 'profile' | 'class-setup' | 'tour' | 'community' | 'complete'
-
-const USER_CLASSES = [
-  'Healer',
-  'Revealer',
-  'Seer',
-  'Teacher',
-  'Guide',
-  'Warrior',
-  'Guardian',
-  'Sage',
-  'Mystic',
-  'Architect',
-  'Artist',
-  'Builder',
-  'Explorer',
-  'Mentor'
-]
-
-const CLASS_ICONS: Record<string, string> = {
-  Healer: '💚',
-  Revealer: '👁️',
-  Seer: '🔮',
-  Teacher: '📚',
-  Guide: '🧭',
-  Warrior: '⚔️',
-  Guardian: '🛡️',
-  Sage: '🦉',
-  Mystic: '✨',
-  Architect: '🏗️',
-  Artist: '🎨',
-  Builder: '🔨',
-  Explorer: '🌍',
-  Mentor: '🌟'
-}
 
 const TOUR_OUTLETS = [
   { id: 'marketplace', icon: '🛒', name: 'Marketplace', description: 'Buy, sell, or barter products with the community. List items, accept donations, and make offers.', url: '/dashboard/marketplace' },

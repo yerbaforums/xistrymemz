@@ -11,24 +11,7 @@ import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/don
 import type { DonationAddr } from '@/types/product'
 import { getEventTemplateById } from '@/lib/event-templates'
 import HashtagInput from '@/components/HashtagInput'
-
-const CATEGORIES = [
-  { value: 'GENERAL', label: 'General' },
-  { value: 'WEDDING', label: 'Wedding' },
-  { value: 'CORPORATE', label: 'Corporate' },
-  { value: 'BIRTHDAY', label: 'Birthday' },
-  { value: 'MEETUP', label: 'Meetup' },
-  { value: 'WORKSHOP', label: 'Workshop' },
-  { value: 'CONCERT', label: 'Concert' },
-  { value: 'SPORTS', label: 'Sports' },
-  { value: 'SHOP', label: 'Shop Event' },
-  { value: 'OUTDOOR', label: 'Outdoor' },
-  { value: 'RETREAT', label: 'Retreat' },
-  { value: 'CEREMONY', label: 'Ceremony' },
-  { value: 'WELLNESS', label: 'Wellness' },
-  { value: 'COMMUNITY', label: 'Community' },
-  { value: 'OTHER', label: 'Other' }
-]
+import { EVENT_CATEGORIES, EVENT_CATEGORY_MAP } from '@/lib/event-categories'
 
 export function EventForm() {
   const router = useRouter()
@@ -194,7 +177,7 @@ export function EventForm() {
         <div className={styles.field}>
           <label htmlFor="eventCategory">Category</label>
           <select id="eventCategory" name="eventCategory" value={formData.eventCategory} onChange={handleChange}>
-            {CATEGORIES.map(cat => (
+            {EVENT_CATEGORIES.map(cat => (
               <option key={cat.value} value={cat.value}>{cat.label}</option>
             ))}
           </select>

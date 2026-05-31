@@ -8,6 +8,7 @@ import { getUserProfileUrl } from '@/lib/utils'
 import { getCryptoIcon, getCryptoColor } from '@/lib/crypto-icons'
 import { useToast } from '@/context/ToastContext'
 import styles from './requests.module.css'
+import { REQUEST_CATEGORIES, REQUEST_PRIORITIES } from '@/lib/request-categories'
 
 interface DonationAddr {
   id: string
@@ -77,11 +78,6 @@ const PRIORITY_COLORS: Record<string, string> = {
   HIGH: '#f97316',
   URGENT: '#ef4444'
 }
-
-const CATEGORIES = [
-  'ALL', 'FUNDING', 'GENERAL', 'HELP', 'COLLABORATION', 'SUPPORT', 'RESOURCES',
-  'FEEDBACK', 'IDEA', 'PRODUCT', 'SERVICE'
-]
 
 type SortOption = 'newest' | 'oldest' | 'mostComments' | 'mostSupported' | 'mostOffers'
 
@@ -345,8 +341,8 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
               onChange={e => setNewRequest({ ...newRequest, category: e.target.value })}
               className={styles.select}
             >
-              {CATEGORIES.filter(c => c !== 'ALL').map(cat => (
-                <option key={cat} value={cat}>{cat.charAt(0) + cat.slice(1).toLowerCase()}</option>
+              {REQUEST_CATEGORIES.map(cat => (
+                <option key={cat.value} value={cat.value}>{cat.label}</option>
               ))}
             </select>
             <select
@@ -454,8 +450,8 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
         <div className={styles.filterDropdowns}>
           <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className={styles.filterSelect}>
             <option value="ALL">All Categories</option>
-            {CATEGORIES.filter(c => c !== 'ALL').map(cat => (
-              <option key={cat} value={cat}>{cat.charAt(0) + cat.slice(1).toLowerCase()}</option>
+            {REQUEST_CATEGORIES.map(cat => (
+              <option key={cat.value} value={cat.value}>{cat.label}</option>
             ))}
           </select>
           <select value={priorityFilter} onChange={e => setPriorityFilter(e.target.value)} className={styles.filterSelect}>

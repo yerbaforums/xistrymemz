@@ -12,6 +12,7 @@ import { useToast } from '@/context/ToastContext'
 import { calculateDistance, geocodeLocation } from '@/lib/geocoding'
 import { usePassportLocation } from '@/hooks/usePassportLocation'
 import HashtagInput from '@/components/HashtagInput'
+import { REQUEST_CATEGORIES, REQUEST_PRIORITIES } from '@/lib/request-categories'
 
 interface DonationAddr {
   id: string
@@ -78,11 +79,6 @@ const PRIORITY_COLORS: Record<string, string> = {
   HIGH: '#f97316',
   URGENT: '#ef4444'
 }
-
-const CATEGORIES = [
-  'ALL', 'FUNDING', 'GENERAL', 'HELP', 'COLLABORATION', 'SUPPORT', 'RESOURCES',
-  'FEEDBACK', 'IDEA', 'PRODUCT', 'SERVICE'
-]
 
 export default function RequestsClient({ initialRequests, userId, userRole, isAuthenticated }: RequestsClientProps) {
   const { success, error: toastError, warning } = useToast()
@@ -381,7 +377,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
             <label className={styles.filterLabel}>Category</label>
             <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className={styles.filterSelect}>
               <option value="ALL">All Categories</option>
-              {CATEGORIES.filter(c => c !== 'ALL').map(cat => (<option key={cat} value={cat}>{cat}</option>))}
+              {REQUEST_CATEGORIES.map(cat => (<option key={cat.value} value={cat.value}>{cat.label}</option>))}
             </select>
           </div>
 
@@ -449,7 +445,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
               />
               <div className={styles.formRow}>
                 <select value={newRequest.category} onChange={e => setNewRequest({ ...newRequest, category: e.target.value })} className={styles.select}>
-                  {CATEGORIES.filter(c => c !== 'ALL').map(cat => (<option key={cat} value={cat}>{cat.charAt(0) + cat.slice(1).toLowerCase()}</option>))}
+                  {REQUEST_CATEGORIES.map(cat => (<option key={cat.value} value={cat.value}>{cat.label}</option>))}
                 </select>
                 <select value={newRequest.priority} onChange={e => setNewRequest({ ...newRequest, priority: e.target.value })} className={styles.select}>
                   <option value="LOW">Low</option><option value="MEDIUM">Medium</option><option value="HIGH">High</option><option value="URGENT">Urgent</option>
@@ -636,7 +632,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
             />
             <div className={styles.formRow}>
               <select value={editForm.category} onChange={e => setEditForm({ ...editForm, category: e.target.value })} className={styles.select}>
-                {CATEGORIES.filter(c => c !== 'ALL').map(cat => (<option key={cat} value={cat}>{cat}</option>))}
+                {REQUEST_CATEGORIES.map(cat => (<option key={cat.value} value={cat.value}>{cat.label}</option>))}
               </select>
               <select value={editForm.priority} onChange={e => setEditForm({ ...editForm, priority: e.target.value })} className={styles.select}>
                 {['LOW','MEDIUM','HIGH','URGENT'].map(p => (<option key={p} value={p}>{p}</option>))}

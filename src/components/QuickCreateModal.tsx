@@ -6,6 +6,7 @@ import Modal from '@/components/ui/Modal'
 import ImageUploader from '@/components/ImageUploader'
 import { useToast } from '@/context/ToastContext'
 import { CONTENT_TEMPLATES, CONTENT_TYPE_MAP } from '@/lib/content-templates'
+import { PRODUCT_CATEGORIES, PRODUCT_CONDITIONS, PRODUCT_TYPES } from '@/lib/product-categories'
 import styles from './QuickCreateModal.module.css'
 
 interface QuickCreateContextType {
@@ -279,7 +280,7 @@ function ProductForm({ onDone }: { onDone: () => void }) {
           category,
           images: images.length > 0 ? JSON.stringify(images) : null,
           published: false,
-          condition: 'NEW',
+          condition: PRODUCT_CONDITIONS[0],
           paymentMethods: 'Venmo,PayPal,Cash',
           paymentType: 'BOTH',
           acceptsRequests: false,
@@ -315,9 +316,7 @@ function ProductForm({ onDone }: { onDone: () => void }) {
         <div className={styles.formGroup}>
           <label className={styles.label}>Category</label>
           <select value={category} onChange={e => setCategory(e.target.value)} className={styles.select}>
-            {['ART', 'ELECTRONICS', 'CLOTHING', 'HOME', 'SPORTS', 'OTHER'].map(c => (
-              <option key={c} value={c}>{c.charAt(0) + c.slice(1).toLowerCase()}</option>
-            ))}
+            {PRODUCT_CATEGORIES.map(c => (<option key={c.value} value={c.value}>{c.label}</option>))}
           </select>
         </div>
       </div>

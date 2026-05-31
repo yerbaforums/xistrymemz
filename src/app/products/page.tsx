@@ -11,6 +11,7 @@ import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
 import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
+import { PRODUCT_CONDITIONS, PRODUCT_TYPES } from '@/lib/product-categories'
 import type { DonationAddr } from '@/types/product'
 import { usePassportLocation } from '@/hooks/usePassportLocation'
 import Breadcrumbs from '@/components/Breadcrumbs'
@@ -603,18 +604,18 @@ export default function ProductsPage() {
                   <div className="form-group" style={{ flex: 1 }}>
                     <label>Type</label>
                     <select value={myForm.type} onChange={e => setMyForm({...myForm, type: e.target.value})}>
-                      <option value="PRODUCT">Product</option>
-                      <option value="RENTAL">Rental</option>
+                      {PRODUCT_TYPES.map(t => (
+                        <option key={t} value={t}>{t.charAt(0) + t.slice(1).toLowerCase()}</option>
+                      ))}
                     </select>
                   </div>
                   <div className="form-group" style={{ flex: 1 }}>
                     <label>Condition</label>
                     <select value={myForm.condition} onChange={e => setMyForm({...myForm, condition: e.target.value})}>
                       <option value="">Select...</option>
-                      <option value="NEW">New</option>
-                      <option value="LIKE_NEW">Like New</option>
-                      <option value="GOOD">Good</option>
-                      <option value="FAIR">Fair</option>
+                      {PRODUCT_CONDITIONS.map(c => (
+                        <option key={c} value={c}>{c.split('_').map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(' ')}</option>
+                      ))}
                     </select>
                   </div>
                 </div>

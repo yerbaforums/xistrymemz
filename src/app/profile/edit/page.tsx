@@ -11,6 +11,7 @@ import { useToast } from '@/context/ToastContext'
 import ImageUploader from '@/components/ImageUploader'
 import AvailabilityEditor from '@/components/AvailabilityEditor'
 import Skeleton from '@/components/Skeleton'
+import { USER_CLASSES, CLASS_ICONS } from '@/lib/user-classes'
 import styles from '../[username]/profile.module.css'
 
 interface UserLink {
@@ -406,8 +407,7 @@ export default function ProfileEditPage() {
             <div>
               <label className={styles.label}>User Classes (select multiple)</label>
               <div className={styles.classGridEdit}>
-                {['Healer','Revealer','Seer','Teacher','Guide','Warrior','Guardian','Sage','Mystic','Architect','Artist','Builder','Explorer','Mentor'].map(cls => {
-                  const classIcons: Record<string, string> = { Healer:'💚', Revealer:'👁️', Seer:'🔮', Teacher:'📚', Guide:'🧭', Warrior:'⚔️', Guardian:'🛡️', Sage:'🦉', Mystic:'✨', Architect:'🏗️', Artist:'🎨', Builder:'🔨', Explorer:'🌍', Mentor:'🌟' }
+                {USER_CLASSES.map(cls => {
                   const checked = userClass.split(',').map(c => c.trim()).includes(cls)
                   return (
                     <label key={cls} className={`${styles.classLabel} ${checked ? styles.classLabelActive : ''}`}>
@@ -419,7 +419,7 @@ export default function ProfileEditPage() {
                           setUserClass([...classes, cls].join(', '))
                         }
                       }} className={styles.autoWidth} />
-                      <span>{classIcons[cls] || ''} {cls}</span>
+                      <span>{CLASS_ICONS[cls] || ''} {cls}</span>
                     </label>
                   )
                 })}

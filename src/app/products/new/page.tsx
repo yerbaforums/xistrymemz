@@ -12,6 +12,7 @@ import ImageUploader from '@/components/ImageUploader'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
 import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
+import { PRODUCT_CONDITIONS, PRODUCT_TYPES } from '@/lib/product-categories'
 import type { DonationAddr } from '@/types/product'
 import styles from './page.module.css'
 
@@ -22,7 +23,7 @@ const steps = [
   { key: 'review', label: 'Review & List' },
 ]
 
-const conditions = ['', 'NEW', 'LIKE_NEW', 'GOOD', 'FAIR']
+const conditions = ['', ...PRODUCT_CONDITIONS]
 
 export default function NewProductPage() {
   const router = useRouter()
@@ -293,8 +294,9 @@ export default function NewProductPage() {
               <div className="form-group">
                 <label>Type</label>
                 <select value={form.type} onChange={e => update('type', e.target.value)}>
-                  <option value="PRODUCT">Product</option>
-                  <option value="RENTAL">Rental</option>
+                  {PRODUCT_TYPES.map(t => (
+                    <option key={t} value={t}>{t.charAt(0) + t.slice(1).toLowerCase()}</option>
+                  ))}
                 </select>
               </div>
               <div className="form-group">

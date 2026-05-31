@@ -11,6 +11,7 @@ import { getUserProfileUrl } from '@/lib/utils'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { DonationActions } from '@/components/DonationActions'
 import { CRYPTO_LOGOS } from '@/lib/constants'
+import { USER_CLASSES, CLASS_ICONS } from '@/lib/user-classes'
 import RoleBadge from '@/components/RoleBadge'
 import ActiveStatus from '@/components/ActiveStatus'
 import LookingForCollaboratorsBadge from '@/components/LookingForCollaboratorsBadge'
@@ -210,40 +211,6 @@ interface UserRequestEntry {
   status: string
   category: string | null
   createdAt: string
-}
-
-  const USER_CLASSES = [
-  'Healer',
-  'Revealer',
-  'Seer',
-  'Teacher',
-  'Guide',
-  'Warrior',
-  'Guardian',
-  'Sage',
-  'Mystic',
-  'Architect',
-  'Artist',
-  'Builder',
-  'Explorer',
-  'Mentor'
-]
-
-const CLASS_ICONS: Record<string, string> = {
-  Healer: '💚',
-  Revealer: '👁️',
-  Seer: '🔮',
-  Teacher: '📚',
-  Guide: '🧭',
-  Warrior: '⚔️',
-  Guardian: '🛡️',
-  Sage: '🦉',
-  Mystic: '✨',
-  Architect: '🏗️',
-  Artist: '🎨',
-  Builder: '🔨',
-  Explorer: '🌍',
-  Mentor: '🌟'
 }
 
 function DonationCard({ donation }: { donation: DonationAddr }) {

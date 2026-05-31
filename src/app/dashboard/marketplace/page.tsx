@@ -12,6 +12,7 @@ import type { DonationAddr } from '@/types/product'
 import ImageUploader from '@/components/ImageUploader'
 import { useTranslations } from 'next-intl'
 import { SHOP_CATEGORIES } from '@/lib/shop-categories'
+import { PRODUCT_CONDITIONS, PRODUCT_TYPES } from '@/lib/product-categories'
 import styles from './marketplace.module.css'
 
 interface Product {
@@ -534,8 +535,9 @@ function MarketplaceContent() {
                 <div className="form-group">
                   <label>Type</label>
                   <select value={productForm.type} onChange={e => setProductForm({...productForm, type: e.target.value})}>
-                    <option value="PRODUCT">Product</option>
-                    <option value="RENTAL">Rental</option>
+                    {PRODUCT_TYPES.map(t => (
+                      <option key={t} value={t}>{t.charAt(0) + t.slice(1).toLowerCase()}</option>
+                    ))}
                   </select>
                 </div>
               <div className="form-group">
@@ -561,10 +563,9 @@ function MarketplaceContent() {
                   <label>Condition</label>
                   <select value={productForm.condition} onChange={e => setProductForm({...productForm, condition: e.target.value})}>
                     <option value="">Select...</option>
-                    <option value="NEW">New</option>
-                    <option value="LIKE_NEW">Like New</option>
-                    <option value="GOOD">Good</option>
-                    <option value="FAIR">Fair</option>
+                    {PRODUCT_CONDITIONS.map(c => (
+                      <option key={c} value={c}>{c.split('_').map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(' ')}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="form-group">

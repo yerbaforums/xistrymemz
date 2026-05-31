@@ -9,6 +9,7 @@ import { usePassportLocation } from '@/hooks/usePassportLocation'
 import type { Event } from '@/types/event'
 import Skeleton, { SkeletonCard, SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
+import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 
 import dynamic from 'next/dynamic'
@@ -477,17 +478,17 @@ export default function EventsPage() {
                       <Popup>
                         <div className={styles.mapPopupContent}>
                           <h4>{event.title}</h4>
-                          {event.eventCategory && (<span className={`badge badge-${event.eventCategory.toLowerCase()}`}>{event.eventCategory}</span>)}
+                          {event.eventCategory && <Badge variant="primary">{event.eventCategory}</Badge>}
                           {event.eventDate && (<p className={styles.popupDetail}>📅 {new Date(event.eventDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</p>)}
                           {event.location && <p className={styles.popupDetail}>📍 {event.location}</p>}
                           {event.locationDetails && <p className={styles.popupDetailSmall}>{event.locationDetails}</p>}
                           <p className={styles.popupDetail}>👥 {(event.joiners || []).length}{event.maxJoiners > 0 ? `/${event.maxJoiners}` : ''} joined</p>
                           <div className={styles.popupActions}>
                             {event.maxJoiners === 0 || (event.joiners || []).length < event.maxJoiners ? (
-                              <button onClick={(e) => { e.stopPropagation(); if (event.joined) { handleLeave(event.id) } else { handleJoin(event.id) } }} disabled={joining === event.id} variant={event.joined ? "secondary" : "primary"}>
+                              <Button onClick={(e) => { e.stopPropagation(); if (event.joined) { handleLeave(event.id) } else { handleJoin(event.id) } }} disabled={joining === event.id} variant={event.joined ? "secondary" : "primary"}>
                                 {joining === event.id ? '...' : event.joined ? 'Leave' : 'Join Event'}
-                              </button>
-                            ) : (<span className="badge badge-full">Event Full</span>)}
+                              </Button>
+                            ) : (<Badge variant="warning">Event Full</Badge>)}
                             <Link href={`/events/${event.id}`} className={styles.popupLink}>View Details →</Link>
                           </div>
                         </div>
