@@ -14,8 +14,6 @@ const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: f
 
 const MapClickHandlerComponent = dynamic(() => import('@/components/MapClickHandler').then(m => m.default), { ssr: false })
 
-import styles from './passport.module.css'
-
 interface UserLocation {
   id: string
   name: string
