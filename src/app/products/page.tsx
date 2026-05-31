@@ -21,6 +21,7 @@ import type { Product } from '@/types/product'
 import ImageUploader from '@/components/ImageUploader'
 import Skeleton, { SkeletonCard, SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
+import Button from '@/components/ui/Button'
 
 const DEBOUNCE_MS = 300
 
@@ -416,18 +417,18 @@ export default function ProductsPage() {
 
       {session?.user && (
         <div className={styles.tabsBar}>
-          <button
+          <Button
             className={`${styles.tabBtn} ${tab === 'browse' ? styles.tabActive : ''}`}
             onClick={() => setTab('browse')}
           >
             Browse
-          </button>
-          <button
+          </Button>
+          <Button
             className={`${styles.tabBtn} ${tab === 'mylistings' ? styles.tabActive : ''}`}
             onClick={() => setTab('mylistings')}
           >
             My Listings {myProducts.length > 0 && <span className={styles.tabCount}>{myProducts.length}</span>}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -444,11 +445,11 @@ export default function ProductsPage() {
             className={styles.searchInput}
           />
           {searchQuery && (
-            <button className={styles.searchClear} onClick={() => setSearchQuery('')}>
+            <Button className={styles.searchClear} onClick={() => setSearchQuery('')}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
               </svg>
-            </button>
+            </Button>
           )}
         </div>
       )}
@@ -490,7 +491,7 @@ export default function ProductsPage() {
                   <option value="price-high">Price: High to Low</option>
                 </select>
                 <div className={styles.viewToggle}>
-                  <button
+                  <Button
                     className={`${styles.viewToggleBtn} ${viewMode === 'grid' ? styles.active : ''}`}
                     onClick={() => setViewMode('grid')}
                     title="Grid view"
@@ -501,8 +502,8 @@ export default function ProductsPage() {
                       <rect x="3" y="14" width="7" height="7" rx="1"/>
                       <rect x="14" y="14" width="7" height="7" rx="1"/>
                     </svg>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     className={`${styles.viewToggleBtn} ${viewMode === 'list' ? styles.active : ''}`}
                     onClick={() => setViewMode('list')}
                     title="List view"
@@ -512,8 +513,8 @@ export default function ProductsPage() {
                       <rect x="3" y="10" width="18" height="4" rx="1"/>
                       <rect x="3" y="16" width="18" height="4" rx="1"/>
                     </svg>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     className={`${styles.viewToggleBtn} ${viewMode === 'map' ? styles.active : ''}`}
                     onClick={() => setViewMode('map')}
                     title="Map view"
@@ -521,7 +522,7 @@ export default function ProductsPage() {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
                     </svg>
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -573,7 +574,7 @@ export default function ProductsPage() {
             <div className={styles.myFormSection}>
               <div className={styles.myFormHeader}>
                 <h3>{editProduct ? 'Edit Listing' : 'New Listing'}</h3>
-                <button onClick={() => { setShowMyForm(false); setEditProduct(null) }} className={styles.myFormClose}>✕</button>
+                <Button onClick={() => { setShowMyForm(false); setEditProduct(null) }} className={styles.myFormClose}>✕</Button>
               </div>
               <form onSubmit={handleMySubmit} className={styles.myForm}>
                 <div className={styles.myFormRow}>
@@ -672,10 +673,10 @@ export default function ProductsPage() {
                   </div>
                 </details>
                 <div className={styles.myFormActions}>
-                  <button type="button" onClick={() => { setShowMyForm(false); setEditProduct(null) }} className="btn-ghost">Cancel</button>
-                  <button type="submit" className="btn-primary" disabled={savingMy}>
+                  <Button type="button" onClick={() => { setShowMyForm(false); setEditProduct(null) }} variant="ghost">Cancel</Button>
+                  <Button type="submit" variant="primary" disabled={savingMy}>
                     {savingMy ? 'Saving...' : editProduct ? 'Save Changes' : 'Create Listing'}
-                  </button>
+                  </Button>
                 </div>
               </form>
             </div>
@@ -719,9 +720,9 @@ export default function ProductsPage() {
                   </div>
                   <div className={styles.myListingActions}>
                     <Link href={`/products/${product.id}`} className={styles.myListingActionBtn} title="View">👁️</Link>
-                    <button onClick={() => startMyEdit(product)} className={styles.myListingActionBtn} title="Edit">✏️</button>
-                    <button onClick={() => toggleMyPublish(product)} className={styles.myListingActionBtn} title={product.published ? 'Hide' : 'Publish'}>{product.published ? '👁️‍🗨️' : '✅'}</button>
-                    <button onClick={() => deleteMyListing(product)} className={styles.myListingActionBtn} title="Delete">🗑️</button>
+                    <Button onClick={() => startMyEdit(product)} className={styles.myListingActionBtn} title="Edit">✏️</Button>
+                    <Button onClick={() => toggleMyPublish(product)} className={styles.myListingActionBtn} title={product.published ? 'Hide' : 'Publish'}>{product.published ? '👁️‍🗨️' : '✅'}</Button>
+                    <Button onClick={() => deleteMyListing(product)} className={styles.myListingActionBtn} title="Delete">🗑️</Button>
                   </div>
                 </div>
               ))}
@@ -750,10 +751,10 @@ export default function ProductsPage() {
               <input id="request-goal" type="number" value={requestGoal} onChange={e => setRequestGoal(e.target.value)} placeholder={requestProduct.price ? `$${requestProduct.price}` : "0"} min="1" step="0.01" />
             </div>
             <div className={styles.modalActions}>
-              <button type="button" onClick={() => { setShowRequestModal(false); setRequestProduct(null) }} className="btn-ghost">Cancel</button>
-              <button type="button" className="btn-primary" disabled={!requestTitle.trim() || requestLoading} onClick={handleMakeRequest}>
+              <Button type="button" onClick={() => { setShowRequestModal(false); setRequestProduct(null) }} variant="ghost">Cancel</Button>
+              <Button type="button" variant="primary" disabled={!requestTitle.trim() || requestLoading} onClick={handleMakeRequest}>
                 {requestLoading ? 'Creating...' : 'Start Funding Request'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

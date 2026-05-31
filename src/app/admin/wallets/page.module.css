@@ -717,7 +717,7 @@
 }
 
 .selectedRow {
-  background: rgba(0, 217, 255, 0.1) !important;
+  background: color-mix(in srgb, var(--accent-primary) 10%, transparent) !important;
 }
 
 .checkboxCell {

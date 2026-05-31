@@ -25,6 +25,7 @@ import BookAppointmentModal from '@/components/BookAppointmentModal'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { useToast } from '@/context/ToastContext'
 import dynamic from 'next/dynamic'
+import Button from '@/components/ui/Button'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
@@ -765,14 +766,14 @@ export default function ProfilePage() {
         >
           {!user.coverImage && <div className={styles.coverPlaceholder} />}
           {isOwnProfile && !editMode && (
-            <button
+            <Button
               type="button"
               onClick={() => coverInputRef.current?.click()}
               disabled={coverUploading}
               style={{ position: 'absolute', bottom: 8, right: 8, zIndex: 3, padding: '6px 12px', background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}
             >
               {coverUploading ? '...' : 'Change Cover'}
-            </button>
+            </Button>
           )}
           <input ref={coverInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleCoverUpload} style={{ display: 'none' }} />
         </div>
@@ -918,9 +919,9 @@ export default function ProfilePage() {
                     <CompactDonation key={da.id} donation={da} />
                   ))}
                   {donationAddresses.length > 2 && (
-                    <button className={styles.compactDonationMore} onClick={() => setActiveTab('about')}>
+                    <Button className={styles.compactDonationMore} onClick={() => setActiveTab('about')}>
                       +{donationAddresses.length - 2} more
-                    </button>
+                    </Button>
                   )}
                 </div>
               )}
@@ -982,17 +983,17 @@ export default function ProfilePage() {
              {isOwnProfile ? (
               editMode ? (
                 <>
-                  <button onClick={handleUpdateProfile} className={styles.saveBtn}>Save</button>
-                  <button onClick={() => setEditMode(false)} className={styles.cancelBtn}>Cancel</button>
+                  <Button onClick={handleUpdateProfile} className={styles.saveBtn}>Save</Button>
+                  <Button onClick={() => setEditMode(false)} className={styles.cancelBtn}>Cancel</Button>
                 </>
               ) : (
-                <button onClick={() => { setEditMode(true); setActiveTab('about'); }} className={styles.editBtn}>Edit Profile</button>
+                <Button onClick={() => { setEditMode(true); setActiveTab('about'); }} className={styles.editBtn}>Edit Profile</Button>
               )
             )             : status === 'authenticated' ? (
               <>
                 <Link href={`/messages?user=${user.id}`} className={styles.messageBtn}>Message</Link>
-                <button onClick={() => setShowAppointmentModal(true)} className={styles.messageBtn}>📅 Book</button>
-                <button
+                <Button onClick={() => setShowAppointmentModal(true)} className={styles.messageBtn}>📅 Book</Button>
+                <Button
                   onClick={async () => {
                     const res = await fetch('/api/video/rooms', {
                       method: 'POST',
@@ -1011,29 +1012,29 @@ export default function ProfilePage() {
                   }}
                 >
                   📹 Video Chat
-                </button>
+                </Button>
 
                 {user.isConnected ? (
-                  <button 
+                  <Button 
                   onClick={() => setConfirmDisconnect(true)}
                   className={styles.disconnectBtn}
                   >
                     Disconnect
-                  </button>
+                  </Button>
                 ) : user.hasPendingRequest ? (
-                  <button 
+                  <Button 
                     disabled
                     className={`${styles.connectBtn} ${styles.pending}`}
                   >
                     Pending
-                  </button>
+                  </Button>
                 ) : (
-                  <button 
+                  <Button 
                     onClick={() => setShowConnectModal(true)}
                     className={styles.connectBtn}
                   >
                     Connect
-                  </button>
+                  </Button>
                 )}
               </>
             ) : (
@@ -1044,76 +1045,76 @@ export default function ProfilePage() {
       </div>
 
       <div className={styles.tabs}>
-        <button 
+        <Button 
           className={`${styles.tab} ${activeTab === 'posts' ? styles.active : ''}`}
           onClick={() => setActiveTab('posts')}
         >
           Posts ({posts.length})
-        </button>
-        <button 
+        </Button>
+        <Button 
           className={`${styles.tab} ${activeTab === 'plans' ? styles.active : ''}`}
           onClick={() => setActiveTab('plans')}
         >
           Projects ({plans.length})
-        </button>
-        <button 
+        </Button>
+        <Button 
           className={`${styles.tab} ${activeTab === 'connections' ? styles.active : ''}`}
           onClick={() => setActiveTab('connections')}
         >
           Connections ({connections.length})
-        </button>
-        <button 
+        </Button>
+        <Button 
           className={`${styles.tab} ${activeTab === 'groups' ? styles.active : ''}`}
           onClick={() => setActiveTab('groups')}
         >
           Groups ({groups.length})
-        </button>
-        <button 
+        </Button>
+        <Button 
           className={`${styles.tab} ${activeTab === 'forum' ? styles.active : ''}`}
           onClick={() => setActiveTab('forum')}
         >
           Forum {(user.forumPostCount ?? 0) > 0 ? `(${user.forumPostCount! + (user.forumReplyCount ?? 0)})` : ''}
-        </button>
-        <button 
+        </Button>
+        <Button 
           className={`${styles.tab} ${activeTab === 'events' ? styles.active : ''}`}
           onClick={() => setActiveTab('events')}
         >
           Events {(user.eventCount ?? 0) > 0 ? `(${user.eventCount})` : ''}
-        </button>
-        <button 
+        </Button>
+        <Button 
           className={`${styles.tab} ${activeTab === 'requests' ? styles.active : ''}`}
           onClick={() => setActiveTab('requests')}
         >
           Requests {(user.requestCount ?? 0) > 0 ? `(${user.requestCount})` : ''}
-        </button>
+        </Button>
         {products.length > 0 && (
-          <button 
+          <Button 
             className={`${styles.tab} ${activeTab === 'shop' ? styles.active : ''}`}
             onClick={() => setActiveTab('shop')}
           >
             Shop ({products.length})
-          </button>
+          </Button>
         )}
         {(user.schoolName || user.schoolSlug) && (
-          <button 
+          <Button 
             className={`${styles.tab} ${activeTab === 'school' ? styles.active : ''}`}
             onClick={() => setActiveTab('school')}
           >
             School
-          </button>
+          </Button>
         )}
-        <button 
+        <Button 
           className={`${styles.tab} ${activeTab === 'reviews' ? styles.active : ''}`}
           onClick={() => setActiveTab('reviews')}
         >
           Reviews
-        </button>
-        <button 
+        </Button>
+        <Button 
           className={`${styles.tab} ${activeTab === 'about' ? styles.active : ''}`}
           onClick={() => setActiveTab('about')}
         >
           About
-        </button>
+        </Button>
       </div>
 
       <div className={styles.content}>
@@ -1142,9 +1143,9 @@ export default function ProfilePage() {
                 </div>
                 <div className={styles.formPostActions}>
                   <span className={styles.charCount}>{newPost.length}/2000</span>
-                  <button type="submit" disabled={posting || !newPost.trim()} className={styles.postBtn}>
+                  <Button type="submit" disabled={posting || !newPost.trim()} className={styles.postBtn}>
                     {posting ? 'Posting...' : (isOwnProfile ? 'Post' : 'Post on Wall')}
-                  </button>
+                  </Button>
                 </div>
               </form>
             )}
@@ -1178,17 +1179,17 @@ export default function ProfilePage() {
                           </div>
                           <div className={styles.cardPostActions}>
                             {isOwnProfile && (
-                              <button 
+                              <Button 
                                 onClick={() => handlePin('post', post.id, post.pinned)} 
                                 className={styles.pinBtn}
                                 title={post.pinned ? 'Unpin' : 'Pin to top'}
                               >
                                 {post.pinned ? '📌' : '📍'}
-                              </button>
+                              </Button>
                             )}
-                            <button onClick={() => setConfirmDeletePost(post.id)} className={styles.deletePost}>
+                            <Button onClick={() => setConfirmDeletePost(post.id)} className={styles.deletePost}>
                               ×
-                            </button>
+                            </Button>
                           </div>
                         </div>
 <p className={styles.postContent}><HashtagText text={post.content} mentionLinks /></p>
@@ -1220,9 +1221,9 @@ export default function ProfilePage() {
                   })}
                 </div>
                 {hasMorePosts && (
-                  <button onClick={handleLoadMorePosts} disabled={loadingMorePosts} className={styles.loadMoreBtn}>
+                  <Button onClick={handleLoadMorePosts} disabled={loadingMorePosts} className={styles.loadMoreBtn}>
                     {loadingMorePosts ? 'Loading...' : `Load more posts (${(totalPostCount ?? 0) - posts.length} remaining)`}
-                  </button>
+                  </Button>
                 )}
               </>
             ) : (
@@ -1240,13 +1241,13 @@ export default function ProfilePage() {
                 {plans.map((plan) => (
                   <div key={plan.id} className={`${styles.planCard} ${plan.pinned ? styles.pinnedCard : ''}`}>
                     {isOwnProfile && (
-                      <button 
+                      <Button 
                         onClick={() => handlePin('plan', plan.id, plan.pinned)} 
                         className={styles.cardPinBtn}
                         title={plan.pinned ? 'Unpin' : 'Pin to top'}
                       >
                         {plan.pinned ? '📌' : '📍'}
-                      </button>
+                      </Button>
                     )}
                     <Link href={`/plans/${plan.id}`} className={styles.planCardLink}>
                       <h3>
@@ -1413,13 +1414,13 @@ export default function ProfilePage() {
                 {products.map((product) => (
                   <div key={product.id} className={`${styles.productCard} ${product.pinned ? styles.pinnedCard : ''}`}>
                     {isOwnProfile && (
-                      <button 
+                      <Button 
                         onClick={() => handlePin('product', product.id, product.pinned)} 
                         className={styles.cardPinBtn}
                         title={product.pinned ? 'Unpin' : 'Pin to top'}
                       >
                         {product.pinned ? '📌' : '📍'}
-                      </button>
+                      </Button>
                     )}
                     <Link href={`/products/${product.id}`} className={styles.productCardLink}>
                       {product.imageUrl && (
@@ -1549,10 +1550,10 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div className={styles.formActions}>
-                  <button type="submit" className={styles.saveBtn}>Save Changes</button>
-                  <button type="button" onClick={() => setEditMode(false)} className={styles.cancelBtn}>
+                  <Button type="submit" className={styles.saveBtn}>Save Changes</Button>
+                  <Button type="button" onClick={() => setEditMode(false)} className={styles.cancelBtn}>
                     Cancel
-                  </button>
+                  </Button>
                 </div>
               </form>
              ) : (
@@ -1751,10 +1752,10 @@ export default function ProfilePage() {
               />
             </div>
             <div className={styles.modalActions}>
-              <button onClick={() => setShowConnectModal(false)} className="btn-ghost">Cancel</button>
-              <button onClick={handleConnect} disabled={connecting} className="btn-primary">
+              <Button onClick={() => setShowConnectModal(false)} variant="ghost">Cancel</Button>
+              <Button onClick={handleConnect} disabled={connecting} variant="primary">
                 {connecting ? 'Connecting...' : 'Send Request'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

@@ -20,6 +20,7 @@ import HashtagText from '@/components/HashtagText'
 import LinkPreview from '@/components/LinkPreview'
 import { SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service'
 import dynamic from 'next/dynamic'
+import Button from '@/components/ui/Button'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
@@ -651,8 +652,8 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                   </div>
                 )}
                 <div className={styles.formActions}>
-                  <button type="submit" className="btn-primary" disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
-                  <button type="button" className="btn-ghost" onClick={() => setShowEditModal(false)}>Cancel</button>
+                  <Button type="submit" variant="primary" disabled={saving}>{saving ? 'Saving...' : 'Save'}</Button>
+                  <Button type="button" variant="ghost" onClick={() => setShowEditModal(false)}>Cancel</Button>
                 </div>
               </form>
             ) : (

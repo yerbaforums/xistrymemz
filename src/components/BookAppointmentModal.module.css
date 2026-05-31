@@ -1,0 +1,274 @@
+/* Utility classes */
+.flex { display: flex; }
+.flexCol { display: flex; flex-direction: column; }
+.flexCenter { display: flex; align-items: center; }
+.flexBetween { display: flex; align-items: center; justify-content: space-between; }
+.flexWrap { display: flex; flex-wrap: wrap; }
+.gap4 { gap: 4px; }
+.gap8 { gap: 8px; }
+.gap12 { gap: 12px; }
+.gap16 { gap: 16px; }
+.gap24 { gap: 24px; }
+.grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.mt4 { margin-top: 4px; }
+.mt8 { margin-top: 8px; }
+.mt12 { margin-top: 12px; }
+.mt16 { margin-top: 16px; }
+.mb8 { margin-bottom: 8px; }
+.mb12 { margin-bottom: 12px; }
+.mb16 { margin-bottom: 16px; }
+.mb24 { margin-bottom: 24px; }
+.p4 { padding: 4px; }
+.p8 { padding: 8px; }
+.p12 { padding: 12px; }
+.p16 { padding: 16px; }
+.wFull { width: 100%; }
+.textCenter { text-align: center; }
+.relative { position: relative; }
+.flexShrink0 { flex-shrink: 0; }
+
+/* Component-specific classes */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.5);
+}
+.modal {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 520px;
+  width: 90%;
+  max-height: 85vh;
+  overflow: auto;
+}
+.heading {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+}
+.subtitle {
+  margin: 0 0 16px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+.statusMsg {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-tertiary);
+  font-size: 0.85rem;
+}
+.calendarInner {
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+}
+.dayHeaderGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 4px;
+}
+.dayHeaderCell {
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  padding: 4px 0;
+  font-weight: 600;
+}
+.dayCellsGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.dayCellBtn {
+  padding: 6px 0;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  transition: none;
+}
+.label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+.input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+}
+.textareaField {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  resize: vertical;
+}
+.inputField {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+}
+.meetingOption {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.meetingOptionTitle {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.meetingOptionDesc {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+.selectedInfo {
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--bg-tertiary);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+.cancelBtn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.submitBtn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent-primary);
+  color: #fff;
+}
+.formSection {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px;
+}
+.formSectionHeading {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 8px;
+}
+.noTimesMsg {
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--bg-tertiary);
+  font-size: 0.82rem;
+  color: var(--text-tertiary);
+}
+.platformLink {
+  margin-top: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--bg-tertiary);
+  font-size: 0.78rem;
+  color: var(--accent-primary);
+  word-break: break-all;
+}
+.videoRoomBtn {
+  margin-top: 6px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  background: var(--accent-primary);
+  color: #fff;
+  font-size: 0.78rem;
+}
+.loadingTimes {
+  padding: 12px;
+  text-align: center;
+  color: var(--text-tertiary);
+  font-size: 0.82rem;
+}
+.timeSlotBtn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+.monthNavBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--accent-primary);
+  font-size: 1rem;
+  padding: 2px 8px;
+}
+.monthLabel {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+.radioInput {
+  margin-top: 2px;
+}
+.flexEnd {
+  display: flex;
+  justify-content: flex-end;
+}
+.optionFlex {
+  flex: 1;
+}
+.mb20 {
+  margin-bottom: 20px;
+}
+.wordBreakAll {
+  word-break: break-all;
+}
+.mt6 {
+  margin-top: 6px;
+}
+.requiredStar {
+  color: #ef4444;
+}
+.resizeVertical {
+  resize: vertical;
+}
+.fw600 {
+  font-weight: 600;
+}
+.fs082 {
+  font-size: 0.82rem;
+}
+.gap6 {
+  gap: 6px;
+}
+.m0 {
+  margin: 0;
+}
+.m004 {
+  margin: 0 0 4px;
+}
+

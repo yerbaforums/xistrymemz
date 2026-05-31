@@ -11,13 +11,13 @@
 .backLink {
   display: inline-block;
   margin-bottom: 1rem;
-  color: #888888;
+  color: var(--text-tertiary);
   text-decoration: none;
   font-size: 0.875rem;
 }
 
 .backLink:hover {
-  color: #00d9ff;
+  color: var(--accent-primary);
 }
 
 .header h1 {
@@ -26,14 +26,14 @@
 }
 
 .subtitle {
-  color: #888888;
+  color: var(--text-tertiary);
   margin: 0;
 }
 
 .loading {
   text-align: center;
   padding: 3rem;
-  color: #888888;
+  color: var(--text-tertiary);
 }
 
 .headerActions {
@@ -41,8 +41,8 @@
 }
 
 .addBtn {
-  background: #00d9ff;
-  color: #0d0d0d;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
   padding: 0.625rem 1.25rem;
   border: none;
   border-radius: 8px;
@@ -72,11 +72,11 @@
 
 .stepContent h2 {
   margin: 0 0 0.5rem 0;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .stepContent > p {
-  color: #888888;
+  color: var(--text-tertiary);
   margin-bottom: 1.5rem;
 }
 
@@ -94,8 +94,8 @@
 }
 
 .templateCard {
-  background: #161616;
-  border: 2px solid #2a2a2a;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
   border-radius: 12px;
   padding: 1.5rem;
   cursor: pointer;
@@ -106,13 +106,13 @@
 }
 
 .templateCard:hover {
-  border-color: #00d9ff;
-  box-shadow: 0 4px 24px rgba(0, 217, 255, 0.1);
+  border-color: var(--accent-primary);
+  box-shadow: 0 4px 24px color-mix(in srgb, var(--accent-primary) 10%, transparent);
 }
 
 .selected {
-  border-color: #00d9ff;
-  box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--accent-primary) 30%, transparent);
   background: #1a1a2e;
 }
 
@@ -123,22 +123,22 @@
 
 .templateCard h3 {
   margin: 0 0 0.25rem 0;
-  color: #ffffff;
+  color: var(--text-primary);
   font-size: 1rem;
 }
 
 .category {
   display: inline-block;
   padding: 0.125rem 0.5rem;
-  background: #1f1f1f;
+  background: var(--bg-tertiary);
   border-radius: 4px;
   font-size: 0.75rem;
-  color: #00d9ff;
+  color: var(--accent-primary);
   margin-bottom: 0.5rem;
 }
 
 .templateCard p {
-  color: #888888;
+  color: var(--text-tertiary);
   font-size: 0.813rem;
   margin: 0.25rem 0;
   line-height: 1.4;
@@ -151,16 +151,16 @@
 }
 
 .serviceCard {
-  background: #161616;
+  background: var(--bg-secondary);
   border-radius: 12px;
   padding: 1.25rem;
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--border-color);
   transition: all 0.2s;
 }
 
 .serviceCard:hover {
-  border-color: #00d9ff;
-  box-shadow: 0 4px 24px rgba(0, 217, 255, 0.1);
+  border-color: var(--accent-primary);
+  box-shadow: 0 4px 24px color-mix(in srgb, var(--accent-primary) 10%, transparent);
 }
 
 .serviceCard.inactive {
@@ -175,8 +175,8 @@
 }
 
 .activeBtn {
-  background: #00ff88;
-  color: #0d0d0d;
+  background: var(--accent-success);
+  color: var(--bg-primary);
   padding: 0.25rem 0.75rem;
   border: none;
   border-radius: 12px;
@@ -186,10 +186,10 @@
 }
 
 .inactiveBtn {
-  background: #1f1f1f;
-  color: #888888;
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
   padding: 0.25rem 0.75rem;
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 600;
@@ -199,11 +199,11 @@
 .serviceCard h3 {
   margin: 0 0 0.5rem;
   font-size: 1.1rem;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .serviceDesc {
-  color: #888888;
+  color: var(--text-tertiary);
   font-size: 0.875rem;
   margin: 0 0 1rem;
 }
@@ -213,7 +213,7 @@
   gap: 1rem;
   margin-bottom: 0.75rem;
   padding: 0.75rem;
-  background: #1f1f1f;
+  background: var(--bg-tertiary);
   border-radius: 8px;
 }
 
@@ -230,12 +230,12 @@
 
 .priceValue {
   font-weight: 600;
-  color: #00d9ff;
+  color: var(--accent-primary);
 }
 
 .serviceAreas {
   font-size: 0.8rem;
-  color: #888888;
+  color: var(--text-tertiary);
   margin: 0 0 0.75rem;
 }
 
@@ -247,9 +247,9 @@
 .editBtn {
   flex: 1;
   padding: 0.5rem;
-  background: #1f1f1f;
-  color: #00d9ff;
-  border: 1px solid #00d9ff;
+  background: var(--bg-tertiary);
+  color: var(--accent-primary);
+  border: 1px solid var(--accent-primary);
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.875rem;
@@ -257,16 +257,16 @@
 }
 
 .editBtn:hover {
-  background: #00d9ff;
-  color: #0d0d0d;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
 }
 
 .deleteBtn {
   flex: 1;
   padding: 0.5rem;
   background: transparent;
-  color: #ff3366;
-  border: 1px solid #ff3366;
+  color: var(--accent-secondary);
+  border: 1px solid var(--accent-secondary);
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.875rem;
@@ -274,8 +274,8 @@
 }
 
 .deleteBtn:hover {
-  background: #ff3366;
-  color: #ffffff;
+  background: var(--accent-secondary);
+  color: var(--text-primary);
 }
 
 .formActions {
@@ -290,30 +290,30 @@
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
-  color: #888888;
+  color: var(--text-tertiary);
   font-size: 0.875rem;
 }
 
 .checkboxLabel input[type="checkbox"] {
-  accent-color: #00d9ff;
+  accent-color: var(--accent-primary);
 }
 
 .reviewSection {
-  background: #161616;
-  border: 1px solid #2a2a2a;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 1.5rem;
   margin-top: 1rem;
 }
 
 .reviewSection h3 {
-  color: #ffffff;
+  color: var(--text-primary);
   margin: 0 0 1rem 0;
   font-size: 1rem;
 }
 
 .reviewSection p {
-  color: #888888;
+  color: var(--text-tertiary);
   margin: 0.5rem 0;
   font-size: 0.875rem;
 }

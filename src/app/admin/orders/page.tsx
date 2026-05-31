@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import styles from './page.module.css'
+import Button from '@/components/ui/Button'
 
 interface EscrowTransaction {
   id: string
@@ -387,13 +388,13 @@ export default function AdminOrdersPage() {
               </div>
             </div>
 
-            <button 
+            <Button 
               onClick={() => setSelectedOrder(null)} 
-              className="btn-ghost"
+              variant="ghost"
               style={{ marginTop: '20px' }}
             >
               Close
-            </button>
+            </Button>
           </div>
         </div>
       )}

@@ -13,6 +13,7 @@ import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
 import ImageUploader from '@/components/ImageUploader'
 import HashtagInput from '@/components/HashtagInput'
+import Button from '@/components/ui/Button'
 
 interface Member {
   id: string
@@ -582,15 +583,15 @@ function GroupDetailContent() {
           <div className={styles.actions}>
             {myUserId && (
               group.isMember ? (
-                <button onClick={handleLeave} disabled={joining} className={styles.leaveBtn}>Leave</button>
+                <Button onClick={handleLeave} disabled={joining} className={styles.leaveBtn}>Leave</Button>
               ) : (
-                <button onClick={handleJoin} disabled={joining} className={styles.joinBtn}>{joining ? 'Joining...' : 'Join Group'}</button>
+                <Button onClick={handleJoin} disabled={joining} className={styles.joinBtn}>{joining ? 'Joining...' : 'Join Group'}</Button>
               )
             )}
             {group.isAdmin && (
               <>
-                <button onClick={() => setShowEditModal(true)} className={styles.editBtn}>Edit</button>
-                <button onClick={handleDeleteGroup} className={styles.deleteBtn}>Delete</button>
+                <Button onClick={() => setShowEditModal(true)} className={styles.editBtn}>Edit</Button>
+                <Button onClick={handleDeleteGroup} className={styles.deleteBtn}>Delete</Button>
               </>
             )}
           </div>
@@ -600,21 +601,21 @@ function GroupDetailContent() {
       {group.isMember && (
         <>
           <div className={styles.tabs}>
-            <button className={`${styles.tab} ${activeTab === 'posts' ? styles.active : ''}`} onClick={() => setActiveTab('posts')}>
+            <Button className={`${styles.tab} ${activeTab === 'posts' ? styles.active : ''}`} onClick={() => setActiveTab('posts')}>
               💬 Posts ({group._count.posts})
-            </button>
-            <button className={`${styles.tab} ${activeTab === 'buys' ? styles.active : ''}`} onClick={() => setActiveTab('buys')}>
+            </Button>
+            <Button className={`${styles.tab} ${activeTab === 'buys' ? styles.active : ''}`} onClick={() => setActiveTab('buys')}>
               🛍️ Group Buys
-            </button>
-            <button className={`${styles.tab} ${activeTab === 'requests' ? styles.active : ''}`} onClick={() => setActiveTab('requests')}>
+            </Button>
+            <Button className={`${styles.tab} ${activeTab === 'requests' ? styles.active : ''}`} onClick={() => setActiveTab('requests')}>
               📝 Requests
-            </button>
-            <button className={`${styles.tab} ${activeTab === 'marketplace' ? styles.active : ''}`} onClick={() => setActiveTab('marketplace')}>
+            </Button>
+            <Button className={`${styles.tab} ${activeTab === 'marketplace' ? styles.active : ''}`} onClick={() => setActiveTab('marketplace')}>
               🏪 Marketplace
-            </button>
-            <button className={`${styles.tab} ${activeTab === 'activity' ? styles.active : ''}`} onClick={() => setActiveTab('activity')}>
+            </Button>
+            <Button className={`${styles.tab} ${activeTab === 'activity' ? styles.active : ''}`} onClick={() => setActiveTab('activity')}>
               🚀 Activity
-            </button>
+            </Button>
           </div>
 
           <div className={styles.content}>
@@ -632,20 +633,20 @@ function GroupDetailContent() {
                           rows={3}
                           className={styles.groupPostTextarea}
                         />
-                        <button
+                        <Button
                           type="button"
                           onClick={() => groupMentionRef.current?.insertAtCursor('@')}
                           className={styles.mentionBtn}
                           title="Mention someone"
                         >
                           @
-                        </button>
+                        </Button>
                       </div>
                       <div className={styles.postFormRow}>
                         <ImageUploader images={postImages} onChange={setPostImages} maxImages={6} />
-                        <button type="submit" disabled={posting || !postContent.trim()} className="btn-primary">
+                        <Button type="submit" disabled={posting || !postContent.trim()} variant="primary">
                           {posting ? 'Posting...' : 'Post'}
-                        </button>
+                        </Button>
                       </div>
                     </form>
                   </div>
@@ -668,16 +669,16 @@ function GroupDetailContent() {
                             </div>
                             <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                               {isPostOwner(post) && (
-                                <button
+                                <Button
                                   onClick={() => handlePin('groupPost', post.id, post.pinned)}
                                   className={`${styles.pinBtn} ${post.pinned ? styles.pinBtnActive : ''}`}
                                   title={post.pinned ? 'Unpin' : 'Pin to top'}
                                 >
                                   {post.pinned ? '📌' : '📍'}
-                                </button>
+                                </Button>
                               )}
                               {isPostOwner(post) && (
-                                <button onClick={() => handleDeletePost(post.id)} className={styles.deletePostBtn} title="Delete">×</button>
+                                <Button onClick={() => handleDeletePost(post.id)} className={styles.deletePostBtn} title="Delete">×</Button>
                               )}
                             </div>
                           </div>
@@ -689,9 +690,9 @@ function GroupDetailContent() {
                             </div>
                           )}
                           <div className={styles.postFooter}>
-                            <button onClick={() => handleLikePost(post.id, post.likes)} className={styles.likeBtn}>
+                            <Button onClick={() => handleLikePost(post.id, post.likes)} className={styles.likeBtn}>
                               ♥ {post.likes}
-                            </button>
+                            </Button>
                           </div>
                         </div>
                       ))
@@ -704,7 +705,7 @@ function GroupDetailContent() {
                 <div className={styles.buysSection}>
                   {group.isMember && (
                     <div className={styles.buysActions}>
-                      <button onClick={() => setShowBuyModal(true)} className={styles.createBuyBtn}>+ Create Group Buy</button>
+                      <Button onClick={() => setShowBuyModal(true)} className={styles.createBuyBtn}>+ Create Group Buy</Button>
                     </div>
                   )}
 
@@ -712,7 +713,7 @@ function GroupDetailContent() {
                     <div className={styles.supportersModal}>
                       <div className={styles.supportersHeader}>
                         <h3>Supporters</h3>
-                        <button onClick={() => setSelectedBuySupporters(null)} className={styles.closeBtn}>×</button>
+                        <Button onClick={() => setSelectedBuySupporters(null)} className={styles.closeBtn}>×</Button>
                       </div>
                       {loadingSupporters ? (
                         <p className={styles.loadingSmall}>Loading supporters...</p>
@@ -738,7 +739,7 @@ function GroupDetailContent() {
 
                   {selectedBuy && !selectedBuySupporters && (
                     <div className={styles.buyDetail}>
-                      <button onClick={() => setSelectedBuy(null)} className={styles.backBtn}>← Back to buys</button>
+                      <Button onClick={() => setSelectedBuy(null)} className={styles.backBtn}>← Back to buys</Button>
                       <h2>{selectedBuy.title}</h2>
                       {selectedBuy.description && <p className={styles.buyDescription}>{selectedBuy.description}</p>}
                       {selectedBuy.productImage && (
@@ -768,9 +769,9 @@ function GroupDetailContent() {
                         </a>
                       )}
                       {selectedBuy.currentSupporters > 0 && (
-                        <button className={styles.viewSupportersBtn} onClick={() => handleViewSupporters(selectedBuy.id)}>
+                        <Button className={styles.viewSupportersBtn} onClick={() => handleViewSupporters(selectedBuy.id)}>
                           View {selectedBuy.currentSupporters} supporter{selectedBuy.currentSupporters > 1 ? 's' : ''}
-                        </button>
+                        </Button>
                       )}
                       <p className={styles.buyOrganizer}>
                         Organized by <Link href={getUserProfileUrl(selectedBuy.organizer)}>{selectedBuy.organizer.name || 'Unknown'}</Link>
@@ -786,7 +787,7 @@ function GroupDetailContent() {
                             <div className={styles.buyCardHeader}>
                               <h3 onClick={() => setSelectedBuy(buy)} className={styles.buyTitle}>{buy.title}</h3>
                               {isBuyOwner(buy) && (
-                                <button onClick={() => handleDeleteBuy(buy.id)} className={styles.deleteBuyBtn} title="Delete">×</button>
+                                <Button onClick={() => handleDeleteBuy(buy.id)} className={styles.deleteBuyBtn} title="Delete">×</Button>
                               )}
                             </div>
                             {buy.description && <p className={styles.buyCardDesc}>{buy.description.slice(0, 100)}...</p>}
@@ -803,13 +804,13 @@ function GroupDetailContent() {
                             <div className={styles.buyCardActions}>
                               <span className={`${styles.buyStatus} ${styles[buy.status.toLowerCase()]}`}>{buy.status}</span>
                               {buy.status === 'ACTIVE' && group.isMember && (
-                                <button
+                                <Button
                                   onClick={() => handleSupportBuy(buy.id)}
                                   disabled={supportingBuyId === buy.id}
                                   className={styles.supportBtn}
                                 >
                                   {supportingBuyId === buy.id ? '...' : 'Support'}
-                                </button>
+                                </Button>
                               )}
                             </div>
                           </div>
@@ -825,7 +826,7 @@ function GroupDetailContent() {
               {activeTab === 'requests' && (
                 <div className={styles.requestsSection}>
                   <div className={styles.requestsActions}>
-                    <button onClick={() => setShowRequestModal(true)} className={styles.createRequestBtn}>+ Create Request</button>
+                    <Button onClick={() => setShowRequestModal(true)} className={styles.createRequestBtn}>+ Create Request</Button>
                     <Link href={`/requests?groupId=${params.id}`} className={styles.viewAllRequestsBtn}>View All Requests</Link>
                   </div>
 
@@ -839,7 +840,7 @@ function GroupDetailContent() {
                               <span className={`badge badge-${req.status.toLowerCase()}`}>{req.status}</span>
                               <span className={`badge badge-${req.priority.toLowerCase()}`}>{req.priority}</span>
                               {isReqOwner(req) && (
-                                <button onClick={() => handleDeleteRequest(req.id)} className={styles.deleteSmallBtn} title="Delete">×</button>
+                                <Button onClick={() => handleDeleteRequest(req.id)} className={styles.deleteSmallBtn} title="Delete">×</Button>
                               )}
                             </div>
                           </div>
@@ -864,7 +865,7 @@ function GroupDetailContent() {
               {activeTab === 'marketplace' && (
                 <div className={styles.marketplaceSection}>
                   <div className={styles.marketplaceActions}>
-                    <button onClick={() => setShowMarketplaceModal(true)} className={styles.linkProductBtn}>+ Link Marketplace Product</button>
+                    <Button onClick={() => setShowMarketplaceModal(true)} className={styles.linkProductBtn}>+ Link Marketplace Product</Button>
                   </div>
 
                   {group.marketplaceProducts && group.marketplaceProducts.length > 0 ? (
@@ -888,7 +889,7 @@ function GroupDetailContent() {
                           </div>
                           <div className={styles.marketplaceActions}>
                             {group.isAdmin && (
-                              <button onClick={(e) => { e.preventDefault(); handleUnlinkProduct(product.id); }} className={styles.unlinkBtn}>Unlink</button>
+                              <Button onClick={(e) => { e.preventDefault(); handleUnlinkProduct(product.id); }} className={styles.unlinkBtn}>Unlink</Button>
                             )}
                           </div>
                         </Link>
@@ -1029,8 +1030,8 @@ function GroupDetailContent() {
                 <HashtagInput value={editForm.hashtags} onChange={(tags) => setEditForm({ ...editForm, hashtags: tags })} placeholder="Add hashtags..." />
               </div>
               <div className={styles.modalActions}>
-                <button type="submit" className="btn-primary" disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
-                <button type="button" className="btn-ghost" onClick={() => setShowEditModal(false)}>Cancel</button>
+                <Button type="submit" variant="primary" disabled={saving}>{saving ? 'Saving...' : 'Save'}</Button>
+                <Button type="button" variant="ghost" onClick={() => setShowEditModal(false)}>Cancel</Button>
               </div>
             </form>
           </div>
@@ -1071,8 +1072,8 @@ function GroupDetailContent() {
                 <input type="url" value={buyForm.productImage} onChange={e => setBuyForm({ ...buyForm, productImage: e.target.value })} placeholder="https://..." />
               </div>
               <div className={styles.modalActions}>
-                <button type="submit" className="btn-primary" disabled={creatingBuy}>{creatingBuy ? 'Creating...' : 'Create Group Buy'}</button>
-                <button type="button" className="btn-ghost" onClick={() => setShowBuyModal(false)}>Cancel</button>
+                <Button type="submit" variant="primary" disabled={creatingBuy}>{creatingBuy ? 'Creating...' : 'Create Group Buy'}</Button>
+                <Button type="button" variant="ghost" onClick={() => setShowBuyModal(false)}>Cancel</Button>
               </div>
             </form>
           </div>
@@ -1131,8 +1132,8 @@ function GroupDetailContent() {
                 </label>
               </div>
               <div className={styles.modalActions}>
-                <button type="submit" className="btn-primary" disabled={creatingRequest}>{creatingRequest ? 'Creating...' : 'Create Request'}</button>
-                <button type="button" className="btn-ghost" onClick={() => setShowRequestModal(false)}>Cancel</button>
+                <Button type="submit" variant="primary" disabled={creatingRequest}>{creatingRequest ? 'Creating...' : 'Create Request'}</Button>
+                <Button type="button" variant="ghost" onClick={() => setShowRequestModal(false)}>Cancel</Button>
               </div>
             </form>
           </div>
@@ -1154,7 +1155,7 @@ function GroupDetailContent() {
                 className={styles.marketplaceSearchInput}
                 onKeyDown={e => { if (e.key === 'Enter') searchMarketplace() }}
               />
-              <button onClick={searchMarketplace} className={styles.searchBtn}>Search</button>
+              <Button onClick={searchMarketplace} className={styles.searchBtn}>Search</Button>
             </div>
             {marketplaceResults.length > 0 && (
               <div className={styles.marketplaceSearchResults}>
@@ -1165,15 +1166,15 @@ function GroupDetailContent() {
                       {product.price && <span className={styles.searchResultPrice}>${product.price}</span>}
                       <span className={`badge badge-${product.type.toLowerCase()}`}>{product.type}</span>
                     </div>
-                    <button onClick={() => handleLinkProduct(product)} disabled={linkingProduct} className={styles.linkBtn}>
+                    <Button onClick={() => handleLinkProduct(product)} disabled={linkingProduct} className={styles.linkBtn}>
                       {linkingProduct ? '...' : 'Link'}
-                    </button>
+                    </Button>
                   </div>
                 ))}
               </div>
             )}
             <div className={styles.modalActions}>
-              <button type="button" className="btn-ghost" onClick={() => setShowMarketplaceModal(false)}>Close</button>
+              <Button type="button" variant="ghost" onClick={() => setShowMarketplaceModal(false)}>Close</Button>
             </div>
           </div>
         </div>

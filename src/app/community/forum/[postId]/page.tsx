@@ -10,6 +10,7 @@ import styles from '../../community.module.css'
 import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
 import TranslateButton from '@/components/TranslateButton'
+import Button from '@/components/ui/Button'
 
 interface Author {
   id: string
@@ -407,10 +408,10 @@ export default function ForumThreadPage() {
                 className={styles.editContent}
               />
               <div className={styles.editActions}>
-                <button onClick={() => setEditingPost(false)} className="btn-ghost">Cancel</button>
-                <button onClick={handleSaveEdit} className="btn-primary" disabled={submitting}>
+                <Button onClick={() => setEditingPost(false)} variant="ghost">Cancel</Button>
+                <Button onClick={handleSaveEdit} variant="primary" disabled={submitting}>
                   {submitting ? 'Saving...' : 'Save Changes'}
-                </button>
+                </Button>
               </div>
             </div>
           ) : (
@@ -547,10 +548,10 @@ export default function ForumThreadPage() {
                         className={styles.editContent}
                       />
                       <div className={styles.editActions}>
-                        <button onClick={() => setEditingReply(null)} className="btn-ghost">Cancel</button>
-                        <button onClick={() => handleSaveReplyEdit(reply.id)} className="btn-primary" disabled={submitting}>
+                        <Button onClick={() => setEditingReply(null)} variant="ghost">Cancel</Button>
+                        <Button onClick={() => handleSaveReplyEdit(reply.id)} variant="primary" disabled={submitting}>
                           {submitting ? 'Saving...' : 'Save'}
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   ) : (

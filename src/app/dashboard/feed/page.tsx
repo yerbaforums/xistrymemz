@@ -9,6 +9,8 @@ import MentionInput, { type MentionInputHandle } from '@/components/MentionInput
 import ImageUploader from '@/components/ImageUploader'
 import EmojiPicker from 'emoji-picker-react'
 import { useTranslations } from 'next-intl'
+import Button from '@/components/ui/Button'
+import styles from './page.module.css'
 
 interface FeedPost {
   id: string
@@ -155,15 +157,15 @@ export default function DashboardFeed() {
 
   if (loading) {
     return (
-      <div style={{ maxWidth: 720, margin: '0 auto', padding: '24px 16px' }}>
-        <p style={{ color: 'var(--text-secondary)' }}>{t('loading')}</p>
+      <div className={styles.page}>
+        <p className={styles.metaText}>{t('loading')}</p>
       </div>
     )
   }
 
   return (
-    <div style={{ maxWidth: 720, margin: '0 auto', padding: '24px 16px' }}>
-      <nav className="breadcrumbs" style={{ marginBottom: '16px' }}>
+    <div className={styles.page}>
+      <nav className={`breadcrumbs ${styles.mb16}`}>
         <Link href="/" className="breadcrumb-link">Home</Link>
         <span className="breadcrumb-sep"> / </span>
         <Link href="/dashboard" className="breadcrumb-link">Dashboard</Link>
@@ -171,16 +173,10 @@ export default function DashboardFeed() {
         <span className="breadcrumb-current">{t('feed')}</span>
       </nav>
 
-      <h1 style={{ fontSize: '1.8rem', marginBottom: '24px' }}>{t('title')}</h1>
+      <h1 className={styles.title}>{t('title')}</h1>
 
       {session && (
-        <form id="feed-post-form" onSubmit={handleCreatePost} style={{
-          background: 'var(--bg-secondary)',
-          border: '1px solid var(--border-color)',
-          borderRadius: 12,
-          padding: 16,
-          marginBottom: 24,
-        }}>
+        <form id="feed-post-form" onSubmit={handleCreatePost} className={styles.card}>
           <MentionInput
             ref={mentionRef}
             value={postContent}
@@ -188,36 +184,32 @@ export default function DashboardFeed() {
             placeholder="What's on your mind?"
             rows={2}
           />
-          <div style={{ display: 'flex', gap: 6, marginTop: 8, alignItems: 'center', position: 'relative' }}>
+          <div className={`${styles.flex} ${styles.gap6} ${styles.mt8} ${styles.flexCenter} ${styles.relative}`}>
             <button type="button" onClick={() => mentionRef.current?.insertAtCursor('@')}
-              style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.8rem', lineHeight: 1 }}>
+              className={styles.toolBtn}>
               @
             </button>
             <button type="button" onClick={() => setShowEmoji(!showEmoji)}
-              style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.8rem', lineHeight: 1 }}>
+              className={styles.toolBtn}>
               😊
             </button>
             <ImageUploader images={postImages} onChange={setPostImages} />
             {showEmoji && (
-              <div style={{ position: 'absolute', top: 36, left: 0, zIndex: 100 }}>
+              <div className={styles.absoluteEmoji}>
                 <EmojiPicker onEmojiClick={(e) => { mentionRef.current?.insertAtCursor(e.emoji); setShowEmoji(false) }} />
               </div>
             )}
           </div>
-          <div style={{
-            display: 'flex', justifyContent: 'space-between',
-            alignItems: 'center', marginTop: 8,
-          }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+          <div className={`${styles.flexBetween} ${styles.mt8}`}>
+            <span className={styles.metaText}>
               {postContent.length}/2000
             </span>
             <button type="submit" disabled={posting || !postContent.trim()}
+              className={styles.submitBtnBase}
               style={{
-                padding: '8px 20px', borderRadius: 8, border: 'none',
                 background: postContent.trim() ? 'var(--accent-primary)' : 'var(--bg-tertiary)',
                 color: postContent.trim() ? '#fff' : 'var(--text-muted)',
                 cursor: postContent.trim() ? 'pointer' : 'not-allowed',
-                fontSize: '0.85rem', fontWeight: 600,
               }}>
               {posting ? 'Posting...' : 'Post'}
             </button>
@@ -226,53 +218,36 @@ export default function DashboardFeed() {
       )}
 
       {trendingTags.length > 0 && (
-        <div style={{
-          marginBottom: 20, padding: '12px 16px',
-          background: 'var(--bg-secondary)',
-          border: '1px solid var(--border-color)',
-          borderRadius: 12,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>🏷️ Trending Hashtags</span>
+        <div className={`${styles.trendingCard} ${styles.mb20}`}>
+          <div className={`${styles.flexCenter} ${styles.gap8} ${styles.mb8}`}>
+            <span className={styles.sectionHeading}>🏷️ Trending Hashtags</span>
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          <div className={`${styles.flexWrap} ${styles.gap6}`}>
             {trendingTags.map((tag) => (
               <Link
                 key={tag.tag}
                 href={`/hashtag/${tag.tag}`}
-                style={{
-                  padding: '4px 12px', borderRadius: 20, fontSize: '0.8rem',
-                  background: 'rgba(0, 217, 255, 0.08)',
-                  border: '1px solid rgba(0, 217, 255, 0.15)',
-                  color: 'var(--accent-primary)',
-                  textDecoration: 'none', transition: 'var(--transition)',
-                }}
+                className={styles.chip}
               >
-                #{tag.tag} <span style={{ opacity: 0.6, fontSize: '0.7rem' }}>({tag.count})</span>
+                #{tag.tag} <span className={styles.chipCount}>({tag.count})</span>
               </Link>
             ))}
           </div>
         </div>
       )}
 
-      <div style={{
-        marginBottom: 20, padding: '12px 16px',
-        background: 'var(--bg-secondary)',
-        border: '1px solid var(--border-color)',
-        borderRadius: 12,
-        display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
-      }}>
-        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>⚡ Quick Links</span>
-        <Link href="/hashtags" style={{ fontSize: '0.8rem', color: 'var(--accent-primary)', textDecoration: 'none' }}>🏷️ Browse Hashtags</Link>
-        <Link href="/products" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textDecoration: 'none' }}>🛒 Marketplace</Link>
-        <Link href="/events" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textDecoration: 'none' }}>📅 Events</Link>
-        <Link href="/community" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textDecoration: 'none' }}>👥 Community</Link>
-        <Link href="/dashboard/passport" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textDecoration: 'none' }}>🌍 Passport</Link>
+      <div className={`${styles.quickLinksCard} ${styles.mb20}`}>
+        <span className={styles.sectionHeading}>⚡ Quick Links</span>
+        <Link href="/hashtags" className={styles.chip}>🏷️ Browse Hashtags</Link>
+        <Link href="/products" className={`${styles.metaText} ${styles.textDecorationNone}`}>🛒 Marketplace</Link>
+        <Link href="/events" className={`${styles.metaText} ${styles.textDecorationNone}`}>📅 Events</Link>
+        <Link href="/community" className={`${styles.metaText} ${styles.textDecorationNone}`}>👥 Community</Link>
+        <Link href="/dashboard/passport" className={`${styles.metaText} ${styles.textDecorationNone}`}>🌍 Passport</Link>
       </div>
 
       {feed.length > 0 ? (
         <>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className={`${styles.flexCol} ${styles.gap24}`}>
             {groupedFeed.map(({ key, posts }) => {
               const config = SECTION_CONFIG[key] || SECTION_CONFIG.PROFILE
               const isCollapsed = collapsedSections.has(key)
@@ -280,30 +255,18 @@ export default function DashboardFeed() {
                 <section key={key}>
                   <button
                     onClick={() => toggleSection(key)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      padding: 0,
-                      marginBottom: '12px',
-                      fontSize: '1.1rem',
-                      fontWeight: 600,
-                      color: 'var(--text-primary)',
-                    }}
+                    className={styles.sectionBtn}
                   >
                     <span>{config.icon} {config.label}</span>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    <span className={styles.metaText}>
                       ({posts.length})
                     </span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                    <span className={`${styles.fs075} ${styles.textSecondary}`}>
                       {isCollapsed ? '▶' : '▼'}
                     </span>
                   </button>
                   {!isCollapsed && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div className={`${styles.flexCol} ${styles.gap16}`}>
                       {posts.map((item, i) => (
                         <FeedItem key={`${item.sourceType}-${item.id}-${i}`} post={item} />
                       ))}
@@ -314,19 +277,11 @@ export default function DashboardFeed() {
             })}
           </div>
           {hasMore && (
-            <div style={{ textAlign: 'center', marginTop: '24px' }}>
+            <div className={`${styles.textCenter} ${styles.mt24}`}>
               <button
                 onClick={loadMore}
                 disabled={loadingMore}
-                style={{
-                  padding: '10px 24px',
-                  background: 'var(--accent)',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontSize: '0.9rem'
-                }}
+                className={styles.loadMoreBtn}
               >
                 {loadingMore ? t('loading') : 'Load More'}
               </button>
@@ -334,25 +289,25 @@ export default function DashboardFeed() {
           )}
         </>
       ) : (
-          <div style={{ textAlign: 'center', padding: '60px 24px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📡</div>
-          <h3 style={{ marginBottom: '8px', color: 'var(--text-primary)' }}>Your feed is empty</h3>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '20px', fontSize: '0.9rem' }}>
+        <div className={styles.emptyState}>
+          <div className={`${styles.mb16} ${styles.fs3rem}`}>📡</div>
+          <h3 className={`${styles.mb8} ${styles.textPrimary}`}>Your feed is empty</h3>
+          <p className={`${styles.textSecondary} ${styles.mb20} ${styles.fs09}`}>
             Share something with the community or connect with others!
           </p>
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button onClick={() => {
+          <div className={`${styles.flex} ${styles.gap12} ${styles.flexCenter} ${styles.flexWrap} ${styles.justifyCenter}`}>
+            <Button onClick={() => {
               const form = document.getElementById('feed-post-form')
               form?.scrollIntoView({ behavior: 'smooth' })
               setTimeout(() => (form?.querySelector('textarea') as HTMLElement)?.focus(), 300)
-            }} className="btn-primary" style={{ padding: '10px 24px', borderRadius: 'var(--radius-md)', fontWeight: 600, textDecoration: 'none', border: 'none', cursor: 'pointer' }}>
+            }} variant="primary" className={styles.heroBtn}>
               ✏️ Create Your First Post
-            </button>
-            <Link href="/community" className="btn-secondary" style={{ padding: '10px 20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.85rem' }}>
-              👥 Find People
+            </Button>
+            <Link href="/community" className={styles.sectionLink}>
+              <Button variant="secondary">👥 Find People</Button>
             </Link>
-            <Link href="/community/groups" className="btn-secondary" style={{ padding: '10px 20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.85rem' }}>
-              👤 Join Groups
+            <Link href="/community/groups" className={styles.sectionLink}>
+              <Button variant="secondary">👤 Join Groups</Button>
             </Link>
           </div>
         </div>

@@ -1,0 +1,195 @@
+/* Utility classes */
+.flex { display: flex; }
+.flexCol { display: flex; flex-direction: column; }
+.flexCenter { display: flex; align-items: center; }
+.flexBetween { display: flex; align-items: center; justify-content: space-between; }
+.flexWrap { display: flex; flex-wrap: wrap; }
+.gap4 { gap: 4px; }
+.gap8 { gap: 8px; }
+.gap12 { gap: 12px; }
+.gap16 { gap: 16px; }
+.gap24 { gap: 24px; }
+.grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.mt4 { margin-top: 4px; }
+.mt8 { margin-top: 8px; }
+.mt12 { margin-top: 12px; }
+.mt16 { margin-top: 16px; }
+.mb8 { margin-bottom: 8px; }
+.mb12 { margin-bottom: 12px; }
+.mb16 { margin-bottom: 16px; }
+.mb24 { margin-bottom: 24px; }
+.p4 { padding: 4px; }
+.p8 { padding: 8px; }
+.p12 { padding: 12px; }
+.p16 { padding: 16px; }
+.wFull { width: 100%; }
+.textCenter { text-align: center; }
+.relative { position: relative; }
+.flexShrink0 { flex-shrink: 0; }
+
+/* Component-specific classes */
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+.card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px;
+}
+.trendingCard {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+.quickLinksCard {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.toolBtn {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 0.8rem;
+  line-height: 1;
+}
+.sectionBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.submitBtnBase {
+  padding: 8px 20px;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.loadMoreBtn {
+  padding: 10px 24px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.emptyState {
+  text-align: center;
+  padding: 60px 24px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+}
+.chip {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  background: rgba(0, 217, 255, 0.08);
+  border: 1px solid rgba(0, 217, 255, 0.15);
+  color: var(--accent-primary);
+  text-decoration: none;
+  transition: var(--transition);
+}
+.heroBtn {
+  padding: 10px 24px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+}
+.sectionLink {
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+.metaText {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+.title {
+  font-size: 1.8rem;
+  margin-bottom: 24px;
+}
+.chipCount {
+  opacity: 0.6;
+  font-size: 0.7rem;
+}
+.gap6 {
+  gap: 6px;
+}
+.mb20 {
+  margin-bottom: 20px;
+}
+.mt24 {
+  margin-top: 24px;
+}
+.gap24 {
+  gap: 24px;
+}
+.gap16 {
+  gap: 16px;
+}
+.fs09 {
+  font-size: 0.9rem;
+}
+.fs075 {
+  font-size: 0.75rem;
+}
+.fs3rem {
+  font-size: 3rem;
+}
+.textSecondary {
+  color: var(--text-secondary);
+}
+.textPrimary {
+  color: var(--text-primary);
+}
+.fs085 {
+  font-size: 0.85rem;
+}
+.fw600 {
+  font-weight: 600;
+}
+.textDecorationNone {
+  text-decoration: none;
+}
+.justifyCenter {
+  justify-content: center;
+}
+.absoluteEmoji {
+  position: absolute;
+  top: 36px;
+  left: 0;
+  z-index: 100;
+}
+.sectionHeading {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}

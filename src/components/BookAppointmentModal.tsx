@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { useToast } from '@/context/ToastContext'
+import styles from './BookAppointmentModal.module.css'
 
 interface FormField {
   label: string
@@ -306,72 +307,55 @@ export default function BookAppointmentModal({
 
   const hasAvailability = availSlots.length > 0
 
-  const labelStyle: React.CSSProperties = {
-    display: 'block', marginBottom: 4, fontSize: '0.85rem', color: 'var(--text-secondary)'
-  }
-  const inputStyle: React.CSSProperties = {
-    width: '100%', padding: '8px 10px', borderRadius: 8,
-    border: '1px solid var(--border-color)',
-    background: 'var(--bg-tertiary)', color: 'var(--text-primary)',
-    fontSize: '0.85rem'
-  }
-
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 1000,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'rgba(0,0,0,0.5)'
-    }} onClick={onClose}>
-      <div style={{
-        background: 'var(--bg-secondary)', borderRadius: 12, padding: 24,
-        maxWidth: 520, width: '90%', maxHeight: '85vh', overflow: 'auto'
-      }} onClick={e => e.stopPropagation()}>
-        <h3 style={{ margin: '0 0 4px', fontSize: '1.1rem' }}>
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modal} onClick={e => e.stopPropagation()}>
+        <h3 className={styles.heading}>
           {productId ? `Book: ${productTitle}` : `Book with ${sellerName || 'Seller'}`}
         </h3>
-        <p style={{ margin: '0 0 16px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+        <p className={styles.subtitle}>
           Duration: {duration} min
           {leadTime ? ` · ${leadTime}h lead time` : ''}
         </p>
 
         <form onSubmit={handleBook}>
           {loadingAvail ? (
-            <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
+            <div className={styles.statusMsg}>
               Loading availability...
             </div>
           ) : !hasAvailability ? (
-            <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
-              <p style={{ margin: '0 0 4px' }}>Seller hasn't set their availability yet.</p>
-              <p style={{ margin: 0 }}>Please check back later or contact the seller directly.</p>
+            <div className={styles.statusMsg}>
+              <p className={styles.m004}>Seller hasn't set their availability yet.</p>
+              <p className={styles.m0}>Please check back later or contact the seller directly.</p>
             </div>
           ) : (
             <>
               {/* Calendar */}
-              <div style={{ marginBottom: 16 }}>
-                <label style={labelStyle}>Select Date</label>
-                <div style={{ background: 'var(--bg-tertiary)', borderRadius: 8, padding: 12, border: '1px solid var(--border-color)' }}>
+              <div className={styles.mb16}>
+                <label className={styles.label}>Select Date</label>
+                <div className={styles.calendarInner}>
                   {/* Month nav */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                    <button type="button" onClick={prevMonth} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent-primary)', fontSize: '1rem', padding: '2px 8px' }}>
+                  <div className={`${styles.flexBetween} ${styles.mb8}`}>
+                    <button type="button" onClick={prevMonth} className={styles.monthNavBtn}>
                       &lt;
                     </button>
-                    <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)' }}>
+                    <span className={styles.monthLabel}>
                       {MONTHS[currentMonth.getMonth()]} {currentMonth.getFullYear()}
                     </span>
-                    <button type="button" onClick={nextMonth} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent-primary)', fontSize: '1rem', padding: '2px 8px' }}>
+                    <button type="button" onClick={nextMonth} className={styles.monthNavBtn}>
                       &gt;
                     </button>
                   </div>
                   {/* Day headers */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2, marginBottom: 4 }}>
+                  <div className={styles.dayHeaderGrid}>
                     {DAYS.map(d => (
-                      <div key={d} style={{ textAlign: 'center', fontSize: '0.7rem', color: 'var(--text-tertiary)', padding: '4px 0', fontWeight: 600 }}>
+                      <div key={d} className={styles.dayHeaderCell}>
                         {d}
                       </div>
                     ))}
                   </div>
                   {/* Day cells */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
+                  <div className={styles.dayCellsGrid}>
                     {calendarCells.map((day, i) => {
                       if (day === null) return <div key={`e-${i}`} />
                       const dateStr = formatDate(currentMonth.getFullYear(), currentMonth.getMonth(), day)
@@ -386,14 +370,12 @@ export default function BookAppointmentModal({
                           type="button"
                           disabled={!clickable}
                           onClick={() => { setSelectedDate(dateStr); setSelectedTime('') }}
+                          className={styles.dayCellBtn}
                           style={{
-                            padding: '6px 0',
-                            borderRadius: 6,
                             border: isSelected ? '2px solid var(--accent-primary)' : 'none',
                             background: isSelected ? 'var(--accent-primary)' : clickable ? 'var(--bg-secondary)' : 'transparent',
                             color: isSelected ? '#fff' : clickable ? 'var(--text-primary)' : 'var(--text-tertiary)',
                             cursor: clickable ? 'pointer' : 'default',
-                            fontSize: '0.8rem',
                             fontWeight: clickable ? 500 : 400,
                             opacity: clickable ? 1 : 0.4,
                           }}
@@ -408,33 +390,28 @@ export default function BookAppointmentModal({
 
               {/* Time slots */}
               {selectedDate && (
-                <div style={{ marginBottom: 16 }}>
-                  <label style={labelStyle}>Select Time</label>
+                <div className={styles.mb16}>
+                  <label className={styles.label}>Select Time</label>
                   {loadingBusy ? (
-                    <div style={{ padding: 12, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '0.82rem' }}>
+                    <div className={styles.loadingTimes}>
                       Loading available times...
                     </div>
                   ) : freeTimes.length === 0 ? (
-                    <div style={{ padding: '10px 14px', borderRadius: 8, background: 'var(--bg-tertiary)', fontSize: '0.82rem', color: 'var(--text-tertiary)' }}>
+                    <div className={styles.noTimesMsg}>
                       No available time slots on this date.
                     </div>
                   ) : (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    <div className={`${styles.flexWrap} ${styles.gap6}`}>
                       {freeTimes.map(t => (
                         <button
                           key={t}
                           type="button"
                           onClick={() => setSelectedTime(t)}
+                          className={styles.timeSlotBtn}
                           style={{
-                            padding: '8px 14px',
-                            borderRadius: 8,
                             border: selectedTime === t ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
                             background: selectedTime === t ? 'var(--accent-primary)' : 'var(--bg-tertiary)',
                             color: selectedTime === t ? '#fff' : 'var(--text-primary)',
-                            cursor: 'pointer',
-                            fontSize: '0.82rem',
-                            fontWeight: 500,
-                            transition: 'all 0.15s',
                           }}
                           onMouseEnter={e => { if (selectedTime !== t) e.currentTarget.style.borderColor = 'var(--accent-primary)' }}
                           onMouseLeave={e => { if (selectedTime !== t) e.currentTarget.style.borderColor = 'var(--border-color)' }}
@@ -448,10 +425,7 @@ export default function BookAppointmentModal({
               )}
 
               {selectedDate && selectedTime && (
-                <div style={{
-                  marginBottom: 16, padding: '10px 14px', borderRadius: 8,
-                  background: 'var(--bg-tertiary)', fontSize: '0.85rem', color: 'var(--text-secondary)'
-                }}>
+                <div className={`${styles.selectedInfo} ${styles.mb16}`}>
                   Selected: {new Date(selectedDate).toLocaleDateString()} at {formatTimeDisplay(selectedTime)}
                   ({duration} min)
                 </div>
@@ -459,47 +433,37 @@ export default function BookAppointmentModal({
             </>
           )}
 
-          <div style={{ marginBottom: 12 }}>
-            <label style={labelStyle}>Title</label>
+          <div className={styles.mb12}>
+            <label className={styles.label}>Title</label>
             <input
               type="text" value={title} onChange={e => setTitle(e.target.value)}
-              style={inputStyle}
+              className={styles.input}
             />
           </div>
 
           {formFields && formFields.length > 0 && (
-            <div style={{ marginBottom: 12, padding: 12, borderRadius: 8, background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)' }}>
-              <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 8px' }}>
+            <div className={`${styles.formSection} ${styles.mb12}`}>
+              <p className={styles.formSectionHeading}>
                 Additional Information Requested
               </p>
               {formFields.map(f => (
-                <div key={f.label} style={{ marginBottom: 8 }}>
-                  <label style={{ display: 'block', marginBottom: 4, fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                    {f.label} {f.required && <span style={{ color: '#ef4444' }}>*</span>}
+                <div key={f.label} className={styles.mb8}>
+                  <label className={`${styles.label} ${styles.fs082}`}>
+                    {f.label} {f.required && <span className={styles.requiredStar}>*</span>}
                   </label>
                   {f.type === 'textarea' ? (
                     <textarea
                       value={formResponses[f.label] || ''}
                       onChange={e => setFormResponses(r => ({ ...r, [f.label]: e.target.value }))}
                       rows={3}
-                      style={{
-                        width: '100%', padding: '8px 10px', borderRadius: 8,
-                        border: '1px solid var(--border-color)',
-                        background: 'var(--bg-secondary)', color: 'var(--text-primary)',
-                        fontSize: '0.82rem', resize: 'vertical'
-                      }}
+                      className={styles.textareaField}
                     />
                   ) : (
                     <input
                       type="text"
                       value={formResponses[f.label] || ''}
                       onChange={e => setFormResponses(r => ({ ...r, [f.label]: e.target.value }))}
-                      style={{
-                        width: '100%', padding: '8px 10px', borderRadius: 8,
-                        border: '1px solid var(--border-color)',
-                        background: 'var(--bg-secondary)', color: 'var(--text-primary)',
-                        fontSize: '0.82rem'
-                      }}
+                      className={styles.inputField}
                     />
                   )}
                 </div>
@@ -507,78 +471,70 @@ export default function BookAppointmentModal({
             </div>
           )}
 
-          <div style={{ marginBottom: 12 }}>
-            <label style={labelStyle}>Notes / Comments</label>
+          <div className={styles.mb12}>
+            <label className={styles.label}>Notes / Comments</label>
             <textarea
               value={description} onChange={e => setDescription(e.target.value)}
               rows={3}
               placeholder="Anything the seller should know..."
-              style={{
-                ...inputStyle, resize: 'vertical'
-              }}
+              className={`${styles.input} ${styles.resizeVertical}`}
             />
           </div>
 
-          <div style={{ marginBottom: 12 }}>
-            <label style={labelStyle}>Location (optional)</label>
+          <div className={styles.mb12}>
+            <label className={styles.label}>Location (optional)</label>
             <input
               type="text" value={location} onChange={e => setLocation(e.target.value)}
               placeholder="Physical address or meeting point"
-              style={inputStyle}
+              className={styles.input}
             />
           </div>
 
           {/* Meeting Link Selection */}
-          <div style={{ marginBottom: 20 }}>
-            <label style={{ ...labelStyle, fontWeight: 600 }}>Video Call / Meeting Link</label>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
+          <div className={styles.mb20}>
+            <label className={`${styles.label} ${styles.fw600}`}>Video Call / Meeting Link</label>
+            <div className={`${styles.flexCol} ${styles.gap8} ${styles.mt4}`}>
               {defaultMeetingLink && (
-                <label style={{
-                  display: 'flex', alignItems: 'flex-start', gap: 8, padding: '10px 12px',
-                  borderRadius: 8, border: meetingLinkType === 'default' ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
-                  background: meetingLinkType === 'default' ? 'var(--bg-tertiary)' : 'transparent',
-                  cursor: 'pointer', transition: 'all 0.15s'
-                }}>
+                <label className={styles.meetingOption}
+                  style={{
+                    border: meetingLinkType === 'default' ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
+                    background: meetingLinkType === 'default' ? 'var(--bg-tertiary)' : 'transparent',
+                  }}>
                   <input
                     type="radio" name="meetingLinkType" checked={meetingLinkType === 'default'}
                     onChange={() => setMeetingLinkType('default')}
-                    style={{ marginTop: 2 }}
+                    className={styles.radioInput}
                   />
                   <div>
-                    <div style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                    <div className={styles.meetingOptionTitle}>
                       Use seller&apos;s link
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: 2, wordBreak: 'break-all' }}>
+                    <div className={`${styles.meetingOptionDesc} ${styles.wordBreakAll}`}>
                       {defaultMeetingLink}
                     </div>
                   </div>
                 </label>
               )}
 
-              <label style={{
-                display: 'flex', alignItems: 'flex-start', gap: 8, padding: '10px 12px',
-                borderRadius: 8, border: meetingLinkType === 'platform' ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
-                background: meetingLinkType === 'platform' ? 'var(--bg-tertiary)' : 'transparent',
-                cursor: 'pointer', transition: 'all 0.15s'
-              }}>
+              <label className={styles.meetingOption}
+                style={{
+                  border: meetingLinkType === 'platform' ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
+                  background: meetingLinkType === 'platform' ? 'var(--bg-tertiary)' : 'transparent',
+                }}>
                 <input
                   type="radio" name="meetingLinkType" checked={meetingLinkType === 'platform'}
                   onChange={() => setMeetingLinkType('platform')}
-                  style={{ marginTop: 2 }}
+                  className={styles.radioInput}
                 />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                <div className={styles.optionFlex}>
+                  <div className={styles.meetingOptionTitle}>
                     Platform Video Room
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: 2 }}>
+                  <div className={styles.meetingOptionDesc}>
                     Create a video room on this platform. A link will be generated automatically.
                   </div>
                   {meetingLinkType === 'platform' && platformRoom && (
-                    <div style={{
-                      marginTop: 6, padding: '6px 10px', borderRadius: 6,
-                      background: 'var(--bg-tertiary)', fontSize: '0.78rem',
-                      color: 'var(--accent-primary)', wordBreak: 'break-all'
-                    }}>
+                    <div className={styles.platformLink}>
                       {typeof window !== 'undefined' ? `${window.location.origin}/dashboard/video?invite=${platformRoom.inviteCode}` : ''}
                     </div>
                   )}
@@ -587,11 +543,10 @@ export default function BookAppointmentModal({
                       type="button"
                       onClick={handleCreatePlatformRoom}
                       disabled={creatingRoom}
+                      className={styles.videoRoomBtn}
                       style={{
-                        marginTop: 6, padding: '6px 14px', borderRadius: 6, border: 'none',
-                        background: 'var(--accent-primary)', color: '#fff',
                         cursor: creatingRoom ? 'not-allowed' : 'pointer',
-                        fontSize: '0.78rem', opacity: creatingRoom ? 0.6 : 1
+                        opacity: creatingRoom ? 0.6 : 1
                       }}
                     >
                       {creatingRoom ? 'Creating...' : 'Create Video Room'}
@@ -600,19 +555,18 @@ export default function BookAppointmentModal({
                 </div>
               </label>
 
-              <label style={{
-                display: 'flex', alignItems: 'flex-start', gap: 8, padding: '10px 12px',
-                borderRadius: 8, border: meetingLinkType === 'custom' ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
-                background: meetingLinkType === 'custom' ? 'var(--bg-tertiary)' : 'transparent',
-                cursor: 'pointer', transition: '0.15s'
-              }}>
+              <label className={styles.meetingOption}
+                style={{
+                  border: meetingLinkType === 'custom' ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
+                  background: meetingLinkType === 'custom' ? 'var(--bg-tertiary)' : 'transparent',
+                }}>
                 <input
                   type="radio" name="meetingLinkType" checked={meetingLinkType === 'custom'}
                   onChange={() => setMeetingLinkType('custom')}
-                  style={{ marginTop: 2 }}
+                  className={styles.radioInput}
                 />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                <div className={styles.optionFlex}>
+                  <div className={styles.meetingOptionTitle}>
                     Custom meeting link
                   </div>
                   {meetingLinkType === 'custom' && (
@@ -621,30 +575,27 @@ export default function BookAppointmentModal({
                       value={customMeetingLink}
                       onChange={e => setCustomMeetingLink(e.target.value)}
                       placeholder="https://zoom.us/j/... or https://meet.google.com/..."
-                      style={{
-                        ...inputStyle, marginTop: 6
-                      }}
+                      className={`${styles.input} ${styles.mt6}`}
                     />
                   )}
                 </div>
               </label>
 
-              <label style={{
-                display: 'flex', alignItems: 'flex-start', gap: 8, padding: '10px 12px',
-                borderRadius: 8, border: meetingLinkType === 'none' ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
-                background: meetingLinkType === 'none' ? 'var(--bg-tertiary)' : 'transparent',
-                cursor: 'pointer', transition: '0.15s'
-              }}>
+              <label className={styles.meetingOption}
+                style={{
+                  border: meetingLinkType === 'none' ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
+                  background: meetingLinkType === 'none' ? 'var(--bg-tertiary)' : 'transparent',
+                }}>
                 <input
                   type="radio" name="meetingLinkType" checked={meetingLinkType === 'none'}
                   onChange={() => setMeetingLinkType('none')}
-                  style={{ marginTop: 2 }}
+                  className={styles.radioInput}
                 />
                 <div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                  <div className={styles.meetingOptionTitle}>
                     No meeting link
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: 2 }}>
+                  <div className={styles.meetingOptionDesc}>
                     In-person or no video needed
                   </div>
                 </div>
@@ -652,18 +603,14 @@ export default function BookAppointmentModal({
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+          <div className={`${styles.flexEnd} ${styles.gap8}`}>
             <button type="button" onClick={onClose}
-              style={{
-                padding: '8px 16px', borderRadius: 8, border: '1px solid var(--border-color)',
-                background: 'transparent', color: 'var(--text-primary)', cursor: 'pointer'
-              }}>
+              className={styles.cancelBtn}>
               Cancel
             </button>
             <button type="submit" disabled={booking || !selectedDate || !selectedTime}
+              className={styles.submitBtn}
               style={{
-                padding: '8px 16px', borderRadius: 8, border: 'none',
-                background: 'var(--accent-primary)', color: '#fff',
                 cursor: booking ? 'not-allowed' : 'pointer',
                 opacity: booking ? 0.6 : 1
               }}>

@@ -345,48 +345,46 @@ export default function ProfileEditPage() {
 
   return (
     <div className={styles.container}>
-      <div style={{maxWidth: '800px', margin: '0 auto', padding: '20px'}}>
-        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px'}}>
+      <div className={styles.editPageWrapper}>
+        <div className={`${styles.flexBetween} ${styles.mb30}`}>
           <h1>Edit Profile</h1>
           <Link href={getUserProfileUrl({ id: session?.user?.id || '', username: username || undefined })} className={styles.editBtn}>
             View Profile
           </Link>
         </div>
 
-        {error && <div className={styles.error || 'error'} style={{padding: '12px', marginBottom: '20px', background: 'rgba(255,51,102,0.1)', border: '1px solid #ff3366', borderRadius: '8px'}}>{error}</div>}
+        {error && <div className={`${styles.error || 'error'} ${styles.errorBox}`}>{error}</div>}
 
         <form onSubmit={handleSaveProfile}>
           {/* Basic Info */}
-          <div style={{background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '24px', marginBottom: '20px'}}>
-            <h2 style={{marginBottom: '20px'}}>Basic Information</h2>
+          <div className={styles.cardMb}>
+            <h2 className={styles.sectionTitle}>Basic Information</h2>
 
-            <div style={{marginBottom: '16px'}}>
-              <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>Username</label>
-              <input type="text" value={username} onChange={e => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))} placeholder="username" maxLength={50} style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)'}} />
-              <small style={{color: 'var(--text-secondary)', fontSize: '0.75rem'}}>Letters and numbers only. Profile URL: xistrymemz.xyz/profile/{username || 'username'}</small>
+            <div className={styles.mb16}>
+              <label className={styles.label}>Username</label>
+              <input type="text" value={username} onChange={e => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))} placeholder="username" maxLength={50} className={styles.inputField} />
+              <small className={styles.small}>Letters and numbers only. Profile URL: xistrymemz.xyz/profile/{username || 'username'}</small>
             </div>
 
-            <div style={{marginBottom: '16px'}}>
-              <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>Display Name</label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)} style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)'}} />
+            <div className={styles.mb16}>
+              <label className={styles.label}>Display Name</label>
+              <input type="text" value={name} onChange={e => setName(e.target.value)} className={styles.inputField} />
             </div>
 
-            <div style={{marginBottom: '16px'}}>
-              <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>Avatar</label>
+            <div className={styles.mb16}>
+              <label className={styles.label}>Avatar</label>
               <ImageUploader images={image ? [image] : []} onChange={urls => setImage(urls[0] || '')} maxImages={1} />
             </div>
 
-            <div style={{marginBottom: '16px'}}>
-              <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>Cover Image</label>
+            <div className={styles.mb16}>
+              <label className={styles.label}>Cover Image</label>
               <ImageUploader images={coverImage ? [coverImage] : []} onChange={urls => setCoverImage(urls[0] || '')} maxImages={1} />
               {coverImage && (
-                <div style={{marginTop: 8, height: 200, borderRadius: 8, backgroundImage: `url(${coverImage})`, backgroundSize: coverStyle === 'contain' ? 'contain' : coverStyle === 'fill' ? '100% 100%' : coverStyle === 'repeat' ? 'auto' : 'cover', backgroundRepeat: coverStyle === 'repeat' ? 'repeat' : 'no-repeat', backgroundPosition: 'center', border: '1px solid var(--border-color)'}} />
+                <div className={styles.coverPreview} style={{ '--bg-image': `url(${coverImage})`, '--bg-size': coverStyle === 'contain' ? 'contain' : coverStyle === 'fill' ? '100% 100%' : coverStyle === 'repeat' ? 'auto' : 'cover', '--bg-repeat': coverStyle === 'repeat' ? 'repeat' : 'no-repeat' } as React.CSSProperties} />
               )}
-              <div style={{marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap'}}>
+              <div className={`${styles.flexWrap} ${styles.gap6} ${styles.mt8}`}>
                 {['cover', 'contain', 'fill', 'repeat'].map(s => (
-                  <button key={s} type="button" onClick={() => setCoverStyle(s)} style={{
-                    padding: '6px 14px', borderRadius: 6, border: `1px solid ${coverStyle === s ? 'var(--accent-primary)' : 'var(--border-color)'}`, background: coverStyle === s ? 'var(--accent-primary)' : 'transparent', color: coverStyle === s ? '#fff' : 'var(--text-primary)', cursor: 'pointer', fontSize: '0.8rem', textTransform: 'capitalize'
-                  }}>
+                  <button key={s} type="button" onClick={() => setCoverStyle(s)} className={`${styles.coverStyleBtn} ${coverStyle === s ? styles.coverStyleBtnActive : ''}`}>
                     {s}
                   </button>
                 ))}
@@ -395,24 +393,24 @@ export default function ProfileEditPage() {
 
             <AvailabilityEditor userId={session?.user.id ?? ''} />
 
-            <div style={{marginBottom: '16px'}}>
-              <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>Bio</label>
-              <textarea value={bio} onChange={e => setBio(e.target.value)} rows={3} style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', resize: 'vertical'}} />
+            <div className={styles.mb16}>
+              <label className={styles.label}>Bio</label>
+              <textarea value={bio} onChange={e => setBio(e.target.value)} rows={3} className={styles.textareaField} />
             </div>
 
-            <div style={{marginBottom: '16px'}}>
-              <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>Website</label>
-              <input type="url" value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://example.com" style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)'}} />
+            <div className={styles.mb16}>
+              <label className={styles.label}>Website</label>
+              <input type="url" value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://example.com" className={styles.inputField} />
             </div>
 
             <div>
-              <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>User Classes (select multiple)</label>
-              <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '6px'}}>
+              <label className={styles.label}>User Classes (select multiple)</label>
+              <div className={styles.classGridEdit}>
                 {['Healer','Revealer','Seer','Teacher','Guide','Warrior','Guardian','Sage','Mystic','Architect','Artist','Builder','Explorer','Mentor'].map(cls => {
                   const classIcons: Record<string, string> = { Healer:'💚', Revealer:'👁️', Seer:'🔮', Teacher:'📚', Guide:'🧭', Warrior:'⚔️', Guardian:'🛡️', Sage:'🦉', Mystic:'✨', Architect:'🏗️', Artist:'🎨', Builder:'🔨', Explorer:'🌍', Mentor:'🌟' }
                   const checked = userClass.split(',').map(c => c.trim()).includes(cls)
                   return (
-                    <label key={cls} style={{display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 10px', background: 'var(--bg-tertiary)', border: `1px solid ${checked ? 'var(--accent-primary)' : 'var(--border-color)'}`, borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text-primary)', transition: 'var(--transition)'}}>
+                    <label key={cls} className={`${styles.classLabel} ${checked ? styles.classLabelActive : ''}`}>
                       <input type="checkbox" checked={checked} onChange={() => {
                         const classes = userClass.split(',').map(c => c.trim()).filter(Boolean)
                         if (checked) {
@@ -420,7 +418,7 @@ export default function ProfileEditPage() {
                         } else {
                           setUserClass([...classes, cls].join(', '))
                         }
-                      }} style={{width: 'auto', accentColor: 'var(--accent-primary)'}} />
+                      }} className={styles.autoWidth} />
                       <span>{classIcons[cls] || ''} {cls}</span>
                     </label>
                   )
@@ -428,82 +426,69 @@ export default function ProfileEditPage() {
               </div>
             </div>
 
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <div className={styles.mb16}>
+              <label className={styles.checkboxLabel}>
                 <input
                   type="checkbox"
                   checked={lookingForCollaborators}
                   onChange={e => setLookingForCollaborators(e.target.checked)}
-                  style={{ width: '18px', height: '18px', accentColor: 'var(--accent-primary)' }}
+                  className={styles.checkboxInput}
                 />
                 <span>🤝 Looking for collaborators</span>
               </label>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', margin: '4px 0 0 26px' }}>
+              <p className={styles.mutedText}>
                 Show a badge on your profile and member cards indicating you're open to collaboration.
               </p>
             </div>
           </div>
 
           {/* Earth Passport */}
-          <div style={{background: 'linear-gradient(135deg, #1a2a1a 0%, #0d1a0d 100%)', border: '1px solid #2a4a2a', borderRadius: '12px', padding: '24px', marginBottom: '20px'}}>
-            <h2 style={{marginBottom: '8px', color: '#7fff7f'}}>🌍 Earth Passport</h2>
-            <p style={{color: '#6a8a6a', fontSize: '0.85rem', marginBottom: '12px', lineHeight: 1.5}}>
+          <div className={styles.editPassportSection}>
+            <h2 className={styles.editPassportTitle}>🌍 Earth Passport</h2>
+            <p className={styles.editPassportDesc}>
               Manage your Earth Passport settings — location, neighborhood, search radius, traveling mode, and GPS coordinates.
             </p>
-            <a href="/dashboard/passport" style={{display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: '#4ade80', color: '#0d1a0d', borderRadius: '8px', textDecoration: 'none', fontWeight: 600, fontSize: '0.875rem'}}>
+            <a href="/dashboard/passport" className={styles.passportLinkBtn}>
               🌍 Open Passport Dashboard →
             </a>
           </div>
 
           {/* Saved Locations */}
-          <div style={{background: 'linear-gradient(135deg, #1a1a2a 0%, #0d0d1a 100%)', border: '1px solid #2a2a4a', borderRadius: '12px', padding: '24px', marginBottom: '20px'}}>
-            <h2 style={{margin: '0 0 8px', color: '#7f7fff'}}>📍 Saved Locations</h2>
-            <p style={{color: '#8888aa', fontSize: '0.85rem', marginBottom: '12px'}}>
+          <div className={styles.editLocationSection}>
+            <h2 className={styles.editLocationTitle}>📍 Saved Locations</h2>
+            <p className={styles.editLocationDesc}>
               Manage your saved places, location categories, and set your primary location.
             </p>
-            <a href="/dashboard/passport" style={{display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: '#7f7fff', color: '#fff', borderRadius: '8px', textDecoration: 'none', fontWeight: 500, fontSize: '0.875rem'}}>
+            <a href="/dashboard/passport" className={styles.locationLinkBtn}>
               📍 Open Locations Dashboard →
             </a>
           </div>
 
           {/* Wallet Addresses - DISABLED until wallet features enabled */}
-          <div style={{background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '24px', marginBottom: '20px', opacity: 0.5, pointerEvents: 'none'}}>
-            <h2 style={{marginBottom: '20px'}}>Wallet Addresses <span style={{fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: '8px'}}>— Coming Soon</span></h2>
+          <div className={styles.disabledSection}>
+            <h2 className={styles.sectionTitle}>Wallet Addresses <span className={`${styles.small} ${styles.ml8}`}>— Coming Soon</span></h2>
 
-            <div style={{marginBottom: '16px'}}>
-              <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>Wallet Address</label>
-              <input type="text" value={walletAddress} disabled placeholder="0x..." style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-muted)'}} />
+            <div className={styles.mb16}>
+              <label className={styles.label}>Wallet Address</label>
+              <input type="text" value={walletAddress} disabled placeholder="0x..." className={styles.inputMuted} />
             </div>
 
-            <div style={{marginBottom: '16px'}}>
-              <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>Payment Address</label>
-              <input type="text" value={paymentAddress} disabled placeholder="0x..." style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-muted)'}} />
+            <div className={styles.mb16}>
+              <label className={styles.label}>Payment Address</label>
+              <input type="text" value={paymentAddress} disabled placeholder="0x..." className={styles.inputMuted} />
             </div>
 
-            <div style={{marginBottom: '16px'}}>
-              <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>Refund Address</label>
-              <input type="text" value={refundAddress} disabled placeholder="0x..." style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-muted)'}} />
+            <div className={styles.mb16}>
+              <label className={styles.label}>Refund Address</label>
+              <input type="text" value={refundAddress} disabled placeholder="0x..." className={styles.inputMuted} />
             </div>
 
             <div>
-              <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-secondary)'}}>Default Currency</label>
-              <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '8px'}}>
+              <label className={styles.label}>Default Currency</label>
+              <div className={styles.cryptoGrid}>
                 {allCryptos.map(crypto => (
-                  <div
-                    key={crypto.id}
-                    style={{
-                      padding: '8px 12px',
-                      background: 'var(--bg-tertiary)',
-                      color: 'var(--text-muted)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: '8px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      fontSize: '0.875rem'
-                    }}
-                  >
-                    {crypto.icon && <img src={crypto.icon} alt="" width={16} height={16} style={{borderRadius: '50%'}} />}
+                  <div key={crypto.id} className={styles.cryptoCard}>
+                    {crypto.icon && <img src={crypto.icon} alt="" width={16} height={16} className={styles.roundImg} />}
                     {crypto.symbol}
                   </div>
                 ))}
@@ -511,38 +496,38 @@ export default function ProfileEditPage() {
             </div>
           </div>
 
-        <button type="submit" disabled={saving} style={{width: '100%', padding: '14px', background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '1rem'}}>
+        <button type="submit" disabled={saving} className={styles.saveBtnFull}>
           {saving ? 'Saving...' : 'Save Profile'}
         </button>
       </form>
 
       {/* Donation Settings */}
-      <div style={{background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '24px', marginTop: '20px'}}>
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
-            <h2 style={{margin: 0}}>Donation Addresses</h2>
+      <div className={styles.cardMt}>
+          <div className={`${styles.flexBetween} ${styles.mb20}`}>
+            <h2 className={styles.m0}>Donation Addresses</h2>
             <button
               type="button"
               onClick={() => { setShowDonationForm(true); setEditingDonation(null); setDonationForm({ currency: 'ETH', address: '', label: '', showQR: true }) }}
-              style={{padding: '8px 16px', background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500}}
+              className={styles.btnPrimary}
             >
               + Add Address
             </button>
           </div>
 
-          <div style={{marginBottom: '16px'}}>
-            <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'}}>
+          <div className={styles.mb16}>
+            <label className={styles.checkboxLabel}>
               <input
                 type="checkbox"
                 checked={acceptsDonations}
                 onChange={e => setAcceptsDonations(e.target.checked)}
-                style={{width: '18px', height: '18px', accentColor: 'var(--accent-primary)'}}
+                className={styles.checkboxInput}
               />
               <span>Accept donations on my profile</span>
             </label>
           </div>
 
           {donationAddresses.length === 0 && !showDonationForm && acceptsDonations && (
-            <p style={{color: 'var(--text-secondary)', textAlign: 'center', padding: '20px', fontSize: '0.875rem'}}>
+            <p className={styles.emptyState}>
               No donation addresses yet. Add crypto addresses to receive donations with QR codes.
             </p>
           )}
@@ -560,20 +545,20 @@ export default function ProfileEditPage() {
                   const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'))
                   if (draggedIndex !== index) handleReorderDonations(draggedIndex, index)
                 }}
-                style={{display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '14px', background: 'var(--bg-tertiary)', borderRadius: '10px', marginBottom: '8px', border: '1px solid var(--border-color)', cursor: 'grab'}}
+                className={styles.donCard}
               >
-                <div style={{width: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '1rem', marginTop: '2px'}} title="Drag to reorder">
+                <div className={styles.dragHandle} title="Drag to reorder">
                   ⠿
                 </div>
-                <div style={{flex: 1}}>
-                  <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px'}}>
-                    {crypto?.icon && <img src={crypto.icon} alt="" width={20} height={20} style={{borderRadius: '50%'}} />}
-                    <span style={{fontWeight: 600, fontSize: '0.9rem'}}>{da.label || crypto?.name || da.currency}</span>
-                    {!da.showQR && <span style={{fontSize: '0.7rem', color: 'var(--text-muted)'}}>(QR hidden)</span>}
+                <div className={styles.flex1}>
+                  <div className={styles.donNameRow}>
+                    {crypto?.icon && <img src={crypto.icon} alt="" width={20} height={20} className={styles.roundImg} />}
+                    <span className={styles.donLabel}>{da.label || crypto?.name || da.currency}</span>
+                    {!da.showQR && <span className={styles.donQrLabel}>(QR hidden)</span>}
                   </div>
-                  <code style={{fontSize: '0.75rem', color: 'var(--text-secondary)', wordBreak: 'break-all'}}>{da.address}</code>
+                  <code className={styles.donCode}>{da.address}</code>
                 </div>
-                <div style={{display: 'flex', gap: '6px'}}>
+                <div className={`${styles.gap6} ${styles.flex}`}>
                   <button
                     type="button"
                     onClick={() => {
@@ -581,14 +566,14 @@ export default function ProfileEditPage() {
                       setDonationForm({ currency: da.currency, address: da.address, label: da.label || '', showQR: da.showQR })
                       setShowDonationForm(true)
                     }}
-                    style={{padding: '6px 12px', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.8rem'}}
+                    className={styles.btnSmall}
                   >
                     Edit
                   </button>
                   <button
                     type="button"
                     onClick={() => setConfirmDeleteDonation(da.id)}
-                    style={{padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-secondary)', borderRadius: '6px', color: 'var(--accent-secondary)', cursor: 'pointer', fontSize: '0.8rem'}}
+                    className={styles.btnDanger}
                   >
                     Delete
                   </button>
@@ -598,84 +583,73 @@ export default function ProfileEditPage() {
           })}
 
           {showDonationForm && (
-            <form onSubmit={handleSaveDonation} style={{marginTop: '16px', padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '10px', border: '1px solid var(--border-color)'}}>
-              <h3 style={{marginTop: 0, fontSize: '1rem'}}>{editingDonation ? 'Edit Donation Address' : 'Add Donation Address'}</h3>
+            <form onSubmit={handleSaveDonation} className={`${styles.formCard} ${styles.mt16}`}>
+              <h3 className={`${styles.h3Mt0} ${styles.mb12}`}>{editingDonation ? 'Edit Donation Address' : 'Add Donation Address'}</h3>
 
-              <div style={{marginBottom: '12px'}}>
-                <label style={{display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem'}}>Currency</label>
-                <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '6px'}}>
+              <div className={styles.mb12}>
+                <label className={styles.donFormLabel}>Currency</label>
+                <div className={styles.cryptoBtnGrid}>
                   {allCryptos.map(crypto => (
                     <button
                       key={crypto.id}
                       type="button"
                       onClick={() => setDonationForm({...donationForm, currency: crypto.id})}
-                      style={{
-                        padding: '6px 10px',
-                        background: donationForm.currency === crypto.id ? 'var(--accent-primary)' : 'var(--bg-secondary)',
-                        color: donationForm.currency === crypto.id ? 'var(--bg-primary)' : 'var(--text-primary)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        fontSize: '0.8rem'
-                      }}
+                      className={`${styles.cryptoBtn} ${donationForm.currency === crypto.id ? styles.cryptoBtnActive : ''}`}
                     >
-                      {crypto.icon && <img src={crypto.icon} alt="" width={14} height={14} style={{borderRadius: '50%'}} />}
+                      {crypto.icon && <img src={crypto.icon} alt="" width={14} height={14} className={styles.roundImg} />}
                       {crypto.symbol}
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div style={{marginBottom: '12px'}}>
-                <label style={{display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem'}}>{donationForm.currency} Address</label>
+              <div className={styles.mb12}>
+                <label className={styles.donFormLabel}>{donationForm.currency} Address</label>
                 <input
                   type="text"
                   value={donationForm.address}
                   onChange={e => setDonationForm({...donationForm, address: e.target.value})}
                   placeholder={`Enter your ${donationForm.currency} address...`}
                   required
-                  style={{width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.875rem'}}
+                  className={styles.donInput}
                 />
               </div>
 
-              <div style={{marginBottom: '12px'}}>
-                <label style={{display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem'}}>Label (optional)</label>
+              <div className={styles.mb12}>
+                <label className={styles.donFormLabel}>Label (optional)</label>
                 <input
                   type="text"
                   value={donationForm.label}
                   onChange={e => setDonationForm({...donationForm, label: e.target.value})}
                   placeholder="e.g., Main Wallet, Cold Storage..."
-                  style={{width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.875rem'}}
+                  className={styles.donInput}
                 />
               </div>
 
-              <div style={{marginBottom: '16px'}}>
-                <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.875rem'}}>
+              <div className={styles.mb16}>
+                <label className={styles.checkboxLabel}>
                   <input
                     type="checkbox"
                     checked={donationForm.showQR}
                     onChange={e => setDonationForm({...donationForm, showQR: e.target.checked})}
-                    style={{accentColor: 'var(--accent-primary)'}}
+                    className={styles.checkboxInput}
                   />
                   <span>Show QR code on profile</span>
                 </label>
               </div>
 
-              <div style={{display: 'flex', gap: '8px', justifyContent: 'flex-end'}}>
+              <div className={`${styles.flexEnd} ${styles.gap8}`}>
                 <button
                   type="button"
                   onClick={() => { setShowDonationForm(false); setEditingDonation(null) }}
-                  style={{padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem'}}
+                  className={styles.btnGhost}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={donationSaving}
-                  style={{padding: '8px 16px', background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500, fontSize: '0.875rem'}}
+                  className={styles.btnPrimary}
                 >
                   {donationSaving ? 'Saving...' : (editingDonation ? 'Update' : 'Add')}
                 </button>
@@ -685,70 +659,70 @@ export default function ProfileEditPage() {
         </div>
 
       {/* Feature Visibility Toggles */}
-      <div style={{background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '24px', marginTop: '20px'}}>
-        <h2 style={{marginBottom: '20px'}}>Feature Visibility</h2>
-        <p style={{color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '16px', lineHeight: 1.5}}>
+      <div className={styles.cardMt}>
+        <h2 className={styles.sectionTitle}>Feature Visibility</h2>
+        <p className={styles.sectionDesc}>
           Control which features and content sections are visible on your profile and content.
         </p>
 
-        <div style={{marginBottom: '12px'}}>
-          <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'}}>
-            <input type="checkbox" checked={showShop} onChange={e => setShowShop(e.target.checked)} style={{width: '18px', height: '18px', accentColor: 'var(--accent-primary)'}} />
+        <div className={styles.mb12}>
+          <label className={styles.checkboxLabel}>
+            <input type="checkbox" checked={showShop} onChange={e => setShowShop(e.target.checked)} className={styles.checkboxInput} />
             <span>🛍️ Show shop on profile</span>
           </label>
         </div>
 
-        <div style={{marginBottom: '12px'}}>
-          <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'}}>
-            <input type="checkbox" checked={showSchool} onChange={e => setShowSchool(e.target.checked)} style={{width: '18px', height: '18px', accentColor: 'var(--accent-primary)'}} />
+        <div className={styles.mb12}>
+          <label className={styles.checkboxLabel}>
+            <input type="checkbox" checked={showSchool} onChange={e => setShowSchool(e.target.checked)} className={styles.checkboxInput} />
             <span>🏫 Show school on profile</span>
           </label>
         </div>
 
-        <div style={{marginBottom: '12px'}}>
-          <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'}}>
-            <input type="checkbox" checked={enableTips} onChange={e => setEnableTips(e.target.checked)} style={{width: '18px', height: '18px', accentColor: 'var(--accent-primary)'}} />
+        <div className={styles.mb12}>
+          <label className={styles.checkboxLabel}>
+            <input type="checkbox" checked={enableTips} onChange={e => setEnableTips(e.target.checked)} className={styles.checkboxInput} />
             <span>💎 Enable tips on content</span>
           </label>
         </div>
 
-        <div style={{marginBottom: '12px'}}>
-          <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'}}>
-            <input type="checkbox" checked={enableReplies} onChange={e => setEnableReplies(e.target.checked)} style={{width: '18px', height: '18px', accentColor: 'var(--accent-primary)'}} />
+        <div className={styles.mb12}>
+          <label className={styles.checkboxLabel}>
+            <input type="checkbox" checked={enableReplies} onChange={e => setEnableReplies(e.target.checked)} className={styles.checkboxInput} />
             <span>💬 Enable replies on content</span>
           </label>
         </div>
 
-        <div style={{marginBottom: '12px'}}>
-          <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'}}>
-            <input type="checkbox" checked={enableLikes} onChange={e => setEnableLikes(e.target.checked)} style={{width: '18px', height: '18px', accentColor: 'var(--accent-primary)'}} />
+        <div className={styles.mb12}>
+          <label className={styles.checkboxLabel}>
+            <input type="checkbox" checked={enableLikes} onChange={e => setEnableLikes(e.target.checked)} className={styles.checkboxInput} />
             <span>❤️ Enable likes on content</span>
           </label>
         </div>
 
         <div>
-          <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'}}>
-            <input type="checkbox" checked={showViewCount} onChange={e => setShowViewCount(e.target.checked)} style={{width: '18px', height: '18px', accentColor: 'var(--accent-primary)'}} />
+          <label className={styles.checkboxLabel}>
+            <input type="checkbox" checked={showViewCount} onChange={e => setShowViewCount(e.target.checked)} className={styles.checkboxInput} />
             <span>👁️ Show view count</span>
           </label>
         </div>
       </div>
 
       {/* Social Links Section */}
-      <div style={{background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '24px', marginTop: '20px'}}>
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
-            <h2 style={{margin: 0}}>Social Links</h2>
+      <div className={styles.cardMt}>
+          <div className={`${styles.flexBetween} ${styles.mb20}`}>
+            <h2 className={styles.m0}>Social Links</h2>
             <button
               type="button"
               onClick={() => { setShowLinkForm(true); setEditingLink(null); setLinkForm({ type: 'website', url: '', label: '', icon: '' }) }}
-              style={{padding: '8px 16px', background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500}}
+              className={styles.btnPrimary}
             >
               + Add Link
             </button>
           </div>
 
           {links.length === 0 && !showLinkForm && (
-            <p style={{color: 'var(--text-secondary)', textAlign: 'center', padding: '20px'}}>No links added yet. Add your social media and website links!</p>
+            <p className={styles.emptyLinkState}>No links added yet. Add your social media and website links!</p>
           )}
 
           {links.map((link, index) => {
@@ -764,25 +738,25 @@ export default function ProfileEditPage() {
                   const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'))
                   if (draggedIndex !== index) handleReorderLinks(draggedIndex, index)
                 }}
-                style={{display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--bg-tertiary)', borderRadius: '8px', marginBottom: '8px', cursor: 'grab', border: '1px solid var(--border-color)'}}
+                className={styles.linkCard}
               >
-                <div style={{width: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '1rem'}} title="Drag to reorder">
+                <div className={styles.dragHandle} title="Drag to reorder">
                   ⠿
                 </div>
-                <div style={{width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem'}}>
+                <div className={styles.linkIconContainer}>
                   {link.icon ? (
-                    <img src={link.icon} alt={socialType.label} width={24} height={24} style={{borderRadius: '4px'}} />
+                    <img src={link.icon} alt={socialType.label} width={24} height={24} className={styles.roundImg4} />
                   ) : socialType.defaultIcon.startsWith('/') ? (
-                    <img src={socialType.defaultIcon} alt={socialType.label} width={24} height={24} style={{borderRadius: '4px'}} />
+                    <img src={socialType.defaultIcon} alt={socialType.label} width={24} height={24} className={styles.roundImg4} />
                   ) : (
                     <span>{socialType.defaultIcon}</span>
                   )}
                 </div>
-                <div style={{flex: 1}}>
-                  <div style={{fontWeight: 500}}>{link.label || socialType.label}</div>
-                  <div style={{fontSize: '0.875rem', color: 'var(--text-secondary)'}}>{link.url}</div>
+                <div className={styles.flex1}>
+                  <div className={styles.linkName}>{link.label || socialType.label}</div>
+                  <div className={styles.linkUrl}>{link.url}</div>
                 </div>
-                <div style={{display: 'flex', gap: '8px'}}>
+                <div className={`${styles.flex} ${styles.gap8}`}>
                   <button
                     type="button"
                     onClick={() => {
@@ -790,14 +764,14 @@ export default function ProfileEditPage() {
                       setLinkForm({ type: link.type, url: link.url, label: link.label || '', icon: link.icon || '' })
                       setShowLinkForm(true)
                     }}
-                    style={{padding: '6px 12px', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem'}}
+                    className={styles.btnGhost}
                   >
                     Edit
                   </button>
                   <button
                     type="button"
                     onClick={() => setConfirmDeleteLink(link.id)}
-                    style={{padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-secondary)', borderRadius: '6px', color: 'var(--accent-secondary)', cursor: 'pointer', fontSize: '0.875rem'}}
+                    className={styles.btnDanger}
                   >
                     Delete
                   </button>
@@ -807,15 +781,15 @@ export default function ProfileEditPage() {
           })}
 
           {showLinkForm && (
-            <form onSubmit={handleSaveLink} style={{marginTop: '20px', padding: '20px', background: 'var(--bg-tertiary)', borderRadius: '8px'}}>
-              <h3 style={{marginTop: 0}}>{editingLink ? 'Edit Link' : 'Add New Link'}</h3>
+            <form onSubmit={handleSaveLink} className={styles.linkFormCard}>
+              <h3 className={styles.h3Mt0}>{editingLink ? 'Edit Link' : 'Add New Link'}</h3>
 
-              <div style={{marginBottom: '12px'}}>
-                <label style={{display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem'}}>Link Type</label>
+              <div className={styles.mb12}>
+                <label className={styles.donFormLabel}>Link Type</label>
                 <select
                   value={linkForm.type}
                   onChange={e => setLinkForm({...linkForm, type: e.target.value})}
-                  style={{width: '100%', padding: '8px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)'}}
+                  className={styles.selectField}
                 >
                   {SOCIAL_TYPES.map(t => (
                     <option key={t.type} value={t.type}>{t.label}</option>
@@ -823,58 +797,58 @@ export default function ProfileEditPage() {
                 </select>
               </div>
 
-              <div style={{marginBottom: '12px'}}>
-                <label style={{display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem'}}>URL</label>
+              <div className={styles.mb12}>
+                <label className={styles.donFormLabel}>URL</label>
                 <input
                   type="url"
                   value={linkForm.url}
                   onChange={e => setLinkForm({...linkForm, url: e.target.value})}
                   placeholder="https://..."
                   required
-                  style={{width: '100%', padding: '8px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)'}}
+                  className={styles.selectField}
                 />
               </div>
 
-              <div style={{marginBottom: '12px'}}>
-                <label style={{display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem'}}>Label (optional)</label>
+              <div className={styles.mb12}>
+                <label className={styles.donFormLabel}>Label (optional)</label>
                 <input
                   type="text"
                   value={linkForm.label}
                   onChange={e => setLinkForm({...linkForm, label: e.target.value})}
                   placeholder="Custom label..."
-                  style={{width: '100%', padding: '8px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)'}}
+                  className={styles.selectField}
                 />
               </div>
 
-              <div style={{marginBottom: '12px'}}>
-                <label style={{display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem'}}>Custom Icon URL (optional)</label>
+              <div className={styles.mb12}>
+                <label className={styles.donFormLabel}>Custom Icon URL (optional)</label>
                 <input
                   type="url"
                   value={linkForm.icon}
                   onChange={e => setLinkForm({...linkForm, icon: e.target.value})}
                   placeholder="https://example.com/icon.png"
-                  style={{width: '100%', padding: '8px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)'}}
+                  className={styles.selectField}
                 />
                 {linkForm.icon && (
-                  <div style={{marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px'}}>
-                    <span style={{fontSize: '0.75rem', color: 'var(--text-muted)'}}>Preview:</span>
-                    <img src={linkForm.icon} alt="Icon preview" width={20} height={20} style={{borderRadius: '4px'}} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                  <div className={styles.iconPreviewRow}>
+                    <span className={styles.previewLabel}>Preview:</span>
+                    <img src={linkForm.icon} alt="Icon preview" width={20} height={20} className={styles.roundImg4} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
                   </div>
                 )}
               </div>
 
-              <div style={{display: 'flex', gap: '8px', justifyContent: 'flex-end'}}>
+              <div className={`${styles.flexEnd} ${styles.gap8}`}>
                 <button
                   type="button"
                   onClick={() => { setShowLinkForm(false); setEditingLink(null) }}
-                  style={{padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer'}}
+                  className={styles.btnGhost}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={linkSaving}
-                  style={{padding: '8px 16px', background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500}}
+                  className={styles.btnPrimary}
                 >
                   {linkSaving ? 'Saving...' : (editingLink ? 'Update' : 'Add')}
                 </button>

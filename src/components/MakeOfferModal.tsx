@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useToast } from '@/context/ToastContext'
 import styles from './MakeOfferModal.module.css'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
+import Button from '@/components/ui/Button'
 
 interface MakeOfferModalProps {
   isOpen: boolean
@@ -118,21 +119,21 @@ export function MakeOfferModal({ isOpen, onClose, listingId, listingTitle, listi
           </div>
 
           <div className={styles.modalActions}>
-            <button
+            <Button
               type="button"
               onClick={onClose}
-              className="btn-ghost"
+              variant="ghost"
               disabled={loading}
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              className="btn-primary"
+              variant="primary"
               disabled={loading || !offeredItem.trim()}
             >
               {loading ? 'Sending...' : 'Send Offer'}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useCallback } from 'react'
+import Modal from '@/components/ui/Modal'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { useCart } from '@/context/CartContext'
@@ -57,8 +58,7 @@ export default function ProductQuickViewModal({ product, onClose, onFund }: Quic
     : []
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className={`modal modal-lg`} onClick={e => e.stopPropagation()} ref={modalRef}>
+    <Modal open={true} onClose={onClose} size="lg">
         <button className={styles.closeBtn} onClick={onClose} aria-label="Close">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -158,7 +158,6 @@ export default function ProductQuickViewModal({ product, onClose, onFund }: Quic
             )}
           </div>
         </div>
-      </div>
-    </div>
+      </Modal>
   )
 }

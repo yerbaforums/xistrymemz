@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useToast } from '@/context/ToastContext'
 import styles from './projects.module.css'
+import Button from '@/components/ui/Button'
 
 interface Plan {
   id: string
@@ -194,8 +195,8 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
           <p className={styles.subtitle}>Manage your projects and collaborations</p>
         </div>
         <div className={styles.headerActions}>
-          <Link href="/projects" className="btn-secondary">Explore Projects</Link>
-          <button onClick={() => setShowCreateModal(true)} className="btn-primary">+ New Project</button>
+          <Link href="/projects" ><Button variant="secondary">Explore Projects</Button></Link>
+          <Button onClick={() => setShowCreateModal(true)} variant="primary">+ New Project</Button>
         </div>
       </div>
 
@@ -218,13 +219,13 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
           {(['ALL', 'DRAFT', 'ACTIVE', 'COMPLETED', 'ARCHIVED'] as const).map(f => {
             const config = STATUS_CONFIG[f]
             return (
-              <button
+              <Button
                 key={f}
                 onClick={() => setStatusFilter(f)}
                 className={`${styles.filterBtn} ${statusFilter === f ? styles.active : ''}`}
               >
                 {config ? config.icon : '🌟'} {f === 'ALL' ? 'All' : config?.label || f} ({statusCounts[f]})
-              </button>
+              </Button>
             )
           })}
         </div>
@@ -243,18 +244,18 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
             <option value="mostPopular">Most Popular</option>
           </select>
           <div className={styles.viewToggle}>
-            <button
+            <Button
               className={`${styles.viewBtn} ${viewMode === 'grid' ? styles.activeView : ''}`}
               onClick={() => setViewMode('grid')}
             >
               ⊞ Grid
-            </button>
-            <button
+            </Button>
+            <Button
               className={`${styles.viewBtn} ${viewMode === 'list' ? styles.activeView : ''}`}
               onClick={() => setViewMode('list')}
             >
               ☰ List
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -270,7 +271,7 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
           <div className={styles.emptyIcon}>📋</div>
           <h3>No projects found</h3>
           <p>Try adjusting your search or filters, or create a new project.</p>
-          <button onClick={() => setShowCreateModal(true)} className="btn-primary">Create Your First Project</button>
+          <Button onClick={() => setShowCreateModal(true)} variant="primary">Create Your First Project</Button>
         </div>
       ) : viewMode === 'grid' ? (
         <div className={styles.cardGrid}>
@@ -423,7 +424,7 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h2>Create New Project</h2>
-              <button className={styles.modalClose} onClick={() => setShowCreateModal(false)}>✕</button>
+              <Button className={styles.modalClose} onClick={() => setShowCreateModal(false)}>✕</Button>
             </div>
             <form onSubmit={handleCreate}>
               <div className={styles.formGroup}>
@@ -443,10 +444,10 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
                 <textarea value={newMileposts} onChange={e => setNewMileposts(e.target.value)} placeholder="Key milestones..." rows={3} />
               </div>
               <div className={styles.modalActions}>
-                <button type="button" onClick={() => setShowCreateModal(false)} className="btn-ghost">Cancel</button>
-                <button type="submit" disabled={!newTitle.trim() || creating} className="btn-primary">
+                <Button type="button" onClick={() => setShowCreateModal(false)} variant="ghost">Cancel</Button>
+                <Button type="submit" disabled={!newTitle.trim() || creating} variant="primary">
                   {creating ? 'Creating...' : 'Create Project'}
-                </button>
+                </Button>
               </div>
             </form>
           </div>

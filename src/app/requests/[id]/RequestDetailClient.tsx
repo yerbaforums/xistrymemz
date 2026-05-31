@@ -12,6 +12,7 @@ import EntityActions from '@/components/EntityActions'
 import ViewCount from '@/components/ViewCount'
 import { useRecordView } from '@/hooks/useRecordView'
 import TranslateButton from '@/components/TranslateButton'
+import Button from '@/components/ui/Button'
 
 const CATEGORIES = [
   { value: 'GENERAL', label: 'General', icon: '\u{1F4CB}' },
@@ -612,9 +613,9 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               </div>
               <div className={styles.headerActions}>
                 {canViewHistory && (
-                  <button onClick={() => setShowHistoryModal(true)} className={styles.historyBtn}>
+                  <Button onClick={() => setShowHistoryModal(true)} className={styles.historyBtn}>
                     📜 History
-                  </button>
+                  </Button>
                 )}
                 <span className={styles.date}>
                   {new Date(request.createdAt).toLocaleDateString()}
@@ -625,11 +626,11 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
 
             <div className={styles.titleRow}>
               <h1 className={styles.title}>{request.title}</h1>
-              <button onClick={() => navigator.clipboard.writeText(window.location.href)} className={styles.editBtn} title="Copy link">🔗</button>
+              <Button onClick={() => navigator.clipboard.writeText(window.location.href)} className={styles.editBtn} title="Copy link">🔗</Button>
               {canEdit && (
-                <button onClick={() => setShowEditModal(true)} className={styles.editBtn}>
+                <Button onClick={() => setShowEditModal(true)} className={styles.editBtn}>
                   ✏️ Edit
-                </button>
+                </Button>
               )}
             </div>
 
@@ -730,13 +731,13 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                     onChange={e => setFundingSlider(parseFloat(e.target.value))}
                     className={styles.fundingSlider}
                   />
-                  <button
+                  <Button
                     onClick={handleSaveFunding}
                     disabled={loading || fundingSlider === request.currentFunding}
                     className={styles.saveFundingBtn}
                   >
                     {loading ? 'Saving...' : 'Save'}
-                  </button>
+                  </Button>
                 </div>
               )}
 
@@ -789,20 +790,20 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                           <span className={styles.donationAddr}>{truncateAddr(da.address)}</span>
                         </div>
                         <div className={styles.donationActions}>
-                          <button
+                          <Button
                             onClick={() => setQrModal({ open: true, currency: da.label || da.currency, address: da.address })}
                             className={styles.donationBtn}
                             title="View QR Code"
                           >
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z"/></svg>
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             onClick={() => { navigator.clipboard.writeText(da.address); success('Copied!') }}
                             className={styles.donationBtn}
                             title="Copy address"
                           >
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     )
@@ -823,12 +824,12 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
             <div className={styles.supportersHeader}>
               <h2 className={styles.sectionTitle}>Supporters ({supportCount})</h2>
               {request.status === 'PENDING' && !isOwnRequest && (
-                <button
+                <Button
                   className={`${styles.supportBtn} ${isSupporting ? styles.supported : ''}`}
                   onClick={handleSupport}
                 >
                   👍 {isSupporting ? 'Supported' : 'Support'}
-                </button>
+                </Button>
               )}
             </div>
 
@@ -856,20 +857,20 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
             <div className={styles.detailCard}>
               <h2 className={styles.sectionTitle}>Manage Request</h2>
               <div className={styles.actions}>
-                <button
+                <Button
                   onClick={handleApprove}
                   className={styles.approveBtn}
                   disabled={loading}
                 >
                   \u2705 Approve
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleReject}
                   className={styles.rejectBtn}
                   disabled={loading}
                 >
                   \u274C Reject
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -877,32 +878,32 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
           {/* QUICK ACTIONS */}
           {canHelpComplete && (
             <div className={styles.detailCard}>
-              <button
+              <Button
                 onClick={() => setShowCompleteModal(true)}
                 className={styles.helpBtn}
                 disabled={loading}
               >
                 🤝 Help Complete This Request
-              </button>
+              </Button>
             </div>
           )}
 
           {canContact && request.status === 'PENDING' && (
             <div className={styles.quickActions}>
-              <button
+              <Button
                 onClick={() => setShowOfferModal(true)}
                 className={styles.actionBtn}
                 disabled={loading}
               >
                 🤝 Make Offer
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => setShowContactModal(true)}
                 className={styles.actionBtn}
                 disabled={loading}
               >
                 💬 Contact Requestor
-              </button>
+              </Button>
             </div>
           )}
 
@@ -919,13 +920,13 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
 
           {canRollback && (
             <div className={styles.quickActions}>
-              <button
+              <Button
                 onClick={() => setShowHistoryModal(true)}
                 className={styles.actionBtn}
                 disabled={loading}
               >
                 ↩️ Rollback Status
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -953,12 +954,12 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
             )}
 
             {allowFulfillments && !isOwnRequest && request.status === 'PENDING' && (
-              <button
+              <Button
                 onClick={() => setShowFulfillmentForm(!showFulfillmentForm)}
                 className={styles.fulfillmentFormToggle}
               >
                 {showFulfillmentForm ? 'Cancel' : 'Make an Offer'}
-              </button>
+              </Button>
             )}
 
             {showFulfillmentForm && (
@@ -983,9 +984,9 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                     required
                   />
                 </div>
-                <button type="submit" className="btn-primary" disabled={loading}>
+                <Button type="submit" variant="primary" disabled={loading}>
                   Submit Offer
-                </button>
+                </Button>
               </form>
             )}
 
@@ -1009,20 +1010,20 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                   <p className={styles.fulfillmentContent}>{f.content}</p>
                   {isOwnRequest && f.status === 'PENDING' && (
                     <div className={styles.fulfillmentActions}>
-                      <button
+                      <Button
                         onClick={() => handleRespondFulfillment(f.id, 'APPROVED')}
                         className={styles.fulfillmentApproveBtn}
                         disabled={loading}
                       >
                         \u2713 Accept
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         onClick={() => handleRespondFulfillment(f.id, 'DECLINED')}
                         className={styles.fulfillmentDeclineBtn}
                         disabled={loading}
                       >
                         \u2715 Decline
-                      </button>
+                      </Button>
                       <label className={styles.autoCompleteLabel}>
                         <input type="checkbox" id={`auto-${f.id}`} />
                         <span>Auto-complete request</span>
@@ -1065,9 +1066,9 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                 placeholder="Add a comment..."
                 rows={3}
               />
-              <button type="submit" className="btn-primary" disabled={loading || !comment.trim()}>
+              <Button type="submit" variant="primary" disabled={loading || !comment.trim()}>
                 Add Comment
-              </button>
+              </Button>
             </form>
           </div>
         </div>
@@ -1092,21 +1093,21 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               />
             </div>
             <div className={styles.modalActions}>
-              <button
+              <Button
                 type="button"
                 onClick={() => setShowCompleteModal(false)}
-                className="btn-ghost"
+                variant="ghost"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={handleComplete}
-                className="btn-primary"
+                variant="primary"
                 disabled={loading}
               >
                 {loading ? 'Processing...' : 'Mark as Completed'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -1155,13 +1156,13 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                 <p className={styles.rollbackInfo}>Select a previous status to rollback to:</p>
                 <div className={styles.historyOptions}>
                   {request.statusHistory?.map((change) => (
-                    <button
+                    <Button
                       key={change.id}
                       className={`${styles.historyOption} ${selectedHistory?.id === change.id ? styles.selected : ''}`}
                       onClick={() => setSelectedHistory(change)}
                     >
                       {STATUS_LABELS[change.fromStatus]?.icon} {STATUS_LABELS[change.fromStatus]?.label}
-                    </button>
+                    </Button>
                   ))}
                 </div>
                 {selectedHistory && (
@@ -1176,21 +1177,21 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                   </div>
                 )}
                 <div className={styles.modalActions}>
-                  <button
+                  <Button
                     type="button"
                     onClick={() => { setShowHistoryModal(false); setSelectedHistory(null); }}
-                    className="btn-ghost"
+                    variant="ghost"
                   >
                     Cancel
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={handleRollback}
-                    className="btn-primary"
+                    variant="primary"
                     disabled={loading || !selectedHistory}
                   >
                     {loading ? 'Rolling back...' : `Rollback to ${STATUS_LABELS[selectedHistory?.fromStatus || '']?.label}`}
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -1216,21 +1217,21 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               />
             </div>
             <div className={styles.modalActions}>
-              <button
+              <Button
                 type="button"
                 onClick={() => setShowContactModal(false)}
-                className="btn-ghost"
+                variant="ghost"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={handleContactMessage}
-                className="btn-primary"
+                variant="primary"
                 disabled={loading || !contactMessage.trim()}
               >
                 {loading ? 'Sending...' : 'Send Message'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -1323,21 +1324,21 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               </label>
             </div>
             <div className={styles.modalActions}>
-              <button
+              <Button
                 type="button"
                 onClick={() => setShowEditModal(false)}
-                className="btn-ghost"
+                variant="ghost"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={handleEdit}
-                className="btn-primary"
+                variant="primary"
                 disabled={loading}
               >
                 {loading ? 'Saving...' : 'Save Changes'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -1365,10 +1366,10 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               rows={4}
             />
             <div className={styles.formActions}>
-              <button onClick={submitSupport} disabled={supporting} className="btn-primary">
+              <Button onClick={submitSupport} disabled={supporting} variant="primary">
                 {supporting ? '...' : 'Support'}
-              </button>
-              <button onClick={() => setSupportModalOpen(false)} className="btn-ghost">Cancel</button>
+              </Button>
+              <Button onClick={() => setSupportModalOpen(false)} variant="ghost">Cancel</Button>
             </div>
           </div>
         </div>

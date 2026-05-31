@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
+import Modal from '@/components/ui/Modal'
 import ServiceFilters from '@/components/ServiceFilters'
 import ServiceCard from '@/components/ServiceCard'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
@@ -177,10 +178,7 @@ export default function ServicesPage() {
       </div>
 
       {sel && !showBooking && (
-        <div className="modal-overlay" onClick={() => { setSelectedService(null) }}>
-          <div className="modal modal-lg" onClick={e => e.stopPropagation()}
-            style={{ maxWidth: 560 }}
-          >
+        <Modal open={true} onClose={() => setSelectedService(null)} size="lg">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
               <div>
                 <span style={{
@@ -260,8 +258,7 @@ export default function ServicesPage() {
                 {session ? '📅 Book This Service' : 'Sign in to Book'}
               </button>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
 
       {sel && showBooking && (

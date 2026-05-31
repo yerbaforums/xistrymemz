@@ -7,6 +7,7 @@ import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import FormWizard, { useWizard, type WizardStep } from '@/components/FormWizard'
 import { businessTemplates, getTemplateById, type BusinessTemplate } from '@/lib/templates'
+import Button from '@/components/ui/Button'
 
 const steps: WizardStep[] = [
   { key: 'template', label: 'Choose Template', icon: '📋' },
@@ -225,9 +226,9 @@ function SchoolSetupContent() {
                   </div>
                 )}
               </div>
-              <button type="submit" className="btn-primary" disabled={saving}>
+              <Button type="submit" variant="primary" disabled={saving}>
                 {saving ? 'Saving...' : 'Save & Continue'}
-              </button>
+              </Button>
             </form>
           </div>
         )}
@@ -240,9 +241,9 @@ function SchoolSetupContent() {
             {selectedTemplate && !hasSchool && (
               <div className={styles.templatePrompt}>
                 <p>This template includes sample content. Add them now?</p>
-                <button onClick={handleAddSampleContent} className="btn-primary" disabled={saving}>
+                <Button onClick={handleAddSampleContent} variant="primary" disabled={saving}>
                   {saving ? 'Adding...' : `Add ${selectedTemplate.sampleContent?.length || 0} Sample Content`}
-                </button>
+                </Button>
               </div>
             )}
             

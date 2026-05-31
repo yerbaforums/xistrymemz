@@ -9,6 +9,7 @@ import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import FormWizard, { useWizard, type WizardStep } from '@/components/FormWizard'
 import { businessTemplates, getTemplateById, type BusinessTemplate } from '@/lib/templates'
+import Button from '@/components/ui/Button'
 
 interface CourierService {
   id: string
@@ -412,7 +413,7 @@ export default function CourierSetupPage() {
       ) : (
         <>
           <div className={styles.headerActions}>
-            <button onClick={() => { 
+            <Button onClick={() => { 
               setShowForm(true)
               setEditingService(null)
               setFormData({
@@ -422,7 +423,7 @@ export default function CourierSetupPage() {
               })
             }} className={styles.addBtn}>
               + New Service
-            </button>
+            </Button>
           </div>
 
           <div className={styles.servicesGrid}>
@@ -432,12 +433,12 @@ export default function CourierSetupPage() {
                   <span className={`badge badge-${service.serviceType.toLowerCase()}`}>
                     {service.serviceType}
                   </span>
-                  <button 
+                  <Button 
                     onClick={() => handleToggleActive(service)}
                     className={service.isActive ? styles.activeBtn : styles.inactiveBtn}
                   >
                     {service.isActive ? 'Active' : 'Paused'}
-                  </button>
+                  </Button>
                 </div>
                 <h3>{service.name}</h3>
                 {service.description && <p className={styles.serviceDesc}>{service.description}</p>}
@@ -461,8 +462,8 @@ export default function CourierSetupPage() {
                   </p>
                 )}
                 <div className={styles.serviceActions}>
-                  <button onClick={() => handleEdit(service)} className={styles.editBtn}>Edit</button>
-                  <button onClick={() => handleDelete(service.id)} className={styles.deleteBtn}>Delete</button>
+                  <Button onClick={() => handleEdit(service)} className={styles.editBtn}>Edit</Button>
+                  <Button onClick={() => handleDelete(service.id)} className={styles.deleteBtn}>Delete</Button>
                 </div>
               </div>
             ))}
@@ -563,10 +564,10 @@ export default function CourierSetupPage() {
                 </label>
               </div>
               <div className={styles.formActions}>
-                <button type="button" onClick={() => setShowForm(false)} className="btn-ghost">Cancel</button>
-                <button type="submit" className="btn-primary" disabled={saving}>
+                <Button type="button" onClick={() => setShowForm(false)} variant="ghost">Cancel</Button>
+                <Button type="submit" variant="primary" disabled={saving}>
                   {saving ? 'Saving...' : editingService ? 'Update Service' : 'Create Service'}
-                </button>
+                </Button>
               </div>
             </form>
           </div>

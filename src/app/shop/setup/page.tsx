@@ -7,6 +7,7 @@ import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import FormWizard, { useWizard, type WizardStep } from '@/components/FormWizard'
 import { businessTemplates, getTemplateById, type BusinessTemplate } from '@/lib/templates'
+import Button from '@/components/ui/Button'
 
 interface ShopData {
   shopName: string | null
@@ -480,9 +481,9 @@ export default function SetupShopPage() {
                 <label>Shop Image</label>
                 <div className={styles.imageUpload}>
                   <input type="file" ref={shopImageRef} onChange={handleShopImageChange} accept="image/*" className={styles.fileInput} />
-                  <button type="button" onClick={() => shopImageRef.current?.click()} className={styles.uploadBtn} disabled={uploading}>
+                  <Button type="button" onClick={() => shopImageRef.current?.click()} className={styles.uploadBtn} disabled={uploading}>
                     {uploading ? 'Uploading...' : 'Upload Image'}
-                  </button>
+                  </Button>
                   <input type="text" value={shopData.shopImage || ''} onChange={e => setShopData({...shopData, shopImage: e.target.value})} placeholder="Or paste image URL" className={styles.urlInput} />
                 </div>
                 {shopData.shopImage && <img src={shopData.shopImage} alt="Shop preview" className={styles.imagePreview} />}
@@ -499,15 +500,15 @@ export default function SetupShopPage() {
           <div className={styles.stepContent}>
             <div className={styles.sectionHeader}>
               <h2>Your Listings</h2>
-              <button onClick={() => setShowProductModal(true)} className="btn-primary">+ Add Listing</button>
+              <Button onClick={() => setShowProductModal(true)} variant="primary">+ Add Listing</Button>
             </div>
             
             {selectedTemplate && !products.length && (
               <div className={styles.templatePrompt}>
                 <p>This template includes sample products. Add them now?</p>
-                <button onClick={handleAddSampleProducts} className="btn-primary" disabled={saving}>
+                <Button onClick={handleAddSampleProducts} variant="primary" disabled={saving}>
                   {saving ? 'Adding...' : `Add ${selectedTemplate.sampleProducts?.length || 0} Sample Products`}
-                </button>
+                </Button>
               </div>
             )}
             
@@ -528,11 +529,11 @@ export default function SetupShopPage() {
                       </p>
                       <p className={styles.status}>{product.published ? '✓ Published' : 'Draft'}</p>
                       <div className={styles.productActions}>
-                        <button onClick={() => handleEditProduct(product)} className={styles.editBtn}>Edit</button>
-                        <button onClick={() => handleTogglePublish(product.id, product.published)} className={product.published ? styles.unpublishBtn : styles.publishBtn}>
+                        <Button onClick={() => handleEditProduct(product)} className={styles.editBtn}>Edit</Button>
+                        <Button onClick={() => handleTogglePublish(product.id, product.published)} className={product.published ? styles.unpublishBtn : styles.publishBtn}>
                           {product.published ? 'Unpublish' : 'Publish'}
-                        </button>
-                        <button onClick={() => handleDeleteProduct(product.id)} className={styles.deleteBtn}>Delete</button>
+                        </Button>
+                        <Button onClick={() => handleDeleteProduct(product.id)} className={styles.deleteBtn}>Delete</Button>
                       </div>
                     </div>
                   </div>
@@ -628,9 +629,9 @@ export default function SetupShopPage() {
                 <label>Image</label>
                 <div className={styles.imageUpload}>
                   <input type="file" ref={productImageRef} onChange={(e) => handleProductImageChange(e, false)} accept="image/*" className={styles.fileInput} />
-                  <button type="button" onClick={() => productImageRef.current?.click()} className={styles.uploadBtn} disabled={uploading}>
+                  <Button type="button" onClick={() => productImageRef.current?.click()} className={styles.uploadBtn} disabled={uploading}>
                     {uploading ? 'Uploading...' : 'Upload Image'}
-                  </button>
+                  </Button>
                   <input type="text" value={newProduct.imageUrl} onChange={e => setNewProduct({...newProduct, imageUrl: e.target.value})} placeholder="Or paste image URL" className={styles.urlInput} />
                 </div>
                 {newProduct.imageUrl && <img src={newProduct.imageUrl} alt="Preview" className={styles.imagePreview} />}
@@ -689,10 +690,10 @@ export default function SetupShopPage() {
                 </label>
               </div>
               <div className={styles.modalActions}>
-                <button type="button" onClick={() => setShowProductModal(false)} className="btn-ghost">Cancel</button>
-                <button type="submit" className="btn-primary" disabled={saving}>
+                <Button type="button" onClick={() => setShowProductModal(false)} variant="ghost">Cancel</Button>
+                <Button type="submit" variant="primary" disabled={saving}>
                   {saving ? 'Creating...' : 'Create Listing'}
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -745,9 +746,9 @@ export default function SetupShopPage() {
                 <label>Image</label>
                 <div className={styles.imageUpload}>
                   <input type="file" onChange={(e) => handleProductImageChange(e, true)} accept="image/*" className={styles.fileInput} />
-                  <button type="button" onClick={(e) => (e.target as HTMLButtonElement).previousElementSibling?.dispatchEvent(new MouseEvent('click'))} className={styles.uploadBtn} disabled={uploading}>
+                  <Button type="button" onClick={(e) => (e.target as HTMLButtonElement).previousElementSibling?.dispatchEvent(new MouseEvent('click'))} className={styles.uploadBtn} disabled={uploading}>
                     {uploading ? 'Uploading...' : 'Upload Image'}
-                  </button>
+                  </Button>
                   <input type="text" value={editProduct.imageUrl} onChange={e => setEditProduct({...editProduct, imageUrl: e.target.value})} placeholder="Or paste image URL" className={styles.urlInput} />
                 </div>
                 {editProduct.imageUrl && <img src={editProduct.imageUrl} alt="Preview" className={styles.imagePreview} />}
@@ -800,10 +801,10 @@ export default function SetupShopPage() {
                 </select>
               </div>
               <div className={styles.modalActions}>
-                <button type="button" onClick={() => setShowEditModal(false)} className="btn-ghost">Cancel</button>
-                <button type="submit" className="btn-primary" disabled={saving}>
+                <Button type="button" onClick={() => setShowEditModal(false)} variant="ghost">Cancel</Button>
+                <Button type="submit" variant="primary" disabled={saving}>
                   {saving ? 'Saving...' : 'Save Changes'}
-                </button>
+                </Button>
               </div>
             </form>
           </div>

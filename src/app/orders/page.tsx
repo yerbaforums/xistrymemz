@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
+import Button from '@/components/ui/Button'
 
 interface EscrowTransaction {
   id: string
@@ -182,30 +183,30 @@ export default function OrdersPage() {
       </div>
 
       <div className={styles.filters}>
-        <button
+        <Button
           className={`${styles.filterBtn} ${filter === 'all' ? styles.active : ''}`}
           onClick={() => setFilter('all')}
         >
           All Orders
-        </button>
-        <button
+        </Button>
+        <Button
           className={`${styles.filterBtn} ${filter === 'asBuyer' ? styles.active : ''}`}
           onClick={() => setFilter('asBuyer')}
         >
           Purchases
-        </button>
-        <button
+        </Button>
+        <Button
           className={`${styles.filterBtn} ${filter === 'asSeller' ? styles.active : ''}`}
           onClick={() => setFilter('asSeller')}
         >
           Sales
-        </button>
-        <button
+        </Button>
+        <Button
           className={`${styles.filterBtn} ${filter === 'asCourier' ? styles.active : ''}`}
           onClick={() => setFilter('asCourier')}
         >
           Deliveries
-        </button>
+        </Button>
       </div>
 
       {orders.length === 0 ? (
@@ -304,12 +305,12 @@ export default function OrdersPage() {
               </Link>
 
               <div className={styles.orderActions}>
-                <button 
+                <Button 
                   onClick={() => setSelectedOrder(order)}
                   className={styles.viewBtn}
                 >
                   Manage
-                </button>
+                </Button>
               </div>
             </div>
           ))}
@@ -417,31 +418,31 @@ export default function OrdersPage() {
                   <span className={styles.partyRole}>Buyer</span>
                   <span className={styles.partyName}>{selectedOrder.buyer.name || 'Unknown'}</span>
                   {selectedOrder.buyer.id !== session?.user?.id && (
-                    <button 
+                    <Button 
                       onClick={() => openMessageModal({ id: selectedOrder.buyer.id, name: selectedOrder.buyer.name })}
                       className={styles.messageBtn}
                     >
                       Message
-                    </button>
+                    </Button>
                   )}
                 </div>
                 <div className={styles.partyItem}>
                   <span className={styles.partyRole}>Seller</span>
                   <span className={styles.partyName}>{selectedOrder.seller.name || 'Unknown'}</span>
                   {selectedOrder.seller.id !== session?.user?.id && (
-                    <button 
+                    <Button 
                       onClick={() => openMessageModal({ id: selectedOrder.seller.id, name: selectedOrder.seller.name })}
                       className={styles.messageBtn}
                     >
                       Message
-                    </button>
+                    </Button>
                   )}
                 </div>
                 {selectedOrder.courier && (
                   <div className={styles.partyItem}>
                     <span className={styles.partyRole}>Courier</span>
                     <span className={styles.partyName}>{selectedOrder.courier.name}</span>
-                    <button 
+                    <Button 
                       onClick={() => {
                         const c = selectedOrder.courier
                         c && openMessageModal({ id: c.id, name: c.name })
@@ -449,7 +450,7 @@ export default function OrdersPage() {
                       className={styles.messageBtn}
                     >
                       Message
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>
@@ -459,30 +460,30 @@ export default function OrdersPage() {
               {selectedOrder.buyer.id === session?.user?.id && (
                 <>
                   {selectedOrder.status === 'PENDING' && (
-                    <button 
+                    <Button 
                       className={styles.fundBtn}
                       disabled={updating}
                       onClick={() => updateOrderStatus(selectedOrder.id, 'fund', { txHash: 'manual-' + Date.now() })}
                     >
                       Fund Escrow
-                    </button>
+                    </Button>
                   )}
                   {selectedOrder.status === 'FUNDED' && (
                     <>
-                      <button 
+                      <Button 
                         className={styles.releaseBtn}
                         disabled={updating}
                         onClick={() => updateOrderStatus(selectedOrder.id, 'release')}
                       >
                         Release Payment
-                      </button>
-                      <button 
+                      </Button>
+                      <Button 
                         className={styles.disputeBtn}
                         disabled={updating}
                         onClick={() => updateOrderStatus(selectedOrder.id, 'dispute')}
                       >
                         Open Dispute
-                      </button>
+                      </Button>
                     </>
                   )}
                 </>
@@ -491,22 +492,22 @@ export default function OrdersPage() {
               {selectedOrder.seller.id === session?.user?.id && (
                 <>
                   {selectedOrder.status === 'FUNDED' && (
-                    <button 
+                    <Button 
                       className={styles.refundBtn}
                       disabled={updating}
                       onClick={() => updateOrderStatus(selectedOrder.id, 'refund')}
                     >
                       Issue Refund
-                    </button>
+                    </Button>
                   )}
                   {selectedOrder.status === 'DISPUTED' && (
-                    <button 
+                    <Button 
                       className={styles.resolveBtn}
                       disabled={updating}
                       onClick={() => updateOrderStatus(selectedOrder.id, 'refund')}
                     >
                       Resolve (Refund)
-                    </button>
+                    </Button>
                   )}
                 </>
               )}
@@ -515,60 +516,60 @@ export default function OrdersPage() {
                 <>
                   {selectedOrder.deliveryStatus === 'PENDING' && selectedOrder.status !== 'CANCELLED' && selectedOrder.status !== 'REFUNDED' && (
                     <>
-                      <button 
+                      <Button 
                         className={styles.acceptBtn}
                         disabled={updating}
                         onClick={() => updateOrderStatus(selectedOrder.id, 'courier_accept')}
                       >
                         Accept Delivery
-                      </button>
-                      <button 
+                      </Button>
+                      <Button 
                         className={styles.declineBtn}
                         disabled={updating}
                         onClick={() => updateOrderStatus(selectedOrder.id, 'courier_decline')}
                       >
                         Decline Delivery
-                      </button>
+                      </Button>
                     </>
                   )}
                   {selectedOrder.deliveryStatus === 'ACCEPTED' && (
-                    <button 
+                    <Button 
                       className={styles.shipBtn}
                       disabled={updating}
                       onClick={() => updateOrderStatus(selectedOrder.id, 'courier_pickup')}
                     >
                       Mark Picked Up
-                    </button>
+                    </Button>
                   )}
                   {selectedOrder.deliveryStatus === 'PICKED_UP' && (
-                    <button 
+                    <Button 
                       className={styles.shipBtn}
                       disabled={updating}
                       onClick={() => updateOrderStatus(selectedOrder.id, 'update_delivery', { deliveryStatus: 'IN_TRANSIT' })}
                     >
                       Mark In Transit
-                    </button>
+                    </Button>
                   )}
                   {selectedOrder.deliveryStatus === 'IN_TRANSIT' && (
-                    <button 
+                    <Button 
                       className={styles.deliverBtn}
                       disabled={updating}
                       onClick={() => updateOrderStatus(selectedOrder.id, 'confirm_delivery')}
                     >
                       Confirm Delivery
-                    </button>
+                    </Button>
                   )}
                 </>
               )}
             </div>
 
-            <button 
+            <Button 
               onClick={() => setSelectedOrder(null)} 
-              className="btn-ghost"
+              variant="ghost"
               style={{ marginTop: '16px' }}
             >
               Close
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -587,10 +588,10 @@ export default function OrdersPage() {
               />
             </div>
             <div className={styles.modalActions}>
-              <button onClick={() => setShowMessageModal(false)} className="btn-ghost">Cancel</button>
-              <button onClick={sendMessage} disabled={sendingMessage || !messageText.trim()} className="btn-primary">
+              <Button onClick={() => setShowMessageModal(false)} variant="ghost">Cancel</Button>
+              <Button onClick={sendMessage} disabled={sendingMessage || !messageText.trim()} variant="primary">
                 {sendingMessage ? 'Sending...' : 'Send Message'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

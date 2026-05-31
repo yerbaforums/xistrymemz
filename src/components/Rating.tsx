@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import styles from './Rating.module.css'
 import { useToast } from '@/context/ToastContext'
+import Button from '@/components/ui/Button'
 
 interface RatingData {
   id: string
@@ -169,20 +170,20 @@ export default function RatingDisplay({ userId, productId, type = 'SELLER' }: Ra
             rows={3}
           />
           <div className={styles.ratingFormActions}>
-            <button 
+            <Button 
               onClick={() => setShowRatingForm(false)} 
-              className="btn-ghost"
+              variant="ghost"
               disabled={submitting}
             >
               Cancel
-            </button>
-            <button 
+            </Button>
+            <Button 
               onClick={submitRating} 
-              className="btn-primary"
+              variant="primary"
               disabled={submitting}
             >
               {submitting ? 'Submitting...' : (userRating ? 'Update Review' : 'Submit Review')}
-            </button>
+            </Button>
           </div>
         </div>
       )}

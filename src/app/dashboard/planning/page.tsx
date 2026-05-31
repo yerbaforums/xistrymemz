@@ -138,15 +138,14 @@ export default function PlanningPage() {
           <h2 className={styles.sidebarTitle}>Trips</h2>
           <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => setShowModal(true)}>+ New</button>
         </div>
-        <div style={{ position: 'relative' }}>
+        <div className={styles.relative}>
           <input
-            className={styles.formInput}
+            className={`${styles.formInput} ${styles.pl2}`}
             placeholder="Search trips..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            style={{ paddingLeft: '2rem' }}
           />
-          <span style={{ position: 'absolute', left: '0.6rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>🔍</span>
+          <span className={styles.searchIcon}>🔍</span>
         </div>
         <div className={styles.tripList}>
           {trips.length === 0 && sharedTrips.length === 0 ? (
@@ -592,16 +591,16 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
       <div className={styles.mainHeader}>
         <div>
           {editing ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%' }}>
+            <div className={`${styles.flexCol} ${styles.gap8} ${styles.wFull}`}>
               <input className={styles.formInput} value={editTitle} onChange={e => setEditTitle(e.target.value)} placeholder="Trip title" />
               <textarea className={styles.formTextarea} value={editDesc} onChange={e => setEditDesc(e.target.value)} placeholder="Description" rows={2} />
-              <textarea className={styles.formTextarea} value={editNotes} onChange={e => setEditNotes(e.target.value)} placeholder="Trip notes..." rows={2} style={{ marginTop: '0.5rem' }} />
+              <textarea className={`${styles.formTextarea} ${styles.mt8}`} value={editNotes} onChange={e => setEditNotes(e.target.value)} placeholder="Trip notes..." rows={2} />
               <div className={styles.formRow}>
                 <div><label className={styles.formLabel}>Start</label><input className={styles.formInput} type="date" value={editStart} onChange={e => setEditStart(e.target.value)} /></div>
                 <div><label className={styles.formLabel}>End</label><input className={styles.formInput} type="date" value={editEnd} onChange={e => setEditEnd(e.target.value)} /></div>
               </div>
               <label className={styles.formCheckbox}><input type="checkbox" checked={editPublic} onChange={e => setEditPublic(e.target.checked)} /> Public trip</label>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div className={`${styles.flex} ${styles.gap8}`}>
                 <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleSaveInfo}>Save</button>
                 <button className={styles.btn} onClick={() => setEditing(false)}>Cancel</button>
               </div>
@@ -610,8 +609,8 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
             <>
               <h1 className={styles.mainTitle}>{trip.title}</h1>
               {trip.description && <p className={styles.mainDesc}>{trip.description}</p>}
-              {trip.notes && <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.25rem', whiteSpace: 'pre-wrap' }}>{trip.notes}</p>}
-              <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+              {trip.notes && <p className={styles.tripNotes}>{trip.notes}</p>}
+              <div className={styles.tripMeta}>
                 {trip.startDate && <span>📅 {new Date(trip.startDate).toLocaleDateString()}{trip.endDate ? ` - ${new Date(trip.endDate).toLocaleDateString()}` : ''}</span>}
                 <span>{trip.stops?.length || 0} stops</span>
                 {trip.isPublic && <span>🌍 Public</span>}
@@ -636,7 +635,7 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
       {activeTab === 'stops' && (
         <>
           {canEdit && (
-            <div style={{ marginBottom: '1rem' }}>
+            <div className={styles.mb16}>
               <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => setAddingCustomStop(true)}>
                 + Add Custom Location
               </button>
@@ -644,12 +643,12 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
           )}
 
           {addingCustomStop && (
-            <div className={styles.card} style={{ padding: '1rem', marginBottom: '1rem' }}>
-              <h4 style={{ fontWeight: 600, marginBottom: '0.75rem' }}>Add Location</h4>
+            <div className={`${styles.card} ${styles.p16} ${styles.mb16}`}>
+              <h4 className={`${styles.fw600} ${styles.mb12}`}>Add Location</h4>
 
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>Search for a place</label>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <div className={`${styles.flex} ${styles.gap8}`}>
                   <input className={styles.formInput} value={customStopSearch} onChange={e => setCustomStopSearch(e.target.value)}
                     placeholder="e.g., Central Park, New York" onKeyDown={e => e.key === 'Enter' && handleGeocodeSearch()} />
                   <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleGeocodeSearch} disabled={geoLoading}>
@@ -658,12 +657,12 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
                 </div>
               </div>
 
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
+              <p className={`${styles.fs085} ${styles.textMuted} ${styles.mb8}`}>
                 Click on the map to drop a pin, or search above
               </p>
               {mapReady && (
-                <div style={{ height: '250px', borderRadius: '8px', overflow: 'hidden', marginBottom: '0.75rem' }}>
-                  <MapContainer center={customStopLat != null ? [customStopLat, customStopLng!] : [20, 0]} zoom={customStopLat != null ? 14 : 2} style={{ width: '100%', height: '100%' }}>
+                <div className={styles.mapWrapper}>
+                  <MapContainer center={customStopLat != null ? [customStopLat, customStopLng!] : [20, 0]} zoom={customStopLat != null ? 14 : 2} className={`${styles.wFull} ${styles.hFull}`}>
                     <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                     <MapClickHandlerComponent onClick={handleMapClick} />
                     {customStopLat != null && customStopLng != null && (
@@ -697,11 +696,11 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
                 <label className={styles.formLabel}>Notes</label>
                 <textarea className={styles.formTextarea} value={customStopNotes} onChange={e => setCustomStopNotes(e.target.value)} rows={2} placeholder="Notes about this stop..." />
               </div>
-              <label className={styles.formCheckbox} style={{ marginBottom: '0.75rem' }}>
+              <label className={`${styles.formCheckbox} ${styles.mb12}`}>
                 <input type="checkbox" checked={saveToProfile} onChange={e => setSaveToProfile(e.target.checked)} />
                 Save to my places
               </label>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div className={`${styles.flex} ${styles.gap8}`}>
                 <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleAddCustomStop} disabled={!customStopName.trim() || customStopLat == null}>
                   Add Stop
                 </button>
@@ -714,10 +713,10 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
 
           {canEdit && savedLocations.length > 0 && (
             <div>
-              <h3 style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem' }}>Add from saved locations</h3>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+              <h3 className={`${styles.fs085} ${styles.fw600} ${styles.mb8}`}>Add from saved locations</h3>
+              <div className={`${styles.flexWrap} ${styles.gap8} ${styles.mb16}`}>
                 {savedLocations.filter(l => !trip.stops?.some(s => s.savedLocationId === l.id)).map(loc => (
-                  <button key={loc.id} className={styles.btn} onClick={() => handleAddStop(loc)} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <button key={loc.id} className={`${styles.btn} ${styles.flexCenter} ${styles.gap4}`} onClick={() => handleAddStop(loc)}>
                     <span>{loc.category?.icon || '📍'}</span>
                     <span>{loc.name}</span>
                   </button>
@@ -735,7 +734,7 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
               <div key={day}>
                 <div className={styles.dayHeader}>
                   Day {day + 1}
-                  {trip.startDate && <span style={{ fontWeight: 400, marginLeft: '0.5rem' }}>
+                  {trip.startDate && <span className={styles.ml8}>
                     {new Date(new Date(trip.startDate).getTime() + day * 86400000).toLocaleDateString()}
                   </span>}
                 </div>
@@ -745,15 +744,15 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
                     <div className={styles.stopInfo}>
                       <div className={styles.stopName}>{stop.name}</div>
                       {stop.location && <div className={styles.stopLocation}>{stop.location}</div>}
-                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <div className={`${styles.flexCenter} ${styles.gap8} ${styles.flexWrap}`}>
                         {stop.arrivalTime && <span className={styles.stopTime}>🕐 {stop.arrivalTime}{stop.departureTime ? ` - ${stop.departureTime}` : ''}</span>}
-                        {stop.notes && <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>📝 Notes</span>}
-                        {(stop.shoppingList?.length || 0) > 0 && <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>🛒 {stop.shoppingList!.filter(i => !i.checked).length} items</span>}
-                        {(stop.links?.length || 0) > 0 && <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>🔗 {stop.links!.length} links</span>}
+                        {stop.notes && <span className={`${styles.fs08} ${styles.textMuted}`}>📝 Notes</span>}
+                        {(stop.shoppingList?.length || 0) > 0 && <span className={`${styles.fs08} ${styles.textMuted}`}>🛒 {stop.shoppingList!.filter(i => !i.checked).length} items</span>}
+                        {(stop.links?.length || 0) > 0 && <span className={`${styles.fs08} ${styles.textMuted}`}>🔗 {stop.links!.length} links</span>}
                       </div>
 
                       {canEdit && (
-                        <div style={{ marginTop: '0.5rem' }}>
+                        <div className={styles.mt8}>
                           <button className={`${styles.btn} ${styles.btnSmall}`} onClick={() => {
                             const next = new Set(expandedStopIds)
                             if (next.has(stop.id)) next.delete(stop.id)
@@ -766,7 +765,7 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
                       )}
 
                       {expandedStopIds.has(stop.id) && canEdit && (
-                        <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'var(--bg-tertiary)', borderRadius: '8px' }}>
+                        <div className={styles.stopDetailPanel}>
                           {/* Name */}
                           <div className={styles.formGroup}>
                             <label className={styles.formLabel}>Name</label>
@@ -791,62 +790,62 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
                           </div>
 
                           {/* Shopping List */}
-                          <div style={{ marginTop: '0.75rem' }}>
+                          <div className={styles.mt12}>
                             <label className={styles.formLabel}>🛒 Shopping List</label>
                             {(stopShopping[stop.id] || []).map((item, idx) => (
-                              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.25rem 0' }}>
+                              <div key={idx} className={`${styles.flexCenter} ${styles.gap8} ${styles.py4}`}>
                                 <input type="checkbox" checked={item.checked} onChange={() => handleToggleShoppingItem(stop.id, idx)} />
-                                <span style={{ textDecoration: item.checked ? 'line-through' : 'none', flex: 1, fontSize: '0.9rem' }}>{item.name}</span>
-                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{item.quantity}</span>
+                                <span className={`${styles.flex1} ${styles.fs09}`} style={{ textDecoration: item.checked ? 'line-through' : 'none' }}>{item.name}</span>
+                                <span className={`${styles.fs08} ${styles.textMuted}`}>{item.quantity}</span>
                                 <button className={styles.btnIcon} onClick={() => handleRemoveShoppingItem(stop.id, idx)}>🗑️</button>
                               </div>
                             ))}
-                            <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.5rem' }}>
+                            <div className={`${styles.flex} ${styles.gap4} ${styles.mt8}`}>
                               <input className={styles.formInput} value={newShopItem} onChange={e => setNewShopItem(e.target.value)}
-                                placeholder="Item name" style={{ flex: 1 }} onKeyDown={e => e.key === 'Enter' && handleAddShoppingItem(stop.id)} />
+                                placeholder="Item name" className={styles.flex1} onKeyDown={e => e.key === 'Enter' && handleAddShoppingItem(stop.id)} />
                               <input className={styles.formInput} value={newShopQty} onChange={e => setNewShopQty(e.target.value)}
-                                placeholder="Qty" style={{ width: '60px' }} />
+                                placeholder="Qty" className={styles.w60} />
                               <button className={`${styles.btn} ${styles.btnPrimary} ${styles.btnSmall}`} onClick={() => handleAddShoppingItem(stop.id)}>+</button>
                             </div>
                           </div>
 
                           {/* Linked Items */}
-                          <div style={{ marginTop: '0.75rem' }}>
+                          <div className={styles.mt12}>
                             <label className={styles.formLabel}>🔗 Linked Items</label>
                             {(stop.linkedRequests || []).length > 0 && (
-                              <div style={{ marginBottom: '0.25rem' }}>
-                                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)' }}>Requests:</span>
+                              <div className={styles.mb4}>
+                                <span className={`${styles.fs08} ${styles.fw600} ${styles.textMuted}`}>Requests:</span>
                                 {(stop.linkedRequests || []).map((item, idx) => (
-                                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.15rem 0' }}>
-                                    <a href={`/requests/${item.id}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', flex: 1 }}>{item.title}</a>
+                                  <div key={idx} className={`${styles.flexCenter} ${styles.gap8} ${styles.py2}`}>
+                                    <a href={`/requests/${item.id}`} target="_blank" rel="noopener noreferrer" className={`${styles.fs085} ${styles.accentPrimary} ${styles.flex1}`}>{item.title}</a>
                                     <button className={styles.btnIcon} onClick={() => handleUnlinkItem(stop.id, 'request', item.id)}>🗑️</button>
                                   </div>
                                 ))}
                               </div>
                             )}
                             {(stop.linkedEvents || []).length > 0 && (
-                              <div style={{ marginBottom: '0.25rem' }}>
-                                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)' }}>Events:</span>
+                              <div className={styles.mb4}>
+                                <span className={`${styles.fs08} ${styles.fw600} ${styles.textMuted}`}>Events:</span>
                                 {(stop.linkedEvents || []).map((item, idx) => (
-                                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.15rem 0' }}>
-                                    <a href={`/events/${item.id}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', flex: 1 }}>{item.title}</a>
+                                  <div key={idx} className={`${styles.flexCenter} ${styles.gap8} ${styles.py2}`}>
+                                    <a href={`/events/${item.id}`} target="_blank" rel="noopener noreferrer" className={`${styles.fs085} ${styles.accentPrimary} ${styles.flex1}`}>{item.title}</a>
                                     <button className={styles.btnIcon} onClick={() => handleUnlinkItem(stop.id, 'event', item.id)}>🗑️</button>
                                   </div>
                                 ))}
                               </div>
                             )}
                             {(stop.linkedProducts || []).length > 0 && (
-                              <div style={{ marginBottom: '0.25rem' }}>
-                                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)' }}>Products:</span>
+                              <div className={styles.mb4}>
+                                <span className={`${styles.fs08} ${styles.fw600} ${styles.textMuted}`}>Products:</span>
                                 {(stop.linkedProducts || []).map((item, idx) => (
-                                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.15rem 0' }}>
-                                    <a href={`/products/${item.id}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', flex: 1 }}>{item.title}</a>
+                                  <div key={idx} className={`${styles.flexCenter} ${styles.gap8} ${styles.py2}`}>
+                                    <a href={`/products/${item.id}`} target="_blank" rel="noopener noreferrer" className={`${styles.fs085} ${styles.accentPrimary} ${styles.flex1}`}>{item.title}</a>
                                     <button className={styles.btnIcon} onClick={() => handleUnlinkItem(stop.id, 'product', item.id)}>🗑️</button>
                                   </div>
                                 ))}
                               </div>
                             )}
-                            <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
+                            <div className={`${styles.flex} ${styles.gap4} ${styles.flexWrap} ${styles.mt8}`}>
                               <button className={`${styles.btn} ${styles.btnSmall}`} onClick={() => { setLinkingStopId(stop.id); setLinkType('request'); setLinkSearch(''); setLinkResults([]) }}>
                                 📝 + Request
                               </button>
@@ -861,40 +860,40 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
 
                           {/* Link Search Modal */}
                           {linkingStopId === stop.id && linkType && (
-                            <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '6px' }}>
-                              <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '0.5rem' }}>
+                            <div className={styles.linkSearchPanel}>
+                              <div className={`${styles.flex} ${styles.gap4} ${styles.mb8}`}>
                                 <input className={styles.formInput} value={linkSearch} onChange={e => handleLinkSearch(e.target.value, linkType)}
-                                  placeholder={`Search ${linkType}s...`} style={{ flex: 1 }} />
+                                  placeholder={`Search ${linkType}s...`} className={styles.flex1} />
                                 <button className={`${styles.btn} ${styles.btnSmall}`} onClick={() => { setLinkingStopId(null); setLinkType(null) }}>✕</button>
                               </div>
-                              {linkSearching && <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Searching...</p>}
+                              {linkSearching && <p className={`${styles.fs08} ${styles.textMuted}`}>Searching...</p>}
                               {linkResults.map((item: any) => (
-                                <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.3rem 0', borderBottom: '1px solid var(--border-color)' }}>
-                                  <span style={{ fontSize: '0.85rem' }}>{item.title}</span>
+                                <div key={item.id} className={`${styles.flexBetween} ${styles.py5} ${styles.bBottom}`}>
+                                  <span className={styles.fs085}>{item.title}</span>
                                   <button className={`${styles.btn} ${styles.btnPrimary} ${styles.btnSmall}`} onClick={() => handleLinkItem(stop.id, linkType, { id: item.id, title: item.title })}>
                                     + Link
                                   </button>
                                 </div>
                               ))}
                               {!linkSearching && linkSearch.length >= 2 && linkResults.length === 0 && (
-                                <div style={{ marginTop: '0.5rem' }}>
-                                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>No results. Create new {linkType}:</p>
+                                <div className={styles.mt8}>
+                                  <p className={`${styles.fs08} ${styles.textMuted} ${styles.mb8}`}>No results. Create new {linkType}:</p>
                                   {linkType === 'request' && (
                                     <div>
-                                      <input className={styles.formInput} value={newRequestTitle} onChange={e => setNewRequestTitle(e.target.value)} placeholder="Request title" style={{ marginBottom: '0.25rem' }} />
-                                      <input className={styles.formInput} value={newRequestDesc} onChange={e => setNewRequestDesc(e.target.value)} placeholder="Description (optional)" style={{ marginBottom: '0.25rem' }} />
+                                      <input className={`${styles.formInput} ${styles.mb4}`} value={newRequestTitle} onChange={e => setNewRequestTitle(e.target.value)} placeholder="Request title" />
+                                      <input className={`${styles.formInput} ${styles.mb4}`} value={newRequestDesc} onChange={e => setNewRequestDesc(e.target.value)} placeholder="Description (optional)" />
                                       <button className={`${styles.btn} ${styles.btnPrimary} ${styles.btnSmall}`} onClick={() => handleCreateAndLinkRequest(stop.id)}>Create & Link</button>
                                     </div>
                                   )}
                                   {linkType === 'event' && (
                                     <div>
-                                      <input className={styles.formInput} value={newEventTitle} onChange={e => setNewEventTitle(e.target.value)} placeholder="Event title" style={{ marginBottom: '0.25rem' }} />
-                                      <input className={styles.formInput} type="date" value={newEventDate} onChange={e => setNewEventDate(e.target.value)} placeholder="Date" style={{ marginBottom: '0.25rem' }} />
+                                      <input className={`${styles.formInput} ${styles.mb4}`} value={newEventTitle} onChange={e => setNewEventTitle(e.target.value)} placeholder="Event title" />
+                                      <input className={`${styles.formInput} ${styles.mb4}`} type="date" value={newEventDate} onChange={e => setNewEventDate(e.target.value)} placeholder="Date" />
                                       <button className={`${styles.btn} ${styles.btnPrimary} ${styles.btnSmall}`} onClick={() => handleCreateAndLinkEvent(stop.id)}>Create & Link</button>
                                     </div>
                                   )}
                                   {linkType === 'product' && (
-                                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Try a different search term</p>
+                                    <p className={`${styles.fs08} ${styles.textMuted}`}>Try a different search term</p>
                                   )}
                                 </div>
                               )}
@@ -902,19 +901,19 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
                           )}
 
                           {/* Links */}
-                          <div style={{ marginTop: '0.75rem' }}>
+                          <div className={styles.mt12}>
                             <label className={styles.formLabel}>🔗 Links</label>
                             {(stopLinks[stop.id] || []).map((link, idx) => (
-                              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.25rem 0' }}>
-                                <a href={link.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.9rem', color: 'var(--accent-primary)', flex: 1 }}>{link.label}</a>
+                              <div key={idx} className={`${styles.flexCenter} ${styles.gap8} ${styles.py4}`}>
+                                <a href={link.url} target="_blank" rel="noopener noreferrer" className={`${styles.fs09} ${styles.accentPrimary} ${styles.flex1}`}>{link.label}</a>
                                 <button className={styles.btnIcon} onClick={() => handleRemoveLink(stop.id, idx)}>🗑️</button>
                               </div>
                             ))}
-                            <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.5rem' }}>
+                            <div className={`${styles.flex} ${styles.gap4} ${styles.mt8}`}>
                               <input className={styles.formInput} value={newLinkUrl} onChange={e => setNewLinkUrl(e.target.value)}
-                                placeholder="URL" style={{ flex: 1 }} onKeyDown={e => e.key === 'Enter' && handleAddLink(stop.id)} />
+                                placeholder="URL" className={styles.flex1} onKeyDown={e => e.key === 'Enter' && handleAddLink(stop.id)} />
                               <input className={styles.formInput} value={newLinkLabel} onChange={e => setNewLinkLabel(e.target.value)}
-                                placeholder="Label" style={{ width: '120px' }} />
+                                placeholder="Label" className={styles.w120} />
                               <button className={`${styles.btn} ${styles.btnPrimary} ${styles.btnSmall}`} onClick={() => handleAddLink(stop.id)}>+</button>
                             </div>
                           </div>
@@ -942,24 +941,24 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
 
       {activeTab === 'map' && mapReady && (
         <div>
-          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
+          <div className={`${styles.flex} ${styles.gap8} ${styles.mb12} ${styles.flexWrap}`}>
             {POI_TYPES.map(pt => (
               <button
                 key={pt.key}
                 className={`${styles.btn} ${activePoiTypes.has(pt.key) ? styles.btnPrimary : ''}`}
                 onClick={() => TogglePoiType(pt.key)}
-                style={{ fontSize: '0.85rem' }}
+                className={styles.fs085}
               >
                 {pt.icon} {pt.label}
               </button>
             ))}
           </div>
-          <div style={{ marginBottom: '0.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+          <div className={`${styles.mb8} ${styles.fs08} ${styles.textMuted}`}>
             {canEdit && 'Click on the map to add a stop at that location · '}
             Toggle POI layers above to browse nearby places
           </div>
           <div className={styles.mapContainer}>
-            <MapContainer center={coords.length > 0 ? [coords[0][0], coords[0][1]] : [20, 0]} zoom={coords.length > 0 ? 5 : 2} style={{ width: '100%', height: '100%' }} ref={mapRef}>
+            <MapContainer center={coords.length > 0 ? [coords[0][0], coords[0][1]] : [20, 0]} zoom={coords.length > 0 ? 5 : 2} className={`${styles.wFull} ${styles.hFull}`} ref={mapRef}>
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
               {canEdit && <MapClickHandlerComponent onClick={(lat, lng) => {
                 setCustomStopLat(lat); setCustomStopLng(lng)
@@ -982,11 +981,11 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
                 <Marker key={`poi-${item.type}-${item.id}`} position={[item.lat, item.lng]}>
                   <Popup>
                     <strong>{item.title}</strong>
-                    {item.meta && <><br /><span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{item.meta}</span></>}
+                    {item.meta && <><br /><span className={`${styles.fs085} ${styles.textMuted}`}>{item.meta}</span></>}
                     <br />
-                    <a href={item.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.85rem' }}>View</a>
+                    <a href={item.url} target="_blank" rel="noopener noreferrer" className={styles.fs085}>View</a>
                     {canEdit && (
-                      <> | <button onClick={() => handleAddPoiStop(item)} style={{ fontSize: '0.85rem', cursor: 'pointer', background: 'none', border: 'none', color: 'var(--accent-primary)', padding: 0 }}>+ Add to trip</button></>
+                      <> | <button onClick={() => handleAddPoiStop(item)} className={`${styles.fs085} ${styles.cursorPointer} ${styles.bgNone} ${styles.borderNone} ${styles.accentPrimary} ${styles.p0}`}>+ Add to trip</button></>
                     )}
                   </Popup>
                 </Marker>
@@ -998,7 +997,7 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
 
       {activeTab === 'share' && (
         <div>
-          <h3 style={{ fontWeight: 600, marginBottom: '0.75rem' }}>Collaborators</h3>
+          <h3 className={`${styles.fw600} ${styles.mb12}`}>Collaborators</h3>
           <div className={styles.collabList}>
             {trip.collaborators?.filter(c => c.status === 'ACCEPTED').map(c => (
               <div key={c.id} className={styles.collabRow}>
@@ -1024,7 +1023,7 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
                 <span className={styles.collabName}>{c.user.name || 'Unknown'}</span>
                 <span className={styles.collabRole}>Invited</span>
                 {c.userId === session?.user?.id && (
-                  <div style={{ display: 'flex', gap: '0.25rem' }}>
+                  <div className={`${styles.flex} ${styles.gap4}`}>
                     <button className={`${styles.btn} ${styles.btnPrimary} ${styles.btnSmall}`} onClick={() => handleCollabAction(c.id, 'ACCEPTED')}>Accept</button>
                     <button className={`${styles.btn} ${styles.btnSmall}`} onClick={() => handleCollabAction(c.id, 'DECLINED')}>Decline</button>
                   </div>
@@ -1037,36 +1036,35 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
           </div>
 
           {isOwner && (
-            <div style={{ marginTop: '1rem', position: 'relative' }}>
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <div className={`${styles.mt16} ${styles.relative}`}>
+              <div className={`${styles.flexCenter} ${styles.gap8}`}>
                 <input
-                  className={styles.formInput}
+                  className={`${styles.formInput} ${styles.maxW300}`}
                   placeholder="Search by username..."
                   value={inviteUsername}
                   onChange={e => handleInviteSearch(e.target.value)}
-                  style={{ maxWidth: '300px' }}
                 />
               </div>
               {inviteResults.length > 0 && (
-                <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, maxWidth: '300px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', zIndex: 100, marginTop: '4px', maxHeight: '200px', overflowY: 'auto' }}>
+                <div className={styles.inviteDropdown}>
                   {inviteResults.map((u: any) => (
-                    <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.75rem', cursor: 'pointer', borderBottom: '1px solid var(--border-color)' }}
+                    <div key={u.id} className={`${styles.flexCenter} ${styles.gap8} ${styles.cursorPointer} ${styles.bBottom} ${styles.px075}`}
                       onClick={() => handleInviteUser(u.id)}>
-                      {u.image ? <img src={u.image} alt="" style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
-                        : <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent-primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem' }}>{(u.name || u.username || '?')[0]}</div>}
-                      <span style={{ fontSize: '0.85rem', flex: 1 }}>{u.name || u.username || 'Unknown'}</span>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--accent-primary)' }}>+ Invite</span>
+                      {u.image ? <img src={u.image} alt="" className={`${styles.w24} ${styles.h24} ${styles.rounded50} ${styles.objectCover}`} />
+                        : <div className={`${styles.w24} ${styles.h24} ${styles.rounded50} ${styles.bgAccent} ${styles.white} ${styles.flexCenter} ${styles.justifyCenter} ${styles.fs07}`}>{(u.name || u.username || '?')[0]}</div>}
+                      <span className={`${styles.fs085} ${styles.flex1}`}>{u.name || u.username || 'Unknown'}</span>
+                      <span className={`${styles.fs075} ${styles.accentPrimary}`}>+ Invite</span>
                     </div>
                   ))}
                 </div>
               )}
-              {inviteSearching && <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>Searching...</p>}
+              {inviteSearching && <p className={`${styles.fs08} ${styles.textMuted} ${styles.mt4}`}>Searching...</p>}
             </div>
           )}
 
-          <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'var(--bg-secondary)', borderRadius: '8px' }}>
-            <h4 style={{ fontWeight: 600, marginBottom: '0.5rem' }}>Share Link</h4>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
+          <div className={styles.shareLinkBox}>
+            <h4 className={`${styles.fw600} ${styles.mb8}`}>Share Link</h4>
+            <p className={`${styles.fs085} ${styles.textMuted} ${styles.mb8}`}>
               {trip.isPublic
                 ? 'Anyone with this link can view this trip.'
                 : 'Make the trip public to share with anyone.'}
@@ -1164,16 +1162,16 @@ function NewTripModal({ onClose, onCreated }: { onClose: () => void; onCreated: 
 
         {step === 2 && (
           <div>
-            <h3 style={{ fontWeight: 600, marginBottom: '0.5rem' }}>{title || 'Untitled Trip'}</h3>
-            {description && <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>{description}</p>}
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+            <h3 className={`${styles.fw600} ${styles.mb8}`}>{title || 'Untitled Trip'}</h3>
+            {description && <p className={`${styles.fs09} ${styles.textMuted} ${styles.mb8}`}>{description}</p>}
+            <div className={`${styles.fs085} ${styles.textMuted}`}>
               {startDate && <div>📅 {new Date(startDate).toLocaleDateString()}{endDate ? ` - ${new Date(endDate).toLocaleDateString()}` : ''}</div>}
               <div>🌍 {isPublic ? 'Public' : 'Private'}</div>
             </div>
           </div>
         )}
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1.5rem' }}>
+        <div className={`${styles.flex} ${styles.justifyBetween} ${styles.mt24}`}>
           <button className={styles.btn} onClick={() => step > 0 ? setStep(step - 1) : onClose()} disabled={creating}>
             {step === 0 ? 'Cancel' : 'Back'}
           </button>

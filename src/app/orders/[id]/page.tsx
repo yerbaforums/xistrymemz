@@ -6,6 +6,7 @@ import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import styles from '../page.module.css'
 import { useToast } from '@/context/ToastContext'
+import Button from '@/components/ui/Button'
 
 interface EscrowTransaction {
   id: string
@@ -331,9 +332,9 @@ export default function OrderDetailPage() {
                   <span className={styles.partyEmail}>{order.buyer.email}</span>
                 </div>
                 {order.buyer.id !== session?.user?.id && (
-                  <button onClick={() => openMessageModal({ id: order.buyer.id, name: order.buyer.name })} className={styles.messageBtn}>
+                  <Button onClick={() => openMessageModal({ id: order.buyer.id, name: order.buyer.name })} className={styles.messageBtn}>
                     Message Buyer
-                  </button>
+                  </Button>
                 )}
               </div>
               <div className={styles.partyCard}>
@@ -343,9 +344,9 @@ export default function OrderDetailPage() {
                   <span className={styles.partyEmail}>{order.seller.email}</span>
                 </div>
                 {order.seller.id !== session?.user?.id && (
-                  <button onClick={() => openMessageModal({ id: order.seller.id, name: order.seller.name })} className={styles.messageBtn}>
+                  <Button onClick={() => openMessageModal({ id: order.seller.id, name: order.seller.name })} className={styles.messageBtn}>
                     Message Seller
-                  </button>
+                  </Button>
                 )}
               </div>
               {order.courier && (
@@ -354,9 +355,9 @@ export default function OrderDetailPage() {
                   <div className={styles.partyInfo}>
                     <span className={styles.partyName}>{order.courier.name}</span>
                   </div>
-                  <button onClick={() => order.courier && openMessageModal({ id: order.courier.id, name: order.courier.name })} className={styles.messageBtn}>
+                  <Button onClick={() => order.courier && openMessageModal({ id: order.courier.id, name: order.courier.name })} className={styles.messageBtn}>
                     Message Courier
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
@@ -370,18 +371,18 @@ export default function OrderDetailPage() {
               {order.buyer.id === session?.user?.id && (
                 <>
                   {order.status === 'PENDING' && (
-                    <button className={styles.fundBtn} disabled={updating} onClick={() => updateOrderStatus('fund', { txHash: 'manual-' + Date.now() })}>
+                    <Button className={styles.fundBtn} disabled={updating} onClick={() => updateOrderStatus('fund', { txHash: 'manual-' + Date.now() })}>
                       Fund Escrow
-                    </button>
+                    </Button>
                   )}
                   {order.status === 'FUNDED' && (
                     <>
-                      <button className={styles.releaseBtn} disabled={updating} onClick={() => updateOrderStatus('release')}>
+                      <Button className={styles.releaseBtn} disabled={updating} onClick={() => updateOrderStatus('release')}>
                         Release Payment
-                      </button>
-                      <button className={styles.disputeBtn} disabled={updating} onClick={() => updateOrderStatus('dispute')}>
+                      </Button>
+                      <Button className={styles.disputeBtn} disabled={updating} onClick={() => updateOrderStatus('dispute')}>
                         Open Dispute
-                      </button>
+                      </Button>
                     </>
                   )}
                 </>
@@ -390,14 +391,14 @@ export default function OrderDetailPage() {
               {order.seller.id === session?.user?.id && (
                 <>
                   {order.status === 'FUNDED' && (
-                    <button className={styles.refundBtn} disabled={updating} onClick={() => updateOrderStatus('refund')}>
+                    <Button className={styles.refundBtn} disabled={updating} onClick={() => updateOrderStatus('refund')}>
                       Issue Refund
-                    </button>
+                    </Button>
                   )}
                   {order.status === 'DISPUTED' && (
-                    <button className={styles.resolveBtn} disabled={updating} onClick={() => updateOrderStatus('refund')}>
+                    <Button className={styles.resolveBtn} disabled={updating} onClick={() => updateOrderStatus('refund')}>
                       Resolve (Refund)
-                    </button>
+                    </Button>
                   )}
                 </>
               )}
@@ -406,28 +407,28 @@ export default function OrderDetailPage() {
                 <>
                   {order.deliveryStatus === 'PENDING' && order.status !== 'CANCELLED' && order.status !== 'REFUNDED' && (
                     <>
-                      <button className={styles.acceptBtn} disabled={updating} onClick={() => updateOrderStatus('courier_accept')}>
+                      <Button className={styles.acceptBtn} disabled={updating} onClick={() => updateOrderStatus('courier_accept')}>
                         Accept Delivery
-                      </button>
-                      <button className={styles.declineBtn} disabled={updating} onClick={() => updateOrderStatus('courier_decline')}>
+                      </Button>
+                      <Button className={styles.declineBtn} disabled={updating} onClick={() => updateOrderStatus('courier_decline')}>
                         Decline Delivery
-                      </button>
+                      </Button>
                     </>
                   )}
                   {order.deliveryStatus === 'ACCEPTED' && (
-                    <button className={styles.shipBtn} disabled={updating} onClick={() => updateOrderStatus('courier_pickup')}>
+                    <Button className={styles.shipBtn} disabled={updating} onClick={() => updateOrderStatus('courier_pickup')}>
                       Mark Picked Up
-                    </button>
+                    </Button>
                   )}
                   {order.deliveryStatus === 'PICKED_UP' && (
-                    <button className={styles.shipBtn} disabled={updating} onClick={() => updateOrderStatus('update_delivery', { deliveryStatus: 'IN_TRANSIT' })}>
+                    <Button className={styles.shipBtn} disabled={updating} onClick={() => updateOrderStatus('update_delivery', { deliveryStatus: 'IN_TRANSIT' })}>
                       Mark In Transit
-                    </button>
+                    </Button>
                   )}
                   {order.deliveryStatus === 'IN_TRANSIT' && (
-                    <button className={styles.deliverBtn} disabled={updating} onClick={() => updateOrderStatus('confirm_delivery')}>
+                    <Button className={styles.deliverBtn} disabled={updating} onClick={() => updateOrderStatus('confirm_delivery')}>
                       Confirm Delivery
-                    </button>
+                    </Button>
                   )}
                 </>
               )}
@@ -444,9 +445,9 @@ export default function OrderDetailPage() {
                 rows={4}
                 className={styles.notesTextarea}
               />
-              <button onClick={saveNotes} disabled={savingNotes} className="btn-primary" style={{ marginTop: '8px', width: '100%' }}>
+              <Button onClick={saveNotes} disabled={savingNotes} variant="primary" style={{ marginTop: '8px', width: '100%' }}>
                 {savingNotes ? 'Saving...' : 'Save Notes'}
-              </button>
+              </Button>
             </div>
           )}
 
@@ -505,10 +506,10 @@ export default function OrderDetailPage() {
               />
             </div>
             <div className={styles.modalActions}>
-              <button onClick={() => setShowMessageModal(false)} className="btn-ghost">Cancel</button>
-              <button onClick={sendMessage} disabled={sendingMessage || !messageText.trim()} className="btn-primary">
+              <Button onClick={() => setShowMessageModal(false)} variant="ghost">Cancel</Button>
+              <Button onClick={sendMessage} disabled={sendingMessage || !messageText.trim()} variant="primary">
                 {sendingMessage ? 'Sending...' : 'Send Message'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

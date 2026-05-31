@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import styles from './page.module.css'
+import Button from '@/components/ui/Button'
 
 interface User {
   id: string
@@ -179,7 +180,7 @@ export default function AdminUsersPage() {
             onChange={e => setSearch(e.target.value)}
             className={styles.searchInput}
           />
-          <button type="submit" className="btn-primary">Search</button>
+          <Button type="submit" variant="primary">Search</Button>
         </form>
         <select
           value={roleFilter}

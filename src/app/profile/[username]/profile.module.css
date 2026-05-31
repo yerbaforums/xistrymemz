@@ -216,7 +216,7 @@
 
 .connectBtn:hover:not(:disabled) {
   transform: scale(1.02);
-  box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--accent-primary) 30%, transparent);
 }
 
 .connectBtn:disabled, .connectBtn.pending {
@@ -298,7 +298,7 @@
 .planCard:hover {
   border-color: var(--accent-primary);
   transform: translateY(-2px);
-  box-shadow: 0 4px 24px rgba(0, 217, 255, 0.1);
+  box-shadow: 0 4px 24px color-mix(in srgb, var(--accent-primary) 10%, transparent);
 }
 
 .planCard h3 {
@@ -323,17 +323,17 @@
 }
 
 .planStatus.draft {
-  background: rgba(136, 136, 136, 0.2);
+  background: color-mix(in srgb, var(--text-tertiary) 20%, transparent);
   color: var(--text-secondary);
 }
 
 .planStatus.active {
-  background: rgba(0, 217, 255, 0.2);
+  background: color-mix(in srgb, var(--accent-primary) 20%, transparent);
   color: var(--accent-primary);
 }
 
 .planStatus.completed {
-  background: rgba(0, 255, 136, 0.2);
+  background: color-mix(in srgb, var(--accent-success) 20%, transparent);
   color: var(--accent-success);
 }
 
@@ -510,7 +510,7 @@
   display: inline-block;
   font-size: 0.7rem;
   padding: 2px 8px;
-  background: rgba(0, 217, 255, 0.1);
+  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
   color: var(--accent-primary);
   border-radius: 4px;
   margin-bottom: 8px;
@@ -987,7 +987,7 @@
 
 .pinnedCard {
   border-color: var(--accent-primary) !important;
-  background: rgba(0, 217, 255, 0.05) !important;
+  background: color-mix(in srgb, var(--accent-primary) 5%, transparent) !important;
   position: relative;
 }
 
@@ -1082,7 +1082,7 @@
 .connectionCard:hover {
   border-color: var(--accent-primary);
   transform: translateY(-2px);
-  box-shadow: 0 4px 24px rgba(0, 217, 255, 0.1);
+  box-shadow: 0 4px 24px color-mix(in srgb, var(--accent-primary) 10%, transparent);
 }
 
 .connectionAvatar {
@@ -1154,7 +1154,7 @@
 .groupCard:hover {
   border-color: var(--accent-primary);
   transform: translateY(-2px);
-  box-shadow: 0 4px 24px rgba(0, 217, 255, 0.1);
+  box-shadow: 0 4px 24px color-mix(in srgb, var(--accent-primary) 10%, transparent);
 }
 
 .groupIcon {
@@ -1440,7 +1440,7 @@
 
 .verificationBadge.none {
   background: rgba(128, 128, 128, 0.2);
-  color: #888;
+  color: var(--text-tertiary);
 }
 
 .verificationBadge.basic {
@@ -1569,7 +1569,7 @@
 
 .copyBtn:hover {
   transform: scale(1.02);
-  box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--accent-primary) 30%, transparent);
 }
 
 /* Profile actions row */
@@ -1594,7 +1594,7 @@
 
 .loginToConnect:hover {
   transform: scale(1.02);
-  box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--accent-primary) 30%, transparent);
 }
 
 /* Section separator */
@@ -1855,9 +1855,9 @@
 }
 
 .passportMode.traveling {
-  background: rgba(255, 170, 0, 0.2);
-  color: #ffaa00;
-  border: 1px solid rgba(255, 170, 0, 0.3);
+  background: color-mix(in srgb, var(--accent-warning) 20%, transparent);
+  color: var(--accent-warning);
+  border: 1px solid color-mix(in srgb, var(--accent-warning) 30%, transparent);
 }
 
 .passportMode.home {
@@ -2078,3 +2078,116 @@
   border-color: var(--accent-primary);
   color: var(--accent-primary);
 }
+
+/* Edit page utility classes */
+.flex { display: flex; }
+.flexCol { display: flex; flex-direction: column; }
+.flexCenter { display: flex; align-items: center; }
+.flexBetween { display: flex; align-items: center; justify-content: space-between; }
+.flexWrap { display: flex; flex-wrap: wrap; }
+.flexStart { display: flex; align-items: flex-start; }
+.flexCenterCenter { display: flex; align-items: center; justify-content: center; }
+.gap4 { gap: 4px; }
+.gap6 { gap: 6px; }
+.gap8 { gap: 8px; }
+.gap12 { gap: 12px; }
+.gap16 { gap: 16px; }
+.gap24 { gap: 24px; }
+.grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.mt4 { margin-top: 4px; }
+.mt8 { margin-top: 8px; }
+.mt12 { margin-top: 12px; }
+.mt16 { margin-top: 16px; }
+.mt20 { margin-top: 20px; }
+.mb8 { margin-bottom: 8px; }
+.mb12 { margin-bottom: 12px; }
+.mb16 { margin-bottom: 16px; }
+.mb20 { margin-bottom: 20px; }
+.mb24 { margin-bottom: 24px; }
+.mb30 { margin-bottom: 30px; }
+.m0 { margin: 0; }
+.p4 { padding: 4px; }
+.p8 { padding: 8px; }
+.p12 { padding: 12px; }
+.p16 { padding: 16px; }
+.p20 { padding: 20px; }
+.p24 { padding: 24px; }
+.wFull { width: 100%; }
+.textCenter { text-align: center; }
+.textRight { text-align: right; }
+.relative { position: relative; }
+.overflowHidden { overflow: hidden; }
+.flexShrink0 { flex-shrink: 0; }
+
+.inputField { width: 100%; padding: 10px; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); }
+.textareaField { width: 100%; padding: 10px; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); resize: vertical; }
+.label { display: block; margin-bottom: 8px; color: var(--text-secondary); }
+.small { color: var(--text-secondary); font-size: 0.75rem; }
+.errorBox { padding: 12px; margin-bottom: 20px; background: rgba(255,51,102,0.1); border: 1px solid #ff3366; border-radius: 8px; }
+.checkboxInput { width: 18px; height: 18px; accent-color: var(--accent-primary); }
+.cardMb { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+.cardMt { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; margin-top: 20px; }
+.editPageWrapper { max-width: 800px; margin: 0 auto; padding: 20px; }
+.btnPrimary { padding: 8px 16px; background: var(--accent-primary); color: var(--bg-primary); border: none; border-radius: 8px; cursor: pointer; font-weight: 500; }
+.btnGhost { padding: 8px 16px; background: transparent; border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-secondary); cursor: pointer; font-size: 0.875rem; }
+.btnDanger { padding: 6px 12px; background: transparent; border: 1px solid var(--accent-secondary); border-radius: 6px; color: var(--accent-secondary); cursor: pointer; font-size: 0.8rem; }
+.btnSmall { padding: 6px 12px; background: transparent; border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-secondary); cursor: pointer; font-size: 0.8rem; }
+.saveBtnFull { width: 100%; padding: 14px; background: var(--accent-primary); color: var(--bg-primary); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem; }
+.coverPreview { margin-top: 8px; height: 200px; border-radius: 8px; background-position: center; border: 1px solid var(--border-color); background-image: var(--bg-image); background-size: var(--bg-size); background-repeat: var(--bg-repeat); }
+.coverStyleBtn { padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; text-transform: capitalize; border: 1px solid var(--border-color); background: transparent; color: var(--text-primary); }
+.coverStyleBtnActive { border-color: var(--accent-primary); background: var(--accent-primary); color: #fff; }
+.classGridEdit { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px; }
+.classLabel { display: flex; align-items: center; gap: 6px; padding: 8px 10px; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; font-size: 0.85rem; color: var(--text-primary); transition: var(--transition); }
+.classLabelActive { border-color: var(--accent-primary); }
+.cryptoGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+.cryptoCard { padding: 8px 12px; background: var(--bg-tertiary); color: var(--text-muted); border: 1px solid var(--border-color); border-radius: 8px; display: flex; align-items: center; gap: 6px; font-size: 0.875rem; }
+.cryptoBtn { padding: 6px 10px; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 0.8rem; }
+.cryptoBtnActive { background: var(--accent-primary); color: var(--bg-primary); }
+.cryptoBtnGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 6px; }
+.roundImg { border-radius: 50%; }
+.roundImg4 { border-radius: 4px; }
+.formCard { padding: 16px; background: var(--bg-tertiary); border-radius: 10px; border: 1px solid var(--border-color); }
+.flexEnd { display: flex; justify-content: flex-end; }
+.flex1 { flex: 1; }
+.dragHandle { width: 20px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 1rem; margin-top: 2px; }
+.ml8 { margin-left: 8px; }
+.inputMuted { width: 100%; padding: 10px; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-muted); }
+.donCard { display: flex; align-items: flex-start; gap: 12px; padding: 14px; background: var(--bg-tertiary); border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--border-color); cursor: grab; }
+.donNameRow { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.donLabel { font-weight: 600; font-size: 0.9rem; }
+.donQrLabel { font-size: 0.7rem; color: var(--text-muted); }
+.donCode { font-size: 0.75rem; color: var(--text-secondary); word-break: break-all; font-family: monospace; }
+.linkCard { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-tertiary); border-radius: 8px; margin-bottom: 8px; cursor: grab; border: 1px solid var(--border-color); }
+.linkIconContainer { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
+.linkName { font-weight: 500; }
+.linkUrl { font-size: 0.875rem; color: var(--text-secondary); }
+.linkFormCard { margin-top: 20px; padding: 20px; background: var(--bg-tertiary); border-radius: 8px; }
+.h3Mt0 { margin-top: 0; }
+.selectField { width: 100%; padding: 8px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); }
+.donFormLabel { display: block; margin-bottom: 6px; color: var(--text-secondary); font-size: 0.875rem; }
+.donInput { width: 100%; padding: 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.875rem; }
+.sectionDesc { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 16px; line-height: 1.5; }
+.emptyState { color: var(--text-secondary); text-align: center; padding: 20px; font-size: 0.875rem; }
+.checkboxLabel { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.disabledSection { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; margin-bottom: 20px; opacity: 0.5; pointer-events: none; }
+.editPassportSection { background: linear-gradient(135deg, #1a2a1a 0%, #0d1a0d 100%); border: 1px solid #2a4a2a; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+.editPassportTitle { margin-bottom: 8px; color: #7fff7f; }
+.editPassportDesc { color: #6a8a6a; font-size: 0.85rem; margin-bottom: 12px; line-height: 1.5; }
+.passportLinkBtn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: #4ade80; color: #0d1a0d; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.875rem; }
+.editLocationSection { background: linear-gradient(135deg, #1a1a2a 0%, #0d0d1a 100%); border: 1px solid #2a2a4a; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+.editLocationTitle { margin: 0 0 8px; color: #7f7fff; }
+.editLocationDesc { color: #8888aa; font-size: 0.85rem; margin-bottom: 12px; }
+.locationLinkBtn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: #7f7fff; color: #fff; border-radius: 8px; text-decoration: none; font-weight: 500; font-size: 0.875rem; }
+.iconPreviewRow { margin-top: 8px; display: flex; align-items: center; gap: 8px; }
+.previewLabel { font-size: 0.75rem; color: var(--text-muted); }
+.headerRow { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+.sectionTitle { margin-bottom: 20px; }
+.mutedText { color: var(--text-muted); font-size: 0.75rem; margin: 4px 0 0 26px; }
+.h2Mb20 { margin-bottom: 20px; }
+.gap8Row { display: flex; gap: 8px; }
+.h2Mb8 { margin-bottom: 8px; }
+.emptyPadding { padding: 20px; }
+.autoWidth { width: auto; accent-color: var(--accent-primary); }
+.emptyLinkState { color: var(--text-secondary); text-align: center; padding: 20px; }
+.sectionSubtitle { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 16px; line-height: 1.5; }

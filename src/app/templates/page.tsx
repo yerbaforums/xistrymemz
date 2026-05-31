@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation'
 import styles from './page.module.css'
 import { businessTemplates, getTemplatesByType, type BusinessTemplate } from '@/lib/templates'
 import { eventTemplates, type EventTemplate } from '@/lib/event-templates'
+import Button from '@/components/ui/Button'
 
 type FilterType = 'ALL' | 'SHOP' | 'SCHOOL' | 'COURIER' | 'EVENTS'
 
@@ -70,13 +71,13 @@ function TemplatesPageContent() {
 
       <div className={styles.filters}>
         {(['ALL', 'SHOP', 'SCHOOL', 'COURIER', 'EVENTS'] as const).map(filter => (
-          <button
+          <Button
             key={filter}
             className={`${styles.filterBtn} ${activeFilter === filter ? styles.filterActive : ''}`}
             onClick={() => { setActiveFilter(filter); setSelectedBusiness(null); setSelectedEvent(null) }}
           >
             {filter === 'ALL' ? 'All Templates' : filter === 'EVENTS' ? 'Events' : filter.charAt(0) + filter.slice(1).toLowerCase() + 's'}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -128,12 +129,12 @@ function TemplatesPageContent() {
         <div className={styles.previewPanel}>
           <div className={styles.previewHeader}>
             <h2>{selectedBusiness.icon} {selectedBusiness.name}</h2>
-            <button 
+            <Button 
               className={styles.closeBtn}
               onClick={() => setSelectedBusiness(null)}
             >
               ✕
-            </button>
+            </Button>
           </div>
           
           <div className={styles.previewContent}>
@@ -192,26 +193,14 @@ function TemplatesPageContent() {
           </div>
           
           <div className={styles.previewActions}>
-            <Link 
-              href={`/shop/setup?template=${selectedBusiness.id}`}
-              className="btn-primary"
-              style={{display: selectedBusiness.type === 'SHOP' ? 'inline-flex' : 'none'}}
-            >
-              Use This Template →
+            <Link href={`/shop/setup?template=${selectedBusiness.id}`} style={{display: selectedBusiness.type === 'SHOP' ? 'inline-flex' : 'none'}}>
+              <Button variant="primary">Use This Template →</Button>
             </Link>
-            <Link 
-              href={`/school/setup?template=${selectedBusiness.id}`}
-              className="btn-primary"
-              style={{display: selectedBusiness.type === 'SCHOOL' ? 'inline-flex' : 'none'}}
-            >
-              Use This Template →
+            <Link href={`/school/setup?template=${selectedBusiness.id}`} style={{display: selectedBusiness.type === 'SCHOOL' ? 'inline-flex' : 'none'}}>
+              <Button variant="primary">Use This Template →</Button>
             </Link>
-            <Link 
-              href={`/courier/setup?template=${selectedBusiness.id}`}
-              className="btn-primary"
-              style={{display: selectedBusiness.type === 'COURIER' ? 'inline-flex' : 'none'}}
-            >
-              Use This Template →
+            <Link href={`/courier/setup?template=${selectedBusiness.id}`} style={{display: selectedBusiness.type === 'COURIER' ? 'inline-flex' : 'none'}}>
+              <Button variant="primary">Use This Template →</Button>
             </Link>
           </div>
         </div>
@@ -221,12 +210,12 @@ function TemplatesPageContent() {
         <div className={styles.previewPanel}>
           <div className={styles.previewHeader}>
             <h2>{selectedEvent.icon} {selectedEvent.name}</h2>
-            <button 
+            <Button 
               className={styles.closeBtn}
               onClick={() => setSelectedEvent(null)}
             >
               ✕
-            </button>
+            </Button>
           </div>
           
           <div className={styles.previewContent}>
@@ -265,11 +254,8 @@ function TemplatesPageContent() {
           </div>
           
           <div className={styles.previewActions}>
-            <Link 
-              href={`/events/new?template=${selectedEvent.id}`}
-              className="btn-primary"
-            >
-              Use This Template →
+            <Link href={`/events/new?template=${selectedEvent.id}`}>
+              <Button variant="primary">Use This Template →</Button>
             </Link>
           </div>
         </div>

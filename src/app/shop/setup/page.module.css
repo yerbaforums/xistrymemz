@@ -7,19 +7,19 @@
 .backLink {
   display: inline-block;
   margin-bottom: 1rem;
-  color: #888888;
+  color: var(--text-tertiary);
   text-decoration: none;
   font-size: 0.875rem;
 }
 
 .backLink:hover {
-  color: #00d9ff;
+  color: var(--accent-primary);
 }
 
 .loading {
   text-align: center;
   padding: 3rem;
-  color: #888888;
+  color: var(--text-tertiary);
 }
 
 .stepContent {
@@ -39,11 +39,11 @@
 
 .stepContent h2 {
   margin: 0 0 0.5rem 0;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .stepContent > p {
-  color: #888888;
+  color: var(--text-tertiary);
   margin-bottom: 1.5rem;
 }
 
@@ -61,8 +61,8 @@
 }
 
 .templateCard {
-  background: #161616;
-  border: 2px solid #2a2a2a;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
   border-radius: 12px;
   padding: 1.5rem;
   cursor: pointer;
@@ -73,13 +73,13 @@
 }
 
 .templateCard:hover {
-  border-color: #00d9ff;
-  box-shadow: 0 4px 24px rgba(0, 217, 255, 0.1);
+  border-color: var(--accent-primary);
+  box-shadow: 0 4px 24px color-mix(in srgb, var(--accent-primary) 10%, transparent);
 }
 
 .selected {
-  border-color: #00d9ff;
-  box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--accent-primary) 30%, transparent);
   background: #1a1a2e;
 }
 
@@ -90,22 +90,22 @@
 
 .templateCard h3 {
   margin: 0 0 0.25rem 0;
-  color: #ffffff;
+  color: var(--text-primary);
   font-size: 1rem;
 }
 
 .category {
   display: inline-block;
   padding: 0.125rem 0.5rem;
-  background: #1f1f1f;
+  background: var(--bg-tertiary);
   border-radius: 4px;
   font-size: 0.75rem;
-  color: #00d9ff;
+  color: var(--accent-primary);
   margin-bottom: 0.5rem;
 }
 
 .templateCard p {
-  color: #888888;
+  color: var(--text-tertiary);
   font-size: 0.813rem;
   margin: 0.25rem 0;
   line-height: 1.4;
@@ -131,17 +131,17 @@
 
 .uploadBtn {
   padding: 0.5rem 1rem;
-  background: #1f1f1f;
-  border: 1px solid #2a2a2a;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
-  color: #ffffff;
+  color: var(--text-primary);
   cursor: pointer;
   font-size: 0.875rem;
   transition: all 0.2s;
 }
 
 .uploadBtn:hover:not(:disabled) {
-  border-color: #00d9ff;
+  border-color: var(--accent-primary);
 }
 
 .uploadBtn:disabled {
@@ -174,8 +174,8 @@
 }
 
 .templatePrompt {
-  background: #1f1f1f;
-  border: 1px solid #2a2a2a;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 1rem;
   margin-bottom: 1.5rem;
@@ -187,14 +187,14 @@
 }
 
 .templatePrompt p {
-  color: #888888;
+  color: var(--text-tertiary);
   margin: 0;
 }
 
 .empty {
   text-align: center;
   padding: 3rem;
-  color: #888888;
+  color: var(--text-tertiary);
 }
 
 .productGrid {
@@ -204,16 +204,16 @@
 }
 
 .productCard {
-  background: #161616;
-  border: 1px solid #2a2a2a;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   overflow: hidden;
   transition: all 0.2s;
 }
 
 .productCard:hover {
-  border-color: #00d9ff;
-  box-shadow: 0 4px 24px rgba(0, 217, 255, 0.1);
+  border-color: var(--accent-primary);
+  box-shadow: 0 4px 24px color-mix(in srgb, var(--accent-primary) 10%, transparent);
 }
 
 .productImage {
@@ -228,7 +228,7 @@
 
 .productInfo h3 {
   margin: 0 0 0.5rem 0;
-  color: #ffffff;
+  color: var(--text-primary);
   font-size: 1rem;
 }
 
@@ -240,12 +240,12 @@
 }
 
 .price {
-  color: #00ff88;
+  color: var(--accent-success);
   font-weight: 600;
 }
 
 .status {
-  color: #888888;
+  color: var(--text-tertiary);
   font-size: 0.875rem;
   margin: 0.5rem 0;
 }
@@ -259,7 +259,7 @@
 
 .editBtn, .publishBtn, .unpublishBtn, .deleteBtn {
   padding: 0.375rem 0.75rem;
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   font-size: 0.813rem;
   cursor: pointer;
@@ -267,27 +267,27 @@
 }
 
 .editBtn {
-  background: #1f1f1f;
-  color: #00d9ff;
-  border-color: #00d9ff;
+  background: var(--bg-tertiary);
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
 }
 
 .publishBtn {
-  background: #00ff88;
-  color: #0d0d0d;
-  border-color: #00ff88;
+  background: var(--accent-success);
+  color: var(--bg-primary);
+  border-color: var(--accent-success);
 }
 
 .unpublishBtn {
-  background: #1f1f1f;
-  color: #ffaa00;
-  border-color: #ffaa00;
+  background: var(--bg-tertiary);
+  color: var(--accent-warning);
+  border-color: var(--accent-warning);
 }
 
 .deleteBtn {
-  background: #1f1f1f;
-  color: #ff3366;
-  border-color: #ff3366;
+  background: var(--bg-tertiary);
+  color: var(--accent-secondary);
+  border-color: var(--accent-secondary);
 }
 
 .paymentOptions {
@@ -300,26 +300,26 @@
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  color: #888888;
+  color: var(--text-tertiary);
   font-size: 0.875rem;
   cursor: pointer;
 }
 
 .paymentCheckbox input[type="checkbox"] {
-  accent-color: #00d9ff;
+  accent-color: var(--accent-primary);
 }
 
 .checkboxLabel {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #888888;
+  color: var(--text-tertiary);
   font-size: 0.875rem;
   cursor: pointer;
 }
 
 .checkboxLabel input[type="checkbox"] {
-  accent-color: #00d9ff;
+  accent-color: var(--accent-primary);
 }
 
 .modalActions {
@@ -330,35 +330,35 @@
 }
 
 .infoBox {
-  background: #1f1f1f;
-  border: 1px solid #2a2a2a;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 1.5rem;
   margin-top: 1rem;
 }
 
 .infoBox p {
-  color: #888888;
+  color: var(--text-tertiary);
   margin: 0.5rem 0;
   font-size: 0.875rem;
 }
 
 .reviewSection {
-  background: #161616;
-  border: 1px solid #2a2a2a;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 1.5rem;
   margin-top: 1rem;
 }
 
 .reviewSection h3 {
-  color: #ffffff;
+  color: var(--text-primary);
   margin: 0 0 1rem 0;
   font-size: 1rem;
 }
 
 .reviewSection p {
-  color: #888888;
+  color: var(--text-tertiary);
   margin: 0.5rem 0;
   font-size: 0.875rem;
 }
@@ -377,8 +377,8 @@
 
 .reviewList li {
   padding: 0.5rem 0;
-  color: #888888;
-  border-bottom: 1px solid #2a2a2a;
+  color: var(--text-tertiary);
+  border-bottom: 1px solid var(--border-color);
   font-size: 0.875rem;
 }
 

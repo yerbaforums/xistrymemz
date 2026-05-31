@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import styles from './groups.module.css'
+import Button from '@/components/ui/Button'
 
 interface Group {
   id: string
@@ -50,7 +51,7 @@ export default function GroupsPage() {
           <h1>Groups</h1>
           <p>Join communities of like-minded people</p>
         </div>
-        <Link href="/groups/new" className="btn-primary">+ Create Group</Link>
+        <Link href="/groups/new" ><Button variant="primary">+ Create Group</Button></Link>
       </div>
 
       {topGroups.length > 0 && groups.length > 3 && sortBy === 'recent' && !search && (
@@ -110,7 +111,7 @@ export default function GroupsPage() {
       ) : sortedGroups.length === 0 ? (
         <div className={styles.empty}>
           <p>{search ? 'No groups match your search' : 'No groups yet'}</p>
-          <Link href="/groups/new" className="btn-primary">Create the first group</Link>
+          <Link href="/groups/new" ><Button variant="primary">Create the first group</Button></Link>
         </div>
       ) : (
         <div className={styles.grid}>

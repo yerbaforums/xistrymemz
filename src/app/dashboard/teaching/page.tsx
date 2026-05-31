@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useToast } from '@/context/ToastContext'
 import ImageUploader from '@/components/ImageUploader'
 import styles from './teaching.module.css'
+import Button from '@/components/ui/Button'
 
 interface SchoolInfo {
   schoolName: string | null
@@ -138,8 +139,8 @@ export default function TeachingPage() {
           <p className={styles.welcome}>Manage your courses, content, and students</p>
         </div>
         <div className={styles.headerActions}>
-          <button onClick={() => setShowSchoolForm(true)} className="btn-secondary">⚙️ School Settings</button>
-          <button onClick={() => { setEditingContent(null); setContentForm({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: '', videoUrl: '' }); setShowContentForm(true) }} className="btn-primary">➕ New Content</button>
+          <Button onClick={() => setShowSchoolForm(true)} variant="secondary">⚙️ School Settings</Button>
+          <Button onClick={() => { setEditingContent(null); setContentForm({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: '', videoUrl: '' }); setShowContentForm(true) }} variant="primary">➕ New Content</Button>
         </div>
       </div>
 
@@ -178,7 +179,7 @@ export default function TeachingPage() {
         <div className={styles.prompt}>
           <h3>Set up your school to start teaching</h3>
           <p>Create courses, share knowledge, and earn from your expertise.</p>
-          <Link href="/school/setup" className="btn-primary">Create School</Link>
+          <Link href="/school/setup" ><Button variant="primary">Create School</Button></Link>
         </div>
       )}
 
@@ -257,8 +258,8 @@ export default function TeachingPage() {
                 <small style={{color: 'var(--text-secondary)'}}>xistrymemz.com/school/{schoolForm.schoolSlug || 'your-slug'}</small>
               </div>
               <div className={styles.formActions}>
-                <button type="button" onClick={() => setShowSchoolForm(false)} className="btn-ghost">Cancel</button>
-                <button type="submit" disabled={saving} className="btn-primary">{saving ? 'Saving...' : 'Save'}</button>
+                <Button type="button" onClick={() => setShowSchoolForm(false)} variant="ghost">Cancel</Button>
+                <Button type="submit" disabled={saving} variant="primary">{saving ? 'Saving...' : 'Save'}</Button>
               </div>
             </form>
           </div>
@@ -306,8 +307,8 @@ export default function TeachingPage() {
                 </label>
               </div>
               <div className={styles.formActions}>
-                <button type="button" onClick={() => { setShowContentForm(false); setEditingContent(null) }} className="btn-ghost">Cancel</button>
-                <button type="submit" disabled={saving} className="btn-primary">{saving ? 'Saving...' : editingContent ? 'Save' : 'Create'}</button>
+                <Button type="button" onClick={() => { setShowContentForm(false); setEditingContent(null) }} variant="ghost">Cancel</Button>
+                <Button type="submit" disabled={saving} variant="primary">{saving ? 'Saving...' : editingContent ? 'Save' : 'Create'}</Button>
               </div>
             </form>
           </div>

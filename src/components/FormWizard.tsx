@@ -2,6 +2,7 @@
 
 import { useState, ReactNode } from 'react'
 import styles from './FormWizard.module.css'
+import Button from '@/components/ui/Button'
 
 export interface WizardStep {
   key: string
@@ -79,40 +80,40 @@ export default function FormWizard({
       <div className={styles.navigation}>
         <div className={styles.navLeft}>
           {!isFirstStep && (
-            <button 
+            <Button 
               onClick={onBack}
-              className="btn-ghost"
+              variant="ghost"
               disabled={loading}
             >
               ← Back
-            </button>
+            </Button>
           )}
         </div>
         <div className={styles.navRight}>
           {showSkip && onSkip && (
-            <button 
+            <Button 
               onClick={onSkip}
-              className="btn-ghost"
+              variant="ghost"
             >
               Skip for now
-            </button>
+            </Button>
           )}
           {!isLastStep ? (
-            <button 
+            <Button 
               onClick={onNext}
-              className="btn-primary"
+              variant="primary"
               disabled={loading}
             >
               Continue →
-            </button>
+            </Button>
           ) : (
-            <button 
+            <Button 
               onClick={onSubmit}
-              className="btn-primary"
+              variant="primary"
               disabled={loading}
             >
               {loading ? 'Saving...' : submitLabel}
-            </button>
+            </Button>
           )}
         </div>
       </div>

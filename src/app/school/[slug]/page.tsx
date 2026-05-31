@@ -22,6 +22,7 @@ import Rating from '@/components/Rating'
 import HashtagText from '@/components/HashtagText'
 import LinkPreview from '@/components/LinkPreview'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
+import Button from '@/components/ui/Button'
 
 interface UserLink {
   id: string
@@ -546,8 +547,8 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                   </div>
                 )}
                 <div className={styles.formActions}>
-                  <button type="submit" className="btn-primary" disabled={creatingContent}>{creatingContent ? 'Saving...' : (editingContentId ? 'Update' : 'Publish')}</button>
-                  <button type="button" className="btn-ghost" onClick={() => { setShowContentForm(false); setEditingContentId(null); setContentForm({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: [], videoUrl: '', section: '', sortOrder: 0 }); setContentHashtags([]) }}>Cancel</button>
+                  <Button type="submit" variant="primary" disabled={creatingContent}>{creatingContent ? 'Saving...' : (editingContentId ? 'Update' : 'Publish')}</Button>
+                  <Button type="button" variant="ghost" onClick={() => { setShowContentForm(false); setEditingContentId(null); setContentForm({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: [], videoUrl: '', section: '', sortOrder: 0 }); setContentHashtags([]) }}>Cancel</Button>
                 </div>
               </form>
             )}
@@ -740,8 +741,8 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                   </div>
                 )}
                 <div className={styles.formActions}>
-                  <button type="submit" className="btn-primary" disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
-                  <button type="button" className="btn-ghost" onClick={() => setShowEditModal(false)}>Cancel</button>
+                  <Button type="submit" variant="primary" disabled={saving}>{saving ? 'Saving...' : 'Save'}</Button>
+                  <Button type="button" variant="ghost" onClick={() => setShowEditModal(false)}>Cancel</Button>
                 </div>
               </form>
             ) : (

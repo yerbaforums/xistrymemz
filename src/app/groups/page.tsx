@@ -9,6 +9,7 @@ import { GROUP_CATEGORIES } from '@/lib/shop-categories'
 import Skeleton, { SkeletonCard, SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import HashtagInput from '@/components/HashtagInput'
+import Button from '@/components/ui/Button'
 
 interface Group {
   id: string
@@ -164,9 +165,9 @@ export default function GroupsPage() {
           <p className={styles.subtitle}>Create and join groups to connect with community members</p>
         </div>
         {userId && (
-          <button onClick={() => setShowModal(true)} className={styles.createBtn}>
+          <Button onClick={() => setShowModal(true)} className={styles.createBtn}>
             + Create Group
-          </button>
+          </Button>
         )}
       </div>
 
@@ -182,18 +183,18 @@ export default function GroupsPage() {
           />
         </div>
         <div className={styles.filterButtons}>
-          <button 
+          <Button 
             className={`${styles.filterBtn} ${filter === 'all' ? styles.active : ''}`}
             onClick={() => setFilter('all')}
           >
             All Groups
-          </button>
-          <button 
+          </Button>
+          <Button 
             className={`${styles.filterBtn} ${filter === 'my' ? styles.active : ''}`}
             onClick={() => setFilter('my')}
           >
             My Groups
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -260,12 +261,12 @@ export default function GroupsPage() {
                 <HashtagInput value={groupHashtags} onChange={setGroupHashtags} placeholder="Add hashtags..." />
               </div>
               <div className={styles.modalActions}>
-                <button type="button" onClick={() => setShowModal(false)} className="btn-ghost">
+                <Button type="button" onClick={() => setShowModal(false)} variant="ghost">
                   Cancel
-                </button>
-                <button type="submit" className="btn-primary" disabled={creating || !name.trim()}>
+                </Button>
+                <Button type="submit" variant="primary" disabled={creating || !name.trim()}>
                   {creating ? 'Creating...' : 'Create Group'}
-                </button>
+                </Button>
               </div>
             </form>
           </div>

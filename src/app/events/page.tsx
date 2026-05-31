@@ -321,9 +321,9 @@ export default function EventsPage() {
           </div>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             {userId && (
-              <Link href="/events/new" className="btn-primary">
+              <Link href="/events/new"><Button variant="primary">
                 Create Event
-              </Link>
+              </Button></Link>
             )}
             <div className={styles.viewToggle}>
               <button className={`${styles.toggleBtn} ${viewMode === 'list' ? styles.active : ''}`} onClick={() => setViewMode('list')} aria-label="List view">List</button>
@@ -483,7 +483,7 @@ export default function EventsPage() {
                           <p className={styles.popupDetail}>👥 {(event.joiners || []).length}{event.maxJoiners > 0 ? `/${event.maxJoiners}` : ''} joined</p>
                           <div className={styles.popupActions}>
                             {event.maxJoiners === 0 || (event.joiners || []).length < event.maxJoiners ? (
-                              <button onClick={(e) => { e.stopPropagation(); if (event.joined) { handleLeave(event.id) } else { handleJoin(event.id) } }} disabled={joining === event.id} className={event.joined ? "btn-secondary" : "btn-primary"}>
+                              <button onClick={(e) => { e.stopPropagation(); if (event.joined) { handleLeave(event.id) } else { handleJoin(event.id) } }} disabled={joining === event.id} variant={event.joined ? "secondary" : "primary"}>
                                 {joining === event.id ? '...' : event.joined ? 'Leave' : 'Join Event'}
                               </button>
                             ) : (<span className="badge badge-full">Event Full</span>)}
@@ -541,7 +541,7 @@ export default function EventsPage() {
                       </div>
                       <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
                         {event.maxJoiners === 0 || (event.joiners || []).length < event.maxJoiners ? (
-                          <button onClick={(e) => { e.stopPropagation(); if (event.joined) { handleLeave(event.id) } else { handleJoin(event.id) } }} disabled={joining === event.id} className={event.joined ? "btn-secondary" : "btn-primary"} style={{ flex: 1 }}>
+                          <button onClick={(e) => { e.stopPropagation(); if (event.joined) { handleLeave(event.id) } else { handleJoin(event.id) } }} disabled={joining === event.id} variant={event.joined ? "secondary" : "primary"} style={{ flex: 1 }}>
                             {joining === event.id ? '...' : event.joined ? 'Leave' : 'Join Event'}
                           </button>
                         ) : (<span className="badge badge-full" style={{ flex: 1, textAlign: 'center', padding: '8px' }}>Event Full</span>)}
