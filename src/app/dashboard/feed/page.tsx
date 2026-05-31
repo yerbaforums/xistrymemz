@@ -174,7 +174,7 @@ export default function DashboardFeed() {
       <h1 style={{ fontSize: '1.8rem', marginBottom: '24px' }}>{t('title')}</h1>
 
       {session && (
-        <form onSubmit={handleCreatePost} style={{
+        <form id="feed-post-form" onSubmit={handleCreatePost} style={{
           background: 'var(--bg-secondary)',
           border: '1px solid var(--border-color)',
           borderRadius: 12,
@@ -341,9 +341,13 @@ export default function DashboardFeed() {
             Share something with the community or connect with others!
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/dashboard/feed" className="btn-primary" style={{ padding: '10px 24px', borderRadius: 'var(--radius-md)', fontWeight: 600, textDecoration: 'none' }}>
+            <button onClick={() => {
+              const form = document.getElementById('feed-post-form')
+              form?.scrollIntoView({ behavior: 'smooth' })
+              setTimeout(() => (form?.querySelector('textarea') as HTMLElement)?.focus(), 300)
+            }} className="btn-primary" style={{ padding: '10px 24px', borderRadius: 'var(--radius-md)', fontWeight: 600, textDecoration: 'none', border: 'none', cursor: 'pointer' }}>
               ✏️ Create Your First Post
-            </Link>
+            </button>
             <Link href="/community" className="btn-secondary" style={{ padding: '10px 20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.85rem' }}>
               👥 Find People
             </Link>

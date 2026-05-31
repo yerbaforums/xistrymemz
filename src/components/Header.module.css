@@ -85,6 +85,17 @@
   box-shadow: 0 0 12px rgba(0, 217, 255, 0.3);
 }
 
+.createBtn {
+  background: var(--accent-primary) !important;
+  color: var(--bg-primary) !important;
+  font-weight: 600;
+}
+
+.createBtn:hover {
+  background: color-mix(in srgb, var(--accent-primary) 80%, white) !important;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent-primary) 50%, transparent);
+}
+
 .navDropdown {
   position: absolute;
   top: 100%;

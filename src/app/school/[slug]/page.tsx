@@ -562,7 +562,9 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                     }
                   }
                   const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').trim()
-                  const renderCard = (item: any) => (
+                  const renderCard = (item: any) => {
+                    const itemImages: string[] = item.images ? (() => { try { return JSON.parse(item.images) } catch { return [] } })() : []
+                    return (
                     <div key={item.id} className={`${styles.contentCard} ${item.pinned ? styles.pinnedCard : ''}`}>
                       <div className={styles.contentCardTop}>
                         <span className={styles.contentTypeIcon}>{CONTENT_TYPE_ICONS[item.contentType] || '📄'}</span>
@@ -576,6 +578,11 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                           </button>
                         )}
                       </div>
+                      {itemImages.length > 0 && (
+                        <div className={styles.cardThumb} onClick={() => router.push(`/school/${resolvedSlug}/content/${item.id}`)} style={{cursor: 'pointer'}}>
+                          <img src={itemImages[0]} alt="" />
+                        </div>
+                      )}
                       <h3 onClick={() => router.push(`/school/${resolvedSlug}/content/${item.id}`)} style={{cursor: 'pointer'}}>{item.title}</h3>
                       <p className={styles.contentPreview}>{stripHtml(item.content).slice(0, 120)}...</p>
                       <span className={styles.readTime}>{Math.max(1, Math.round(stripHtml(item.content).split(/\s+/).length / 200))} min read</span>
@@ -596,7 +603,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                         </div>
                       )}
                     </div>
-                  )
+                  )}
                   return (
                     <>
                       {uncategorized.map(renderCard)}

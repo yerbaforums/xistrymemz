@@ -231,6 +231,29 @@ export default function Header() {
             </div>
           )}
 
+          {isAuthenticated && (
+            <div className={`${styles.navItem} ${openDropdown === 'create' ? styles.dropdownVisible : ''}`}>
+              <button
+                className={`${styles.navToggle} ${styles.createBtn}`}
+                onClick={() => toggleDropdown('create')}
+                onKeyDown={e => handleDropdownKeyDown(e, 'create')}
+                aria-expanded={openDropdown === 'create'}
+                aria-controls="nav-dropdown-create"
+              >
+                <span aria-hidden="true">➕</span> Create
+              </button>
+              <div className={styles.navDropdown} id="nav-dropdown-create" role="menu" style={{ minWidth: 200 }}>
+                <Link href="/dashboard/feed" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">✏️</span> New Post</Link>
+                <Link href="/dashboard/projects" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🚀</span> New Project</Link>
+                <Link href="/products/new" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🛒</span> New Product</Link>
+                <Link href="/events/new" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📅</span> New Event</Link>
+                <Link href="/groups/new" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">👥</span> New Group</Link>
+                <Link href="/requests" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📝</span> New Request</Link>
+                <Link href="/dashboard/services" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🔧</span> New Service</Link>
+              </div>
+            </div>
+          )}
+
           <div className={`${styles.navItem} ${openDropdown === 'explore' ? styles.dropdownVisible : ''}`}>
             <button
               className={`${styles.navToggle}`}
