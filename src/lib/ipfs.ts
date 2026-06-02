@@ -4,8 +4,6 @@ const IPFS_API_URL = process.env.IPFS_API_URL || 'http://127.0.0.1:5001'
 const IPFS_GATEWAY = process.env.IPFS_GATEWAY || 'https://gateway.pinata.cloud'
 
 async function uploadToPinata(buffer: Buffer, fileName: string): Promise<{ cid: string; gatewayUrl: string }> {
-  const { Readable } = await import('stream')
-
   const formData = new FormData()
   const uint8 = new Uint8Array(buffer)
   formData.append('file', new Blob([uint8]), fileName)

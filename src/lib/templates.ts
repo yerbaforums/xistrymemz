@@ -1,5 +1,3 @@
-import { z } from 'zod'
-
 export interface BusinessTemplate {
   id: string
   type: 'SHOP' | 'SCHOOL' | 'COURIER'

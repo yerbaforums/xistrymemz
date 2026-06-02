@@ -1,6 +1,7 @@
 'use client'
 
 import { signOut } from 'next-auth/react'
+import type { Session } from 'next-auth'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useLocale, useTranslations } from 'next-intl'
@@ -23,7 +24,7 @@ interface MobileNavProps {
   onClose: () => void
   isAdmin: boolean
   isAuthenticated: boolean
-  session: any
+  session: Session | null
 }
 
 export default function MobileNav({ open, onClose, isAdmin, isAuthenticated, session }: MobileNavProps) {
@@ -119,7 +120,7 @@ export default function MobileNav({ open, onClose, isAdmin, isAuthenticated, ses
             <button onClick={() => { onClose(); quickCreate.open() }} className={styles.mobileLink} style={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10, background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', cursor: 'pointer', fontSize: '0.9rem', padding: '10px 14px', borderRadius: 'var(--radius-md)', fontWeight: 600 }}>
               ✨ Quick Create
             </button>
-            {NAV.dashboard.filter(item => !('walletRequired' in item) || (item as any).walletRequired !== true || settings.enableWallet).map(item => (
+            {NAV.dashboard.filter(item => !('walletRequired' in item) || !item.walletRequired || settings.enableWallet).map(item => (
               <Link key={item.href} href={item.href} className={styles.mobileLink} onClick={onClose}>
                 <span aria-hidden="true">{item.icon}</span> {item.label}
               </Link>

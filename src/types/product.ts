@@ -1,3 +1,33 @@
+export type ProductType = 'PRODUCT' | 'SERVICE' | 'RENTAL'
+export type PaymentType = 'BOTH' | 'ESCROW' | 'DIRECT'
+
+export interface ProductSummary {
+  id: string
+  title: string
+  description: string | null
+  price: number | null
+  type: ProductType
+  category: string | null
+  imageUrl: string | null
+  published: boolean
+  pinned: boolean
+  location: string | null
+  user?: { id: string; name: string | null; image: string | null }
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ProductDetail extends ProductSummary {
+  condition: string | null
+  locationDetails: string | null
+  paymentMethods: string | null
+  paymentType: PaymentType
+  acceptsRequests: boolean
+  acceptsOffers: boolean
+  requestPrice: number | null
+  userId: string
+}
+
 export interface Product {
   id: string
   title: string

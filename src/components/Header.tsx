@@ -66,28 +66,78 @@ export default function Header() {
     }
   }, [isAuthenticated])
 
+  const fetchNotificationCount = useCallback(async () => {
+    try {
+      const [connRes, msgRes, notifRes] = await Promise.all([
+        fetch('/api/community/members'),
+        fetch('/api/messages/conversations'),
+        fetch('/api/notifications/unread')
+      ])
+      if (connRes.ok) {
+        const connData = await connRes.json()
+        setNotificationCount(connData.pendingRequests?.length || 0)
+      }
+      if (msgRes.ok) {
+        const msgData = await msgRes.json()
+        const unreadCount = msgData.conversations?.reduce((sum: number, c: { unreadCount: number }) => sum + c.unreadCount, 0) || 0
+        setNotificationCount(prev => prev + unreadCount)
+      }
+      if (notifRes.ok) {
+        const notifData = await notifRes.json()
+        setNotificationCount(prev => prev + (notifData.unreadCount || 0))
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error)
+    }
+  }, [])
+
   useEffect(() => {
-    if (session?.user) fetchNotificationCount()
+    if (!session?.user) return
+    const load = async () => {
+      try {
+        const [connRes, msgRes, notifRes] = await Promise.all([
+          fetch('/api/community/members'),
+          fetch('/api/messages/conversations'),
+          fetch('/api/notifications/unread')
+        ])
+        if (connRes.ok) {
+          const connData = await connRes.json()
+          setNotificationCount(connData.pendingRequests?.length || 0)
+        }
+        if (msgRes.ok) {
+          const msgData = await msgRes.json()
+          const unreadCount = msgData.conversations?.reduce((sum: number, c: { unreadCount: number }) => sum + c.unreadCount, 0) || 0
+          setNotificationCount(prev => prev + unreadCount)
+        }
+        if (notifRes.ok) {
+          const notifData = await notifRes.json()
+          setNotificationCount(prev => prev + (notifData.unreadCount || 0))
+        }
+      } catch (error) {
+        console.error('Error fetching notifications:', error)
+      }
+    }
+    load()
   }, [session])
 
-
-
-  useNotificationSSE((event) => {
+  useNotificationSSE(useCallback((event) => {
     if (event.type === 'unread-count' && event.unreadCount !== undefined) {
       setNotificationCount(prev => prev + event.unreadCount!)
     }
     if (event.type === 'notification') {
       fetchNotificationCount()
     }
-  })
+  }, [fetchNotificationCount]))
 
+  // Close menus on route change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMenuOpen(false)
     setOpenDropdown(null)
   }, [pathname])
 
   useEffect(() => {
-    const handler = (e: CustomEvent) => setIsTraveling(e.detail.traveling)
+    const handler = (e: CustomEvent<{ traveling: boolean }>) => setIsTraveling(e.detail.traveling)
     window.addEventListener('traveling-changed', handler as EventListener)
     fetch('/api/users/me', { credentials: 'include' })
       .then(r => r.ok ? r.json() : null)
@@ -129,31 +179,6 @@ export default function Header() {
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [menuOpen, openDropdown, isAuthenticated])
-
-  const fetchNotificationCount = async () => {
-    try {
-      const [connRes, msgRes, notifRes] = await Promise.all([
-        fetch('/api/community/members'),
-        fetch('/api/messages/conversations'),
-        fetch('/api/notifications/unread')
-      ])
-      if (connRes.ok) {
-        const connData = await connRes.json()
-        setNotificationCount(connData.pendingRequests?.length || 0)
-      }
-      if (msgRes.ok) {
-        const msgData = await msgRes.json()
-        const unreadCount = msgData.conversations?.reduce((sum: number, c: { unreadCount: number }) => sum + c.unreadCount, 0) || 0
-        setNotificationCount(prev => prev + unreadCount)
-      }
-      if (notifRes.ok) {
-        const notifData = await notifRes.json()
-        setNotificationCount(prev => prev + (notifData.unreadCount || 0))
-      }
-    } catch (error) {
-      console.error('Error fetching notifications:', error)
-    }
-  }
 
   const toggleDropdown = useCallback((name: string) => {
     setOpenDropdown(prev => prev === name ? null : name)

@@ -56,6 +56,10 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
+        if (!user.password) {
+          return null
+        }
+
         const isPasswordValid = await bcrypt.compare(
           credentials.password,
           user.password
@@ -160,9 +164,14 @@ export const authOptions: NextAuthOptions = {
 
         // Send verification email for OAuth signups
         const verifyToken = randomBytes(32).toString('hex')
-        prisma.verificationToken.create({
-          data: { token: verifyToken, userId: newUser.id, expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) }
-        }).then(() => sendVerificationEmail(newUser.email, verifyToken)).catch(() => {})
+        try {
+          await prisma.verificationToken.create({
+            data: { token: verifyToken, userId: newUser.id, expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) }
+          })
+          await sendVerificationEmail(newUser.email, verifyToken)
+        } catch {
+          console.error('Failed to create verification token or send email')
+        }
 
         // Auto-connect with founder
         const founder = await prisma.user.findFirst({
@@ -205,7 +214,7 @@ export const authOptions: NextAuthOptions = {
 
       return false
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account: _account }) {
       if (user) {
         token.id = user.id
         token.email = user.email

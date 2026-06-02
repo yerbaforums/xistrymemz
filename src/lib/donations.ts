@@ -1,11 +1,21 @@
 import type { DonationAddr } from '@/types/product'
 
+interface RawDonationAddress {
+  id?: string
+  currency?: string
+  address?: string
+  label?: string | null
+  qrCodeUrl?: string | null
+  showQR?: boolean
+  sortOrder?: number
+}
+
 export function parseDonationAddresses(json: string | null | undefined): DonationAddr[] {
   if (!json) return []
   try {
     const parsed = JSON.parse(json)
     if (!Array.isArray(parsed)) return []
-    return parsed.map((a: any, i: number) => ({
+    return parsed.map((a: RawDonationAddress, i: number) => ({
       id: a.id || `addr-${i}`,
       currency: a.currency || 'ETH',
       address: a.address || '',
