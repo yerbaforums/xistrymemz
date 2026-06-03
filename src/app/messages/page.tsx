@@ -9,6 +9,7 @@ import { getUserProfileUrl } from '@/lib/utils'
 import TranslateButton from '@/components/TranslateButton'
 import Skeleton, { SkeletonCard, SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
+import InboxView from '@/components/InboxView'
 
 interface User {
   id: string
@@ -43,6 +44,7 @@ function MessagesContent() {
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
+  const [mode, setMode] = useState<'chat' | 'inbox'>('inbox')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   
   const userParam = searchParams.get('user')
@@ -154,6 +156,27 @@ function MessagesContent() {
         <p>Connect with your community</p>
       </div>
 
+      <div className={styles.modeTabs}>
+        <button
+          className={`${styles.modeTab} ${mode === 'inbox' ? styles.modeTabActive : ''}`}
+          onClick={() => setMode('inbox')}
+        >
+          📬 Inbox
+        </button>
+        <button
+          className={`${styles.modeTab} ${mode === 'chat' ? styles.modeTabActive : ''}`}
+          onClick={() => setMode('chat')}
+        >
+          💬 Chat
+        </button>
+      </div>
+
+      {mode === 'inbox' ? (
+        <InboxView onChatUser={(userId) => {
+          setMode('chat')
+          fetchUser(userId)
+        }} />
+      ) : (
       <div className={styles.messagesLayout}>
         <div className={styles.conversationsList}>
           <div className={styles.conversationsHeader}>
@@ -276,6 +299,7 @@ function MessagesContent() {
           )}
         </div>
       </div>
+      )}
     </div>
   )
 }

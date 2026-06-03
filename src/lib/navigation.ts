@@ -40,6 +40,7 @@ export const NAV: NavConfig = {
   ],
 
   explore: [
+    { href: '/discover', icon: '🌐', label: 'Discover' },
     { href: '/projects', icon: '🚀', label: 'Projects' },
     { href: '/products', icon: '🛒', label: 'Products' },
     { href: '/services', icon: '🔧', label: 'Services' },
@@ -105,6 +106,7 @@ export const NAV: NavConfig = {
 }
 
 export const DASHBOARD_SIDEBAR_PRIMARY: NavItem[] = [
+  { href: '/discover', icon: '🌐', label: 'Discover' },
   { href: '/dashboard/overview', icon: '📊', label: 'Overview' },
   { href: '/dashboard/studio', icon: '🎨', label: 'Studio' },
   { href: '/dashboard/feed', icon: '📡', label: 'Feed' },

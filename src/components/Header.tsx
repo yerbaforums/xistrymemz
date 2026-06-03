@@ -33,6 +33,7 @@ export default function Header() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [isTraveling, setIsTraveling] = useState(false)
   const [notificationCount, setNotificationCount] = useState(0)
+  const [messagesUnread, setMessagesUnread] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const headerRef = useRef<HTMLElement>(null)
   const quickCreate = useQuickCreate()
@@ -95,10 +96,11 @@ export default function Header() {
     if (!session?.user) return
     const load = async () => {
       try {
-        const [connRes, msgRes, notifRes] = await Promise.all([
+        const [connRes, msgRes, notifRes, inboxRes] = await Promise.all([
           fetch('/api/community/members'),
           fetch('/api/messages/conversations'),
-          fetch('/api/notifications/unread')
+          fetch('/api/notifications/unread'),
+          fetch('/api/inbox')
         ])
         if (connRes.ok) {
           const connData = await connRes.json()
@@ -112,6 +114,10 @@ export default function Header() {
         if (notifRes.ok) {
           const notifData = await notifRes.json()
           setNotificationCount(prev => prev + (notifData.unreadCount || 0))
+        }
+        if (inboxRes.ok) {
+          const inboxData = await inboxRes.json()
+          setMessagesUnread(inboxData.unreadCount || 0)
         }
       } catch (error) {
         console.error('Error fetching notifications:', error)
@@ -250,7 +256,7 @@ export default function Header() {
                 <div style={{ padding: '6px 14px', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Personal</div>
                 <Link href="/dashboard/passport" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🌍</span> Passport</Link>
                 <Link href="/dashboard/feed" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📡</span> Feed</Link>
-                <Link href="/dashboard/messages" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">💬</span> Messages</Link>
+                <Link href="/dashboard/messages" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">💬</span> Messages{messagesUnread > 0 && <span className={styles.navBadge}>{messagesUnread > 99 ? '99+' : messagesUnread}</span>}</Link>
                 <Link href="/dashboard/saved" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">⭐</span> Saved</Link>
               </div>
             </div>
@@ -376,6 +382,7 @@ export default function Header() {
           isAdmin={isAdmin}
           isAuthenticated={isAuthenticated}
           session={session}
+          messagesUnread={messagesUnread}
         />
 
         {/* Right section: search + auth */}

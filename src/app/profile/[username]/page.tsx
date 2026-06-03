@@ -11,7 +11,7 @@ import { getUserProfileUrl } from '@/lib/utils'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { DonationActions } from '@/components/DonationActions'
 import { CRYPTO_LOGOS } from '@/lib/constants'
-import { USER_CLASSES, CLASS_ICONS } from '@/lib/user-classes'
+import { USER_CLASSES, CLASS_ICONS, matchesClass } from '@/lib/user-classes'
 import RoleBadge from '@/components/RoleBadge'
 import ActiveStatus from '@/components/ActiveStatus'
 import LookingForCollaboratorsBadge from '@/components/LookingForCollaboratorsBadge'
@@ -323,6 +323,7 @@ export default function ProfilePage() {
   const [totalPostCount, setTotalPostCount] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'posts' | 'plans' | 'connections' | 'groups' | 'forum' | 'events' | 'requests' | 'shop' | 'school' | 'reviews' | 'about'>('posts')
+  const [activeClass, setActiveClass] = useState<string | null>(null)
   const [forumPosts, setForumPosts] = useState<ForumPostEntry[]>([])
   const [userEvents, setUserEvents] = useState<UserEventEntry[]>([])
   const [userRequests, setUserRequests] = useState<UserRequestEntry[]>([])
@@ -1084,8 +1085,140 @@ export default function ProfilePage() {
         </Button>
       </div>
 
+      {userClasses.length > 0 && (
+        <div className={styles.classTabs}>
+          <Button
+            className={`${styles.classTab} ${activeClass === null ? styles.classTabActive : ''}`}
+            onClick={() => { setActiveClass(null); setActiveTab('posts') }}
+          >
+            <span className={styles.classIcon}>{CLASS_ICONS['Architect'] || '📋'}</span>
+            Combined
+          </Button>
+          {userClasses.map(cls => (
+            <Button
+              key={cls}
+              className={`${styles.classTab} ${activeClass === cls ? styles.classTabActive : ''}`}
+              onClick={() => { setActiveClass(cls); setActiveTab('posts') }}
+            >
+              <span className={styles.classIcon}>{CLASS_ICONS[cls] || '👤'}</span>
+              {cls}
+            </Button>
+          ))}
+        </div>
+      )}
+
       <div className={styles.content}>
-        {activeTab === 'posts' && (
+        {activeClass !== null && (
+          <div className={styles.classContent}>
+            <h3 className={styles.classSectionTitle}>
+              <span className={styles.classIcon}>{CLASS_ICONS[activeClass] || '👤'}</span>
+              {activeClass} Activity
+            </h3>
+            {posts.filter(p => matchesClass(p.content || '', activeClass)).length > 0 && (
+              <div className={styles.classEntitySection}>
+                <h4>Posts</h4>
+                <div className={styles.classEntityGrid}>
+                  {posts.filter(p => matchesClass(p.content || '', activeClass)).slice(0, 6).map(p => (
+                    <div key={p.id} className={styles.classEntityCard}>
+                      {p.images && <div className={styles.classEntityImage}><Image src={getPostImages(p.images)[0] || ''} alt="" fill style={{objectFit:'cover'}} /></div>}
+                      <div className={styles.classEntityBody}>
+                        <Link href={`/posts/${p.id}`} className={styles.classEntityLink}>{p.content?.slice(0, 80)}</Link>
+                        <span className={styles.classEntityDate}>{new Date(p.createdAt).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {plans.filter(p => matchesClass(p.title || '', activeClass)).length > 0 && (
+              <div className={styles.classEntitySection}>
+                <h4>Projects</h4>
+                <div className={styles.classEntityGrid}>
+                  {plans.filter(p => matchesClass(p.title || '', activeClass)).slice(0, 6).map(p => (
+                    <div key={p.id} className={styles.classEntityCard}>
+                      <div className={styles.classEntityBody}>
+                        <Link href={`/plans/${p.id}`} className={styles.classEntityLink}>{p.title}</Link>
+                        <span className={styles.classEntityBadge}>{p.status}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {products.filter(p => matchesClass(p.title || '', activeClass)).length > 0 && (
+              <div className={styles.classEntitySection}>
+                <h4>Shop</h4>
+                <div className={styles.classEntityGrid}>
+                  {products.filter(p => matchesClass(p.title || '', activeClass)).slice(0, 6).map(p => (
+                    <div key={p.id} className={styles.classEntityCard}>
+                      {p.imageUrl && <div className={styles.classEntityImage}><Image src={p.imageUrl} alt="" fill style={{objectFit:'cover'}} /></div>}
+                      <div className={styles.classEntityBody}>
+                        <Link href={`/products/${p.id}`} className={styles.classEntityLink}>{p.title}</Link>
+                        {p.price && <span className={styles.classEntityPrice}>${p.price}</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {userEvents.filter(e => matchesClass(e.title || '', activeClass)).length > 0 && (
+              <div className={styles.classEntitySection}>
+                <h4>Events</h4>
+                <div className={styles.classEntityGrid}>
+                  {userEvents.filter(e => matchesClass(e.title || '', activeClass)).slice(0, 6).map(e => (
+                    <div key={e.id} className={styles.classEntityCard}>
+                      <div className={styles.classEntityBody}>
+                        <Link href={`/events/${e.id}`} className={styles.classEntityLink}>{e.title}</Link>
+                        <span className={styles.classEntityDate}>{new Date(e.eventDate || '').toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {userClasses.length > 0 && userRequests.filter(r => matchesClass(r.title || '', activeClass) || matchesClass(r.description || '', activeClass)).length > 0 && (
+              <div className={styles.classEntitySection}>
+                <h4>Requests</h4>
+                <div className={styles.classEntityGrid}>
+                  {userRequests.filter(r => matchesClass(r.title || '', activeClass) || matchesClass(r.description || '', activeClass)).slice(0, 6).map(r => (
+                    <div key={r.id} className={styles.classEntityCard}>
+                      <div className={styles.classEntityBody}>
+                        <Link href={`/requests/${r.id}`} className={styles.classEntityLink}>{r.title}</Link>
+                        <span className={styles.classEntityBadge}>{r.status || 'OPEN'}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {groups.filter(g => matchesClass(g.name || '', activeClass) || matchesClass(g.description || '', activeClass)).length > 0 && (
+              <div className={styles.classEntitySection}>
+                <h4>Groups</h4>
+                <div className={styles.classEntityGrid}>
+                  {groups.filter(g => matchesClass(g.name || '', activeClass) || matchesClass(g.description || '', activeClass)).slice(0, 6).map(g => (
+                    <div key={g.id} className={styles.classEntityCard}>
+                      {g.image && <div className={styles.classEntityImage}><Image src={g.image} alt="" fill style={{objectFit:'cover'}} /></div>}
+                      <div className={styles.classEntityBody}>
+                        <Link href={`/groups/${g.id}`} className={styles.classEntityLink}>{g.name}</Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {posts.filter(p => matchesClass(p.content || '', activeClass)).length === 0 &&
+             plans.filter(p => matchesClass(p.title || '', activeClass) || matchesClass(p.description || '', activeClass)).length === 0 &&
+             products.filter(p => matchesClass(p.title || '', activeClass) || matchesClass(p.description || '', activeClass)).length === 0 &&
+             userEvents.filter(e => matchesClass(e.title || '', activeClass) || matchesClass(e.description || '', activeClass)).length === 0 &&
+             userRequests.filter(r => matchesClass(r.title || '', activeClass) || matchesClass(r.description || '', activeClass)).length === 0 &&
+             groups.filter(g => matchesClass(g.name || '', activeClass) || matchesClass(g.description || '', activeClass)).length === 0 && (
+              <div className={styles.empty}>
+                <p>No {activeClass} activity found</p>
+              </div>
+            )}
+          </div>
+        )}
+        {activeClass === null && activeTab === 'posts' && (
           <div className={styles.postsSection}>
             {status === 'authenticated' && (
               <form onSubmit={handleCreatePost} className={styles.createPost}>
@@ -1201,7 +1334,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {activeTab === 'plans' && (
+        {activeClass === null && activeTab === 'plans' && (
           <div className={styles.plansSection}>
             {plans.length > 0 ? (
               <div className={styles.plansGrid}>
@@ -1237,7 +1370,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {activeTab === 'connections' && (
+        {activeClass === null && activeTab === 'connections' && (
           <div className={styles.connectionsSection}>
             {connections.length > 0 ? (
               <div className={styles.connectionsGrid}>
@@ -1265,7 +1398,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {activeTab === 'groups' && (
+        {activeClass === null && activeTab === 'groups' && (
           <div className={styles.groupsSection}>
             {groups.length > 0 ? (
               <div className={styles.groupsGrid}>
@@ -1301,7 +1434,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {activeTab === 'forum' && (
+        {activeClass === null && activeTab === 'forum' && (
           <div className={styles.forumSection}>
             <h3>Forum Posts</h3>
             {loadingForum ? (
@@ -1325,7 +1458,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {activeTab === 'events' && (
+        {activeClass === null && activeTab === 'events' && (
           <div className={styles.eventsSection}>
             <h3>Events</h3>
             {loadingEvents ? (
@@ -1347,7 +1480,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {activeTab === 'requests' && (
+        {activeClass === null && activeTab === 'requests' && (
           <div className={styles.requestsSection}>
             <h3>Requests</h3>
             {loadingRequests ? (
@@ -1369,7 +1502,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {activeTab === 'shop' && (
+        {activeClass === null && activeTab === 'shop' && (
           <div className={styles.shopSection}>
             {user.shopSlug && (
               <Link href={`/shop/${user.shopSlug}`} className={styles.viewShopLink}>
@@ -1414,7 +1547,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {activeTab === 'school' && (
+        {activeClass === null && activeTab === 'school' && (
           <div className={styles.schoolSection}>
             {user.schoolSlug && (
               <Link href={`/school/${user.schoolSlug}`} className={styles.schoolCard}>
@@ -1425,13 +1558,13 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {activeTab === 'reviews' && (
+        {activeClass === null && activeTab === 'reviews' && (
           <div className={styles.reviewsSection}>
             <Rating userId={user.id} type="SELLER" />
           </div>
         )}
 
-        {activeTab === 'about' && (
+        {activeClass === null && activeTab === 'about' && (
           <div className={styles.aboutSection}>
             {editMode ? (
               <form onSubmit={handleUpdateProfile} className={styles.editForm}>

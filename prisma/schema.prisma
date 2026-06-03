@@ -175,6 +175,8 @@ model User {
   locationCategories LocationCategory[]
   trips              Trip[]
   tripCollaborators  TripCollaborator[]
+  sentCollabRequests   CollaborationRequest[] @relation("CollabRequestSender")
+  receivedCollabRequests CollaborationRequest[] @relation("CollabRequestReceiver")
 }
 
 // User-defined locations for filtering content
@@ -468,6 +470,24 @@ model PlanContribution {
 
   @@index([planId])
   @@index([userId])
+}
+
+model CollaborationRequest {
+  id         String   @id @default(cuid())
+  senderId   String
+  sender     User     @relation("CollabRequestSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String
+  receiver   User     @relation("CollabRequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  entityType String   // PRODUCT | EVENT | GROUP | PLAN
+  entityId   String
+  message    String?
+  intent     String   // COLLABORATE | VOLUNTEER | PARTNER | MENTOR
+  status     String   @default("PENDING") // PENDING | ACCEPTED | DECLINED
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([receiverId, status])
+  @@index([senderId])
 }
 
 model Request {

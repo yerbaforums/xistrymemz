@@ -18,6 +18,7 @@ import type { Event } from '@/types/event'
 import type { DonationAddr } from '@/types/product'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import TranslateButton from '@/components/TranslateButton'
+import CollaborateButton from '@/components/CollaborateButton'
 import Skeleton from '@/components/Skeleton'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 
@@ -533,6 +534,9 @@ function EventDetailContent() {
                 >
                   {joining ? 'Processing...' : 'Leave Event'}
                 </button>
+              )}
+              {!isOwner && (
+                <CollaborateButton entityType="EVENT" entityId={event.id} label="🤝 Propose Collab" variant="secondary" />
               )}
             </div>
 

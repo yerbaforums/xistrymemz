@@ -25,9 +25,10 @@ interface MobileNavProps {
   isAdmin: boolean
   isAuthenticated: boolean
   session: Session | null
+  messagesUnread?: number
 }
 
-export default function MobileNav({ open, onClose, isAdmin, isAuthenticated, session }: MobileNavProps) {
+export default function MobileNav({ open, onClose, isAdmin, isAuthenticated, session, messagesUnread }: MobileNavProps) {
   const currentLocale = useLocale()
   const t = useTranslations('header')
   const { mode, accent, setAccent, toggleMode } = useTheme()
@@ -123,6 +124,11 @@ export default function MobileNav({ open, onClose, isAdmin, isAuthenticated, ses
             {NAV.dashboard.filter(item => !('walletRequired' in item) || !item.walletRequired || settings.enableWallet).map(item => (
               <Link key={item.href} href={item.href} className={styles.mobileLink} onClick={onClose}>
                 <span aria-hidden="true">{item.icon}</span> {item.label}
+                {item.label === 'Messages' && messagesUnread && messagesUnread > 0 && (
+                  <span style={{ marginLeft: 8, background: 'var(--accent-primary)', color: 'var(--bg-primary)', fontSize: '0.65rem', padding: '1px 6px', borderRadius: 10, fontWeight: 600 }}>
+                    {messagesUnread > 99 ? '99+' : messagesUnread}
+                  </span>
+                )}
               </Link>
             ))}
             <Link href={session?.user ? getUserProfileUrl({ id: session.user.id, username: session.user?.username }) : '/auth/login'} className={styles.mobileLink} onClick={onClose}>

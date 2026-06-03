@@ -12,6 +12,7 @@ import { parseGoals, parseMilestones, parseResources, stringifyGoals, stringifyM
 import { getUserProfileUrl } from '@/lib/utils'
 import EntityActions from '@/components/EntityActions'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
+import CollaborateButton from '@/components/CollaborateButton'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
@@ -487,6 +488,11 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                       )}
                       {plan.description && <p className={styles.description}>{plan.description}</p>}
                       {plan.description && <TranslateButton text={plan.description} />}
+                      {userId && !isOwner && (
+                        <div style={{ margin: '12px 0' }}>
+                          <CollaborateButton entityType="PLAN" entityId={plan.id} label="🤝 Join as Collaborator" variant="secondary" />
+                        </div>
+                      )}
                       <EntityActions
                         entityType="PLAN"
                         entityId={plan.id}

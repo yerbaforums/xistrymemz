@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import styles from './page.module.css'
+import CollaborateButton from '@/components/CollaborateButton'
 import { useCart } from '@/context/CartContext'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { useToast } from '@/context/ToastContext'
@@ -839,12 +840,15 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               </Link>
             )}
             {session?.user && !isOwner && (
-              <button
-                className={styles.messageBtn}
-                onClick={() => setShowMessageModal(true)}
-              >
-                ✉️ Message Seller
-              </button>
+              <>
+                <button
+                  className={styles.messageBtn}
+                  onClick={() => setShowMessageModal(true)}
+                >
+                  ✉️ Message Seller
+                </button>
+                <CollaborateButton entityType="PRODUCT" entityId={product.id} label="🤝 Collaborate" variant="secondary" />
+              </>
             )}
           </div>
 

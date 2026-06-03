@@ -16,6 +16,7 @@ import HashtagInput from '@/components/HashtagInput'
 import Button from '@/components/ui/Button'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
+import CollaborateButton from '@/components/CollaborateButton'
 
 interface Member {
   id: string
@@ -588,7 +589,10 @@ function GroupDetailContent() {
               group.isMember ? (
                 <Button onClick={handleLeave} disabled={joining} className={styles.leaveBtn}>Leave</Button>
               ) : (
-                <Button onClick={handleJoin} disabled={joining} className={styles.joinBtn}>{joining ? 'Joining...' : 'Join Group'}</Button>
+                <>
+                  <Button onClick={handleJoin} disabled={joining} className={styles.joinBtn}>{joining ? 'Joining...' : 'Join Group'}</Button>
+                  <CollaborateButton entityType="GROUP" entityId={group.id} label="🤝 Propose Collab" variant="secondary" />
+                </>
               )
             )}
             {group.isAdmin && (

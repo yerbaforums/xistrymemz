@@ -293,6 +293,18 @@
   padding: 0 4px;
 }
 
+.navBadge {
+  margin-left: 8px;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 10px;
+  display: inline-block;
+  line-height: 1.4;
+}
+
 /* Auth Buttons */
 .authButtons {
   display: flex;

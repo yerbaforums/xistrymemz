@@ -275,6 +275,126 @@
   border-color: var(--accent-primary);
 }
 
+.classTabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.classTab {
+  padding: 6px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.classTab:hover {
+  background: var(--bg-tertiary);
+}
+
+.classTabActive {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border-color: var(--accent-primary);
+}
+
+.classIcon {
+  font-size: 0.9rem;
+}
+
+.classContent {
+  min-height: 300px;
+}
+
+.classSectionTitle {
+  font-size: 1.1rem;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.classEntitySection {
+  margin-bottom: 24px;
+}
+
+.classEntitySection h4 {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.classEntityGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.classEntityCard {
+  background: var(--bg-secondary);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s;
+}
+
+.classEntityCard:hover {
+  border-color: var(--accent-primary);
+}
+
+.classEntityImage {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  background: var(--bg-tertiary);
+}
+
+.classEntityBody {
+  padding: 10px 12px;
+}
+
+.classEntityLink {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  text-decoration: none;
+}
+
+.classEntityLink:hover {
+  color: var(--accent-primary);
+}
+
+.classEntityDate {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.classEntityBadge {
+  font-size: 0.7rem;
+  color: var(--accent-primary);
+  background: rgba(99,102,241,0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.classEntityPrice {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+
 .plansSection {
   min-height: 200px;
 }
