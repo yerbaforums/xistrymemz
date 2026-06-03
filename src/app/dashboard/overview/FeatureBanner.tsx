@@ -13,6 +13,20 @@ interface Banner {
 
 const BANNERS: Banner[] = [
   {
+    id: 'boards',
+    icon: '📌',
+    title: 'New: Community Boards',
+    desc: 'Pin your cards, announcements, and listings to location-based community bulletin boards.',
+    link: { href: '/boards', label: 'Explore Boards' }
+  },
+  {
+    id: 'discover',
+    icon: '🌐',
+    title: 'New: Discover Nearby',
+    desc: 'Find people, products, services, events, and projects near you on an interactive map.',
+    link: { href: '/discover', label: 'Open Discover' }
+  },
+  {
     id: 'planner',
     icon: '🗓️',
     title: 'New: Planner Dashboard',

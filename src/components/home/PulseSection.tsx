@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Skeleton from '@/components/Skeleton'
 import { useScrollReveal } from '@/hooks/useScrollReveal'
-import type { FeaturedShop, FeaturedProduct, PublicRequest, FeaturedEvent, PublicPlan } from './types'
+import type { FeaturedShop, FeaturedProduct, PublicRequest, FeaturedEvent, PublicPlan, FeaturedBoard } from './types'
 import { useTranslations } from 'next-intl'
 import styles from './PulseSection.module.css'
 
@@ -13,15 +13,17 @@ interface Props {
   requests: PublicRequest[]
   events: FeaturedEvent[]
   plans: PublicPlan[]
+  boards: FeaturedBoard[]
   loadingShops: boolean
   loadingProducts: boolean
   loadingRequests: boolean
   loadingEvents: boolean
   loadingPlans: boolean
+  loadingBoards: boolean
   trendingTags?: { tag: string; entities?: { products: number; events: number; posts: number; forumPosts: number; groupPosts: number } }[]
 }
 
-export default function PulseSection({ shops, products, requests, events, plans, loadingShops, loadingProducts, loadingRequests, loadingEvents, loadingPlans, trendingTags }: Props) {
+export default function PulseSection({ shops, products, requests, events, plans, boards, loadingShops, loadingProducts, loadingRequests, loadingEvents, loadingPlans, loadingBoards, trendingTags }: Props) {
   const { ref, visible } = useScrollReveal()
   const t = useTranslations('home')
 
@@ -150,6 +152,29 @@ export default function PulseSection({ shops, products, requests, events, plans,
             </div>
           ) : <p className={styles.empty}>{t('noProjectsYet')}</p>}
           <Link href="/plans/public" className={styles.viewAll}>{t('exploreProjects')} →</Link>
+        </div>
+        <div className={styles.card}>
+          <div className={styles.header}>
+            <span className={styles.icon}>📌</span>
+            <h3>{t('communityBoards')}</h3>
+          </div>
+          {loadingBoards ? (
+            <div className={styles.list}>{[1,2,3].map(i => <Skeleton key={i} width="100%" height="2.5rem" />)}</div>
+          ) : boards.length > 0 ? (
+            <div className={styles.list}>
+              {boards.slice(0, 4).map(board => (
+                <Link key={board.id} href={`/boards/${board.slug}`} className={styles.item}>
+                  <span className={styles.itemIcon}>📌</span>
+                  <div className={styles.itemCol}>
+                    <span className={styles.itemTitle}>{board.name}</span>
+                    <span className={styles.itemMeta}>{board.location || '📍 ' + board.pinCount + ' pins'}</span>
+                  </div>
+                  <span className={styles.itemPrice}>{board.pinCount}</span>
+                </Link>
+              ))}
+            </div>
+          ) : <p className={styles.empty}>{t('noBoardsYet')}</p>}
+          <Link href="/boards" className={styles.viewAll}>{t('exploreBoards')} →</Link>
         </div>
       </div>
 

@@ -12,6 +12,7 @@ export interface PlatformStats {
   forumReplies: number
   offers: number
   appointments: number
+  boards: number
 }
 
 export interface FeaturedShop {
@@ -56,4 +57,12 @@ export interface PublicPlan {
   description: string | null
   imageUrl: string | null
   user: { name: string | null }
+}
+
+export interface FeaturedBoard {
+  id: string
+  name: string
+  slug: string
+  location: string | null
+  pinCount: number
 }

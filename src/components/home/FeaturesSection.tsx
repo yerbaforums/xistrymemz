@@ -32,6 +32,9 @@ export default function FeaturesSection() {
         { icon: '📹', title: 'Video Chat', desc: 'Start or join video rooms for collaboration, lessons, consultations, or social calls.', href: '/dashboard/video' },
         { icon: '#️⃣', title: 'Hashtags', desc: 'Follow hashtags to discover trending content across projects, services, and posts.', href: '/hashtags' },
         { icon: '🔄', title: 'Share & Repost', desc: 'Share any project, service, or event to your feed or social media.', href: '/dashboard/feed' },
+        { icon: '📌', title: 'Boards', desc: 'Pin announcements, listings, and cards to location-based community bulletin boards.', href: '/boards' },
+        { icon: '🌐', title: 'Discover', desc: 'Browse an interactive map of everything near you — people, products, events, and projects.', href: '/discover' },
+        { icon: '📬', title: 'Inbox', desc: 'Unified inbox for messages, connection requests, offers, and collaboration invites.', href: '/dashboard/messages' },
       ]
     },
     {
@@ -42,6 +45,7 @@ export default function FeaturesSection() {
         { icon: '📝', title: 'Requests', desc: 'Need help? Post a request. Have skills? Fulfill and earn reputation.', href: '/requests' },
         { icon: '🏫', title: 'School & Teaching', desc: 'Create courses, share knowledge, and earn from your expertise.', href: '/schools' },
         { icon: '🗓️', title: 'Planner & Appointments', desc: 'Schedule appointments, set availability, and manage your calendar.', href: '/dashboard/appointments' },
+        { icon: '🤲', title: 'Collaboration', desc: 'Send and receive collaboration requests for products, events, groups, and projects.', href: '/dashboard/messages' },
       ]
     },
     {

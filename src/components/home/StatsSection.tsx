@@ -26,6 +26,7 @@ export default function StatsSection({ stats }: Props) {
     { key: 'requests' as const, icon: '📝', label: t('statsRequests'), href: '/requests' },
     { key: 'offers' as const, icon: '🤝', label: t('statsOffers'), href: '/dashboard/offers' },
     { key: 'appointments' as const, icon: '🗓️', label: t('statsAppointments'), href: '/dashboard/appointments' },
+    { key: 'boards' as const, icon: '📌', label: t('statsBoards'), href: '/boards' },
   ]
 
   return (

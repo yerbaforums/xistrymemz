@@ -24,6 +24,8 @@ const TOUR_OUTLETS = [
   { id: 'shops', icon: '🏪', name: 'Shops', description: 'Open your own shop front with a branded storefront to showcase and sell products.', url: '/shop/setup' },
   { id: 'schools', icon: '📚', name: 'Schools', description: 'Create courses, publish articles and tutorials, or enroll in educational content.', url: '/school/setup' },
   { id: 'offers', icon: '🤝', name: 'Offers & Barter', description: 'Exchange items and services directly through barter offers within the community.', url: '/dashboard/offers' },
+  { id: 'boards', icon: '📌', name: 'Boards', description: 'Pin your cards, announcements, and listings to location-based community bulletin boards.', url: '/boards' },
+  { id: 'discover', icon: '🌐', name: 'Discover', description: 'Browse a map of everything near you — people, products, events, groups, and more.', url: '/discover' },
 ]
 
 export default function OnboardingPage() {

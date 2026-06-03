@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    const [members, shops, schools, products, services, rentals, events, plans, requests, forumPosts, forumReplies, offers, appointments] = await Promise.all([
+    const [members, shops, schools, products, services, rentals, events, plans, requests, forumPosts, forumReplies, offers, appointments, boards] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { shopSlug: { not: null } } }),
       prisma.user.count({ where: { schoolSlug: { not: null } } }),
@@ -19,11 +19,12 @@ export async function GET() {
       prisma.forumReply.count(),
       prisma.barterOffer.count(),
       prisma.appointment.count(),
+      prisma.bulletinBoard.count({ where: { isPublic: true } }),
     ])
 
-    return NextResponse.json({ members, shops, schools, products, services, rentals, events, plans, requests, forumPosts, forumReplies, offers, appointments })
+    return NextResponse.json({ members, shops, schools, products, services, rentals, events, plans, requests, forumPosts, forumReplies, offers, appointments, boards })
   } catch (error) {
     console.error('Error fetching stats:', error)
-    return NextResponse.json({ members: 0, shops: 0, schools: 0, products: 0, services: 0, rentals: 0, events: 0, plans: 0, requests: 0, forumPosts: 0, forumReplies: 0 })
+    return NextResponse.json({ members: 0, shops: 0, schools: 0, products: 0, services: 0, rentals: 0, events: 0, plans: 0, requests: 0, forumPosts: 0, forumReplies: 0, boards: 0 })
   }
 }

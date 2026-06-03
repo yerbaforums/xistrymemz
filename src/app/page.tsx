@@ -12,12 +12,12 @@ import FeaturesSection from '@/components/home/FeaturesSection'
 import CTASection from '@/components/home/CTASection'
 import PassportSection from '@/components/home/PassportSection'
 import HomeFooterSection from '@/components/home/HomeFooterSection'
-import type { PlatformStats, FeaturedShop, FeaturedProduct, PublicRequest, FeaturedEvent, PublicPlan } from '@/components/home/types'
+import type { PlatformStats, FeaturedShop, FeaturedProduct, PublicRequest, FeaturedEvent, PublicPlan, FeaturedBoard } from '@/components/home/types'
 
 const ZERO_STATS: PlatformStats = {
   members: 0, shops: 0, schools: 0, products: 0, services: 0,
   rentals: 0, events: 0, plans: 0, requests: 0, forumPosts: 0, forumReplies: 0,
-  offers: 0, appointments: 0
+  offers: 0, appointments: 0, boards: 0
 }
 
 function easeOutCubic(t: number): number {
@@ -66,11 +66,13 @@ export default function Home() {
   const [requests, setRequests] = useState<PublicRequest[]>([])
   const [events, setEvents] = useState<FeaturedEvent[]>([])
   const [plans, setPlans] = useState<PublicPlan[]>([])
+  const [boards, setBoards] = useState<FeaturedBoard[]>([])
   const [loadingShops, setLoadingShops] = useState(true)
   const [loadingProducts, setLoadingProducts] = useState(true)
   const [loadingRequests, setLoadingRequests] = useState(true)
   const [loadingEvents, setLoadingEvents] = useState(true)
   const [loadingPlans, setLoadingPlans] = useState(true)
+  const [loadingBoards, setLoadingBoards] = useState(true)
   const [trendingTags, setTrendingTags] = useState<{ tag: string; postCount: number; entities: { posts: number; products: number; events: number; forumPosts: number; groupPosts: number } }[]>([])
   const animatedStats = useCountUp(stats)
 
@@ -125,6 +127,11 @@ export default function Home() {
         setPlans(list.slice(0, 4)); setLoadingPlans(false)
       })
       .catch(() => setLoadingPlans(false))
+
+    fetch('/api/boards?limit=4')
+      .then(r => r.ok ? r.json() : { boards: [] })
+      .then(data => { setBoards(data.boards || []); setLoadingBoards(false) })
+      .catch(() => setLoadingBoards(false))
   }, [fetchProducts])
 
   return (
@@ -138,11 +145,13 @@ export default function Home() {
         requests={requests}
         events={events}
         plans={plans}
+        boards={boards}
         loadingShops={loadingShops}
         loadingProducts={loadingProducts}
         loadingRequests={loadingRequests}
         loadingEvents={loadingEvents}
         loadingPlans={loadingPlans}
+        loadingBoards={loadingBoards}
         trendingTags={trendingTags}
       />
       <StepsSection />
