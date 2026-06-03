@@ -20,6 +20,7 @@ import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
 import Rating from '@/components/Rating'
 import HashtagText from '@/components/HashtagText'
+import LinkedItemsSection from '@/components/LinkedItemsSection'
 import LinkPreview from '@/components/LinkPreview'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import Button from '@/components/ui/Button'
@@ -798,6 +799,12 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
         message="Delete this content item? This cannot be undone."
         confirmLabel="Delete"
         variant="danger"
+      />
+
+      <LinkedItemsSection
+        entityType="SCHOOL"
+        entityId={school.user.id}
+        currentUserId={session?.user?.id}
       />
 
       </div>

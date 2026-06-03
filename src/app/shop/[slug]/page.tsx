@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
+import LinkedItemsSection from '@/components/LinkedItemsSection'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
@@ -708,6 +709,12 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
         onClose={() => setShowAppointmentModal(false)}
         sellerId={shop.user.id}
         sellerName={shop.user.name}
+      />
+
+      <LinkedItemsSection
+        entityType="SHOP"
+        entityId={shop.user.id}
+        currentUserId={session?.user?.id}
       />
 
       <EntityActions entityType="SHOP" entityId={shop.shopSlug || ''} title={shop.shopName || 'Shop'} authorId={shop.user.id} variant="bar" />

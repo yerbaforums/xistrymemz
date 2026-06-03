@@ -11,6 +11,7 @@ import SharedItemCard from '@/components/SharedItemCard'
 import ViewCount from '@/components/ViewCount'
 import { getUserProfileUrl } from '@/lib/utils'
 import { useRecordView } from '@/hooks/useRecordView'
+import LinkedItemsSection from '@/components/LinkedItemsSection'
 
 interface PostData {
   id: string
@@ -174,6 +175,11 @@ export default function PostPage() {
       </div>
 
       <ReplySection postId={post.id} postAuthorId={post.userId} expandReply={expandReply} />
+
+      <LinkedItemsSection
+        entityType="POST"
+        entityId={post.id}
+      />
     </div>
   )
 }

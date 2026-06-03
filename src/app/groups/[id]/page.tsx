@@ -15,6 +15,7 @@ import ImageUploader from '@/components/ImageUploader'
 import HashtagInput from '@/components/HashtagInput'
 import Button from '@/components/ui/Button'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import LinkedItemsSection from '@/components/LinkedItemsSection'
 
 interface Member {
   id: string
@@ -1141,6 +1142,8 @@ function GroupDetailContent() {
           </div>
         </div>
       )}
+
+      <LinkedItemsSection entityType="GROUP" entityId={params.id as string} currentUserId={session?.user?.id} />
 
       {/* Marketplace Link Modal */}
       {showMarketplaceModal && (

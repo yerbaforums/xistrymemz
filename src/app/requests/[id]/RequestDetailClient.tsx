@@ -13,6 +13,7 @@ import ViewCount from '@/components/ViewCount'
 import { useRecordView } from '@/hooks/useRecordView'
 import TranslateButton from '@/components/TranslateButton'
 import Button from '@/components/ui/Button'
+import LinkedItemsSection from '@/components/LinkedItemsSection'
 
 const CATEGORIES = [
   { value: 'GENERAL', label: 'General', icon: '\u{1F4CB}' },
@@ -1374,6 +1375,8 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
           </div>
         </div>
       )}
+
+      <LinkedItemsSection entityType="REQUEST" entityId={request.id} currentUserId={userId || null} />
 
       {/* OFFER MODAL */}
       <MakeOfferModal

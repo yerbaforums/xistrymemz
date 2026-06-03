@@ -19,6 +19,7 @@ import type { DonationAddr } from '@/types/product'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import TranslateButton from '@/components/TranslateButton'
 import Skeleton from '@/components/Skeleton'
+import LinkedItemsSection from '@/components/LinkedItemsSection'
 
 const QRCodeModal = dynamic(() => import('@/components/QRCodeModal').then(mod => mod.QRCodeModal), { ssr: false })
 
@@ -746,6 +747,12 @@ function EventDetailContent() {
         message="Are you sure you want to delete this event? This action cannot be undone."
         confirmLabel="Delete"
         variant="danger"
+      />
+
+      <LinkedItemsSection
+        entityType="EVENT"
+        entityId={event?.id || ''}
+        currentUserId={userId}
       />
 
       {relatedEvents.length > 0 && (

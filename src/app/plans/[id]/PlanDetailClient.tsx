@@ -11,6 +11,7 @@ import PlanSupport from './PlanSupport'
 import { parseGoals, parseMilestones, parseResources, stringifyGoals, stringifyMilestones, stringifyResources } from '@/lib/plan-utils'
 import { getUserProfileUrl } from '@/lib/utils'
 import EntityActions from '@/components/EntityActions'
+import LinkedItemsSection from '@/components/LinkedItemsSection'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
@@ -779,6 +780,12 @@ donationDescription={plan.donationDescription}
           )}
         </div>
       </div>
+
+      <LinkedItemsSection
+        entityType="PLAN"
+        entityId={plan.id}
+        currentUserId={userId}
+      />
 
       {/* Event Modal */}
       {showEventModal && (

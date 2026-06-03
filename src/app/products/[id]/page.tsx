@@ -33,6 +33,7 @@ const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ss
 import TranslateButton from '@/components/TranslateButton'
 import Skeleton from '@/components/Skeleton'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import LinkedItemsSection from '@/components/LinkedItemsSection'
 
 interface Product {
   id: string
@@ -1303,6 +1304,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         defaultLocation={product.appointmentLocation}
         defaultMeetingLink={product.appointmentMeetingLink}
         formFields={product.appointmentFormFields as { label: string; type: 'text' | 'textarea'; required: boolean }[] | null}
+      />
+
+      <LinkedItemsSection
+        entityType="PRODUCT"
+        entityId={product?.id || ''}
+        currentUserId={session?.user?.id}
       />
 
       {relatedProducts.length > 0 && (

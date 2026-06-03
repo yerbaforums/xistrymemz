@@ -1131,17 +1131,24 @@ model Payment {
 }
 
 model PlatformSettings {
-  id                 String  @id @default(cuid())
-  platformFeePercent Float   @default(10)
+  id                 String   @id @default(cuid())
+  platformFeePercent Float    @default(10)
   platformWallet     String?
-  adminPrivateKeys   String? // Encrypted JSON of private keys (legacy)
+  adminPrivateKeys   String?  // Encrypted JSON of private keys (legacy)
   remoteNodeUrl      String?
   remoteNodeApiKey   String?
-  enableCheckout     Boolean @default(true)
-  enableWallet       Boolean @default(true)
+  enableCheckout     Boolean  @default(true)
+  enableWallet       Boolean  @default(true)
 
   // Site-wide donation addresses
   donationAddresses String? // JSON string: [{ currency, address, label, qrUrl?, showQR }]
+
+  // Backup configuration
+  enableAutoBackup     Boolean   @default(false)
+  backupIntervalHours  Int       @default(24)
+  backupRetentionCount Int       @default(7)
+  lastBackupAt         DateTime?
+  ipfsGatewayUrl       String?   @default("https://ipfs.io/ipfs/")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

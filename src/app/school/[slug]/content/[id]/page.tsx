@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import EntityActions from '@/components/EntityActions'
+import LinkedItemsSection from '@/components/LinkedItemsSection'
 import styles from './page.module.css'
 
 interface ContentData {
@@ -90,6 +92,7 @@ function QuizSection({ content }: { content: string }) {
 }
 
 export default function SchoolContentDetailPage() {
+  const { data: session } = useSession()
   const params = useParams()
   const slug = params.slug as string
   const id = params.id as string
@@ -203,6 +206,8 @@ export default function SchoolContentDetailPage() {
           </div>
         </div>
       )}
+
+      <LinkedItemsSection entityType="SCHOOLCONTENT" entityId={content.id} currentUserId={session?.user?.id} />
     </div>
   )
 }

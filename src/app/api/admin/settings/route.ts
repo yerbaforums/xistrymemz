@@ -39,7 +39,12 @@ export async function GET() {
       enableCheckout: settings.enableCheckout,
       enableWallet: settings.enableWallet,
       platformFeePercent: settings.platformFeePercent,
-      donationAddresses
+      donationAddresses,
+      enableAutoBackup: settings.enableAutoBackup,
+      backupIntervalHours: settings.backupIntervalHours,
+      backupRetentionCount: settings.backupRetentionCount,
+      lastBackupAt: settings.lastBackupAt?.toISOString() || null,
+      ipfsGatewayUrl: settings.ipfsGatewayUrl
     })
   } catch (error) {
     console.error('Error fetching settings:', error)
@@ -56,7 +61,7 @@ export async function PUT(request: Request) {
 
   try {
     const body = await request.json()
-    const { enableCheckout, enableWallet, platformFeePercent, donationAddresses } = body
+    const { enableCheckout, enableWallet, platformFeePercent, donationAddresses, enableAutoBackup, backupIntervalHours, backupRetentionCount, ipfsGatewayUrl } = body
 
     const settings = await getOrCreateSettings()
 
@@ -66,7 +71,11 @@ export async function PUT(request: Request) {
         enableCheckout: enableCheckout !== undefined ? enableCheckout : settings.enableCheckout,
         enableWallet: enableWallet !== undefined ? enableWallet : settings.enableWallet,
         platformFeePercent: platformFeePercent !== undefined ? platformFeePercent : settings.platformFeePercent,
-        donationAddresses: donationAddresses !== undefined ? JSON.stringify(donationAddresses) : settings.donationAddresses
+        donationAddresses: donationAddresses !== undefined ? JSON.stringify(donationAddresses) : settings.donationAddresses,
+        enableAutoBackup: enableAutoBackup !== undefined ? enableAutoBackup : settings.enableAutoBackup,
+        backupIntervalHours: backupIntervalHours !== undefined ? backupIntervalHours : settings.backupIntervalHours,
+        backupRetentionCount: backupRetentionCount !== undefined ? backupRetentionCount : settings.backupRetentionCount,
+        ipfsGatewayUrl: ipfsGatewayUrl !== undefined ? ipfsGatewayUrl : settings.ipfsGatewayUrl
       }
     })
 
@@ -83,7 +92,12 @@ export async function PUT(request: Request) {
       enableCheckout: updated.enableCheckout,
       enableWallet: updated.enableWallet,
       platformFeePercent: updated.platformFeePercent,
-      donationAddresses: parsedAddresses
+      donationAddresses: parsedAddresses,
+      enableAutoBackup: updated.enableAutoBackup,
+      backupIntervalHours: updated.backupIntervalHours,
+      backupRetentionCount: updated.backupRetentionCount,
+      lastBackupAt: updated.lastBackupAt?.toISOString() || null,
+      ipfsGatewayUrl: updated.ipfsGatewayUrl
     })
   } catch (error) {
     console.error('Error updating settings:', error)

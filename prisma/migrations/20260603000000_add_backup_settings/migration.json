@@ -1,0 +1,50 @@
+{
+  "version": "5.22.0",
+  "steps": [
+    {
+      "tag": "AlterTable",
+      "model": "PlatformSettings",
+      "changes": [
+        {
+          "operation": "AddColumn",
+          "column": {
+            "name": "enableAutoBackup",
+            "type": "Boolean",
+            "default": false
+          }
+        },
+        {
+          "operation": "AddColumn",
+          "column": {
+            "name": "backupIntervalHours",
+            "type": "Int",
+            "default": 24
+          }
+        },
+        {
+          "operation": "AddColumn",
+          "column": {
+            "name": "backupRetentionCount",
+            "type": "Int",
+            "default": 7
+          }
+        },
+        {
+          "operation": "AddColumn",
+          "column": {
+            "name": "lastBackupAt",
+            "type": "DateTime"
+          }
+        },
+        {
+          "operation": "AddColumn",
+          "column": {
+            "name": "ipfsGatewayUrl",
+            "type": "String",
+            "default": "https://ipfs.io/ipfs/"
+          }
+        }
+      ]
+    }
+  ]
+}

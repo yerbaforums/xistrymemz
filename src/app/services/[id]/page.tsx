@@ -13,6 +13,7 @@ import { useRecordView } from '@/hooks/useRecordView'
 import TranslateButton from '@/components/TranslateButton'
 import styles from './page.module.css'
 import Skeleton from '@/components/Skeleton'
+import LinkedItemsSection from '@/components/LinkedItemsSection'
 
 function formatDuration(mins: number) {
   if (mins < 60) return `${mins} min`
@@ -421,6 +422,8 @@ export default function ServiceDetailPage() {
             </div>
           </div>
         )}
+
+        <LinkedItemsSection entityType="SERVICE" entityId={service.id} currentUserId={session?.user?.id} />
       </div>
     </ErrorBoundary>
   )
