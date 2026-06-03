@@ -4,6 +4,19 @@
   padding: 24px 20px 60px;
 }
 
+.backLink {
+  display: inline-block;
+  margin-bottom: 16px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.backLink:hover {
+  color: var(--accent-primary);
+}
+
 .boardHeader {
   display: flex;
   align-items: flex-start;

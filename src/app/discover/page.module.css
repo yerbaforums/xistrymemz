@@ -4,6 +4,29 @@
   padding: 24px;
 }
 
+.breadcrumb {
+  margin-bottom: 16px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.breadcrumbLink {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.breadcrumbLink:hover {
+  color: var(--accent-primary);
+}
+
+.breadcrumbSep {
+  margin: 0 6px;
+}
+
+.breadcrumbCurrent {
+  color: var(--text-primary);
+}
+
 .header {
   margin-bottom: 24px;
 }

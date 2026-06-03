@@ -169,6 +169,11 @@ export default function DiscoverPage() {
 
   return (
     <div className={styles.page}>
+      <div className={styles.breadcrumb}>
+        <Link href="/" className={styles.breadcrumbLink}>Home</Link>
+        <span className={styles.breadcrumbSep}> / </span>
+        <span className={styles.breadcrumbCurrent}>Discover</span>
+      </div>
       <div className={styles.header}>
         <h1 className={styles.title}>Discover</h1>
         <p className={styles.subtitle}>Find people, products, groups, events, and projects near you</p>

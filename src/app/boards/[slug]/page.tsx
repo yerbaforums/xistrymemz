@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useParams } from 'next/navigation'
+import Link from 'next/link'
 import BoardPinCard from '@/components/BoardPinCard'
 import CreatePinModal from '@/components/CreatePinModal'
 import styles from './page.module.css'
@@ -111,6 +112,7 @@ export default function BoardDetailPage() {
 
   return (
     <div className={styles.page}>
+      <Link href="/boards" className={styles.backLink}>← Back to Boards</Link>
       <div className={styles.boardHeader}>
         <div className={styles.boardInfo}>
           <h1>📌 {board.name}</h1>
