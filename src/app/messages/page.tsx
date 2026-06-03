@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState, useRef, Suspense } from 'react'
+import { useEffect, useState, useRef, Suspense, use } from 'react'
 import Link from 'next/link'
 import styles from './messages.module.css'
 import { getUserProfileUrl } from '@/lib/utils'
@@ -45,6 +45,7 @@ function MessagesContent() {
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
   const [mode, setMode] = useState<'chat' | 'inbox'>('inbox')
+  const [fetchError, setFetchError] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   
   const userParam = searchParams.get('user')
@@ -98,26 +99,34 @@ function MessagesContent() {
   }
 
   const fetchUser = async (userId: string) => {
+    setFetchError(null)
     try {
       const res = await fetch(`/api/users/${userId}`)
       if (res.ok) {
         const data = await res.json()
         setSelectedUser(data.user)
+      } else {
+        setFetchError('User not found')
       }
     } catch (error) {
       console.error('Error fetching user:', error)
+      setFetchError('Failed to load user')
     }
   }
 
   const fetchMessages = async (userId: string) => {
+    setFetchError(null)
     try {
       const res = await fetch(`/api/messages?user=${userId}`)
       if (res.ok) {
         const data = await res.json()
-        setMessages(data.messages || [])
+        setMessages(data.data?.messages || data.messages || [])
+      } else {
+        setFetchError('Failed to load messages')
       }
     } catch (error) {
       console.error('Error fetching messages:', error)
+      setFetchError('Failed to load messages')
     }
   }
 
@@ -186,15 +195,16 @@ function MessagesContent() {
           
           {conversations.length > 0 ? (
             <div className={styles.conversations}>
-              {conversations.map((conv) => (
-                <button
-                  key={conv.userId}
-                  className={`${styles.conversationItem} ${selectedUser?.id === conv.userId ? styles.active : ''}`}
-                  onClick={() => {
-                    setSelectedUser(conv.user)
-                    router.replace(`/messages?user=${conv.userId}`, { scroll: false })
-                  }}
-                >
+                  {conversations.map((conv) => (
+                    <button
+                      key={conv.userId}
+                      className={`${styles.conversationItem} ${selectedUser?.id === conv.userId ? styles.active : ''}`}
+                      onClick={() => {
+                        setMode('chat')
+                        setSelectedUser(conv.user)
+                        router.replace(`/messages?user=${conv.userId}`, { scroll: false })
+                      }}
+                    >
                   <div className={styles.conversationAvatar}>
                     {conv.user.image ? (
                       <img src={conv.user.image} alt={conv.user.name || 'User'} />
@@ -243,6 +253,10 @@ function MessagesContent() {
                   View Profile
                 </Link>
               </div>
+
+              {fetchError && (
+                <div className={styles.errorBanner}>{fetchError}</div>
+              )}
 
               <div className={styles.messagesContainer}>
                 {messages.map((message) => {

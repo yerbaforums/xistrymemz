@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import dynamic from 'next/dynamic'
+import CreateBoardModal from '@/components/CreateBoardModal'
 import styles from './page.module.css'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
@@ -26,12 +27,21 @@ interface Board {
   createdAt: string
 }
 
+interface UserLocation {
+  id: string
+  location: string
+  latitude: number | null
+  longitude: number | null
+  name: string
+}
+
 export default function BoardsPage() {
   const { data: session } = useSession()
   const [boards, setBoards] = useState<Board[]>([])
   const [loading, setLoading] = useState(true)
   const [searchCity, setSearchCity] = useState('')
   const [mapCenter, setMapCenter] = useState<[number, number]>([40.7128, -74.006])
+  const [showCreateModal, setShowCreateModal] = useState(false)
 
   const fetchBoards = useCallback(async (city?: string) => {
     setLoading(true)
@@ -62,6 +72,38 @@ export default function BoardsPage() {
     fetchBoards()
   }, [fetchBoards])
 
+  useEffect(() => {
+    if (!session?.user?.id) return
+    const autoCreateFromLocations = async () => {
+      try {
+        const res = await fetch('/api/users/me')
+        if (!res.ok) return
+        const data = await res.json()
+        const locations: UserLocation[] = data?.user?.locations || data?.locations || []
+        if (locations.length === 0) return
+        for (const loc of locations) {
+          if (!loc.latitude || !loc.longitude) continue
+          const checkRes = await fetch(`/api/boards?lat=${loc.latitude}&lng=${loc.longitude}&radius=25&limit=1`)
+          const checkData = await checkRes.json()
+          if (!checkData.boards || checkData.boards.length === 0) {
+            await fetch('/api/boards', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name: loc.name ? `${loc.name} Board` : `${loc.location} Board`,
+                location: loc.location,
+                latitude: loc.latitude,
+                longitude: loc.longitude,
+              }),
+            })
+          }
+        }
+        fetchBoards()
+      } catch {}
+    }
+    autoCreateFromLocations()
+  }, [session, fetchBoards])
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     fetchBoards(searchCity.trim())
@@ -72,6 +114,11 @@ export default function BoardsPage() {
       <div className={styles.hero}>
         <h1>📌 Community Bulletin Boards</h1>
         <p>Pin your cards, announcements, and listings to local boards</p>
+        {session?.user && (
+          <button className={styles.createBtn} onClick={() => setShowCreateModal(true)}>
+            ➕ Create Board
+          </button>
+        )}
       </div>
 
       <form onSubmit={handleSearch} className={styles.search}>
@@ -118,7 +165,13 @@ export default function BoardsPage() {
         ) : boards.length === 0 ? (
           <div className={styles.empty}>
             <p>No boards found near your location.</p>
-            <p>Create one or search for a city.</p>
+            {session?.user ? (
+              <button className={styles.createBtn} onClick={() => setShowCreateModal(true)}>
+                ➕ Create the First Board
+              </button>
+            ) : (
+              <p>Sign in to create one or search for a city.</p>
+            )}
           </div>
         ) : (
           boards.map(board => (
@@ -139,6 +192,13 @@ export default function BoardsPage() {
           ))
         )}
       </div>
+
+      {showCreateModal && (
+        <CreateBoardModal
+          onClose={() => setShowCreateModal(false)}
+          onCreated={() => { fetchBoards(); setShowCreateModal(false) }}
+        />
+      )}
     </div>
   )
 }

@@ -17,8 +17,24 @@
 
 .hero p {
   color: var(--text-secondary);
-  margin: 0;
+  margin: 0 0 16px;
   font-size: 0.95rem;
+}
+
+.createBtn {
+  padding: 10px 24px;
+  background: var(--accent-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--bg-primary);
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.createBtn:hover {
+  box-shadow: 0 0 16px rgba(0, 217, 255, 0.4);
 }
 
 .search {
@@ -74,6 +90,12 @@
   overflow: hidden;
   border: 1px solid var(--border-color);
   margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.mapWrap :global(.leaflet-container) {
+  z-index: 1;
 }
 
 .map {

@@ -53,6 +53,7 @@ export default function OfferDetailPage({
 }: { 
   params: Promise<{ id: string }> 
 }) {
+  const resolvedParams = use(params)
   const { data: session } = useSession()
   const router = useRouter()
   const { success, error } = useToast()
@@ -60,12 +61,7 @@ export default function OfferDetailPage({
   const [counterOffers, setCounterOffers] = useState<BarterOffer[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
-  const [resolvedParams, setResolvedParams] = useState<{ id: string } | null>(null)
   const [showCounterModal, setShowCounterModal] = useState(false)
-
-  useEffect(() => {
-    params.then(setResolvedParams)
-  }, [params])
 
   useEffect(() => {
     if (!resolvedParams) return

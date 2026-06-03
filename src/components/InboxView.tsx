@@ -94,7 +94,7 @@ export default function InboxView({ onChatUser }: { onChatUser?: (userId: string
         await fetch(`/api/offers/${item.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: action === 'accept' ? 'ACCEPTED' : 'DECLINED' }),
+          body: JSON.stringify({ status: action === 'accept' ? 'ACCEPTED' : 'REJECTED' }),
         })
       } else if (item.type === 'COLLAB') {
         await fetch('/api/collab-requests', {
@@ -190,8 +190,8 @@ export default function InboxView({ onChatUser }: { onChatUser?: (userId: string
                       View
                     </Link>
                   )}
-                  {item.actions.includes('counter') && item.entity && (
-                    <Link href={`/dashboard/offers`} className={styles.replyBtn}>
+                  {item.actions.includes('counter') && (
+                    <Link href={`/offers/${item.id}`} className={styles.replyBtn}>
                       Counter
                     </Link>
                   )}
