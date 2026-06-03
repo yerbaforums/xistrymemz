@@ -13,6 +13,7 @@ import { getUserProfileUrl } from '@/lib/utils'
 import EntityActions from '@/components/EntityActions'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import CollaborateButton from '@/components/CollaborateButton'
+import PinToBoardButton from '@/components/PinToBoardButton'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
@@ -491,6 +492,20 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                       {userId && !isOwner && (
                         <div style={{ margin: '12px 0' }}>
                           <CollaborateButton entityType="PLAN" entityId={plan.id} label="🤝 Join as Collaborator" variant="secondary" />
+                        </div>
+                      )}
+                      {userId && (
+                        <div style={{ margin: '12px 0' }}>
+                          <PinToBoardButton
+                            entityType="PLAN"
+                            entityId={plan.id}
+                            entityTitle={plan.title}
+                            entityImage={plan.imageUrl || undefined}
+                            entityLatitude={plan.latitude || undefined}
+                            entityLongitude={plan.longitude || undefined}
+                            variant="ghost"
+                            label="📌 Pin to Board"
+                          />
                         </div>
                       )}
                       <EntityActions

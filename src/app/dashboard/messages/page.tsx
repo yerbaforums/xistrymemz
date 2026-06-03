@@ -1,3 +1,2 @@
-import { getTranslations } from 'next-intl/server'
-import MessagesPage from '../../messages/page'
-export default MessagesPage
+import DashboardMessagesPage from './DashboardMessagesPage'
+export default DashboardMessagesPage

@@ -22,7 +22,7 @@ export async function POST(
     }
 
     const body = await request.json()
-    const { title, content, images, entityType, entityId, entityTitle, entityImage, contactName, contactEmail, contactPhone, category, expiresAt } = body
+    const { title, content, images, entityType, entityId, entityTitle, entityImage, contactName, contactEmail, contactPhone, category, expiresAt, latitude, longitude } = body
 
     if (!content) {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 })
@@ -43,6 +43,8 @@ export async function POST(
       contactPhone,
       category,
       expiresAt,
+      latitude,
+      longitude,
     })
 
     return NextResponse.json(pin, { status: 201 })

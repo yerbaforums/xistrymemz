@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { findNearbyBoards, autoCreateBoard } from '@/lib/boardService'
+import { findNearbyBoards } from '@/lib/boardService'
 
 export async function GET(request: Request) {
   try {
@@ -12,6 +12,10 @@ export async function GET(request: Request) {
     const radius = searchParams.get('radius') ? parseInt(searchParams.get('radius')!) : undefined
     const city = searchParams.get('city') || undefined
     const page = parseInt(searchParams.get('page') || '1')
+    const north = searchParams.get('north') ? parseFloat(searchParams.get('north')!) : undefined
+    const south = searchParams.get('south') ? parseFloat(searchParams.get('south')!) : undefined
+    const east = searchParams.get('east') ? parseFloat(searchParams.get('east')!) : undefined
+    const west = searchParams.get('west') ? parseFloat(searchParams.get('west')!) : undefined
 
     const session = await getServerSession(authOptions)
     let userLat = lat
@@ -38,6 +42,10 @@ export async function GET(request: Request) {
       radius: effectiveRadius || 50,
       city,
       page,
+      north,
+      south,
+      east,
+      west,
     })
 
     return NextResponse.json(result)

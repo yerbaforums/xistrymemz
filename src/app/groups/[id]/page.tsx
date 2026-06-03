@@ -17,6 +17,7 @@ import Button from '@/components/ui/Button'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import CollaborateButton from '@/components/CollaborateButton'
+import PinToBoardButton from '@/components/PinToBoardButton'
 
 interface Member {
   id: string
@@ -600,6 +601,16 @@ function GroupDetailContent() {
                 <Button onClick={() => setShowEditModal(true)} className={styles.editBtn}>Edit</Button>
                 <Button onClick={handleDeleteGroup} className={styles.deleteBtn}>Delete</Button>
               </>
+            )}
+            {session?.user && (
+              <PinToBoardButton
+                entityType="GROUP"
+                entityId={group.id}
+                entityTitle={group.name}
+                entityImage={group.imageUrl || undefined}
+                variant="ghost"
+                label="📌 Pin to Board"
+              />
             )}
           </div>
         </div>

@@ -19,6 +19,7 @@ import type { DonationAddr } from '@/types/product'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import TranslateButton from '@/components/TranslateButton'
 import CollaborateButton from '@/components/CollaborateButton'
+import PinToBoardButton from '@/components/PinToBoardButton'
 import Skeleton from '@/components/Skeleton'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 
@@ -537,6 +538,18 @@ function EventDetailContent() {
               )}
               {!isOwner && (
                 <CollaborateButton entityType="EVENT" entityId={event.id} label="🤝 Propose Collab" variant="secondary" />
+              )}
+              {session?.user && (
+                <PinToBoardButton
+                  entityType="EVENT"
+                  entityId={event.id}
+                  entityTitle={event.title}
+                  entityImage={event.imageUrl || undefined}
+                  entityLatitude={event.latitude || undefined}
+                  entityLongitude={event.longitude || undefined}
+                  variant="ghost"
+                  label="📌 Pin to Board"
+                />
               )}
             </div>
 

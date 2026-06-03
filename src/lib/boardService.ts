@@ -24,14 +24,23 @@ export async function findNearbyBoards(params: {
   city?: string
   page?: number
   limit?: number
+  north?: number
+  south?: number
+  east?: number
+  west?: number
 }): Promise<{ boards: BoardWithDistance[]; total: number }> {
-  const { lat, lng, radius = 50, city, page = 1, limit = 20 } = params
+  const { lat, lng, radius = 50, city, page = 1, limit = 20, north, south, east, west } = params
   const offset = (page - 1) * limit
 
   const where: Record<string, unknown> = { isPublic: true }
 
   if (city) {
     where.city = { contains: city, mode: 'insensitive' }
+  }
+
+  if (north !== undefined && south !== undefined && east !== undefined && west !== undefined) {
+    where.latitude = { gte: south, lte: north }
+    where.longitude = { gte: west, lte: east }
   }
 
   const rows = await prisma.bulletinBoard.findMany({
@@ -153,6 +162,8 @@ export async function createPin(params: {
   contactPhone?: string
   category?: string
   expiresAt?: string
+  latitude?: number
+  longitude?: number
 }) {
   const pin = await prisma.bulletinPin.create({
     data: {
@@ -170,6 +181,8 @@ export async function createPin(params: {
       contactPhone: params.contactPhone || null,
       category: params.category || 'GENERAL',
       expiresAt: params.expiresAt ? new Date(params.expiresAt) : null,
+      latitude: params.latitude ?? null,
+      longitude: params.longitude ?? null,
     },
     include: {
       user: { select: { id: true, name: true, image: true } },

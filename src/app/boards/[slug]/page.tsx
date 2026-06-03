@@ -4,9 +4,15 @@ import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import BoardPinCard from '@/components/BoardPinCard'
 import CreatePinModal from '@/components/CreatePinModal'
 import styles from './page.module.css'
+
+const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
+const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
+const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false })
+const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false })
 
 interface PinUser {
   id: string
@@ -23,6 +29,8 @@ interface Pin {
   entityId: string | null
   entityTitle: string | null
   entityImage: string | null
+  latitude: number | null
+  longitude: number | null
   contactName: string | null
   contactEmail: string | null
   contactPhone: string | null
@@ -60,6 +68,8 @@ export default function BoardDetailPage() {
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
+
+  const pinLocations = pins.filter(p => p.latitude && p.longitude)
 
   const fetchBoard = useCallback(async () => {
     setLoading(true)
@@ -110,6 +120,12 @@ export default function BoardDetailPage() {
     )
   }
 
+  const mapCenter: [number, number] = board.latitude && board.longitude
+    ? [board.latitude, board.longitude]
+    : pinLocations.length > 0
+      ? [pinLocations[0].latitude!, pinLocations[0].longitude!]
+      : [40.7128, -74.006]
+
   return (
     <div className={styles.page}>
       <Link href="/boards" className={styles.backLink}>← Back to Boards</Link>
@@ -131,6 +147,34 @@ export default function BoardDetailPage() {
           )}
         </div>
       </div>
+
+      {pinLocations.length > 0 && (
+        <div className={styles.mapWrap}>
+          <MapContainer center={mapCenter} zoom={12} className={styles.map} scrollWheelZoom={true}>
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            {pinLocations.map(pin => (
+              <Marker key={pin.id} position={[pin.latitude!, pin.longitude!]}>
+                <Popup>
+                  <div style={{ minWidth: 180 }}>
+                    <strong>{pin.title || pin.content?.slice(0, 60)}</strong>
+                    {pin.entityType && pin.entityTitle && (
+                      <div style={{ fontSize: '0.8rem', color: '#666', marginTop: 4 }}>
+                        📎 {pin.entityTitle}
+                      </div>
+                    )}
+                    <div style={{ fontSize: '0.75rem', color: '#888', marginTop: 4 }}>
+                      {pin.user.name} · {new Date(pin.createdAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
+          </MapContainer>
+        </div>
+      )}
 
       {pins.length === 0 ? (
         <div className={styles.empty}>

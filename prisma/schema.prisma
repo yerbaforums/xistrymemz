@@ -533,6 +533,8 @@ model BulletinPin {
   contactEmail String?
   contactPhone String?
   category     String? // LOST_FOUND | GENERAL | PROMOTION | EVENT | SERVICE | HOUSING | JOBS | FREE
+  latitude     Float?
+  longitude    Float?
   expiresAt    DateTime?
   isPinned     Boolean  @default(false)
   pinOrder     Int      @default(0)

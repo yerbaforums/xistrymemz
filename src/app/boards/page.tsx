@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import dynamic from 'next/dynamic'
@@ -11,6 +11,7 @@ const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContai
 const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
 const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false })
 const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false })
+const MapEvents = dynamic(() => import('./MapEvents').then(m => m.MapEvents), { ssr: false })
 
 interface Board {
   id: string
@@ -41,16 +42,26 @@ export default function BoardsPage() {
   const [loading, setLoading] = useState(true)
   const [searchCity, setSearchCity] = useState('')
   const [mapCenter, setMapCenter] = useState<[number, number]>([40.7128, -74.006])
+  const [mapZoom, setMapZoom] = useState(10)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [hoveredBoardId, setHoveredBoardId] = useState<string | null>(null)
+  const [selectedBoardId, setSelectedBoardId] = useState<string | null>(null)
+  const mapRef = useRef<any>(null)
 
-  const fetchBoards = useCallback(async (city?: string) => {
+  const fetchBoards = useCallback(async (bounds?: { north: number; south: number; east: number; west: number }, city?: string) => {
     setLoading(true)
     try {
       const params = new URLSearchParams()
-      params.set('limit', '50')
+      params.set('limit', '100')
       if (city) params.set('city', city)
+      if (bounds) {
+        params.set('north', String(bounds.north))
+        params.set('south', String(bounds.south))
+        params.set('east', String(bounds.east))
+        params.set('west', String(bounds.west))
+      }
 
-      if (typeof window !== 'undefined' && 'geolocation' in navigator) {
+      if (!bounds && !city && typeof window !== 'undefined' && 'geolocation' in navigator) {
         try {
           const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
             navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
@@ -106,7 +117,25 @@ export default function BoardsPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    fetchBoards(searchCity.trim())
+    fetchBoards(undefined, searchCity.trim())
+  }
+
+  const handleMapMove = useCallback((bounds: { north: number; south: number; east: number; west: number }) => {
+    if (!searchCity) {
+      fetchBoards(bounds)
+    }
+  }, [fetchBoards, searchCity])
+
+  const handleCardClick = (board: Board) => {
+    if (board.latitude && board.longitude) {
+      setSelectedBoardId(board.id)
+      setMapCenter([board.latitude, board.longitude])
+      setMapZoom(14)
+    }
+  }
+
+  const handleCardHover = (boardId: string | null) => {
+    setHoveredBoardId(boardId)
   }
 
   return (
@@ -138,24 +167,33 @@ export default function BoardsPage() {
       </form>
 
       <div className={styles.mapWrap}>
-        <MapContainer center={mapCenter} zoom={10} className={styles.map} scrollWheelZoom={false}>
+        <MapContainer center={mapCenter} zoom={mapZoom} className={styles.map} scrollWheelZoom={true} ref={mapRef}>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          {boards.filter(b => b.latitude && b.longitude).map(b => (
-            <Marker key={b.id} position={[b.latitude!, b.longitude!]}>
-              <Popup>
-                <Link href={`/boards/${b.slug}`} style={{ fontWeight: 600, textDecoration: 'none', color: 'var(--accent-primary)' }}>
-                  {b.name}
-                </Link>
-                <br />
-                <span style={{ fontSize: '0.8rem', color: '#666' }}>{b.location} · {b.pinCount} pins</span>
-                {b.distance != null && <br />}
-                {b.distance != null && <span style={{ fontSize: '0.8rem' }}>📍 {b.distance} mi</span>}
-              </Popup>
-            </Marker>
-          ))}
+          <MapEvents onMove={handleMapMove} />
+          {boards.filter(b => b.latitude && b.longitude).map(b => {
+            const isHighlighted = b.id === hoveredBoardId || b.id === selectedBoardId
+            return (
+              <Marker
+                key={b.id}
+                position={[b.latitude!, b.longitude!]}
+                icon={isHighlighted ? undefined : undefined}
+                opacity={isHighlighted ? 1 : 0.7}
+              >
+                <Popup>
+                  <Link href={`/boards/${b.slug}`} style={{ fontWeight: 600, textDecoration: 'none', color: 'var(--accent-primary)' }}>
+                    {b.name}
+                  </Link>
+                  <br />
+                  <span style={{ fontSize: '0.8rem', color: '#666' }}>{b.location} · {b.pinCount} pins</span>
+                  {b.distance != null && <br />}
+                  {b.distance != null && <span style={{ fontSize: '0.8rem' }}>📍 {b.distance} mi</span>}
+                </Popup>
+              </Marker>
+            )
+          })}
         </MapContainer>
       </div>
 
@@ -175,20 +213,28 @@ export default function BoardsPage() {
           </div>
         ) : (
           boards.map(board => (
-            <Link key={board.id} href={`/boards/${board.slug}`} className={styles.card}>
-              <div className={styles.cardHeader}>
-                <h3>{board.name}</h3>
-                {board.isSystem && <span className={styles.systemBadge}>Auto</span>}
-              </div>
-              {board.description && <p className={styles.cardDesc}>{board.description}</p>}
-              <div className={styles.cardMeta}>
-                <span>📌 {board.pinCount} pins</span>
-                {board.location && <span>📍 {board.location}</span>}
-                {board.distance != null && <span>📍 {board.distance} mi</span>}
-                {board.city && <span>🏙️ {board.city}</span>}
-              </div>
-              <span className={styles.visitBtn}>View Board →</span>
-            </Link>
+            <div
+              key={board.id}
+              className={`${styles.card} ${board.id === selectedBoardId ? styles.cardSelected : ''}`}
+              onMouseEnter={() => handleCardHover(board.id)}
+              onMouseLeave={() => handleCardHover(null)}
+              onClick={() => handleCardClick(board)}
+            >
+              <Link href={`/boards/${board.slug}`} className={styles.cardInner}>
+                <div className={styles.cardHeader}>
+                  <h3>{board.name}</h3>
+                  {board.isSystem && <span className={styles.systemBadge}>Auto</span>}
+                </div>
+                {board.description && <p className={styles.cardDesc}>{board.description}</p>}
+                <div className={styles.cardMeta}>
+                  <span>📌 {board.pinCount} pins</span>
+                  {board.location && <span>📍 {board.location}</span>}
+                  {board.distance != null && <span>📍 {board.distance} mi</span>}
+                  {board.city && <span>🏙️ {board.city}</span>}
+                </div>
+                <span className={styles.visitBtn}>View Board →</span>
+              </Link>
+            </div>
           ))
         )}
       </div>

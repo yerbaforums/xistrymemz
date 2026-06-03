@@ -9,11 +9,13 @@ interface PinToBoardButtonProps {
   entityId: string
   entityTitle: string
   entityImage?: string
+  entityLatitude?: number
+  entityLongitude?: number
   variant?: 'primary' | 'secondary' | 'ghost'
   label?: string
 }
 
-export default function PinToBoardButton({ entityType, entityId, entityTitle, entityImage, variant = 'secondary', label }: PinToBoardButtonProps) {
+export default function PinToBoardButton({ entityType, entityId, entityTitle, entityImage, entityLatitude, entityLongitude, variant = 'secondary', label }: PinToBoardButtonProps) {
   const [loading, setLoading] = useState(false)
   const { success, error } = useToast()
 
@@ -62,6 +64,8 @@ export default function PinToBoardButton({ entityType, entityId, entityTitle, en
           entityId,
           entityTitle,
           entityImage: entityImage || undefined,
+          latitude: entityLatitude,
+          longitude: entityLongitude,
           category: 'PROMOTION',
         }),
       })

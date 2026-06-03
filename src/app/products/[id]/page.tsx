@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import styles from './page.module.css'
 import CollaborateButton from '@/components/CollaborateButton'
+import PinToBoardButton from '@/components/PinToBoardButton'
 import { useCart } from '@/context/CartContext'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { useToast } from '@/context/ToastContext'
@@ -849,6 +850,18 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 </button>
                 <CollaborateButton entityType="PRODUCT" entityId={product.id} label="🤝 Collaborate" variant="secondary" />
               </>
+            )}
+            {session?.user && (
+              <PinToBoardButton
+                entityType="PRODUCT"
+                entityId={product.id}
+                entityTitle={product.title}
+                entityImage={product.imageUrl || undefined}
+                entityLatitude={product.latitude || undefined}
+                entityLongitude={product.longitude || undefined}
+                variant="ghost"
+                label="📌 Pin to Board"
+              />
             )}
           </div>
 
