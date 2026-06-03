@@ -41,6 +41,7 @@ export const NAV: NavConfig = {
 
   explore: [
     { href: '/discover', icon: '🌐', label: 'Discover' },
+    { href: '/boards', icon: '📌', label: 'Boards' },
     { href: '/projects', icon: '🚀', label: 'Projects' },
     { href: '/products', icon: '🛒', label: 'Products' },
     { href: '/services', icon: '🔧', label: 'Services' },
@@ -120,6 +121,7 @@ export const DASHBOARD_SIDEBAR_PRIMARY: NavItem[] = [
 ]
 
 export const DASHBOARD_SIDEBAR_SECONDARY: NavItem[] = [
+  { href: '/boards', icon: '📌', label: 'Boards' },
   { href: '/dashboard/messages', icon: '💬', label: 'Messages' },
   { href: '/dashboard/community', icon: '🌐', label: 'Community' },
   { href: '/dashboard/projects', icon: '🚀', label: 'Projects' },

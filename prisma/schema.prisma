@@ -177,6 +177,8 @@ model User {
   tripCollaborators  TripCollaborator[]
   sentCollabRequests   CollaborationRequest[] @relation("CollabRequestSender")
   receivedCollabRequests CollaborationRequest[] @relation("CollabRequestReceiver")
+  boardsOwned          BulletinBoard[]
+  bulletinPins         BulletinPin[]
 }
 
 // User-defined locations for filtering content
@@ -488,6 +490,62 @@ model CollaborationRequest {
 
   @@index([receiverId, status])
   @@index([senderId])
+}
+
+model BulletinBoard {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  location    String?
+  latitude    Float?
+  longitude   Float?
+  radius      Float    @default(25)
+  city        String?
+  region      String?
+  country     String?
+  isPublic    Boolean  @default(true)
+  isSystem    Boolean  @default(false)
+  pinCount    Int      @default(0)
+  ownerId     String?
+  owner       User?    @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  pins        BulletinPin[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([latitude, longitude])
+  @@index([city])
+  @@index([slug])
+}
+
+model BulletinPin {
+  id           String         @id @default(cuid())
+  boardId      String
+  board        BulletinBoard  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  title        String?
+  content      String?
+  images       String? // JSON array of image URLs
+  entityType   String? // USER | PRODUCT | SERVICE | SHOP | EVENT | GROUP | PLAN
+  entityId     String?
+  entityTitle  String?
+  entityImage  String?
+  contactName  String?
+  contactEmail String?
+  contactPhone String?
+  category     String? // LOST_FOUND | GENERAL | PROMOTION | EVENT | SERVICE | HOUSING | JOBS | FREE
+  expiresAt    DateTime?
+  isPinned     Boolean  @default(false)
+  pinOrder     Int      @default(0)
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([boardId, expiresAt])
+  @@index([boardId, createdAt])
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([category])
 }
 
 model Request {

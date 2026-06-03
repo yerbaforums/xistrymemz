@@ -298,6 +298,7 @@ export default function Header() {
             <div className={styles.navDropdown} id="nav-dropdown-explore" role="menu" style={{ minWidth: 200 }}>
               <div style={{ padding: '6px 14px', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('browse')}</div>
               <Link href="/projects" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🚀</span> Projects</Link>
+              <Link href="/boards" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📌</span> Boards</Link>
               <Link href="/products" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🛒</span> Products</Link>
               <Link href="/services" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🔧</span> Services</Link>
               <Link href="/shops" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🏪</span> Shops</Link>
