@@ -13,6 +13,7 @@ const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr:
 const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false })
 const Tooltip = dynamic(() => import('react-leaflet').then(m => m.Tooltip), { ssr: false })
 const MapEvents = dynamic(() => import('./MapEvents').then(m => m.MapEvents), { ssr: false })
+const MapController = dynamic(() => import('./MapEvents').then(m => m.MapController), { ssr: false })
 
 interface Board {
   id: string
@@ -42,8 +43,6 @@ export default function BoardsPage() {
   const [boards, setBoards] = useState<Board[]>([])
   const [loading, setLoading] = useState(true)
   const [searchCity, setSearchCity] = useState('')
-  const [mapCenter, setMapCenter] = useState<[number, number]>([40.7128, -74.006])
-  const [mapZoom, setMapZoom] = useState(10)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [hoveredBoardId, setHoveredBoardId] = useState<string | null>(null)
   const [selectedBoardId, setSelectedBoardId] = useState<string | null>(null)
@@ -84,7 +83,6 @@ export default function BoardsPage() {
           )
           params.set('lat', String(pos.coords.latitude))
           params.set('lng', String(pos.coords.longitude))
-          setMapCenter([pos.coords.latitude, pos.coords.longitude])
         } catch {}
       }
 
@@ -211,11 +209,12 @@ export default function BoardsPage() {
       </form>
 
       <div className={styles.mapWrap}>
-        <MapContainer center={mapCenter} zoom={mapZoom} className={styles.map} scrollWheelZoom={true} ref={mapRef}>
+        <MapContainer center={[40.7128, -74.006]} zoom={3} className={styles.map} scrollWheelZoom={true}>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
+          <MapController mapRef={mapRef} />
           <MapEvents onMove={handleMapMove} />
           {boards.filter(b => b.latitude && b.longitude).map(b => {
             const isHighlighted = b.id === hoveredBoardId || b.id === selectedBoardId
