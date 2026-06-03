@@ -7,6 +7,7 @@ import styles from './CreateBoardModal.module.css'
 const BoardMapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
 const BoardTileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
 const BoardMarker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false })
+const BoardClickHandler = dynamic(() => import('./BoardMapClickHandler').then(m => m.BoardMapClickHandler), { ssr: false })
 
 interface CreateBoardModalProps {
   onClose: () => void
@@ -191,11 +192,12 @@ export default function CreateBoardModal({ onClose, onCreated, initialCity, init
                 {detectingLocation ? '📍 Detecting...' : '📍 Use My Current Location'}
               </button>
               <div className={styles.mapWrap}>
-                <BoardMapContainer center={mapCenter} zoom={12} className={styles.map} scrollWheelZoom={true} onClick={handleMapClick}>
+                <BoardMapContainer center={mapCenter} zoom={12} className={styles.map} scrollWheelZoom={true}>
                   <BoardTileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
+                  <BoardClickHandler onClick={handleMapClick} />
                   {mapMarker && <BoardMarker position={mapMarker} />}
                 </BoardMapContainer>
               </div>
