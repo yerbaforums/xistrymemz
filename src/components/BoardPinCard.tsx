@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { getUserProfileUrl } from '@/lib/utils'
@@ -36,6 +37,7 @@ interface BoardPinCardProps {
   isOwner: boolean
   isBoardOwner: boolean
   onDelete: (pinId: string) => void
+  onView?: (pinId: string) => void
 }
 
 function getEntityHref(type: string | null, id: string | null): string {
@@ -104,14 +106,57 @@ function timeUntilExpires(expiresAt: string | null): string | null {
   return 'Expiring soon'
 }
 
-export default function BoardPinCard({ pin, isOwner, isBoardOwner, onDelete }: BoardPinCardProps) {
+function ImageCarousel({ images }: { images: string[] }) {
+  const [current, setCurrent] = useState(0)
+  const len = images.length
+
+  if (len === 0) return null
+
+  const prev = useCallback(() => setCurrent(c => (c - 1 + len) % len), [len])
+  const next = useCallback(() => setCurrent(c => (c + 1) % len), [len])
+
+  return (
+    <div className={styles.carousel}>
+      <div className={styles.carouselInner}>
+        <div className={styles.carouselImageWrap}>
+          <Image src={images[current]} alt="" fill style={{ objectFit: 'cover' }} />
+        </div>
+        {len > 1 && (
+          <>
+            <button className={`${styles.carouselBtn} ${styles.carouselPrev}`} onClick={prev} aria-label="Previous image">‹</button>
+            <button className={`${styles.carouselBtn} ${styles.carouselNext}`} onClick={next} aria-label="Next image">›</button>
+          </>
+        )}
+      </div>
+      {len > 1 && (
+        <div className={styles.carouselDots}>
+          {images.map((_, i) => (
+            <button
+              key={i}
+              className={`${styles.carouselDot} ${i === current ? styles.carouselDotActive : ''}`}
+              onClick={() => setCurrent(i)}
+              aria-label={`Image ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function BoardPinCard({ pin, isOwner, isBoardOwner, onDelete, onView }: BoardPinCardProps) {
+  const [minimized, setMinimized] = useState(false)
   const parsedImages = pin.images ? JSON.parse(pin.images) as string[] : []
   const expirationText = timeUntilExpires(pin.expiresAt)
   const canDelete = isOwner || isBoardOwner
 
   return (
-    <div className={styles.card} style={pin.isPinned ? { borderColor: 'var(--accent-primary)' } : undefined}>
+    <div className={`${styles.card} ${minimized ? styles.minimized : ''}`} style={pin.isPinned ? { borderColor: 'var(--accent-primary)' } : undefined}>
       {pin.isPinned && <div className={styles.pinnedBadge}>📌 Pinned</div>}
+
+      <div className={styles.minimizeToggle} onClick={() => setMinimized(!minimized)}>
+        {minimized ? '▲' : '▼'}
+      </div>
 
       <div className={styles.header}>
         <Link href={getUserProfileUrl({ id: pin.user.id, username: '' })} className={styles.userLink}>
@@ -130,32 +175,34 @@ export default function BoardPinCard({ pin, isOwner, isBoardOwner, onDelete }: B
       </div>
 
       {pin.title && <h4 className={styles.title}>{pin.title}</h4>}
-      {pin.content && <p className={styles.content}>{pin.content}</p>}
 
-      {parsedImages.length > 0 && (
-        <div className={styles.images}>
-          {parsedImages.map((url, i) => (
-            <div key={i} className={styles.imageWrap}>
-              <Image src={url} alt="" fill style={{ objectFit: 'cover' }} />
+      {!minimized && (
+        <>
+          {pin.content && <p className={styles.content}>{pin.content}</p>}
+
+          {parsedImages.length > 0 && <ImageCarousel images={parsedImages} />}
+
+          {pin.entityType && pin.entityId && (
+            <Link href={getEntityHref(pin.entityType, pin.entityId)} className={styles.entityLink}>
+              <span className={styles.entityIcon}>{getEntityIcon(pin.entityType)}</span>
+              {pin.entityImage && (
+                <div className={styles.entityThumb}>
+                  <Image src={pin.entityImage} alt="" width={24} height={24} />
+                </div>
+              )}
+              <span className={styles.entityTitle}>{pin.entityTitle || 'View'}</span>
+            </Link>
+          )}
+
+          {(pin.contactName || pin.contactEmail || pin.contactPhone) && (
+            <div className={styles.contact}>
+              <span className={styles.contactLabel}>Contact:</span>
+              {pin.contactName && <span>{pin.contactName}</span>}
+              {pin.contactEmail && <a href={`mailto:${pin.contactEmail}`} className={styles.contactLink}>{pin.contactEmail}</a>}
+              {pin.contactPhone && <span>{pin.contactPhone}</span>}
             </div>
-          ))}
-        </div>
-      )}
-
-      {pin.entityType && pin.entityId && (
-        <Link href={getEntityHref(pin.entityType, pin.entityId)} className={styles.entityLink}>
-          <span className={styles.entityIcon}>{getEntityIcon(pin.entityType)}</span>
-          <span className={styles.entityTitle}>{pin.entityTitle || 'View'}</span>
-        </Link>
-      )}
-
-      {(pin.contactName || pin.contactEmail || pin.contactPhone) && (
-        <div className={styles.contact}>
-          <span className={styles.contactLabel}>Contact:</span>
-          {pin.contactName && <span>{pin.contactName}</span>}
-          {pin.contactEmail && <a href={`mailto:${pin.contactEmail}`} className={styles.contactLink}>{pin.contactEmail}</a>}
-          {pin.contactPhone && <span>{pin.contactPhone}</span>}
-        </div>
+          )}
+        </>
       )}
 
       <div className={styles.footer}>
@@ -165,11 +212,18 @@ export default function BoardPinCard({ pin, isOwner, isBoardOwner, onDelete }: B
             {expirationText === 'Expired' ? '❌ Expired' : `⏳ ${expirationText}`}
           </span>
         )}
-        {canDelete && (
-          <button className={styles.deleteBtn} onClick={() => onDelete(pin.id)} aria-label="Delete pin">
-            🗑️
-          </button>
-        )}
+        <div className={styles.footerActions}>
+          {onView && (
+            <button className={styles.viewBtn} onClick={() => onView(pin.id)} aria-label="View in carousel">
+              🔍
+            </button>
+          )}
+          {canDelete && (
+            <button className={styles.deleteBtn} onClick={() => onDelete(pin.id)} aria-label="Delete pin">
+              🗑️
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )

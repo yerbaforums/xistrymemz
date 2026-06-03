@@ -7,6 +7,7 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import BoardPinCard from '@/components/BoardPinCard'
 import CreatePinModal from '@/components/CreatePinModal'
+import PinCarouselModal from '@/components/PinCarouselModal'
 import styles from './page.module.css'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
@@ -68,6 +69,7 @@ export default function BoardDetailPage() {
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [carouselIndex, setCarouselIndex] = useState<number | null>(null)
 
   const pinLocations = pins.filter(p => p.latitude && p.longitude)
 
@@ -194,6 +196,10 @@ export default function BoardDetailPage() {
               isOwner={pin.userId === userId}
               isBoardOwner={isBoardOwner}
               onDelete={handleDelete}
+              onView={(pinId) => {
+                const idx = pins.findIndex(p => p.id === pinId)
+                if (idx >= 0) setCarouselIndex(idx)
+              }}
             />
           ))}
         </div>
@@ -205,6 +211,14 @@ export default function BoardDetailPage() {
           boardName={board.name}
           onClose={() => setShowCreateModal(false)}
           onCreated={fetchBoard}
+        />
+      )}
+
+      {carouselIndex !== null && (
+        <PinCarouselModal
+          pins={pins}
+          initialIndex={carouselIndex}
+          onClose={() => setCarouselIndex(null)}
         />
       )}
     </div>

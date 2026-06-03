@@ -15,10 +15,44 @@
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 
+.minimized {
+  gap: 6px;
+  cursor: pointer;
+}
+
+.minimized .title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.minimizeToggle {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-tertiary);
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  z-index: 2;
+  transition: var(--transition);
+}
+
+.minimizeToggle:hover {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+}
+
 .pinnedBadge {
   position: absolute;
   top: -8px;
-  right: 12px;
+  right: 40px;
   background: var(--accent-primary);
   color: var(--bg-primary);
   font-size: 0.7rem;
@@ -89,6 +123,7 @@
   font-weight: 600;
   margin: 0;
   color: var(--text-primary);
+  padding-right: 24px;
 }
 
 .content {
@@ -99,21 +134,83 @@
   white-space: pre-wrap;
 }
 
-.images {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+/* Image Carousel */
+.carousel {
+  width: 100%;
 }
 
-.imageWrap {
+.carouselInner {
   position: relative;
   width: 100%;
-  height: 180px;
+  height: 220px;
   border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--bg-tertiary);
 }
 
+.carouselImageWrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.carouselBtn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.4);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 2;
+}
+
+.carouselInner:hover .carouselBtn {
+  opacity: 1;
+}
+
+.carouselPrev {
+  left: 8px;
+}
+
+.carouselNext {
+  right: 8px;
+}
+
+.carouselDots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.carouselDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border-color);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: var(--transition);
+}
+
+.carouselDotActive {
+  background: var(--accent-primary);
+  width: 20px;
+  border-radius: 4px;
+}
+
+/* Entity Link */
 .entityLink {
   display: flex;
   align-items: center;
@@ -137,10 +234,26 @@
   font-size: 1rem;
 }
 
+.entityThumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.entityThumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .entityTitle {
   flex: 1;
 }
 
+/* Contact */
 .contact {
   display: flex;
   flex-direction: column;
@@ -168,6 +281,7 @@
   text-decoration: underline;
 }
 
+/* Footer */
 .footer {
   display: flex;
   align-items: center;
@@ -189,18 +303,32 @@
   color: var(--accent-secondary);
 }
 
+.footerActions {
+  display: flex;
+  gap: 4px;
+}
+
+.viewBtn,
 .deleteBtn {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   padding: 2px 6px;
   border-radius: 4px;
   transition: var(--transition);
   opacity: 0.5;
 }
 
+.viewBtn:hover,
 .deleteBtn:hover {
   opacity: 1;
+}
+
+.viewBtn:hover {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.deleteBtn:hover {
   background: rgba(239, 68, 68, 0.1);
 }
