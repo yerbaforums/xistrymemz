@@ -15,15 +15,16 @@ async function requireAdmin() {
 
 export async function DELETE(
   _request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params
   const session = await requireAdmin()
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
-    const deleted = await deleteBackup(params.id)
+    const deleted = await deleteBackup(id)
     if (!deleted) {
       return NextResponse.json({ error: 'Backup not found' }, { status: 404 })
     }
@@ -36,8 +37,9 @@ export async function DELETE(
 
 export async function GET(
   _request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params
   const session = await requireAdmin()
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -45,7 +47,7 @@ export async function GET(
 
   try {
     const { prisma } = await import('@/lib/prisma')
-    const backup = await prisma.backup.findUnique({ where: { id: params.id } })
+    const backup = await prisma.backup.findUnique({ where: { id } })
     if (!backup) {
       return NextResponse.json({ error: 'Backup not found' }, { status: 404 })
     }
