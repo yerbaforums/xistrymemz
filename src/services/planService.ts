@@ -79,3 +79,30 @@ export async function updatePlan(id: string, data: Record<string, unknown>) {
 export async function deletePlan(id: string) {
   return prisma.plan.delete({ where: { id } })
 }
+
+export async function createGettingStartedPlan(userId: string) {
+  return prisma.plan.create({
+    data: {
+      title: 'Getting Started on XistrYmemZ',
+      description: 'A simple plan to help you explore the platform and connect with the community. Check off each milestone as you go!',
+      goals: JSON.stringify([
+        'Complete your profile',
+        'Explore the marketplace',
+        'Join or create a group',
+        'Make your first post',
+        'Connect with a community member',
+      ]),
+      mileposts: JSON.stringify([
+        { title: '👋 Introduce yourself', description: 'Post on the feed to say hello to the community', done: false },
+        { title: '🛒 Browse the marketplace', description: 'Check out products and services available near you', done: false },
+        { title: '👥 Join a group', description: 'Find a group that matches your interests', done: false },
+        { title: '💬 Make a connection', description: 'Send a message or connect with another member', done: false },
+        { title: '🚀 Create something', description: 'Post a product, service, event, or request', done: false },
+      ]),
+      milepostStatus: '[]',
+      userId,
+      status: 'ACTIVE',
+      published: false,
+    },
+  })
+}

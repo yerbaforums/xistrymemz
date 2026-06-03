@@ -937,3 +937,160 @@
   font-size: 1.1rem;
   flex-shrink: 0;
 }
+
+.tagSearchRow {
+  margin-bottom: 12px;
+}
+
+.tagSearchInput {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.tagGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.tagChip {
+  padding: 6px 14px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  color: var(--accent-primary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.tagChip:hover {
+  background: rgba(0, 217, 255, 0.1);
+  border-color: var(--accent-primary);
+  transform: scale(1.03);
+}
+
+.selectedTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.selectedTag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(0, 217, 255, 0.15);
+  border: 1px solid var(--accent-primary);
+  border-radius: 20px;
+  color: var(--accent-primary);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.removeTagBtn {
+  background: none;
+  border: none;
+  color: var(--accent-primary);
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.7;
+}
+
+.removeTagBtn:hover {
+  opacity: 1;
+}
+
+.suggestionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.suggestionCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: var(--transition);
+  text-align: left;
+}
+
+.suggestionCard:hover {
+  border-color: var(--accent-primary);
+  background: rgba(0, 217, 255, 0.05);
+  text-decoration: none;
+}
+
+.suggestionCard strong {
+  color: var(--text-primary);
+  font-size: 0.85rem;
+}
+
+.suggestionCard span {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.memberRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.memberChip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 6px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.memberChip:hover {
+  border-color: var(--accent-primary);
+  background: rgba(0, 217, 255, 0.05);
+  text-decoration: none;
+}
+
+.memberChip span {
+  color: var(--text-primary);
+  font-size: 0.8rem;
+}
+
+.memberAvatar {
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.memberInitial {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}

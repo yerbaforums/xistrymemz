@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import styles from './layout.module.css'
+import ErrorBoundary from '@/components/ErrorBoundary'
 
 export default async function AdminLayout({
   children,
@@ -56,7 +57,7 @@ export default async function AdminLayout({
           </Link>
         </nav>
         <main className={styles.main}>
-          {children}
+          <ErrorBoundary>{children}</ErrorBoundary>
         </main>
       </div>
     </div>

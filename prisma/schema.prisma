@@ -139,6 +139,7 @@ model User {
   outboxActivities       OutboxActivity[]
   oauthProviders         OAuthProvider[]
   savedItems             SavedItem[]
+  hashtagFollows         UserHashtagFollow[]
 
   // Donation settings (legacy single address)
   donationAddress  String?
@@ -893,9 +894,23 @@ model Hashtag {
   plans            PlanHashtag[]
   requests         RequestHashtag[]
   groups           GroupHashtag[]
+  followedBy       UserHashtagFollow[]
 
   @@index([postCount])
   @@index([tag])
+}
+
+model UserHashtagFollow {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hashtagId String
+  hashtag   Hashtag  @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, hashtagId])
+  @@index([userId])
+  @@index([hashtagId])
 }
 
 model SchoolContentHashtag {

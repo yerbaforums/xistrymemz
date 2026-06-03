@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import ImageUploader from '@/components/ImageUploader'
-import { getClassGuides, getAllSetupStepIds, CLASS_SETUP_GUIDES } from '@/lib/classOnboarding'
+import { getClassGuides, getAllSetupStepIds } from '@/lib/classOnboarding'
 import { USER_CLASSES, CLASS_ICONS } from '@/lib/user-classes'
 import styles from './page.module.css'
 
@@ -34,8 +34,8 @@ export default function OnboardingPage() {
   const [bio, setBio] = useState('')
   const [avatarImage, setAvatarImage] = useState('')
   const [location, setLocation] = useState('')
-  const [locationName, setLocationName] = useState('')
-  const [neighborhood, setNeighborhood] = useState('')
+  const [neighborhood] = useState('')
+
   const [searchRadius, setSearchRadius] = useState('50')
   const [userClass, setUserClass] = useState('')
   const [userLocations, setUserLocations] = useState<{id: string; name: string; location: string; isPrimary: boolean}[]>([])
@@ -53,6 +53,11 @@ export default function OnboardingPage() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const [completedSetupSteps, setCompletedSetupSteps] = useState<string[]>([])
+  const [interestTags, setInterestTags] = useState<string[]>([])
+  const [searchTagInput, setSearchTagInput] = useState('')
+  const [suggestedTags, setSuggestedTags] = useState<{tag: string; postCount: number}[]>([])
+  const [communityGroups, setCommunityGroups] = useState<{id: string; name: string; memberCount: number}[]>([])
+  const [communityMembers, setCommunityMembers] = useState<{id: string; name: string; image: string | null}[]>([])
 
   const toggleSetupStep = (id: string) => {
     setCompletedSetupSteps(prev => {
@@ -141,6 +146,42 @@ export default function OnboardingPage() {
         .catch(() => {})
     }
   }, [step])
+
+  useEffect(() => {
+    if (step === 'community') {
+      fetch('/api/hashtags?mode=trending&limit=12')
+        .then(res => res.ok ? res.json() : { hashtags: [] })
+        .then(data => setSuggestedTags(Array.isArray(data.hashtags) ? data.hashtags.map((h: {tag: string}) => ({tag: h.tag, postCount: 0})) : []))
+        .catch(() => {})
+
+      fetch('/api/groups?limit=6&sort=members')
+        .then(res => res.ok ? res.json() : [])
+        .then(data => setCommunityGroups(Array.isArray(data) ? data : []))
+        .catch(() => {})
+
+      fetch('/api/community/members')
+        .then(res => res.ok ? res.json() : { members: [] })
+        .then(data => setCommunityMembers(Array.isArray(data.members) ? data.members.slice(0, 6) : []))
+        .catch(() => {})
+    }
+  }, [step])
+
+  useEffect(() => {
+    if (!searchTagInput.trim()) return
+    const timer = setTimeout(() => {
+      fetch(`/api/hashtags/search?q=${encodeURIComponent(searchTagInput)}`)
+        .then(res => res.ok ? res.json() : [])
+        .then(data => {
+          if (Array.isArray(data)) {
+            const existing = new Set(interestTags.map(t => t.toLowerCase()))
+            const filtered = data.filter((h: {tag: string}) => !existing.has(h.tag.toLowerCase()))
+            setSuggestedTags(filtered)
+          }
+        })
+        .catch(() => {})
+    }, 200)
+    return () => clearTimeout(timer)
+  }, [searchTagInput, interestTags])
 
   const handleAddLocation = async () => {
     if (!newLocationName.trim() || !newLocationPlace.trim()) return
@@ -269,7 +310,14 @@ export default function OnboardingPage() {
 
   const handleComplete = async () => {
     try {
-      await completeOnboarding()
+      await fetch('/api/users/onboarding', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          createPlan: true,
+          interestTags: interestTags.length > 0 ? interestTags : undefined,
+        }),
+      })
       if (selectedOutlets.length > 0) {
         const outlet = TOUR_OUTLETS.find(o => o.id === selectedOutlets[0])
         if (outlet) {
@@ -336,7 +384,7 @@ export default function OnboardingPage() {
                     <span>{sessionUser?.email}</span>
                   </div>
                   <div className={styles.userDropdownLinks}>
-                    <Link href={`/profile/${(sessionUser as any)?.username || ''}`} className={styles.userDropdownLink} onClick={() => setDropdownOpen(false)}>My Profile</Link>
+                    <Link href={`/profile/${(sessionUser as { username?: string })?.username || ''}`} className={styles.userDropdownLink} onClick={() => setDropdownOpen(false)}>My Profile</Link>
                     <Link href="/dashboard/overview" className={styles.userDropdownLink} onClick={() => setDropdownOpen(false)}>Dashboard</Link>
                   </div>
                 </div>
@@ -687,46 +735,98 @@ export default function OnboardingPage() {
           {step === 'community' && (
             <div className={styles.stepContent}>
               <h2>Connect with the Community</h2>
-              <p>XistrYmemZ is built around people. Find your people and start collaborating.</p>
-              
+              <p>Follow topics you care about and discover groups and people that match your interests.</p>
+
+              <div className={styles.formGroup}>
+                <label>Topics You Care About</label>
+                <p className={styles.formHint}>Pick hashtags to follow — your feed will show posts about these topics.</p>
+                <div className={styles.tagSearchRow}>
+                  <input
+                    type="text"
+                    value={searchTagInput}
+                    onChange={(e) => setSearchTagInput(e.target.value)}
+                    placeholder="Search topics..."
+                    className={styles.tagSearchInput}
+                  />
+                </div>
+                <div className={styles.tagGrid}>
+                  {suggestedTags.filter(h => !interestTags.includes(h.tag)).slice(0, 8).map(h => (
+                    <button
+                      key={h.tag}
+                      type="button"
+                      className={styles.tagChip}
+                      onClick={() => {
+                        setInterestTags(prev => [...prev, h.tag])
+                        setSearchTagInput('')
+                      }}
+                    >
+                      #{h.tag}
+                    </button>
+                  ))}
+                </div>
+                {interestTags.length > 0 && (
+                  <div className={styles.selectedTags}>
+                    {interestTags.map(tag => (
+                      <span key={tag} className={styles.selectedTag}>
+                        #{tag}
+                        <button
+                          type="button"
+                          className={styles.removeTagBtn}
+                          onClick={() => setInterestTags(prev => prev.filter(t => t !== tag))}
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {communityGroups.length > 0 && (
+                <div className={styles.formGroup}>
+                  <label>Popular Groups</label>
+                  <div className={styles.suggestionGrid}>
+                    {communityGroups.slice(0, 4).map(g => (
+                      <Link key={g.id} href={`/groups/${g.id}`} className={styles.suggestionCard}>
+                        <strong>{g.name}</strong>
+                        <span>{g.memberCount} members</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {communityMembers.length > 0 && (
+                <div className={styles.formGroup}>
+                  <label>Active Members</label>
+                  <div className={styles.memberRow}>
+                    {communityMembers.slice(0, 6).map(m => (
+                      <Link key={m.id} href={`/profile/${m.id}`} className={styles.memberChip}>
+                        {m.image ? (
+                          <Image src={m.image} alt={m.name || 'Member'} width={28} height={28} className={styles.memberAvatar} />
+                        ) : (
+                          <span className={styles.memberInitial}>{(m.name || '?')[0]}</span>
+                        )}
+                        <span>{m.name}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className={styles.quickLinks}>
                 <Link href="/community" className={styles.quickLink}>
                   <span className={styles.linkIcon}>👥</span>
                   <div>
-                    <strong>Browse Members</strong>
+                    <strong>Browse All Members</strong>
                     <span>Find and connect with people near you</span>
                   </div>
                 </Link>
-                
                 <Link href="/community/groups" className={styles.quickLink}>
                   <span className={styles.linkIcon}>👤</span>
                   <div>
                     <strong>Join Groups</strong>
                     <span>Find groups by interest, location, or purpose</span>
-                  </div>
-                </Link>
-
-                <Link href="/community/forum" className={styles.quickLink}>
-                  <span className={styles.linkIcon}>💬</span>
-                  <div>
-                    <strong>Discussion Forum</strong>
-                    <span>Start conversations and share ideas</span>
-                  </div>
-                </Link>
-                
-                <Link href="/plans/public" className={styles.quickLink}>
-                  <span className={styles.linkIcon}>📋</span>
-                  <div>
-                    <strong>Public Projects</strong>
-                    <span>Explore projects you can join and contribute to</span>
-                  </div>
-                </Link>
-                
-                <Link href="/dashboard/requests" className={styles.quickLink}>
-                  <span className={styles.linkIcon}>📝</span>
-                  <div>
-                    <strong>Open Requests</strong>
-                    <span>Find tasks to help with or needs to fill</span>
                   </div>
                 </Link>
               </div>

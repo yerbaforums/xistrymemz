@@ -45,9 +45,6 @@ export async function createDatabaseDump(): Promise<{
   let dbSize = 0
 
   if (dbType === 'postgresql') {
-    const url = new URL(process.env.DATABASE_URL!)
-    const dbName = url.pathname.slice(1)
-
     const dumpFile = path.join(BACKUP_DIR, `backup-${timestamp}.sql`)
     await execAsync(`pg_dump "${process.env.DATABASE_URL}" > "${dumpFile}"`)
 
@@ -95,7 +92,7 @@ export async function uploadToIPFS(filePath: string): Promise<string> {
         'pinata_api_key': apiKey,
         'pinata_secret_api_key': secretKey,
       },
-      body: form as any,
+      body: form as unknown as BodyInit,
     })
 
     if (!response.ok) {
