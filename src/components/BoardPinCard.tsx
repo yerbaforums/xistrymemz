@@ -50,6 +50,9 @@ function getEntityHref(type: string | null, id: string | null): string {
     case 'EVENT': return `/events/${id}`
     case 'GROUP': return `/groups/${id}`
     case 'PLAN': return `/plans/${id}`
+    case 'REQUEST': return `/requests/${id}`
+    case 'POST': return `/posts/${id}`
+    case 'SCHOOL_CONTENT': return `/school/content/${id}`
     default: return '#'
   }
 }
@@ -63,6 +66,9 @@ function getEntityIcon(type: string | null): string {
     case 'EVENT': return '📅'
     case 'GROUP': return '👥'
     case 'PLAN': return '🚀'
+    case 'REQUEST': return '📝'
+    case 'POST': return '✏️'
+    case 'SCHOOL_CONTENT': return '📚'
     default: return '📌'
   }
 }

@@ -31,6 +31,11 @@ const ASSET_ICONS: Record<string, string> = {
   EVENT: '📅',
   GROUP: '👥',
   PLAN: '🚀',
+  REQUEST: '📝',
+  SCHOOL_CONTENT: '📚',
+  POST: '✏️',
+  SHOP: '🏪',
+  USER: '👤',
 }
 
 interface CreatePinModalProps {
