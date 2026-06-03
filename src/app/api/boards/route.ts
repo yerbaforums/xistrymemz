@@ -12,6 +12,7 @@ export async function GET(request: Request) {
     const radius = searchParams.get('radius') ? parseInt(searchParams.get('radius')!) : undefined
     const city = searchParams.get('city') || undefined
     const page = parseInt(searchParams.get('page') || '1')
+    const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 20
     const north = searchParams.get('north') ? parseFloat(searchParams.get('north')!) : undefined
     const south = searchParams.get('south') ? parseFloat(searchParams.get('south')!) : undefined
     const east = searchParams.get('east') ? parseFloat(searchParams.get('east')!) : undefined
@@ -42,6 +43,7 @@ export async function GET(request: Request) {
       radius: effectiveRadius || 50,
       city,
       page,
+      limit,
       north,
       south,
       east,

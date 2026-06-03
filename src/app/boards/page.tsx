@@ -46,12 +46,13 @@ export default function BoardsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [hoveredBoardId, setHoveredBoardId] = useState<string | null>(null)
   const [selectedBoardId, setSelectedBoardId] = useState<string | null>(null)
+  const [L, setL] = useState<any>(null)
   const mapRef = useRef<any>(null)
 
-  let L: any = null
-  if (typeof window !== 'undefined') {
-    try { L = require('leaflet') } catch {}
-  }
+  useEffect(() => {
+    import('leaflet/dist/leaflet.css')
+    import('leaflet').then(mod => setL(mod))
+  }, [])
 
   const getBoardIcon = useCallback((highlighted: boolean) => {
     if (!L) return undefined

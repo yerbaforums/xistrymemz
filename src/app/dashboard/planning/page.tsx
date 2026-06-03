@@ -817,7 +817,7 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
                                 <span className={`${styles.fs08} ${styles.fw600} ${styles.textMuted}`}>Requests:</span>
                                 {(stop.linkedRequests || []).map((item, idx) => (
                                   <div key={idx} className={`${styles.flexCenter} ${styles.gap8} ${styles.py2}`}>
-                                    <a href={`/requests/${item.id}`} target="_blank" rel="noopener noreferrer" className={`${styles.fs085} ${styles.accentPrimary} ${styles.flex1}`}>{item.title}</a>
+                                    <a href={`/requests/${item.id}`} className={`${styles.fs085} ${styles.accentPrimary} ${styles.flex1}`}>{item.title}</a>
                                     <button className={styles.btnIcon} onClick={() => handleUnlinkItem(stop.id, 'request', item.id)}>🗑️</button>
                                   </div>
                                 ))}
@@ -828,7 +828,7 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
                                 <span className={`${styles.fs08} ${styles.fw600} ${styles.textMuted}`}>Events:</span>
                                 {(stop.linkedEvents || []).map((item, idx) => (
                                   <div key={idx} className={`${styles.flexCenter} ${styles.gap8} ${styles.py2}`}>
-                                    <a href={`/events/${item.id}`} target="_blank" rel="noopener noreferrer" className={`${styles.fs085} ${styles.accentPrimary} ${styles.flex1}`}>{item.title}</a>
+                                    <a href={`/events/${item.id}`} className={`${styles.fs085} ${styles.accentPrimary} ${styles.flex1}`}>{item.title}</a>
                                     <button className={styles.btnIcon} onClick={() => handleUnlinkItem(stop.id, 'event', item.id)}>🗑️</button>
                                   </div>
                                 ))}
@@ -839,7 +839,7 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
                                 <span className={`${styles.fs08} ${styles.fw600} ${styles.textMuted}`}>Products:</span>
                                 {(stop.linkedProducts || []).map((item, idx) => (
                                   <div key={idx} className={`${styles.flexCenter} ${styles.gap8} ${styles.py2}`}>
-                                    <a href={`/products/${item.id}`} target="_blank" rel="noopener noreferrer" className={`${styles.fs085} ${styles.accentPrimary} ${styles.flex1}`}>{item.title}</a>
+                                    <a href={`/products/${item.id}`} className={`${styles.fs085} ${styles.accentPrimary} ${styles.flex1}`}>{item.title}</a>
                                     <button className={styles.btnIcon} onClick={() => handleUnlinkItem(stop.id, 'product', item.id)}>🗑️</button>
                                   </div>
                                 ))}

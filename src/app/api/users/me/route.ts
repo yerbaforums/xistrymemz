@@ -43,6 +43,7 @@ export async function GET() {
           lookingForCollaborators: true,
           coverImage: true,
           coverStyle: true,
+          traveling: true,
           showShop: true,
           showSchool: true,
           enableTips: true,
