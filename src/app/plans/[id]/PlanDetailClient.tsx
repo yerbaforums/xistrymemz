@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import dynamic from 'next/dynamic'
 import styles from './page.module.css'
 import PlanGoals from './PlanGoals'
 import PlanMilestones from './PlanMilestones'
@@ -15,6 +16,11 @@ import LinkedItemsSection from '@/components/LinkedItemsSection'
 import CollaborateButton from '@/components/CollaborateButton'
 import PinToBoardButton from '@/components/PinToBoardButton'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
+
+const PlanMapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
+const PlanTileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
+const PlanMarker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false })
+const PlanPopup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false })
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import type { DonationAddr } from '@/types/product'
@@ -49,6 +55,9 @@ interface Plan {
   status: string; published: boolean; schoolId: string | null; shopId: string | null
   lookingForCollaborators: boolean
   imageUrl: string | null
+  location: string | null
+  latitude: number | null
+  longitude: number | null
   requests: Request[]; isOwner: boolean; isEditor: boolean; events: PlanEvent[]
   goalAmount: number | null; currentFunding: number | null
   donationAddress: string | null; donationCurrency: string; donationAddresses: string | null
@@ -516,6 +525,26 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                         image={plan.imageUrl}
                         variant="bar"
                       />
+
+                      {(plan.location || (plan.latitude && plan.longitude)) && (
+                        <div className={styles.locationSection}>
+                          <h4 className={styles.locationTitle}>📍 Location</h4>
+                          {plan.location && <p className={styles.locationText}>{plan.location}</p>}
+                          {plan.latitude && plan.longitude && (
+                            <div className={styles.locationMapWrap}>
+                              <PlanMapContainer center={[plan.latitude, plan.longitude]} zoom={13} className={styles.locationMap} scrollWheelZoom={false}>
+                                <PlanTileLayer
+                                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+                                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                />
+                                <PlanMarker position={[plan.latitude, plan.longitude]}>
+                                  <PlanPopup>{plan.location || plan.title}</PlanPopup>
+                                </PlanMarker>
+                              </PlanMapContainer>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
 
