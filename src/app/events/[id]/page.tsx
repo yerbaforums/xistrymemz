@@ -539,7 +539,7 @@ function EventDetailContent() {
               {!isOwner && (
                 <CollaborateButton entityType="EVENT" entityId={event.id} label="🤝 Propose Collab" variant="secondary" />
               )}
-              {session?.user && (
+              {userId && (
                 <PinToBoardButton
                   entityType="EVENT"
                   entityId={event.id}
