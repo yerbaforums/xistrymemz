@@ -151,6 +151,7 @@ interface Post {
 interface Plan {
   id: string
   title: string
+  description: string | null
   status: string
   published: boolean
   pinned: boolean
@@ -160,6 +161,7 @@ interface Plan {
 interface Product {
   id: string
   title: string
+  description: string | null
   price: number | null
   imageUrl: string | null
   type: string
@@ -179,6 +181,8 @@ interface Connection {
 interface UserGroup {
   id: string
   name: string
+  description: string | null
+  image: string | null
   imageUrl: string | null
   memberCount: number
   role: string
@@ -197,6 +201,7 @@ interface ForumPostEntry {
 interface UserEventEntry {
   id: string
   title: string
+  description: string | null
   eventCategory: string | null
   eventDate: string | null
   location: string | null
