@@ -90,21 +90,42 @@ export default function BoardsPage() {
         const res = await fetch('/api/users/me')
         if (!res.ok) return
         const data = await res.json()
-        const locations: UserLocation[] = data?.user?.locations || data?.locations || []
-        if (locations.length === 0) return
+        const user = data?.user
+        const locations: UserLocation[] = user?.locations || data?.locations || []
+
+        const locsToCheck: { name: string; location: string; lat: number; lng: number }[] = []
+
+        if (user?.latitude && user?.longitude) {
+          locsToCheck.push({
+            name: user.location || 'Home',
+            location: user.location || `${user.latitude.toFixed(4)}, ${user.longitude.toFixed(4)}`,
+            lat: user.latitude,
+            lng: user.longitude,
+          })
+        }
+
         for (const loc of locations) {
           if (!loc.latitude || !loc.longitude) continue
-          const checkRes = await fetch(`/api/boards?lat=${loc.latitude}&lng=${loc.longitude}&radius=25&limit=1`)
+          locsToCheck.push({
+            name: loc.name || loc.location,
+            location: loc.location,
+            lat: loc.latitude,
+            lng: loc.longitude,
+          })
+        }
+
+        for (const loc of locsToCheck) {
+          const checkRes = await fetch(`/api/boards?lat=${loc.lat}&lng=${loc.lng}&radius=25&limit=1`)
           const checkData = await checkRes.json()
           if (!checkData.boards || checkData.boards.length === 0) {
             await fetch('/api/boards', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                name: loc.name ? `${loc.name} Board` : `${loc.location} Board`,
+                name: `${loc.name} Board`,
                 location: loc.location,
-                latitude: loc.latitude,
-                longitude: loc.longitude,
+                latitude: loc.lat,
+                longitude: loc.lng,
               }),
             })
           }

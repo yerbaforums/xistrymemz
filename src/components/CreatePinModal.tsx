@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import styles from './CreatePinModal.module.css'
 
 const PIN_CATEGORIES = [
@@ -14,16 +15,23 @@ const PIN_CATEGORIES = [
   { value: 'FREE', label: 'Free' },
 ]
 
-const ENTITY_TYPES = [
-  { value: '', label: 'None' },
-  { value: 'USER', label: 'My Profile' },
-  { value: 'SHOP', label: 'My Shop' },
-  { value: 'PRODUCT', label: 'My Product' },
-  { value: 'SERVICE', label: 'My Service' },
-  { value: 'EVENT', label: 'My Event' },
-  { value: 'GROUP', label: 'My Group' },
-  { value: 'PLAN', label: 'My Project' },
-]
+interface UserAsset {
+  id: string
+  type: 'PRODUCT' | 'SERVICE' | 'EVENT' | 'GROUP' | 'PLAN'
+  title: string
+  image: string | null
+  location: string | null
+  latitude: number | null
+  longitude: number | null
+}
+
+const ASSET_ICONS: Record<string, string> = {
+  PRODUCT: '🛒',
+  SERVICE: '🔧',
+  EVENT: '📅',
+  GROUP: '👥',
+  PLAN: '🚀',
+}
 
 interface CreatePinModalProps {
   boardSlug: string
@@ -36,7 +44,6 @@ export default function CreatePinModal({ boardSlug, boardName, onClose, onCreate
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [category, setCategory] = useState('GENERAL')
-  const [entityType, setEntityType] = useState('')
   const [contactName, setContactName] = useState('')
   const [contactEmail, setContactEmail] = useState('')
   const [contactPhone, setContactPhone] = useState('')
@@ -44,6 +51,38 @@ export default function CreatePinModal({ boardSlug, boardName, onClose, onCreate
   const [imageUrls, setImageUrls] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [assets, setAssets] = useState<UserAsset[]>([])
+  const [assetsLoading, setAssetsLoading] = useState(false)
+  const [selectedAsset, setSelectedAsset] = useState<UserAsset | null>(null)
+  const [showAssetPicker, setShowAssetPicker] = useState(false)
+
+  useEffect(() => {
+    const fetchAssets = async () => {
+      setAssetsLoading(true)
+      try {
+        const res = await fetch('/api/user/assets')
+        if (res.ok) {
+          const data = await res.json()
+          setAssets(data.assets || [])
+        }
+      } catch {}
+      setAssetsLoading(false)
+    }
+    fetchAssets()
+  }, [])
+
+  const handleSelectAsset = (asset: UserAsset) => {
+    setSelectedAsset(asset === selectedAsset ? null : asset)
+    if (!title && asset.title) {
+      setTitle(asset.title)
+    }
+  }
+
+  const groupedAssets = assets.reduce<Record<string, UserAsset[]>>((acc, a) => {
+    if (!acc[a.type]) acc[a.type] = []
+    acc[a.type].push(a)
+    return acc
+  }, {})
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -69,7 +108,12 @@ export default function CreatePinModal({ boardSlug, boardName, onClose, onCreate
           content: content.trim(),
           images,
           category,
-          entityType: entityType || undefined,
+          entityType: selectedAsset?.type || undefined,
+          entityId: selectedAsset?.id || undefined,
+          entityTitle: selectedAsset?.title || undefined,
+          entityImage: selectedAsset?.image || undefined,
+          latitude: selectedAsset?.latitude || undefined,
+          longitude: selectedAsset?.longitude || undefined,
           contactName: contactName.trim() || undefined,
           contactEmail: contactEmail.trim() || undefined,
           contactPhone: contactPhone.trim() || undefined,
@@ -145,14 +189,71 @@ export default function CreatePinModal({ boardSlug, boardName, onClose, onCreate
             />
           </label>
 
-          <label className={styles.label}>
-            Link an entity (optional)
-            <select value={entityType} onChange={e => setEntityType(e.target.value)} className={styles.select}>
-              {ENTITY_TYPES.map(t => (
-                <option key={t.value} value={t.value}>{t.label}</option>
-              ))}
-            </select>
-          </label>
+          <div className={styles.assetSection}>
+            <div className={styles.assetSectionHeader}>
+              <span className={styles.label}>Link an item (optional)</span>
+              <button
+                type="button"
+                className={styles.assetToggle}
+                onClick={() => setShowAssetPicker(!showAssetPicker)}
+              >
+                {showAssetPicker ? 'Hide' : `Choose (${assets.length})`}
+              </button>
+            </div>
+
+            {selectedAsset && (
+              <div className={styles.selectedAsset}>
+                <span>{ASSET_ICONS[selectedAsset.type] || '📌'}</span>
+                <span className={styles.selectedAssetTitle}>{selectedAsset.title}</span>
+                <span className={styles.selectedAssetType}>{selectedAsset.type}</span>
+                <button type="button" className={styles.clearAsset} onClick={() => setSelectedAsset(null)}>✕</button>
+              </div>
+            )}
+
+            {showAssetPicker && (
+              <div className={styles.assetPicker}>
+                {assetsLoading ? (
+                  <p className={styles.assetsLoading}>Loading your items...</p>
+                ) : assets.length === 0 ? (
+                  <p className={styles.assetsEmpty}>No items found. Create products, events, groups, or plans first.</p>
+                ) : (
+                  Object.entries(groupedAssets).map(([type, items]) => (
+                    <div key={type} className={styles.assetGroup}>
+                      <div className={styles.assetGroupTitle}>
+                        {ASSET_ICONS[type] || '📌'} {type.charAt(0) + type.slice(1).toLowerCase()}s ({items.length})
+                      </div>
+                      <div className={styles.assetGrid}>
+                        {items.map(asset => {
+                          const isSelected = selectedAsset?.id === asset.id && selectedAsset?.type === asset.type
+                          return (
+                            <button
+                              key={`${asset.type}-${asset.id}`}
+                              type="button"
+                              className={`${styles.assetCard} ${isSelected ? styles.assetCardSelected : ''}`}
+                              onClick={() => handleSelectAsset(asset)}
+                            >
+                              {asset.image ? (
+                                <div className={styles.assetCardImage}>
+                                  <Image src={asset.image} alt={asset.title} width={48} height={48} style={{ objectFit: 'cover' }} />
+                                </div>
+                              ) : (
+                                <div className={styles.assetCardIcon}>{ASSET_ICONS[asset.type] || '📌'}</div>
+                              )}
+                              <div className={styles.assetCardInfo}>
+                                <span className={styles.assetCardTitle}>{asset.title}</span>
+                                {asset.location && <span className={styles.assetCardLoc}>{asset.location}</span>}
+                              </div>
+                              {isSelected && <span className={styles.assetCheck}>✓</span>}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
 
           <label className={styles.label}>
             Contact Name (optional)
