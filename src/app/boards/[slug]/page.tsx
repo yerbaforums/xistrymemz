@@ -157,6 +157,11 @@ export default function BoardDetailPage() {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
+            {board.latitude && board.longitude && pinLocations.length === 0 && (
+              <Marker position={[board.latitude, board.longitude]}>
+                <Popup>{board.name} — {board.location || ''}</Popup>
+              </Marker>
+            )}
             {pinLocations.map(pin => (
               <Marker key={pin.id} position={[pin.latitude!, pin.longitude!]}>
                 <Popup>
@@ -174,6 +179,20 @@ export default function BoardDetailPage() {
                 </Popup>
               </Marker>
             ))}
+          </MapContainer>
+        </div>
+      )}
+
+      {pinLocations.length === 0 && board.latitude && board.longitude && (
+        <div className={styles.mapWrap}>
+          <MapContainer center={[board.latitude, board.longitude]} zoom={12} className={styles.map} scrollWheelZoom={true}>
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <Marker position={[board.latitude, board.longitude]}>
+              <Popup>{board.name} — {board.location || ''}</Popup>
+            </Marker>
           </MapContainer>
         </div>
       )}

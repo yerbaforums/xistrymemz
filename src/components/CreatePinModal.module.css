@@ -272,6 +272,35 @@
   font-size: 1rem;
 }
 
+.expiryPresets {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.expiryPresetBtn {
+  padding: 6px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 500;
+}
+
+.expiryPresetBtn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.expiryPresetActive {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border-color: var(--accent-primary);
+}
+
 .actions {
   display: flex;
   gap: 10px;

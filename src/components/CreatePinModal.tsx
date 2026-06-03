@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import ImageUploader from '@/components/ImageUploader'
 import styles from './CreatePinModal.module.css'
 
 const PIN_CATEGORIES = [
@@ -52,8 +53,12 @@ export default function CreatePinModal({ boardSlug, boardName, onClose, onCreate
   const [contactName, setContactName] = useState('')
   const [contactEmail, setContactEmail] = useState('')
   const [contactPhone, setContactPhone] = useState('')
-  const [expiresAt, setExpiresAt] = useState('')
-  const [imageUrls, setImageUrls] = useState('')
+  const [expiresAt, setExpiresAt] = useState(() => {
+    const d = new Date()
+    d.setDate(d.getDate() + 90)
+    return d.toISOString().slice(0, 16)
+  })
+  const [imageUrls, setImageUrls] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [assets, setAssets] = useState<UserAsset[]>([])
@@ -104,7 +109,7 @@ export default function CreatePinModal({ boardSlug, boardName, onClose, onCreate
     setError('')
 
     try {
-      const images = imageUrls.trim() ? imageUrls.split('\n').map(s => s.trim()).filter(Boolean) : undefined
+      const images = imageUrls.length > 0 ? imageUrls : undefined
       const res = await fetch(`/api/boards/${boardSlug}/pins`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -184,14 +189,8 @@ export default function CreatePinModal({ boardSlug, boardName, onClose, onCreate
           </label>
 
           <label className={styles.label}>
-            Image URLs (one per line, optional)
-            <textarea
-              value={imageUrls}
-              onChange={e => setImageUrls(e.target.value)}
-              className={styles.textarea}
-              placeholder="https://example.com/image.jpg"
-              rows={2}
-            />
+            Images (optional)
+            <ImageUploader images={imageUrls} onChange={setImageUrls} maxImages={6} />
           </label>
 
           <div className={styles.assetSection}>
@@ -295,6 +294,11 @@ export default function CreatePinModal({ boardSlug, boardName, onClose, onCreate
 
           <label className={styles.label}>
             Expires At *
+            <div className={styles.expiryPresets}>
+              <button type="button" className={`${styles.expiryPresetBtn} ${expiresAt === (() => { const d = new Date(); d.setDate(d.getDate() + 7); return d.toISOString().slice(0, 16) })() ? styles.expiryPresetActive : ''}`} onClick={() => { const d = new Date(); d.setDate(d.getDate() + 7); setExpiresAt(d.toISOString().slice(0, 16)) }}>7 days</button>
+              <button type="button" className={`${styles.expiryPresetBtn} ${expiresAt === (() => { const d = new Date(); d.setDate(d.getDate() + 30); return d.toISOString().slice(0, 16) })() ? styles.expiryPresetActive : ''}`} onClick={() => { const d = new Date(); d.setDate(d.getDate() + 30); setExpiresAt(d.toISOString().slice(0, 16)) }}>30 days</button>
+              <button type="button" className={`${styles.expiryPresetBtn} ${expiresAt === (() => { const d = new Date(); d.setDate(d.getDate() + 90); return d.toISOString().slice(0, 16) })() ? styles.expiryPresetActive : ''}`} onClick={() => { const d = new Date(); d.setDate(d.getDate() + 90); setExpiresAt(d.toISOString().slice(0, 16)) }}>90 days</button>
+            </div>
             <input
               type="datetime-local"
               value={expiresAt}

@@ -30,6 +30,11 @@ type Mode = 'map' | 'passport' | 'manual'
 
 export default function CreateBoardModal({ onClose, onCreated, initialCity, initialLat, initialLng }: CreateBoardModalProps) {
   const [mode, setMode] = useState<Mode>(initialLat ? 'map' : 'passport')
+
+  function extractCity(location: string): string {
+    return location.split(',')[0].trim()
+  }
+
   const [name, setName] = useState(initialCity ? `${initialCity} Board` : '')
   const [description, setDescription] = useState('')
   const [location, setLocation] = useState(initialCity || '')
@@ -76,7 +81,7 @@ export default function CreateBoardModal({ onClose, onCreated, initialCity, init
           const first = locs[0]
           setMapCenter([first.latitude!, first.longitude!])
           setMapMarker([first.latitude!, first.longitude!])
-          setName(first.isPrimary ? `${first.name} Board` : `${first.name} Board`)
+          setName(`${extractCity(first.name)} Board`)
           setLocation(first.location)
           setLatitude(first.latitude!.toString())
           setLongitude(first.longitude!.toString())
@@ -100,7 +105,7 @@ export default function CreateBoardModal({ onClose, onCreated, initialCity, init
     if (!loc.latitude || !loc.longitude) return
     setMapCenter([loc.latitude, loc.longitude])
     setMapMarker([loc.latitude, loc.longitude])
-    setName(loc.isPrimary ? `${loc.name} Board` : `${loc.name} Board`)
+    setName(`${extractCity(loc.name)} Board`)
     setLocation(loc.location)
     setLatitude(loc.latitude.toString())
     setLongitude(loc.longitude.toString())

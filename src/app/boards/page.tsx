@@ -11,6 +11,7 @@ const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContai
 const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
 const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false })
 const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false })
+const Tooltip = dynamic(() => import('react-leaflet').then(m => m.Tooltip), { ssr: false })
 const MapEvents = dynamic(() => import('./MapEvents').then(m => m.MapEvents), { ssr: false })
 
 interface Board {
@@ -48,6 +49,21 @@ export default function BoardsPage() {
   const [selectedBoardId, setSelectedBoardId] = useState<string | null>(null)
   const mapRef = useRef<any>(null)
 
+  let L: any = null
+  if (typeof window !== 'undefined') {
+    try { L = require('leaflet') } catch {}
+  }
+
+  const getBoardIcon = useCallback((highlighted: boolean) => {
+    if (!L) return undefined
+    return L.divIcon({
+      className: '',
+      html: `<div style="width:16px;height:16px;border-radius:50%;background:${highlighted ? 'var(--accent-primary)' : '#888'};border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>`,
+      iconSize: [16, 16],
+      iconAnchor: [8, 8],
+    })
+  }, [L])
+
   const fetchBoards = useCallback(async (bounds?: { north: number; south: number; east: number; west: number }, city?: string) => {
     setLoading(true)
     try {
@@ -75,6 +91,12 @@ export default function BoardsPage() {
       const res = await fetch(`/api/boards?${params}`)
       const data = await res.json()
       setBoards(data.boards || [])
+
+      const locBoards = (data.boards || []).filter((b: Board) => b.latitude && b.longitude)
+      if (locBoards.length > 0 && mapRef.current) {
+        const bounds = locBoards.map((b: Board) => [b.latitude, b.longitude] as [number, number])
+        mapRef.current.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 })
+      }
     } catch {}
     setLoading(false)
   }, [])
@@ -150,8 +172,9 @@ export default function BoardsPage() {
   const handleCardClick = (board: Board) => {
     if (board.latitude && board.longitude) {
       setSelectedBoardId(board.id)
-      setMapCenter([board.latitude, board.longitude])
-      setMapZoom(14)
+      if (mapRef.current) {
+        mapRef.current.flyTo([board.latitude, board.longitude], 14, { duration: 1 })
+      }
     }
   }
 
@@ -200,9 +223,9 @@ export default function BoardsPage() {
               <Marker
                 key={b.id}
                 position={[b.latitude!, b.longitude!]}
-                icon={isHighlighted ? undefined : undefined}
-                opacity={isHighlighted ? 1 : 0.7}
+                icon={getBoardIcon(isHighlighted)}
               >
+                <Tooltip>{b.name} — {b.pinCount} pins</Tooltip>
                 <Popup>
                   <Link href={`/boards/${b.slug}`} style={{ fontWeight: 600, textDecoration: 'none', color: 'var(--accent-primary)' }}>
                     {b.name}
