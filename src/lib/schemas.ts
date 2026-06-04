@@ -167,6 +167,8 @@ export const eventSchema = z.object({
   volunteerDescription: z.string().optional(),
   planId: z.string().optional().nullable(),
   groupId: z.string().optional().nullable(),
+  schoolId: z.string().optional().nullable(),
+  shopId: z.string().optional().nullable(),
   createGroup: z.boolean().optional(),
   hashtags: z.array(z.string()).optional()
 })

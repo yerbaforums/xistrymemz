@@ -62,6 +62,7 @@ export interface DashboardEvent {
   description: string | null
   imageUrl: string | null
   eventDate: string | null
+  endDate: string | null
   eventCategory: string | null
   location: string | null
   locationDetails: string | null
@@ -80,6 +81,11 @@ export interface DashboardEvent {
   planId: string | null
   groupTitle?: string | null
   groupId?: string | null
+  schoolId?: string | null
+  shopId?: string | null
+  needsVolunteers?: boolean
+  volunteerRoles?: string
+  volunteerDescription?: string | null
   createdAt: string
   hashtags?: string[]
 }

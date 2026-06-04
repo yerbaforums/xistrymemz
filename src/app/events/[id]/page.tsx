@@ -7,8 +7,9 @@ import styles from './page.module.css'
 import dynamic from 'next/dynamic'
 import { useToast } from '@/context/ToastContext'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
-import DonationAddressPicker from '@/components/DonationAddressPicker'
 import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
+import EventFormFields, { getDefaultEventFormData } from '@/components/EventFormFields'
+import type { EventFormData } from '@/components/EventFormFields'
 import { getUserProfileUrl } from '@/lib/utils'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
@@ -46,21 +47,7 @@ function EventDetailContent() {
   const [qrOpen, setQrOpen] = useState<string | null>(null)
   const userDonationAddrs = useDonationAddresses()
   const [isEditing, setIsEditing] = useState(false)
-  const [editForm, setEditForm] = useState({
-    title: '',
-    description: '',
-    location: '',
-    locationDetails: '',
-    maxJoiners: 0,
-    isTicketed: false,
-    ticketPrice: 0,
-    currency: 'USD',
-    acceptsDonations: false,
-    selectedDonationAddrs: [] as DonationAddr[],
-    needsVolunteers: false,
-    volunteerRoles: '',
-    volunteerDescription: ''
-  })
+  const [editFormData, setEditFormData] = useState<EventFormData>(() => getDefaultEventFormData())
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [confirmDeleteModal, setConfirmDeleteModal] = useState(false)
@@ -96,55 +83,81 @@ function EventDetailContent() {
 
   const startEditing = () => {
     if (!event) return
-    setEditForm({
+    setEditFormData({
       title: event.title,
       description: event.description || '',
+      imageUrl: '',
+      images: [],
+      eventCategory: event.eventCategory || 'GENERAL',
+      eventDate: event.eventDate ? event.eventDate.slice(0, 16) : '',
+      endDate: event.endDate ? event.endDate.slice(0, 16) : '',
       location: event.location || '',
       locationDetails: event.locationDetails || '',
       maxJoiners: event.maxJoiners,
       isTicketed: event.isTicketed,
       ticketPrice: event.ticketPrice,
       currency: event.currency,
-      acceptsDonations: event.acceptsDonations || false,
-      selectedDonationAddrs: hydrateDonationAddresses(event.donationAddress, event.donationCurrency, event.donationAddresses),
+      visibility: 'PUBLIC',
+      eventType: 'public',
       needsVolunteers: event.needsVolunteers || false,
       volunteerRoles: event.volunteerRoles ? (Array.isArray(event.volunteerRoles) ? event.volunteerRoles.join(', ') : '') : '',
-      volunteerDescription: event.volunteerDescription || ''
+      volunteerDescription: event.volunteerDescription || '',
+      acceptsDonations: event.acceptsDonations || false,
+      selectedDonationAddrs: hydrateDonationAddresses(event.donationAddress, event.donationCurrency, event.donationAddresses),
+      hashtags: event.hashtags || [],
+      planId: event.planId || null,
+      planTitle: event.planTitle || null,
+      groupId: event.group?.id || null,
+      groupTitle: event.group?.name || null,
+      schoolId: null,
+      shopId: null,
     })
     setIsEditing(true)
   }
 
-  const cancelEditing = () => {
-    setIsEditing(false)
-  }
-
-  const handleSave = async () => {
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault()
     if (!event) return
     setSaving(true)
     try {
-      let volunteerRoles = editForm.volunteerRoles
-      if (editForm.needsVolunteers && volunteerRoles) {
+      let volunteerRoles = editFormData.volunteerRoles
+      if (editFormData.needsVolunteers && volunteerRoles) {
         try { JSON.parse(volunteerRoles) } catch {
           volunteerRoles = JSON.stringify(volunteerRoles.split(',').map(r => r.trim()).filter(Boolean))
         }
       }
 
-      const legacy = donationAddressesToLegacy(editForm.acceptsDonations ? editForm.selectedDonationAddrs : [])
+      const legacy = donationAddressesToLegacy(editFormData.acceptsDonations ? editFormData.selectedDonationAddrs : [])
       const res = await fetch(`/api/events/${event.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...editForm,
-          volunteerRoles,
-          ticketPrice: editForm.ticketPrice ? parseFloat(String(editForm.ticketPrice)) : 0,
+          title: editFormData.title,
+          description: editFormData.description,
+          eventCategory: editFormData.eventCategory,
+          eventDate: editFormData.eventDate || undefined,
+          endDate: editFormData.endDate || undefined,
+          location: editFormData.location,
+          locationDetails: editFormData.locationDetails,
+          maxJoiners: editFormData.maxJoiners,
+          isTicketed: editFormData.isTicketed,
+          ticketPrice: editFormData.ticketPrice,
+          currency: editFormData.currency,
+          acceptsDonations: editFormData.acceptsDonations,
           ...legacy,
-          donationAddresses: editForm.acceptsDonations ? serializeDonationAddresses(editForm.selectedDonationAddrs) : null,
+          donationAddresses: editFormData.acceptsDonations ? serializeDonationAddresses(editFormData.selectedDonationAddrs) : null,
+          needsVolunteers: editFormData.needsVolunteers,
+          volunteerRoles,
+          volunteerDescription: editFormData.volunteerDescription,
+          hashtags: editFormData.hashtags,
+          planId: editFormData.planId,
+          groupId: editFormData.groupId,
         })
       })
 
       if (res.ok) {
         const updated = await res.json()
-        setEvent(prev => prev ? { ...prev, ...updated, volunteerRoles: editForm.needsVolunteers ? editForm.volunteerRoles.split(',').map(r => r.trim()).filter(Boolean) : [] } : prev)
+        setEvent(prev => prev ? { ...prev, ...updated, volunteerRoles: editFormData.needsVolunteers ? editFormData.volunteerRoles.split(',').map(r => r.trim()).filter(Boolean) : [] } : prev)
         success('Event updated')
         setIsEditing(false)
       } else {
@@ -357,81 +370,15 @@ function EventDetailContent() {
 
             {isEditing ? (
               <>
-                <div className={styles.field}>
-                  <label>Title</label>
-                  <input type="text" value={editForm.title} onChange={e => setEditForm(p => ({ ...p, title: e.target.value }))} />
-                </div>
-                <div className={styles.field}>
-                  <label>Description</label>
-                  <textarea rows={4} value={editForm.description} onChange={e => setEditForm(p => ({ ...p, description: e.target.value }))} />
-                </div>
-                <div className={styles.field}>
-                  <label>Location</label>
-                  <input type="text" value={editForm.location} onChange={e => setEditForm(p => ({ ...p, location: e.target.value }))} />
-                </div>
-                <div className={styles.field}>
-                  <label>Location Details</label>
-                  <input type="text" value={editForm.locationDetails} onChange={e => setEditForm(p => ({ ...p, locationDetails: e.target.value }))} />
-                </div>
-                <div className={styles.field}>
-                  <label>Max Attendees (0 = unlimited)</label>
-                  <input type="number" value={editForm.maxJoiners} onChange={e => setEditForm(p => ({ ...p, maxJoiners: parseInt(e.target.value) || 0 }))} min={0} />
-                </div>
-                <div className={styles.checkboxField}>
-                  <input type="checkbox" id="edit-ticketed" checked={editForm.isTicketed} onChange={e => setEditForm(p => ({ ...p, isTicketed: e.target.checked }))} />
-                  <label htmlFor="edit-ticketed">Ticketed Event</label>
-                </div>
-                {editForm.isTicketed && (
-                  <div className={styles.row}>
-                    <div className={styles.field}>
-                      <label>Ticket Price</label>
-                      <input type="number" value={editForm.ticketPrice} onChange={e => setEditForm(p => ({ ...p, ticketPrice: parseFloat(e.target.value) || 0 }))} min={0} step={0.01} />
-                    </div>
-                    <div className={styles.field}>
-                      <label>Currency</label>
-                      <select value={editForm.currency} onChange={e => setEditForm(p => ({ ...p, currency: e.target.value }))}>
-                        <option value="USD">USD</option>
-                        <option value="EUR">EUR</option>
-                        <option value="GBP">GBP</option>
-                        <option value="XMR">XMR</option>
-                        <option value="XTM">XTM</option>
-                      </select>
-                    </div>
-                  </div>
-                )}
-                <div className={styles.checkboxField}>
-                  <input type="checkbox" id="edit-donations" checked={editForm.acceptsDonations} onChange={e => setEditForm(p => ({ ...p, acceptsDonations: e.target.checked }))} />
-                  <label htmlFor="edit-donations">Accept Donations</label>
-                </div>
-                {editForm.acceptsDonations && (
-                  <DonationAddressPicker
-                    savedAddresses={userDonationAddrs}
-                    selectedAddresses={editForm.selectedDonationAddrs}
-                    onAddressesChange={(addrs) => setEditForm(p => ({ ...p, selectedDonationAddrs: addrs }))}
-                  />
-                )}
-                <div className={styles.checkboxField}>
-                  <input type="checkbox" id="edit-volunteers" checked={editForm.needsVolunteers} onChange={e => setEditForm(p => ({ ...p, needsVolunteers: e.target.checked }))} />
-                  <label htmlFor="edit-volunteers">Recruit Volunteers</label>
-                </div>
-                {editForm.needsVolunteers && (
-                  <>
-                    <div className={styles.field}>
-                      <label>Volunteer Roles (comma separated)</label>
-                      <input type="text" value={editForm.volunteerRoles} onChange={e => setEditForm(p => ({ ...p, volunteerRoles: e.target.value }))} placeholder="e.g., Setup, Cleanup" />
-                    </div>
-                    <div className={styles.field}>
-                      <label>Volunteer Description</label>
-                      <textarea rows={2} value={editForm.volunteerDescription} onChange={e => setEditForm(p => ({ ...p, volunteerDescription: e.target.value }))} />
-                    </div>
-                  </>
-                )}
-                <div className={styles.editActions}>
-                  <button onClick={cancelEditing} className="btn-secondary" disabled={saving}>Cancel</button>
-                  <button onClick={handleSave} className="btn-primary" disabled={saving}>
-                    {saving ? 'Saving...' : 'Save'}
-                  </button>
-                </div>
+                <EventFormFields
+                  formData={editFormData}
+                  onChange={(patch) => setEditFormData(prev => ({ ...prev, ...patch }))}
+                  onSubmit={handleSave}
+                  mode="edit"
+                  saving={saving}
+                  onCancel={() => setIsEditing(false)}
+                  submitLabel="Save"
+                />
               </>
             ) : (
               <>

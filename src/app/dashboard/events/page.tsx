@@ -3,8 +3,11 @@
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useToast } from '@/context/ToastContext'
+import EventFormFields, { getDefaultEventFormData } from '@/components/EventFormFields'
+import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import styles from './events.module.css'
 import type { DashboardEvent } from '@/types/event'
+import type { EventFormData } from '@/components/EventFormFields'
 
 const TYPE_CONFIG: Record<string, { icon: string; label: string; color: string }> = {
   ORGANIZED: { icon: '🎯', label: 'Organized', color: '#00d9ff' },
@@ -34,6 +37,41 @@ export default function DashboardEvents() {
   const [selectedEvent, setSelectedEvent] = useState<DashboardEvent | null>(null)
   const [editingEvent, setEditingEvent] = useState<DashboardEvent | null>(null)
   const [saving, setSaving] = useState(false)
+  const [editFormData, setEditFormData] = useState<EventFormData>(() => getDefaultEventFormData())
+
+  useEffect(() => {
+    if (editingEvent) {
+      setEditFormData({
+        title: editingEvent.title,
+        description: editingEvent.description || '',
+        imageUrl: '',
+        images: [],
+        eventCategory: editingEvent.eventCategory || 'GENERAL',
+        eventDate: editingEvent.eventDate ? editingEvent.eventDate.slice(0, 16) : '',
+        endDate: '',
+        location: editingEvent.location || '',
+        locationDetails: editingEvent.locationDetails || '',
+        maxJoiners: editingEvent.maxJoiners,
+        isTicketed: editingEvent.isTicketed,
+        ticketPrice: editingEvent.ticketPrice || 0,
+        currency: editingEvent.currency || 'USD',
+        visibility: 'PUBLIC',
+        eventType: 'public',
+        needsVolunteers: false,
+        volunteerRoles: '',
+        volunteerDescription: '',
+        acceptsDonations: editingEvent.acceptsDonations || false,
+        selectedDonationAddrs: [],
+        hashtags: editingEvent.hashtags || [],
+        planId: editingEvent.planId || null,
+        planTitle: editingEvent.planTitle || null,
+        groupId: editingEvent.groupId || null,
+        groupTitle: editingEvent.groupTitle || null,
+        schoolId: null,
+        shopId: null,
+      })
+    }
+  }, [editingEvent])
 
   const handleDeleteEvent = async (id: string, eventType: string) => {
     if (!confirm('Delete this event? This cannot be undone.')) return
@@ -56,17 +94,49 @@ export default function DashboardEvents() {
     }
   }
 
-  const handleUpdateEvent = async (id: string, data: Partial<DashboardEvent>) => {
+  const handleUpdateEvent = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingEvent) return
     setSaving(true)
     try {
-      const res = await fetch(`/api/events/${id}`, {
+      let volunteerRoles = editFormData.volunteerRoles
+      if (editFormData.needsVolunteers && volunteerRoles) {
+        try { JSON.parse(volunteerRoles) } catch {
+          volunteerRoles = JSON.stringify(volunteerRoles.split(',').map(r => r.trim()).filter(Boolean))
+        }
+      }
+
+      const legacy = donationAddressesToLegacy(editFormData.acceptsDonations ? editFormData.selectedDonationAddrs : [])
+      const res = await fetch(`/api/events/${editingEvent.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify({
+          title: editFormData.title,
+          description: editFormData.description,
+          eventCategory: editFormData.eventCategory,
+          eventDate: editFormData.eventDate || undefined,
+          endDate: editFormData.endDate || undefined,
+          location: editFormData.location,
+          locationDetails: editFormData.locationDetails,
+          maxJoiners: editFormData.maxJoiners,
+          isTicketed: editFormData.isTicketed,
+          ticketPrice: editFormData.ticketPrice,
+          currency: editFormData.currency,
+          acceptsDonations: editFormData.acceptsDonations,
+          ...legacy,
+          donationAddresses: editFormData.acceptsDonations ? serializeDonationAddresses(editFormData.selectedDonationAddrs) : null,
+          needsVolunteers: editFormData.needsVolunteers,
+          volunteerRoles,
+          volunteerDescription: editFormData.volunteerDescription,
+          hashtags: editFormData.hashtags,
+          planId: editFormData.planId,
+          groupId: editFormData.groupId,
+        })
       })
       if (res.ok) {
         success('Event updated')
         setEditingEvent(null)
+        setSelectedEvent(null)
         fetchAll()
       } else {
         error('Failed to update')
@@ -465,89 +535,19 @@ export default function DashboardEvents() {
               <>
                 <div className={styles.eventModalHeader}>
                   <h2>✏️ Edit Event</h2>
-                  <button onClick={() => setEditingEvent(null)} className={styles.closeBtn}>✕</button>
+                  <button onClick={() => { setEditingEvent(null); setSelectedEvent(null) }} className={styles.closeBtn}>✕</button>
                 </div>
-                <form onSubmit={(e) => {
-                  e.preventDefault()
-                  const formData = new FormData(e.currentTarget)
-                  const acceptsDonations = formData.get('acceptsDonations') === 'on'
-                  const isTicketed = formData.get('isTicketed') === 'on'
-                  const donationAddr = formData.get('donationAddress') as string
-                  const donationCurr = formData.get('donationCurrency') as string
-                  handleUpdateEvent(editingEvent.id, {
-                    title: formData.get('title') as string,
-                    description: formData.get('description') as string || undefined,
-                    location: formData.get('location') as string || undefined,
-                    eventDate: formData.get('eventDate') as string || undefined,
-                    eventCategory: formData.get('eventCategory') as string || undefined,
-                    isTicketed,
-                    ticketPrice: isTicketed ? parseFloat(formData.get('ticketPrice') as string) || 0 : 0,
-                    acceptsDonations,
-                    donationAddress: acceptsDonations ? donationAddr || undefined : undefined,
-                    donationCurrency: acceptsDonations ? donationCurr || undefined : undefined,
-                  })
-                }} className={styles.editForm}>
-                  <div className="form-group">
-                    <label>Title</label>
-                    <input name="title" defaultValue={editingEvent.title} required />
-                  </div>
-                  <div className="form-group">
-                    <label>Date</label>
-                    <input name="eventDate" type="datetime-local" defaultValue={editingEvent.eventDate ? editingEvent.eventDate.slice(0, 16) : ''} />
-                  </div>
-                  <div className="form-group">
-                    <label>Location</label>
-                    <input name="location" defaultValue={editingEvent.location || ''} />
-                  </div>
-                  <div className="form-group">
-                    <label>Description</label>
-                    <textarea name="description" defaultValue={editingEvent.description || ''} rows={4} />
-                  </div>
-                  <div className="form-group">
-                    <label className={styles.checkboxLabel}>
-                      <input type="checkbox" name="isTicketed" defaultChecked={editingEvent.isTicketed} />
-                      Require Tickets
-                    </label>
-                  </div>
-                  <div className="form-group">
-                    <label>Ticket Price</label>
-                    <input name="ticketPrice" type="number" step="0.01" defaultValue={editingEvent.ticketPrice || 0} placeholder="0.00" />
-                  </div>
-                  <div className="form-group">
-                    <label>Category</label>
-                    <select name="eventCategory" defaultValue={editingEvent.eventCategory || 'GENERAL'}>
-                      <option value="GENERAL">General</option>
-                      <option value="GROUP">Group</option>
-                      <option value="SCHOOL">School</option>
-                      <option value="SHOP">Shop</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label className={styles.checkboxLabel}>
-                      <input type="checkbox" name="acceptsDonations" defaultChecked={editingEvent.acceptsDonations} />
-                      Accept Donations
-                    </label>
-                  </div>
-                  <div className="form-group">
-                    <label>Donation Address (crypto)</label>
-                    <input name="donationAddress" defaultValue={editingEvent.donationAddress || ''} placeholder="0x..." />
-                    <small style={{color: 'var(--text-secondary)'}}>Custom crypto address (ETH/SOL), or leave empty to use profile default</small>
-                  </div>
-                  <div className="form-group">
-                    <label>Donation Currency</label>
-                    <select name="donationCurrency" defaultValue={editingEvent.donationCurrency || 'ETH'}>
-                      <option value="ETH">ETH</option>
-                      <option value="SOL">SOL</option>
-                      <option value="USDT">USDT</option>
-                    </select>
-                  </div>
-                  <div className={styles.eventModalActions}>
-                    <button type="button" onClick={() => setEditingEvent(null)} className="btn-ghost">Cancel</button>
-                    <button type="submit" className="btn-primary" disabled={saving}>
-                      {saving ? 'Saving...' : 'Save Changes'}
-                    </button>
-                  </div>
-                </form>
+                <div>
+                  <EventFormFields
+                    formData={editFormData}
+                    onChange={(patch) => setEditFormData(prev => ({ ...prev, ...patch }))}
+                    onSubmit={handleUpdateEvent}
+                    mode="edit"
+                    saving={saving}
+                    onCancel={() => { setEditingEvent(null); setSelectedEvent(null) }}
+                    submitLabel="Save Changes"
+                  />
+                </div>
               </>
             )}
           </div>

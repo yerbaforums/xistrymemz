@@ -1,46 +1,20 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
-import { useDonationAddresses } from '@/hooks/useDonationAddresses'
-import DonationAddressPicker from '@/components/DonationAddressPicker'
-import ImageUploader from '@/components/ImageUploader'
+import EventFormFields, { getDefaultEventFormData } from '@/components/EventFormFields'
 import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
-import type { DonationAddr } from '@/types/product'
 import { getEventTemplateById } from '@/lib/event-templates'
-import HashtagInput from '@/components/HashtagInput'
-import { EVENT_CATEGORIES, EVENT_CATEGORY_MAP } from '@/lib/event-categories'
+import type { EventFormData } from '@/components/EventFormFields'
 
 export function EventForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { success, error } = useToast()
   const [loading, setLoading] = useState(false)
-  const userDonationAddrs = useDonationAddresses()
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    eventCategory: 'GENERAL',
-    eventDate: '',
-    endDate: '',
-    location: '',
-    locationDetails: '',
-    maxJoiners: 0,
-    isTicketed: false,
-    ticketPrice: 0,
-    currency: 'USD',
-    visibility: 'PUBLIC',
-    eventType: 'public',
-    needsVolunteers: false,
-    volunteerRoles: '',
-    volunteerDescription: '',
-    acceptsDonations: false,
-    selectedDonationAddrs: [] as DonationAddr[],
-    hashtags: [] as string[],
-    images: [] as string[]
-  })
+  const [formData, setFormData] = useState<EventFormData>(() => getDefaultEventFormData())
 
   useEffect(() => {
     const templateId = searchParams.get('template')
@@ -62,17 +36,9 @@ export function EventForm() {
     }
   }, [searchParams])
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
-    }))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!formData.title.trim()) {
       error('Title is required')
       return
@@ -92,14 +58,28 @@ export function EventForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
+          title: formData.title,
+          description: formData.description,
           imageUrl: formData.images[0] || null,
-          volunteerRoles,
-          maxJoiners: formData.maxJoiners ? parseInt(String(formData.maxJoiners)) : 0,
-          ticketPrice: formData.ticketPrice ? parseFloat(String(formData.ticketPrice)) : 0,
+          eventCategory: formData.eventCategory,
+          eventDate: formData.eventDate || undefined,
+          endDate: formData.endDate || undefined,
+          location: formData.location,
+          locationDetails: formData.locationDetails,
+          maxJoiners: formData.maxJoiners,
+          isTicketed: formData.isTicketed,
+          ticketPrice: formData.ticketPrice,
+          currency: formData.currency,
+          visibility: formData.visibility,
+          eventType: formData.eventType,
+          planId: formData.planId,
+          groupId: formData.groupId,
           acceptsDonations: formData.acceptsDonations,
           ...legacy,
           donationAddresses: formData.acceptsDonations ? serializeDonationAddresses(formData.selectedDonationAddrs) : null,
+          needsVolunteers: formData.needsVolunteers,
+          volunteerRoles,
+          volunteerDescription: formData.volunteerDescription,
           hashtags: formData.hashtags
         })
       })
@@ -118,284 +98,30 @@ export function EventForm() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [formData, success, error, router])
 
   return (
-    <form onSubmit={handleSubmit} className={styles.form}>
-      <div className={styles.eventTypeToggle}>
-        <button
-          type="button"
-          className={`${styles.typeBtn} ${formData.eventType === 'personal' ? styles.active : ''}`}
-          onClick={() => setFormData(prev => ({ ...prev, eventType: 'personal', visibility: 'PRIVATE' }))}
-        >
-          Personal
-        </button>
-        <button
-          type="button"
-          className={`${styles.typeBtn} ${formData.eventType === 'public' ? styles.active : ''}`}
-          onClick={() => setFormData(prev => ({ ...prev, eventType: 'public', visibility: 'PUBLIC' }))}
-        >
-          Public Event
-        </button>
-      </div>
-
-      <div className={styles.field}>
-        <label htmlFor="title">Title *</label>
-        <input
-          type="text"
-          id="title"
-          name="title"
-          value={formData.title}
-          onChange={handleChange}
-          placeholder="Event title"
-          required
-        />
-      </div>
-
-      <div className={styles.field}>
-        <label htmlFor="description">Description</label>
-        <textarea
-          id="description"
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          placeholder="Describe your event..."
-          rows={4}
-        />
-      </div>
-
-      <div className={styles.field}>
-        <label>Event Image</label>
-        <ImageUploader
-          images={formData.images}
-          onChange={(urls) => setFormData(prev => ({ ...prev, images: urls }))}
-          maxImages={1}
-        />
-      </div>
-
-      <div className={styles.row}>
-        <div className={styles.field}>
-          <label htmlFor="eventCategory">Category</label>
-          <select id="eventCategory" name="eventCategory" value={formData.eventCategory} onChange={handleChange}>
-            {EVENT_CATEGORIES.map(cat => (
-              <option key={cat.value} value={cat.value}>{cat.label}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className={styles.field}>
-          <label htmlFor="maxJoiners">Max Attendees (0 = unlimited)</label>
-          <input
-            type="number"
-            id="maxJoiners"
-            name="maxJoiners"
-            value={formData.maxJoiners}
-            onChange={handleChange}
-            min={0}
-          />
-        </div>
-      </div>
-
-      <div className={styles.row}>
-        <div className={styles.field}>
-          <label htmlFor="eventDate">Start Date/Time</label>
-          <input
-            type="datetime-local"
-            id="eventDate"
-            name="eventDate"
-            value={formData.eventDate}
-            onChange={handleChange}
-          />
-        </div>
-
-        <div className={styles.field}>
-          <label htmlFor="endDate">End Date/Time</label>
-          <input
-            type="datetime-local"
-            id="endDate"
-            name="endDate"
-            value={formData.endDate}
-            onChange={handleChange}
-          />
-        </div>
-      </div>
-
-      <div className={styles.field}>
-        <label htmlFor="location">Location</label>
-        <input
-          type="text"
-          id="location"
-          name="location"
-          value={formData.location}
-          onChange={handleChange}
-          placeholder="City, address, or venue name"
-        />
-      </div>
-
-      <div className={styles.field}>
-        <label htmlFor="locationDetails">Location Details</label>
-        <input
-          type="text"
-          id="locationDetails"
-          name="locationDetails"
-          value={formData.locationDetails}
-          onChange={handleChange}
-          placeholder="Additional details (room, floor, etc.)"
-        />
-      </div>
-
-      <div className={styles.ticketing}>
-        <div className={styles.checkboxField}>
-          <input
-            type="checkbox"
-            id="isTicketed"
-            name="isTicketed"
-            checked={formData.isTicketed}
-            onChange={handleChange}
-          />
-          <label htmlFor="isTicketed">Ticketed Event</label>
-        </div>
-
-        {formData.isTicketed && (
-          <div className={styles.row}>
-            <div className={styles.field}>
-              <label htmlFor="ticketPrice">Ticket Price</label>
-              <input
-                type="number"
-                id="ticketPrice"
-                name="ticketPrice"
-                value={formData.ticketPrice}
-                onChange={handleChange}
-                min={0}
-                step={0.01}
-              />
-            </div>
-            <div className={styles.field}>
-              <label htmlFor="currency">Currency</label>
-              <select id="currency" name="currency" value={formData.currency} onChange={handleChange}>
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-                <option value="GBP">GBP</option>
-                <option value="XMR">XMR</option>
-                <option value="XTM">XTM</option>
-              </select>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className={styles.volunteering}>
-        <div className={styles.checkboxField}>
-          <input
-            type="checkbox"
-            id="needsVolunteers"
-            name="needsVolunteers"
-            checked={formData.needsVolunteers}
-            onChange={handleChange}
-          />
-          <label htmlFor="needsVolunteers">Recruit Volunteers</label>
-        </div>
-
-        {formData.needsVolunteers && (
-          <>
-            <div className={styles.field}>
-              <label htmlFor="volunteerRoles">Volunteer Roles (comma separated)</label>
-              <input
-                type="text"
-                id="volunteerRoles"
-                name="volunteerRoles"
-                value={formData.volunteerRoles}
-                onChange={handleChange}
-                placeholder="e.g., Setup, Cleanup, Photography"
-              />
-            </div>
-            <div className={styles.field}>
-              <label htmlFor="volunteerDescription">Volunteer Description</label>
-              <textarea
-                id="volunteerDescription"
-                name="volunteerDescription"
-                value={formData.volunteerDescription}
-                onChange={handleChange}
-                placeholder="Describe what volunteers will do..."
-                rows={2}
-              />
-            </div>
-          </>
-        )}
-      </div>
-
-      <div className={styles.field}>
-        <label>Hashtags</label>
-        <HashtagInput value={formData.hashtags} onChange={(tags) => setFormData(prev => ({ ...prev, hashtags: tags }))} placeholder="Add hashtags..." />
-      </div>
-
-      <details className={styles.eventSettings}>
-        <summary className={styles.settingsSummary}>Event Settings</summary>
-        <div className={styles.settingsBody}>
-          <div className={styles.checkboxField}>
-            <input
-              type="checkbox"
-              id="acceptsDonations"
-              name="acceptsDonations"
-              checked={formData.acceptsDonations}
-              onChange={handleChange}
-            />
-            <label htmlFor="acceptsDonations">Accept Donations</label>
-          </div>
-
-          {formData.acceptsDonations && (
-            <div className={styles.donationFields}>
-              <DonationAddressPicker
-                savedAddresses={userDonationAddrs}
-                selectedAddresses={formData.selectedDonationAddrs}
-                onAddressesChange={(addrs) => setFormData(prev => ({ ...prev, selectedDonationAddrs: addrs }))}
-              />
-            </div>
-          )}
-        </div>
-      </details>
+    <div>
+      <EventFormFields
+        formData={formData}
+        onChange={(patch) => setFormData(prev => ({ ...prev, ...patch }))}
+        onSubmit={handleSubmit}
+        mode="create"
+        saving={loading}
+        onCancel={() => router.back()}
+      />
 
       {searchParams.get('template') && (
         <div className={styles.templateNotice}>
-          <span>📋 Template applied — fields pre-filled from &quot;{getEventTemplateById(searchParams.get('template') || '')?.name || 'template'}&quot;</span>
+          <span>📋 Template applied — fields pre-filled</span>
           <button type="button" onClick={() => {
             router.replace('/events/new')
-            setFormData({
-              title: '',
-              description: '',
-              eventCategory: 'GENERAL',
-              eventDate: '',
-              endDate: '',
-              location: '',
-              locationDetails: '',
-              maxJoiners: 0,
-              isTicketed: false,
-              ticketPrice: 0,
-              currency: 'USD',
-              visibility: 'PUBLIC',
-              eventType: 'public',
-              needsVolunteers: false,
-              volunteerRoles: '',
-              volunteerDescription: '',
-              acceptsDonations: false,
-              selectedDonationAddrs: [] as DonationAddr[],
-              hashtags: [],
-              images: []
-            })
+            setFormData(getDefaultEventFormData())
           }}>
             Clear Template
           </button>
         </div>
       )}
-
-      <div className={styles.actions}>
-        <button type="button" onClick={() => router.back()} className="btn-secondary">
-          Cancel
-        </button>
-        <button type="submit" disabled={loading} className="btn-primary">
-          {loading ? 'Creating...' : 'Create Event'}
-        </button>
-      </div>
-    </form>
+    </div>
   )
 }

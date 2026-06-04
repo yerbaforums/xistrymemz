@@ -155,6 +155,8 @@ export async function PUT(
       needsVolunteers,
       volunteerRoles,
       volunteerDescription,
+      schoolId,
+      shopId,
       hashtags
     } = validation.data
 
@@ -192,7 +194,9 @@ export async function PUT(
         donationAddresses: donationAddresses !== undefined ? (donationAddresses || null) : event.donationAddresses,
         needsVolunteers: needsVolunteers ?? event.needsVolunteers,
         volunteerRoles: volunteerRoles ?? event.volunteerRoles,
-        volunteerDescription: volunteerDescription ?? event.volunteerDescription
+        volunteerDescription: volunteerDescription ?? event.volunteerDescription,
+        schoolId: schoolId !== undefined ? schoolId : event.schoolId,
+        shopId: shopId !== undefined ? shopId : event.shopId
       }
     })
 

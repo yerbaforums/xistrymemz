@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Image from 'next/image'
 import ImageUploader from '@/components/ImageUploader'
+import AssetPicker from '@/components/AssetPicker'
+import type { UserAsset } from '@/components/AssetPicker'
 import styles from './CreatePinModal.module.css'
 
 const PIN_CATEGORIES = [
@@ -15,16 +17,6 @@ const PIN_CATEGORIES = [
   { value: 'JOBS', label: 'Jobs' },
   { value: 'FREE', label: 'Free' },
 ]
-
-interface UserAsset {
-  id: string
-  type: 'PRODUCT' | 'SERVICE' | 'EVENT' | 'GROUP' | 'PLAN'
-  title: string
-  image: string | null
-  location: string | null
-  latitude: number | null
-  longitude: number | null
-}
 
 const ASSET_ICONS: Record<string, string> = {
   PRODUCT: '🛒',
@@ -61,38 +53,7 @@ export default function CreatePinModal({ boardSlug, boardName, onClose, onCreate
   const [imageUrls, setImageUrls] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
-  const [assets, setAssets] = useState<UserAsset[]>([])
-  const [assetsLoading, setAssetsLoading] = useState(false)
   const [selectedAsset, setSelectedAsset] = useState<UserAsset | null>(null)
-  const [showAssetPicker, setShowAssetPicker] = useState(false)
-
-  useEffect(() => {
-    const fetchAssets = async () => {
-      setAssetsLoading(true)
-      try {
-        const res = await fetch('/api/user/assets')
-        if (res.ok) {
-          const data = await res.json()
-          setAssets(data.assets || [])
-        }
-      } catch {}
-      setAssetsLoading(false)
-    }
-    fetchAssets()
-  }, [])
-
-  const handleSelectAsset = (asset: UserAsset) => {
-    setSelectedAsset(asset === selectedAsset ? null : asset)
-    if (!title && asset.title) {
-      setTitle(asset.title)
-    }
-  }
-
-  const groupedAssets = assets.reduce<Record<string, UserAsset[]>>((acc, a) => {
-    if (!acc[a.type]) acc[a.type] = []
-    acc[a.type].push(a)
-    return acc
-  }, {})
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -193,71 +154,13 @@ export default function CreatePinModal({ boardSlug, boardName, onClose, onCreate
             <ImageUploader images={imageUrls} onChange={setImageUrls} maxImages={6} />
           </label>
 
-          <div className={styles.assetSection}>
-            <div className={styles.assetSectionHeader}>
-              <span className={styles.label}>Link an item (optional)</span>
-              <button
-                type="button"
-                className={styles.assetToggle}
-                onClick={() => setShowAssetPicker(!showAssetPicker)}
-              >
-                {showAssetPicker ? 'Hide' : `Choose (${assets.length})`}
-              </button>
-            </div>
-
-            {selectedAsset && (
-              <div className={styles.selectedAsset}>
-                <span>{ASSET_ICONS[selectedAsset.type] || '📌'}</span>
-                <span className={styles.selectedAssetTitle}>{selectedAsset.title}</span>
-                <span className={styles.selectedAssetType}>{selectedAsset.type}</span>
-                <button type="button" className={styles.clearAsset} onClick={() => setSelectedAsset(null)}>✕</button>
-              </div>
-            )}
-
-            {showAssetPicker && (
-              <div className={styles.assetPicker}>
-                {assetsLoading ? (
-                  <p className={styles.assetsLoading}>Loading your items...</p>
-                ) : assets.length === 0 ? (
-                  <p className={styles.assetsEmpty}>No items found. Create products, events, groups, or plans first.</p>
-                ) : (
-                  Object.entries(groupedAssets).map(([type, items]) => (
-                    <div key={type} className={styles.assetGroup}>
-                      <div className={styles.assetGroupTitle}>
-                        {ASSET_ICONS[type] || '📌'} {type.charAt(0) + type.slice(1).toLowerCase()}s ({items.length})
-                      </div>
-                      <div className={styles.assetGrid}>
-                        {items.map(asset => {
-                          const isSelected = selectedAsset?.id === asset.id && selectedAsset?.type === asset.type
-                          return (
-                            <button
-                              key={`${asset.type}-${asset.id}`}
-                              type="button"
-                              className={`${styles.assetCard} ${isSelected ? styles.assetCardSelected : ''}`}
-                              onClick={() => handleSelectAsset(asset)}
-                            >
-                              {asset.image ? (
-                                <div className={styles.assetCardImage}>
-                                  <Image src={asset.image} alt={asset.title} width={48} height={48} style={{ objectFit: 'cover' }} />
-                                </div>
-                              ) : (
-                                <div className={styles.assetCardIcon}>{ASSET_ICONS[asset.type] || '📌'}</div>
-                              )}
-                              <div className={styles.assetCardInfo}>
-                                <span className={styles.assetCardTitle}>{asset.title}</span>
-                                {asset.location && <span className={styles.assetCardLoc}>{asset.location}</span>}
-                              </div>
-                              {isSelected && <span className={styles.assetCheck}>✓</span>}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            )}
-          </div>
+          <AssetPicker
+            selectedAsset={selectedAsset}
+            onSelect={(asset) => {
+              setSelectedAsset(asset)
+              if (asset && !title) setTitle(asset.title)
+            }}
+          />
 
           <label className={styles.label}>
             Contact Name (optional)

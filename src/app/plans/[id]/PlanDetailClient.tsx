@@ -23,8 +23,10 @@ const PlanMarker = dynamic(() => import('react-leaflet').then(m => m.Marker), { 
 const PlanPopup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false })
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
+import EventFormFields, { getDefaultEventFormData } from '@/components/EventFormFields'
 import type { DonationAddr } from '@/types/product'
 import type { PlanGoal, PlanMilestone, PlanResource, PlanContribution, PlanJoiner } from '@/lib/plan-utils'
+import type { EventFormData } from '@/components/EventFormFields'
 import TranslateButton from '@/components/TranslateButton'
 import HashtagInput from '@/components/HashtagInput'
 
@@ -115,15 +117,7 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
   const [editDonationDescription, setEditDonationDescription] = useState(plan.donationDescription || '')
   const userDonationAddrs = useDonationAddresses()
 
-  const [eventTitle, setEventTitle] = useState('')
-  const [eventDesc, setEventDesc] = useState('')
-  const [eventCategory, setEventCategory] = useState('')
-  const [eventDate, setEventDate] = useState('')
-  const [eventLocation, setEventLocation] = useState('')
-  const [eventLocationDetails, setEventLocationDetails] = useState('')
-  const [eventMaxJoiners, setEventMaxJoiners] = useState(0)
-  const [eventIsTicketed, setEventIsTicketed] = useState(false)
-  const [eventTicketPrice, setEventTicketPrice] = useState(0)
+  const [eventFormData, setEventFormData] = useState<EventFormData>(() => getDefaultEventFormData())
   const [showStatusHistory, setShowStatusHistory] = useState(false)
   const [statusHistory, setStatusHistory] = useState<StatusHistoryEntry[]>([])
   const [showRollbackModal, setShowRollbackModal] = useState(false)
@@ -134,20 +128,38 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
   const openEventModal = (event?: PlanEvent) => {
     if (event) {
       setEditingEvent(event)
-      setEventTitle(event.title)
-      setEventDesc(event.description || '')
-      setEventCategory(event.eventCategory || '')
-      setEventDate(event.eventDate ? event.eventDate.slice(0, 16) : '')
-      setEventLocation(event.location || '')
-      setEventLocationDetails(event.locationDetails || '')
-      setEventMaxJoiners(event.maxJoiners)
-      setEventIsTicketed(event.isTicketed || false)
-      setEventTicketPrice(event.ticketPrice || 0)
+      setEventFormData({
+        title: event.title,
+        description: event.description || '',
+        imageUrl: '',
+        images: [],
+        eventCategory: event.eventCategory || 'GENERAL',
+        eventDate: event.eventDate ? event.eventDate.slice(0, 16) : '',
+        endDate: event.endDate ? event.endDate.slice(0, 16) : '',
+        location: event.location || '',
+        locationDetails: event.locationDetails || '',
+        maxJoiners: event.maxJoiners,
+        isTicketed: event.isTicketed || false,
+        ticketPrice: event.ticketPrice || 0,
+        currency: event.currency || 'USD',
+        visibility: 'PUBLIC',
+        eventType: 'public',
+        needsVolunteers: false,
+        volunteerRoles: '',
+        volunteerDescription: '',
+        acceptsDonations: false,
+        selectedDonationAddrs: [],
+        hashtags: [],
+        planId: plan.id,
+        planTitle: plan.title || null,
+        groupId: null,
+        groupTitle: null,
+        schoolId: null,
+        shopId: null,
+      })
     } else {
       setEditingEvent(null)
-      setEventTitle(''); setEventDesc(''); setEventCategory(''); setEventDate('')
-      setEventLocation(''); setEventLocationDetails(''); setEventMaxJoiners(0)
-      setEventIsTicketed(false); setEventTicketPrice(0)
+      setEventFormData(getDefaultEventFormData())
     }
     setShowEventModal(true)
   }
@@ -250,30 +262,58 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
     try {
       const url = editingEvent ? `/api/plans/${plan.id}/events/${editingEvent.id}` : `/api/plans/${plan.id}/events`
       const method = editingEvent ? 'PUT' : 'POST'
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: eventTitle, description: eventDesc, eventCategory: eventCategory || null,
-          eventDate: eventDate ? new Date(eventDate).toISOString() : null,
-          location: eventLocation || null, locationDetails: eventLocationDetails || null,
-          maxJoiners: eventMaxJoiners || 0, isTicketed: eventIsTicketed,
-          ticketPrice: eventTicketPrice, currency: 'USD'
-        })
-      })
+
+      let volunteerRoles = eventFormData.volunteerRoles
+      if (eventFormData.needsVolunteers && volunteerRoles) {
+        try { JSON.parse(volunteerRoles) } catch {
+          volunteerRoles = JSON.stringify(volunteerRoles.split(',').map(r => r.trim()).filter(Boolean))
+        }
+      }
+
+      const payload: Record<string, unknown> = {
+        title: eventFormData.title,
+        description: eventFormData.description,
+        eventCategory: eventFormData.eventCategory,
+        eventDate: eventFormData.eventDate ? new Date(eventFormData.eventDate).toISOString() : null,
+        endDate: eventFormData.endDate ? new Date(eventFormData.endDate).toISOString() : null,
+        location: eventFormData.location || null,
+        locationDetails: eventFormData.locationDetails || null,
+        maxJoiners: eventFormData.maxJoiners || 0,
+        isTicketed: eventFormData.isTicketed,
+        ticketPrice: eventFormData.ticketPrice,
+        currency: eventFormData.currency,
+        needsVolunteers: eventFormData.needsVolunteers,
+        volunteerRoles: eventFormData.needsVolunteers ? volunteerRoles : null,
+        volunteerDescription: eventFormData.needsVolunteers ? eventFormData.volunteerDescription : null,
+        hashtags: eventFormData.hashtags,
+      }
+
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       if (res.ok) {
         const updatedEvent = await res.json()
         if (editingEvent) {
-          setPlan({ ...plan, events: plan.events.map(ev => ev.id === editingEvent.id ? { ...ev, ...updatedEvent, createdAt: ev.createdAt, updatedAt: ev.updatedAt } : ev) })
+          setPlan(prev => ({ ...prev, events: prev.events.map(ev => ev.id === editingEvent!.id ? { ...ev, ...updatedEvent, createdAt: ev.createdAt, updatedAt: ev.updatedAt } : ev) }))
         } else {
           const now = new Date().toISOString()
-          setPlan({ ...plan, events: [...plan.events, { ...updatedEvent, joiners: [], createdAt: now, updatedAt: now } as PlanEvent] })
+          const newEvent: PlanEvent = {
+            id: updatedEvent.id, title: eventFormData.title, description: eventFormData.description || null,
+            eventCategory: eventFormData.eventCategory || null, eventDate: eventFormData.eventDate ? new Date(eventFormData.eventDate).toISOString() : null,
+            endDate: eventFormData.endDate ? new Date(eventFormData.endDate).toISOString() : null,
+            location: eventFormData.location || null, locationDetails: eventFormData.locationDetails || null,
+            latitude: null, longitude: null, maxJoiners: eventFormData.maxJoiners || 0,
+            isTicketed: eventFormData.isTicketed, ticketPrice: eventFormData.ticketPrice, currency: eventFormData.currency,
+            pinned: false, joiners: [], createdAt: now, updatedAt: now
+          }
+          setPlan(prev => ({ ...prev, events: [...prev.events, newEvent] }))
         }
         setShowEventModal(false)
-        setEditingEvent(null)
+      } else {
+        const data = await res.json()
+        alert(data.error || 'Failed to save event')
       }
     } catch (err) {
       console.error(err)
+      alert('Failed to save event')
     } finally {
       setLoading(false)
     }
@@ -842,69 +882,17 @@ donationDescription={plan.donationDescription}
         <div className="modal-overlay" onClick={() => setShowEventModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <h2>{editingEvent ? 'Edit Event' : 'Add Event'}</h2>
-            <form onSubmit={handleCreateEvent}>
-              <div className="form-group">
-                <label>Event Title *</label>
-                <input type="text" value={eventTitle} onChange={e => setEventTitle(e.target.value)} placeholder="Event title" required />
-              </div>
-              <div className="form-group">
-                <label>Description</label>
-                <textarea value={eventDesc} onChange={e => setEventDesc(e.target.value)} placeholder="Event description" rows={3} />
-              </div>
-              <div className="form-group">
-                <label>Category</label>
-                <select value={eventCategory} onChange={e => setEventCategory(e.target.value)}>
-                  <option value="">Select Category</option>
-                  <option value="WEDDING">Wedding</option>
-                  <option value="CORPORATE">Corporate Event</option>
-                  <option value="BIRTHDAY">Birthday Party</option>
-                  <option value="CONFERENCE">Conference</option>
-                  <option value="CONCERT">Concert</option>
-                  <option value="EXHIBITION">Exhibition</option>
-                  <option value="SPORTS">Sports Event</option>
-                  <option value="OTHER">Other</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Date</label>
-                <input type="datetime-local" value={eventDate} onChange={e => setEventDate(e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label>Location Type</label>
-                <select value={eventLocation} onChange={e => setEventLocation(e.target.value)}>
-                  <option value="">Select</option>
-                  <option value="INDOOR">Indoor</option>
-                  <option value="OUTDOOR">Outdoor</option>
-                  <option value="VENUE">External Venue</option>
-                  <option value="ONLINE">Online</option>
-                  <option value="HYBRID">Hybrid</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Location Details</label>
-                <textarea value={eventLocationDetails} onChange={e => setEventLocationDetails(e.target.value)} placeholder="Address, venue name, link, etc." rows={2} />
-              </div>
-              <div className="form-group">
-                <label>Max Joiners (0 = unlimited)</label>
-                <input type="number" value={eventMaxJoiners} onChange={e => setEventMaxJoiners(parseInt(e.target.value) || 0)} min={0} />
-              </div>
-              <div className="form-group">
-                <label className="checkbox-label">
-                  <input type="checkbox" checked={eventIsTicketed} onChange={e => setEventIsTicketed(e.target.checked)} />
-                  <span>Ticketed Event</span>
-                </label>
-              </div>
-              {eventIsTicketed && (
-                <div className="form-group">
-                  <label>Ticket Price (USD)</label>
-                  <input type="number" value={eventTicketPrice} onChange={e => setEventTicketPrice(parseFloat(e.target.value) || 0)} min={0} step={0.01} />
-                </div>
-              )}
-              <div className={styles.modalActions}>
-                <button type="button" onClick={() => setShowEventModal(false)} className="btn-ghost">Cancel</button>
-                <button type="submit" className="btn-primary" disabled={loading}>{loading ? 'Saving...' : (editingEvent ? 'Update' : 'Create')}</button>
-              </div>
-            </form>
+            <EventFormFields
+              formData={eventFormData}
+              onChange={(patch) => setEventFormData(prev => ({ ...prev, ...patch }))}
+              onSubmit={handleCreateEvent}
+              mode="edit"
+              saving={loading}
+              onCancel={() => setShowEventModal(false)}
+              submitLabel={editingEvent ? 'Update' : 'Create'}
+              fixedPlanId={plan.id}
+              fixedPlanTitle={plan.title || undefined}
+            />
           </div>
         </div>
       )}

@@ -4,10 +4,12 @@ import { createContext, useContext, useState, useCallback, type ReactNode } from
 import { useRouter } from 'next/navigation'
 import Modal from '@/components/ui/Modal'
 import ImageUploader from '@/components/ImageUploader'
+import EventFormFields, { getDefaultEventFormData } from '@/components/EventFormFields'
 import { useToast } from '@/context/ToastContext'
 import { CONTENT_TEMPLATES, CONTENT_TYPE_MAP } from '@/lib/content-templates'
 import { PRODUCT_CATEGORIES, PRODUCT_CONDITIONS, PRODUCT_TYPES } from '@/lib/product-categories'
 import styles from './QuickCreateModal.module.css'
+import type { EventFormData } from '@/components/EventFormFields'
 
 interface QuickCreateContextType {
   open: (tab?: string) => void
@@ -341,29 +343,29 @@ function ProductForm({ onDone }: { onDone: () => void }) {
 function EventForm({ onDone }: { onDone: () => void }) {
   const { success, error } = useToast()
   const router = useRouter()
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [date, setDate] = useState('')
-  const [time, setTime] = useState('')
-  const [location, setLocation] = useState('')
+  const [formData, setFormData] = useState<EventFormData>(() => getDefaultEventFormData())
   const [creating, setCreating] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!title.trim()) return
     setCreating(true)
     try {
-      const startDate = date ? new Date(`${date}T${time || '12:00'}`) : new Date()
       const res = await fetch('/api/events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: title.trim(),
-          description,
-          date: startDate.toISOString(),
-          location,
-          type: 'PHYSICAL',
-          published: true,
+          title: formData.title.trim(),
+          description: formData.description,
+          eventDate: formData.eventDate || undefined,
+          endDate: formData.endDate || undefined,
+          location: formData.location,
+          locationDetails: formData.locationDetails,
+          maxJoiners: formData.maxJoiners,
+          isTicketed: formData.isTicketed,
+          ticketPrice: formData.ticketPrice,
+          currency: formData.currency,
+          eventCategory: formData.eventCategory,
+          published: formData.visibility === 'PUBLIC',
         }),
       })
       if (res.ok) {
@@ -382,36 +384,16 @@ function EventForm({ onDone }: { onDone: () => void }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className={styles.form}>
-      <div className={styles.formGroup}>
-        <label className={styles.label}>Title</label>
-        <input type="text" value={title} onChange={e => setTitle(e.target.value)} className={styles.input} placeholder="Event name" required autoFocus />
-      </div>
-      <div className={styles.formRow}>
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Date</label>
-          <input type="date" value={date} onChange={e => setDate(e.target.value)} className={styles.input} />
-        </div>
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Time</label>
-          <input type="time" value={time} onChange={e => setTime(e.target.value)} className={styles.input} />
-        </div>
-      </div>
-      <div className={styles.formGroup}>
-        <label className={styles.label}>Location</label>
-        <input type="text" value={location} onChange={e => setLocation(e.target.value)} className={styles.input} placeholder="Where is it?" />
-      </div>
-      <div className={styles.formGroup}>
-        <label className={styles.label}>Description</label>
-        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="Describe your event..." />
-      </div>
-      <div className={styles.formActions}>
-        <button type="button" onClick={onDone} className="btn-ghost">Cancel</button>
-        <button type="submit" disabled={creating || !title.trim()} className="btn-primary">
-          {creating ? 'Creating...' : '📅 Create Event'}
-        </button>
-      </div>
-    </form>
+    <EventFormFields
+      formData={formData}
+      onChange={(patch) => setFormData(prev => ({ ...prev, ...patch }))}
+      onSubmit={handleSubmit}
+      mode="create"
+      saving={creating}
+      onCancel={onDone}
+      submitLabel="Create Event"
+      compact
+    />
   )
 }
 
