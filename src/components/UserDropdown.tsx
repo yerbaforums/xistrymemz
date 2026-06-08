@@ -55,6 +55,18 @@ export default function UserDropdown({ session, open, onClose, traveling }: User
           <span aria-hidden="true">⚙️</span> Settings
         </Link>
         <Link href="/onboarding" className={styles.userLink} role="menuitem" onClick={onClose}>🚀 Getting Started</Link>
+        <button
+          className={styles.userLink}
+          role="menuitem"
+          onClick={() => {
+            localStorage.removeItem('tour_post-onboarding')
+            localStorage.removeItem('tour_home-welcome')
+            window.location.href = '/dashboard/overview'
+          }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', padding: '6px 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}
+        >
+          🗺️ Restart Tour
+        </button>
 
         <div className={styles.userDivider} />
         <div className={styles.userSectionLabel}>Dashboard</div>

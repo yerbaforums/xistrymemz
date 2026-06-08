@@ -1,9 +1,15 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
 import styles from './FeedbackSection.module.css'
 
 export default function FeedbackSection() {
+  const { data: session } = useSession()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+
   return (
     <section className={styles.section}>
       <div className={styles.badge}>v0.7.0 — Early Development</div>
@@ -42,7 +48,11 @@ export default function FeedbackSection() {
       </div>
       <p className={styles.footer}>
         Your passport connects everything. Set your location and start building.{' '}
-        <Link href="/auth/register" className={styles.cta}>Join us →</Link>
+        {mounted && session?.user ? (
+          <Link href="/dashboard/overview" className={styles.cta}>Go to Dashboard →</Link>
+        ) : (
+          <Link href="/auth/register" className={styles.cta}>Join us →</Link>
+        )}
       </p>
     </section>
   )

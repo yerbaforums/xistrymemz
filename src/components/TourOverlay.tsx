@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import type { TourStep, TourID } from '@/data/onboarding-tour'
 import { useTour } from '@/hooks/useTour'
 import styles from './TourOverlay.module.css'
@@ -11,6 +12,7 @@ interface TourOverlayProps {
 }
 
 export default function TourOverlay({ tourKey, steps }: TourOverlayProps) {
+  const router = useRouter()
   const { isActive, currentStep, next, back, skip, totalSteps } = useTour(tourKey, steps.length)
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null)
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({})
@@ -39,10 +41,7 @@ export default function TourOverlay({ tourKey, steps }: TourOverlayProps) {
     const rect = el.getBoundingClientRect()
     setTargetRect(rect)
 
-    const padding = s.spotlightPadding ?? 8
     const pos = s.position || 'bottom'
-    const scrollX = window.scrollX
-    const scrollY = window.scrollY
 
     const tooltip: React.CSSProperties = {}
     const gap = 12
@@ -100,27 +99,13 @@ export default function TourOverlay({ tourKey, steps }: TourOverlayProps) {
 
   if (!isActive || !step) return null
 
-  const spotlightStyle: React.CSSProperties = targetRect
-    ? {
-        boxShadow: `rgba(0,0,0,0.7) 0px 0px 0px ${Math.max(window.innerWidth, window.innerHeight)}px`,
-        clipPath: `polygon(
-          0% 0%, 100% 0%, 100% 100%, 0% 100%,
-          0% ${targetRect.top - 8}px,
-          100% ${targetRect.top - 8}px,
-          100% ${targetRect.bottom + 8}px,
-          0% ${targetRect.bottom + 8}px,
-          0% 0%
-        )`,
-      }
-    : {}
-
   const arrowPos = step.position || 'bottom'
   const arrowKey = `arrow${arrowPos.charAt(0).toUpperCase() + arrowPos.slice(1)}` as keyof typeof styles
   const arrowClass = step.target ? (styles[arrowKey] || styles.arrowBottom) : ''
 
   const handleAction = () => {
     if (step.action?.href) {
-      window.location.href = step.action.href
+      router.push(step.action.href)
     }
     step.action?.onClick?.()
   }

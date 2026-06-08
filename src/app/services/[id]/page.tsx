@@ -11,6 +11,7 @@ import { SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service
 import ViewCount from '@/components/ViewCount'
 import { useRecordView } from '@/hooks/useRecordView'
 import TranslateButton from '@/components/TranslateButton'
+import PinToBoardButton from '@/components/PinToBoardButton'
 import styles from './page.module.css'
 import Skeleton, { SkeletonCard } from '@/components/Skeleton'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
@@ -355,6 +356,17 @@ export default function ServiceDetailPage() {
               >
                 {session ? '📅 Book This Service' : 'Sign in to Book'}
               </button>
+
+              {session && (
+                <PinToBoardButton
+                  entityType="SERVICE"
+                  entityId={service.id}
+                  entityTitle={title}
+                  entityImage={imageUrl || undefined}
+                  variant="ghost"
+                  label="Pin to Board"
+                />
+              )}
 
               {!session && (
                 <p style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', margin: '8px 0 0', textAlign: 'center' }}>

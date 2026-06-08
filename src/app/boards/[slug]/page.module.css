@@ -108,3 +108,19 @@
 .mapWrap :global(.leaflet-container) {
   z-index: 1;
 }
+
+.pinPopup {
+  min-width: 180px;
+}
+
+.popupMeta {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 4px;
+}
+
+.popupDate {
+  font-size: 0.75rem;
+  color: #888;
+  margin-top: 4px;
+}

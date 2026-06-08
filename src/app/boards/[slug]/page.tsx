@@ -165,14 +165,12 @@ export default function BoardDetailPage() {
             {pinLocations.map(pin => (
               <Marker key={pin.id} position={[pin.latitude!, pin.longitude!]}>
                 <Popup>
-                  <div style={{ minWidth: 180 }}>
+                  <div className={styles.pinPopup}>
                     <strong>{pin.title || pin.content?.slice(0, 60)}</strong>
                     {pin.entityType && pin.entityTitle && (
-                      <div style={{ fontSize: '0.8rem', color: '#666', marginTop: 4 }}>
-                        📎 {pin.entityTitle}
-                      </div>
+                      <div className={styles.popupMeta}>📎 {pin.entityTitle}</div>
                     )}
-                    <div style={{ fontSize: '0.75rem', color: '#888', marginTop: 4 }}>
+                    <div className={styles.popupDate}>
                       {pin.user.name} · {new Date(pin.createdAt).toLocaleDateString()}
                     </div>
                   </div>

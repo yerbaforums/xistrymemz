@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import styles from '../login/page.module.css'
+import Skeleton from '@/components/Skeleton'
 
 function VerifyEmailContent() {
   const router = useRouter()
@@ -179,7 +180,7 @@ function VerifyEmailContent() {
 
 export default function VerifyEmailPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div style={{ padding: 40, textAlign: 'center' }}><Skeleton width="200px" height="1rem" /></div>}>
       <VerifyEmailContent />
     </Suspense>
   )

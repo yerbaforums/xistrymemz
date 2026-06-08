@@ -215,6 +215,10 @@ export default async function DashboardOverview({
     prisma.post.count({ where: { userId } }),
   ])
 
+  const boardCount = await prisma.bulletinBoard.count({
+    where: { ownerId: userId },
+  })
+
   // Analytics: total views across all content
   const [postViews, productViews, serviceViews, requestViews] = await Promise.all([
     prisma.post.aggregate({ where: { userId }, _sum: { viewCount: true } }),
@@ -272,6 +276,7 @@ export default async function DashboardOverview({
     { label: 'Earnings', value: Math.round(totalEarnings), max: 5000, color: '#F59E0B', icon: '💰', href: '' },
     { label: 'Total Views', value: totalViews, max: Math.max(totalViews, 100), color: '#06B6D4', icon: '👁️', href: '' },
     { label: 'Listings', value: totalListings, max: Math.max(totalListings, 20), color: '#84CC16', icon: '📋', href: '/dashboard/marketplace' },
+    { label: 'Boards', value: boardCount, max: Math.max(boardCount, 5), color: '#00D9FF', icon: '📌', href: '/boards' },
   ]
 
   const quickActions = [

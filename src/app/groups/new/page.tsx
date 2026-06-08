@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
+import Skeleton from '@/components/Skeleton'
 
 export default function NewGroupPage() {
   const router = useRouter()
@@ -53,7 +54,7 @@ export default function NewGroupPage() {
     }
   }
 
-  if (!authenticated) return <div className={styles.loading}>Loading...</div>
+  if (!authenticated) return <div className={styles.loading}><Skeleton width="100%" height="2rem" /></div>
 
   return (
     <div className={styles.page}>
