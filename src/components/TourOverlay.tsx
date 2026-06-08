@@ -6,6 +6,8 @@ import type { TourStep, TourID } from '@/data/onboarding-tour'
 import { useTour } from '@/hooks/useTour'
 import styles from './TourOverlay.module.css'
 
+const DISMISSED_KEY = (key: string) => `tour_${key}_dismissed`
+
 interface TourOverlayProps {
   tourKey: TourID
   steps: TourStep[]
@@ -17,7 +19,29 @@ export default function TourOverlay({ tourKey, steps }: TourOverlayProps) {
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null)
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({})
   const [visible, setVisible] = useState(false)
+  const [dontShowAgain, setDontShowAgain] = useState(false)
   const tooltipRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const stored = localStorage.getItem(DISMISSED_KEY(tourKey))
+    if (stored === 'true') {
+      setDontShowAgain(true)
+    }
+  }, [tourKey])
+
+  const handleSkip = useCallback(() => {
+    if (dontShowAgain) {
+      localStorage.setItem(DISMISSED_KEY(tourKey), 'true')
+    }
+    skip()
+  }, [dontShowAgain, skip, tourKey])
+
+  const handleDone = useCallback(() => {
+    if (dontShowAgain) {
+      localStorage.setItem(DISMISSED_KEY(tourKey), 'true')
+    }
+    next()
+  }, [dontShowAgain, next, tourKey])
 
   const step = steps[currentStep]
   const isLast = currentStep === steps.length - 1
@@ -65,7 +89,8 @@ export default function TourOverlay({ tourKey, steps }: TourOverlayProps) {
         break
       case 'center':
         tooltip.left = '50%'
-        tooltip.top = '40%'
+        tooltip.top = '50%'
+        tooltip.transform = 'translate(-50%, -50%)'
         break
     }
 
@@ -89,13 +114,13 @@ export default function TourOverlay({ tourKey, steps }: TourOverlayProps) {
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') skip()
+      if (e.key === 'Escape') handleSkip()
       if (e.key === 'ArrowRight') next()
       if (e.key === 'ArrowLeft') back()
     }
     if (isActive) window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [isActive, next, back, skip])
+  }, [isActive, next, back, handleSkip])
 
   if (!isActive || !step) return null
 
@@ -149,13 +174,25 @@ export default function TourOverlay({ tourKey, steps }: TourOverlayProps) {
           </button>
         )}
 
+        <div className={styles.dismissRow}>
+          <label className={styles.dismissLabel}>
+            <input
+              type="checkbox"
+              checked={dontShowAgain}
+              onChange={(e) => setDontShowAgain(e.target.checked)}
+              className={styles.dismissCheckbox}
+            />
+            Don't show again
+          </label>
+        </div>
+
         <div className={styles.nav}>
-          <button className={styles.skipBtn} onClick={skip}>Skip Tour</button>
+          <button className={styles.skipBtn} onClick={handleSkip}>Skip Tour</button>
           <div className={styles.navRight}>
             {!isFirst && (
               <button className={styles.navBtn} onClick={back}>← Back</button>
             )}
-            <button className={styles.nextBtn} onClick={next}>
+            <button className={styles.nextBtn} onClick={handleDone}>
               {isLast ? 'Done' : 'Next →'}
             </button>
           </div>

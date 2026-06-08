@@ -9,7 +9,8 @@ export function useTour(tourKey: string, totalSteps: number) {
 
   useEffect(() => {
     const stored = localStorage.getItem(`tour_${tourKey}`)
-    if (stored === 'completed' || stored === 'skipped') {
+    const dismissed = localStorage.getItem(`tour_${tourKey}_dismissed`)
+    if (stored === 'completed' || stored === 'skipped' || dismissed === 'true') {
       setCompleted(true)
       return
     }
