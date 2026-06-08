@@ -13,6 +13,7 @@ import ImageUploader from '@/components/ImageUploader'
 import MentionInput from '@/components/MentionInput'
 import TranslateButton from '@/components/TranslateButton'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
+import { EmptyState } from '@/components/EmptyState'
 import EntityActions from '@/components/EntityActions'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
@@ -485,7 +486,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                 </div>
               ))
             ) : (
-              <div className={styles.empty}><p>No products listed yet</p></div>
+              <EmptyState icon="🛒" title="No products listed yet" description="This shop hasn&apos;t listed any products yet." />
             )}
           </div>
         )}
@@ -514,7 +515,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                 </Link>
               ))
             ) : (
-              <div className={styles.empty}><p>No services offered yet</p></div>
+              <EmptyState icon="🔧" title="No services offered yet" description="This shop hasn&apos;t added any services yet." />
             )}
           </div>
         )}
@@ -608,7 +609,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                 ))}
               </div>
             ) : (
-              <div className={styles.empty}><p>No posts yet</p></div>
+              <EmptyState icon="💬" title="No posts yet" description="This shop hasn&apos;t made any posts yet." />
             )}
           </div>
         )}

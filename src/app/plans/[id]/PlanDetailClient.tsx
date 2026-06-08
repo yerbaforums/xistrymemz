@@ -553,7 +553,7 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                             entityLatitude={plan.latitude || undefined}
                             entityLongitude={plan.longitude || undefined}
                             variant="ghost"
-                            label="📌 Pin to Board"
+                              label="Pin to Board"
                           />
                         </div>
                       )}

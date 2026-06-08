@@ -10,6 +10,7 @@ import Image from 'next/image'
 import { getCryptoInfo, CRYPTO_ICONS } from '@/lib/crypto-icons'
 import { useToast } from '@/context/ToastContext'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
+import Skeleton from '@/components/Skeleton'
 
 interface Product {
   id: string
@@ -224,7 +225,7 @@ function CheckoutContent() {
   }
 
   if (status === 'loading' || loading) {
-    return <div className={styles.container}><div className={styles.loading}>Loading...</div></div>
+    return <div className={styles.container}><Skeleton width="100%" height="2rem" /></div>
   }
 
   const hasItems = directProduct || cartItems.length > 0
@@ -489,7 +490,7 @@ function CheckoutContent() {
 
 export default function CheckoutPage() {
   return (
-    <Suspense fallback={<div className={styles.page}>Loading...</div>}>
+    <Suspense fallback={<Skeleton width="100%" height="2rem" />}>
       <CheckoutContent />
     </Suspense>
   )

@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import styles from './page.module.css'
 import Button from '@/components/ui/Button'
+import Skeleton from '@/components/Skeleton'
 
 interface EscrowTransaction {
   id: string
@@ -125,7 +126,7 @@ export default function AdminOrdersPage() {
   }
 
   if (status === 'loading' || loading) {
-    return <div className={styles.container}><div className={styles.loading}>Loading...</div></div>
+    return <div className={styles.container}><Skeleton width="100%" height="2rem" /></div>
   }
 
   return (

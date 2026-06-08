@@ -8,6 +8,7 @@ import { useSearchParams } from 'next/navigation'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import FormWizard, { useWizard, type WizardStep } from '@/components/FormWizard'
+import Skeleton from '@/components/Skeleton'
 import { businessTemplates, getTemplateById, type BusinessTemplate } from '@/lib/templates'
 import Button from '@/components/ui/Button'
 
@@ -191,7 +192,7 @@ export default function CourierSetupPage() {
   }
 
   if (status === 'loading' || loading) {
-    return <div className={styles.container}><div className={styles.loading}>Loading...</div></div>
+    return <div className={styles.container}><Skeleton width="100%" height="2rem" /></div>
   }
 
   return (

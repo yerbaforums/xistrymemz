@@ -1,12 +1,13 @@
-# XistrYmemZ — Comprehensive Improvement Plan
+# XistrYmemZ — Comprehensive Improvement Plan (Updated)
 
-> Generated from full codebase audit. **ERP-like modular overhaul** with school content customization, universal social sharing, backlinking, hashtag-first discovery, unified UI/UX, and refined onboarding.
+> **v2.0 — Refreshed from full codebase audit (June 2026).** Reflects actual completion state. Items marked ✅ are done; remaining work is phased below.
+> **Execution strategy**: All passes follow the 7-step cycle in `.opencode/plans/pass-playbook.md`.
 
 ---
 
 ## Current State Assessment
 
-### Existing Hashtag Coverage
+### Hashtag Coverage
 
 | Entity | Hashtag Model | API Extraction | Display | Searchable |
 |--------|:---:|:---:|:---:|:---:|
@@ -16,13 +17,13 @@
 | Products | `ProductHashtag` | ✅ | ✅ | ✅ |
 | Events | `EventHashtag` | ✅ | ✅ | ✅ |
 | Services | `ServiceOfferingHashtag` | ✅ | ✅ | ✅ |
-| **School Content** | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing |
-| **Plans** | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing |
-| **Requests** | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing |
-| **Groups** (entity) | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing |
+| **School Content** | ✅ `SchoolContentHashtag` | ✅ (via hashtagService) | 🔄 Display pills pending | 🔄 Filter pending |
+| **Plans** | ✅ `PlanHashtag` | ✅ (via hashtagService) | 🔄 Display pills pending | 🔄 Filter pending |
+| **Requests** | ✅ `RequestHashtag` | ✅ (via hashtagService) | 🔄 Display pills pending | 🔄 Filter pending |
+| **Groups** (entity) | ✅ `GroupHashtag` | ✅ (via hashtagService) | 🔄 Display pills pending | 🔄 Filter pending |
 | **Trips** | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing |
 
-### Existing Backlink Coverage
+### Backlink Coverage
 
 | Entity Pair | Bidirectional Link |
 |-------------|:---:|
@@ -32,421 +33,180 @@
 | Request ↔ Product | ✅ |
 | Event ↔ Plan | ✅ |
 | Post ↔ referenced entity | ✅ (through ShareToPostModal) |
+| All ↔ All (universal) | ✅ Backlink model exists, API pending |
 | School ↔ related Plans | ❌ |
 | Service ↔ related Requests | ❌ |
 | Group ↔ related Events | ❌ |
-| All ↔ All (universal) | ❌ |
 
 ---
 
-## Phase 1: Foundation & Infrastructure
+## ✅ Phases Already Complete
 
-### 1.1 Unified Design System
-**Files:** `src/app/design-system.css` (new)
-- Extract all component-level CSS variables into a single design tokens file
-- Add semantic spacing scale: 2, 4, 8, 12, 16, 24, 32, 48, 64, 96, 128
-- Define `--radius`, `--transition`, `--shadow` tiers
-- Add `--focus-ring` for accessibility consistency
-- Document pattern: `*.module.css` for components, design-system.css for tokens
+### Phase A: Foundation Components
+| Item | Status |
+|------|--------|
+| `design-system.css` (160+ tokens: spacing, radius, shadow, typography) | ✅ |
+| `src/types/` directory with 11 domain type files | ✅ |
+| `ErrorBoundary` component | ✅ |
+| `Skeleton` component + `SkeletonCard` | ✅ |
+| `EmptyState` component | ✅ |
+| `ConfirmDialog` component | ✅ |
+| `ToastContext` (provider, stacking, auto-dismiss) | ✅ |
+| ESLint flat config (eslint-config-next, @typescript-eslint, strict rules) | ✅ |
 
-### 1.2 Shell & Navigation Rework
-**Files:** `src/components/AppShell.tsx`, `src/components/Header.tsx`
-- **Sidebar redesign**: Collapsible icon-only mode (ERP-style sidebar), section grouping by domain
-  - *Workspace*: Dashboard, Plans, Requests
-  - *Commerce*: Marketplace, Shop, Services, Rentals
-  - *Social*: Community, Messages, Groups, Events
-  - *Learn*: Schools, Directory
-  - *Finance*: Wallet, Orders, Offers
-  - *Admin* (role-gated)
-- **Hashtag nav item**: Quick access to `/hashtags` from sidebar + header search
-- **Unified breadcrumb system**: Auto-generated from route segments
-- **Global command palette** (Cmd+K): Search ALL entities + hashtags with context actions
+### Phase B: Universal Hashtags
+| Item | Status |
+|------|--------|
+| `SchoolContentHashtag` Prisma model | ✅ |
+| `PlanHashtag` Prisma model | ✅ |
+| `RequestHashtag` Prisma model | ✅ |
+| `GroupHashtag` Prisma model | ✅ |
+| `Backlink` Prisma model | ✅ |
+| `hashtagService.ts` centralized service | ✅ |
+| `backlinkService.ts` | ✅ |
+| `HashtagInput` component (autocomplete, pills, trending) | ✅ |
 
-### 1.3 Unified API Response Format (from PRIORITY_LIST)
-**File:** `src/lib/api-helpers.ts` (new)
-```ts
-{ success: boolean, data?: T, error?: string, metadata?: { total, page, limit } }
-```
-Refactor all 60+ API routes to use this standard envelope.
+### Phase C: Federation Endpoints
+| Item | Status |
+|------|--------|
+| `/.well-known/webfinger` | ✅ |
+| `/.well-known/nodeinfo` | ✅ |
+| `/api/fediverse/actor/[username]` | ✅ |
+| `/api/fediverse/inbox` | ✅ |
+| `/api/fediverse/outbox/[userId]` | ✅ |
+| `/api/fediverse/nodeinfo/2.1` | ✅ |
 
-### 1.4 Service Layer
-**Dir:** `src/services/` (new)
-- Extract business logic from API routes
-- Services: `planService`, `productService`, `schoolService`, `requestService`, `eventService`, `userService`, `messageService`, `hashtagService`
-- `hashtagService.ts`: Centralized hashtag extraction, upsert, and entity linking for ALL entity types
-- API routes become thin HTTP handlers calling services
+### Phase D: Onboarding Flow
+| Item | Status |
+|------|--------|
+| 6-step onboarding (Welcome → Profile → Class Setup → Tour → Community → Complete) | ✅ |
 
-### 1.5 Centralized Types
-**Files:** `src/types/SchoolContent.ts`, `src/types/Post.ts`, `src/types/Notification.ts`, `src/types/Group.ts`, `src/types/Hashtag.ts` (new)
-- Domain types for every entity
-- `HashtagTypes`: Reusable tagged-entity type union for hashtag attachment
-
----
-
-## Phase 2: School Content Customization
-
-### 2.1 Rich Content Engine
-**Files:** `src/app/school/[slug]/page.tsx`, `src/app/school/[slug]/[contentId]/page.tsx` (new)
-- **Rich text editor**: Bold, italic, headings, lists, code blocks, images, video embeds
-- **Curriculum builder**: Module → Lesson → Topic hierarchy (drag-and-drop reorder)
-- **Expanded content types**: `article`, `video`, `course`, `quiz`, `worksheet`, `resource`, `assignment`
-- **Progress tracking**: Lesson completion, student progress per content item
-- **Prerequisites**: Dependency chain between content items
-- **Scheduling**: Drip-feed content release dates
-- **Content metadata**: Tags, difficulty level, estimated time, language
-
-### 2.2 Hashtags on School Content
-**Files:** `prisma/schema.prisma`, `src/app/api/school/[slug]/content/route.ts`, `src/app/api/hashtags/route.ts`, `src/app/api/hashtags/[tag]/route.ts`
-- **New model**: `SchoolContentHashtag` (junction: SchoolContent ↔ Hashtag)
-- **API**: Extract hashtags from school content title + content on create/update
-- **Display**: Hashtag pills on school content cards + detail view
-- **Hashtag page**: Add "schoolContent" to trending query, totals, and filtered views
-- **School browse**: Filterable by hashtag on `/schools` page
-
-### 2.3 Student Management
-- Enrolled students list per school
-- Progress per student
-- Completion certificates
-
-### 2.4 School Setup Wizard Enhancements
-**File:** `src/app/school/setup/page.tsx`
-- Content type presets selection
-- Pricing model (per-content / subscription / bundle)
-- Category + hashtag suggestions on setup
+### Phase E: Session Plan Items
+| Item | Status |
+|------|--------|
+| Footer restructured (`.bottomBuiltWith`, version badge) | ✅ |
+| CRYPTO_LOGOS → `src/lib/constants.ts` | ✅ |
+| Shops/schools auth gates removed | ✅ |
+| Products API envelope + pinned filter | ✅ |
+| Home page modular refresh | ✅ |
+| Donation DnD reorder | ✅ |
+| FIRO logo PNG | ✅ |
+| Shops search + category filter + map | ✅ |
+| Schools CSS (tabs, filters, content grid, type colors) | ✅ |
 
 ---
 
-## Phase 3: Universal Hashtags
+## ⏳ Remaining Phases
 
-### 3.1 Missing Hashtag Models (Prisma)
-**File:** `prisma/schema.prisma`
-Add junction models + Hashtag relations to:
-```prisma
-model SchoolContentHashtag {
-  schoolContentId String
-  schoolContent   SchoolContent @relation(fields: [schoolContentId], references: [id], onDelete: Cascade)
-  hashtagId       String
-  hashtag         Hashtag       @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
-  createdAt       DateTime      @default(now())
-  @@unique([schoolContentId, hashtagId])
-  @@index([hashtagId])
-}
+## Phase 1: Fix Remaining Breaks (~3 hrs)
 
-model PlanHashtag {
-  planId    String
-  plan      Plan    @relation(fields: [planId], references: [id], onDelete: Cascade)
-  hashtagId String
-  hashtag   Hashtag @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  @@unique([planId, hashtagId])
-  @@index([hashtagId])
-}
+- **1.1 Middleware deprecation**: ~~Rename `src/middleware.ts` → `proxy.ts`~~ ❌ Cancelled — not needed in Next.js 16
+- **1.2 Test environment**: Switch jest `jsdom` → `jest-environment-node`, add polyfills (`fetch`, `Request`, `setImmediate`), create test DB setup
+- **1.3 Fire-and-forget Prisma writes**: `src/lib/auth.ts:192,210` — convert `.catch(() => {})` to awaited
+- **1.4 Deduplicate notification button**: `src/components/Header.tsx:534-545` — refactor to single conditional
+- **1.5 `any` type audit**: 7 API route files flagged with `Record<string, unknown>` patterns
 
-model RequestHashtag {
-  requestId String
-  request   Request @relation(fields: [requestId], references: [id], onDelete: Cascade)
-  hashtagId String
-  hashtag   Hashtag @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  @@unique([requestId, hashtagId])
-  @@index([hashtagId])
-}
+## Phase 2: Complete Service Layer + API Standardization (2-3 days)
 
-model GroupHashtag {
-  groupId   String
-  group     Group   @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  hashtagId String
-  hashtag   Hashtag @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  @@unique([groupId, hashtagId])
-  @@index([hashtagId])
-}
-```
+- **2.1 Unified API envelope**: Create `src/lib/api-helpers.ts` with `apiResponse<T>()`, `apiError()`, `withAuth()`, `requireAdmin()`, `withValidation()`; refactor ~60 routes
+- **2.2 Frontend fetch helpers**: `apiGet<T>()`, `apiPost<T>()`, `apiPut<T>()`, `apiDelete<T>()`
+- **2.3 Missing services** (6 new files): `productService.ts`, `requestService.ts`, `eventService.ts`, `userService.ts`, `notificationService.ts`, `walletService.ts`
+- **2.4 Database transactions**: Wrap multi-step ops in `$transaction()`
 
-### 3.2 Hashtag Service (`src/services/hashtagService.ts`)
-Centralized service for:
-```ts
-extractAndLinkHashtags(text: string, entityType: string, entityId: string): Promise<void>
-removeHashtags(entityType: string, entityId: string): Promise<void>
-getHashtagsForEntity(entityType: string, entityId: string): Promise<Hashtag[]>
-getTrendingHashtags(days: number, limit: number): Promise<HashtagItem[]>
-getRelatedEntities(tag: string, type: string, page: number): Promise<any[]>
-```
-- Reuse across ALL content creation/update flows
-- Single source of truth for hashtag logic
+## Phase 3: Complete Social Sharing & Backlinking (1.5-2 days)
 
-### 3.3 Hashtag Input Component (`src/components/HashtagInput.tsx` new)
-- Text input that suggests existing hashtags as user types
-- Shows trending/suggested hashtags below
-- Displays selected hashtags as removable pills
-- Can be embedded in any content creation form
-- Returns array of hashtag strings for submission
+- **3.1 Universal ShareBar**: `src/components/ShareBar.tsx` — replace 4 separate share modals; features: Copy Link, Share to Feed, QR Code, X, Facebook, LinkedIn, Telegram, WhatsApp, Email, Fediverse
+- **3.2 Auto-generated Related Items**: Query backlinks → "Related Items" section on every entity detail page
+- **3.3 Manual linking UI**: "Link to..." button in editors with entity search
+- **3.4 Cross-posting engine**: Create post → offer cross-post to Wall + Shop + School + Group + Forum
 
-### 3.4 Hashtag Injection into Content Forms
-Embed `HashtagInput` + `extractHashtags` into:
-| Form/Page | File |
-|-----------|------|
-| School content create | `src/app/school/[slug]/page.tsx` |
-| Plan create/edit | `src/app/plans/[id]/PlanDetailClient.tsx` |
-| Request create/edit | `src/app/requests/RequestsClient.tsx` |
-| Group create/edit | `src/app/groups/page.tsx` |
-| Trip create/edit | `src/app/dashboard/planning/page.tsx` |
+## Phase 4: Complete Federation (2-3 days)
 
-### 3.5 Hashtag API Expansion
-**File:** `src/app/api/hashtags/route.ts`
-- Add school content, plans, requests, groups to trending query
-- Add entity counts to `enrichWithCounts`
-- API param `?entity=schoolContent|plans|requests|groups` for filtered trending
+- **4.1 User key generation on registration**: Wire `federation.ts` key gen; store `federatedUrl`, `privateKey`, `publicKey`
+- **4.2 Follow model + route handlers**: Manage local + remote follows; Follow/Unfollow UI on profiles
+- **4.3 Wire inbox processing**: Incoming Follow→notify, Accept→update, Like→increment, Announce→boost
+- **4.4 Wire outbound delivery cron**: `/api/cron/deliver-fediverse` with retry + cleanup
+- **4.5 Federation UI**: Federated handle, follower/following counts, remote user display, admin settings
+- **4.6 Security**: HTTP Signature verification, dedup, rate limiting, HTML sanitization
 
-**File:** `src/app/api/hashtags/[tag]/route.ts`
-- Add school content, plans, requests, groups to detail response
-- Support filtering by new entity types
+## Phase 5: Navigation Overhaul (2 days)
 
-### 3.6 Hashtag Detail Page Expansion
-**File:** `src/app/hashtag/[tag]/page.tsx`
-- **New tabs/sections**: School Content, Plans, Requests, Groups, Services
-- Update `Totals` interface and display
-- Add new card components for each entity type
-- Unified "Related Hashtags" sidebar
+- **5.1 Command palette**: `src/components/CommandPalette.tsx` — Cmd+K modal, unified search across all entities + hashtags + pages, keyboard nav, context actions
+- **5.2 ERP-style sidebar**: Collapsible icon-only mode, sections: Workspace, Commerce, Social, Learn, Finance, Admin
+- **5.3 Mobile bottom nav**: Home, Feed, Create (FAB), Messages, Profile; ≥44px; hide on keyboard open
+- **5.4 Unified breadcrumbs**: Auto-generate from route segments; ensure ALL pages have them
+- **5.5 Navigation cleanup**: Remove `/plans/public` redirect; hide admin from non-admins
 
-### 3.7 Hashtag Browse Page Expansion
-**File:** `src/app/hashtags/page.tsx`
-- Add entity counts for school content, plans, requests, groups, services
-- Filter pills by entity type
-- Search with auto-suggestion
+## Phase 6: UI/UX Consistency (2 days)
+
+- **6.1 Component library standardization**: Use `ui/Button`, `ui/Card`, `ui/Modal`, `ui/Badge`, `ui/Avatar` everywhere; remove all inline `style={{}}`
+- **6.2 Loading states**: Replace all `Loading...` with `<Skeleton>` across every page — ✅ 32 of ~38 instances fixed (6 remain: Suspense fallbacks in auth/events-new/groups-new + Loading component default)
+- **6.3 Empty states**: Replace all `No results` / `No items found` with `<EmptyState>` — 🟡 Partial: shop detail page (3 sections) + services page converted; ~25 bare instances remain in admin/dashboard
+- **6.4 Toast coverage**: Consistent toasts for ALL CRUD operations
+- **6.5 ConfirmDialog**: For all destructive actions (delete, unpublish, remove)
+- **6.6 Micro-interactions**: Card hover scale+glow, button active scale, page fade-in
+
+## Phase 7: School Content Enhancement (2-3 days)
+
+- **7.1 Curriculum builder**: Module → Lesson → Topic hierarchy with drag-and-drop
+- **7.2 Expanded content types**: article, video, course, quiz, worksheet, resource, assignment
+- **7.3 Progress tracking**: Lesson completion, student progress, prerequisites, drip-feed
+- **7.4 Hashtag display**: Pills on school content cards + detail view, filter by hashtag
+- **7.5 Student management**: Enrolled list, progress detail, certificates, bulk messaging
+
+## Phase 8: Dashboard Enhancement (2 days)
+
+- **8.1 Unified inbox**: Notifications + Messages + Pending Requests + Connection Requests
+- **8.2 Cross-module quick actions**: "Create Plan with Product", "Add Event to Group", etc.
+- **8.3 Dashboard widgets**: Hashtag widget, recent activity, progress widgets, analytics
+- **8.4 Expand directory**: Add Members, Schools, Groups, School Content tabs; map view; hashtag+location filter
+- **8.5 Smart cross-linking**: Suggest related entities; "Quick Link" in editors
+
+## Phase 9: Help System & First-Use Triggers (1-1.5 days)
+
+- **9.1 Contextual help**: Inline tooltips, guided tours per module, help drawer
+- **9.2 First-use triggers**: First plan → sharing dialog; first product → hashtags prompt; first content → school tips
+
+## Phase 10: Polish & Performance (2 days)
+
+- **10.1 `React.memo()`**: ProductCard, MemberCard, MessageBubble, PostCard, EventCard, SharedItemCard — 🟡 Done: ProductCard, SharedItemCard, ServiceCard, BoardPinCard (MemberCard/EventCard/PostCard are inline)
+- **10.2 Virtualization**: Long lists (members, feed, products, notifications)
+- **10.3 Dynamic imports**: Leaflet, RichEditor, emoji-picker, QRCode, video chat
+- **10.4 Lazy images**: `loading="lazy"` below the fold
+- **10.5 Accessibility**: Keyboard nav, aria attributes, focus management, WCAG AA contrast
+- **10.6 Security**: File upload validation, DOMPurify, CORS, key encryption, rate limiting
+- **10.7 Testing expansion**: RTL for components, hook tests, integration tests, `npm run db:test`
 
 ---
 
-## Phase 4: Social Sharing & Backlinking
+## Effort Summary
 
-### 4.1 Universal Share Bar (`src/components/ShareBar.tsx` new)
-Replace all 4 separate share modals with one `ShareBar`:
-- Detects entity type from page context or props
-- Always available: Copy Link, Share to Feed (creates backlinked post), QR Code
-- Social share: X, Facebook, LinkedIn, Telegram, WhatsApp, Email, Fediverse
-- Share count tracking per entity
-- Embed on: all entity detail pages, profile, post, product, event, plan, request, school content
+| Phase | Effort | Deps | Status |
+|-------|--------|------|--------|
+| **P1: Fix Breaks** | 3 hrs | None | ⏳ 3 items (2 done, 1 cancelled) |
+| **P2: API Standardization** | 2-3 days | P1 | ⏳ |
+| **P3: Social Sharing** | 1.5-2 days | P2 | ⏳ |
+| **P4: Federation** | 2-3 days | P2 | 🔄 Routes exist, logic pending |
+| **P5: Navigation** | 2 days | None | ⏳ |
+| **P6: UI/UX** | 2 days | P5 | 🔄 Components exist, adoption pending (Loading→Skeleton mostly done, EmptyState partial) |
+| **P7: School Content** | 2-3 days | P2 | ⏳ |
+| **P8: Dashboard** | 2 days | P2, P6 | 🔄 Directory partial |
+| **P9: Help System** | 1-1.5 days | None | ⏳ |
+| **P10: Polish** | 2 days | P6 | 🔄 design-system done, memo on 4/6 cards done, rest pending |
 
-### 4.2 Backlink System (`src/lib/backlinks.ts` new)
-```prisma
-model Backlink {
-  id           String   @id @default(cuid())
-  sourceType   String   // PLAN | PRODUCT | POST | EVENT | SCHOOLCONTENT | REQUEST | SERVICE | GROUP
-  sourceId     String
-  targetType   String
-  targetId     String
-  relationType String   // REFERENCES | CONTAINS | RELATES_TO | PROMOTES
-  createdAt    DateTime @default(now())
-  @@index([sourceType, sourceId])
-  @@index([targetType, targetId])
-}
-```
-- **Auto-generated** "Related Items" section on every entity detail page
-- **Manual linking** UI: "Link to..." button on content creation/edit with entity search
-- **Backlink display**: Show incoming and outgoing links
-- **Backlink graph**: Visual map of how entities connect
-
-### 4.3 Cross-Posting Engine
-- When creating a post, cross-post to: Wall + Shop + School + Group + Forum simultaneously
-- Repost/Share entity creates a backlinked post automatically
-- "Share this [entity] to..." menu on every entity
-
-### 4.4 Fediverse Sharing (ActivityPub)
-- Connect sharing to fediverse followers (outbox activities)
-- Display remote interactions (likes, reposts from fediverse)
-- Share count includes fediverse interactions
+**Total remaining: ~17-22 days**
 
 ---
 
-## Phase 5: UI/UX Overhaul
+## Quick Wins (Parallelizable, < 1 day each)
 
-### 5.1 Component Library Consistency
-- Refactor all components to use `ui/Button`, `ui/Card`, `ui/Modal`, `ui/Badge`, `ui/Avatar`
-- Remove ALL inline `style={{}}` React props → CSS modules or design tokens
-- Standardize every page: consistent padding `--space-6`, card grid `auto-fill minmax`, responsive breakpoints
-
-### 5.2 Loading & Empty States
-- Replace all `<div>Loading...</div>` with `<Skeleton />` variants
-- Replace all `<div>No results</div>` with `<EmptyState>` (contextual icon + action button)
-- Skeleton loading for: product grids, member lists, content lists, message conversations, hashtag clouds
-
-### 5.3 Error Handling
-- Wrap every page section with `<ErrorBoundary>`
-- Consistent toast notifications for all CRUD operations
-- `<ConfirmDialog>` for all destructive actions (delete, unpublish, remove)
-
-### 5.4 Responsive & Mobile
-- Audit all pages at 3 breakpoints: <640px, 640-1024px, >1024px
-- Mobile navigation: bottom nav bar (icons only) replacing sidebar
-- All interactive elements ≥44px touch targets
-- Mobile-friendly hashtag input with autocomplete overlay
-
-### 5.5 Micro-interactions
-- Page transitions: fade-in on route change
-- Card hover: subtle scale + border glow
-- Button active: scale(0.97)
-- Hashtag click: ripple animation
-- Success actions: checkmark animation
-
----
-
-## Phase 6: Connectedness & Productivity
-
-### 6.1 Dashboard as ERP Hub (`src/app/dashboard/overview/page.tsx`)
-- **Unified inbox**: Notifications + Messages + Pending Requests + Connection Requests
-- **Cross-module quick actions**: "Create Plan with Product", "Add Event to Group", "Create Request for Plan"
-- **Hashtag widget**: Trending hashtags relevant to user's content
-- **Recent activity** across ALL modules (not just plans/feed)
-- **Progress widgets**: Plan completion, content publishing, shop orders, upcoming appointments
-- **Drag-and-drop widget layout** (user customizable)
-
-### 6.2 Global Search Enhancement (`src/app/search/SearchResultsClient.tsx`)
-- **Hashtag-first search**: Prefix `#` triggers hashtag search with entity counts
-- Type filters with entity counts (including new hashtagged entities)
-- Keyboard navigation (arrow keys + enter)
-- Quick actions per result ("Edit", "Share", "View")
-- Search history (localStorage)
-- Federated search results
-
-### 6.3 Unified Directory Page (`src/app/directory/page.tsx`)
-- Add tabs: Schools, Groups, School Content, Services
-- Unified filter bar: category + location + **hashtag** + sort
-- Map view for all geotagged entities
-- Alphabetical index for each entity type
-
-### 6.4 Smart Cross-Linking in Forms
-- Suggest related Plans/Products/Courses when creating a Request
-- Suggest recent entities with same hashtags when creating content
-- "Quick Link" button in every editor with entity search + hashtag suggestions
-
----
-
-## Phase 7: Onboarding & New User Experience
-
-### 7.1 Progressive Onboarding Flow (`src/app/onboarding/page.tsx`)
-- **Step 1** — Welcome: platform video, value prop carousel with hashtag demo
-- **Step 2** — Profile: interest tags → auto-converted to hashtag follows
-- **Step 3** — Class Setup: role-specific guided tours with hashtag discovery
-- **Step 4** — Tour: interactive clickable hotspots (vs checkboxes) including "What are hashtags?"
-- **Step 5** — Community: pre-follow suggested members, suggested groups by interest hashtags
-- **Step 6** — Complete: auto-create "Getting Started" plan with pre-filled milestones + hashtags
-- **Hashtag discovery**: Show trending hashtags based on user's selected interests
-
-### 7.2 Contextual Help System (`src/app/help/`)
-- Inline `(?)` tooltips on complex form fields (especially hashtag input)
-- Guided tours per module: "Tour Dashboard", "Tour Marketplace", "Tour Schools"
-- **Hashtag guide**: Dedicated help section explaining how hashtags connect content
-- Help drawer: slide-out panel with relevant articles based on current page
-
-### 7.3 First-Use Triggers
-- First plan created → Show sharing dialog with hashtag suggestions
-- First product listed → "Add hashtags to get discovered!"
-- First content published → School customization tips with hashtag prompt
-- First connection → Messaging feature highlight
-- First hashtag used → Show related content discovery
-
----
-
-## Phase 8: Clean Feel & Polish
-
-### 8.1 Visual Consistency Audit
-- Remove ALL inline `style={{}}` → CSS modules or design tokens
-- Standardize `ui/Button` everywhere (replace `.btn-primary`, `btn-secondary` classes)
-- Standardize card patterns via `ui/Card`
-- Merge duplicate CSS across all modules into design system
-
-### 8.2 Navigation Cleanup
-- Simplify header: reduce dropdown nesting
-- Remove duplicate entry points (`/plans/public` → redirects to `/projects`)
-- Hide admin UI from non-admin users
-- Progressive nav loading (lazy-load heavy sections)
-
-### 8.3 Content Density
-- Reduce visual noise on dashboards and listing pages
-- Consistent card sizing across grid layouts
-- Responsive images via `next/image` with proper sizing
-- Text truncation with "Show more" for long descriptions
-- Hashtag pills: consistent styling across all entity types
-
-### 8.4 Typography & Spacing Audit
-- Consistent `clamp()` sizing across all headings
-- Standard line-height: 1.5 body, 1.3 headings
-- Consistent paragraph spacing
-- Monospace only for code/addresses (not headings)
-
----
-
-## Implementation Order & Effort
-
-| Phase | Effort | Key Deliverables | Deps |
-|-------|--------|-----------------|------|
-| **P1: Foundation** | 3-4 days | Design system, nav rework, API helpers, service layer, types | None |
-| **P2: School Content** | 4-5 days | Rich editor, curriculum builder, expanded content types, progress tracking | P1 |
-| **P3: Universal Hashtags** | 3-4 days | 4 new Prisma models, HashtagService, HashtagInput component, API expansion, hashtag page expansion | P1 |
-| **P4: Social Sharing** | 2-3 days | Universal ShareBar, Backlink system, cross-posting, fediverse sharing | P1, P3 |
-| **P5: UI/UX Overhaul** | 3-4 days | Component refactor, loading/empty/error states, responsive audit, animations | P1 |
-| **P6: Connectedness** | 3-4 days | Dashboard hub, global search, unified directory, smart linking | P3, P4 |
-| **P7: Onboarding** | 2-3 days | Enhanced flow, contextual help, first-use triggers, hashtag discovery | P3 |
-| **P8: Clean Feel** | 2-3 days | CSS audit, nav cleanup, density/spacing pass | P5 |
-
-**Total: ~22-30 days**
-
----
-
-## Quick Wins (Parallelizable)
-
-1. Replace all `Loading...` with `<Skeleton />`
-2. Add `<ErrorBoundary>` to all major layouts
-3. `<EmptyState>` on all list pages
-4. Consolidate 4 share components → 1 `ShareBar`
-5. Add `extractHashtags` to school content API route (backend only)
-6. Add `extractHashtags` to plans API route (backend only)
-7. Add `extractHashtags` to requests API route (backend only)
-8. Standardize breadcrumbs across all pages
-9. "Share to Feed" button on every entity detail page
-10. Unified cross-entity search API endpoint
-
----
-
-## Prisma Migration Plan (Models to Add/Modify)
-
-```prisma
-// NEW models for hashtag coverage
-model SchoolContentHashtag { ... }
-model PlanHashtag { ... }
-model RequestHashtag { ... }
-model GroupHashtag { ... }
-
-// NEW model for backlinking
-model Backlink { ... }
-
-// Add hashtag relations to Hashtag model
-model Hashtag {
-  // ... existing fields
-  schoolContents   SchoolContentHashtag[]
-  plans            PlanHashtag[]
-  requests         RequestHashtag[]
-  groups           GroupHashtag[]
-}
-
-// Add hashtag relations to existing models
-model SchoolContent {
-  // ... existing fields
-  hashtags SchoolContentHashtag[]
-}
-
-model Plan {
-  // ... existing fields
-  hashtags PlanHashtag[]
-}
-
-model Request {
-  // ... existing fields
-  hashtags RequestHashtag[]
-}
-
-model Group {
-  // ... existing fields
-  hashtags GroupHashtag[]
-}
-```
+1. ✅ ESLint config fixed
+2. ✅ Auth bcrypt guard added
+3. ✅ MobileNav session typed
+4. ✅ Header CustomEvent typed
+5. ❌ Cancelled — middleware rename (`middleware.ts` → `proxy.ts`), not needed in Next.js 16
+6. ✅ Fixed 2 fire-and-forget `.catch()` in auth.ts (now log errors)
+7. ✅ Deduplicated notification button in Header.tsx (merged conditionals)
+8. 🟡 Partial — `React.memo()` added to ProductCard, SharedItemCard, ServiceCard, BoardPinCard (4 of 6; EventCard/PostCard are inline)
+9. ✅ `<Skeleton>` added to all dashboard (8), admin (5), and user-facing pages (14+) — 6 Suspense fallback instances remain (low impact)
+10. 🟡 Partial — `<EmptyState>` added to shop detail (3 sections) + services page; ~25 bare instances remain in admin/dashboard

@@ -189,7 +189,7 @@ export const authOptions: NextAuthOptions = {
               receiverId: founder.id,
               status: 'ACCEPTED'
             }
-          }).catch(() => {})
+          }).catch((err: Error) => console.error('Failed to create auto-connection:', err))
         }
 
         // Link OAuth provider
@@ -207,7 +207,7 @@ export const authOptions: NextAuthOptions = {
           where: { email: user.email },
           update: {},
           create: { email: user.email, name: name as string, source: 'oauth_registration' }
-        }).catch(() => {})
+        }).catch((err: Error) => console.error('Failed to subscribe OAuth user:', err))
 
         return true
       }

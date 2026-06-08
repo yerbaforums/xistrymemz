@@ -1,111 +1,113 @@
 # Session Working Notes
 
-## Current State (45bb5df — committed and pushed)
-
-### ✅ Complete — Creative Hub (Batch 1)
-
-**QuickCreateModal:**
-- New `QuickCreateModal` component with 5 tabs: Post, Content, Product, Event, Project
-- `QuickCreateProvider` context wraps the app, accessible via `useQuickCreate()` hook
-- Post tab: textarea + image uploader, creates inline without navigation
-- Content tab: title, type selector, template picker (6 templates), content body, images, price
-- Product tab: title, price, category, description, images
-- Event tab: title, date/time, location, description
-- Project tab: title, status, description
-
-**Content Templates:**
-- `src/lib/content-templates.ts` with 6 templates: Lesson Plan, Course Outline, Tutorial, Article Starter, Resource List, Quick Note
-- Each template has type, name, description, icon, and pre-filled starter content
-- `CONTENT_TYPE_MAP` for consistent type labels across the app
-
-**Dashboard Studio (`/dashboard/studio`):**
-- Unified view of ALL user content: posts, school content, products, plans/projects, events
-- Fetches from multiple APIs, sorts by date, shows titles + view counts + prices
-- Type filter bar with counts per type
-- Stats row: Total Items, Total Views, Total Value
-- Empty state with "Create Something" CTA
-- Added "Studio" to dashboard sidebar (primary nav, right after Overview)
-- Added "🎨 Creative Studio" to dashboard overview quick actions
-
-**Nav Integration:**
-- `+ Create` dropdown in header nav (accent-colored button) — "New Post" opens QuickCreateModal
-- CreateFAB "New Post" action opens QuickCreateModal instead of navigating
-- MobileNav: "✨ Quick Create" button at top of Dashboard section opens modal
-- Dashboard "Dashboard" label is now a `<Link href="/dashboard/overview">` (click navigates, dropdown still works on hover)
-
-### ✅ Complete — UX Refinements
-
-**Dashboard Overview:**
-- Added "Recent Studio Activity" section showing 5 most recent items across Plans, Products, School Content
-- Added "Write Your First Post" link uses `#feed-post-form` hash for auto-scroll on feed page
-- Feed empty state "Create Your First Post" now scrolls to and focuses the post form instead of linking to same page
-
-**School Content:**
-- Template picker injected into school content creation form (shows when content field is empty)
-- Content cards now show image thumbnail (first image, 140px tall) when available
-
-**User Menu:**
-- Avatar uses `<Image fill>` instead of explicit width/height — properly fits 36x36 button
-- UserDropdown avatar also uses `fill` with a proper sized container
-- Dropdown has `max-height: calc(100vh - 80px)` and `overflow-y: auto` — no longer cuts off at bottom
-
-### ✅ Complete — Saved Items Revamp
-
-**API Enrichment:**
-- `GET /api/saved` now resolves entity titles by querying all 9 entity types in batch
-- Added `DELETE` handler to `/api/saved/route.ts` (fixes toggleSave unsave from entity pages)
-- Added missing types: SERVICE, SCHOOLCONTENT, GROUP (total 9 valid types)
-
-**Rich Saved Page:**
-- Cards now show type icon, entity title (or "Untitled"), type badge, and save date
-- Type filter bar with counts per type
-- Empty state for individual type filters
-- Updated CSS with cleaner card layout and hover states
-
-### ✅ Complete — Connections & Communications
-
-**Connection Notifications:**
-- Sending a connection request creates a CONNECTION_REQUEST notification for the receiver + SSE emit
-- Accepting a connection creates a CONNECTION_ACCEPTED notification for the requester + SSE emit
-- More notification type icons: CONNECTION_REQUEST 👋, CONNECTION_ACCEPTED 🤝, NEW_MESSAGE 💬, NEW_FOLLOWER 👤, SYSTEM 🔔
-
-**Message Improvements:**
-- Added polling (every 10s) when a conversation is open — new messages appear without manual refresh
-- "+ New" button changed to "+ Find People" linking to `/community?ref=messages`
-- Dashboard sidebar shows unread message count badge on "Messages" in the More section
+> **Last audit: June 2026** — Comprehensive review of all plan files vs actual codebase.
+> **Methodology**: All passes follow the 7-step cycle defined in `.opencode/plans/pass-playbook.md`.
+> **Pass 2 (Fresh Pass)**: Batch 1 — Loading→Skeleton full sweep, React.memo additions, EmptyState adoption start.
+> **Pass 3 (Boards + Passport)**: Boards listing page centered on user's passport location; custom passport marker; quick location update UI (set on map, auto-detect, fly home).
 
 ---
 
-### ⏳ Planned / Future Work
+## ✅ Complete — All Session Plan Items
 
-**High Priority:**
-- Federated protocol foundations (ActivityPub/WebFinger endpoints, user key generation)
-- Unified API response format (`{success, data, error}` envelope)
-- Service layer extraction (pilot: school content service with federation hook points)
+| Session Plan | Items | Status |
+|-------------|-------|--------|
+| Footer UI/UX improvements | `.bottomBuiltWith`, version badge, CRYPTO_LOGOS extraction | ✅ Done |
+| Donation DnD reorder | `handleReorderDonations`, drag handles, `index` param | ✅ Done |
+| Products/shops/schools/home enhancements | API envelope, auth gates, shops search/filter, schools CSS, home refresh | ✅ All Done |
+| Product & Shop UI improvements | QR button, FIRO logo, product form hashtags, payment hiding | ✅ All Done |
 
-**Medium Priority:**
-- Content series navigation (prev/next) on school content detail page
-- Content progress tracking (mark complete, continue later)
-- Quick-edit from Studio page (inline edit without navigating)
-- Reading time estimate on content cards
+## ✅ Complete — From Priority Plan (after audit)
 
-**Lower Priority:**
-- Project/plan pages revamp (RichEditor, dedicated content URLs)
-- Student management for schools
-- Drag-and-drop donation address reordering
+| Phase | Key Items | Status |
+|-------|-----------|--------|
+| P1: Fix Breaks | ESLint, bcrypt, MobileNav, Header types + auth.ts catch + Header dedup | ✅ 6 of 7 items (1 cancelled) |
+| P2: Foundation | ErrorBoundary, centralized types (11 files), service layer (5 services) | ✅ Partial |
+| P3: Universal Hashtags | 4 junction models, HashtagInput, hashtagService | ✅ Complete |
+| P4: Backlinking | Backlink model, backlinkService | ✅ Partial |
+| P5: Federation | actor, inbox, outbox, nodeinfo endpoints | ✅ Partial (routes exist) |
+| P7: UI/UX | Skeleton, EmptyState, ConfirmDialog, ToastContext + Loading→Skeleton sweep | ✅ Components exist, adoption ~85% |
+| P10: Onboarding | 6-step flow (Welcome → Profile → Class Setup → Tour → Community → Complete) | ✅ Complete |
+| P11: Polish | design-system.css, 43 useMemo usages, React.memo on 4 cards | ✅ Partial |
 
 ---
 
-### Git Log
+## ✅ Completed in Pass 2 (Fresh Pass)
+
+| Item | Files | Status |
+|------|-------|--------|
+| Loading... → Skeleton: dashboard (8 pages) | marketplace, passport, rentals, services, teaching, video, shop, saved | ✅ Done |
+| Loading... → Skeleton: admin (5 pages) | orders, wallets, subscribers, invite-codes, messages | ✅ Done |
+| Loading... → Skeleton: user-facing (14+ pages) | school setup, wallet, schools list, onboarding, forum post, community layout, courier setup, shop setup, AvailabilityEditor, services page | ✅ Done |
+| React.memo() | BoardPinCard | ✅ Done |
+| EmptyState adoption | shop detail (3 sections), services list page | ✅ Done |
+| **Total Loading... replaced** | ~32 of ~38 instances (6 low-impact remain) | ✅ 84% |
+| **Boards + Passport integration** | Map centered on passport location, passport marker, quick location update UI (set on map, auto-detect, fly home) | ✅ Done |
+
+## ⏳ Remaining Work (Prioritized)
+
+### Phase 1: Boards Feature (next steps)
+1. **Board CRUD** — edit board modal, delete board, board settings
+2. **PinToBoardButton** on remaining 4 entity types (services, shops, school, requests)
+3. **Unified MapView** component (shared across app)
+4. **ViewCount on boards + pins**
+5. **Boards on profile + dashboard widget**
+6. **Hashtags on boards/pins**
+7. **Boards in search**
+
+### Phase 2: Fix Breaks
+1. **Fix test env** — switch jest from jsdom to jest-environment-node, add polyfills
+2. **`any` type audit** — 7 API route files with `Record<string, unknown>`
+3. **6 Suspense fallbacks** — auth/verify-email, auth/reset-password, events/new, groups/new (auth guard), profile load-more button, Loading component default — low impact
+
+### Phase 2: Foundation (2-3 days)
+4. **Unified API envelope** — `src/lib/api-helpers.ts` with `withAuth()`, `requireAdmin()`, `withValidation()`
+5. **6 missing services** — productService, requestService, eventService, userService, notificationService, walletService
+6. **Database transactions** — wrap multi-step ops in `$transaction()`
+
+### Phase 3: Social Sharing (1.5-2 days)
+7. **ShareBar** — universal component replacing 4 separate share modals
+8. **Related Items** — auto-generated from backlinks on every entity detail page
+
+### Phase 4: Federation (2-3 days)
+9. **Key gen on registration**, **Follow model**, **wire inbox/outbox**, **federation UI**
+
+### Phase 5: Navigation (2 days)
+10. **Command palette**, **ERP sidebar**, **mobile bottom nav**, **breadcrumbs**
+
+### Phase 6: UI/UX (1.5 days remaining)
+11. **Component standardization** — use ui/Button, ui/Card everywhere, remove inline styles
+12. **Empty state adoption** — ~25 bare instances remain (admin/dashboard)
+13. **Toast coverage** — consistent toasts for ALL CRUD operations
+14. **ConfirmDialog** — for all destructive actions
+15. **Micro-interactions** — card hover, button active, page transitions
+
+### Phase 7-10: School, Dashboard, Help, Polish (7-9 days)
+16. Curriculum builder, student management, unified inbox, dashboard widgets, accessibility, performance, security, tests
+
+---
+
+## Implementation Notes
+
+### Key Files Referenced
+- `PRIORITY_LIST.md` — full phased execution plan with completion checkboxes
+- `IMPROVEMENT_PLAN.md` — architecture-focused plan with current state assessment
+- `MANUAL_CHECKLIST.md` — 411-item QA verification checklist
+
+### Architecture Patterns
+- **CSS**: CSS Modules for components, `design-system.css` for tokens, `globals.css` for reset
+- **API**: Moving toward `{success, data, error}` envelope with service layer
+- **Auth**: NextAuth.js with credentials + OAuth providers
+- **DB**: Prisma ORM (PostgreSQL on Neon production, SQLite dev)
+- **i18n**: next-intl with 4 locales (en, es, fr, pt)
+
+### Git Log (Latest)
 ```
-45bb5df feat: saved API enrichment + rich cards with filter, connection notifications, message polling, sidebar unread, more notification icons
-4eb9fff feat: Recent Studio section on overview, template picker in school form, mobile quick create
-e7ab2d8 fix: user menu avatar sizing with Image fill, dropdown max-height scroll
-3442b7c feat: Creative Hub - QuickCreateModal, Studio page, content templates, nav integration
-5c92498 feat: header Create dropdown, feed empty state fix, content card thumbnails, dashboard first-visit link
-3fdc717 fix: sidebar aria-labels, Skeleton loading, ErrorBoundary on hashtags, regex align, LinkPreview on profiles, dead code removal
-a4a6ec6 feat: profile share pre-fill, mention links fix, SharedItemCard CSS, bottom nav
-7496d4d fix: security, UX polish, and launch readiness fixes
-2599499 fix: profile share-to-post creates @mention post instead of reference
-127ad67 feat: crypto logos in tip modal, copy button style, social platform icons, profile share modal
+2314ccf Unify event forms into reusable EventFormFields + AssetPicker components
+ea876a6 fix: boards map markers, internal links new-window, travel mode persistence
+b191015 fix: use MapController component to properly capture Leaflet map instance
+cdbe280 feat: board UX enhancements — map auto-fit, flyTo, custom markers, always-show map, 90-day prefill, image upload, city name
+5851800 fix: replace MapContainer onClick with useMapEvents handler component
+e81eef7 feat: home page features integration + map-based board creation
+a6583cb feat: all user content types available as assets for pinning
+06da8b0 feat: auto-create boards from passport locations, live asset picker in CreatePinModal
 ```

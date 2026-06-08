@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import styles from './page.module.css'
+import Skeleton from '@/components/Skeleton'
 
 interface Message {
   id: string
@@ -56,7 +57,7 @@ export default function AdminMessagesPage() {
   }
 
   if (loading) {
-    return <div className={styles.container}><div className={styles.loading}>Loading...</div></div>
+    return <div className={styles.container}><Skeleton width="100%" height="2rem" /></div>
   }
 
   return (

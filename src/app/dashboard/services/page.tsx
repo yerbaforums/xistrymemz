@@ -8,6 +8,7 @@ import DonationAddressPicker from '@/components/DonationAddressPicker'
 import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import type { DonationAddr } from '@/types/product'
 import ImageUploader from '@/components/ImageUploader'
+import Skeleton from '@/components/Skeleton'
 import type { ServiceOffering, ServiceCategory } from '@/types/service'
 import { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service'
 import styles from './page.module.css'
@@ -289,7 +290,7 @@ export default function DashboardServices() {
       </div>
 
       {loading ? (
-        <div className={styles.loading}>Loading...</div>
+        <Skeleton width="100%" height="2rem" />
       ) : filteredServices.length === 0 && !showForm ? (
         <div className={styles.empty}>
           <div className={styles.emptyIcon}>🔧</div>

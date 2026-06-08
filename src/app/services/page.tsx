@@ -10,6 +10,8 @@ import BookAppointmentModal from '@/components/BookAppointmentModal'
 import type { ServiceOffering, ServiceCategory } from '@/types/service'
 import { SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service'
 import styles from './page.module.css'
+import Skeleton from '@/components/Skeleton'
+import { EmptyState } from '@/components/EmptyState'
 
 function safeStr(v: unknown): string | null {
   return typeof v === 'string' ? v : null
@@ -155,14 +157,9 @@ export default function ServicesPage() {
           </div>
 
           {loading ? (
-            <div className={styles.loading}>Loading services...</div>
+            <Skeleton width="100%" height="2rem" />
           ) : filteredServices.length === 0 ? (
-            <div className={styles.emptyState}>
-              <div className={styles.emptyIcon}>🔧</div>
-              <h3>No services found</h3>
-              <p>Try adjusting your filters or check back later.</p>
-              <button onClick={clearFilters} className={styles.clearBtn}>Clear Filters</button>
-            </div>
+            <EmptyState icon="🔧" title="No services found" description="Try adjusting your filters or check back later." action={{ label: 'Clear Filters', onClick: clearFilters }} />
           ) : (
             <div className={styles.grid}>
               {filteredServices.map(s => (

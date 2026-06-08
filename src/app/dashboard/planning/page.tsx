@@ -628,6 +628,7 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
 
       <div className={styles.tripTabs}>
         <button className={`${styles.tripTab} ${activeTab === 'stops' ? styles.tripTabActive : ''}`} onClick={() => setActiveTab('stops')}>📍 Stops</button>
+        <button className={`${styles.tripTab} ${activeTab === 'calendar' ? styles.tripTabActive : ''}`} onClick={() => setActiveTab('calendar')}>📅 Calendar</button>
         <button className={`${styles.tripTab} ${activeTab === 'map' ? styles.tripTabActive : ''}`} onClick={() => setActiveTab('map')}>🗺️ Map</button>
         <button className={`${styles.tripTab} ${activeTab === 'share' ? styles.tripTabActive : ''}`} onClick={() => setActiveTab('share')}>👥 Share</button>
       </div>
@@ -939,6 +940,10 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
         </>
       )}
 
+      {activeTab === 'calendar' && trip.startDate && (
+        <TripCalendar trip={trip} />
+      )}
+
       {activeTab === 'map' && mapReady && (
         <div>
           <div className={`${styles.flex} ${styles.gap8} ${styles.mb12} ${styles.flexWrap}`}>
@@ -1080,6 +1085,70 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
         </div>
       )}
     </>
+  )
+}
+
+function TripCalendar({ trip }: { trip: Trip }) {
+  const [currentMonth, setCurrentMonth] = useState(new Date())
+  if (!trip.startDate) return null
+
+  const year = currentMonth.getFullYear()
+  const month = currentMonth.getMonth()
+  const firstDay = new Date(year, month, 1)
+  const lastDay = new Date(year, month + 1, 0)
+  const startPadding = firstDay.getDay()
+  const tripStart = new Date(trip.startDate)
+
+  const getStopsForDay = (day: number) => {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+    if (!trip.stops || !trip.startDate) return []
+    return trip.stops.filter(s => {
+      const stopDate = new Date(tripStart)
+      stopDate.setDate(stopDate.getDate() + s.day)
+      return stopDate.toISOString().split('T')[0] === dateStr
+    })
+  }
+
+  const days: React.ReactNode[] = []
+  for (let i = 0; i < startPadding; i++) {
+    days.push(<div key={`e-${i}`} className={styles.calDayEmpty}></div>)
+  }
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const dayStops = getStopsForDay(d)
+    const isTripDay = trip.startDate && (() => {
+      const sd = new Date(trip.startDate)
+      const ed = trip.endDate ? new Date(trip.endDate) : sd
+      const check = new Date(year, month, d)
+      return check >= sd && check <= ed
+    })()
+    days.push(
+      <div key={d} className={`${styles.calDay} ${dayStops.length > 0 ? styles.calDayHas : ''} ${isTripDay ? styles.calDayTrip : ''}`}>
+        <span className={styles.calDayNum}>{d}</span>
+        {dayStops.slice(0, 2).map(s => (
+          <div key={s.id} className={styles.calStop} title={s.name}>
+            <span className={styles.calStopDot}>📍</span>
+            <span className={styles.calStopName}>{s.name}</span>
+          </div>
+        ))}
+        {dayStops.length > 2 && <span className={styles.calMore}>+{dayStops.length - 2}</span>}
+      </div>
+    )
+  }
+
+  return (
+    <div className={styles.calendarWrap}>
+      <div className={styles.calHeader}>
+        <button className={styles.calNav} onClick={() => setCurrentMonth(new Date(year, month - 1))}>←</button>
+        <h4>{currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h4>
+        <button className={styles.calNav} onClick={() => setCurrentMonth(new Date(year, month + 1))}>→</button>
+      </div>
+      <div className={styles.calGrid}>
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+          <div key={d} className={styles.calDayHeader}>{d}</div>
+        ))}
+        {days}
+      </div>
+    </div>
   )
 }
 

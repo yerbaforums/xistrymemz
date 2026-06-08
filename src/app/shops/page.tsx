@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
 import { ShopsClient } from './ShopsClient'
+import { SkeletonCard } from '@/components/Skeleton'
 
 interface Shop {
   id: string
@@ -51,7 +52,7 @@ export default function ShopsPage() {
       </div>
 
       {loading ? (
-        <div className={styles.loading}>Loading shops...</div>
+        <SkeletonCard />
       ) : (
         <ShopsClient initialShops={shops} />
       )}

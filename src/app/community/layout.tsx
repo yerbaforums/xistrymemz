@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { useEffect } from 'react'
 import Link from 'next/link'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import Skeleton from '@/components/Skeleton'
 import styles from './layout.module.css'
 import sidebarStyles from './layout-sidebar.module.css'
 
@@ -58,7 +59,7 @@ export default function CommunityLayout({
     return (
       <div className={styles.layout}>
         <div className={styles.container}>
-          <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Loading...</div>
+          <Skeleton width="100%" height="2rem" />
         </div>
       </div>
     )

@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { memo, useState, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { getUserProfileUrl } from '@/lib/utils'
+import LinkedEntityDetail from '@/components/LinkedEntityDetail'
 import styles from './BoardPinCard.module.css'
 
 interface PinUser {
@@ -150,7 +151,7 @@ function ImageCarousel({ images }: { images: string[] }) {
   )
 }
 
-export default function BoardPinCard({ pin, isOwner, isBoardOwner, onDelete, onView }: BoardPinCardProps) {
+const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, onDelete, onView }: BoardPinCardProps) {
   const [minimized, setMinimized] = useState(false)
   const parsedImages = pin.images ? JSON.parse(pin.images) as string[] : []
   const expirationText = timeUntilExpires(pin.expiresAt)
@@ -189,15 +190,7 @@ export default function BoardPinCard({ pin, isOwner, isBoardOwner, onDelete, onV
           {parsedImages.length > 0 && <ImageCarousel images={parsedImages} />}
 
           {pin.entityType && pin.entityId && (
-            <Link href={getEntityHref(pin.entityType, pin.entityId)} className={styles.entityLink}>
-              <span className={styles.entityIcon}>{getEntityIcon(pin.entityType)}</span>
-              {pin.entityImage && (
-                <div className={styles.entityThumb}>
-                  <Image src={pin.entityImage} alt="" width={24} height={24} />
-                </div>
-              )}
-              <span className={styles.entityTitle}>{pin.entityTitle || 'View'}</span>
-            </Link>
+            <LinkedEntityDetail entityType={pin.entityType} entityId={pin.entityId} />
           )}
 
           {(pin.contactName || pin.contactEmail || pin.contactPhone) && (
@@ -233,4 +226,6 @@ export default function BoardPinCard({ pin, isOwner, isBoardOwner, onDelete, onV
       </div>
     </div>
   )
-}
+})
+
+export default BoardPinCard

@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import styles from './page.module.css'
+import Skeleton from '@/components/Skeleton'
 
 interface SavedItem {
   id: string
@@ -72,7 +73,7 @@ export default function SavedPage() {
         <p className={styles.subtitle}>Items you&apos;ve bookmarked for later</p>
 
         {loading ? (
-          <div className={styles.loading}>Loading...</div>
+          <Skeleton width="100%" height="2rem" />
         ) : saved.length === 0 ? (
           <div className={styles.empty}>
             <div className={styles.emptyIcon}>☆</div>

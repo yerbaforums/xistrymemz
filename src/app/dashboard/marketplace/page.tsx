@@ -7,6 +7,7 @@ import { useToast } from '@/context/ToastContext'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
+import Skeleton from '@/components/Skeleton'
 import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import type { DonationAddr } from '@/types/product'
 import ImageUploader from '@/components/ImageUploader'
@@ -640,7 +641,7 @@ function MarketplaceContent() {
 
 export default function DashboardMarketplace() {
   return (
-    <Suspense fallback={<div className={styles.page}><div className={styles.loading}>Loading...</div></div>}>
+    <Suspense fallback={<div className={styles.page}><Skeleton width="100%" height="2rem" /></div>}>
       <MarketplaceContent />
     </Suspense>
   )

@@ -7,6 +7,7 @@ import { useSession } from 'next-auth/react'
 import EntityActions from '@/components/EntityActions'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import styles from './page.module.css'
+import Skeleton from '@/components/Skeleton'
 
 interface ContentData {
   id: string
@@ -112,7 +113,7 @@ export default function SchoolContentDetailPage() {
       .finally(() => setLoading(false))
   }, [slug, id])
 
-  if (loading) return <div className={styles.loading}>Loading...</div>
+  if (loading) return <Skeleton width="100%" height="2rem" />
   if (fetchError) return <div className={styles.error}>Failed to load content</div>
   if (!content) return <div className={styles.error}>Content not found</div>
 

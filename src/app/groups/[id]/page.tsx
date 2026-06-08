@@ -15,6 +15,7 @@ import ImageUploader from '@/components/ImageUploader'
 import HashtagInput from '@/components/HashtagInput'
 import Button from '@/components/ui/Button'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { SkeletonCard } from '@/components/Skeleton'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import CollaborateButton from '@/components/CollaborateButton'
 import PinToBoardButton from '@/components/PinToBoardButton'
@@ -518,7 +519,7 @@ function GroupDetailContent() {
     } catch { /* ignore */ }
   }
 
-  if (loading) return <div className={styles.loading}>Loading...</div>
+  if (loading) return <SkeletonCard />
   if (!group) return <div className={styles.error}>Group not found</div>
 
   const postProgress = (buy: GroupBuy) => {
@@ -609,7 +610,7 @@ function GroupDetailContent() {
                 entityTitle={group.name}
                 entityImage={group.imageUrl || undefined}
                 variant="ghost"
-                label="📌 Pin to Board"
+                label="Pin to Board"
               />
             )}
           </div>
@@ -1206,7 +1207,7 @@ function GroupDetailContent() {
 
 export default function GroupDetailPage() {
   return (
-    <Suspense fallback={<div className={styles.loading}>Loading...</div>}>
+    <Suspense fallback={<SkeletonCard />}>
       <GroupDetailContent />
     </Suspense>
   )

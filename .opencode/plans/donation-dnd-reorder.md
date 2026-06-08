@@ -1,4 +1,4 @@
-# Drag-and-Drop Reordering for Donation Addresses
+# ✅ COMPLETED — Drag-and-Drop Reordering for Donation Addresses
 
 **File:** `src/app/profile/edit/page.tsx`
 

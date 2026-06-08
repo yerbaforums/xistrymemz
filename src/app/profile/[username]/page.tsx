@@ -27,6 +27,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { useToast } from '@/context/ToastContext'
 import dynamic from 'next/dynamic'
 import Button from '@/components/ui/Button'
+import Skeleton from '@/components/Skeleton'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
@@ -1443,7 +1444,7 @@ export default function ProfilePage() {
           <div className={styles.forumSection}>
             <h3>Forum Posts</h3>
             {loadingForum ? (
-              <div className={styles.empty}><p>Loading...</p></div>
+              <div className={styles.empty}><Skeleton width="100%" height="1rem" /></div>
             ) : forumPosts.length > 0 ? (
               <div className={styles.postsList}>
                 {forumPosts.map(fp => (
@@ -1467,7 +1468,7 @@ export default function ProfilePage() {
           <div className={styles.eventsSection}>
             <h3>Events</h3>
             {loadingEvents ? (
-              <div className={styles.empty}><p>Loading...</p></div>
+              <div className={styles.empty}><Skeleton width="100%" height="1rem" /></div>
             ) : userEvents.length > 0 ? (
               <div className={styles.postsList}>
                 {userEvents.map(ev => (
@@ -1489,7 +1490,7 @@ export default function ProfilePage() {
           <div className={styles.requestsSection}>
             <h3>Requests</h3>
             {loadingRequests ? (
-              <div className={styles.empty}><p>Loading...</p></div>
+              <div className={styles.empty}><Skeleton width="100%" height="1rem" /></div>
             ) : userRequests.length > 0 ? (
               <div className={styles.postsList}>
                 {userRequests.map(r => (

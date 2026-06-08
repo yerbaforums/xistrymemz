@@ -592,3 +592,115 @@
   background: var(--bg-secondary);
   border-radius: 8px;
 }
+
+.calendarWrap {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+
+.calHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.calHeader h4 {
+  margin: 0;
+  min-width: 180px;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.calNav {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px 12px;
+  font-size: 0.9rem;
+}
+
+.calNav:hover {
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+}
+
+.calGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.calDayHeader {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 6px 2px;
+  text-transform: uppercase;
+}
+
+.calDayEmpty {
+  min-height: 72px;
+}
+
+.calDay {
+  min-height: 72px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.calDayHas {
+  border-color: var(--accent-primary);
+  background: rgba(0, 217, 255, 0.03);
+}
+
+.calDayTrip {
+  background: rgba(0, 217, 255, 0.06);
+}
+
+.calDayNum {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.calStop {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.7rem;
+  cursor: default;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.calStopDot {
+  font-size: 0.6rem;
+  flex-shrink: 0;
+}
+
+.calStopName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-primary);
+}
+
+.calMore {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}

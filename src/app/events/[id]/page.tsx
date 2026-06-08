@@ -302,7 +302,7 @@ function EventDetailContent() {
     }
   }
 
-  if (loading) return <div className={styles.loading}>Loading...</div>
+  if (loading) return <Skeleton width="100%" height="2rem" />
   if (!event) return (
     <div className={styles.page}>
       <div className={styles.notFound}>
@@ -495,7 +495,7 @@ function EventDetailContent() {
                   entityLatitude={event.latitude || undefined}
                   entityLongitude={event.longitude || undefined}
                   variant="ghost"
-                  label="📌 Pin to Board"
+                  label="Pin to Board"
                 />
               )}
             </div>
@@ -764,7 +764,7 @@ function EventDetailContent() {
 export default function PublicEventPage() {
   return (
     <ErrorBoundary>
-      <Suspense fallback={<div className={styles.loading}>Loading...</div>}>
+      <Suspense fallback={<Skeleton width="100%" height="2rem" />}>
         <EventDetailContent />
       </Suspense>
     </ErrorBoundary>

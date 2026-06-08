@@ -25,8 +25,11 @@ export function MapEvents({ onMove }: { onMove: (bounds: { north: number; south:
   return null
 }
 
-export function MapController({ mapRef }: { mapRef: MutableRefObject<any> }) {
+export function MapController({ mapRef, onReady }: { mapRef: MutableRefObject<any>; onReady?: () => void }) {
   const map = useMap()
-  useEffect(() => { mapRef.current = map }, [map, mapRef])
+  useEffect(() => {
+    mapRef.current = map
+    onReady?.()
+  }, [map, mapRef, onReady])
   return null
 }

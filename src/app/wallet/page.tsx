@@ -6,6 +6,7 @@ import styles from './page.module.css'
 import { getCryptoIcon, getCryptoName, CRYPTO_ICONS } from '@/lib/crypto-icons'
 import { useTariWallet } from '@/context/TariWalletContext'
 import { useToast } from '@/context/ToastContext'
+import Skeleton from '@/components/Skeleton'
 
 interface UserWallet {
   id: string
@@ -137,7 +138,7 @@ export default function WalletPage() {
   }
 
   if (loading) {
-    return <div className={styles.container}><div className={styles.loading}>Loading...</div></div>
+    return <div className={styles.container}><Skeleton width="100%" height="2rem" /></div>
   }
 
   return (

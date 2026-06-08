@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
 import dynamic from 'next/dynamic'
+import Skeleton from '@/components/Skeleton'
 import styles from './passport.module.css'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
@@ -357,7 +358,7 @@ export default function PassportPage() {
     } catch { toastError('Failed to delete category') }
   }
 
-  if (loading) return <div className={styles.loadingText}>Loading...</div>
+  if (loading) return <Skeleton width="100%" height="2rem" />
 
   return (
     <>

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
 import { EmptyState } from '@/components/EmptyState'
+import Skeleton from '@/components/Skeleton'
 
 interface School {
   id: string
@@ -165,7 +166,7 @@ export default function SchoolsPage() {
       </div>
 
       {loading ? (
-        <div className={styles.loading}>Loading...</div>
+        <Skeleton width="100%" height="2rem" />
       ) : view === 'schools' ? (
         schools.length === 0 ? (
           <EmptyState icon="🏫" title="No schools found" description="Be the first to create one!" />

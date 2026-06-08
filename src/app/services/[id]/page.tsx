@@ -12,7 +12,7 @@ import ViewCount from '@/components/ViewCount'
 import { useRecordView } from '@/hooks/useRecordView'
 import TranslateButton from '@/components/TranslateButton'
 import styles from './page.module.css'
-import Skeleton from '@/components/Skeleton'
+import Skeleton, { SkeletonCard } from '@/components/Skeleton'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 
 function formatDuration(mins: number) {
@@ -153,7 +153,7 @@ export default function ServiceDetailPage() {
   useRecordView('service', service?.id || '')
 
   if (loading) {
-    return <div className={styles.page}><div className={styles.loading}>Loading...</div></div>
+    return <div className={styles.page}><SkeletonCard /></div>
   }
 
   if (!service) {

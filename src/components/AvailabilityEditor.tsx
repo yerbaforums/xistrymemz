@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useToast } from '@/context/ToastContext'
+import Skeleton from '@/components/Skeleton'
 
 interface Slot {
   id?: string
@@ -81,7 +82,7 @@ export default function AvailabilityEditor({ userId }: AvailabilityEditorProps) 
       <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>Appointment Availability</label>
 
       {loading ? (
-        <p style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>Loading...</p>
+        <Skeleton width="100%" height="1rem" />
       ) : slots.length === 0 ? (
         <p style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem', marginBottom: 12 }}>No availability slots set.</p>
       ) : (

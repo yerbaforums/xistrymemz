@@ -5,6 +5,9 @@ import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import dynamic from 'next/dynamic'
 import CreateBoardModal from '@/components/CreateBoardModal'
+import { usePassportLocation } from '@/hooks/usePassportLocation'
+import { useToast } from '@/context/ToastContext'
+import { reverseGeocodeLocation, shortenLocation } from '@/lib/geocoding'
 import styles from './page.module.css'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
@@ -14,6 +17,7 @@ const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: f
 const Tooltip = dynamic(() => import('react-leaflet').then(m => m.Tooltip), { ssr: false })
 const MapEvents = dynamic(() => import('./MapEvents').then(m => m.MapEvents), { ssr: false })
 const MapController = dynamic(() => import('./MapEvents').then(m => m.MapController), { ssr: false })
+const BoardMapClickHandler = dynamic(() => import('@/components/BoardMapClickHandler').then(m => m.BoardMapClickHandler), { ssr: false })
 
 interface Board {
   id: string
@@ -40,12 +44,18 @@ interface UserLocation {
 
 export default function BoardsPage() {
   const { data: session } = useSession()
+  const { location: passportLocation } = usePassportLocation()
+  const { success, error } = useToast()
   const [boards, setBoards] = useState<Board[]>([])
   const [loading, setLoading] = useState(true)
   const [searchCity, setSearchCity] = useState('')
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [hoveredBoardId, setHoveredBoardId] = useState<string | null>(null)
   const [selectedBoardId, setSelectedBoardId] = useState<string | null>(null)
+  const [settingLocation, setSettingLocation] = useState(false)
+  const [homeCoords, setHomeCoords] = useState<[number, number] | null>(null)
+  const [homeName, setHomeName] = useState('')
+  const [mapReady, setMapReady] = useState(false)
   const [L, setL] = useState<any>(null)
   const mapRef = useRef<any>(null)
 
@@ -54,6 +64,21 @@ export default function BoardsPage() {
     import('leaflet').then(mod => setL(mod))
   }, [])
 
+  useEffect(() => {
+    if (passportLocation?.latitude && passportLocation?.longitude) {
+      setHomeCoords([passportLocation.latitude, passportLocation.longitude])
+      setHomeName(passportLocation.location || '')
+    }
+  }, [passportLocation])
+
+  useEffect(() => {
+    if (homeCoords && mapRef.current) {
+      mapRef.current.flyTo(homeCoords, 12, { duration: 1.5 })
+    }
+  }, [homeCoords, mapReady])
+
+  const mapCenter: [number, number] = homeCoords || [40.7128, -74.006]
+
   const getBoardIcon = useCallback((highlighted: boolean) => {
     if (!L) return undefined
     return L.divIcon({
@@ -61,6 +86,16 @@ export default function BoardsPage() {
       html: `<div style="width:16px;height:16px;border-radius:50%;background:${highlighted ? 'var(--accent-primary)' : '#888'};border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>`,
       iconSize: [16, 16],
       iconAnchor: [8, 8],
+    })
+  }, [L])
+
+  const getPassportIcon = useCallback(() => {
+    if (!L) return undefined
+    return L.divIcon({
+      className: '',
+      html: `<div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#00d9ff,#7b61ff);border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;font-size:14px;">🏠</div>`,
+      iconSize: [28, 28],
+      iconAnchor: [14, 14],
     })
   }, [L])
 
@@ -181,6 +216,68 @@ export default function BoardsPage() {
     setHoveredBoardId(boardId)
   }
 
+  const handleMapClickSetLocation = useCallback(async (e: any) => {
+    if (!settingLocation) return
+    const { lat, lng } = e.latlng
+    setSettingLocation(false)
+
+    const displayName = await reverseGeocodeLocation(lat, lng)
+    const locationName = shortenLocation(displayName || `${lat.toFixed(4)}, ${lng.toFixed(4)}`)
+
+    try {
+      const res = await fetch('/api/users/me', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ location: locationName, latitude: lat, longitude: lng }),
+      })
+      if (res.ok) {
+        setHomeCoords([lat, lng])
+        setHomeName(locationName)
+        success('📍 Home location updated!')
+      } else {
+        error('Failed to update location')
+      }
+    } catch {
+      error('Failed to update location')
+    }
+  }, [settingLocation, success, error])
+
+  const handleDetectLocation = useCallback(async () => {
+    if (typeof window === 'undefined' || !('geolocation' in navigator)) {
+      error('Geolocation not available')
+      return
+    }
+    try {
+      const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
+        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 8000 })
+      )
+      const { latitude: lat, longitude: lng } = pos.coords
+      const displayName = await reverseGeocodeLocation(lat, lng)
+      const locationName = shortenLocation(displayName || `${lat.toFixed(4)}, ${lng.toFixed(4)}`)
+
+      const res = await fetch('/api/users/me', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ location: locationName, latitude: lat, longitude: lng }),
+      })
+      if (res.ok) {
+        setHomeCoords([lat, lng])
+        setHomeName(locationName)
+        success('📍 Location auto-detected!')
+      } else {
+        error('Failed to update location')
+      }
+    } catch {
+      error('Could not detect location. Try setting it manually.')
+    }
+  }, [success, error])
+
+  const handleFlyHome = useCallback(() => {
+    if (homeCoords && mapRef.current) {
+      mapRef.current.flyTo(homeCoords, 12, { duration: 1 })
+    }
+  }, [homeCoords])
+
   return (
     <div className={styles.page}>
       <div className={styles.hero}>
@@ -192,6 +289,36 @@ export default function BoardsPage() {
           </button>
         )}
       </div>
+
+      {session?.user && (
+        <div className={styles.locationCard}>
+          <div className={styles.locationInfo}>
+            <span className={styles.locationIcon}>🏠</span>
+            <div>
+              <div className={styles.locationLabel}>Your Location</div>
+              <div className={styles.locationName}>
+                {homeName || 'Not set — click the map to set your home base'}
+              </div>
+            </div>
+          </div>
+          <div className={styles.locationActions}>
+            <button
+              className={`${styles.locBtn} ${settingLocation ? styles.locBtnActive : ''}`}
+              onClick={() => setSettingLocation(s => !s)}
+            >
+              {settingLocation ? '✕ Cancel' : '📍 Set on Map'}
+            </button>
+            <button className={styles.locBtn} onClick={handleDetectLocation}>
+              📡 Detect
+            </button>
+            {homeCoords && (
+              <button className={styles.locBtn} onClick={handleFlyHome}>
+                ✈️ Fly Home
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSearch} className={styles.search}>
         <input
@@ -210,13 +337,27 @@ export default function BoardsPage() {
       </form>
 
       <div className={styles.mapWrap}>
-        <MapContainer center={[40.7128, -74.006]} zoom={3} className={styles.map} scrollWheelZoom={true}>
+        {settingLocation && <div className={styles.mapOverlay}>Click anywhere on the map to set your home location</div>}
+        <MapContainer center={mapCenter} zoom={12} className={styles.map} scrollWheelZoom={true}>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          <MapController mapRef={mapRef} />
+          <MapController mapRef={mapRef} onReady={() => setMapReady(true)} />
           <MapEvents onMove={handleMapMove} />
+          {settingLocation && <BoardMapClickHandler onClick={handleMapClickSetLocation} />}
+          {homeCoords && (
+            <Marker position={homeCoords} icon={getPassportIcon()}>
+              <Tooltip>🏠 {homeName || 'Home'}</Tooltip>
+              <Popup>
+                <div style={{ textAlign: 'center', minWidth: 120 }}>
+                  <strong>🏠 Your Location</strong>
+                  <br />
+                  <span style={{ fontSize: '0.8rem', color: '#666' }}>{homeName || `${homeCoords[0].toFixed(4)}, ${homeCoords[1].toFixed(4)}`}</span>
+                </div>
+              </Popup>
+            </Marker>
+          )}
           {boards.filter(b => b.latitude && b.longitude).map(b => {
             const isHighlighted = b.id === hoveredBoardId || b.id === selectedBoardId
             return (
@@ -227,13 +368,15 @@ export default function BoardsPage() {
               >
                 <Tooltip>{b.name} — {b.pinCount} pins</Tooltip>
                 <Popup>
-                  <Link href={`/boards/${b.slug}`} style={{ fontWeight: 600, textDecoration: 'none', color: 'var(--accent-primary)' }}>
-                    {b.name}
-                  </Link>
-                  <br />
-                  <span style={{ fontSize: '0.8rem', color: '#666' }}>{b.location} · {b.pinCount} pins</span>
-                  {b.distance != null && <br />}
-                  {b.distance != null && <span style={{ fontSize: '0.8rem' }}>📍 {b.distance} mi</span>}
+                  <div style={{ minWidth: 180 }}>
+                    <Link href={`/boards/${b.slug}`} style={{ fontWeight: 600, textDecoration: 'none', color: 'var(--accent-primary)' }}>
+                      {b.name}
+                    </Link>
+                    <br />
+                    <span style={{ fontSize: '0.8rem', color: '#666' }}>{b.location} · {b.pinCount} pins</span>
+                    {b.distance != null && <br />}
+                    {b.distance != null && <span style={{ fontSize: '0.8rem' }}>📍 {b.distance} mi</span>}
+                  </div>
                 </Popup>
               </Marker>
             )

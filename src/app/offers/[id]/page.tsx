@@ -9,6 +9,7 @@ import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
 import { CounterOfferModal } from '@/components/CounterOfferModal'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import Skeleton from '@/components/Skeleton'
 
 interface BarterOffer {
   id: string
@@ -127,7 +128,7 @@ export default function OfferDetailPage({
   }
 
   if (loading) {
-    return <div className={styles.loading}>Loading...</div>
+    return <Skeleton width="100%" height="2rem" />
   }
 
   if (!offer) {

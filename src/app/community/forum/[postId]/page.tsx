@@ -11,6 +11,7 @@ import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
 import TranslateButton from '@/components/TranslateButton'
 import Button from '@/components/ui/Button'
+import Skeleton from '@/components/Skeleton'
 
 interface Author {
   id: string
@@ -341,7 +342,7 @@ export default function ForumThreadPage() {
   }
 
   if (loading) {
-    return <div className={styles.container}><p>Loading...</p></div>
+    return <div className={styles.container}><Skeleton width="100%" height="2rem" /></div>
   }
 
   if (!post) {

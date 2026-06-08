@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { useCart } from '@/context/CartContext'
@@ -22,7 +23,7 @@ interface ProductCardProps {
   onPin?: (product: Product) => void
 }
 
-export default function ProductCard({
+const ProductCard = memo(function ProductCard({
   product,
   viewMode = 'grid',
   onQuickView,
@@ -219,4 +220,6 @@ export default function ProductCard({
       </div>
     </div>
   )
-}
+})
+
+export default ProductCard

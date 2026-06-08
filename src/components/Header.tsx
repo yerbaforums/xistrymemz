@@ -531,16 +531,14 @@ export default function Header() {
 
               <CartButton />
 
-              {notificationCount > 0 && (
-                <Link href="/notifications" className={styles.notificationBtn} aria-label={`Notifications (${notificationCount})`}>
+              {isAuthenticated && (
+                <Link
+                  href="/notifications"
+                  className={styles.notificationBtn}
+                  aria-label={notificationCount > 0 ? `Notifications (${notificationCount})` : 'Notifications'}
+                >
                   <span className={styles.bellIcon}>🔔</span>
-                  <span className={styles.notificationBadge}>{notificationCount}</span>
-                </Link>
-              )}
-
-              {notificationCount === 0 && isAuthenticated && (
-                <Link href="/notifications" className={styles.notificationBtn} aria-label="Notifications">
-                  <span className={styles.bellIcon}>🔔</span>
+                  {notificationCount > 0 && <span className={styles.notificationBadge}>{notificationCount}</span>}
                 </Link>
               )}
 

@@ -8,6 +8,7 @@ import { useToast } from '@/context/ToastContext'
 import FormWizard, { useWizard, type WizardStep } from '@/components/FormWizard'
 import { businessTemplates, getTemplateById, type BusinessTemplate } from '@/lib/templates'
 import Button from '@/components/ui/Button'
+import Skeleton from '@/components/Skeleton'
 
 const steps: WizardStep[] = [
   { key: 'template', label: 'Choose Template', icon: '📋' },
@@ -115,7 +116,7 @@ function SchoolSetupContent() {
   }
 
   if (loading) {
-    return <div className={styles.loading}>Loading...</div>
+    return <Skeleton width="100%" height="2rem" />
   }
 
   return (
@@ -294,7 +295,7 @@ function SchoolSetupContent() {
 
 export default function SchoolSetupPage() {
   return (
-    <Suspense fallback={<div className={styles.loading}>Loading...</div>}>
+    <Suspense fallback={<Skeleton width="100%" height="2rem" />}>
       <SchoolSetupContent />
     </Suspense>
   )

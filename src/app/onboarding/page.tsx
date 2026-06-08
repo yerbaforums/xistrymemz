@@ -9,6 +9,7 @@ import ImageUploader from '@/components/ImageUploader'
 import { getClassGuides, getAllSetupStepIds } from '@/lib/classOnboarding'
 import { USER_CLASSES, CLASS_ICONS } from '@/lib/user-classes'
 import styles from './page.module.css'
+import Skeleton from '@/components/Skeleton'
 
 type OnboardingStep = 'welcome' | 'profile' | 'class-setup' | 'tour' | 'community' | 'complete'
 
@@ -342,7 +343,7 @@ export default function OnboardingPage() {
     return (
       <div className={styles.onboarding}>
         <div className={styles.container} style={{ textAlign: 'center', paddingTop: '20vh' }}>
-          <p>Loading...</p>
+          <Skeleton width="100%" height="1rem" />
         </div>
       </div>
     )

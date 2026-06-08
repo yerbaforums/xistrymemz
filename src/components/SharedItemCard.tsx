@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { memo, useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import Skeleton from '@/components/Skeleton'
 import HashtagText from '@/components/HashtagText'
 import styles from './SharedItemCard.module.css'
 
@@ -38,7 +39,7 @@ const TYPE_ICONS: Record<string, string> = {
   SCHOOLCONTENT: '📖', FORUMPOST: '💬', GROUP: '👥',
 }
 
-export default function SharedItemCard({ referenceType, referenceId, referenceTitle: cachedTitle }: SharedItemCardProps) {
+const SharedItemCard = memo(function SharedItemCard({ referenceType, referenceId, referenceTitle: cachedTitle }: SharedItemCardProps) {
   const [item, setItem] = useState<RefItem | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -131,7 +132,7 @@ export default function SharedItemCard({ referenceType, referenceId, referenceTi
           <div className={styles.cardInfo}>
             <div className={styles.cardType}>{TYPE_ICONS[referenceType]} {referenceType}</div>
             <div className={styles.cardTitle}>
-              {loading ? 'Loading...' : (item?.title || referenceType)}
+              {loading ? <Skeleton width="60%" height="1rem" /> : (item?.title || referenceType)}
             </div>
           </div>
           <span className={styles.cardArrow}>→</span>
@@ -139,4 +140,6 @@ export default function SharedItemCard({ referenceType, referenceId, referenceTi
       </div>
     </Link>
   )
-}
+})
+
+export default SharedItemCard

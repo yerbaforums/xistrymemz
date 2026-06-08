@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import type { ServiceOffering, ServiceCategory } from '@/types/service'
 import { SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service'
 import ViewCount from '@/components/ViewCount'
@@ -17,7 +18,7 @@ interface ServiceCardProps {
   style?: React.CSSProperties
 }
 
-export default function ServiceCard({ service, onClick, style }: ServiceCardProps) {
+const ServiceCard = memo(function ServiceCard({ service, onClick, style }: ServiceCardProps) {
   const cat = (typeof service.category === 'string' ? service.category : 'OTHER') as ServiceCategory
   const icon = SERVICE_CATEGORY_ICONS[cat] || '📋'
   const label = SERVICE_CATEGORY_LABELS[cat] || 'Other'
@@ -121,4 +122,6 @@ export default function ServiceCard({ service, onClick, style }: ServiceCardProp
       </div>
     </div>
   )
-}
+})
+
+export default ServiceCard

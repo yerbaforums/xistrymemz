@@ -518,7 +518,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   }
 
   if (loading) {
-    return <div className={styles.loading}>Loading...</div>
+    return <Skeleton width="100%" height="2rem" />
   }
 
   if (fetchError) {
@@ -860,7 +860,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 entityLatitude={product.latitude || undefined}
                 entityLongitude={product.longitude || undefined}
                 variant="ghost"
-                label="📌 Pin to Board"
+                label="Pin to Board"
               />
             )}
           </div>

@@ -8,6 +8,7 @@ import { useToast } from '@/context/ToastContext'
 import FormWizard, { useWizard, type WizardStep } from '@/components/FormWizard'
 import { businessTemplates, getTemplateById, type BusinessTemplate } from '@/lib/templates'
 import Button from '@/components/ui/Button'
+import Skeleton from '@/components/Skeleton'
 
 interface ShopData {
   shopName: string | null
@@ -390,7 +391,7 @@ export default function SetupShopPage() {
   }
 
   if (loading) {
-    return <div className={styles.loading}>Loading...</div>
+    return <Skeleton width="100%" height="2rem" />
   }
 
   return (
