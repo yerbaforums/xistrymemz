@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
 import EntityActions from '@/components/EntityActions'
+import Button from '@/components/ui/Button'
 import type { ServiceOffering, ServiceCategory } from '@/types/service'
 import { SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service'
 import ViewCount from '@/components/ViewCount'
@@ -355,13 +356,14 @@ export default function ServiceDetailPage() {
                 </div>
               </div>
 
-              <button
+              <Button
                 onClick={() => setShowBooking(true)}
                 className={styles.bookBtn}
+                variant="primary"
                 disabled={!session}
               >
                 {session ? '📅 Book This Service' : 'Sign in to Book'}
-              </button>
+              </Button>
 
               {session && (
                 <PinToBoardButton

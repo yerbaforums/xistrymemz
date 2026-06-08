@@ -379,9 +379,9 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                   <CompactDonation key={da.id} donation={da} />
                 ))}
                 {shop.donationAddresses.length > 2 && (
-                  <button className={styles.compactDonationMore} onClick={() => setActiveTab('about')}>
+                  <Button className={styles.compactDonationMore} variant="ghost" onClick={() => setActiveTab('about')}>
                     +{shop.donationAddresses.length - 2} more
-                  </button>
+                  </Button>
                 )}
               </div>
             )}
@@ -412,12 +412,12 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
             <Link href={getUserProfileUrl(shop.user)} className={styles.viewOwnerBtn}>
               View Owner Profile
             </Link>
-            <button onClick={() => setShowAppointmentModal(true)} className={styles.viewOwnerBtn} style={{ fontSize: '0.78rem' }}>📅 Book</button>
-            {shop.shopSlug && <button onClick={() => setShowShareModal(true)} className={styles.viewOwnerBtn}>🔗 Share</button>}
+            <Button variant="secondary" onClick={() => setShowAppointmentModal(true)} className={styles.viewOwnerBtn} style={{ fontSize: '0.78rem' }}>📅 Book</Button>
+            {shop.shopSlug && <Button variant="secondary" onClick={() => setShowShareModal(true)} className={styles.viewOwnerBtn}>🔗 Share</Button>}
             {isOwner && (
-              <button onClick={() => { setShowEditModal(true); setActiveTab('about'); }} className={styles.editBtn}>
+              <Button variant="ghost" onClick={() => { setShowEditModal(true); setActiveTab('about'); }} className={styles.editBtn}>
                 Edit Shop
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -431,24 +431,24 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
       )}
 
       <div className={styles.tabs}>
-        <button className={`${styles.tab} ${activeTab === 'products' ? styles.active : ''}`} onClick={() => setActiveTab('products')}>
+        <Button variant="ghost" className={`${styles.tab} ${activeTab === 'products' ? styles.active : ''}`} onClick={() => setActiveTab('products')}>
           Products ({shop.products.length})
-        </button>
-        <button className={`${styles.tab} ${activeTab === 'services' ? styles.active : ''}`} onClick={() => setActiveTab('services')}>
+        </Button>
+        <Button variant="ghost" className={`${styles.tab} ${activeTab === 'services' ? styles.active : ''}`} onClick={() => setActiveTab('services')}>
           Services ({shop.services.length})
-        </button>
-        <button className={`${styles.tab} ${activeTab === 'rentals' ? styles.active : ''}`} onClick={() => setActiveTab('rentals')}>
+        </Button>
+        <Button variant="ghost" className={`${styles.tab} ${activeTab === 'rentals' ? styles.active : ''}`} onClick={() => setActiveTab('rentals')}>
           Rentals ({shop.rentals.length})
-        </button>
-        <button className={`${styles.tab} ${activeTab === 'posts' ? styles.active : ''}`} onClick={() => setActiveTab('posts')}>
+        </Button>
+        <Button variant="ghost" className={`${styles.tab} ${activeTab === 'posts' ? styles.active : ''}`} onClick={() => setActiveTab('posts')}>
           Posts ({shop.posts.length})
-        </button>
-        <button className={`${styles.tab} ${activeTab === 'reviews' ? styles.active : ''}`} onClick={() => setActiveTab('reviews')}>
+        </Button>
+        <Button variant="ghost" className={`${styles.tab} ${activeTab === 'reviews' ? styles.active : ''}`} onClick={() => setActiveTab('reviews')}>
           Reviews
-        </button>
-        <button className={`${styles.tab} ${activeTab === 'about' ? styles.active : ''}`} onClick={() => setActiveTab('about')}>
+        </Button>
+        <Button variant="ghost" className={`${styles.tab} ${activeTab === 'about' ? styles.active : ''}`} onClick={() => setActiveTab('about')}>
           About
-        </button>
+        </Button>
       </div>
 
       <div className={styles.content}>
@@ -475,13 +475,14 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                     </div>
                   </Link>
                   {isOwner && (
-                    <button
+                    <Button
+                      variant="ghost"
                       onClick={() => handlePin('product', product.id, product.pinned)}
                       className={`${styles.pinBtn} ${product.pinned ? styles.pinBtnActive : ''}`}
                       title={product.pinned ? 'Unpin' : 'Pin to top'}
                     >
                       {product.pinned ? '📌' : '📍'}
-                    </button>
+                    </Button>
                   )}
                 </div>
               ))
@@ -561,9 +562,9 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                 <ImageUploader images={newPostImages} onChange={setNewPostImages} maxImages={6} />
                 <div className={styles.postActions}>
                   <span className={styles.charCount}>{newPost.length}/2000</span>
-                  <button type="submit" disabled={posting || !newPost.trim()} className={styles.postBtn}>
+                  <Button type="submit" variant="primary" disabled={posting || !newPost.trim()} className={styles.postBtn}>
                     {posting ? 'Posting...' : 'Post'}
-                  </button>
+                  </Button>
                 </div>
               </form>
             )}
@@ -583,13 +584,14 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                       </div>
                       <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                         {isOwner && (
-                          <button
+                          <Button
+                            variant="ghost"
                             onClick={() => handlePin('post', post.id, post.pinned)}
                             className={`${styles.pinBtn} ${post.pinned ? styles.pinBtnActive : ''}`}
                             title={post.pinned ? 'Unpin' : 'Pin to top'}
                           >
                             {post.pinned ? '📌' : '📍'}
-                          </button>
+                          </Button>
                         )}
                       </div>
                     </div>
@@ -603,7 +605,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                     )}
                     <div className={styles.postFooter}>
                       <span className={styles.postLikes}>♥ {post.likes}</span>
-                      <button onClick={() => handleLikePost(post.id, post.likes)} className={styles.likeBtn}>Like</button>
+                      <Button variant="ghost" onClick={() => handleLikePost(post.id, post.likes)} className={styles.likeBtn}>Like</Button>
                     </div>
                   </div>
                 ))}
@@ -645,11 +647,11 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                     <label>Cover Style</label>
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                       {['cover', 'contain', 'fill', 'repeat'].map(s => (
-                        <button key={s} type="button" onClick={() => setEditForm(prev => ({ ...prev, shopCoverStyle: s }))} style={{
+                        <Button key={s} type="button" variant="ghost" onClick={() => setEditForm(prev => ({ ...prev, shopCoverStyle: s }))} style={{
                           padding: '6px 14px', borderRadius: 6, border: `1px solid ${editForm.shopCoverStyle === s ? 'var(--accent-primary)' : 'var(--border-color)'}`, background: editForm.shopCoverStyle === s ? 'var(--accent-primary)' : 'transparent', color: editForm.shopCoverStyle === s ? '#fff' : 'var(--text-primary)', cursor: 'pointer', fontSize: '0.8rem', textTransform: 'capitalize'
                         }}>
                           {s}
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   </div>

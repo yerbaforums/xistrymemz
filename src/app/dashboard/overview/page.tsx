@@ -428,7 +428,7 @@ export default async function DashboardOverview({
                   ))}
                 </div>
               ) : (
-                <EmptyState icon="🚀" title="No projects yet" description="Start your first project and track progress with milestones." action={{ label: 'Create Project', onClick: () => window.location.href = '/dashboard/projects' }} />
+                <EmptyState icon="🚀" title="No projects yet" description="Start your first project and track progress with milestones." action={{ label: 'Create Project', href: '/dashboard/projects' }} />
               )}
             </div>
 
@@ -452,7 +452,7 @@ export default async function DashboardOverview({
                   ))}
                 </div>
               ) : (
-                <EmptyState icon="✏️" title="No recent posts" description="Connect with people or write your own post to get started." action={{ label: 'Write a Post', onClick: () => window.location.href = '/dashboard/feed' }} />
+                <EmptyState icon="✏️" title="No recent posts" description="Connect with people or write your own post to get started." action={{ label: 'Write a Post', href: '/dashboard/feed' }} />
               )}
             </div>
           </div>
@@ -470,7 +470,7 @@ export default async function DashboardOverview({
               ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5)
               if (studioItems.length === 0) {
                 return (
-                  <EmptyState icon="📝" title="No content yet" description="Create plans, products, or school content to get started." action={{ label: 'Create Something', onClick: () => window.location.href = '/dashboard/studio' }} />
+                  <EmptyState icon="📝" title="No content yet" description="Create plans, products, or school content to get started." action={{ label: 'Create Something', href: '/dashboard/studio' }} />
                 )
               }
               return (

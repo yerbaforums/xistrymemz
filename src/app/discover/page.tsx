@@ -7,6 +7,7 @@ import { useSession } from 'next-auth/react'
 import dynamic from 'next/dynamic'
 import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import Button from '@/components/ui/Button'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
@@ -188,32 +189,34 @@ export default function DiscoverPage() {
           onChange={e => setQuery(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && fetchResults(1)}
         />
-        <button className={styles.searchBtn} onClick={() => fetchResults(1)}>Search</button>
+        <Button variant="primary" className={styles.searchBtn} onClick={() => fetchResults(1)}>Search</Button>
       </div>
 
       <div className={styles.filterRow}>
         <div className={styles.typeFilters}>
           {ENTITY_TYPES.map(t => (
-            <button
+            <Button
               key={t.key}
+              variant="secondary"
               className={`${styles.typePill} ${typeFilter === t.key ? styles.typePillActive : ''}`}
               onClick={() => { setTypeFilter(t.key); setPage(1) }}
             >
               {t.icon} {t.label}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
 
       <div className={styles.filterRow}>
         {INTENT_FILTERS.map(f => (
-          <button
+          <Button
             key={f.key}
+            variant="secondary"
             className={`${styles.intentPill} ${intentFilter === f.key ? styles.intentPillActive : ''}`}
             onClick={() => { setIntentFilter(f.key); setPage(1) }}
           >
             {f.label}
-          </button>
+          </Button>
         ))}
         <input
           type="text"
@@ -224,14 +227,16 @@ export default function DiscoverPage() {
           onKeyDown={e => e.key === 'Enter' && fetchResults(1)}
         />
         <div className={styles.viewToggle}>
-          <button
+          <Button
+            variant="ghost"
             className={`${styles.viewBtn} ${viewMode === 'map' ? styles.viewBtnActive : ''}`}
             onClick={() => setViewMode('map')}
-          >🗺️ Map</button>
-          <button
+          >🗺️ Map</Button>
+          <Button
+            variant="ghost"
             className={`${styles.viewBtn} ${viewMode === 'grid' ? styles.viewBtnActive : ''}`}
             onClick={() => setViewMode('grid')}
-          >📋 Grid</button>
+          >📋 Grid</Button>
         </div>
       </div>
 
@@ -279,9 +284,9 @@ export default function DiscoverPage() {
             <div className={styles.empty}>No results found. Try adjusting your filters.</div>
           )}
           {total > page * 50 && (
-            <button className={styles.loadMore} onClick={() => fetchResults(page + 1)}>
+            <Button variant="primary" className={styles.loadMore} onClick={() => fetchResults(page + 1)}>
               Load More ({Math.min(50, total - page * 50)} remaining)
-            </button>
+            </Button>
           )}
         </>
       )}

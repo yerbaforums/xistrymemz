@@ -439,8 +439,9 @@ export default function ForumThreadPage() {
             </div>
             <div className={styles.pollOptions}>
               {pollOptions.map(option => (
-                <button
+                <Button
                   key={option.id}
+                  variant="ghost"
                   onClick={() => handleVote(option.id)}
                   disabled={voting || userVoted || isPollExpired}
                   className={`${styles.pollOptionBtn} ${userVotes.includes(option.id) ? styles.votedOption : ''}`}
@@ -453,7 +454,7 @@ export default function ForumThreadPage() {
                   </div>
                   <span className={styles.pollOptionText}>{option.optionText}</span>
                   <span className={styles.pollOptionPercent}>{option.percentage || 0}%</span>
-                </button>
+                </Button>
               ))}
             </div>
             {session && !userVoted && !isPollExpired && (
@@ -466,7 +467,8 @@ export default function ForumThreadPage() {
         )}
 
         <div className={styles.threadActions}>
-          <button
+          <Button
+            variant="ghost"
             onClick={() => {
               const newLiked = new Set(likedPosts)
               if (newLiked.has(post.id)) newLiked.delete(post.id)
@@ -476,37 +478,39 @@ export default function ForumThreadPage() {
             className={`${styles.actionBtn} ${likedPosts.has(post.id) ? styles.liked : ''}`}
           >
             {likedPosts.has(post.id) ? '❤️ Liked' : '🤍 Like'}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
             onClick={() => navigator.clipboard.writeText(`${window.location.origin}/community/forum/${post.id}`)}
             className={styles.actionBtn}
           >
             📤 Share
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
             onClick={() => setTipTarget({ type: 'post', id: post.id, authorId: post.author.id })}
             className={styles.actionBtn}
           >
             💰 Tip
-          </button>
+          </Button>
           {canModerate && !editingPost && (
             <>
-              <button onClick={handleEditPost} className={styles.actionBtn}>
+              <Button variant="ghost" onClick={handleEditPost} className={styles.actionBtn}>
                 ✏️ Edit
-              </button>
-              <button onClick={handleDeletePost} className={styles.actionBtn} disabled={deleting}>
+              </Button>
+              <Button variant="ghost" onClick={handleDeletePost} className={styles.actionBtn} disabled={deleting}>
                 🗑️ Delete
-              </button>
+              </Button>
             </>
           )}
           {isAdmin && (
             <>
-              <button onClick={handleTogglePin} className={styles.actionBtn}>
+              <Button variant="ghost" onClick={handleTogglePin} className={styles.actionBtn}>
                 {post.pinned ? '📌 Unpin' : '📌 Pin'}
-              </button>
-              <button onClick={handleToggleLock} className={styles.actionBtn}>
+              </Button>
+              <Button variant="ghost" onClick={handleToggleLock} className={styles.actionBtn}>
                 {post.locked ? '🔓 Unlock' : '🔒 Lock'}
-              </button>
+              </Button>
             </>
           )}
         </div>
@@ -568,20 +572,21 @@ export default function ForumThreadPage() {
                   {reply.totalTips > 0 && (
                     <span className={styles.replyTips}>💰 ${reply.totalTips.toFixed(2)}</span>
                   )}
-                  <button
+                  <Button
+                    variant="ghost"
                     onClick={() => setTipTarget({ type: 'reply', id: reply.id, authorId: reply.author.id })}
                     className={styles.actionBtn}
                   >
                     💰 Tip
-                  </button>
+                  </Button>
                   {userId && reply.author.id === userId && (
                     <>
-                      <button onClick={() => handleEditReply(reply)} className={styles.actionBtn}>
+                      <Button variant="ghost" onClick={() => handleEditReply(reply)} className={styles.actionBtn}>
                         ✏️ Edit
-                      </button>
-                      <button onClick={() => handleDeleteReply(reply.id)} className={styles.actionBtn}>
+                      </Button>
+                      <Button variant="ghost" onClick={() => handleDeleteReply(reply.id)} className={styles.actionBtn}>
                         🗑️
-                      </button>
+                      </Button>
                     </>
                   )}
                 </div>
@@ -602,22 +607,24 @@ export default function ForumThreadPage() {
             rows={5}
             className={styles.replyTextarea}
           />
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => replyMentionRef.current?.insertAtCursor('@')}
             className={styles.mentionBtn}
             title="Mention someone"
           >
             @
-          </button>
+          </Button>
         </div>
-        <button
+        <Button
+          variant="primary"
           onClick={handleSubmitReply}
           disabled={submitting || !replyContent.trim()}
           className={styles.submitReplyBtn}
         >
           {submitting ? 'Posting...' : 'Post Reply'}
-        </button>
+        </Button>
       </div>
 
       {tipTarget && (
@@ -629,15 +636,16 @@ export default function ForumThreadPage() {
               <label>Select Crypto</label>
               <div className={styles.cryptoGrid}>
                 {cryptoBalances.map(crypto => (
-                  <button
+                  <Button
                     key={crypto.symbol}
+                    variant="secondary"
                     className={`${styles.cryptoBtn} ${tipCrypto === crypto.symbol ? styles.selected : ''}`}
                     onClick={() => setTipCrypto(crypto.symbol)}
                     style={{ '--crypto-color': crypto.color } as React.CSSProperties}
                   >
                     <img src={crypto.icon} alt={crypto.symbol} style={{ width: 24, height: 24, borderRadius: '50%' }} />
                     <span>{crypto.symbol}</span>
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -657,12 +665,12 @@ export default function ForumThreadPage() {
             />
 
             <div className={styles.tipActions}>
-              <button onClick={handleTip} className={styles.confirmTipBtn}>
+              <Button variant="primary" onClick={handleTip} className={styles.confirmTipBtn}>
                 Confirm Tip
-              </button>
-              <button onClick={() => { setTipTarget(null); setTipAmount(''); }} className={styles.cancelTipBtn}>
+              </Button>
+              <Button variant="ghost" onClick={() => { setTipTarget(null); setTipAmount(''); }} className={styles.cancelTipBtn}>
                 Cancel
-              </button>
+              </Button>
             </div>
           </div>
         </div>

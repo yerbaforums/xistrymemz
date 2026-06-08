@@ -13,6 +13,7 @@ import RoleBadge from '@/components/RoleBadge'
 import ActiveStatus from '@/components/ActiveStatus'
 import LookingForCollaboratorsBadge from '@/components/LookingForCollaboratorsBadge'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import Button from '@/components/ui/Button'
 
 interface Member {
   id: string
@@ -296,42 +297,48 @@ export default function CommunityPage() {
       </div>
 
       <div className={styles.tabs}>
-        <button 
+        <Button 
+          variant="ghost"
           className={`${styles.tab} ${activeTab === 'members' ? styles.active : ''}`}
           onClick={() => setActiveTab('members')}
         >
           Members ({members.length})
-        </button>
-        <button 
+        </Button>
+        <Button 
+          variant="ghost"
           className={`${styles.tab} ${activeTab === 'connections' ? styles.active : ''}`}
           onClick={() => setActiveTab('connections')}
         >
           Connections ({connections.length})
-        </button>
-        <button 
+        </Button>
+        <Button 
+          variant="ghost"
           className={`${styles.tab} ${activeTab === 'requests' ? styles.active : ''}`}
           onClick={() => setActiveTab('requests')}
         >
           Pending ({pendingRequests.length})
-        </button>
-        <button 
+        </Button>
+        <Button 
+          variant="ghost"
           className={`${styles.tab} ${activeTab === 'groups' ? styles.active : ''}`}
           onClick={() => setActiveTab('groups')}
         >
           Groups ({groups.length})
-        </button>
-        <button 
+        </Button>
+        <Button 
+          variant="ghost"
           className={`${styles.tab} ${activeTab === 'marketRequests' ? styles.active : ''}`}
           onClick={() => { setActiveTab('marketRequests'); setSearchQuery(''); }}
         >
           Requests ({marketRequests.length})
-        </button>
-        <button 
+        </Button>
+        <Button 
+          variant="ghost"
           className={`${styles.tab} ${activeTab === 'forum' ? styles.active : ''}`}
           onClick={() => { setActiveTab('forum'); }}
         >
           Forum
-        </button>
+        </Button>
       </div>
 
       {activeTab === 'members' && (
@@ -405,13 +412,14 @@ export default function CommunityPage() {
                       View Profile
                     </Link>
                     {member.id !== session?.user?.id && (
-                      <button 
+                      <Button 
+                        variant="secondary"
                         className={`${styles.connectBtn} ${isConnected ? styles.connected : ''}`}
                         onClick={() => handleConnect(member.id)}
                         disabled={isConnected || hasPending}
                       >
                         {isConnected ? 'Connected' : hasPending ? 'Pending' : 'Connect'}
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </div>
@@ -493,13 +501,15 @@ export default function CommunityPage() {
                     <p>wants to connect with you</p>
                   </div>
                   <div className={styles.requestActions}>
-                    <button 
+                    <Button 
+                      variant="primary"
                       className={styles.acceptBtn}
                       onClick={() => handleAcceptConnection(request.id)}
                     >
                       Accept
-                    </button>
-                    <button 
+                    </Button>
+                    <Button 
+                      variant="ghost"
                       className={styles.declineBtn}
                       onClick={() => {
                         fetch(`/api/community/connections/${request.id}`, { method: 'DELETE' })
@@ -507,7 +517,7 @@ export default function CommunityPage() {
                       }}
                     >
                       Decline
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -592,29 +602,31 @@ export default function CommunityPage() {
         <div className={styles.forumSection}>
           <div className={styles.forumHeader}>
             <h2>Forum Discussions</h2>
-            <button className={styles.createPostBtn} onClick={() => setShowNewPost(true)}>
+            <Button variant="primary" className={styles.createPostBtn} onClick={() => setShowNewPost(true)}>
               + New Post
-            </button>
+            </Button>
           </div>
 
           <div className={styles.forumCategories}>
-            <button
+            <Button
+              variant="secondary"
               className={`${styles.categoryBtn} ${!selectedCategory ? styles.active : ''}`}
               onClick={() => { setSelectedCategory(null); fetchForumPosts(); }}
             >
               <span>📋</span>
               <span>All Topics</span>
-            </button>
+            </Button>
             {forumCategories.map(cat => (
-              <button
+              <Button
                 key={cat.id}
+                variant="secondary"
                 className={`${styles.categoryBtn} ${selectedCategory === cat.id ? styles.active : ''}`}
                 onClick={() => { setSelectedCategory(cat.id); fetchForumPosts(cat.id); }}
               >
                 <span className={styles.categoryIcon}>{cat.icon}</span>
                 <span>{cat.name}</span>
                 <span className={styles.categoryCount}>{cat._count?.posts || 0}</span>
-              </button>
+              </Button>
             ))}
           </div>
 
@@ -646,8 +658,8 @@ export default function CommunityPage() {
                 rows={4}
               />
               <div className={styles.postFormActions}>
-                <button onClick={handleCreatePost} className={styles.submitPostBtn}>Post</button>
-                <button onClick={() => setShowNewPost(false)} className={styles.cancelPostBtn}>Cancel</button>
+                <Button variant="primary" onClick={handleCreatePost} className={styles.submitPostBtn}>Post</Button>
+                <Button variant="ghost" onClick={() => setShowNewPost(false)} className={styles.cancelPostBtn}>Cancel</Button>
               </div>
             </div>
           )}
@@ -685,15 +697,16 @@ export default function CommunityPage() {
                   <label>Select Crypto</label>
                   <div className={styles.cryptoGrid}>
                     {cryptoBalances.map(crypto => (
-                      <button
+                      <Button
                         key={crypto.symbol}
+                        variant="secondary"
                         className={`${styles.cryptoBtn} ${tipCrypto === crypto.symbol ? styles.selected : ''}`}
                         onClick={() => setTipCrypto(crypto.symbol)}
                         style={{ '--crypto-color': crypto.color } as React.CSSProperties}
                       >
                         <img src={crypto.icon} alt={crypto.symbol} style={{ width: 20, height: 20, borderRadius: '50%' }} />
                         <span>{crypto.symbol}</span>
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 </div>
@@ -712,12 +725,12 @@ export default function CommunityPage() {
                   step="0.01"
                 />
                 <div className={styles.tipActions}>
-                  <button onClick={() => handleTip(tipTarget.type, tipTarget.id, tipTarget.authorId)} className={styles.confirmTipBtn}>
+                  <Button variant="primary" onClick={() => handleTip(tipTarget.type, tipTarget.id, tipTarget.authorId)} className={styles.confirmTipBtn}>
                     Confirm Tip
-                  </button>
-                  <button onClick={() => { setTipTarget(null); setTipAmount(''); }} className={styles.cancelTipBtn}>
+                  </Button>
+                  <Button variant="ghost" onClick={() => { setTipTarget(null); setTipAmount(''); }} className={styles.cancelTipBtn}>
                     Cancel
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>

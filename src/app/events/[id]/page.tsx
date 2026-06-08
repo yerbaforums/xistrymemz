@@ -7,6 +7,7 @@ import styles from './page.module.css'
 import dynamic from 'next/dynamic'
 import { useToast } from '@/context/ToastContext'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
+import Button from '@/components/ui/Button'
 import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import EventFormFields, { getDefaultEventFormData } from '@/components/EventFormFields'
 import type { EventFormData } from '@/components/EventFormFields'
@@ -362,13 +363,13 @@ function EventDetailContent() {
             <div className={styles.titleRow}>
               <h1>{isEditing ? 'Editing Event' : event.title}</h1>
               <div className={styles.titleActions}>
-                <button onClick={() => navigator.clipboard.writeText(window.location.href)} className={styles.editBtn} title="Copy link">🔗</button>
+                <Button onClick={() => navigator.clipboard.writeText(window.location.href)} className={styles.editBtn} variant="ghost" title="Copy link">🔗</Button>
                 {isOwner && !isEditing && (
                   <>
-                    <button onClick={startEditing} className={styles.editBtn}>Edit</button>
-                    <button onClick={confirmDelete} className={styles.deleteBtn} disabled={deleting}>
+                    <Button onClick={startEditing} className={styles.editBtn} variant="ghost">Edit</Button>
+                    <Button onClick={confirmDelete} className={styles.deleteBtn} variant="danger" disabled={deleting}>
                       {deleting ? 'Deleting...' : 'Delete'}
-                    </button>
+                    </Button>
                   </>
                 )}
               </div>
@@ -458,21 +459,23 @@ function EventDetailContent() {
                 <>
                   {event.maxJoiners === 0 || joinerCount < event.maxJoiners ? (
                     <div className={styles.joinButtonGroup}>
-                      <button
+                      <Button
                         onClick={() => handleJoin('ATTENDEE')}
                         disabled={joining}
                         className={styles.joinBtn}
+                        variant="primary"
                       >
                         {joining ? 'Processing...' : (event.isTicketed ? 'Get Tickets' : 'RSVP as Attendee')}
-                      </button>
+                      </Button>
                       {event.needsVolunteers && (
-                        <button
+                        <Button
                           onClick={() => handleJoin('VOLUNTEER')}
                           disabled={joining}
                           className={styles.volunteerBtn}
+                          variant="secondary"
                         >
                           🙋 Volunteer
-                        </button>
+                        </Button>
                       )}
                     </div>
                   ) : (
@@ -481,13 +484,14 @@ function EventDetailContent() {
                 </>
               )}
               {!isOwner && event.joined && (
-                <button
+                <Button
                   onClick={handleLeave}
                   disabled={joining}
                   className={styles.leaveBtn}
+                  variant="secondary"
                 >
                   {joining ? 'Processing...' : 'Leave Event'}
-                </button>
+                </Button>
               )}
               {!isOwner && (
                 <CollaborateButton entityType="EVENT" entityId={event.id} label="🤝 Propose Collab" variant="secondary" />
@@ -573,10 +577,10 @@ function EventDetailContent() {
                         <code style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', wordBreak: 'break-all' }}>{shortAddr}</code>
                       </div>
                       <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                        <button className={styles.copyDonationBtn} onClick={() => { navigator.clipboard.writeText(da.address); setCopiedDonation(true); setTimeout(() => setCopiedDonation(false), 2000) }}>
+                        <Button className={styles.copyDonationBtn} variant="ghost" onClick={() => { navigator.clipboard.writeText(da.address); setCopiedDonation(true); setTimeout(() => setCopiedDonation(false), 2000) }}>
                           {copiedDonation ? 'Copied' : 'Copy'}
-                        </button>
-                        <button className={styles.copyDonationBtn} onClick={() => setQrOpen(da.address)}>QR</button>
+                        </Button>
+                        <Button className={styles.copyDonationBtn} variant="ghost" onClick={() => setQrOpen(da.address)}>QR</Button>
                       </div>
                     </div>
                   )
@@ -589,10 +593,10 @@ function EventDetailContent() {
                       <code style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', wordBreak: 'break-all' }}>{event.donationAddress.length > 20 ? event.donationAddress.slice(0, 10) + '...' + event.donationAddress.slice(-8) : event.donationAddress}</code>
                     </div>
                     <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                      <button className={styles.copyDonationBtn} onClick={() => { navigator.clipboard.writeText(event.donationAddress || ''); setCopiedDonation(true); setTimeout(() => setCopiedDonation(false), 2000) }}>
+                      <Button className={styles.copyDonationBtn} variant="ghost" onClick={() => { navigator.clipboard.writeText(event.donationAddress || ''); setCopiedDonation(true); setTimeout(() => setCopiedDonation(false), 2000) }}>
                         {copiedDonation ? 'Copied' : 'Copy'}
-                      </button>
-                      <button className={styles.copyDonationBtn} onClick={() => setQrOpen(event.donationAddress || '')}>QR</button>
+                      </Button>
+                      <Button className={styles.copyDonationBtn} variant="ghost" onClick={() => setQrOpen(event.donationAddress || '')}>QR</Button>
                     </div>
                   </div>
                 )
@@ -614,13 +618,14 @@ function EventDetailContent() {
 
           {isOwner && joinerCount > 0 && (
             <div className={styles.joinersCard}>
-              <button 
+              <Button 
                 className={styles.ownerToggle}
+                variant="ghost"
                 onClick={() => setShowJoiners(!showJoiners)}
               >
                 <h3>👥 Attendees ({joinerCount})</h3>
                 <span>{showJoiners ? '▼' : '▶'}</span>
-              </button>
+              </Button>
               
                {showJoiners && (
                 <div className={styles.joinerList}>
@@ -658,13 +663,14 @@ function EventDetailContent() {
                     rows={3}
                     className={styles.bulkTextarea}
                   />
-                  <button
+                  <Button
                     onClick={handleBulkMessage}
                     disabled={sendingBulk || !bulkMessage.trim()}
                     className={styles.bulkSendBtn}
+                    variant="primary"
                   >
                     {sendingBulk ? 'Sending...' : 'Send to All'}
-                  </button>
+                  </Button>
                   {bulkSuccess && (
                     <p className={styles.bulkSuccess}>{bulkSuccess}</p>
                   )}

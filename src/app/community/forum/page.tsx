@@ -9,6 +9,7 @@ import HashtagText from '@/components/HashtagText'
 import ImageUploader from '@/components/ImageUploader'
 import { EmptyState } from '@/components/EmptyState'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import Button from '@/components/ui/Button'
 import styles from './forum.module.css'
 
 interface Post {
@@ -237,14 +238,15 @@ export default function ForumPage() {
                 rows={isPoll ? 2 : 3}
                 className={styles.postTextarea}
               />
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 onClick={() => mentionRef.current?.insertAtCursor('@')}
                 className={styles.mentionBtn}
                 title="Mention someone"
               >
                 @
-              </button>
+              </Button>
             </div>
             
             <div className={styles.postActions}>
@@ -267,13 +269,14 @@ export default function ForumPage() {
                 ))}
               </select>
               <ImageUploader images={postImages} onChange={setPostImages} maxImages={6} />
-              <button 
+              <Button 
+                variant="primary"
                 onClick={handleCreatePost} 
                 disabled={posting || !newPostTitle.trim() || !newPostContent.trim()}
                 className={styles.postBtn}
               >
                 {posting ? 'Posting...' : 'Post'}
-              </button>
+              </Button>
             </div>
 
             {isPoll && (
@@ -317,13 +320,14 @@ export default function ForumPage() {
                   ))}
                 </div>
                 {pollOptions.length < 6 && (
-                  <button 
+                  <Button 
                     type="button"
+                    variant="ghost"
                     onClick={() => setPollOptions([...pollOptions, ''])}
                     className={styles.addPollOptionBtn}
                   >
                     + Add Option
-                  </button>
+                  </Button>
                 )}
               </div>
             )}
@@ -334,7 +338,7 @@ export default function ForumPage() {
           ) : error ? (
             <div className={styles.empty}>
               <p>{error}</p>
-              <button onClick={fetchForumData} className={styles.postBtn}>Retry</button>
+              <Button variant="primary" onClick={fetchForumData} className={styles.postBtn}>Retry</Button>
             </div>
           ) : sortedPosts.length === 0 ? (
             <EmptyState icon="💬" title="No posts yet" description="Be the first to post!" />

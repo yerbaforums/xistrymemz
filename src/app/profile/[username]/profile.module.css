@@ -1879,18 +1879,6 @@
   font-family: monospace;
 }
 
-.qrCodeSection {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-
-.qrCodeSection img {
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-}
-
 .toggleQRBtn {
   background: transparent;
   border: 1px solid var(--border-color);

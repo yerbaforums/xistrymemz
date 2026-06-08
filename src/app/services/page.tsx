@@ -13,6 +13,7 @@ import styles from './page.module.css'
 import Skeleton from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import Button from '@/components/ui/Button'
 
 function safeStr(v: unknown): string | null {
   return typeof v === 'string' ? v : null
@@ -138,7 +139,7 @@ export default function ServicesPage() {
           className={styles.searchInput}
         />
         {searchQuery && (
-          <button className={styles.searchClear} onClick={() => setSearchQuery('')}>✕</button>
+          <Button className={styles.searchClear} variant="ghost" onClick={() => setSearchQuery('')}>✕</Button>
         )}
       </div>
 
@@ -192,7 +193,7 @@ export default function ServicesPage() {
                 </span>
                 <h2 style={{ margin: 0, fontSize: '1.2rem' }}>{selTitle}</h2>
               </div>
-              <button onClick={() => setSelectedService(null)} className={styles.closeBtn}>✕</button>
+              <Button onClick={() => setSelectedService(null)} className={styles.closeBtn} variant="ghost">✕</Button>
             </div>
 
             {selImage && (
@@ -252,13 +253,14 @@ export default function ServicesPage() {
               >
                 View Full Details
               </Link>
-              <button
+              <Button
                 onClick={() => setShowBooking(true)}
                 className={styles.bookBtn}
+                variant="primary"
                 disabled={!session}
               >
                 {session ? '📅 Book This Service' : 'Sign in to Book'}
-              </button>
+              </Button>
             </div>
         </Modal>
       )}

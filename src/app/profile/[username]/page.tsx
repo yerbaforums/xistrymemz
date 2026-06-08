@@ -51,7 +51,6 @@ interface DonationAddr {
   address: string
   label: string | null
   qrCodeUrl: string | null
-  showQR: boolean
 }
 
 interface UserLocation {
@@ -1832,7 +1831,6 @@ export default function ProfilePage() {
                         address: user.donationAddress,
                         label: null,
                         qrCodeUrl: null,
-                        showQR: true
                       }] : [])).map(da => (
                         <DonationCard key={da.id} donation={da} />
                       ))}

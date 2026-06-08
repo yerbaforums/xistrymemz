@@ -7,6 +7,7 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import BoardPinCard from '@/components/BoardPinCard'
 import CreatePinModal from '@/components/CreatePinModal'
+import Button from '@/components/ui/Button'
 import PinCarouselModal from '@/components/PinCarouselModal'
 import { EmptyState } from '@/components/EmptyState'
 import styles from './page.module.css'
@@ -150,9 +151,9 @@ export default function BoardDetailPage() {
         </div>
         <div className={styles.boardActions}>
           {session?.user && (
-            <button className={styles.pinBtn} onClick={() => setShowCreateModal(true)}>
+            <Button variant="primary" className={styles.pinBtn} onClick={() => setShowCreateModal(true)}>
               📌 Pin Something
-            </button>
+            </Button>
           )}
         </div>
       </div>

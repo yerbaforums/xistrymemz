@@ -7,6 +7,7 @@ import styles from './page.module.css'
 import CollaborateButton from '@/components/CollaborateButton'
 import PinToBoardButton from '@/components/PinToBoardButton'
 import { useCart } from '@/context/CartContext'
+import Button from '@/components/ui/Button'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { useToast } from '@/context/ToastContext'
 import Rating from '@/components/Rating'
@@ -738,12 +739,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 </>
               )}
               <div className={styles.editActions}>
-                <button onClick={() => setIsEditing(false)} className="btn-ghost">
+                <Button onClick={() => setIsEditing(false)} variant="ghost">
                   Cancel
-                </button>
-                <button onClick={handleSave} className="btn-primary" disabled={saving}>
+                </Button>
+                <Button onClick={handleSave} variant="primary" disabled={saving}>
                   {saving ? 'Saving...' : 'Save Changes'}
-                </button>
+                </Button>
               </div>
             </div>
           ) : (
@@ -759,12 +760,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 </div>
                 {isOwner && (
                   <div className={styles.ownerActions}>
-                    <button onClick={() => setIsEditing(true)} className={styles.editBtn}>
+                    <Button onClick={() => setIsEditing(true)} className={styles.editBtn} variant="ghost">
                       Edit
-                    </button>
-                    <button onClick={() => setConfirmDelete(true)} className={styles.deleteBtn}>
+                    </Button>
+                    <Button onClick={() => setConfirmDelete(true)} className={styles.deleteBtn} variant="danger">
                       Delete
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>
@@ -840,17 +841,18 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 Visit {sellerShop.shopName || 'Shop'}
               </Link>
             )}
-            {session?.user && !isOwner && (
-              <>
-                <button
-                  className={styles.messageBtn}
-                  onClick={() => setShowMessageModal(true)}
-                >
-                  ✉️ Message Seller
-                </button>
-                <CollaborateButton entityType="PRODUCT" entityId={product.id} label="🤝 Collaborate" variant="secondary" />
-              </>
-            )}
+              {session?.user && !isOwner && (
+                <>
+                  <Button
+                    className={styles.messageBtn}
+                    variant="secondary"
+                    onClick={() => setShowMessageModal(true)}
+                  >
+                    ✉️ Message Seller
+                  </Button>
+                  <CollaborateButton entityType="PRODUCT" entityId={product.id} label="🤝 Collaborate" variant="secondary" />
+                </>
+              )}
             {session?.user && (
               <PinToBoardButton
                 entityType="PRODUCT"
@@ -877,12 +879,13 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <div className={styles.mapCard}>
               <div className={styles.mapCardHeader}>
                 <h3>📍 Product Location</h3>
-                <button
+                <Button
                   className={styles.mapToggleBtn}
+                  variant="ghost"
                   onClick={() => setMapExpanded(!mapExpanded)}
                 >
                   {mapExpanded ? 'Collapse' : 'Expand'}
-                </button>
+                </Button>
               </div>
               <div className={`${styles.mapContainer} ${mapExpanded ? styles.mapExpanded : ''}`}>
                 <MapContainer center={[product.latitude, product.longitude]} zoom={13} style={{ height: '100%', width: '100%', position: 'relative', zIndex: 1 }}>
@@ -919,63 +922,69 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               </div>
                {settings.enableCheckout ? (
                  <>
-                   <button 
+                   <Button 
                      className={styles.addToCartBtn}
+                     variant="primary"
                      onClick={() => setShowCartModal(true)}
                      title="Add to cart"
                    >
                      Add to Cart
-                   </button>
+                   </Button>
                    {session?.user && !isOwner && (
-                     <button 
+                     <Button 
                        className={styles.escrowBtn}
+                       variant="secondary"
                        onClick={openEscrowModal}
                        title="Escrow checkout"
                      >
                        🔒 Escrow Checkout
-                     </button>
+                     </Button>
                    )}
                  </>
                ) : (
-                 <button 
+                 <Button 
                    className={`${styles.addToCartBtn} ${styles.addToCartBtnDisabled}`}
+                   variant="primary"
                    disabled
                    title="Checkout is currently disabled"
                  >
                    Add to Cart
-                 </button>
+                 </Button>
                )}
               {session?.user && !isOwner && product.acceptsOffers !== false && (
-                <button 
+                <Button 
                   className={styles.addToPlanBtn}
+                  variant="ghost"
                   onClick={() => setShowOfferModal(true)}
                 >
                   🤝 Make Offer
-                </button>
+                </Button>
               )}
               {product.acceptsRequests && (
-                <button 
+                <Button 
                   className={styles.addToPlanBtn}
+                  variant="ghost"
                   onClick={() => setShowPlanModal(true)}
                 >
                   Add to Plan
-                </button>
+                </Button>
               )}
             </div>
           )}
 
           {product.acceptsAppointments && (
             <div className={styles.priceCard}>
-              <button className={styles.addToPlanBtn} onClick={() => setShowAppointmentModal(true)}>
+              <Button className={styles.addToPlanBtn} variant="ghost" onClick={() => setShowAppointmentModal(true)}>
                 📅 Book Appointment
-              </button>
+              </Button>
             </div>
           )}
 
           <div className={styles.priceCard}>
             {session?.user && (
-              <button 
+              <Button 
                 className={styles.addToPlanBtn}
+                variant="ghost"
                 onClick={() => {
                   setRequestTitle(`Wanted: ${product.title}`)
                   setRequestDesc(`Looking for: ${product.title}`)
@@ -984,7 +993,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 }}
               >
                 📝 Request Funding
-              </button>
+              </Button>
             )}
           </div>
 
@@ -1026,21 +1035,21 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               </div>
             )}
             <div className={styles.modalActions}>
-              <button 
+              <Button 
                 type="button" 
                 onClick={() => setShowPlanModal(false)}
-                className="btn-ghost"
+                variant="ghost"
               >
                 Cancel
-              </button>
-              <button 
+              </Button>
+              <Button 
                 type="button"
-                className="btn-primary" 
+                variant="primary" 
                 disabled={!selectedPlan || addingToPlan}
                 onClick={handleAddToPlan}
               >
                 {addingToPlan ? 'Adding...' : 'Add to Plan'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -1087,21 +1096,21 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               />
             </div>
             <div className={styles.modalActions}>
-              <button 
+              <Button 
                 type="button" 
                 onClick={() => setShowRequestModal(false)}
-                className="btn-ghost"
+                variant="ghost"
               >
                 Cancel
-              </button>
-              <button 
+              </Button>
+              <Button 
                 type="button"
-                className="btn-primary" 
+                variant="primary" 
                 disabled={!requestTitle.trim() || requestLoading}
                 onClick={handleMakeRequest}
               >
                 {requestLoading ? 'Creating...' : 'Start Funding Request'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -1166,21 +1175,21 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             )}
 
             <div className={styles.modalActions}>
-              <button 
+              <Button 
                 type="button" 
                 onClick={() => setShowEscrowModal(false)}
-                className="btn-ghost"
+                variant="ghost"
               >
                 Cancel
-              </button>
-              <button 
+              </Button>
+              <Button 
                 type="button"
-                className="btn-primary" 
+                variant="primary" 
                 disabled={escrowLoading}
                 onClick={handleEscrowCheckout}
               >
                 {escrowLoading ? 'Creating...' : 'Create Escrow'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -1222,21 +1231,21 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             </div>
 
             <div className={styles.modalActions}>
-              <button 
+              <Button 
                 type="button" 
                 onClick={() => setShowFundingModal(false)}
-                className="btn-ghost"
+                variant="ghost"
               >
                 Cancel
-              </button>
-              <button 
+              </Button>
+              <Button 
                 type="button"
-                className="btn-primary" 
+                variant="primary" 
                 disabled={fundingLoading || !fundAmount || parseFloat(fundAmount) <= 0}
                 onClick={handleFundRequest}
               >
                 {fundingLoading ? 'Processing...' : 'Contribute'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -1256,21 +1265,21 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               />
             </div>
             <div className={styles.modalActions}>
-              <button
+              <Button
                 type="button"
                 onClick={() => { setShowMessageModal(false); setMessageContent('') }}
-                className="btn-ghost"
+                variant="ghost"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
-                className="btn-primary"
+                variant="primary"
                 disabled={!messageContent.trim() || messageSending}
                 onClick={handleSendMessage}
               >
                 {messageSending ? 'Sending...' : 'Send Message'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

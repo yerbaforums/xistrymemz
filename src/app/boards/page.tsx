@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import dynamic from 'next/dynamic'
 import CreateBoardModal from '@/components/CreateBoardModal'
+import Button from '@/components/ui/Button'
 import { usePassportLocation } from '@/hooks/usePassportLocation'
 import { useToast } from '@/context/ToastContext'
 import { reverseGeocodeLocation, shortenLocation } from '@/lib/geocoding'
@@ -290,9 +291,9 @@ export default function BoardsPage() {
         <h1>📌 Community Bulletin Boards</h1>
         <p>Pin your cards, announcements, and listings to local boards</p>
         {session?.user && (
-          <button className={styles.createBtn} onClick={() => setShowCreateModal(true)}>
+          <Button variant="primary" className={styles.createBtn} onClick={() => setShowCreateModal(true)}>
             ➕ Create Board
-          </button>
+          </Button>
         )}
       </div>
 
@@ -308,19 +309,20 @@ export default function BoardsPage() {
             </div>
           </div>
           <div className={styles.locationActions}>
-            <button
+            <Button
+              variant="secondary"
               className={`${styles.locBtn} ${settingLocation ? styles.locBtnActive : ''}`}
               onClick={() => setSettingLocation(s => !s)}
             >
               {settingLocation ? '✕ Cancel' : '📍 Set on Map'}
-            </button>
-            <button className={styles.locBtn} onClick={handleDetectLocation}>
+            </Button>
+            <Button variant="secondary" className={styles.locBtn} onClick={handleDetectLocation}>
               📡 Detect
-            </button>
+            </Button>
             {homeCoords && (
-              <button className={styles.locBtn} onClick={handleFlyHome}>
+              <Button variant="secondary" className={styles.locBtn} onClick={handleFlyHome}>
                 ✈️ Fly Home
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -334,11 +336,11 @@ export default function BoardsPage() {
           placeholder="Search boards by city..."
           className={styles.searchInput}
         />
-        <button type="submit" className={styles.searchBtn}>Search</button>
+        <Button type="submit" variant="primary" className={styles.searchBtn}>Search</Button>
         {searchCity && (
-          <button type="button" className={styles.clearBtn} onClick={() => { setSearchCity(''); fetchBoards() }}>
+          <Button type="button" variant="ghost" className={styles.clearBtn} onClick={() => { setSearchCity(''); fetchBoards() }}>
             Clear
-          </button>
+          </Button>
         )}
       </form>
 

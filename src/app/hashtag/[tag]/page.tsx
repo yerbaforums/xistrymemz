@@ -6,6 +6,7 @@ import Link from 'next/link'
 import FeedItem from '@/components/FeedItem'
 import ProductCard from '@/components/ProductCard'
 import ServiceCard from '@/components/ServiceCard'
+import Button from '@/components/ui/Button'
 import type { Product } from '@/types/product'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import Breadcrumbs from '@/components/Breadcrumbs'
@@ -149,8 +150,9 @@ function HashtagPage() {
 
       <div className={styles.tabs}>
         {TABS.map(tab => (
-          <button
+          <Button
             key={tab.key}
+            variant="secondary"
             className={`${styles.tab} ${activeTab === tab.key ? styles.tabActive : ''}`}
             onClick={() => setActiveTab(tab.key)}
           >
@@ -160,7 +162,7 @@ function HashtagPage() {
                 {totals[tab.key as keyof Totals] || 0}
               </span>
             )}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -182,9 +184,9 @@ function HashtagPage() {
               </div>
               {activeTab === 'all' && totals && totals.products > products.length && (
                 <div className={styles.viewAllRow}>
-                  <button onClick={() => setActiveTab('products')} className={styles.viewAllBtn}>
+                  <Button variant="ghost" onClick={() => setActiveTab('products')} className={styles.viewAllBtn}>
                     View all {totals.products} products →
-                  </button>
+                  </Button>
                 </div>
               )}
             </section>
@@ -219,9 +221,9 @@ function HashtagPage() {
               </div>
               {activeTab === 'all' && totals && totals.events > events.length && (
                 <div className={styles.viewAllRow}>
-                  <button onClick={() => setActiveTab('events')} className={styles.viewAllBtn}>
+                  <Button variant="ghost" onClick={() => setActiveTab('events')} className={styles.viewAllBtn}>
                     View all {totals.events} events →
-                  </button>
+                  </Button>
                 </div>
               )}
             </section>
@@ -237,9 +239,9 @@ function HashtagPage() {
               </div>
               {activeTab === 'all' && totals && totals.services > services.length && (
                 <div className={styles.viewAllRow}>
-                  <button onClick={() => setActiveTab('services')} className={styles.viewAllBtn}>
+                  <Button variant="ghost" onClick={() => setActiveTab('services')} className={styles.viewAllBtn}>
                     View all {totals.services} services →
-                  </button>
+                  </Button>
                 </div>
               )}
             </section>
@@ -268,9 +270,9 @@ function HashtagPage() {
               </div>
               {activeTab === 'all' && totals && totals.schoolContents > schoolContents.length && (
                 <div className={styles.viewAllRow}>
-                  <button onClick={() => setActiveTab('schoolContents')} className={styles.viewAllBtn}>
+                  <Button variant="ghost" onClick={() => setActiveTab('schoolContents')} className={styles.viewAllBtn}>
                     View all {totals.schoolContents} lessons →
-                  </button>
+                  </Button>
                 </div>
               )}
             </section>
@@ -299,9 +301,9 @@ function HashtagPage() {
               </div>
               {activeTab === 'all' && totals && totals.plans > plans.length && (
                 <div className={styles.viewAllRow}>
-                  <button onClick={() => setActiveTab('plans')} className={styles.viewAllBtn}>
+                  <Button variant="ghost" onClick={() => setActiveTab('plans')} className={styles.viewAllBtn}>
                     View all {totals.plans} plans →
-                  </button>
+                  </Button>
                 </div>
               )}
             </section>
@@ -332,9 +334,9 @@ function HashtagPage() {
               </div>
               {activeTab === 'all' && totals && totals.requests > requests.length && (
                 <div className={styles.viewAllRow}>
-                  <button onClick={() => setActiveTab('requests')} className={styles.viewAllBtn}>
+                  <Button variant="ghost" onClick={() => setActiveTab('requests')} className={styles.viewAllBtn}>
                     View all {totals.requests} requests →
-                  </button>
+                  </Button>
                 </div>
               )}
             </section>
@@ -369,9 +371,9 @@ function HashtagPage() {
               </div>
               {activeTab === 'all' && totals && totals.groups > groups.length && (
                 <div className={styles.viewAllRow}>
-                  <button onClick={() => setActiveTab('groups')} className={styles.viewAllBtn}>
+                  <Button variant="ghost" onClick={() => setActiveTab('groups')} className={styles.viewAllBtn}>
                     View all {totals.groups} groups →
-                  </button>
+                  </Button>
                 </div>
               )}
             </section>

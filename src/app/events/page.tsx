@@ -333,9 +333,9 @@ export default function EventsPage() {
               </Button></Link>
             )}
             <div className={styles.viewToggle}>
-              <button className={`${styles.toggleBtn} ${viewMode === 'list' ? styles.active : ''}`} onClick={() => setViewMode('list')} aria-label="List view">List</button>
-              <button className={`${styles.toggleBtn} ${viewMode === 'calendar' ? styles.active : ''}`} onClick={() => setViewMode('calendar')} aria-label="Calendar view">Calendar</button>
-              <button className={`${styles.toggleBtn} ${viewMode === 'map' ? styles.active : ''}`} onClick={() => setViewMode('map')} aria-label="Map view">Map</button>
+              <Button className={`${styles.toggleBtn} ${viewMode === 'list' ? styles.active : ''}`} onClick={() => setViewMode('list')} variant="ghost" aria-label="List view">List</Button>
+              <Button className={`${styles.toggleBtn} ${viewMode === 'calendar' ? styles.active : ''}`} onClick={() => setViewMode('calendar')} variant="ghost" aria-label="Calendar view">Calendar</Button>
+              <Button className={`${styles.toggleBtn} ${viewMode === 'map' ? styles.active : ''}`} onClick={() => setViewMode('map')} variant="ghost" aria-label="Map view">Map</Button>
             </div>
           </div>
         </div>
@@ -422,30 +422,31 @@ export default function EventsPage() {
                   <option value="50">50 mi</option>
                   <option value="100">100 mi</option>
                 </select>
-                <button onClick={geocodeZipCode} className={styles.zipBtn} disabled={geocodingLoading || !zipCode.trim()}>
+                <Button onClick={geocodeZipCode} className={styles.zipBtn} variant="secondary" disabled={geocodingLoading || !zipCode.trim()}>
                   {geocodingLoading ? '...' : 'Go'}
-                </button>
+                </Button>
               </div>
             </div>
             {passportLocation?.latitude && passportLocation?.longitude && (
-              <button
+              <Button
                 onClick={() => {
                   setUserLocation({ lat: passportLocation.latitude!, lon: passportLocation.longitude! })
                   setRadius(String(passportLocation.searchRadius || 25))
                   setZipCode('')
                 }}
                 className={styles.zipBtn}
+                variant="secondary"
                 style={{ marginTop: '8px', width: '100%' }}
               >
                 📍 Near Me
-              </button>
+              </Button>
             )}
           </div>
 
           {hasActiveFilters && (
-            <button onClick={clearFilters} className={styles.clearBtn}>
+            <Button onClick={clearFilters} className={styles.clearBtn} variant="ghost">
               Clear All Filters
-            </button>
+            </Button>
           )}
         </aside>
 
@@ -453,9 +454,9 @@ export default function EventsPage() {
           {viewMode === 'calendar' ? (
             <div className={styles.calendarView}>
               <div className={styles.calendarHeader}>
-                <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))} className={styles.calendarNavBtn} aria-label="Previous month">←</button>
+                <Button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))} className={styles.calendarNavBtn} variant="ghost" aria-label="Previous month">←</Button>
                 <h2>{currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h2>
-                <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))} className={styles.calendarNavBtn} aria-label="Next month">→</button>
+                <Button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))} className={styles.calendarNavBtn} variant="ghost" aria-label="Next month">→</Button>
               </div>
               <div className={styles.calendarGrid}>
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
@@ -467,12 +468,12 @@ export default function EventsPage() {
           ) : viewMode === 'map' ? (
             <div className={styles.fullMapView}>
               <div className={styles.fullMapHeader}>
-                <button className={styles.backToListBtn} onClick={() => setViewMode('list')}>
+                <Button className={styles.backToListBtn} variant="ghost" onClick={() => setViewMode('list')}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M19 12H5M12 19l-7-7 7-7"/>
                   </svg>
                   Back to List
-                </button>
+                </Button>
                 <span className={styles.fullMapCount}>{eventsWithCoords.length} events on map</span>
               </div>
               <div style={{ height: '600px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)', marginBottom: '24px', position: 'relative', zIndex: 1 }}>
@@ -528,13 +529,14 @@ export default function EventsPage() {
                         <span className={`badge badge-${event.eventCategory?.toLowerCase()}`}>{event.eventCategory}</span>
                         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                           {event.acceptsDonations && (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); setQrOpen(event.id) }}
-                              className={styles.donationBadge}
-                              title={`Donate ${event.donationCurrency || 'ETH'}`}
-                            >
-                              💰 Donate
-                            </button>
+                          <Button
+                            onClick={(e) => { e.stopPropagation(); setQrOpen(event.id) }}
+                            className={styles.donationBadge}
+                            variant="ghost"
+                            title={`Donate ${event.donationCurrency || 'ETH'}`}
+                          >
+                            💰 Donate
+                          </Button>
                           )}
                           {event.eventDate && (<span className={styles.eventDate}>{new Date(event.eventDate).toLocaleDateString()}</span>)}
                         </div>
