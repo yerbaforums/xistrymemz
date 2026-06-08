@@ -18,7 +18,23 @@ export async function GET(request: Request) {
     const east = searchParams.get('east') ? parseFloat(searchParams.get('east')!) : undefined
     const west = searchParams.get('west') ? parseFloat(searchParams.get('west')!) : undefined
 
+    const my = searchParams.get('my') === 'true'
+
     const session = await getServerSession(authOptions)
+
+    if (my && session?.user?.id) {
+      const boards = await prisma.bulletinBoard.findMany({
+        where: { ownerId: session.user.id },
+        include: { _count: { select: { pins: true } } },
+        orderBy: { updatedAt: 'desc' },
+        take: limit,
+      })
+      return NextResponse.json({
+        boards: boards.map(b => ({ ...b, pinCount: b._count.pins })),
+        total: boards.length,
+      })
+    }
+
     let userLat = lat
     let userLng = lng
 

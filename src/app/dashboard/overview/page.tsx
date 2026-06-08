@@ -14,6 +14,7 @@ import TipCard from './TipCard'
 import ChecklistCard from './ChecklistCard'
 import FeatureBanner from './FeatureBanner'
 import StreakCard from './StreakCard'
+import DashboardWidgets from '@/components/DashboardWidgets'
 import AchievementCard from './AchievementCard'
 import { EmptyState } from '@/components/EmptyState'
 
@@ -305,6 +306,8 @@ export default async function DashboardOverview({
         <h2>Welcome back, {session.user.name?.split(' ')[0] || 'User'}! 👋</h2>
         <p>{isNewUser ? 'Let&apos;s get started — here are your first steps.' : `${allStats[6]} posts · ${connectionCount} connections${totalViews > 0 ? ` · ${totalViews} views` : ''}${totalEarnings > 0 ? ` · $${totalEarnings.toFixed(0)} earned` : ''}`}</p>
       </div>
+
+      <DashboardWidgets />
 
       {/* New user: simplified view with prioritized next step */}
       {isNewUser ? (

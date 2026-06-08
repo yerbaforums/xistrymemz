@@ -1,0 +1,93 @@
+.banner {
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.08), rgba(255, 193, 7, 0.02));
+  border: 1px solid rgba(255, 193, 7, 0.25);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.icon {
+  font-size: 1.5rem;
+}
+
+.title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.sub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.link {
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.exploreBtn {
+  margin-left: auto;
+  padding: 6px 16px;
+  background: var(--accent-primary);
+  border-radius: var(--radius-md);
+  color: var(--bg-primary);
+  font-weight: 600;
+  font-size: 0.82rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.exploreBtn:hover {
+  box-shadow: 0 0 10px rgba(0, 217, 255, 0.4);
+}
+
+.loading {
+  margin-top: 12px;
+}
+
+.boards {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.boardCard {
+  flex: 1;
+  min-width: 160px;
+  padding: 10px 14px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: border-color 0.15s;
+}
+
+.boardCard:hover {
+  border-color: var(--accent-primary);
+}
+
+.boardName {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.boardMeta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
