@@ -12,6 +12,7 @@ import CreateFAB from "@/components/CreateFAB";
 import { QuickCreateProvider } from "@/components/QuickCreateModal";
 import BottomNav from "@/components/BottomNav";
 import LocaleProvider from "@/components/LocaleProvider";
+import { WebSiteLD, OrganizationLD } from "@/components/JSONLD";
 
 const OG_LOCALE_MAP: Record<string, string> = {
   en: "en_US",
@@ -49,7 +50,13 @@ export async function generateMetadata() {
       title: messages.layout?.title || "XistrYmemZ - Plan. Request. Complete.",
       description: messages.layout?.description || "Collaborative planning platform.",
     },
-    keywords: ["collaborative planning", "community platform", "project management", "crypto payments", "business platform"],
+    keywords: ["collaborative planning", "community platform", "project management", "crypto payments", "business platform", "local marketplace", "community boards"],
+    robots: { index: true, follow: true },
+    alternates: {
+      types: {
+        'application/rss+xml': '/feed.xml',
+      },
+    },
   };
 }
 
@@ -67,6 +74,9 @@ export default async function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)" />
         <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+        <link rel="alternate" type="application/rss+xml" title="XistrYmemZ Feed" href="/feed.xml" />
+        <WebSiteLD />
+        <OrganizationLD />
       </head>
       <body>
         <LocaleProvider initialLocale={locale} initialMessages={messages}>

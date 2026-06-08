@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /_next/
+
+Sitemap: https://xistrymemz.com/sitemap.xml
