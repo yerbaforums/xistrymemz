@@ -24,6 +24,7 @@ import { SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service
 import dynamic from 'next/dynamic'
 import Button from '@/components/ui/Button'
 import PinToBoardButton from '@/components/PinToBoardButton'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
@@ -309,13 +310,11 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
   return (
     <div className={styles.page}>
       <Link href="/shops" className={styles.backLink}>← Back to Shops</Link>
-      <nav className="breadcrumbs">
-        <Link href="/" className="breadcrumb-link">Home</Link>
-        <span className="breadcrumb-sep"> / </span>
-        <Link href="/shops" className="breadcrumb-link">Shops</Link>
-        <span className="breadcrumb-sep"> / </span>
-        <span className="breadcrumb-current">{shop.shopName || 'Shop'}</span>
-      </nav>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Shops', href: '/shops' },
+        { label: shop.shopName || 'Shop' },
+      ]} />
 
       <div className={styles.shopHeader}>
         <div

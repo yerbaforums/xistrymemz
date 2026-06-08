@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import RequestsClient from './RequestsClient'
 import { Suspense } from 'react'
 import Skeleton from '@/components/Skeleton'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 export const dynamic = 'force-dynamic'
 
@@ -87,8 +88,14 @@ export default async function RequestsPage() {
   }))
 
   return (
-    <Suspense fallback={<div style={{ padding: '48px' }}><Skeleton width="100%" height="300px" borderRadius="12px" /></div>}>
-      <RequestsClient initialRequests={serializedRequests} userId={userId} userRole={userRole} isAuthenticated={!!userId} />
-    </Suspense>
+    <>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Requests' },
+      ]} />
+      <Suspense fallback={<div style={{ padding: '48px' }}><Skeleton width="100%" height="300px" borderRadius="12px" /></div>}>
+        <RequestsClient initialRequests={serializedRequests} userId={userId} userRole={userRole} isAuthenticated={!!userId} />
+      </Suspense>
+    </>
   )
 }

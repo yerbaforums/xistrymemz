@@ -2,10 +2,15 @@
 
 import Link from 'next/link'
 import styles from './page.module.css'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 export default function Terms() {
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Terms' },
+      ]} />
       <section className={styles.content}>
         <h1>Terms of Service</h1>
         <p className={styles.date}>Last updated: January 1, 2025</p>

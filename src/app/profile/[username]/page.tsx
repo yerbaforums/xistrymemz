@@ -29,6 +29,7 @@ import dynamic from 'next/dynamic'
 import Button from '@/components/ui/Button'
 import { EmptyState } from '@/components/EmptyState'
 import Skeleton from '@/components/Skeleton'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
@@ -724,13 +725,10 @@ export default function ProfilePage() {
 
   return (
     <div className={styles.container}>
-      <nav className="breadcrumbs" style={{ marginBottom: '16px' }}>
-        <Link href="/" className="breadcrumb-link">Home</Link>
-        <span className="breadcrumb-sep"> / </span>
-        <Link href="/community" className="breadcrumb-link">Community</Link>
-        <span className="breadcrumb-sep"> / </span>
-        <span className="breadcrumb-current">{user?.name || 'Profile'}</span>
-      </nav>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Profile' },
+      ]} />
       <div className={styles.profileHeader}>
         <div 
           className={styles.coverImage}

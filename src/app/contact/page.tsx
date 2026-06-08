@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '', website: '' })
@@ -38,6 +39,10 @@ export default function Contact() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Contact' },
+      ]} />
       <div className={styles.container}>
         <section className={styles.hero}>
           <h1>Contact Us</h1>

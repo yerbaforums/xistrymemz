@@ -6,6 +6,7 @@ import { SkeletonCard } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import styles from './page.module.css'
 import AlphabeticalIndex from '@/components/AlphabeticalIndex'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import type { IndexItem } from '@/components/AlphabeticalIndex'
 
 interface DirItem {
@@ -114,6 +115,10 @@ export default function DirectoryPage() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Directory' },
+      ]} />
       <div className={styles.header}>
         <h1>📋 Directory</h1>
         <p>Browse all public entities on the platform</p>

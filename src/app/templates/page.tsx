@@ -7,6 +7,7 @@ import styles from './page.module.css'
 import { businessTemplates, getTemplatesByType, type BusinessTemplate } from '@/lib/templates'
 import { eventTemplates, type EventTemplate } from '@/lib/event-templates'
 import Button from '@/components/ui/Button'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 type FilterType = 'ALL' | 'SHOP' | 'SCHOOL' | 'COURIER' | 'EVENTS'
 
@@ -59,6 +60,10 @@ function TemplatesPageContent() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Templates' },
+      ]} />
       <div className={styles.header}>
         <Link href="/dashboard" className={styles.backLink}>
           ← Back to Dashboard

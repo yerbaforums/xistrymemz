@@ -13,6 +13,7 @@ import TranslateButton from '@/components/TranslateButton'
 import Button from '@/components/ui/Button'
 import { EmptyState } from '@/components/EmptyState'
 import Skeleton from '@/components/Skeleton'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface Author {
   id: string
@@ -357,11 +358,12 @@ export default function ForumThreadPage() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.forumBreadcrumb}>
-        <Link href="/community?tab=forum">← Forum</Link>
-        <span> / </span>
-        <Link href={`/community?tab=forum&category=${post.category.id}`}>{post.category.name}</Link>
-      </div>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Community', href: '/community' },
+        { label: 'Forum', href: '/community/forum' },
+        { label: post.title || 'Post' },
+      ]} />
 
       <div className={styles.threadPost}>
         <div className={styles.threadHeader}>

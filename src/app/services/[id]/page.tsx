@@ -15,6 +15,7 @@ import PinToBoardButton from '@/components/PinToBoardButton'
 import styles from './page.module.css'
 import Skeleton, { SkeletonCard } from '@/components/Skeleton'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 function formatDuration(mins: number) {
   if (mins < 60) return `${mins} min`
@@ -195,6 +196,11 @@ export default function ServiceDetailPage() {
   return (
     <ErrorBoundary>
       <div className={styles.page}>
+        <Breadcrumbs items={[
+          { label: 'Home', href: '/' },
+          { label: 'Services', href: '/services' },
+          { label: title || 'Service' },
+        ]} />
         <Link href="/services" className={styles.breadcrumb}>← Back to Services</Link>
 
         <div className={styles.layout}>

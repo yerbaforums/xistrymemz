@@ -10,6 +10,7 @@ import CreatePinModal from '@/components/CreatePinModal'
 import PinCarouselModal from '@/components/PinCarouselModal'
 import { EmptyState } from '@/components/EmptyState'
 import styles from './page.module.css'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
@@ -131,6 +132,11 @@ export default function BoardDetailPage() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Boards', href: '/boards' },
+        { label: board.name || 'Board' },
+      ]} />
       <Link href="/boards" className={styles.backLink}>← Back to Boards</Link>
       <div className={styles.boardHeader}>
         <div className={styles.boardInfo}>

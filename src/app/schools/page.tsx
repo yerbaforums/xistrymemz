@@ -5,6 +5,7 @@ import Link from 'next/link'
 import styles from './page.module.css'
 import { EmptyState } from '@/components/EmptyState'
 import Skeleton from '@/components/Skeleton'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface School {
   id: string
@@ -104,6 +105,10 @@ export default function SchoolsPage() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Schools' },
+      ]} />
       <div className={styles.header}>
         <h1>Learning Center</h1>
         <p className={styles.subtitle}>Browse schools and educational content</p>

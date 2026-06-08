@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { geocodeLocation } from '@/lib/geocoding'
 import { productSchema, validateBody } from '@/lib/schemas'
-import { extractHashtags } from '@/lib/hashtags'
+import { extractHashtags, linkHashtags, removeHashtags } from '@/services/hashtagService'
 
 export async function GET(
   request: Request,
@@ -122,20 +122,6 @@ export async function PUT(
       }
     })
 
-    const existingTags = await prisma.productHashtag.findMany({
-      where: { productId: id },
-      include: { hashtag: true }
-    })
-
-    for (const pt of existingTags) {
-      await prisma.hashtag.update({
-        where: { id: pt.hashtagId },
-        data: { postCount: { decrement: 1 } },
-      })
-    }
-
-    await prisma.productHashtag.deleteMany({ where: { productId: id } })
-
     const resolvedTitle = title ?? existing.title
     const resolvedDescription = description ?? existing.description
     const allTags = [...new Set([
@@ -144,24 +130,13 @@ export async function PUT(
     ])]
 
     if (allTags.length > 0) {
-      await Promise.all(allTags.map(async tag => {
-        const hashtag = await prisma.hashtag.upsert({
-          where: { tag },
-          create: { tag, postCount: 0 },
-          update: {},
-        })
-        await prisma.productHashtag.create({
-          data: {
-            productId: product.id,
-            hashtagId: hashtag.id,
-            sourceType: 'PRODUCT',
-          },
-        }).catch(() => {})
-        await prisma.hashtag.update({
-          where: { id: hashtag.id },
-          data: { postCount: { increment: 1 } },
-        })
-      }))
+      await linkHashtags('PRODUCT', product.id, allTags)
+      await prisma.hashtag.updateMany({
+        where: { tag: { in: allTags } },
+        data: { postCount: { increment: 1 } },
+      })
+    } else {
+      await removeHashtags('PRODUCT', product.id)
     }
 
     return NextResponse.json(product)

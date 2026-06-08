@@ -9,6 +9,7 @@ import FormWizard, { useWizard, type WizardStep } from '@/components/FormWizard'
 import { businessTemplates, getTemplateById, type BusinessTemplate } from '@/lib/templates'
 import Button from '@/components/ui/Button'
 import Skeleton from '@/components/Skeleton'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 const steps: WizardStep[] = [
   { key: 'template', label: 'Choose Template', icon: '📋' },
@@ -121,6 +122,10 @@ function SchoolSetupContent() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Setup School' },
+      ]} />
       <div className={styles.header}>
         <Link href="/dashboard" className={styles.backLink}>
           ← Back to Dashboard

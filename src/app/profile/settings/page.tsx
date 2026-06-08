@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import styles from './settings.module.css'
 import { getUserProfileUrl } from '@/lib/utils'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 export default async function ProfileSettingsPage() {
   const session = await getServerSession(authOptions)
@@ -16,6 +17,10 @@ export default async function ProfileSettingsPage() {
 
   return (
     <div className={styles.layout}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Settings' },
+      ]} />
       <div className={styles.container}>
         <main className={styles.main}>
           <div className={styles.header}>

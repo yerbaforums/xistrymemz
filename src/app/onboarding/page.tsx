@@ -10,6 +10,7 @@ import { getClassGuides, getAllSetupStepIds } from '@/lib/classOnboarding'
 import { USER_CLASSES, CLASS_ICONS } from '@/lib/user-classes'
 import styles from './page.module.css'
 import Skeleton from '@/components/Skeleton'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 type OnboardingStep = 'welcome' | 'profile' | 'class-setup' | 'tour' | 'community' | 'complete'
 
@@ -350,8 +351,13 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className={styles.onboarding}>
-      <div className={styles.container}>
+        <div className={styles.onboarding}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Getting Started' },
+      ]} />
+      <div className={styles.container}
+>
         <div className={styles.header}>
           <div className={styles.logo}>
             <img src="/logo.png" alt="XistrYmemZ" style={{height: '40px', marginRight: '10px'}} />

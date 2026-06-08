@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import PlanDetailClient from './PlanDetailClient'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 export const dynamic = 'force-dynamic'
 
@@ -94,5 +95,14 @@ export default async function PlanDetailPage({
     }))
   }
 
-  return <PlanDetailClient plan={serializedPlan} userId={userId} isOwner={canEdit} />
+  return (
+    <>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Plans', href: '/plans/public' },
+        { label: serializedPlan.title || 'Plan' },
+      ]} />
+      <PlanDetailClient plan={serializedPlan} userId={userId} isOwner={canEdit} />
+    </>
+  )
 }

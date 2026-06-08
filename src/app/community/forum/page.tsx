@@ -8,6 +8,7 @@ import { getUserProfileUrl } from '@/lib/utils'
 import HashtagText from '@/components/HashtagText'
 import ImageUploader from '@/components/ImageUploader'
 import { EmptyState } from '@/components/EmptyState'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import styles from './forum.module.css'
 
 interface Post {
@@ -161,6 +162,11 @@ export default function ForumPage() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Community', href: '/community' },
+        { label: 'Forum' },
+      ]} />
       <div className={styles.header}>
         <h1>Community Forum</h1>
         <p>Connect, share, and discuss with other members</p>

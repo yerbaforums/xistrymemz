@@ -10,6 +10,7 @@ import Skeleton, { SkeletonCard, SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import HashtagInput from '@/components/HashtagInput'
 import Button from '@/components/ui/Button'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface Group {
   id: string
@@ -159,6 +160,10 @@ export default function GroupsPage() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Groups' },
+      ]} />
       <div className={styles.header}>
         <div>
           <h1>Groups</h1>

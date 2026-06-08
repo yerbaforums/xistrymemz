@@ -25,6 +25,7 @@ import LinkPreview from '@/components/LinkPreview'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { EmptyState } from '@/components/EmptyState'
 import Button from '@/components/ui/Button'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface UserLink {
   id: string
@@ -346,13 +347,11 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
 
   return (
     <div className={styles.page}>
-      <nav className="breadcrumbs">
-        <Link href="/" className="breadcrumb-link">Home</Link>
-        <span className="breadcrumb-sep"> / </span>
-        <Link href="/schools" className="breadcrumb-link">Schools</Link>
-        <span className="breadcrumb-sep"> / </span>
-        <span className="breadcrumb-current">{school.schoolName || 'School'}</span>
-      </nav>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Schools', href: '/schools' },
+        { label: school.schoolName || 'School' },
+      ]} />
 
       <div className={styles.schoolHeader}>
         <div

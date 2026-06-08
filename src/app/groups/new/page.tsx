@@ -6,6 +6,7 @@ import Link from 'next/link'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import Skeleton from '@/components/Skeleton'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 export default function NewGroupPage() {
   const router = useRouter()
@@ -58,13 +59,11 @@ export default function NewGroupPage() {
 
   return (
     <div className={styles.page}>
-      <nav className="breadcrumbs">
-        <Link href="/" className="breadcrumb-link">Home</Link>
-        <span className="breadcrumb-sep"> / </span>
-        <Link href="/groups" className="breadcrumb-link">Groups</Link>
-        <span className="breadcrumb-sep"> / </span>
-        <span className="breadcrumb-current">Create Group</span>
-      </nav>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Groups', href: '/groups' },
+        { label: 'Create Group' },
+      ]} />
 
       <div className={styles.formContainer}>
         <div className={styles.header}>

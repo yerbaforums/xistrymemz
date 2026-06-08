@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 export default function Help() {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
@@ -117,6 +118,10 @@ export default function Help() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Help' },
+      ]} />
       <div className={styles.container}>
         <section className={styles.hero}>
           <h1>Help Center</h1>

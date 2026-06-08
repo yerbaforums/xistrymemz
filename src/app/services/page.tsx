@@ -12,6 +12,7 @@ import { SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service
 import styles from './page.module.css'
 import Skeleton from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 function safeStr(v: unknown): string | null {
   return typeof v === 'string' ? v : null
@@ -107,6 +108,10 @@ export default function ServicesPage() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Services' },
+      ]} />
       <div className={styles.header}>
         <div>
           <h1>Services</h1>

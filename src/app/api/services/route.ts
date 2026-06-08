@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { serviceOfferingSchema, validateBody } from '@/lib/schemas'
 import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
-import { extractHashtags } from '@/lib/hashtags'
+import { extractHashtags, linkHashtags } from '@/services/hashtagService'
 
 export const dynamic = 'force-dynamic'
 
@@ -118,20 +118,11 @@ export async function POST(request: NextRequest) {
     // Extract hashtags from title + description
     const allTags = [...new Set(extractHashtags([parsed.data.title, parsed.data.description || ''].join(' ')))]
     if (allTags.length > 0) {
-      await Promise.all(allTags.map(async tag => {
-        const hashtag = await prisma.hashtag.upsert({
-          where: { tag },
-          create: { tag, postCount: 0 },
-          update: {},
-        })
-        await prisma.serviceOfferingHashtag.create({
-          data: { serviceOfferingId: service.id, hashtagId: hashtag.id, sourceType: 'SERVICE' },
-        }).catch(() => {})
-        await prisma.hashtag.update({
-          where: { id: hashtag.id },
-          data: { postCount: { increment: 1 } },
-        })
-      }))
+      await linkHashtags('SERVICE', service.id, allTags)
+      await prisma.hashtag.updateMany({
+        where: { tag: { in: allTags } },
+        data: { postCount: { increment: 1 } },
+      })
     }
 
     return NextResponse.json({ service }, { status: 201 })

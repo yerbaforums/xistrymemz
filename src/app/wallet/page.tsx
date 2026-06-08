@@ -7,6 +7,7 @@ import { getCryptoIcon, getCryptoName, CRYPTO_ICONS } from '@/lib/crypto-icons'
 import { useTariWallet } from '@/context/TariWalletContext'
 import { useToast } from '@/context/ToastContext'
 import Skeleton from '@/components/Skeleton'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface UserWallet {
   id: string
@@ -143,6 +144,10 @@ export default function WalletPage() {
 
   return (
     <div className={styles.container}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Wallet' },
+      ]} />
       <div className={styles.header}>
         <div>
           <h1 className={styles.title}>My Wallet</h1>

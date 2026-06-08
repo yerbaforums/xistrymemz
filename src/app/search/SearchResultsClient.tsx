@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Skeleton, { SkeletonCard } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import styles from './page.module.css'
 
 interface SearchResult {
@@ -152,6 +153,10 @@ export default function SearchResultsClient() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Search' },
+      ]} />
       <form onSubmit={handleSearch} className={styles.searchBar}>
         <input
           type="text"

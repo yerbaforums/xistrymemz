@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import RequestDetailClient from './RequestDetailClient'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 export const dynamic = 'force-dynamic'
 
@@ -160,5 +161,14 @@ export default async function RequestDetailPage({
     supportCount: (request as any)._count?.supports || 0,
   }
 
-  return <RequestDetailClient request={serializedRequest} userId={session?.user?.id || ''} userRole={userRole} />
+  return (
+    <>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Requests', href: '/requests' },
+        { label: serializedRequest.title || 'Request' },
+      ]} />
+      <RequestDetailClient request={serializedRequest} userId={session?.user?.id || ''} userRole={userRole} />
+    </>
+  )
 }

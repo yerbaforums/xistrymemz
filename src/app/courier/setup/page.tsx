@@ -11,6 +11,7 @@ import FormWizard, { useWizard, type WizardStep } from '@/components/FormWizard'
 import Skeleton from '@/components/Skeleton'
 import { businessTemplates, getTemplateById, type BusinessTemplate } from '@/lib/templates'
 import Button from '@/components/ui/Button'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface CourierService {
   id: string
@@ -197,6 +198,10 @@ export default function CourierSetupPage() {
 
   return (
     <div className={styles.container}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Setup Courier' },
+      ]} />
       <div className={styles.header}>
         <Link href="/dashboard" className={styles.backLink}>
           ← Back to Dashboard

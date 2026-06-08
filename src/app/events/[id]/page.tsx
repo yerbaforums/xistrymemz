@@ -23,6 +23,7 @@ import CollaborateButton from '@/components/CollaborateButton'
 import PinToBoardButton from '@/components/PinToBoardButton'
 import Skeleton from '@/components/Skeleton'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 const QRCodeModal = dynamic(() => import('@/components/QRCodeModal').then(mod => mod.QRCodeModal), { ssr: false })
 
@@ -321,6 +322,11 @@ function EventDetailContent() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Events', href: '/events' },
+        { label: event.title || 'Event' },
+      ]} />
       <Link href="/events" className={styles.backLink}>
         ← Back to Events
       </Link>

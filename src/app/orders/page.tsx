@@ -7,6 +7,7 @@ import Link from 'next/link'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import Button from '@/components/ui/Button'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface EscrowTransaction {
   id: string
@@ -177,6 +178,10 @@ export default function OrdersPage() {
 
   return (
     <div className={styles.container}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Orders' },
+      ]} />
       <div className={styles.header}>
         <h1>Orders & Escrow</h1>
         <p className={styles.subtitle}>Track your transactions and deliveries</p>

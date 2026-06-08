@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { serviceOfferingSchema, validateBody } from '@/lib/schemas'
 import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
-import { extractHashtags } from '@/lib/hashtags'
+import { extractHashtags, linkHashtags, removeHashtags } from '@/services/hashtagService'
 
 export async function GET(
   request: Request,
@@ -127,39 +127,15 @@ export async function PUT(
     const title = d.title ?? existing.title
     const description = d.description ?? existing.description
     const newTags = [...new Set(extractHashtags([title, description || ''].join(' ')))]
-    const existingTags = await prisma.serviceOfferingHashtag.findMany({
-      where: { serviceOfferingId: id },
-      include: { hashtag: true },
-    })
-    const oldTagNames = existingTags.map(e => e.hashtag.tag)
 
-    // Remove old tags that no longer match
-    for (const et of existingTags) {
-      if (!newTags.includes(et.hashtag.tag)) {
-        await prisma.serviceOfferingHashtag.delete({ where: { id: et.id } })
-        await prisma.hashtag.update({
-          where: { id: et.hashtagId },
-          data: { postCount: { decrement: 1 } },
-        })
-      }
-    }
-
-    // Add new tags
-    for (const tag of newTags) {
-      if (!oldTagNames.includes(tag)) {
-        const hashtag = await prisma.hashtag.upsert({
-          where: { tag },
-          create: { tag, postCount: 0 },
-          update: {},
-        })
-        await prisma.serviceOfferingHashtag.create({
-          data: { serviceOfferingId: id, hashtagId: hashtag.id, sourceType: 'SERVICE' },
-        }).catch(() => {})
-        await prisma.hashtag.update({
-          where: { id: hashtag.id },
-          data: { postCount: { increment: 1 } },
-        })
-      }
+    if (newTags.length > 0) {
+      await linkHashtags('SERVICE', id, newTags)
+      await prisma.hashtag.updateMany({
+        where: { tag: { in: newTags } },
+        data: { postCount: { increment: 1 } },
+      })
+    } else {
+      await removeHashtags('SERVICE', id)
     }
 
     return NextResponse.json({ service })

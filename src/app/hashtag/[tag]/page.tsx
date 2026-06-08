@@ -8,6 +8,7 @@ import ProductCard from '@/components/ProductCard'
 import ServiceCard from '@/components/ServiceCard'
 import type { Product } from '@/types/product'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import styles from './page.module.css'
 
 type TabType = 'all' | 'posts' | 'products' | 'events' | 'services' | 'schoolContents' | 'plans' | 'requests' | 'groups'
@@ -121,13 +122,11 @@ function HashtagPage() {
 
   return (
     <div className={styles.page}>
-      <nav className={styles.breadcrumbs}>
-        <Link href="/" className="breadcrumb-link">Home</Link>
-        <span className="breadcrumb-sep"> / </span>
-        <Link href="/hashtags" className="breadcrumb-link">Hashtags</Link>
-        <span className="breadcrumb-sep"> / </span>
-        <span className="breadcrumb-current">#{tag}</span>
-      </nav>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Hashtags', href: '/hashtags' },
+        { label: `#${tag}` },
+      ]} />
 
       <div className={styles.header}>
         <h1 className={styles.title}>#{tag}</h1>

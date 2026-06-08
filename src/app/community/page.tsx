@@ -12,6 +12,7 @@ import { getUserProfileUrl } from '@/lib/utils'
 import RoleBadge from '@/components/RoleBadge'
 import ActiveStatus from '@/components/ActiveStatus'
 import LookingForCollaboratorsBadge from '@/components/LookingForCollaboratorsBadge'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface Member {
   id: string
@@ -284,11 +285,10 @@ export default function CommunityPage() {
 
   return (
     <div className={styles.container}>
-      <nav className="breadcrumbs" style={{ marginBottom: '16px' }}>
-        <Link href="/" className="breadcrumb-link">Home</Link>
-        <span className="breadcrumb-sep"> / </span>
-        <span className="breadcrumb-current">Community</span>
-      </nav>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Community' },
+      ]} />
 
       <div className={styles.header}>
         <h1>Community</h1>

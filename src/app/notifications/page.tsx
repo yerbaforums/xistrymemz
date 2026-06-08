@@ -6,6 +6,7 @@ import Link from 'next/link'
 import styles from './page.module.css'
 import Skeleton, { SkeletonCard, SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface Notification {
   id: string
@@ -97,6 +98,10 @@ export default function NotificationsPage() {
 
   return (
     <div className={styles.container}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Notifications' },
+      ]} />
       <h1>🔔 Notifications</h1>
 
       <div className={styles.filters}>

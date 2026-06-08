@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 export default function NewPlanPage() {
   const router = useRouter()
@@ -61,6 +62,11 @@ export default function NewPlanPage() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Plans', href: '/plans/public' },
+        { label: 'Create Plan' },
+      ]} />
       <div className={styles.header}>
         <Link href="/dashboard/projects" className={styles.backLink}>← Back to Projects</Link>
         <h1>New Project</h1>

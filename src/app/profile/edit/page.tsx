@@ -11,6 +11,7 @@ import { useToast } from '@/context/ToastContext'
 import ImageUploader from '@/components/ImageUploader'
 import AvailabilityEditor from '@/components/AvailabilityEditor'
 import Skeleton from '@/components/Skeleton'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import { USER_CLASSES, CLASS_ICONS } from '@/lib/user-classes'
 import styles from '../[username]/profile.module.css'
 
@@ -346,6 +347,11 @@ export default function ProfileEditPage() {
 
   return (
     <div className={styles.container}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Profile', href: userData?.username ? `/profile/${userData.username}` : '#' },
+        { label: 'Edit' },
+      ]} />
       <div className={styles.editPageWrapper}>
         <div className={`${styles.flexBetween} ${styles.mb30}`}>
           <h1>Edit Profile</h1>

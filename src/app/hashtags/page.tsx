@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface HashtagEntityCounts {
   posts: number
@@ -83,11 +84,10 @@ function HashtagsPage() {
 
   return (
     <div className={styles.page}>
-      <nav className={styles.breadcrumbs}>
-        <Link href="/" className="breadcrumb-link">Home</Link>
-        <span className="breadcrumb-sep"> / </span>
-        <span className="breadcrumb-current">Hashtags</span>
-      </nav>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Hashtags' },
+      ]} />
 
       <div className={styles.header}>
         <h1 className={styles.title}>Hashtags</h1>

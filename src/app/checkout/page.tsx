@@ -11,6 +11,7 @@ import { getCryptoInfo, CRYPTO_ICONS } from '@/lib/crypto-icons'
 import { useToast } from '@/context/ToastContext'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import Skeleton from '@/components/Skeleton'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface Product {
   id: string
@@ -232,6 +233,10 @@ function CheckoutContent() {
 
   return (
     <div className={styles.container}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Checkout' },
+      ]} />
       <div className={styles.header}>
         <Link href="/products" className={styles.backLink}>← Back to Marketplace</Link>
         <h1>Checkout</h1>

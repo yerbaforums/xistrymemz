@@ -10,6 +10,7 @@ import TranslateButton from '@/components/TranslateButton'
 import Skeleton, { SkeletonCard, SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import InboxView from '@/components/InboxView'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface User {
   id: string
@@ -160,6 +161,10 @@ function MessagesContent() {
 
   return (
     <div className={styles.container}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Messages' },
+      ]} />
       <div className={styles.header}>
         <h1>Messages</h1>
         <p>Connect with your community</p>

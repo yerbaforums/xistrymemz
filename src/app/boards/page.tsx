@@ -10,6 +10,7 @@ import { useToast } from '@/context/ToastContext'
 import { reverseGeocodeLocation, shortenLocation } from '@/lib/geocoding'
 import { EmptyState } from '@/components/EmptyState'
 import styles from './page.module.css'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
@@ -281,6 +282,10 @@ export default function BoardsPage() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Boards' },
+      ]} />
       <div className={styles.hero}>
         <h1>📌 Community Bulletin Boards</h1>
         <p>Pin your cards, announcements, and listings to local boards</p>

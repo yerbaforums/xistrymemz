@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { postSchema, validateBody } from '@/lib/schemas'
 import { parseMentions } from '@/lib/mentions'
-import { extractHashtags } from '@/lib/hashtags'
+import { extractHashtags, linkHashtags } from '@/services/hashtagService'
 import { sseManager } from '@/lib/sse'
 
 export async function GET(request: NextRequest) {
@@ -199,19 +199,12 @@ export async function POST(request: NextRequest) {
 
     // Extract and process hashtags
     const hashtags = extractHashtags(content)
-    for (const tag of hashtags) {
-      await prisma.hashtag.upsert({
-        where: { tag },
-        update: { postCount: { increment: 1 } },
-        create: { tag, postCount: 1 }
+    if (hashtags.length > 0) {
+      await linkHashtags('POST', post.id, hashtags)
+      await prisma.hashtag.updateMany({
+        where: { tag: { in: hashtags } },
+        data: { postCount: { increment: 1 } },
       })
-      await prisma.postHashtag.create({
-        data: {
-          postId: post.id,
-          hashtagId: (await prisma.hashtag.findUnique({ where: { tag } }))!.id,
-          sourceType: 'POST'
-        }
-      }).catch(() => {})
     }
 
     return NextResponse.json({ post }, { status: 201 })

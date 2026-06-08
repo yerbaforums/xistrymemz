@@ -8,6 +8,7 @@ import styles from '../page.module.css'
 import { useToast } from '@/context/ToastContext'
 import Button from '@/components/ui/Button'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface EscrowTransaction {
   id: string
@@ -214,6 +215,11 @@ export default function OrderDetailPage() {
   return (
     <ErrorBoundary>
       <div className={styles.container}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Orders', href: '/orders' },
+        { label: 'Order details' },
+      ]} />
       <div className={styles.header}>
         <Link href="/orders" className={styles.backLink}>Back to Orders</Link>
         <h1>Order #{order.id.slice(0, 10)}</h1>

@@ -6,6 +6,7 @@ import styles from './page.module.css'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { DonationActions } from '@/components/DonationActions'
 import { CRYPTO_LOGOS } from '@/lib/constants'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface DonationAddr {
   id: string
@@ -28,6 +29,10 @@ export default function About() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'About' },
+      ]} />
       <section className={styles.hero}>
         <img src="/logo.png" alt="XistrYmemZ" className={styles.logo} />
         <h1>XistrYmemZ</h1>

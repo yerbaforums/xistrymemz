@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { geocodeLocation } from '@/lib/geocoding'
 import { eventSchema, validateBody } from '@/lib/schemas'
-import { extractHashtags } from '@/lib/hashtags'
+import { extractHashtags, linkHashtags } from '@/services/hashtagService'
 
 export async function GET(
   request: NextRequest,
@@ -206,23 +206,12 @@ export async function PUT(
         ...extractHashtags([title || event.title, description || event.description || ''].join(' '))
       ])]
 
-      await prisma.eventHashtag.deleteMany({ where: { eventId: id } })
-
+      await linkHashtags('EVENT', id, allTags)
       if (allTags.length > 0) {
-        await Promise.all(allTags.map(async tag => {
-          const hashtag = await prisma.hashtag.upsert({
-            where: { tag },
-            create: { tag, postCount: 0 },
-            update: {},
-          })
-          await prisma.eventHashtag.create({
-            data: { eventId: id, hashtagId: hashtag.id },
-          }).catch(() => {})
-          await prisma.hashtag.update({
-            where: { id: hashtag.id },
-            data: { postCount: { increment: 1 } },
-          })
-        }))
+        await prisma.hashtag.updateMany({
+          where: { tag: { in: allTags } },
+          data: { postCount: { increment: 1 } },
+        })
       }
     }
 

@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { geocodeLocation } from '@/lib/geocoding'
-import { extractHashtags } from '@/lib/hashtags'
+import { extractHashtags, linkHashtags } from '@/services/hashtagService'
 import { productSchema, validateBody } from '@/lib/schemas'
 
 export async function GET(request: Request) {
@@ -229,24 +229,11 @@ export async function POST(request: Request) {
     ])]
 
     if (allTags.length > 0) {
-      await Promise.all(allTags.map(async tag => {
-        const hashtag = await prisma.hashtag.upsert({
-          where: { tag },
-          create: { tag, postCount: 0 },
-          update: {},
-        })
-        await prisma.productHashtag.create({
-          data: {
-            productId: product.id,
-            hashtagId: hashtag.id,
-            sourceType: 'PRODUCT',
-          },
-        }).catch(() => {})
-        await prisma.hashtag.update({
-          where: { id: hashtag.id },
-          data: { postCount: { increment: 1 } },
-        })
-      }))
+      await linkHashtags('PRODUCT', product.id, allTags)
+      await prisma.hashtag.updateMany({
+        where: { tag: { in: allTags } },
+        data: { postCount: { increment: 1 } },
+      })
     }
 
     return NextResponse.json(product)
