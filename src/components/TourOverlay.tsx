@@ -49,13 +49,11 @@ export default function TourOverlay({ tourKey, steps }: TourOverlayProps) {
 
   const updatePosition = useCallback(() => {
     const s = steps[currentStep]
-    if (!s?.target) {
+
+    const isMobile = window.innerWidth < 768
+    if (isMobile || !s?.target || s.position === 'center') {
       setTargetRect(null)
-      if (s?.position === 'center') {
-        setTooltipStyle({ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' })
-      } else {
-        setTooltipStyle({})
-      }
+      setTooltipStyle({ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' })
       return
     }
 
@@ -73,6 +71,8 @@ export default function TourOverlay({ tourKey, steps }: TourOverlayProps) {
 
     const tooltip: React.CSSProperties = {}
     const gap = 12
+    const tw = tooltipRef.current?.offsetWidth ?? Math.min(420, window.innerWidth - 40)
+    const th = tooltipRef.current?.offsetHeight ?? 400
 
     switch (pos) {
       case 'top':
@@ -91,15 +91,21 @@ export default function TourOverlay({ tourKey, steps }: TourOverlayProps) {
         tooltip.left = rect.right + gap
         tooltip.top = rect.top + rect.height / 2
         break
-      case 'center':
-        tooltip.left = '50%'
-        tooltip.top = '50%'
-        tooltip.transform = 'translate(-50%, -50%)'
-        break
     }
 
-    setTooltipStyle(tooltip)
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    const overflows =
+      (pos === 'bottom' && rect.bottom + gap + th > window.innerHeight) ||
+      (pos === 'top' && rect.top - gap - th < 0) ||
+      (pos === 'left' && rect.left - gap - tw < 0) ||
+      (pos === 'right' && rect.right + gap + tw > window.innerWidth)
+
+    if (overflows) {
+      setTargetRect(null)
+      setTooltipStyle({ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' })
+    } else {
+      setTooltipStyle(tooltip)
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
   }, [currentStep, steps])
 
   useEffect(() => {
