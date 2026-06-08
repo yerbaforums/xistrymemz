@@ -11,6 +11,7 @@ import StepsSection from '@/components/home/StepsSection'
 import FeaturesSection from '@/components/home/FeaturesSection'
 import CTASection from '@/components/home/CTASection'
 import PassportSection from '@/components/home/PassportSection'
+import FeedbackSection from '@/components/home/FeedbackSection'
 import HomeFooterSection from '@/components/home/HomeFooterSection'
 import type { PlatformStats, FeaturedShop, FeaturedProduct, PublicRequest, FeaturedEvent, PublicPlan, FeaturedBoard } from '@/components/home/types'
 
@@ -159,6 +160,7 @@ export default function Home() {
       <PassportSection />
       <HomeMap />
       <CTASection memberCount={animatedStats.members} />
+      <FeedbackSection />
       <HomeFooterSection />
     </div>
   )

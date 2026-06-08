@@ -7,6 +7,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { SkeletonCard } from '@/components/Skeleton'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import DashboardTourWrapper from '@/components/DashboardTourWrapper'
 import { DASHBOARD_SIDEBAR_PRIMARY, DASHBOARD_SIDEBAR_SECONDARY, BREADCRUMB_LABELS } from '@/lib/navigation'
 import styles from './layout.module.css'
 import sidebarStyles from './layout-sidebar.module.css'
@@ -183,6 +184,7 @@ export default function DashboardLayout({
           <ErrorBoundary>{children}</ErrorBoundary>
         </main>
       </div>
+      <DashboardTourWrapper />
     </div>
   )
 }
