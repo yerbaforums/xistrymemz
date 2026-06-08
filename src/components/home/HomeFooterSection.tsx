@@ -2,12 +2,14 @@
 
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
+import NewsletterSignup from '@/components/NewsletterSignup'
 import styles from './HomeFooterSection.module.css'
 
 export default function HomeFooterSection() {
   const t = useTranslations('homeFooter')
   return (
     <section className={styles.section}>
+      <NewsletterSignup />
       <div className={styles.links}>
         <Link href="/about">{t('about')}</Link>
         <Link href="/help">{t('help')}</Link>

@@ -95,6 +95,7 @@ interface ProfileUser {
   postCount: number
   productCount: number
   connectionCount: number
+  inviteCount: number
   isConnected: boolean
   hasPendingRequest: boolean
   connectionId: string | null
@@ -917,6 +918,10 @@ export default function ProfilePage() {
               <div className={styles.stat}>
                 <span className={styles.statValue}>{user.connectionCount}</span>
                 <span className={styles.statLabel}>Connections</span>
+              </div>
+              <div className={styles.stat}>
+                <span className={styles.statValue}>{user.inviteCount ?? 0}</span>
+                <span className={styles.statLabel}>Invited</span>
               </div>
               {user.volunteerCount !== undefined && user.volunteerCount > 0 && (
                 <div className={styles.stat}>

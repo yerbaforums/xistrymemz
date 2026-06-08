@@ -1,0 +1,65 @@
+.card {
+  background: linear-gradient(135deg, rgba(0, 217, 255, 0.06), rgba(123, 97, 255, 0.06));
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.icon {
+  font-size: 1.3rem;
+}
+
+.title {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.codeBox {
+  display: flex;
+  gap: 6px;
+}
+
+.codeInput {
+  flex: 1;
+  padding: 8px 10px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  cursor: text;
+}
+
+.codeInput:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.copyBtn {
+  padding: 8px 16px;
+  background: var(--accent-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--bg-primary);
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.copyBtn:hover {
+  box-shadow: 0 0 10px rgba(0, 217, 255, 0.4);
+}

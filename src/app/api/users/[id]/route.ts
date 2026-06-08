@@ -46,6 +46,7 @@ export async function GET(
       donationCurrency: true,
       lookingForCollaborators: true,
       lastActiveAt: true,
+      inviteCount: true,
       _count: {
         select: {
           plans: true,

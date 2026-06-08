@@ -179,7 +179,7 @@ export default async function DashboardOverview({
 
   const user = await prisma.user.findUnique({ 
     where: { id: userId },
-    select: { name: true, bio: true, shopSlug: true, schoolSlug: true, onboardingCompleted: true, setupProgress: true, walletAddress: true, paymentAddress: true, refundAddress: true, cryptoCurrency: true, donationAddress: true, donationCurrency: true, acceptsDonations: true, userClass: true }
+    select: { name: true, bio: true, shopSlug: true, schoolSlug: true, onboardingCompleted: true, setupProgress: true, walletAddress: true, paymentAddress: true, refundAddress: true, cryptoCurrency: true, donationAddress: true, donationCurrency: true, acceptsDonations: true, userClass: true, inviteCount: true }
   })
 
   const userClasses = (user?.userClass || '').split(',').map(c => c.trim()).filter(Boolean)
@@ -279,6 +279,7 @@ export default async function DashboardOverview({
     { label: 'Total Views', value: totalViews, max: Math.max(totalViews, 100), color: '#06B6D4', icon: '👁️', href: '' },
     { label: 'Listings', value: totalListings, max: Math.max(totalListings, 20), color: '#84CC16', icon: '📋', href: '/dashboard/marketplace' },
     { label: 'Boards', value: boardCount, max: Math.max(boardCount, 5), color: '#00D9FF', icon: '📌', href: '/boards' },
+    { label: 'Invites', value: user?.inviteCount || 0, max: Math.max(user?.inviteCount || 0, 10), color: '#F59E0B', icon: '📨', href: '' },
   ]
 
   const quickActions = [

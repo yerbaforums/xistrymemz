@@ -40,37 +40,44 @@ export async function POST(request: Request) {
       }
     }
 
+    let invitedByUser: string | null = null
+
     if (inviteCode) {
-      const code = await prisma.inviteCode.findUnique({
-        where: { code: inviteCode.toUpperCase() }
-      })
+      const referrer = await prisma.user.findUnique({ where: { inviteCode: inviteCode.toUpperCase() } })
+      if (referrer) {
+        invitedByUser = referrer.id
+      } else {
+        const code = await prisma.inviteCode.findUnique({
+          where: { code: inviteCode.toUpperCase() }
+        })
 
-      if (!code) {
-        return NextResponse.json(
-          { error: 'Invalid invite code' },
-          { status: 400 }
-        )
-      }
+        if (!code) {
+          return NextResponse.json(
+            { error: 'Invalid invite code' },
+            { status: 400 }
+          )
+        }
 
-      if (!code.isActive) {
-        return NextResponse.json(
-          { error: 'This invite code is no longer active' },
-          { status: 400 }
-        )
-      }
+        if (!code.isActive) {
+          return NextResponse.json(
+            { error: 'This invite code is no longer active' },
+            { status: 400 }
+          )
+        }
 
-      if (code.expiresAt && new Date(code.expiresAt) < new Date()) {
-        return NextResponse.json(
-          { error: 'This invite code has expired' },
-          { status: 400 }
-        )
-      }
+        if (code.expiresAt && new Date(code.expiresAt) < new Date()) {
+          return NextResponse.json(
+            { error: 'This invite code has expired' },
+            { status: 400 }
+          )
+        }
 
-      if (code.usedCount >= code.maxUses) {
-        return NextResponse.json(
-          { error: 'This invite code has reached its usage limit' },
-          { status: 400 }
-        )
+        if (code.usedCount >= code.maxUses) {
+          return NextResponse.json(
+            { error: 'This invite code has reached its usage limit' },
+            { status: 400 }
+          )
+        }
       }
     }
 
@@ -90,6 +97,8 @@ export async function POST(request: Request) {
     const normalizedUsername = username ? username.toLowerCase().replace(/[^a-z0-9]/g, '') : null
     const { publicKey, privateKey } = generateActorKeys()
 
+    const userInviteCode = 'USER-' + randomBytes(3).toString('hex').toUpperCase()
+
     const user = await prisma.user.create({
       data: {
         email,
@@ -97,9 +106,18 @@ export async function POST(request: Request) {
         name,
         username: normalizedUsername,
         publicKey,
-        privateKey
+        privateKey,
+        inviteCode: userInviteCode,
+        ...(invitedByUser ? { invitedBy: invitedByUser } : {}),
       }
     })
+
+    if (invitedByUser) {
+      await prisma.user.update({
+        where: { id: invitedByUser },
+        data: { inviteCount: { increment: 1 } },
+      })
+    }
 
     const fedUrl = `${getBaseUrl()}/api/fediverse/actor/${normalizedUsername || user.id}`
     await prisma.user.update({
@@ -107,7 +125,7 @@ export async function POST(request: Request) {
       data: { federatedUrl: fedUrl }
     })
 
-    if (inviteCode) {
+    if (inviteCode && !invitedByUser) {
       await prisma.inviteCode.update({
         where: { code: inviteCode.toUpperCase() },
         data: { usedCount: { increment: 1 } }
