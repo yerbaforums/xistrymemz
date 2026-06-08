@@ -51,7 +51,11 @@ export default function TourOverlay({ tourKey, steps }: TourOverlayProps) {
     const s = steps[currentStep]
     if (!s?.target) {
       setTargetRect(null)
-      setTooltipStyle({})
+      if (s?.position === 'center') {
+        setTooltipStyle({ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' })
+      } else {
+        setTooltipStyle({})
+      }
       return
     }
 
