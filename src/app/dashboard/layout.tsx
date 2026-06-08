@@ -9,6 +9,7 @@ import { SkeletonCard } from '@/components/Skeleton'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import DashboardTourWrapper from '@/components/DashboardTourWrapper'
 import { DASHBOARD_SIDEBAR_PRIMARY, DASHBOARD_SIDEBAR_SECONDARY, BREADCRUMB_LABELS } from '@/lib/navigation'
+import { dashboardShortcuts } from '@/lib/shortcuts'
 import styles from './layout.module.css'
 import sidebarStyles from './layout-sidebar.module.css'
 
@@ -68,7 +69,7 @@ function DashboardNav({ user }: { user: { id?: string | null; name?: string | nu
         )}
       </div>
       <div className={sidebarStyles.navDivider} />
-      {primaryNav.map(item => (
+      {primaryNav.map((item, i) => (
         <Link 
           key={item.href} 
           href={item.href} 
@@ -77,6 +78,7 @@ function DashboardNav({ user }: { user: { id?: string | null; name?: string | nu
         >
           <span>{item.icon}</span>
           <span>{item.label}</span>
+          {i < 9 && <span className={sidebarStyles.shortcut}>Alt+{i + 1}</span>}
         </Link>
       ))}
       <button onClick={() => setMoreOpen(!moreOpen)} className={sidebarStyles.moreToggle}>
@@ -146,6 +148,10 @@ export default function DashboardLayout({
       })
       .catch(() => setOnboardingChecked(true))
   }, [status, session, router])
+
+  useEffect(() => {
+    return dashboardShortcuts((href) => router.push(href))
+  }, [router])
 
   if (status === 'loading' || !onboardingChecked) {
     return (

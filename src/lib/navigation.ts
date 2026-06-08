@@ -107,28 +107,28 @@ export const NAV: NavConfig = {
 }
 
 export const DASHBOARD_SIDEBAR_PRIMARY: NavItem[] = [
-  { href: '/discover', icon: '🌐', label: 'Discover' },
   { href: '/dashboard/overview', icon: '📊', label: 'Overview' },
-  { href: '/dashboard/studio', icon: '🎨', label: 'Studio' },
+  { href: '/dashboard/passport', icon: '🌍', label: 'Passport' },
   { href: '/dashboard/feed', icon: '📡', label: 'Feed' },
+  { href: '/boards', icon: '📌', label: 'Boards' },
+  { href: '/discover', icon: '🌐', label: 'Discover' },
+  { href: '/dashboard/planning', icon: '🗺️', label: 'Planning' },
+  { href: '/dashboard/studio', icon: '🎨', label: 'Studio' },
   { href: '/dashboard/marketplace', icon: '🛒', label: 'Marketplace' },
-  { href: '/dashboard/services', icon: '🔧', label: 'Services' },
-  { href: '/dashboard/rentals', icon: '🏠', label: 'Rentals' },
-  { href: '/dashboard/shop', icon: '🏪', label: 'Shop' },
   { href: '/dashboard/events', icon: '📅', label: 'Events' },
   { href: '/dashboard/appointments', icon: '🗓️', label: 'Planner' },
-  { href: '/dashboard/planning', icon: '🗺️', label: 'Planning' },
 ]
 
 export const DASHBOARD_SIDEBAR_SECONDARY: NavItem[] = [
-  { href: '/boards', icon: '📌', label: 'Boards' },
   { href: '/dashboard/messages', icon: '💬', label: 'Messages' },
   { href: '/dashboard/community', icon: '🌐', label: 'Community' },
   { href: '/dashboard/projects', icon: '🚀', label: 'Projects' },
   { href: '/dashboard/requests', icon: '📝', label: 'Requests' },
+  { href: '/dashboard/services', icon: '🔧', label: 'Services' },
+  { href: '/dashboard/rentals', icon: '🏠', label: 'Rentals' },
+  { href: '/dashboard/shop', icon: '🏪', label: 'Shop' },
   { href: '/dashboard/teaching', icon: '📚', label: 'Teaching' },
   { href: '/dashboard/offers', icon: '🤝', label: 'Offers' },
-  { href: '/dashboard/passport', icon: '🌍', label: 'Passport' },
   { href: '/dashboard/saved', icon: '⭐', label: 'Saved' },
   { href: '/directory', icon: '📋', label: 'Directory' },
   { href: '/dashboard/video', icon: '📹', label: 'Video Chat' },
