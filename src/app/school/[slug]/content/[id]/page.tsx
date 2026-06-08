@@ -8,6 +8,7 @@ import EntityActions from '@/components/EntityActions'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import styles from './page.module.css'
 import Skeleton from '@/components/Skeleton'
+import PinToBoardButton from '@/components/PinToBoardButton'
 
 interface ContentData {
   id: string
@@ -190,6 +191,18 @@ export default function SchoolContentDetailPage() {
       <div className={styles.actions}>
         <EntityActions entityType="SCHOOLCONTENT" entityId={content.id} title={content.title} authorId={content.author.id} variant="bar" />
       </div>
+
+      {session?.user && (
+        <div className={styles.actions}>
+          <PinToBoardButton
+            entityType="SCHOOL_CONTENT"
+            entityId={content.id}
+            entityTitle={content.title}
+            variant="ghost"
+            label="Pin to Board"
+          />
+        </div>
+      )}
 
       <Link href={`/school/${slug}`} className={styles.backLink}>← Back to {content.user.schoolName || 'School'}</Link>
 

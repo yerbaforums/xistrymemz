@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import styles from './page.module.css'
+import { EmptyState } from '@/components/EmptyState'
 import Skeleton from '@/components/Skeleton'
 
 interface InviteCode {
@@ -190,9 +191,7 @@ export default function AdminInviteCodesPage() {
       </div>
 
       {codes.length === 0 ? (
-        <div className={styles.empty}>
-          <p>No invite codes yet. Create some to get started.</p>
-        </div>
+        <EmptyState icon="🔑" title="No invite codes yet" description="Create some to get started." action={{ label: 'Create Codes', onClick: () => setShowForm(true) }} />
       ) : (
         <div className={styles.codeList}>
           {codes.map(code => (

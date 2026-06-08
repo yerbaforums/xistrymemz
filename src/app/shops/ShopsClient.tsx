@@ -6,6 +6,7 @@ import Link from 'next/link'
 import styles from './page.module.css'
 import AlphabeticalIndex, { type IndexItem } from '@/components/AlphabeticalIndex'
 import { SHOP_CATEGORIES } from '@/lib/shop-categories'
+import { EmptyState } from '@/components/EmptyState'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
@@ -155,12 +156,7 @@ export function ShopsClient({ initialShops }: ShopsClientProps) {
 
       {filtered.length === 0 ? (
         shops.length === 0 ? (
-          <div className={styles.empty}>
-            <p>No shops yet. Be the first to create one!</p>
-            <Link href="/shop/setup" className={styles.createBtn}>
-              Create Shop
-            </Link>
-          </div>
+          <EmptyState icon="🏪" title="No shops yet" description="Be the first to create a shop!" action={{ label: 'Create Shop', onClick: () => window.location.href = '/shop/setup' }} />
         ) : null
       ) : (
         <AlphabeticalIndex

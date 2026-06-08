@@ -11,6 +11,7 @@ import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
 import TranslateButton from '@/components/TranslateButton'
 import Button from '@/components/ui/Button'
+import { EmptyState } from '@/components/EmptyState'
 import Skeleton from '@/components/Skeleton'
 
 interface Author {
@@ -513,9 +514,7 @@ export default function ForumThreadPage() {
         <h2>Replies ({replies.length})</h2>
         
         {replies.length === 0 ? (
-          <div className={styles.noReplies}>
-            <p>No replies yet. Be the first to respond!</p>
-          </div>
+          <EmptyState icon="💬" title="No replies yet" description="Be the first to respond!" action={session?.user ? { label: 'Post Reply', onClick: () => document.querySelector('[class*="replyForm"]')?.scrollIntoView({ behavior: 'smooth' }) } : undefined} />
         ) : (
           <div className={styles.repliesList}>
             {replies.map((reply, index) => (

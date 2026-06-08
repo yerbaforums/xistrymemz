@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import PlanSortableList from './PlanSortableList'
 import styles from './sortable.module.css'
+import { EmptyState } from '@/components/EmptyState'
 import type { PlanMilestone } from '@/lib/plan-utils'
 
 interface PlanMilestonesProps {
@@ -107,9 +108,7 @@ export default function PlanMilestones({ milestones, isOwner, onChange }: PlanMi
       )}
 
       {milestones.length === 0 && (
-        <div className={styles.emptyState}>
-          <p>No milestones yet. Add key milestones to track your progress.</p>
-        </div>
+        <EmptyState icon="🏁" title="No milestones yet" description="Add key milestones to track your progress." action={isOwner ? { label: 'Add Milestone', onClick: () => (document.querySelector('input[placeholder="Add a new milestone..."]') as HTMLInputElement)?.focus() } : undefined} />
       )}
 
       <PlanSortableList

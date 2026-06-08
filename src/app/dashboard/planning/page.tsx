@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import dynamic from 'next/dynamic'
 import styles from './planning.module.css'
 import { geocodeLocation, reverseGeocodeLocation } from '@/lib/geocoding'
+import { EmptyState } from '@/components/EmptyState'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
@@ -149,10 +150,7 @@ export default function PlanningPage() {
         </div>
         <div className={styles.tripList}>
           {trips.length === 0 && sharedTrips.length === 0 ? (
-            <div className={styles.emptyState}>
-              <div className={styles.emptyStateIcon}>🗺️</div>
-              <p>No trips yet. Create your first trip!</p>
-            </div>
+            <EmptyState icon="🗺️" title="No trips yet" description="Create your first trip to get started." action={{ label: 'New Trip', onClick: () => setShowModal(true) }} />
           ) : (
             <>
               {trips.filter(t => !searchQuery || t.title.toLowerCase().includes(searchQuery.toLowerCase())).map(trip => (
@@ -201,10 +199,7 @@ export default function PlanningPage() {
           showAddStop={showAddStop}
           setShowAddStop={setShowAddStop}
         /> : (
-          <div className={styles.emptyState}>
-            <div className={styles.emptyStateIcon}>🗺️</div>
-            <p>Select a trip or create a new one to get started</p>
-          </div>
+          <EmptyState icon="🗺️" title="Select a trip" description="Select a trip or create a new one to get started." />
         )}
       </main>
 
@@ -728,9 +723,7 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
 
           <div className={styles.stopsList}>
             {days.length === 0 && !addingCustomStop ? (
-              <div className={styles.emptyState}>
-                <p>No stops yet. Add a custom location or use saved places.</p>
-              </div>
+              <EmptyState icon="📍" title="No stops yet" description="Add a custom location or use saved places." action={canEdit ? { label: 'Add Stop', onClick: () => setAddingCustomStop(true) } : undefined} />
             ) : days.map(day => (
               <div key={day}>
                 <div className={styles.dayHeader}>

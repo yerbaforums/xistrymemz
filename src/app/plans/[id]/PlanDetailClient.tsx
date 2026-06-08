@@ -29,6 +29,7 @@ import type { PlanGoal, PlanMilestone, PlanResource, PlanContribution, PlanJoine
 import type { EventFormData } from '@/components/EventFormFields'
 import TranslateButton from '@/components/TranslateButton'
 import HashtagInput from '@/components/HashtagInput'
+import { EmptyState } from '@/components/EmptyState'
 
 interface Request {
   id: string; title: string; description: string | null; status: string
@@ -804,7 +805,7 @@ donationDescription={plan.donationDescription}
               </div>
 
               {showCalendar ? renderCalendar() : plan.events.length === 0 ? (
-                <div className={styles.empty}><p>No events scheduled yet</p></div>
+                <EmptyState icon="📅" title="No events scheduled yet" description="Add events to your project timeline." action={isOwner ? { label: 'Add Event', onClick: () => openEventModal() } : undefined} />
               ) : (
                 <div className={styles.eventsList}>
                   {plan.events.map(event => (
@@ -853,7 +854,7 @@ donationDescription={plan.donationDescription}
             <button onClick={() => setShowRequestModal(true)} className={styles.createBtn}>+ New</button>
           </div>
           {plan.requests.length === 0 ? (
-            <div className={styles.empty}><p>No requests yet</p></div>
+            <EmptyState icon="📝" title="No requests yet" description="Create a request to get what you need for this project." action={isOwner ? { label: 'New Request', onClick: () => setShowRequestModal(true) } : undefined} />
           ) : (
             <div className={styles.requestList}>
               {plan.requests.map(req => (

@@ -11,6 +11,7 @@ import ImageUploader from '@/components/ImageUploader'
 import Skeleton from '@/components/Skeleton'
 import type { ServiceOffering, ServiceCategory } from '@/types/service'
 import { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service'
+import { EmptyState } from '@/components/EmptyState'
 import styles from './page.module.css'
 
 interface ShopSettings {
@@ -292,12 +293,7 @@ export default function DashboardServices() {
       {loading ? (
         <Skeleton width="100%" height="2rem" />
       ) : filteredServices.length === 0 && !showForm ? (
-        <div className={styles.empty}>
-          <div className={styles.emptyIcon}>🔧</div>
-          <h3>No services yet</h3>
-          <p>Create your first bookable service to get started.</p>
-          <button onClick={() => { resetForm(); setShowForm(true) }} className="btn-primary">➕ Add Your First Service</button>
-        </div>
+        <EmptyState icon="🔧" title="No services yet" description="Offer your skills and expertise." action={{ label: 'Add Service', onClick: () => window.location.href = '/dashboard/services' }} />
       ) : (
         <div className={styles.list}>
           {filteredServices.map(s => {

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import type { Product } from '@/types/product'
 import styles from './ProductMapView.module.css'
+import { EmptyState } from '@/components/EmptyState'
 import { useTheme } from '@/context/ThemeContext'
 
 const DARK_TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
@@ -73,15 +74,7 @@ export default function ProductMapView({ products, userLocation }: ProductMapVie
   }, [products, userLocation])
 
   if (productsWithCoords.length === 0) {
-    return (
-      <div className={styles.empty}>
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-        </svg>
-        <h3>No products with location data</h3>
-        <p>Products with coordinates will appear on this map</p>
-      </div>
-    )
+    return <EmptyState icon="🗺️" title="No products with location data" description="Products with coordinates will appear on this map." />
   }
 
   return (

@@ -23,6 +23,7 @@ import LinkPreview from '@/components/LinkPreview'
 import { SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service'
 import dynamic from 'next/dynamic'
 import Button from '@/components/ui/Button'
+import PinToBoardButton from '@/components/PinToBoardButton'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
@@ -719,6 +720,16 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
       />
 
       <EntityActions entityType="SHOP" entityId={shop.shopSlug || ''} title={shop.shopName || 'Shop'} authorId={shop.user.id} variant="bar" />
+
+      {session?.user && (
+        <PinToBoardButton
+          entityType="SHOP"
+          entityId={shop.shopSlug || ''}
+          entityTitle={shop.shopName || 'Shop'}
+          variant="ghost"
+          label="Pin to Board"
+        />
+      )}
     </div>
   )
 }

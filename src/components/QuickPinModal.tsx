@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { EmptyState } from '@/components/EmptyState'
 import styles from './QuickPinModal.module.css'
 
 interface NearbyBoard {
@@ -148,40 +149,7 @@ export default function QuickPinModal({ entityType, entityId, entityTitle, entit
             {loadingBoards ? (
               <div className={styles.loading}>Loading boards...</div>
             ) : filteredBoards.length === 0 ? (
-              <div className={styles.empty}>
-                <p>No boards found nearby.</p>
-                <button
-                  className={styles.createBoardBtn}
-                  onClick={async () => {
-                    setCreatingBoard(true)
-                    try {
-                      const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
-                        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
-                      )
-                      const res = await fetch('/api/boards', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                          name: `${entityTitle} Board`,
-                          location: `${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`,
-                          latitude: pos.coords.latitude,
-                          longitude: pos.coords.longitude,
-                        }),
-                      })
-                      if (res.ok) {
-                        const data = await res.json()
-                        const newBoard = { id: data.id, name: data.name, slug: data.slug, location: data.location, pinCount: 0, distance: null }
-                        setBoards(prev => [newBoard, ...prev])
-                        setSelectedBoard(newBoard)
-                      }
-                    } catch {}
-                    setCreatingBoard(false)
-                  }}
-                  disabled={creatingBoard}
-                >
-                  {creatingBoard ? 'Creating...' : '➕ Create New Board'}
-                </button>
-              </div>
+              <EmptyState icon="📌" title="No boards found nearby" description="Create a new board to pin this item." action={{ label: 'Create Board', onClick: async () => { setCreatingBoard(true); try { const pos = await new Promise<GeolocationPosition>((resolve, reject) => navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })); const res = await fetch('/api/boards', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: `${entityTitle} Board`, location: `${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`, latitude: pos.coords.latitude, longitude: pos.coords.longitude }) }); if (res.ok) { const data = await res.json(); const newBoard = { id: data.id, name: data.name, slug: data.slug, location: data.location, pinCount: 0, distance: null }; setBoards(prev => [newBoard, ...prev]); setSelectedBoard(newBoard); } } catch {} setCreatingBoard(false); } }} />
             ) : (
               filteredBoards.map(board => (
                 <div

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import VideoChatModal from '@/components/VideoChatModal'
 import styles from './video.module.css'
+import { EmptyState } from '@/components/EmptyState'
 import Skeleton from '@/components/Skeleton'
 
 interface RoomSummary {
@@ -139,9 +140,7 @@ export default function VideoChatPage() {
         {loading ? (
           <Skeleton width="100%" height="1rem" />
         ) : rooms.length === 0 ? (
-          <div className={styles.empty}>
-            <p>No active rooms. Create one to start a video chat!</p>
-          </div>
+          <EmptyState icon="📹" title="No active rooms" description="Create one to start a video chat!" action={{ label: 'Create Room', onClick: handleCreateRoom }} />
         ) : (
           <div className={styles.roomList}>
             {rooms.map(r => (

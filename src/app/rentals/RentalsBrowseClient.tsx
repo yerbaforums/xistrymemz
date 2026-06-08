@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import styles from './rentals-browse.module.css'
 import { getUserProfileUrl } from '@/lib/utils'
+import { EmptyState } from '@/components/EmptyState'
 
 interface RentalItem {
   id: string
@@ -141,11 +142,7 @@ export default function RentalsBrowseClient({ initialRentals, categories, locati
       </div>
 
       {filtered.length === 0 ? (
-        <div className={styles.empty}>
-          <div className={styles.emptyIcon}>🏠</div>
-          <p>No rentals found</p>
-          <span>Try adjusting your filters or search terms</span>
-        </div>
+        <EmptyState icon="🏠" title="No rentals found" description="Try adjusting your filters or search terms." action={{ label: 'Browse All', onClick: () => window.location.href = '/rentals' }} />
       ) : (
         <div className={styles.grid}>
           {filtered.map(item => (

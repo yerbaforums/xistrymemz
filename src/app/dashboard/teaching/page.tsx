@@ -6,6 +6,7 @@ import { useToast } from '@/context/ToastContext'
 import ImageUploader from '@/components/ImageUploader'
 import styles from './teaching.module.css'
 import Button from '@/components/ui/Button'
+import { EmptyState } from '@/components/EmptyState'
 import Skeleton from '@/components/Skeleton'
 
 interface SchoolInfo {
@@ -190,9 +191,7 @@ export default function TeachingPage() {
           <h3>📚 Your Content ({content.length})</h3>
         </div>
         {content.length === 0 ? (
-          <div className={styles.empty}>
-            <p>No content yet. Create your first lesson!</p>
-          </div>
+          <EmptyState icon="📚" title="No content yet" description="Create your first lesson to start teaching." action={{ label: 'Create Content', onClick: () => { setEditingContent(null); setContentForm({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: '', videoUrl: '' }); setShowContentForm(true) }}} />
         ) : (
           <div className={styles.contentList}>
             {content.map(c => (

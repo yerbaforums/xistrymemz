@@ -13,6 +13,7 @@ import { calculateDistance, geocodeLocation } from '@/lib/geocoding'
 import { usePassportLocation } from '@/hooks/usePassportLocation'
 import HashtagInput from '@/components/HashtagInput'
 import { REQUEST_CATEGORIES, REQUEST_PRIORITIES } from '@/lib/request-categories'
+import { EmptyState } from '@/components/EmptyState'
 
 interface DonationAddr {
   id: string
@@ -489,12 +490,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
           )}
 
           {filtered.length === 0 ? (
-            <div className={styles.emptyState}>
-              <div className={styles.emptyIcon}>📝</div>
-              <h3>No requests found</h3>
-              <p>Try adjusting your filters or create a new request.</p>
-              <button onClick={() => setShowCreate(true)} className="btn-primary">Create Request</button>
-            </div>
+            <EmptyState icon="📝" title="No requests found" description="Try adjusting your filters or create a new request." action={{ label: 'Create Request', onClick: () => setShowCreate(true) }} />
           ) : (
             <>
               <div className={styles.resultsHeader}>

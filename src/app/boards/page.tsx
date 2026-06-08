@@ -8,6 +8,7 @@ import CreateBoardModal from '@/components/CreateBoardModal'
 import { usePassportLocation } from '@/hooks/usePassportLocation'
 import { useToast } from '@/context/ToastContext'
 import { reverseGeocodeLocation, shortenLocation } from '@/lib/geocoding'
+import { EmptyState } from '@/components/EmptyState'
 import styles from './page.module.css'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
@@ -388,16 +389,7 @@ export default function BoardsPage() {
         {loading ? (
           <p className={styles.loading}>Loading boards...</p>
         ) : boards.length === 0 ? (
-          <div className={styles.empty}>
-            <p>No boards found near your location.</p>
-            {session?.user ? (
-              <button className={styles.createBtn} onClick={() => setShowCreateModal(true)}>
-                ➕ Create the First Board
-              </button>
-            ) : (
-              <p>Sign in to create one or search for a city.</p>
-            )}
-          </div>
+          <EmptyState icon="📌" title="No boards found" description="No boards near your location. Create one or search for a city." action={session?.user ? { label: 'Create Board', onClick: () => setShowCreateModal(true) } : { label: 'Sign In', onClick: () => window.location.href = '/auth/login' }} />
         ) : (
           boards.map(board => (
             <div

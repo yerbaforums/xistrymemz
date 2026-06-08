@@ -9,6 +9,7 @@ import { getCryptoIcon, getCryptoColor } from '@/lib/crypto-icons'
 import { useToast } from '@/context/ToastContext'
 import styles from './requests.module.css'
 import { REQUEST_CATEGORIES, REQUEST_PRIORITIES } from '@/lib/request-categories'
+import { EmptyState } from '@/components/EmptyState'
 
 interface DonationAddr {
   id: string
@@ -472,12 +473,7 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
       </div>
 
       {filteredRequests.length === 0 ? (
-        <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>📝</div>
-          <h3>No requests found</h3>
-          <p>Try adjusting your filters, or create a new request.</p>
-          <button onClick={() => setShowCreate(true)} className="btn-primary">Create Your First Request</button>
-        </div>
+        <EmptyState icon="📝" title="No requests found" description="Try adjusting your filters, or create a new request." action={{ label: 'Create Request', onClick: () => setShowCreate(true) }} />
       ) : (
         <div className={styles.cardGrid}>
           {filteredRequests.map((req, index) => {

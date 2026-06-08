@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import { EmptyState } from '@/components/EmptyState'
 import styles from '../page.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -82,12 +83,7 @@ export default async function DashboardOffers() {
       <div className={styles.section}>
         <h2>Sent Offers</h2>
         {sentOffers.length === 0 ? (
-          <div className={styles.emptyLarge}>
-            <div className={styles.emptyIcon}>📤</div>
-            <h3>No offers sent yet</h3>
-            <p>Browse the marketplace to find items you&apos;d like to trade for.</p>
-            <Link href="/products" className={styles.emptyBtn}>Browse Marketplace</Link>
-          </div>
+          <EmptyState icon="📤" title="No offers sent yet" description="Browse the marketplace to find items you'd like to trade for." action={{ label: 'Browse Marketplace', onClick: () => window.location.href = '/products' }} />
         ) : (
           <div className={styles.list}>
             {sentOffers.map(offer => (
@@ -119,12 +115,7 @@ export default async function DashboardOffers() {
       <div className={styles.section}>
         <h2>Received Offers</h2>
         {receivedOffers.length === 0 ? (
-          <div className={styles.emptyLarge}>
-            <div className={styles.emptyIcon}>📥</div>
-            <h3>No offers received yet</h3>
-            <p>Offers from other members will appear here when someone wants to trade with you.</p>
-            <Link href="/products" className={styles.emptyBtn}>Browse Marketplace</Link>
-          </div>
+          <EmptyState icon="📥" title="No offers received yet" description="Offers from other members will appear here when someone wants to trade with you." action={{ label: 'Browse Marketplace', onClick: () => window.location.href = '/products' }} />
         ) : (
           <div className={styles.list}>
             {receivedOffers.map(offer => (

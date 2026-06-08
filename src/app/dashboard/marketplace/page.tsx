@@ -14,6 +14,7 @@ import ImageUploader from '@/components/ImageUploader'
 import { useTranslations } from 'next-intl'
 import { SHOP_CATEGORIES } from '@/lib/shop-categories'
 import { PRODUCT_CONDITIONS, PRODUCT_TYPES } from '@/lib/product-categories'
+import { EmptyState } from '@/components/EmptyState'
 import styles from './marketplace.module.css'
 
 interface Product {
@@ -426,10 +427,7 @@ function MarketplaceContent() {
       </div>
 
       {filteredProducts.length === 0 && !showProductForm ? (
-        <div className={styles.empty}>
-          <p>No products yet. Add your first!</p>
-          <button onClick={() => { resetProductForm(); setShowProductForm(true) }} className="btn-primary">➕ {t('products')}</button>
-        </div>
+        <EmptyState icon="🛒" title="No products yet" description="List your first product to start selling." action={{ label: 'Add Product', onClick: () => window.location.href = '/products/new' }} />
       ) : (
         <div className={styles.list}>
           {filteredProducts.map(product => (

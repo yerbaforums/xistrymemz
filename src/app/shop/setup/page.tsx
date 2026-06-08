@@ -7,6 +7,7 @@ import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import FormWizard, { useWizard, type WizardStep } from '@/components/FormWizard'
 import { businessTemplates, getTemplateById, type BusinessTemplate } from '@/lib/templates'
+import { EmptyState } from '@/components/EmptyState'
 import Button from '@/components/ui/Button'
 import Skeleton from '@/components/Skeleton'
 
@@ -514,9 +515,7 @@ export default function SetupShopPage() {
             )}
             
             {products.length === 0 ? (
-              <div className={styles.empty}>
-                <p>No listings yet. Add your first product or service!</p>
-              </div>
+              <EmptyState icon="🛒" title="No listings yet" description="Add your first product or service!" action={{ label: 'Add Listing', onClick: () => setShowProductModal(true) }} />
             ) : (
               <div className={styles.productGrid}>
                 {products.map(product => (

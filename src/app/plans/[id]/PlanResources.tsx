@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import styles from './resources.module.css'
+import { EmptyState } from '@/components/EmptyState'
 import type { PlanResource, ResourceType } from '@/lib/plan-utils'
 
 const RESOURCE_TYPE_ICONS: Record<ResourceType, string> = {
@@ -183,9 +184,7 @@ export default function PlanResources({ resources, isOwner, onChange }: PlanReso
       )}
 
       {!showForm && resources.length === 0 && (
-        <div className={styles.emptyState}>
-          <p>No resources yet. Add links, documents, checklists, or references to help plan your project.</p>
-        </div>
+        <EmptyState icon="📚" title="No resources yet" description="Add links, documents, checklists, or references to help plan your project." action={isOwner ? { label: 'Add Resource', onClick: () => setShowForm(true) } : undefined} />
       )}
 
       <div className={styles.resourceList}>

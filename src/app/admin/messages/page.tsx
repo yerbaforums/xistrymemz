@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import styles from './page.module.css'
+import { EmptyState } from '@/components/EmptyState'
 import Skeleton from '@/components/Skeleton'
 
 interface Message {
@@ -66,9 +67,7 @@ export default function AdminMessagesPage() {
       <p className={styles.subtitle}>Shared inbox for all contact form submissions</p>
 
       {messages.length === 0 ? (
-        <div className={styles.empty}>
-          <p>No messages yet</p>
-        </div>
+        <EmptyState icon="📬" title="No messages yet" description="Contact form submissions will appear here." />
       ) : (
         <div className={styles.content}>
           <div className={styles.messageList}>

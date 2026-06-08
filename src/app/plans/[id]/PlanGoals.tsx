@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import PlanSortableList from './PlanSortableList'
 import styles from './sortable.module.css'
+import { EmptyState } from '@/components/EmptyState'
 import type { PlanGoal } from '@/lib/plan-utils'
 
 interface PlanGoalsProps {
@@ -138,9 +139,7 @@ export default function PlanGoals({ goals, isOwner, onChange }: PlanGoalsProps) 
       />
 
       {goals.length === 0 && (
-        <div className={styles.emptyState}>
-          <p>No goals defined yet. Add your first goal below.</p>
-        </div>
+        <EmptyState icon="🎯" title="No goals defined yet" description="Add your first goal below." action={isOwner ? { label: 'Add Goal', onClick: () => (document.querySelector('input[placeholder="Add a new goal..."]') as HTMLInputElement)?.focus() } : undefined} />
       )}
 
       {isOwner && (

@@ -6,6 +6,7 @@ import { useToast } from '@/context/ToastContext'
 import ImageUploader from '@/components/ImageUploader'
 import styles from './rentals.module.css'
 import Skeleton from '@/components/Skeleton'
+import { EmptyState } from '@/components/EmptyState'
 
 interface ShopSettings {
   shopName: string | null
@@ -268,12 +269,7 @@ export default function RentalsPage() {
       {loading ? (
         <Skeleton width="100%" height="2rem" />
       ) : filtered.length === 0 && !showForm ? (
-        <div className={styles.empty}>
-          <div className={styles.emptyIcon}>🏠</div>
-          <h3>No rental listings yet</h3>
-          <p>List tools, equipment, spaces, or anything you want to rent out.</p>
-          <button onClick={() => { resetForm(); setShowForm(true) }} className="btn-primary">➕ Add Your First Rental</button>
-        </div>
+        <EmptyState icon="🏠" title="No rental listings yet" description="List items for rent." action={{ label: 'Add Rental', onClick: () => window.location.href = '/dashboard/rentals' }} />
       ) : (
         <div className={styles.list}>
           {filtered.map(r => (

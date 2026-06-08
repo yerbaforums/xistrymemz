@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useToast } from '@/context/ToastContext'
 import styles from './projects.module.css'
+import { EmptyState } from '@/components/EmptyState'
 import Button from '@/components/ui/Button'
 
 interface Plan {
@@ -267,12 +268,7 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
       </div>
 
       {filteredPlans.length === 0 ? (
-        <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>📋</div>
-          <h3>No projects found</h3>
-          <p>Try adjusting your search or filters, or create a new project.</p>
-          <Button onClick={() => setShowCreateModal(true)} variant="primary">Create Your First Project</Button>
-        </div>
+        <EmptyState icon="📋" title="No projects found" description="Try adjusting your search or filters, or create a new project." action={{ label: 'Create Project', onClick: () => setShowCreateModal(true) }} />
       ) : viewMode === 'grid' ? (
         <div className={styles.cardGrid}>
           {filteredPlans.map((plan, index) => {

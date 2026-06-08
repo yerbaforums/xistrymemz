@@ -27,6 +27,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { useToast } from '@/context/ToastContext'
 import dynamic from 'next/dynamic'
 import Button from '@/components/ui/Button'
+import { EmptyState } from '@/components/EmptyState'
 import Skeleton from '@/components/Skeleton'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
@@ -1218,9 +1219,7 @@ export default function ProfilePage() {
              userEvents.filter(e => matchesClass(e.title || '', activeClass) || matchesClass(e.description || '', activeClass)).length === 0 &&
              userRequests.filter(r => matchesClass(r.title || '', activeClass) || matchesClass(r.description || '', activeClass)).length === 0 &&
              groups.filter(g => matchesClass(g.name || '', activeClass) || matchesClass(g.description || '', activeClass)).length === 0 && (
-              <div className={styles.empty}>
-                <p>No {activeClass} activity found</p>
-              </div>
+              <EmptyState icon="👤" title={`No ${activeClass} activity found`} description="This user has no activity in this class." />
             )}
           </div>
         )}

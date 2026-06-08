@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic'
 import styles from '../page.module.css'
 import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
+import { EmptyState } from '@/components/EmptyState'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
@@ -493,18 +494,7 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
               )}
             </div>
           ) : filteredPlans.length === 0 ? (
-            <div className={styles.empty}>
-              <div className={styles.emptyIllustration}>
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3">
-                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-                </svg>
-              </div>
-              <h3>No projects found</h3>
-              <p>Try adjusting your search or filters</p>
-              <button className={styles.emptyReset} onClick={() => { setFilter('ALL'); setCategory('ALL'); setShowPinned(null); setSearchQuery(''); setNearbyMode('ALL'); setUserLocation(null) }}>
-                Clear all filters
-              </button>
-            </div>
+            <EmptyState icon="🚀" title="No projects found" description="Try adjusting your search or filters." action={{ label: 'Clear Filters', onClick: () => { setFilter('ALL'); setCategory('ALL'); setShowPinned(null); setSearchQuery(''); setNearbyMode('ALL'); setUserLocation(null) }}} />
           ) : (
             <div className={styles.publicGrid}>
               {filteredPlans.map((plan, index) => {

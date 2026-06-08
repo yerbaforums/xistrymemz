@@ -5,6 +5,7 @@ import Link from 'next/link'
 import styles from './page.module.css'
 import { getCryptoIcon, CRYPTO_ICONS } from '@/lib/crypto-icons'
 import { useToast } from '@/context/ToastContext'
+import { EmptyState } from '@/components/EmptyState'
 import Skeleton from '@/components/Skeleton'
 
 function Breadcrumbs() {
@@ -524,9 +525,7 @@ export default function AdminWalletsPage() {
         <h2 className={styles.sectionTitle}>Site Generated Wallets</h2>
         
         {wallets.length === 0 && (
-          <div className={styles.emptyState}>
-            <p>No wallets generated yet. Use the form above to create wallet addresses.</p>
-          </div>
+          <EmptyState icon="💳" title="No wallets generated yet" description="Use the form above to create wallet addresses." />
         )}
 
         {wallets.length > 0 && (
@@ -684,9 +683,7 @@ export default function AdminWalletsPage() {
         </p>
         
         {userWallets.length === 0 ? (
-          <div className={styles.emptyState}>
-            <p>No user wallets found.</p>
-          </div>
+          <EmptyState icon="💳" title="No user wallets found" description="Users have not generated any wallets yet." />
         ) : (
           <div>
             <div className={styles.listHeader}>

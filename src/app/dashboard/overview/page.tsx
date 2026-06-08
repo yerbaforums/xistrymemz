@@ -15,6 +15,7 @@ import ChecklistCard from './ChecklistCard'
 import FeatureBanner from './FeatureBanner'
 import StreakCard from './StreakCard'
 import AchievementCard from './AchievementCard'
+import { EmptyState } from '@/components/EmptyState'
 
 export const dynamic = 'force-dynamic'
 
@@ -423,10 +424,7 @@ export default async function DashboardOverview({
                   ))}
                 </div>
               ) : (
-                <div className={styles.emptyState}>
-                  <p>No projects yet</p>
-                  <Link href="/dashboard/projects" className={styles.emptyAction}>Create your first project</Link>
-                </div>
+                <EmptyState icon="🚀" title="No projects yet" description="Start your first project and track progress with milestones." action={{ label: 'Create Project', onClick: () => window.location.href = '/dashboard/projects' }} />
               )}
             </div>
 
@@ -450,10 +448,7 @@ export default async function DashboardOverview({
                   ))}
                 </div>
               ) : (
-                <div className={styles.emptyState}>
-                  <p>No recent posts</p>
-                  <Link href="/dashboard/feed" className={styles.emptyAction}>Explore feed</Link>
-                </div>
+                <EmptyState icon="✏️" title="No recent posts" description="Connect with people or write your own post to get started." action={{ label: 'Write a Post', onClick: () => window.location.href = '/dashboard/feed' }} />
               )}
             </div>
           </div>
@@ -471,10 +466,7 @@ export default async function DashboardOverview({
               ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5)
               if (studioItems.length === 0) {
                 return (
-                  <div className={styles.emptyState}>
-                    <p>No content yet</p>
-                    <Link href="/dashboard/studio" className={styles.emptyAction}>Create something</Link>
-                  </div>
+                  <EmptyState icon="📝" title="No content yet" description="Create plans, products, or school content to get started." action={{ label: 'Create Something', onClick: () => window.location.href = '/dashboard/studio' }} />
                 )
               }
               return (

@@ -8,6 +8,7 @@ import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/don
 import styles from './events.module.css'
 import type { DashboardEvent } from '@/types/event'
 import type { EventFormData } from '@/components/EventFormFields'
+import { EmptyState } from '@/components/EmptyState'
 
 const TYPE_CONFIG: Record<string, { icon: string; label: string; color: string }> = {
   ORGANIZED: { icon: '🎯', label: 'Organized', color: '#00d9ff' },
@@ -303,12 +304,7 @@ export default function DashboardEvents() {
       </div>
 
       {filteredEvents.length === 0 ? (
-        <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>📅</div>
-          <h3>No events found</h3>
-          <p>You haven&apos;t created or joined any events yet. Browse public events to get started.</p>
-          <Link href="/events" className="btn-primary">Browse Events</Link>
-        </div>
+        <EmptyState icon="📅" title="No events found" description="Browse public events or create your own." action={{ label: 'Browse Events', onClick: () => window.location.href = '/events' }} />
       ) : (
         <div className={styles.cardGrid}>
           {filteredEvents.map((event, index) => {

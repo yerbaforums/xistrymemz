@@ -23,6 +23,7 @@ import HashtagText from '@/components/HashtagText'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import LinkPreview from '@/components/LinkPreview'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
+import { EmptyState } from '@/components/EmptyState'
 import Button from '@/components/ui/Button'
 
 interface UserLink {
@@ -638,7 +639,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                 })()}
               </div>
             ) : (
-              <div className={styles.empty}><p>No content published yet</p></div>
+              <EmptyState icon="📚" title="No content published yet" description="The instructor hasn't published any content yet." action={isOwner ? { label: 'Add Content', onClick: () => setShowContentForm(true) } : undefined} />
             )}
           </div>
         )}
@@ -696,7 +697,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                 ))}
               </div>
             ) : (
-              <div className={styles.empty}><p>No posts yet</p></div>
+              <EmptyState icon="✏️" title="No posts yet" description="No announcements have been made yet." />
             )}
           </div>
         )}

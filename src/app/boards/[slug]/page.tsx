@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic'
 import BoardPinCard from '@/components/BoardPinCard'
 import CreatePinModal from '@/components/CreatePinModal'
 import PinCarouselModal from '@/components/PinCarouselModal'
+import { EmptyState } from '@/components/EmptyState'
 import styles from './page.module.css'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
@@ -196,14 +197,7 @@ export default function BoardDetailPage() {
       )}
 
       {pins.length === 0 ? (
-        <div className={styles.empty}>
-          <p>No pins on this board yet.</p>
-          {session?.user && (
-            <button className={styles.pinBtn} onClick={() => setShowCreateModal(true)}>
-              📌 Be the first to pin something
-            </button>
-          )}
-        </div>
+        <EmptyState icon="📌" title="No pins yet" description="Be the first to pin something to this board!" action={session?.user ? { label: 'Pin Something', onClick: () => setShowCreateModal(true) } : undefined} />
       ) : (
         <div className={styles.pinsGrid}>
           {pins.map(pin => (

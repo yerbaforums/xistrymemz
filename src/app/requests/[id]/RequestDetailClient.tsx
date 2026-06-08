@@ -14,6 +14,7 @@ import { useRecordView } from '@/hooks/useRecordView'
 import TranslateButton from '@/components/TranslateButton'
 import Button from '@/components/ui/Button'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
+import PinToBoardButton from '@/components/PinToBoardButton'
 
 const CATEGORIES = [
   { value: 'GENERAL', label: 'General', icon: '\u{1F4CB}' },
@@ -918,6 +919,19 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               variant="bar"
             />
           </div>
+
+          {userId && (
+            <div className={styles.quickActions} style={{ marginTop: 8 }}>
+              <PinToBoardButton
+                entityType="REQUEST"
+                entityId={request.id}
+                entityTitle={request.title}
+                entityImage={request.imageUrl || undefined}
+                variant="ghost"
+                label="Pin to Board"
+              />
+            </div>
+          )}
 
           {canRollback && (
             <div className={styles.quickActions}>

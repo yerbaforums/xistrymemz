@@ -4,6 +4,7 @@ import { useState } from 'react'
 import ProductCard from './ProductCard'
 import ProductQuickViewModal from './ProductQuickViewModal'
 import Skeleton from './Skeleton'
+import { EmptyState } from '@/components/EmptyState'
 import type { Product } from '@/types/product'
 import styles from './ProductGrid.module.css'
 
@@ -66,22 +67,7 @@ export default function ProductGrid({
   }
 
   if (products.length === 0) {
-    return (
-      <div className={styles.empty}>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="48" height="48">
-          <circle cx="11" cy="11" r="8"/>
-          <path d="M21 21l-4.35-4.35"/>
-          <path d="M8 11h6"/>
-        </svg>
-        <h3>No products found</h3>
-        <p>Try adjusting your filters or search criteria</p>
-        {onClearFilters && (
-          <button onClick={onClearFilters} className={styles.clearBtn}>
-            Clear Filters
-          </button>
-        )}
-      </div>
-    )
+    return <EmptyState icon="🛒" title="No products found" description="Try adjusting your filters or search criteria." action={onClearFilters ? { label: 'Clear Filters', onClick: onClearFilters } : undefined} />
   }
 
   return (

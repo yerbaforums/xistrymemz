@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
+import { EmptyState } from '@/components/EmptyState'
 import styles from './sortable.module.css'
 
 interface UpdateUser { id: string; name: string | null; image: string | null }
@@ -95,10 +96,7 @@ export default function PlanUpdates({ planId, isOwner }: Props) {
       )}
 
       {updates.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '40px 16px', color: 'var(--text-muted)' }}>
-          <div style={{ fontSize: '2rem', marginBottom: '8px' }}>📡</div>
-          <p>No updates yet. {isOwner ? 'Post the first update to share your progress.' : 'Check back later for project updates.'}</p>
-        </div>
+        <EmptyState icon="📡" title="No updates yet" description={isOwner ? 'Post the first update to share your progress.' : 'Check back later for project updates.'} action={isOwner ? { label: 'Post Update', onClick: () => setContent(' ') } : undefined} />
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>

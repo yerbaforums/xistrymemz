@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
+import { EmptyState } from '@/components/EmptyState'
 import styles from './CreateBoardModal.module.css'
 
 const BoardMapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
@@ -220,10 +221,7 @@ export default function CreateBoardModal({ onClose, onCreated, initialCity, init
               {loadingLocations ? (
                 <p className={styles.loadingText}>Loading your locations...</p>
               ) : savedLocations.length === 0 ? (
-                <div className={styles.emptyLocations}>
-                  <p>No saved locations found.</p>
-                  <p className={styles.mapHint}>Add locations in your <a href="/dashboard/passport" className={styles.inlineLink}>Passport</a>, or use the Map tab to pick one.</p>
-                </div>
+                <EmptyState icon="📍" title="No saved locations" description='Add locations in your Passport, or use the Map tab to pick one.' />
               ) : (
                 <div className={styles.locationList}>
                   {savedLocations.map(loc => (

@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { getUserProfileUrl } from '@/lib/utils'
+import { EmptyState } from '@/components/EmptyState'
 import styles from './page.module.css'
 
 interface ConnectionUser {
@@ -316,10 +317,7 @@ export default function CommunityManagement() {
               <Link href="/community" className={styles.actionBtn}>Browse Members</Link>
             </div>
             {acceptedConnections.length === 0 && pendingReceived.length === 0 && pendingSent.length === 0 ? (
-              <div className={styles.emptyState}>
-                <p>No connections yet</p>
-                <Link href="/community" style={{ color: 'var(--accent-primary)', fontSize: '0.85rem' }}>Find members to connect with →</Link>
-              </div>
+              <EmptyState icon="🤝" title="No connections yet" description="Find members to connect with." action={{ label: 'Find Members', onClick: () => window.location.href = '/community' }} />
             ) : (
               acceptedConnections.slice(0, 10).map(c => {
                 const user = otherUser(c)
@@ -353,10 +351,7 @@ export default function CommunityManagement() {
               <Link href="/groups/new" className={styles.actionBtn}>+ Create Group</Link>
             </div>
             {ownerGroups.length === 0 ? (
-              <div className={styles.emptyState}>
-                <p>You don&apos;t own any groups yet</p>
-                <Link href="/groups/new" style={{ color: 'var(--accent-primary)', fontSize: '0.85rem' }}>Create your first group →</Link>
-              </div>
+              <EmptyState icon="👥" title="No groups owned" description="Create your first group to start a community." action={{ label: 'Create Group', onClick: () => window.location.href = '/groups/new' }} />
             ) : (
               ownerGroups.map(g => (
                 <div key={g.id} className={styles.card}>
@@ -390,10 +385,7 @@ export default function CommunityManagement() {
               <Link href="/community/groups" className={styles.actionBtn}>Browse Groups</Link>
             </div>
             {memberGroups.length === 0 ? (
-              <div className={styles.emptyState}>
-                <p>Not a member of any groups yet</p>
-                <Link href="/community/groups" style={{ color: 'var(--accent-primary)', fontSize: '0.85rem' }}>Discover groups →</Link>
-              </div>
+              <EmptyState icon="👥" title="No groups joined" description="Discover groups to join." action={{ label: 'Discover Groups', onClick: () => window.location.href = '/community/groups' }} />
             ) : (
               memberGroups.map(g => (
                 <Link key={g.id} href={`/groups/${g.id}`} className={styles.card}>
@@ -421,10 +413,7 @@ export default function CommunityManagement() {
             <Link href="/community/forum" className={styles.actionBtn}>Browse Forum</Link>
           </div>
           {forumPosts.length === 0 ? (
-            <div className={styles.emptyState}>
-              <p>No forum posts yet</p>
-              <Link href="/community/forum" style={{ color: 'var(--accent-primary)', fontSize: '0.85rem' }}>Create your first post →</Link>
-            </div>
+            <EmptyState icon="💬" title="No forum posts yet" description="Create your first post to start a discussion." action={{ label: 'Browse Forum', onClick: () => window.location.href = '/community/forum' }} />
           ) : (
             forumPosts.map(p => (
               <Link key={p.id} href={`/community/forum/${p.id}`} className={styles.card}>
