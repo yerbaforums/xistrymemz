@@ -325,7 +325,7 @@ export default function BoardDetailPage() {
         </button>
       </div>
 
-      {(viewMode === 'map' || (viewMode === 'grid' && pinLocations.length > 0)) && (
+      {viewMode !== 'calendar' && (
         <div className={styles.mapWrap}>
           <MapContainer center={mapCenter} zoom={12} className={styles.map} scrollWheelZoom={true}>
             <TileLayer
@@ -334,7 +334,22 @@ export default function BoardDetailPage() {
             />
             {board.latitude && board.longitude && pinLocations.length === 0 && (
               <Marker position={[board.latitude, board.longitude]}>
-                <Popup>{board.name} — {board.location || ''}</Popup>
+                <Popup>
+                  <div className={styles.pinPopup}>
+                    <strong>{board.name} — {board.location || ''}</strong>
+                    {pins.length > 0 && <div className={styles.popupMeta}>📌 {pins.length} pin{pins.length !== 1 ? 's' : ''} at this location</div>}
+                  </div>
+                </Popup>
+              </Marker>
+            )}
+            {board.latitude && board.longitude && pinLocations.length > 0 && (
+              <Marker position={[board.latitude, board.longitude]}>
+                <Popup>
+                  <div className={styles.pinPopup}>
+                    <strong>{board.name}</strong>
+                    <div className={styles.popupMeta}>📍 {board.location || ''}</div>
+                  </div>
+                </Popup>
               </Marker>
             )}
             {pinLocations.map(pin => (
@@ -352,20 +367,20 @@ export default function BoardDetailPage() {
                 </Popup>
               </Marker>
             ))}
-          </MapContainer>
-        </div>
-      )}
-
-      {viewMode === 'grid' && pins.length === 0 && !pinLocations.length && board.latitude && board.longitude && (
-        <div className={styles.mapWrap}>
-          <MapContainer center={[board.latitude, board.longitude]} zoom={12} className={styles.map} scrollWheelZoom={true}>
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            <Marker position={[board.latitude, board.longitude]}>
-              <Popup>{board.name} — {board.location || ''}</Popup>
-            </Marker>
+            {board.latitude && board.longitude && pins.length > 0 && pinLocations.length === 0 && (
+              <Marker position={[board.latitude, board.longitude]}>
+                <Popup>
+                  <div className={styles.pinPopup}>
+                    <strong>📌 {pins.length} pin{pins.length !== 1 ? 's' : ''}</strong>
+                    <div className={styles.popupDate}>at {board.location || 'this location'}</div>
+                    {pins.slice(0, 5).map(p => (
+                      <div key={p.id} className={styles.popupMeta}>• {p.title || p.content?.slice(0, 30) || 'Untitled'}</div>
+                    ))}
+                    {pins.length > 5 && <div className={styles.popupMeta}>+{pins.length - 5} more</div>}
+                  </div>
+                </Popup>
+              </Marker>
+            )}
           </MapContainer>
         </div>
       )}

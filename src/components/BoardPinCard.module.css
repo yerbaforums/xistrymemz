@@ -415,3 +415,49 @@
   font-size: 0.8rem;
   color: var(--text-secondary);
 }
+
+.eventActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.eventAttendees {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.eventJoinBtn {
+  padding: 5px 14px;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.eventJoinBtn:hover {
+  box-shadow: 0 0 8px rgba(0, 217, 255, 0.4);
+}
+
+.eventJoinBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.eventJoined {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.eventJoined:hover {
+  border-color: var(--accent-secondary);
+  box-shadow: none;
+}

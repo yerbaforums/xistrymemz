@@ -220,6 +220,41 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
     setShowCommentForm(!showCommentForm)
   }
 
+  const isEventPin = pin.entityType === 'EVENT' && pin.entityId
+  const [eventJoiners, setEventJoiners] = useState(0)
+  const [eventJoined, setEventJoined] = useState(false)
+  const [eventJoining, setEventJoining] = useState(false)
+
+  useEffect(() => {
+    if (!isEventPin) return
+    fetch(`/api/events/${pin.entityId}`)
+      .then(r => r.json())
+      .then(data => {
+        const count = data._count?.eventJoiners || data.joiners?.length || 0
+        setEventJoiners(count)
+        setEventJoined(data.joined || false)
+      })
+      .catch(() => {})
+  }, [pin.entityId, isEventPin])
+
+  const handleEventJoin = async () => {
+    if (!pin.entityId || eventJoining) return
+    setEventJoining(true)
+    try {
+      if (eventJoined) {
+        const res = await fetch(`/api/events/${pin.entityId}/join`, { method: 'DELETE' })
+        if (res.ok) { setEventJoined(false); setEventJoiners(c => Math.max(0, c - 1)) }
+      } else {
+        const res = await fetch(`/api/events/${pin.entityId}/join`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: 'ATTENDEE' }),
+        })
+        if (res.ok) { setEventJoined(true); setEventJoiners(c => c + 1) }
+      }
+    } catch {} finally { setEventJoining(false) }
+  }
+
   return (
     <div className={`${styles.card} ${minimized ? styles.minimized : ''}`} style={pin.isPinned ? { borderColor: 'var(--accent-primary)' } : undefined}>
       {pin.isPinned && <div className={styles.pinnedBadge}>📌 Pinned</div>}
@@ -252,6 +287,18 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
           {parsedImages.length > 0 && <ImageCarousel images={parsedImages} />}
           {pin.entityType && pin.entityId && (
             <LinkedEntityDetail entityType={pin.entityType} entityId={pin.entityId} />
+          )}
+          {isEventPin && (
+            <div className={styles.eventActions}>
+              <span className={styles.eventAttendees}>👥 {eventJoiners} attending</span>
+              <button
+                className={`${styles.eventJoinBtn} ${eventJoined ? styles.eventJoined : ''}`}
+                onClick={handleEventJoin}
+                disabled={eventJoining}
+              >
+                {eventJoining ? '...' : eventJoined ? '✓ Attending' : 'Join Event'}
+              </button>
+            </div>
           )}
           {(pin.contactName || pin.contactEmail || pin.contactPhone) && (
             <div className={styles.contact}>
