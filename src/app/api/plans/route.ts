@@ -11,17 +11,21 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const isPublic = searchParams.get('public') === 'true'
 
+  const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
+  const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') || (isPublic ? '4' : '20'))))
+  const skip = (page - 1) * pageSize
+
   if (isPublic) {
-    const plans = await getPublicPlans(4)
-    return apiSuccess(plans)
+    const { items, total } = await getPublicPlans(skip, pageSize)
+    return apiSuccess({ items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
   }
 
   if (!session?.user?.id) {
     return apiError('Unauthorized', 401)
   }
 
-  const plans = await getPlansByUser(session.user.id)
-  return apiSuccess(plans)
+  const { items, total } = await getPlansByUser(session.user.id, false, skip, pageSize)
+  return apiSuccess({ items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
 }
 
 export const POST = withValidation(planSchema, async (req, session, data) => {

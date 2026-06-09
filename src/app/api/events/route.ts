@@ -39,22 +39,31 @@ export async function GET(request: Request) {
       where.organizerId = organizerId
     }
 
-    const events = await prisma.event.findMany({
-      where,
-      include: {
-        organizer: { select: { id: true, name: true } },
-        plan: { select: { id: true, title: true, userId: true } },
-        group: { select: { id: true, name: true } },
-        school: { select: { id: true, schoolName: true, name: true } },
-        shop: { select: { id: true, shopName: true, name: true } },
-        _count: { select: { eventJoiners: true } },
-        eventJoiners: {
-          select: { userId: true },
-          take: 20
-        }
-      },
-      orderBy: { eventDate: 'asc' }
-    })
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
+    const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') || '20')))
+    const skip = (page - 1) * pageSize
+
+    const [events, total] = await Promise.all([
+      prisma.event.findMany({
+        where,
+        include: {
+          organizer: { select: { id: true, name: true } },
+          plan: { select: { id: true, title: true, userId: true } },
+          group: { select: { id: true, name: true } },
+          school: { select: { id: true, schoolName: true, name: true } },
+          shop: { select: { id: true, shopName: true, name: true } },
+          _count: { select: { eventJoiners: true } },
+          eventJoiners: {
+            select: { userId: true },
+            take: 20
+          }
+        },
+        skip,
+        take: pageSize,
+        orderBy: { eventDate: 'asc' }
+      }),
+      prisma.event.count({ where })
+    ])
 
     const formattedEvents = events.map(event => {
       const linkedTitle = event.plan?.title || event.group?.name || event.school?.schoolName || event.shop?.shopName || null
@@ -86,7 +95,7 @@ export async function GET(request: Request) {
       }
     })
 
-    return NextResponse.json(formattedEvents)
+    return NextResponse.json({ items: formattedEvents, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
   } catch (error) {
     console.error('GET /api/events:', error)
     return NextResponse.json({ error: 'Failed to fetch events' }, { status: 500 })

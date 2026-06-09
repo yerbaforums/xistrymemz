@@ -10,43 +10,56 @@ export async function getPlanById(id: string) {
   })
 }
 
-export async function getPlansByUser(userId: string, publishedOnly = false) {
-  return prisma.plan.findMany({
-    where: {
-      userId,
-      ...(publishedOnly ? { published: true } : {}),
-    },
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      imageUrl: true,
-      status: true,
-      published: true,
-      pinned: true,
-      createdAt: true,
-      updatedAt: true,
-      _count: { select: { requests: true } },
-    },
-    orderBy: [{ pinned: 'desc' }, { createdAt: 'desc' }],
-  })
+export async function getPlansByUser(userId: string, publishedOnly = false, skip = 0, take = 20) {
+  const where = {
+    userId,
+    ...(publishedOnly ? { published: true } : {}),
+  }
+  const [items, total] = await Promise.all([
+    prisma.plan.findMany({
+      where,
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        imageUrl: true,
+        status: true,
+        published: true,
+        pinned: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: { select: { requests: true } },
+      },
+      orderBy: [{ pinned: 'desc' }, { createdAt: 'desc' }],
+      skip,
+      take,
+    }),
+    prisma.plan.count({ where }),
+  ])
+  return { items, total }
 }
 
-export async function getPublicPlans(limit = 10) {
-  return prisma.plan.findMany({
-    where: { published: true, status: { in: ['ACTIVE', 'COMPLETED'] } },
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      imageUrl: true,
-      status: true,
-      user: { select: { id: true, name: true, image: true } },
-      _count: { select: { requests: true, joiners: true } },
-    },
-    orderBy: [{ pinned: 'desc' }, { updatedAt: 'desc' }],
-    take: limit,
-  })
+export async function getPublicPlans(skip = 0, take = 10) {
+  const where = { published: true, status: { in: ['ACTIVE', 'COMPLETED'] } }
+  const [items, total] = await Promise.all([
+    prisma.plan.findMany({
+      where,
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        imageUrl: true,
+        status: true,
+        user: { select: { id: true, name: true, image: true } },
+        _count: { select: { requests: true, joiners: true } },
+      },
+      orderBy: [{ pinned: 'desc' }, { updatedAt: 'desc' }],
+      skip,
+      take,
+    }),
+    prisma.plan.count({ where }),
+  ])
+  return { items, total }
 }
 
 export async function createPlan(data: {

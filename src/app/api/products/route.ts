@@ -21,6 +21,20 @@ export async function GET(request: Request) {
     const pinned = searchParams.get('pinned')
     const hashtag = searchParams.get('hashtag')
     const limit = searchParams.get('limit')
+    const rawPage = searchParams.get('page')
+    const rawPageSize = searchParams.get('pageSize')
+
+    let page = 1
+    let pageSize = 20
+
+    if (rawPage !== null || rawPageSize !== null) {
+      page = Math.max(1, parseInt(rawPage || '1'))
+      pageSize = Math.min(100, Math.max(1, parseInt(rawPageSize || '20')))
+    } else if (limit !== null) {
+      pageSize = Math.min(100, Math.max(1, parseInt(limit)))
+    }
+
+    const skip = (page - 1) * pageSize
 
     const session = await getServerSession(authOptions)
     let userLocation = null
@@ -59,20 +73,24 @@ export async function GET(request: Request) {
       where.pinned = true
     }
 
-    const take = limit ? parseInt(limit) : undefined
+    const [dbProducts, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        take: pageSize,
+        skip,
+        include: {
+          user: { select: { name: true, location: true, neighborhood: true, shopSlug: true } },
+          hashtags: { include: { hashtag: { select: { id: true, tag: true } } } },
+        },
+        orderBy: [
+          { pinned: 'desc' },
+          { createdAt: 'desc' }
+        ]
+      }),
+      prisma.product.count({ where }),
+    ])
 
-    let products = await prisma.product.findMany({
-      where,
-      take,
-      include: {
-        user: { select: { name: true, location: true, neighborhood: true, shopSlug: true } },
-        hashtags: { include: { hashtag: { select: { id: true, tag: true } } } },
-      },
-      orderBy: [
-        { pinned: 'desc' },
-        { createdAt: 'desc' }
-      ]
-    })
+    let products = dbProducts
 
     if (hashtag) {
       products = products.filter(p =>
@@ -95,7 +113,13 @@ export async function GET(request: Request) {
       }
     }
 
-    return NextResponse.json({ products: filteredProducts })
+    return NextResponse.json({
+      items: filteredProducts,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    })
   } catch (error) {
     console.error('GET /api/products:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

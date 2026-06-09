@@ -23,15 +23,23 @@ export async function GET(request: Request) {
     const session = await getServerSession(authOptions)
 
     if (my && session?.user?.id) {
-      const boards = await prisma.bulletinBoard.findMany({
-        where: { ownerId: session.user.id },
-        include: { _count: { select: { pins: true } } },
-        orderBy: { updatedAt: 'desc' },
-        take: limit,
-      })
+      const skip = (page - 1) * limit
+      const [boards, total] = await Promise.all([
+        prisma.bulletinBoard.findMany({
+          where: { ownerId: session.user.id },
+          include: { _count: { select: { pins: true } } },
+          orderBy: { updatedAt: 'desc' },
+          skip,
+          take: limit,
+        }),
+        prisma.bulletinBoard.count({ where: { ownerId: session.user.id } }),
+      ])
       return NextResponse.json({
         boards: boards.map(b => ({ ...b, pinCount: b._count.pins })),
-        total: boards.length,
+        total,
+        page,
+        pageSize: limit,
+        totalPages: Math.ceil(total / limit),
       })
     }
 
@@ -113,6 +121,81 @@ export async function POST(request: Request) {
     return NextResponse.json(board)
   } catch (error) {
     console.error('POST /api/boards:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+export async function PUT(request: Request) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    const body = await request.json()
+    const { id, name, description, location, latitude, longitude, city, region, country } = body
+
+    if (!id) {
+      return NextResponse.json({ error: 'Board ID is required' }, { status: 400 })
+    }
+
+    const existing = await prisma.bulletinBoard.findUnique({ where: { id } })
+    if (!existing) {
+      return NextResponse.json({ error: 'Board not found' }, { status: 404 })
+    }
+    if (existing.ownerId !== session.user.id) {
+      return NextResponse.json({ error: 'Not authorized to edit this board' }, { status: 403 })
+    }
+
+    const board = await prisma.bulletinBoard.update({
+      where: { id },
+      data: {
+        name: name || existing.name,
+        description: description !== undefined ? description : existing.description,
+        location: location || existing.location,
+        latitude: latitude !== undefined ? latitude : existing.latitude,
+        longitude: longitude !== undefined ? longitude : existing.longitude,
+        city: city !== undefined ? city : existing.city,
+        region: region !== undefined ? region : existing.region,
+        country: country !== undefined ? country : existing.country,
+      },
+    })
+
+    return NextResponse.json(board)
+  } catch (error) {
+    console.error('PUT /api/boards:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+export async function DELETE(request: Request) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+
+    if (!id) {
+      return NextResponse.json({ error: 'Board ID is required' }, { status: 400 })
+    }
+
+    const existing = await prisma.bulletinBoard.findUnique({ where: { id } })
+    if (!existing) {
+      return NextResponse.json({ error: 'Board not found' }, { status: 404 })
+    }
+    if (existing.ownerId !== session.user.id) {
+      return NextResponse.json({ error: 'Not authorized to delete this board' }, { status: 403 })
+    }
+
+    await prisma.bulletinPin.deleteMany({ where: { boardId: id } })
+    await prisma.bulletinBoard.delete({ where: { id } })
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('DELETE /api/boards:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

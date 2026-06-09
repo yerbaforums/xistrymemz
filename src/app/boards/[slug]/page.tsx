@@ -2,13 +2,15 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import BoardPinCard from '@/components/BoardPinCard'
 import CreatePinModal from '@/components/CreatePinModal'
 import Button from '@/components/ui/Button'
 import PinCarouselModal from '@/components/PinCarouselModal'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
+import { useToast } from '@/context/ToastContext'
 import { EmptyState } from '@/components/EmptyState'
 import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
@@ -64,7 +66,9 @@ interface Board {
 
 export default function BoardDetailPage() {
   const { data: session } = useSession()
+  const { success, error: toastError } = useToast()
   const params = useParams()
+  const router = useRouter()
   const slug = params.slug as string
 
   const [board, setBoard] = useState<Board | null>(null)
@@ -72,6 +76,11 @@ export default function BoardDetailPage() {
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [editName, setEditName] = useState('')
+  const [editDescription, setEditDescription] = useState('')
+  const [editing, setEditing] = useState(false)
   const [carouselIndex, setCarouselIndex] = useState<number | null>(null)
 
   const pinLocations = pins.filter(p => p.latitude && p.longitude)
@@ -101,6 +110,55 @@ export default function BoardDetailPage() {
         setTotal(prev => prev - 1)
       }
     } catch {}
+  }
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!board || !editName.trim()) return
+    setEditing(true)
+    try {
+      const res = await fetch('/api/boards', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: board.id,
+          name: editName.trim(),
+          description: editDescription.trim() || null,
+        }),
+      })
+      if (res.ok) {
+        const updated = await res.json()
+        setBoard(prev => prev ? { ...prev, ...updated } : null)
+        setShowEditModal(false)
+        success('Board updated!')
+      } else {
+        const err = await res.json()
+        toastError(err.error || 'Failed to update')
+      }
+    } catch { toastError('Failed to update board') }
+    finally { setEditing(false) }
+  }
+
+  const handleDeleteBoard = async () => {
+    if (!board) return
+    try {
+      const res = await fetch(`/api/boards?id=${board.id}`, { method: 'DELETE' })
+      if (res.ok) {
+        setShowDeleteConfirm(false)
+        success('Board deleted!')
+        router.push('/boards')
+      } else {
+        const err = await res.json()
+        toastError(err.error || 'Failed to delete')
+      }
+    } catch { toastError('Failed to delete board') }
+  }
+
+  const openEdit = () => {
+    if (!board) return
+    setEditName(board.name)
+    setEditDescription(board.description || '')
+    setShowEditModal(true)
   }
 
   const userId = session?.user?.id
@@ -154,6 +212,12 @@ export default function BoardDetailPage() {
             <Button variant="primary" className={styles.pinBtn} onClick={() => setShowCreateModal(true)}>
               📌 Pin Something
             </Button>
+          )}
+          {isBoardOwner && (
+            <>
+              <Button variant="secondary" onClick={openEdit}>✏️ Edit</Button>
+              <Button variant="danger" onClick={() => setShowDeleteConfirm(true)}>🗑️ Delete</Button>
+            </>
           )}
         </div>
       </div>
@@ -239,6 +303,49 @@ export default function BoardDetailPage() {
           onClose={() => setCarouselIndex(null)}
         />
       )}
+
+      {showEditModal && (
+        <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2>✏️ Edit Board</h2>
+            <form onSubmit={handleEdit}>
+              <div className="form-group">
+                <label>Board Name *</label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={e => setEditName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <textarea
+                  value={editDescription}
+                  onChange={e => setEditDescription(e.target.value)}
+                  rows={3}
+                />
+              </div>
+              <div className="form-actions">
+                <Button type="button" variant="ghost" onClick={() => setShowEditModal(false)}>Cancel</Button>
+                <Button type="submit" variant="primary" disabled={editing}>
+                  {editing ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDeleteBoard}
+        title="Delete Board"
+        message={`Are you sure you want to delete "${board?.name}"? All pins will be permanently removed.`}
+        confirmLabel="Delete Board"
+        variant="danger"
+      />
     </div>
   )
 }

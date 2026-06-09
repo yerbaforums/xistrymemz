@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
@@ -11,42 +11,51 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const members = await prisma.user.findMany({
-      where: {
-        id: { not: session.user.id }
-      },
-      select: {
-        id: true,
-        name: true,
-        username: true,
-        email: true,
-        image: true,
-        bio: true,
-        location: true,
-        userClass: true,
-        role: true,
-        shopSlug: true,
-        createdAt: true,
-        lastActiveAt: true,
-        lookingForCollaborators: true,
-        _count: {
-          select: { 
-            plans: true,
-            requests: true,
-            products: true,
-            posts: true
-          }
-        }
-      },
-      orderBy: { createdAt: 'desc' }
-    })
+    const searchParams = request.nextUrl.searchParams
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
+    const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') || '50')))
+    const skip = (page - 1) * pageSize
 
-    const membersWithCount = members.map((m: typeof members[0] & { _count: { 
-      plans: number
-      requests: number
-      products: number
-      posts: number
-    } }) => ({
+    const [members, totalMembers] = await Promise.all([
+      prisma.user.findMany({
+        where: {
+          id: { not: session.user.id }
+        },
+        skip,
+        take: pageSize,
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          email: true,
+          image: true,
+          bio: true,
+          location: true,
+          userClass: true,
+          role: true,
+          shopSlug: true,
+          createdAt: true,
+          lastActiveAt: true,
+          lookingForCollaborators: true,
+          _count: {
+            select: { 
+              plans: true,
+              requests: true,
+              products: true,
+              posts: true
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.user.count({
+        where: {
+          id: { not: session.user.id }
+        }
+      })
+    ])
+
+    const membersWithCount = members.map(m => ({
       ...m,
       planCount: m._count.plans,
       requestCount: m._count.requests,
@@ -70,40 +79,78 @@ export async function GET() {
       m.connectionCount = countMap.get(m.id) || 0
     })
 
-    const connections = await prisma.connection.findMany({
-      where: {
-        status: 'CONNECTED',
-        OR: [
-          { requesterId: session.user.id },
-          { receiverId: session.user.id }
-        ]
-      },
-      include: {
-        requester: {
-          select: { id: true, name: true, username: true, email: true, image: true, location: true, shopSlug: true, lastActiveAt: true, lookingForCollaborators: true }
+    const [connections, totalConnections] = await Promise.all([
+      prisma.connection.findMany({
+        where: {
+          status: 'CONNECTED',
+          OR: [
+            { requesterId: session.user.id },
+            { receiverId: session.user.id }
+          ]
         },
-        receiver: {
-          select: { id: true, name: true, username: true, email: true, image: true, location: true, shopSlug: true, lastActiveAt: true, lookingForCollaborators: true }
+        skip,
+        take: pageSize,
+        include: {
+          requester: {
+            select: { id: true, name: true, username: true, email: true, image: true, location: true, shopSlug: true, lastActiveAt: true, lookingForCollaborators: true }
+          },
+          receiver: {
+            select: { id: true, name: true, username: true, email: true, image: true, location: true, shopSlug: true, lastActiveAt: true, lookingForCollaborators: true }
+          }
         }
-      }
-    })
+      }),
+      prisma.connection.count({
+        where: {
+          status: 'CONNECTED',
+          OR: [
+            { requesterId: session.user.id },
+            { receiverId: session.user.id }
+          ]
+        }
+      })
+    ])
 
-    const pendingRequests = await prisma.connection.findMany({
-      where: {
-        receiverId: session.user.id,
-        status: 'PENDING'
-      },
-      include: {
-        requester: {
-          select: { id: true, name: true, username: true, email: true, image: true, lastActiveAt: true, lookingForCollaborators: true }
+    const [pendingRequests, totalPendingRequests] = await Promise.all([
+      prisma.connection.findMany({
+        where: {
+          receiverId: session.user.id,
+          status: 'PENDING'
+        },
+        skip,
+        take: pageSize,
+        include: {
+          requester: {
+            select: { id: true, name: true, username: true, email: true, image: true, lastActiveAt: true, lookingForCollaborators: true }
+          }
         }
-      }
-    })
+      }),
+      prisma.connection.count({
+        where: {
+          receiverId: session.user.id,
+          status: 'PENDING'
+        }
+      })
+    ])
 
     return NextResponse.json({
-      members: membersWithCount,
-      connections,
-      pendingRequests
+      members: {
+        items: membersWithCount,
+        total: totalMembers,
+        page,
+        pageSize
+      },
+      connections: {
+        items: connections,
+        total: totalConnections,
+        page,
+        pageSize
+      },
+      pendingRequests: {
+        items: pendingRequests,
+        total: totalPendingRequests,
+        page,
+        pageSize
+      }
     })
   } catch (error) {
     console.error('Error fetching community data:', error)

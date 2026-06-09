@@ -43,36 +43,53 @@ export async function findNearbyBoards(params: {
     where.longitude = { gte: west, lte: east }
   }
 
-  const rows = await prisma.bulletinBoard.findMany({
-    where: where as any,
-    include: { _count: { select: { pins: { where: { expiresAt: { gte: new Date() } } } } } },
-    orderBy: { createdAt: 'desc' },
-  })
-
-  let total = rows.length
-
-  let boards: BoardWithDistance[] = rows.map(r => ({
-    ...r,
-    distance: null,
-    pinCount: r._count.pins,
-  }))
-
   if (lat !== undefined && lng !== undefined) {
+    const rows = await prisma.bulletinBoard.findMany({
+      where: where as any,
+      include: { _count: { select: { pins: { where: { expiresAt: { gte: new Date() } } } } } },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    let boards: BoardWithDistance[] = rows.map(r => ({
+      ...r,
+      distance: null,
+      pinCount: r._count.pins,
+    }))
+
     for (const b of boards) {
       if (b.latitude !== null && b.longitude !== null) {
         b.distance = Math.round(haversineDistance(lat, lng, b.latitude, b.longitude) * 10) / 10
       }
     }
     boards = boards.filter(b => b.distance === null || b.distance <= radius)
-    total = boards.length
+    const total = boards.length
     boards.sort((a, b) => {
       const dA = a.distance ?? Infinity
       const dB = b.distance ?? Infinity
       return dA - dB
     })
+
+    return { boards: boards.slice(offset, offset + limit), total }
   }
 
-  return { boards: boards.slice(offset, offset + limit), total }
+  const [rows, total] = await Promise.all([
+    prisma.bulletinBoard.findMany({
+      where: where as any,
+      include: { _count: { select: { pins: { where: { expiresAt: { gte: new Date() } } } } } },
+      orderBy: { createdAt: 'desc' },
+      skip: offset,
+      take: limit,
+    }),
+    prisma.bulletinBoard.count({ where: where as any }),
+  ])
+
+  const boards: BoardWithDistance[] = rows.map(r => ({
+    ...r,
+    distance: null,
+    pinCount: r._count.pins,
+  }))
+
+  return { boards, total }
 }
 
 export async function getBoardBySlug(slug: string) {

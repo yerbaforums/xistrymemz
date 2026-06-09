@@ -10,6 +10,7 @@ import { usePassportLocation } from '@/hooks/usePassportLocation'
 import { useToast } from '@/context/ToastContext'
 import { reverseGeocodeLocation, shortenLocation } from '@/lib/geocoding'
 import { EmptyState } from '@/components/EmptyState'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
@@ -34,6 +35,7 @@ interface Board {
   distance: number | null
   pinCount: number
   isSystem: boolean
+  ownerId: string | null
   createdAt: string
 }
 
@@ -283,6 +285,60 @@ export default function BoardsPage() {
     }
   }, [success, error])
 
+  const [editBoard, setEditBoard] = useState<Board | null>(null)
+  const [deleteBoardId, setDeleteBoardId] = useState<string | null>(null)
+  const [editName, setEditName] = useState('')
+  const [editDescription, setEditDescription] = useState('')
+  const [editing, setEditing] = useState(false)
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editBoard || !editName.trim()) return
+    setEditing(true)
+    try {
+      const res = await fetch('/api/boards', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editBoard.id,
+          name: editName.trim(),
+          description: editDescription.trim() || null,
+        }),
+      })
+      if (res.ok) {
+        const updated = await res.json()
+        setBoards(prev => prev.map(b => b.id === editBoard.id ? { ...b, ...updated } : b))
+        setEditBoard(null)
+        success('Board updated!')
+      } else {
+        const err = await res.json()
+        error(err.error || 'Failed to update')
+      }
+    } catch { error('Failed to update board') }
+    finally { setEditing(false) }
+  }
+
+  const handleDelete = async () => {
+    if (!deleteBoardId) return
+    try {
+      const res = await fetch(`/api/boards?id=${deleteBoardId}`, { method: 'DELETE' })
+      if (res.ok) {
+        setBoards(prev => prev.filter(b => b.id !== deleteBoardId))
+        setDeleteBoardId(null)
+        success('Board deleted!')
+      } else {
+        const err = await res.json()
+        error(err.error || 'Failed to delete')
+      }
+    } catch { error('Failed to delete board') }
+  }
+
+  const openEdit = (board: Board) => {
+    setEditBoard(board)
+    setEditName(board.name)
+    setEditDescription(board.description || '')
+  }
+
   const handleFlyHome = useCallback(() => {
     if (homeCoords && mapRef.current) {
       mapRef.current.flyTo(homeCoords, 12, { duration: 1 })
@@ -436,6 +492,12 @@ export default function BoardsPage() {
                 </div>
                 <span className={styles.visitBtn}>View Board →</span>
               </Link>
+              {board.ownerId === session?.user?.id && (
+                <div className={styles.cardOwnerActions}>
+                  <button className={styles.editBtn} onClick={(e) => { e.stopPropagation(); openEdit(board) }} title="Edit">✏️</button>
+                  <button className={styles.deleteBtn} onClick={(e) => { e.stopPropagation(); setDeleteBoardId(board.id) }} title="Delete">🗑️</button>
+                </div>
+              )}
             </div>
           ))
         )}
@@ -447,6 +509,40 @@ export default function BoardsPage() {
           onCreated={() => { fetchBoards(); setShowCreateModal(false) }}
         />
       )}
+
+      {editBoard && (
+        <div className="modal-overlay" onClick={() => setEditBoard(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2>✏️ Edit Board</h2>
+            <form onSubmit={handleEdit}>
+              <div className="form-group">
+                <label>Board Name *</label>
+                <input type="text" value={editName} onChange={e => setEditName(e.target.value)} required />
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <textarea value={editDescription} onChange={e => setEditDescription(e.target.value)} rows={3} />
+              </div>
+              <div className="form-actions">
+                <Button type="button" variant="ghost" onClick={() => setEditBoard(null)}>Cancel</Button>
+                <Button type="submit" variant="primary" disabled={editing}>
+                  {editing ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <ConfirmDialog
+        isOpen={!!deleteBoardId}
+        onClose={() => setDeleteBoardId(null)}
+        onConfirm={handleDelete}
+        title="Delete Board"
+        message="Are you sure? All pins will be permanently removed."
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   )
 }
