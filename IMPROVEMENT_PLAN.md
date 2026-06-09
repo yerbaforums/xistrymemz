@@ -1,6 +1,6 @@
 # XistrYmemZ — Comprehensive Improvement Plan (Updated)
 
-> **v2.0 — Refreshed from full codebase audit (June 2026).** Reflects actual completion state. Items marked ✅ are done; remaining work is phased below.
+> **v2.1 — Refreshed from Pass 4 (Site Structure + UX/UI Polish).** Reflects actual completion state after Dragon+Loading animation, EmptyState unification, inline style migration batch 1, hashtag pills, micro-interactions, and type cleanup.
 > **Execution strategy**: All passes follow the 7-step cycle in `.opencode/plans/pass-playbook.md`.
 
 ---
@@ -17,11 +17,11 @@
 | Products | `ProductHashtag` | ✅ | ✅ | ✅ |
 | Events | `EventHashtag` | ✅ | ✅ | ✅ |
 | Services | `ServiceOfferingHashtag` | ✅ | ✅ | ✅ |
-| **School Content** | ✅ `SchoolContentHashtag` | ✅ (via hashtagService) | 🔄 Display pills pending | 🔄 Filter pending |
-| **Plans** | ✅ `PlanHashtag` | ✅ (via hashtagService) | 🔄 Display pills pending | 🔄 Filter pending |
-| **Requests** | ✅ `RequestHashtag` | ✅ (via hashtagService) | 🔄 Display pills pending | 🔄 Filter pending |
-| **Groups** (entity) | ✅ `GroupHashtag` | ✅ (via hashtagService) | 🔄 Display pills pending | 🔄 Filter pending |
-| **Trips** | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing |
+| School Content | `SchoolContentHashtag` | ✅ | 🔄 Display pending | 🔄 Filter pending |
+| Plans | `PlanHashtag` | ✅ | ✅ Display pills done | 🔄 Filter pending |
+| Requests | `RequestHashtag` | ✅ | ✅ Display pills done | 🔄 Filter pending |
+| Groups (entity) | `GroupHashtag` | ✅ | ✅ Display pills done | 🔄 Filter pending |
+| Trips | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing |
 
 ### Backlink Coverage
 
@@ -94,88 +94,102 @@
 | Shops search + category filter + map | ✅ |
 | Schools CSS (tabs, filters, content grid, type colors) | ✅ |
 
+### Phase F: Pass 4 — Site Structure + UX/UI Polish
+| Item | Status |
+|------|--------|
+| Dragon + Logo Loading Animation (`Loading.tsx` + CSS module) | ✅ |
+| Empty State Unification (~30 replacements) | ✅ |
+| Inline Style Migration Batch 1 (TipModal, ReplySection, ServiceCard) | ✅ |
+| Hashtag Pills Display (Plans, Requests, Groups) | ✅ |
+| Micro-interactions (keyframes, page-enter, card-hover, btn-press) | ✅ |
+| Type Cleanup (9 TS errors, 4 interfaces extended) | ✅ |
+
 ---
 
 ## ⏳ Remaining Phases
 
 ## Phase 1: Fix Remaining Breaks (~3 hrs)
 
-- **1.1 Middleware deprecation**: ~~Rename `src/middleware.ts` → `proxy.ts`~~ ❌ Cancelled — not needed in Next.js 16
-- **1.2 Test environment**: Switch jest `jsdom` → `jest-environment-node`, add polyfills (`fetch`, `Request`, `setImmediate`), create test DB setup
-- **1.3 Fire-and-forget Prisma writes**: `src/lib/auth.ts:192,210` — convert `.catch(() => {})` to awaited
-- **1.4 Deduplicate notification button**: `src/components/Header.tsx:534-545` — refactor to single conditional
+- **1.1 Middleware deprecation**: ❌ Cancelled — not needed in Next.js 16
+- **1.2 Test environment**: Switch jest `jsdom` → `jest-environment-node`, add polyfills
+- **1.3 Fire-and-forget Prisma writes**: ✅ Done
+- **1.4 Deduplicate notification button**: ✅ Done
 - **1.5 `any` type audit**: 7 API route files flagged with `Record<string, unknown>` patterns
 
 ## Phase 2: Complete Service Layer + API Standardization (2-3 days)
 
-- **2.1 Unified API envelope**: Create `src/lib/api-helpers.ts` with `apiResponse<T>()`, `apiError()`, `withAuth()`, `requireAdmin()`, `withValidation()`; refactor ~60 routes
+- **2.1 Unified API envelope**: Create `src/lib/api-helpers.ts` with helpers; refactor ~60 routes
 - **2.2 Frontend fetch helpers**: `apiGet<T>()`, `apiPost<T>()`, `apiPut<T>()`, `apiDelete<T>()`
 - **2.3 Missing services** (6 new files): `productService.ts`, `requestService.ts`, `eventService.ts`, `userService.ts`, `notificationService.ts`, `walletService.ts`
 - **2.4 Database transactions**: Wrap multi-step ops in `$transaction()`
 
 ## Phase 3: Complete Social Sharing & Backlinking (1.5-2 days)
 
-- **3.1 Universal ShareBar**: `src/components/ShareBar.tsx` — replace 4 separate share modals; features: Copy Link, Share to Feed, QR Code, X, Facebook, LinkedIn, Telegram, WhatsApp, Email, Fediverse
-- **3.2 Auto-generated Related Items**: Query backlinks → "Related Items" section on every entity detail page
-- **3.3 Manual linking UI**: "Link to..." button in editors with entity search
-- **3.4 Cross-posting engine**: Create post → offer cross-post to Wall + Shop + School + Group + Forum
+- **3.1 Universal ShareBar**: Replace 4 separate share modals
+- **3.2 Auto-generated Related Items**: "Related Items" section on every detail page
+- **3.3 Manual linking UI**: "Link to..." button in editors
+- **3.4 Cross-posting engine**: Cross-post to Wall + Shop + School + Group + Forum
 
 ## Phase 4: Complete Federation (2-3 days)
 
-- **4.1 User key generation on registration**: Wire `federation.ts` key gen; store `federatedUrl`, `privateKey`, `publicKey`
-- **4.2 Follow model + route handlers**: Manage local + remote follows; Follow/Unfollow UI on profiles
-- **4.3 Wire inbox processing**: Incoming Follow→notify, Accept→update, Like→increment, Announce→boost
-- **4.4 Wire outbound delivery cron**: `/api/cron/deliver-fediverse` with retry + cleanup
-- **4.5 Federation UI**: Federated handle, follower/following counts, remote user display, admin settings
-- **4.6 Security**: HTTP Signature verification, dedup, rate limiting, HTML sanitization
+- **4.1-4.6**: Key gen, Follow model, inbox/outbox wiring, outbound cron, federation UI, security
 
 ## Phase 5: Navigation Overhaul (2 days)
 
-- **5.1 Command palette**: `src/components/CommandPalette.tsx` — Cmd+K modal, unified search across all entities + hashtags + pages, keyboard nav, context actions
-- **5.2 ERP-style sidebar**: Collapsible icon-only mode, sections: Workspace, Commerce, Social, Learn, Finance, Admin
-- **5.3 Mobile bottom nav**: Home, Feed, Create (FAB), Messages, Profile; ≥44px; hide on keyboard open
-- **5.4 Unified breadcrumbs**: Auto-generate from route segments; ensure ALL pages have them
-- **5.5 Navigation cleanup**: Remove `/plans/public` redirect; hide admin from non-admins
+- **5.1 Command palette**: Cmd+K modal
+- **5.2 ERP-style sidebar**: Collapsible, role-gated
+- **5.3 Mobile bottom nav**: 5 icons, ≥44px
+- **⏳ 5.4 Unified breadcrumbs**: Add `<Breadcrumbs>` to ~35 pages missing them:
+  - Dashboard: 14 pages
+  - Admin (partial): 8 pages
+  - Auth: 5 pages
+  - Other: connections, offers/[id], posts/[id], projects, rentals (2), settings (3), shops, trips/[id]
+- **5.5 Navigation cleanup**: Remove duplicates, hide admin, progressive loading
 
-## Phase 6: UI/UX Consistency (2 days)
+## Phase 6: UI/UX Consistency (2 days — 5-8h remaining)
 
-- **6.1 Component library standardization**: Use `ui/Button`, `ui/Card`, `ui/Modal`, `ui/Badge`, `ui/Avatar` everywhere; remove all inline `style={{}}`
-- **6.2 Loading states**: Replace all `Loading...` with `<Skeleton>` across every page — ✅ 32 of ~38 instances fixed (6 remain: Suspense fallbacks in auth/events-new/groups-new + Loading component default)
-- **6.3 Empty states**: Replace all `No results` / `No items found` with `<EmptyState>` — 🟡 Partial: shop detail page (3 sections) + services page converted; ~25 bare instances remain in admin/dashboard
-- **6.4 Toast coverage**: Consistent toasts for ALL CRUD operations
-- **6.5 ConfirmDialog**: For all destructive actions (delete, unpublish, remove)
-- **6.6 Micro-interactions**: Card hover scale+glow, button active scale, page fade-in
+### ✅ 6.1 Component Library Standardization — Partial
+- **Done**: `ui/Button` has `btn-press` class, `EmptyState` adopted (~30 instances)
+- **⏳ Inline styles → CSS modules**: 3/20 files done. Remaining top 8:
+
+| File | Count | CSS Module |
+|------|:-----:|:---------:|
+| `plans/[id]/PlanDetailClient.tsx` | 37 | ❌ Need new |
+| `admin/settings/page.tsx` | 35 | Has `page.module.css` |
+| `connections/page.tsx` | 31 | ❌ Need new |
+| `dashboard/appointments/page.tsx` | 29 | ❌ Need new |
+| `plans/[id]/PlanUpdates.tsx` | 26 | ❌ Need new |
+| `posts/[id]/page.tsx` | 23 | ❌ Need new |
+| `trips/[id]/TripView.tsx` | 23 | ❌ Need new |
+| `dashboard/overview/page.tsx` | 20 | Has `OverviewCards.module.css` |
+
+### ✅ 6.2 Loading States
+- **Status**: ✅ 32 of ~38 instances (6 low-impact Suspense fallbacks remain)
+
+### ✅ 6.3 Empty States
+- **Status**: ✅ ~30 replacements done in Pass 4. Custom-styled pages (dashboard/studio, dashboard/saved, dashboard/appointments, ProjectsClient, hashtag pages) kept as-is.
+
+### ⏳ 6.4 Toast Coverage
+- **Status**: 🟡 ~48 files use toasts (~350+ calls). Gaps in dashboard settings, admin analytics/backups, offers, trips, rentals, connections.
+
+### ⏳ 6.5 ConfirmDialog
+- **Status**: 🟡 Only 5/35 pages with DELETE operations wired. Priority: groups/[id] (6 ops), dashboard/ (~20 ops), community/forum/[postId] (2 ops), connections, Plans.
+
+### ✅ 6.6 Micro-interactions
+- **Status**: ✅ Done
 
 ## Phase 7: School Content Enhancement (2-3 days)
-
-- **7.1 Curriculum builder**: Module → Lesson → Topic hierarchy with drag-and-drop
-- **7.2 Expanded content types**: article, video, course, quiz, worksheet, resource, assignment
-- **7.3 Progress tracking**: Lesson completion, student progress, prerequisites, drip-feed
-- **7.4 Hashtag display**: Pills on school content cards + detail view, filter by hashtag
-- **7.5 Student management**: Enrolled list, progress detail, certificates, bulk messaging
+- **7.1-7.5**: Curriculum builder, content types, progress, hashtags, student management
 
 ## Phase 8: Dashboard Enhancement (2 days)
-
-- **8.1 Unified inbox**: Notifications + Messages + Pending Requests + Connection Requests
-- **8.2 Cross-module quick actions**: "Create Plan with Product", "Add Event to Group", etc.
-- **8.3 Dashboard widgets**: Hashtag widget, recent activity, progress widgets, analytics
-- **8.4 Expand directory**: Add Members, Schools, Groups, School Content tabs; map view; hashtag+location filter
-- **8.5 Smart cross-linking**: Suggest related entities; "Quick Link" in editors
+- **8.1-8.5**: Unified inbox, quick actions, widgets, directory expansion, cross-linking
 
 ## Phase 9: Help System & First-Use Triggers (1-1.5 days)
-
-- **9.1 Contextual help**: Inline tooltips, guided tours per module, help drawer
-- **9.2 First-use triggers**: First plan → sharing dialog; first product → hashtags prompt; first content → school tips
+- **9.1-9.2**: Contextual help, guided tours, first-use triggers
 
 ## Phase 10: Polish & Performance (2 days)
-
-- **10.1 `React.memo()`**: ProductCard, MemberCard, MessageBubble, PostCard, EventCard, SharedItemCard — 🟡 Done: ProductCard, SharedItemCard, ServiceCard, BoardPinCard (MemberCard/EventCard/PostCard are inline)
-- **10.2 Virtualization**: Long lists (members, feed, products, notifications)
-- **10.3 Dynamic imports**: Leaflet, RichEditor, emoji-picker, QRCode, video chat
-- **10.4 Lazy images**: `loading="lazy"` below the fold
-- **10.5 Accessibility**: Keyboard nav, aria attributes, focus management, WCAG AA contrast
-- **10.6 Security**: File upload validation, DOMPurify, CORS, key encryption, rate limiting
-- **10.7 Testing expansion**: RTL for components, hook tests, integration tests, `npm run db:test`
+- **10.1**: React.memo — 🟡 4/6 cards done
+- **10.2-10.7**: Virtualization, dynamic imports, lazy images, a11y, security, testing
 
 ---
 
@@ -183,18 +197,18 @@
 
 | Phase | Effort | Deps | Status |
 |-------|--------|------|--------|
-| **P1: Fix Breaks** | 3 hrs | None | ⏳ 3 items (2 done, 1 cancelled) |
+| **P1: Fix Breaks** | 3 hrs | None | 🔄 1 item pending |
 | **P2: API Standardization** | 2-3 days | P1 | ⏳ |
 | **P3: Social Sharing** | 1.5-2 days | P2 | ⏳ |
-| **P4: Federation** | 2-3 days | P2 | 🔄 Routes exist, logic pending |
-| **P5: Navigation** | 2 days | None | ⏳ |
-| **P6: UI/UX** | 2 days | P5 | 🔄 Components exist, adoption pending (Loading→Skeleton mostly done, EmptyState partial) |
+| **P4: Federation** | 2-3 days | P2 | 🔄 Routes done |
+| **P5: Navigation** | 2 days | None | ⏳ Breadcrumbs 35pp pending |
+| **P6: UI/UX** | 2 days (5-8h remain) | P5 | 🔄 Inline ~17 files, ConfirmDialog ~30 pp |
 | **P7: School Content** | 2-3 days | P2 | ⏳ |
-| **P8: Dashboard** | 2 days | P2, P6 | 🔄 Directory partial |
+| **P8: Dashboard** | 2 days | P2, P6 | ⏳ |
 | **P9: Help System** | 1-1.5 days | None | ⏳ |
-| **P10: Polish** | 2 days | P6 | 🔄 design-system done, memo on 4/6 cards done, rest pending |
+| **P10: Polish** | 2 days | P6 | 🔄 Partial |
 
-**Total remaining: ~17-22 days**
+**Total remaining: ~15-20 days**
 
 ---
 
@@ -204,9 +218,14 @@
 2. ✅ Auth bcrypt guard added
 3. ✅ MobileNav session typed
 4. ✅ Header CustomEvent typed
-5. ❌ Cancelled — middleware rename (`middleware.ts` → `proxy.ts`), not needed in Next.js 16
-6. ✅ Fixed 2 fire-and-forget `.catch()` in auth.ts (now log errors)
-7. ✅ Deduplicated notification button in Header.tsx (merged conditionals)
-8. 🟡 Partial — `React.memo()` added to ProductCard, SharedItemCard, ServiceCard, BoardPinCard (4 of 6; EventCard/PostCard are inline)
-9. ✅ `<Skeleton>` added to all dashboard (8), admin (5), and user-facing pages (14+) — 6 Suspense fallback instances remain (low impact)
-10. 🟡 Partial — `<EmptyState>` added to shop detail (3 sections) + services page; ~25 bare instances remain in admin/dashboard
+5. ❌ Middleware rename cancelled
+6. ✅ Fire-and-forget fixed
+7. ✅ Notification button deduplicated
+8. 🟡 React.memo on 4/6 cards
+9. ✅ Skeleton sweep (32/38)
+10. ✅ EmptyState unification (30+)
+11. ✅ Micro-interactions done
+12. ✅ Inline styles batch 1 (3 files)
+13. ✅ Hashtag pills (Plans, Requests, Groups)
+14. ⏳ Add Breadcrumbs to 35 pages
+15. ⏳ Wire ConfirmDialog to 35 DELETE ops

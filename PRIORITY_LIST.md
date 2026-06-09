@@ -1,6 +1,6 @@
 # Development Priority List
 
-> **v2.0 — Updated from full codebase audit (June 2026).** Reflects actual completion state after initial implementation pass.
+> **v2.1 — Updated from Pass 4 (Site Structure + UX/UI Polish).** Reflects actual completion state after inline style migration, empty state unification, micro-interactions, and hashtag pills pass.
 > **Execution strategy**: All passes follow the 7-step cycle in `.opencode/plans/pass-playbook.md`.
 
 ---
@@ -53,7 +53,7 @@
 |------|--------|
 | Fediverse API endpoints: `actor/[username]`, `inbox`, `outbox/[userId]`, `nodeinfo/2.1` | ✅ |
 
-### From Priority Plan — Phase 7 (UI/UX)
+### From Priority Plan — Phase 7 (UI/UX) — Core Components
 | Item | Status |
 |------|--------|
 | `<Skeleton>` component + `SkeletonCard` export | ✅ |
@@ -72,6 +72,16 @@
 | `design-system.css` (160+ lines, comprehensive tokens) | ✅ |
 | `useMemo` used 43 times across 17+ files (PublicPlansClient, EventsPage, ProductsClient, DirectoryPage, etc.) | ✅ |
 
+### Pass 4 — Site Structure + UX/UI Polish
+| Item | Status |
+|------|--------|
+| **Dragon Loading Animation**: `Loading.tsx` + CSS module with float/glow/fade keyframes | ✅ |
+| **Empty State Unification**: ~30 replacements across Header, InboxView, LinkItemModal, EntityActions, DashboardTodo, BookAppointmentModal, admin/orders/users/subscribers, discover, profile (7 tabs), groups (6 tabs), shop/rentals, PlanDetailClient (calendar+history), RequestDetailClient (supporters/offers/history) | ✅ |
+| **Inline Style Migration (Batch 1)**: TipModal (21 → 0), ReplySection (16 → 0), ServiceCard (15 → 0) | ✅ |
+| **Micro-interactions**: `page-enter`, `card-hover`, `grid-card`, `btn-press`, `stagger-enter` in globals.css; applied to 7 pages + Button | ✅ |
+| **Hashtag Pills**: Plans, Requests, Groups detail pages + 4 type interfaces extended | ✅ |
+| **Type Cleanup**: 9 TS errors fixed across 3 detail pages + GroupSummary | ✅ |
+
 ---
 
 ## ⏳ Remaining Work
@@ -89,14 +99,10 @@
 - **Fix**: Switch to `jest-environment-node`, add `node-fetch`/`undici`, add `setImmediate` polyfill for Prisma, create test DB setup
 
 ### 1.3 Fix Fire-and-Forget Prisma Writes
-- **Location**: `src/lib/auth.ts:192,210`
-- **Issue**: Two `.catch(() => {})` — `connection.create` on OAuth signup, `emailSubscriber.upsert` on registration — silently swallow errors
-- **Fix**: ✅ Done — converted to `.catch((err) => console.error(...))` with proper logging, kept non-blocking
+- **Status**: ✅ Done
 
 ### 1.4 Deduplicate Notification Button
-- **Location**: `src/components/Header.tsx:534-545`
-- **Issue**: Bell icon rendered twice (with/without badge) in mutually exclusive conditionals
-- **Fix**: ✅ Done — refactored into single `isAuthenticated` guard with conditional badge
+- **Status**: ✅ Done
 
 ### 1.5 Audit `any` Types (Ongoing)
 - **Location**: `src/app/api/` (7 files flagged)
@@ -104,15 +110,10 @@
 - **Fix**: Add proper typed interfaces per route
 
 ### 1.6 React.memo() — Card Components
-- **Location**: `ProductCard.tsx`, `SharedItemCard.tsx`, `ServiceCard.tsx`, `BoardPinCard.tsx`
-- **Status**: ✅ Done (EventCard/PostCard/MemberCard/MessageBubble are inline markup, not dedicated components)
+- **Status**: ✅ Done (ProductCard, SharedItemCard, ServiceCard, BoardPinCard)
 
 ### 1.7 Loading... → Skeleton (Full Pass)
-- **Phase 1 batch**: 9 user-facing pages (events/[id], products/[id], profile/[username], groups/[id], shops, offers/[id], services/[id], checkout, school/[slug]/content/[id]) — ✅ Done
-- **Phase 2 batch**: 8 dashboard pages (marketplace, passport, rentals, services, teaching, video, shop, saved) — ✅ Done
-- **Phase 3 batch**: 5 admin pages (orders, wallets, subscribers, invite-codes, messages) — ✅ Done
-- **Phase 4 batch**: School/shop/courier setup, wallet, schools list, onboarding, forum, community layout, AvailabilityEditor — ✅ Done
-- **Total**: ~32 of ~38 instances replaced. 6 remain (3 Suspense fallbacks in auth + events-new + groups-new, loading component default, profile load-more button)
+- **Status**: ✅ Done (32 of ~38 instances; 6 low-impact Suspense fallbacks remain)
 
 ---
 
@@ -135,7 +136,6 @@
 ---
 
 ## Phase 3: Universal Hashtags — ✅ Complete
-> All 4 junction models, HashtagInput component, hashtagService, API expansion. No work remaining.
 
 ---
 
@@ -143,251 +143,155 @@
 
 ### 4.1 Universal ShareBar Component
 - **New file**: `src/components/ShareBar.tsx`
-- **Replace**: 4 separate share modals (currently in `EntityActions.tsx`, `shop/[slug]/page.tsx`, etc.)
-- **Features**: Copy Link, Share to Feed (creates backlinked post), QR Code, social share (X, Facebook, LinkedIn, Telegram, WhatsApp, Email, Fediverse)
-- **Embed**: All entity detail pages, profile, post, product, event, plan, request, school content
+- **Replace**: 4 separate share modals
+- **Features**: Copy Link, Share to Feed, QR Code, social share (X, Facebook, LinkedIn, Telegram, WhatsApp, Email, Fediverse)
+- **Embed**: All entity detail pages
 
 ### 4.2 Auto-Generated Related Items
 - Backend: Query backlinks for entity → frontend section on every detail page
-- Display: Incoming + outgoing links with entity cards
 
 ### 4.3 Manual Linking UI
 - "Link to..." button in content editors with entity search + keyboard nav
 
 ### 4.4 Cross-Posting Engine
 - Create post → offer cross-post to Wall + Shop + School + Group + Forum
-- Repost/Share entity creates backlinked post automatically
 
 ---
 
 ## Phase 5: Complete Federation / ActivityPub (2-3 days)
 
-### 5.1 User Key Generation on Registration
-- Wire `src/lib/federation.ts` key gen into signup flow
-- Store `federatedUrl`, `privateKey`, `publicKey` on User model
-
-### 5.2 Follow Model + Route Handlers
-- Create `Follow` Prisma model or confirm existing schema
-- Implement local + remote follow management
-- Add Follow/Unfollow UI on profile pages
-
-### 5.3 Wire Inbox Processing
-- Incoming Follow → create notification
-- Incoming Accept → update follow status
-- Incoming Like → increment local counter
-- Incoming Announce → create boost post
-
-### 5.4 Wire Outbound Delivery Cron
-- `/api/cron/deliver-fediverse` — actually deliver queued activities
-- Retry with exponential backoff (max 3)
-- Stale activity cleanup (> 7 days old)
-
-### 5.5 Federation UI
-- Profile: federated handle (`@user@domain`), follower/following counts
-- Admin: fediverse settings page (relay URL, blocklist, instance description)
-- Remote user profile display (from ActivityPub Person object)
-
-### 5.6 Security
-- HTTP Signature verification
-- Activity dedup via `activityId` unique constraint
-- Reject activities older than 24h
-- Rate-limit follows (10/min per remote actor)
-- Sanitize HTML in incoming content
+### 5.1-5.6
+- Key gen on registration, Follow model, wire inbox/outbox, outbound cron, federation UI, security
 
 ---
 
 ## Phase 6: Navigation & Layout Overhaul (2 days)
 
 ### 6.1 Global Command Palette
-- **New file**: `src/components/CommandPalette.tsx`
-- `Cmd+K` / `Ctrl+K` opens modal
-- Unified search across ALL entities + hashtags + pages
-- Context actions per result: View, Edit, Share, Delete
-- Keyboard navigation with arrow keys
-- Recent searches (localStorage)
+- `Cmd+K` modal, unified search, keyboard nav, context actions
 
 ### 6.2 ERP-Style Sidebar
-- Collapsible icon-only mode
-- Section grouping: Workspace, Commerce, Social, Learn, Finance, Admin (role-gated)
-- Hashtag nav item, unread badges
+- Collapsible icon-only, role-gated sections
 
 ### 6.3 Mobile Bottom Navigation
-- Icons: Home, Feed, Create (FAB), Messages, Profile
-- ≥44px touch targets, hides on keyboard open
+- Home, Feed, Create, Messages, Profile
 
-### 6.4 Unified Breadcrumbs
-- Auto-generate from route segments
-- Ensure ALL pages have breadcrumbs
-- Responsive: collapse to last 2 levels on mobile
+### ⏳ 6.4 Unified Breadcrumbs — Remaining Work
+Add `<Breadcrumbs>` to these missing directories:
+| Directory | Pages |
+|-----------|-------|
+| Dashboard | overview, messages, community, studio, planning, requests, projects, marketplace, teaching, shop, video, events, feed, appointments (14 pages) |
+| Admin (partial) | messages, backups, analytics, users, invite-codes, subscribers, orders, settings (8 pages) |
+| Auth | login, register, forgot-password, reset-password, verify-email (5 pages) |
+| Other | connections, offers/[id], posts/[id], projects, rentals/browse, rentals/page, settings/account, settings/privacy, settings/notifications, shops, trips/[id] (11 pages) |
 
 ### 6.5 Navigation Cleanup
-- Remove duplicate entry points (`/plans/public` → redirect to `/projects`)
-- Hide admin UI from non-admin users
-- Progressive nav loading (lazy-load heavy sections)
+- Remove duplicate entry points, hide admin from non-admin, progressive loading
 
 ---
 
-## Phase 7: UI/UX Consistency (2 days)
+## Phase 7: UI/UX Consistency (2 days — 5-8h remaining)
 
 ### 7.1 Component Library Standardization
-- Refactor ALL components to use `ui/Button`, `ui/Card`, `ui/Modal`, `ui/Badge`, `ui/Avatar`
-- Remove ALL inline `style={{}}` → CSS modules or design tokens
-- Consistent padding `--space-6`, card grid `auto-fill minmax`
+- Use `ui/Button`, `ui/Card`, `ui/Modal`, `ui/Badge`, `ui/Avatar` everywhere
+- **⏳ Inline style → CSS module migration**: 3/20 files done. Remaining top 8:
+
+| File | Inline Styles | Module Status |
+|------|:------------:|:-------------:|
+| `plans/[id]/PlanDetailClient.tsx` | 37 | ❌ Needs new CSS module |
+| `admin/settings/page.tsx` | 35 | Has `page.module.css` — migrate inline styles into it |
+| `connections/page.tsx` | 31 | ❌ Needs new module |
+| `dashboard/appointments/page.tsx` | 29 | ❌ Needs new module |
+| `plans/[id]/PlanUpdates.tsx` | 26 | ❌ Needs new module |
+| `posts/[id]/page.tsx` | 23 | ❌ Needs new module |
+| `trips/[id]/TripView.tsx` | 23 | ❌ Needs new module |
+| `dashboard/overview/page.tsx` | 20 | Has `OverviewCards.module.css` — migrate |
 
 ### 7.2 Loading States
-- Replace all remaining `<div>Loading...</div>` with `<Skeleton />`
-- Skeleton variants for: product grids, member lists, content lists, messages, hashtag clouds, dashboards
+- **Status**: ✅ 32 of ~38 instances done (6 low-impact remain)
 
 ### 7.3 Empty States
-- Replace all remaining `<div>No results</div>` / `<div>No items found</div>` with `<EmptyState>`
-- Contextual icon + action button
+- **Status**: ✅ Pass 4 replaced ~30 instances. Custom-styled states (dashboard/studio, dashboard/saved, dashboard/appointments, ProjectsClient, hashtag pages) intentionally kept as-is.
 
-### 7.4 Toast Coverage
-- Consistent toasts for ALL CRUD operations across every page
-- Green (create), blue (update), red (delete/error), yellow (warning)
+### ⏳ 7.4 Toast Coverage
+- **Status**: 🟡 Toasts used in ~48 files (~350+ calls). Check for gaps in:
+  - Dashboard settings/profile edit (update toasts)
+  - Admin analytics/backups (missing CRUD feedback)
+  - Offers, Trips, Rentals pages
+  - Connection management (add/remove feedback)
 
-### 7.5 ConfirmDialog for Destructive Actions
-- Hook up to: delete plan, delete product, delete post, unpublish, remove connection, leave group
+### ⏳ 7.5 ConfirmDialog for Destructive Actions
+- **Status**: 🟡 Only 5/35 pages with DELETE operations currently use ConfirmDialog
+- **Priority pages to wire**: groups/[id] (6 ops), dashboard/ pages (~20 ops), community/forum/[postId] (2 ops), connections (1 op), Plans (2 ops)
+- **Files added so far**: profile/[username], products/[id], events/[id], profile/edit, school/[slug]
 
-### 7.6 Micro-interactions
-- Card hover: scale(1.02) + border glow
-- Button active: scale(0.97)
-- Page transitions: CSS `@keyframes fadeIn`
-- Success checkmark animation
+### ✅ 7.6 Micro-interactions
+- **Status**: ✅ Done — keyframes + classes in globals.css, applied to 7 pages + Button
 
 ---
 
 ## Phase 8: School Content Customization (2-3 days)
 
-### 8.1 Rich Content Engine
-- **Curriculum builder**: Module → Lesson → Topic hierarchy with drag-and-drop
-- **Expanded types**: article, video, course, quiz, worksheet, resource, assignment
-- **Progress tracking**: Lesson completion checkbox, overall % per student
-- **Prerequisites**: Dependency chain between content items
-- **Drip-feed**: Scheduled content release dates
-
-### 8.2 Hashtags on School Content
-- (Backend extraction is done via `hashtagService.ts`)
-- Display hashtag pills on content cards + detail view
-- Filter school content by hashtag on `/schools`
-- Include in trending hashtags API
-
-### 8.3 Student Management
-- Enrolled students list per school (with progress %)
-- Progress detail per student (lessons completed, quiz scores)
-- Completion certificates (PDF or shareable badge)
-- Bulk message all enrolled students
+### 8.1-8.3
+- Curriculum builder, progress tracking, student management
 
 ---
 
 ## Phase 9: Dashboard as ERP Hub (2 days)
 
-### 9.1 Unified Inbox
-- Single section: Notifications + Unread Messages + Pending Requests + Connection Requests
-- Grouped by type, expand/collapse, "Mark all read"
-
-### 9.2 Cross-Module Quick Actions
-- "Create Plan with Product", "Add Event to Group", "Create Request for Plan", "Create Post about entity"
-
-### 9.3 Dashboard Widgets
-- Hashtag widget (trending tags relevant to user's content)
-- Recent activity across ALL modules
-- Progress widgets (plan %, content queue, shop orders, appointments)
-- Analytics (total views, likes, tips this week/month)
-
-### 9.4 Expand Unified Directory
-- **Missing tabs**: Members, Schools, Groups, School Content
-- **Unified filter**: category + location + hashtag + sort
-- **Map view**: all geotagged entities
-- **Alphabetical index**: per entity type
-
-### 9.5 Smart Cross-Linking
-- Suggest related entities when creating Requests/content
-- "Quick Link" button in every editor with entity search + hashtag suggestions
+### 9.1-9.5
+- Unified inbox, quick actions, widgets, directory expansion, smart cross-linking
 
 ---
 
 ## Phase 10: Onboarding & Help (1-1.5 days)
 
-### 10.1 Contextual Help System
-- Inline `(?)` tooltips on complex form fields (hashtag input, donation addresses, escrow)
-- Guided tours per module: "Tour Dashboard", "Tour Marketplace", "Tour Schools", "Tour Hashtags"
-- Help drawer: slide-out panel with relevant articles based on current page
-
-### 10.2 First-Use Triggers
-- First plan created → sharing dialog with hashtag suggestions + backlink options
-- First product listed → "Add hashtags to get discovered!" prompt
-- First content published → school customization tips
-- First connection → messaging feature highlight
-- First hashtag used → related content discovery
+### 10.1-10.2
+- Contextual help, guided tours, first-use triggers
 
 ---
 
 ## Phase 11: Polish & Performance (2 days)
 
-### 11.1 CSS Audit & Cleanup
-- Remove duplicate declarations between `globals.css`, `design-system.css`, and component modules
-- Merge color/spacing/typography vars into single source (`design-system.css`)
-- Standardize naming conventions
-
-### 11.2 Performance Optimization
-- **`React.memo()`**: ProductCard, MemberCard, MessageBubble, PostCard, EventCard, SharedItemCard (0 instances currently)
-- Virtualization for long lists: members page, feed, product grid, notifications
-- Dynamic imports for heavy deps: Leaflet map, RichEditor, emoji-picker-react, QRCode, video chat
-- Lazy load images below the fold (`loading="lazy"`)
-
-### 11.3 Accessibility
-- Keyboard navigation: all interactive elements focusable, activatable with Enter/Space
-- `aria-*` attributes: labels on icon buttons, roles on nav/menu/dialog, live regions
-- Focus management: trap in modals, return on close
-- Color contrast: WCAG AA (4.5:1 normal, 3:1 large)
-- `prefers-reduced-motion`
-
-### 11.4 Security Hardening
-- File upload: validate MIME type, max size (10MB)
-- Input sanitization: DOMPurify for all text inputs
-- CORS: strict `Access-Control-Allow-Origin` for API routes
-- Crypto keys: encrypt stored private keys (AES-256-GCM)
-- Rate limiting: extend to auth, contact, upload routes
-
-### 11.5 Testing Expansion
-- Fix existing 6 API test suites (Phase 1.2)
-- RTL tests: Button, Card, Modal, Badge, Avatar, Breadcrumbs, Pagination, EmptyState
-- Hook tests: `useCart`, `useToast`, `useSiteSettings`, `useEntityActions`
-- Integration tests: plan CRUD, request approve/reject, message send/read
-- Test DB setup: `npm run db:test` with in-memory SQLite + seed data
+### 11.1-11.5
+- CSS audit, performance (memo/virtualization/dynamic imports), a11y, security, testing
 
 ---
 
 ## Effort Summary
 
-| Phase | Effort | Dependencies | Key Deliverables | Status |
-|-------|--------|-------------|------------------|--------|
-| **P1: Fix Breaks** | 3 hrs | None | middleware rename, tests fixed, fire-and-forget fixed, btn dedup | ⏳ 2 items pending (test env, any types) + 3 extra items done |
-| **P2: Foundation** | 2-3 days | P1 | api-helpers, 6 missing services, $transaction | 🔄 Partial (5 of 11 services done) |
-| **P3: Hashtags** | 0 | None | Already complete | ✅ Done |
-| **P4: Sharing** | 1.5-2 days | P2 | ShareBar, Related Items, cross-posting | ⏳ |
-| **P5: Federation** | 2-3 days | P2 | Key gen, follow UI, inbox/outbox wiring, security | 🔄 Routes done, logic pending |
-| **P6: Navigation** | 2 days | None | Command palette, sidebar, mobile nav, breadcrumbs | ⏳ |
-| **P7: UI/UX** | 2 days | P6 | Component standardization, loading/empty states, toasts | 🔄 Components exist, adoption pending |
-| **P8: School** | 2-3 days | P2 | Curriculum builder, student management | ⏳ |
-| **P9: Dashboard** | 2 days | P2, P7 | Unified inbox, widgets, directory expansion | 🔄 Directory partial, rest pending |
-| **P10: Onboarding** | 1-1.5 days | None | Contextual help, first-use triggers | 🔄 Flow done, help system pending |
-| **P11: Polish** | 2 days | P7 | React.memo, virtualization, a11y, security, tests | 🔄 design-system done, rest pending |
+| Phase | Effort | Dependencies | Status |
+|-------|--------|-------------|--------|
+| **P1: Fix Breaks** | 3 hrs | None | 🔄 1 item pending (any types) |
+| **P2: Foundation** | 2-3 days | P1 | 🔄 Partial (5 of 11 services) |
+| **P3: Hashtags** | — | Once | ✅ Done |
+| **P4: Sharing** | 1.5-2 days | P2 | ⏳ |
+| **P5: Federation** | 2-3 days | P2 | 🔄 Routes done |
+| **P6: Navigation** | 2 days | None | ⏳ Breadcrumbs 35pp pending |
+| **P7: UI/UX** | 2 days | P6 | 🔄 Inline styles ~17 files pending; ConfirmDialog ~30 pp pending |
+| **P8: School** | 2-3 days | P2 | ⏳ |
+| **P9: Dashboard** | 2 days | P2, P7 | ⏳ |
+| **P10: Onboarding** | 1-1.5 days | None | 🔄 Flow done, help pending |
+| **P11: Polish** | 2 days | P7 | 🔄 Partial |
 
-**Total remaining: ~17-22 days**
+**Total remaining: ~15-20 days**
 
 ---
 
 ## Quick Wins (Parallelizable, < 1 day each)
 
-1. ✅ Fix ESLint config → proper flat config with presets
-2. ✅ Add `if (!user.password) return null` in auth.ts
-3. ⏳ Rename `middleware.ts` → `proxy.ts`
-4. ⏳ Convert 2 `.catch(() => {})` fire-and-forgets in auth.ts to awaited
-5. ⏳ Deduplicate notification button in Header.tsx
-6. ⏳ `React.memo()` on ProductCard + EventCard + PostCard (3 component files)
-7. ⏳ Add `extractHashtags` extraction calls to plan/request/school content API routes (if not wired yet)
-8. ⏳ "Share to Feed" button on every entity detail page
-9. ✅ Fix MobileNav `session: any` type
-10. ✅ Fix Header `CustomEvent` generic type
+1. ✅ ESLint config fixed
+2. ✅ Auth bcrypt guard added
+3. ✅ MobileNav session typed
+4. ✅ Header CustomEvent typed
+5. ❌ Middleware rename cancelled
+6. ✅ Fire-and-forget fixed
+7. ✅ Notification button deduplicated
+8. 🟡 React.memo on 4/6 cards
+9. ✅ Skeleton sweep (32/38)
+10. ✅ Empty state unification (30+ replacements)
+11. ✅ Micro-interactions (globals.css + 7 pages + Button)
+12. ✅ Inline styles: TipModal, ReplySection, ServiceCard
+13. ✅ Hashtag pills on Plans, Requests, Groups
+14. ⏳ Breadcrumbs: add to 35 pages
+15. ⏳ ConfirmDialog: wire to 35 DELETE operations

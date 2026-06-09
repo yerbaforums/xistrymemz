@@ -17,4 +17,5 @@ export interface RequestSummary {
   productId?: string | null
   createdAt: string
   updatedAt: string
+  hashtags?: Array<{ id: string; hashtag: { id: string; tag: string } }>
 }

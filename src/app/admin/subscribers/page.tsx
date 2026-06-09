@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import Skeleton from '@/components/Skeleton'
+import { EmptyState } from '@/components/EmptyState'
 
 interface Subscriber {
   id: string
@@ -215,7 +216,7 @@ export default function SubscribersPage() {
           </tbody>
         </table>
         {filteredSubscribers.length === 0 && (
-          <div className={styles.empty}>No subscribers found</div>
+          <EmptyState icon="📧" title="No subscribers found" description="Newsletter subscribers will appear here." />
         )}
       </div>
 

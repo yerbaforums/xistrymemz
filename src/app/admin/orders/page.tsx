@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import styles from './page.module.css'
 import Button from '@/components/ui/Button'
 import Skeleton from '@/components/Skeleton'
+import { EmptyState } from '@/components/EmptyState'
 
 interface EscrowTransaction {
   id: string
@@ -244,7 +245,7 @@ export default function AdminOrdersPage() {
       </div>
 
       {filteredOrders.length === 0 && (
-        <div className={styles.empty}>No orders found</div>
+        <EmptyState icon="📦" title="No orders found" description="Orders will appear here once customers start purchasing." />
       )}
 
       {selectedOrder && (

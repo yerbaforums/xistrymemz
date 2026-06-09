@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import styles from './page.module.css'
 import Button from '@/components/ui/Button'
+import { EmptyState } from '@/components/EmptyState'
 
 interface User {
   id: string
@@ -196,7 +197,7 @@ export default function AdminUsersPage() {
       {loading ? (
         <div className={styles.loading}>Loading users...</div>
       ) : users.length === 0 ? (
-        <div className={styles.empty}>No users found</div>
+        <EmptyState icon="👥" title="No users found" description="Users will appear here once they register on the platform." />
       ) : (
         <>
           <div className={styles.tableContainer}>

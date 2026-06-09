@@ -22,7 +22,7 @@ export default function Button({
 }: Props) {
   return (
     <button
-      className={`${styles.btn} ${styles[variant]} ${styles[size]} ${className}`}
+      className={`${styles.btn} ${styles[variant]} ${styles[size]} btn-press ${className}`}
       disabled={disabled || loading}
       {...rest}
     >

@@ -8,6 +8,7 @@ import { useToast } from '@/context/ToastContext'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import type { DonationAddr } from '@/types/product'
 import { CRYPTO_LOGOS } from '@/lib/constants'
+import { EmptyState } from '@/components/EmptyState'
 import styles from './EntityActions.module.css'
 
 interface EntityActionsProps {
@@ -245,7 +246,7 @@ export default function EntityActions({
                 </div>
               </>
             ) : (
-              <p className={styles.modalDesc}>No donation addresses available.</p>
+              <EmptyState icon="💰" title="No donation addresses" description="This user hasn't set up any donation addresses yet." />
             )}
             <button className={styles.closeBtn} onClick={() => setShowTipModal(false)}>Cancel</button>
           </div>

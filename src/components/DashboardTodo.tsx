@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { EmptyState } from '@/components/EmptyState'
 
 interface TodoItem {
   id: string
@@ -124,9 +125,7 @@ export default function DashboardTodo() {
       </div>
 
       {todos.length === 0 ? (
-        <p style={{ color: '#8d7b6a', fontSize: '0.8rem', margin: 0, fontStyle: 'italic' }}>
-          No tasks yet. Add something above!
-        </p>
+        <EmptyState icon="✅" title="No tasks yet" description="Add a task above to get started." />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 400, overflowY: 'auto' }}>
           {todos.map(t => (

@@ -13,6 +13,7 @@ import ViewCount from '@/components/ViewCount'
 import { useRecordView } from '@/hooks/useRecordView'
 import TranslateButton from '@/components/TranslateButton'
 import Button from '@/components/ui/Button'
+import { EmptyState } from '@/components/EmptyState'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import PinToBoardButton from '@/components/PinToBoardButton'
 
@@ -150,6 +151,7 @@ interface Request {
   statusHistory?: StatusChange[]
   fulfillments: Fulfillment[]
   supportCount?: number
+  hashtags?: Array<{ id: string; hashtag: { id: string; tag: string } }>
 }
 
 interface RequestDetailClientProps {
@@ -647,6 +649,14 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
             )}
             {request.description && <TranslateButton text={request.description} />}
 
+            {request.hashtags && request.hashtags.length > 0 && (
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 12 }}>
+                {request.hashtags.map((h: any) => (
+                  <Link key={h.hashtag?.id || h.id} href={`/hashtag/${h.hashtag?.tag || h.tag}`} className="hashtag-link" style={{ fontSize: '0.85rem' }}>#{h.hashtag?.tag || h.tag}</Link>
+                ))}
+              </div>
+            )}
+
             <div className={styles.meta}>
               {request.plan && (
                 <div className={styles.metaItem}>
@@ -850,7 +860,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                 ))}
               </div>
             ) : (
-              <p className={styles.noSupporters}>No supporters yet. Be the first!</p>
+              <EmptyState icon="🤝" title="No supporters yet" description="Be the first to support this request!" />
             )}
           </div>
 
@@ -1048,7 +1058,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                 </div>
               ))}
               {fulfillments.length === 0 && (
-                <p className={styles.noFulfillments}>No offers yet.</p>
+                <EmptyState icon="📦" title="No offers yet" description="Offers to fulfill this request will appear here." />
               )}
             </div>
           </div>
@@ -1162,7 +1172,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                 </div>
               ))}
               {(!request.statusHistory || request.statusHistory.length === 0) && (
-                <p className={styles.noHistory}>No status changes recorded yet.</p>
+                <EmptyState icon="📜" title="No status changes yet" description="Status history will appear here as the request progresses." />
               )}
             </div>
             {canRollback && (

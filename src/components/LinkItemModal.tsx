@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react'
 import styles from './LinkItemModal.module.css'
+import { EmptyState } from '@/components/EmptyState'
 
 interface SearchResult {
   id: string
@@ -199,7 +200,7 @@ export default function LinkItemModal({
                   </div>
                 )}
                 {query.length >= 2 && !searching && results.length === 0 && (
-                  <div className={styles.noResults}>No items found</div>
+                  <EmptyState icon="🔗" title="No items found" description="Try a different search term." />
                 )}
               </div>
             )}

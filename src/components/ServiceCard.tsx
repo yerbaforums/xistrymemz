@@ -4,6 +4,7 @@ import { memo } from 'react'
 import type { ServiceOffering, ServiceCategory } from '@/types/service'
 import { SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service'
 import ViewCount from '@/components/ViewCount'
+import styles from './ServiceCard.module.css'
 
 function formatDuration(mins: number) {
   if (mins < 60) return `${mins} min`
@@ -33,87 +34,36 @@ const ServiceCard = memo(function ServiceCard({ service, onClick, style }: Servi
   const userImage = typeof service.user?.image === 'string' ? service.user.image : null
 
   return (
-    <div
-      onClick={onClick}
-      style={{
-        background: 'var(--bg-secondary)',
-        borderRadius: 12,
-        border: '1px solid var(--border-color)',
-        overflow: 'hidden',
-        cursor: 'pointer',
-        transition: 'transform 0.15s, box-shadow 0.15s',
-        ...style,
-      }}
-      onMouseEnter={e => {
-        e.currentTarget.style.transform = 'translateY(-2px)'
-        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.transform = ''
-        e.currentTarget.style.boxShadow = ''
-      }}
-    >
+    <div onClick={onClick} className={styles.card} style={style}>
       {imageUrl ? (
-        <img
-          src={imageUrl}
-          alt={title}
-          style={{ width: '100%', height: 160, objectFit: 'cover' }}
-        />
+        <img src={imageUrl} alt={title} className={styles.image} />
       ) : (
-        <div style={{
-          width: '100%', height: 120, display: 'flex', alignItems: 'center',
-          justifyContent: 'center', fontSize: '2.5rem', background: 'var(--bg-tertiary)',
-          color: 'var(--text-tertiary)'
-        }}>
-          {icon}
-        </div>
+        <div className={styles.imagePlaceholder}>{icon}</div>
       )}
-      <div style={{ padding: 14 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-          <span style={{
-            fontSize: '0.7rem', padding: '2px 8px', borderRadius: 6,
-            background: 'color-mix(in srgb, var(--accent-primary) 15%, transparent)',
-            color: 'var(--accent-primary)', fontWeight: 600,
-            whiteSpace: 'nowrap'
-          }}>
-            {icon} {label}
-          </span>
-          {price != null && (
-            <span style={{
-              fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)',
-              marginLeft: 'auto'
-            }}>
-              ${price}
-            </span>
-          )}
+      <div className={styles.body}>
+        <div className={styles.topRow}>
+          <span className={styles.categoryBadge}>{icon} {label}</span>
+          {price != null && <span className={styles.price}>${price}</span>}
         </div>
-        <h3 style={{ margin: '0 0 4px', fontSize: '0.95rem', color: 'var(--text-primary)' }}>
-          {title}
-        </h3>
-        {description && (
-          <p style={{ margin: '0 0 8px', fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-            {description}
-          </p>
-        )}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem', color: 'var(--text-tertiary)' }}>
+        <h3 className={styles.title}>{title}</h3>
+        {description && <p className={styles.description}>{description}</p>}
+        <div className={styles.meta}>
           <span>🕐 {formatDuration(duration)}</span>
           {location && <span>📍 {location}</span>}
           <ViewCount count={viewCount} />
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, fontSize: '0.78rem', color: 'var(--text-tertiary)' }}>
+        <div className={styles.author}>
           {userImage ? (
-            <img src={userImage} alt="" style={{ width: 20, height: 20, borderRadius: '50%', objectFit: 'cover' }} />
+            <img src={userImage} alt="" className={styles.authorAvatar} />
           ) : (
-            <span style={{ width: 20, height: 20, borderRadius: '50%', background: 'var(--bg-tertiary)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>
-              {(userName || 'U')[0]}
-            </span>
+            <span className={styles.authorInitials}>{(userName || 'U')[0]}</span>
           )}
           <span>{userName || 'Anonymous'}</span>
         </div>
-        <div style={{ marginTop: 6, display: 'flex', justifyContent: 'flex-end' }}>
+        <div className={styles.footer}>
           <button
             onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(`${window.location.origin}/services/${service.id}`) }}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', padding: 4, fontSize: '0.8rem' }}
+            className={styles.copyBtn}
             title="Copy link"
           >
             🔗

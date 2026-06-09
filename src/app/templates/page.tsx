@@ -8,12 +8,13 @@ import { businessTemplates, getTemplatesByType, type BusinessTemplate } from '@/
 import { eventTemplates, type EventTemplate } from '@/lib/event-templates'
 import Button from '@/components/ui/Button'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import Loading from '@/components/Loading'
 
 type FilterType = 'ALL' | 'SHOP' | 'SCHOOL' | 'COURIER' | 'EVENTS'
 
 export default function TemplatesPage() {
   return (
-    <Suspense fallback={<div style={{padding: '40px', textAlign: 'center'}}>Loading templates...</div>}>
+    <Suspense fallback={<Loading size="medium" message="Loading templates..." />}>
       <TemplatesPageContent />
     </Suspense>
   )

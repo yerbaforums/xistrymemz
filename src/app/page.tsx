@@ -136,7 +136,7 @@ export default function Home() {
   }, [fetchProducts])
 
   return (
-    <div className={styles.landing}>
+    <div className={`${styles.landing} page-enter`}>
       <HeroSection />
       <StatsSection stats={animatedStats} />
       <HashtagSection tags={trendingTags} />

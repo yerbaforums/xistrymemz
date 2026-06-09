@@ -155,7 +155,7 @@ export default function ServicesPage() {
           onClear={clearFilters}
         />
 
-        <main className={styles.content}>
+        <main className={`${styles.content} page-enter`}>
           <div className={styles.resultsHeader}>
             <span className={styles.resultsCount}>
               <strong>{filteredServices.length}</strong> {filteredServices.length === 1 ? 'service' : 'services'} found

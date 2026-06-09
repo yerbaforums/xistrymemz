@@ -22,7 +22,7 @@ export default async function ProfileSettingsPage() {
         { label: 'Settings' },
       ]} />
       <div className={styles.container}>
-        <main className={styles.main}>
+        <main className={`${styles.main} page-enter`}>
           <div className={styles.header}>
             <h1>{t('title')}</h1>
             <p>Manage your account and profile information</p>

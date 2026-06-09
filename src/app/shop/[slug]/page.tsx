@@ -543,7 +543,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                 </Link>
               ))
             ) : (
-              <div className={styles.empty}><p>No rentals available yet</p></div>
+              <EmptyState icon="🏠" title="No rentals available yet" description="Check back later for new rental listings." />
             )}
           </div>
         )}

@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic'
 import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import Button from '@/components/ui/Button'
+import { EmptyState } from '@/components/EmptyState'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
@@ -281,7 +282,7 @@ export default function DiscoverPage() {
             {results.map(r => <EntityCard key={`${r.type}-${r.id}`} item={r} />)}
           </div>
           {results.length === 0 && (
-            <div className={styles.empty}>No results found. Try adjusting your filters.</div>
+            <EmptyState icon="🔍" title="No results found" description="Try adjusting your filters." />
           )}
           {total > page * 50 && (
             <Button variant="primary" className={styles.loadMore} onClick={() => fetchResults(page + 1)}>

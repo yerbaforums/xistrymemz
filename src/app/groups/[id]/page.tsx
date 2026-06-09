@@ -10,6 +10,7 @@ import TranslateButton from '@/components/TranslateButton'
 import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import { useToast } from '@/context/ToastContext'
+import { EmptyState } from '@/components/EmptyState'
 import { getUserProfileUrl } from '@/lib/utils'
 import ImageUploader from '@/components/ImageUploader'
 import HashtagInput from '@/components/HashtagInput'
@@ -123,6 +124,7 @@ interface Group {
   _count: { members: number; posts: number }
   isMember: boolean
   isAdmin: boolean
+  hashtags?: Array<{ id: string; hashtag: { id: string; tag: string } }>
 }
 
 function GroupDetailContent() {
@@ -571,6 +573,13 @@ function GroupDetailContent() {
                 <TranslateButton text={group.description} />
               </>
             )}
+            {group.hashtags && group.hashtags.length > 0 && (
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
+                {group.hashtags.map((h: any) => (
+                  <Link key={h.hashtag?.id || h.id} href={`/hashtag/${h.hashtag?.tag || h.tag}`} className="hashtag-link" style={{ fontSize: '0.85rem' }}>#{h.hashtag?.tag || h.tag}</Link>
+                ))}
+              </div>
+            )}
             <div className={styles.stats}>
               <div className={styles.stat}>
                 <span className={styles.statValue}>{group._count.members}</span>
@@ -672,7 +681,7 @@ function GroupDetailContent() {
 
                   <div className={styles.postsList}>
                     {group.posts.length === 0 ? (
-                      <div className={styles.empty}><p>No posts yet. Be the first!</p></div>
+                      <EmptyState icon="💬" title="No posts yet" description="Be the first to post in this group!" />
                     ) : (
                       group.posts.map(post => (
                         <div key={post.id} className={`${styles.postCard} ${post.pinned ? styles.pinnedCard : ''}`}>
@@ -737,7 +746,7 @@ function GroupDetailContent() {
                       {loadingSupporters ? (
                         <p className={styles.loadingSmall}>Loading supporters...</p>
                       ) : selectedBuySupporters.length === 0 ? (
-                        <p className={styles.emptySmall}>No supporters yet</p>
+                        <EmptyState icon="🤝" title="No supporters yet" description="Be the first to support this group buy!" />
                       ) : (
                         <div className={styles.supportersList}>
                           {selectedBuySupporters.map(s => (
@@ -835,7 +844,7 @@ function GroupDetailContent() {
                           </div>
                         ))
                       ) : (
-                        <div className={styles.empty}><p>No group buys yet. Create one to pool resources!</p></div>
+                        <EmptyState icon="🛒" title="No group buys yet" description="Create one to pool resources with the group!" />
                       )}
                     </div>
                   )}
@@ -876,7 +885,7 @@ function GroupDetailContent() {
                       ))}
                     </div>
                   ) : (
-                    <div className={styles.empty}><p>No requests yet. Create one to ask the group for help!</p></div>
+                    <EmptyState icon="📋" title="No requests yet" description="Create one to ask the group for help!" />
                   )}
                 </div>
               )}
@@ -915,7 +924,7 @@ function GroupDetailContent() {
                       ))}
                     </div>
                   ) : (
-                    <div className={styles.empty}><p>No marketplace products linked yet. Link products relevant to this group!</p></div>
+                    <EmptyState icon="🛍️" title="No products linked yet" description="Link products relevant to this group!" />
                   )}
                 </div>
               )}
@@ -984,7 +993,7 @@ function GroupDetailContent() {
                         </div>
                       )}
                       {Object.values(activity).every(arr => arr.length === 0) && (
-                        <div className={styles.empty}><p>No member activity yet.</p></div>
+                        <EmptyState icon="📊" title="No member activity yet" description="Activity will appear here as members participate." />
                       )}
                     </>
                   )}

@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { useToast } from '@/context/ToastContext'
 import styles from './BookAppointmentModal.module.css'
+import { EmptyState } from '@/components/EmptyState'
 
 interface FormField {
   label: string
@@ -397,9 +398,7 @@ export default function BookAppointmentModal({
                       Loading available times...
                     </div>
                   ) : freeTimes.length === 0 ? (
-                    <div className={styles.noTimesMsg}>
-                      No available time slots on this date.
-                    </div>
+                    <EmptyState icon="⏰" title="No time slots available" description="Try selecting a different date." />
                   ) : (
                     <div className={`${styles.flexWrap} ${styles.gap6}`}>
                       {freeTimes.map(t => (

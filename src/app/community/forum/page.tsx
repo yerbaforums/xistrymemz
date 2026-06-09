@@ -197,7 +197,7 @@ export default function ForumPage() {
           </div>
         </aside>
 
-        <main className={styles.main}>
+        <main className={`${styles.main} page-enter`}>
           <div className={styles.toolbar}>
             <form onSubmit={handleSearch} className={styles.searchForm}>
               <input

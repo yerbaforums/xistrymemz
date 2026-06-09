@@ -1329,14 +1329,12 @@ export default function ProfilePage() {
                 </div>
                 {hasMorePosts && (
                   <Button onClick={handleLoadMorePosts} disabled={loadingMorePosts} className={styles.loadMoreBtn}>
-                    {loadingMorePosts ? 'Loading...' : `Load more posts (${(totalPostCount ?? 0) - posts.length} remaining)`}
+                    {loadingMorePosts ? 'Loading posts...' : `Load more posts (${(totalPostCount ?? 0) - posts.length} remaining)`}
                   </Button>
                 )}
               </>
             ) : (
-              <div className={styles.empty}>
-                <p>No posts yet</p>
-              </div>
+              <EmptyState icon="📝" title="No posts yet" description={isOwnProfile ? "Create your first post to share with the community." : `${user.name || 'This user'} hasn't posted anything yet.`} />
             )}
           </div>
         )}
@@ -1370,9 +1368,7 @@ export default function ProfilePage() {
                 ))}
               </div>
             ) : (
-              <div className={styles.empty}>
-                <p>No plans yet</p>
-              </div>
+              <EmptyState icon="🚀" title="No plans yet" description={isOwnProfile ? "Create a plan to start tracking your projects." : `${user.name || 'This user'} hasn't created any plans yet.`} />
             )}
           </div>
         )}
@@ -1398,9 +1394,7 @@ export default function ProfilePage() {
                 ))}
               </div>
             ) : (
-              <div className={styles.empty}>
-                <p>No connections yet</p>
-              </div>
+              <EmptyState icon="🤝" title="No connections yet" description={isOwnProfile ? "Connect with other members to grow your network." : `${user.name || 'This user'} hasn't made any connections yet.`} />
             )}
           </div>
         )}
@@ -1460,7 +1454,7 @@ export default function ProfilePage() {
                 ))}
               </div>
             ) : (
-              <div className={styles.empty}><p>No forum posts yet</p></div>
+              <EmptyState icon="💬" title="No forum posts yet" description={`${user.name || 'This user'} hasn't posted in any forums yet.`} />
             )}
           </div>
         )}
@@ -1482,7 +1476,7 @@ export default function ProfilePage() {
                 ))}
               </div>
             ) : (
-              <div className={styles.empty}><p>No events yet</p></div>
+              <EmptyState icon="📅" title="No events yet" description={`${user.name || 'This user'} hasn't created any events yet.`} />
             )}
           </div>
         )}
@@ -1504,7 +1498,7 @@ export default function ProfilePage() {
                 ))}
               </div>
             ) : (
-              <div className={styles.empty}><p>No requests yet</p></div>
+              <EmptyState icon="📋" title="No requests yet" description={`${user.name || 'This user'} hasn't made any requests yet.`} />
             )}
           </div>
         )}
@@ -1547,9 +1541,7 @@ export default function ProfilePage() {
                 ))}
               </div>
             ) : (
-              <div className={styles.empty}>
-                <p>No listings</p>
-              </div>
+              <EmptyState icon="🛒" title="No listings" description={`${user.name || 'This user'} hasn't listed any products or services yet.`} />
             )}
           </div>
         )}

@@ -5,6 +5,7 @@ import { useToast } from '@/context/ToastContext'
 import { DonationActions } from '@/components/DonationActions'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { CRYPTO_LOGOS } from '@/lib/constants'
+import styles from './TipModal.module.css'
 
 interface CryptoOption {
   symbol: string
@@ -74,63 +75,47 @@ export default function TipModal({ isOpen, onClose, onTip, donationAddresses, wa
 
   return (
     <>
-      <div style={{
-        position: 'fixed', inset: 0, zIndex: 1000,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'rgba(0,0,0,0.5)'
-      }} onClick={onClose}>
-        <div style={{
-          background: 'var(--bg-secondary)', borderRadius: 12,
-          padding: 24, width: '90%', maxWidth: 420,
-          border: '1px solid var(--border-color)',
-          maxHeight: '85vh', overflow: 'auto'
-        }} onClick={e => e.stopPropagation()}>
-          <h3 style={{ margin: '0 0 16px', color: 'var(--text-primary)' }}>Send Tip</h3>
+      <div className={styles.overlay} onClick={onClose}>
+        <div className={styles.modal} onClick={e => e.stopPropagation()}>
+          <h3 className={styles.title}>Send Tip</h3>
 
           {cryptoBalances.length > 0 && (
             <>
               {!walletEnabled && (
-                <div style={{
-                  padding: '10px 12px', marginBottom: 12, borderRadius: 8,
-                  background: 'rgba(255, 204, 0, 0.1)', border: '1px solid rgba(255, 204, 0, 0.3)',
-                  color: 'var(--text-secondary)', fontSize: '0.8rem', textAlign: 'center'
-                }}>
+                <div className={styles.warningBanner}>
                   Wallet features are disabled. You can still send direct donations below.
                 </div>
               )}
-              <div style={{
-                display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 16,
-                opacity: walletEnabled ? 1 : 0.5, pointerEvents: walletEnabled ? 'auto' : 'none',
-              }}>
+              <div className={`${styles.cryptoGrid} ${!walletEnabled ? styles.cryptoGridDisabled : ''}`}>
                 {cryptoBalances.map(c => (
                   <button key={c.symbol} type="button" onClick={() => setTipCrypto(c.symbol)}
+                    className={tipCrypto === c.symbol ? styles.cryptoBtnActive : styles.cryptoBtn}
                     style={{
-                      padding: '8px', borderRadius: 8, border: tipCrypto === c.symbol ? `2px solid ${c.color}` : '1px solid var(--border-color)',
-                      background: tipCrypto === c.symbol ? 'var(--bg-hover)' : 'transparent', cursor: 'pointer', textAlign: 'center'
+                      border: tipCrypto === c.symbol ? `2px solid ${c.color}` : '1px solid var(--border-color)',
+                      background: tipCrypto === c.symbol ? 'var(--bg-hover)' : 'transparent'
                     }}>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginBottom: 2 }}>{c.symbol}</div>
-                    <div style={{ fontSize: '0.6rem', color: 'var(--text-secondary)' }}>{c.available.toFixed(2)}</div>
+                    <div className={styles.cryptoSymbol}>{c.symbol}</div>
+                    <div className={styles.cryptoBalance}>{c.available.toFixed(2)}</div>
                   </button>
                 ))}
               </div>
 
-              <div style={{ marginBottom: 16, opacity: walletEnabled ? 1 : 0.5, pointerEvents: walletEnabled ? 'auto' : 'none' }}>
-                <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>
+              <div className={`${styles.inputGroup} ${!walletEnabled ? styles.inputGroupDisabled : ''}`}>
+                <label className={styles.inputLabel}>
                   Amount ({tipCrypto}) — Available: {selectedCrypto?.available.toFixed(2) || '0'}
                 </label>
                 <input type="number" min="0" step="0.01" value={tipAmount}
                   onChange={e => setTipAmount(e.target.value)}
-                  style={{ width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'var(--text-primary)' }}
+                  className={styles.input}
                   placeholder="0.00" />
               </div>
 
-              <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginBottom: 16 }}>
-                <button type="button" onClick={onClose}
-                  style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-primary)', cursor: 'pointer' }}>
+              <div className={styles.actions}>
+                <button type="button" onClick={onClose} className={styles.btnCancel}>
                   Cancel
                 </button>
                 <button type="button" onClick={handleConfirm} disabled={tipping || !tipAmount || !walletEnabled}
-                  style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: 'var(--accent-primary)', color: '#fff', cursor: tipping || !tipAmount || !walletEnabled ? 'not-allowed' : 'pointer', opacity: tipping || !tipAmount || !walletEnabled ? 0.6 : 1 }}>
+                  className={styles.btnConfirm}>
                   {tipping ? 'Tipping...' : !walletEnabled ? 'Wallet Unavailable' : 'Confirm Tip'}
                 </button>
               </div>
@@ -138,27 +123,19 @@ export default function TipModal({ isOpen, onClose, onTip, donationAddresses, wa
           )}
 
           {donationAddresses && donationAddresses.length > 0 && (
-            <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: 16 }}>
-              <h4 style={{ margin: '0 0 12px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            <div className={styles.donationSection}>
+              <h4 className={styles.donationTitle}>
                 💰 Direct Donations
               </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div className={styles.donationList}>
                 {donationAddresses.map(da => (
-                  <div key={da.id} style={{
-                    display: 'flex', alignItems: 'center', gap: 8,
-                    padding: '8px 10px', borderRadius: 8,
-                    background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)'
-                  }}>
+                  <div key={da.id} className={styles.donationItem}>
                     <img src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'ethereum.png'}`}
-                      alt={da.currency} width={18} height={18} style={{ flexShrink: 0 }} />
-                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
+                      alt={da.currency} width={18} height={18} className={styles.donationIcon} />
+                    <span className={styles.donationLabel}>
                       {da.label || da.currency}
                     </span>
-                    <code style={{
-                      fontSize: '0.75rem', color: 'var(--text-secondary)',
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      flex: 1, direction: 'rtl', textAlign: 'left'
-                    }}>
+                    <code className={styles.donationAddress}>
                       {da.address}
                     </code>
                     <DonationActions address={da.address} size="sm" onQrClick={() => setQrAddr(da)} />

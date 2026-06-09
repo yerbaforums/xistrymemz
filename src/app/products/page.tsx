@@ -480,7 +480,7 @@ export default function ProductsPage() {
             }}
           />
 
-          <main className={styles.content}>
+          <main className={`${styles.content} page-enter`}>
             <div className={styles.resultsHeader}>
               <span className={styles.resultsCount}>
                 <strong>{filteredProducts.length}</strong> {filteredProducts.length === 1 ? 'item' : 'items'} found

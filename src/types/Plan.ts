@@ -28,4 +28,5 @@ export interface PlanDetail extends PlanSummary {
   requests?: Array<{ id: string; title: string; status: string }>
   joiners?: Array<{ id: string; userId: string; user: { name: string | null; image: string | null } }>
   events?: Array<{ id: string; title: string; eventDate: string | null }>
+  hashtags?: Array<{ id: string; hashtag: { id: string; tag: string } }>
 }

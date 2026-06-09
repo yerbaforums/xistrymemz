@@ -13,6 +13,7 @@ import { useSiteSettings } from '@/hooks/useSiteSettings'
 import LocationStatus from './LocationStatus'
 import { useTheme } from '@/context/ThemeContext'
 import { useNotificationSSE } from '@/hooks/useNotificationSSE'
+import { EmptyState } from '@/components/EmptyState'
 import MobileNav from './MobileNav'
 import UserDropdown from './UserDropdown'
 
@@ -510,7 +511,7 @@ export default function Header() {
                               </div>
                             )}
                             {(!searchResults.plans?.length && !searchResults.products?.length && !searchResults.services?.length && !searchResults.users?.length && !searchResults.events?.length && !searchResults.requests?.length && !searchResults.groups?.length && !searchResults.hashtags?.length && !searchResults.schoolContent?.length) && (
-                              <div className={styles.searchEmpty}>No results found for &quot;{searchQuery}&quot;</div>
+                              <EmptyState icon="🔍" title="No results found" description={`No results for "${searchQuery}"`} />
                             )}
                             <Link href={`/search?q=${encodeURIComponent(searchQuery)}`} className={styles.seeAllResults} onClick={() => setSearchOpen(false)}>
                               See all results →

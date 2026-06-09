@@ -68,6 +68,7 @@ interface Plan {
   needsVolunteers: boolean; volunteerRoles: string | null; volunteerDescription: string | null
   joiners: PlanJoiner[]; contributions: PlanContribution[]
   user: { id: string; name: string | null; username: string | null; image?: string | null }
+  hashtags?: Array<{ id: string; hashtag: { id: string; tag: string } }>
 }
 
 interface Product { id: string; title: string; price: number | null; imageUrl: string | null; type: string }
@@ -429,7 +430,7 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
     })
     return (
       <div className={styles.calendarView}>
-        {Object.keys(months).length === 0 ? <p>No events with dates scheduled</p> : (
+        {Object.keys(months).length === 0 ? <EmptyState icon="📅" title="No events scheduled" description="Add dates to your plan events to see them on the calendar." /> : (
           Object.entries(months).map(([monthKey, monthEvents]) => {
             const [year, month] = monthKey.split('-')
             const monthName = new Date(parseInt(year), parseInt(month) - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
@@ -539,6 +540,13 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                       )}
                       {plan.description && <p className={styles.description}>{plan.description}</p>}
                       {plan.description && <TranslateButton text={plan.description} />}
+                      {plan.hashtags && plan.hashtags.length > 0 && (
+                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 12 }}>
+                          {plan.hashtags.map((h: any) => (
+                            <Link key={h.hashtag?.id || h.id} href={`/hashtag/${h.hashtag?.tag || h.tag}`} className="hashtag-link" style={{ fontSize: '0.85rem' }}>#{h.hashtag?.tag || h.tag}</Link>
+                          ))}
+                        </div>
+                      )}
                       {userId && !isOwner && (
                         <div style={{ margin: '12px 0' }}>
                           <CollaborateButton entityType="PLAN" entityId={plan.id} label="🤝 Join as Collaborator" variant="secondary" />
@@ -938,7 +946,7 @@ donationDescription={plan.donationDescription}
             </div>
             <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
               {statusHistory.length === 0 ? (
-                <p style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '2rem' }}>No status changes recorded yet.</p>
+                <EmptyState icon="📜" title="No status changes yet" description="Status history will appear as the plan progresses." />
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem', background: 'var(--bg-tertiary)', borderRadius: '8px' }}>

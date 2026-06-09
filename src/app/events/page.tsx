@@ -450,7 +450,7 @@ export default function EventsPage() {
           )}
         </aside>
 
-        <main className={styles.content}>
+        <main className={`${styles.content} page-enter`}>
           {viewMode === 'calendar' ? (
             <div className={styles.calendarView}>
               <div className={styles.calendarHeader}>

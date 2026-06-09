@@ -1,0 +1,183 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.modal {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%;
+  max-width: 420px;
+  border: 1px solid var(--border-color);
+  max-height: 85vh;
+  overflow: auto;
+}
+
+.title {
+  margin: 0 0 16px;
+  color: var(--text-primary);
+}
+
+.warningBanner {
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  background: rgba(255, 204, 0, 0.1);
+  border: 1px solid rgba(255, 204, 0, 0.3);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.cryptoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.cryptoGridDisabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.cryptoBtn {
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  transition: var(--transition);
+}
+
+.cryptoBtnActive {
+  composes: cryptoBtn;
+}
+
+.cryptoSymbol {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+}
+
+.cryptoBalance {
+  font-size: 0.6rem;
+  color: var(--text-secondary);
+}
+
+.inputGroup {
+  margin-bottom: 16px;
+}
+
+.inputGroupDisabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.inputLabel {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.input {
+  width: 100%;
+  padding: 10px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.btnCancel {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.btnCancel:hover {
+  background: var(--bg-tertiary);
+}
+
+.btnConfirm {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent-primary);
+  color: #fff;
+  cursor: pointer;
+}
+
+.btnConfirm:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btnConfirm:not(:disabled):hover {
+  box-shadow: var(--shadow-glow);
+}
+
+.donationSection {
+  border-top: 1px solid var(--border-color);
+  padding-top: 16px;
+}
+
+.donationTitle {
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.donationList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.donationItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+}
+
+.donationIcon {
+  flex-shrink: 0;
+}
+
+.donationLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.donationAddress {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  direction: rtl;
+  text-align: left;
+}

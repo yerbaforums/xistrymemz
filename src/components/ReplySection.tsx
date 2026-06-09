@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useToast } from '@/context/ToastContext'
 import EntityActions from '@/components/EntityActions'
+import styles from './ReplySection.module.css'
 
 interface Reply {
   id: string
@@ -83,45 +84,35 @@ export default function ReplySection({ postId, postAuthorId, expandReply }: Repl
   }
 
   return (
-    <div style={{ marginTop: 8 }}>
+    <div className={styles.wrapper}>
       {total > 0 && (
-        <button type="button" onClick={() => setExpanded(!expanded)}
-          style={{
-            background: 'transparent', border: 'none', color: 'var(--accent-primary)',
-            cursor: 'pointer', fontSize: '0.8rem', padding: '4px 0'
-          }}>
+        <button type="button" onClick={() => setExpanded(!expanded)} className={styles.toggleBtn}>
           {expanded ? 'Hide replies' : `View ${total} ${total === 1 ? 'reply' : 'replies'}`}
         </button>
       )}
 
       {expanded && (
-        <div style={{ marginTop: 8 }}>
-          {loading && <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', padding: '8px 0' }}>Loading replies...</div>}
+        <div className={styles.repliesContainer}>
+          {loading && <div className={styles.loadingText}>Loading replies...</div>}
           {replies.map(reply => (
-            <div key={reply.id} style={{
-              display: 'flex', gap: 8, padding: '8px 0',
-              borderBottom: '1px solid var(--border-color)'
-            }}>
-              <div style={{
-                width: 28, height: 28, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
-                background: 'var(--bg-tertiary)'
-              }}>
+            <div key={reply.id} className={styles.reply}>
+              <div className={styles.replyAvatar}>
                 {reply.user.image ? (
-                  <img src={reply.user.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={reply.user.image} alt="" className={styles.replyAvatarImg} />
                 ) : (
-                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem' }}>
+                  <div className={styles.replyAvatarPlaceholder}>
                     {reply.user.name?.[0] || 'U'}
                   </div>
                 )}
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', gap: 6, alignItems: 'baseline', marginBottom: 2 }}>
-                  <span style={{ fontWeight: 600, fontSize: '0.8rem' }}>{reply.user.name || 'User'}</span>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+              <div className={styles.replyBody}>
+                <div className={styles.replyHeader}>
+                  <span className={styles.replyAuthor}>{reply.user.name || 'User'}</span>
+                  <span className={styles.replyDate}>
                     {new Date(reply.createdAt).toLocaleDateString()}
                   </span>
                 </div>
-                <p style={{ margin: 0, fontSize: '0.85rem', lineHeight: 1.4 }}>{reply.content}</p>
+                <p className={styles.replyContent}>{reply.content}</p>
                 <EntityActions
                   entityType="POST"
                   entityId={reply.id}
@@ -135,7 +126,7 @@ export default function ReplySection({ postId, postAuthorId, expandReply }: Repl
           ))}
 
           {session && (
-            <form onSubmit={handleReply} style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            <form onSubmit={handleReply} className={styles.replyForm}>
               <input
                 ref={replyInputRef}
                 type="text"
@@ -143,16 +134,9 @@ export default function ReplySection({ postId, postAuthorId, expandReply }: Repl
                 onChange={e => setReplyContent(e.target.value)}
                 placeholder="Write a reply..."
                 maxLength={2000}
-                style={{
-                  flex: 1, padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border-color)',
-                  background: 'var(--bg-tertiary)', color: 'var(--text-primary)', fontSize: '0.85rem'
-                }}
+                className={styles.replyInput}
               />
-              <button type="submit" disabled={posting || !replyContent.trim()}
-                style={{
-                  padding: '8px 16px', borderRadius: 8, border: 'none', background: 'var(--accent-primary)',
-                  color: '#fff', cursor: posting ? 'not-allowed' : 'pointer', opacity: posting || !replyContent.trim() ? 0.6 : 1
-                }}>
+              <button type="submit" disabled={posting || !replyContent.trim()} className={styles.replyBtn}>
                 {posting ? '...' : 'Reply'}
               </button>
             </form>

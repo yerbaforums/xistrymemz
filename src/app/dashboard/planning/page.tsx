@@ -186,7 +186,7 @@ export default function PlanningPage() {
         </div>
       </aside>
 
-      <main className={styles.main}>
+      <main className={`${styles.main} page-enter`}>
         {selectedTrip ? <TripDetail
           trip={selectedTrip}
           savedLocations={savedLocations}

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import styles from './InboxView.module.css'
+import { EmptyState } from '@/components/EmptyState'
 
 interface InboxItem {
   id: string
@@ -135,7 +136,7 @@ export default function InboxView({ onChatUser }: { onChatUser?: (userId: string
       </div>
 
       {filtered.length === 0 ? (
-        <div className={styles.empty}>No items yet</div>
+        <EmptyState icon="📭" title="No items yet" description="No messages or notifications to show." />
       ) : (
         <div className={styles.list}>
           {filtered.map(item => (

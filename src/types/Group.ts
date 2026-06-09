@@ -10,4 +10,5 @@ export interface GroupSummary {
   memberCount: number
   createdAt: string
   updatedAt: string
+  hashtags?: Array<{ id: string; hashtag: { id: string; tag: string } }>
 }
