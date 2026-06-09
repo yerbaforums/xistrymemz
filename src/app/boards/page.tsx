@@ -110,6 +110,18 @@ export default function BoardsPage() {
     })
   }, [L])
 
+  const getClusterIcon = useCallback((count: number, hasOwner?: boolean) => {
+    if (!L) return undefined
+    const bgColor = hasOwner ? 'var(--accent-primary)' : '#666'
+    const size = 24 + Math.min(count, 5) * 2
+    return L.divIcon({
+      className: '',
+      html: `<div style="width:${size}px;height:${size}px;background:${bgColor};border:2px solid white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;box-shadow:0 2px 4px rgba(0,0,0,0.3);color:white;">${count}</div>`,
+      iconSize: [size + 4, size + 4],
+      iconAnchor: [(size + 4) / 2, (size + 4) / 2],
+    })
+  }, [L])
+
   const getPassportIcon = useCallback(() => {
     if (!L) return undefined
     return L.divIcon({
@@ -518,16 +530,19 @@ export default function BoardsPage() {
               if (!locGroups.has(key)) locGroups.set(key, [])
               locGroups.get(key)!.push(b)
             })
-            return Array.from(locGroups.entries()).map(([area, group]) =>
-              L ? (
-                <Marker key={`no-loc-${area}`} position={mapCenter} icon={getBoardIcon(false)}>
+            return Array.from(locGroups.entries()).map(([area, group], idx) => {
+              const hasOwner = group.some(b => b.ownerId === session?.user?.id)
+              const offset = (idx + 1) * 0.003
+              const clusterPos: [number, number] = [mapCenter[0] + offset, mapCenter[1] + offset]
+              return L ? (
+                <Marker key={`no-loc-${area}`} position={clusterPos} icon={getClusterIcon(group.length, hasOwner)}>
                   <Tooltip>📍 {group.length} board{group.length !== 1 ? 's' : ''} in {area}</Tooltip>
                   <Popup>
                     <div style={{ minWidth: 180 }}>
                       <strong>📍 {group.length} board{group.length !== 1 ? 's' : ''} in {area}</strong>
                       {group.slice(0, 10).map(b => (
                         <div key={b.id} style={{ marginTop: 4 }}>
-                          <Link href={`/boards/${b.slug}`} style={{ color: 'var(--accent-primary)', textDecoration: 'none' }}>
+                          <Link href={`/boards/${b.slug}`} style={{ color: hasOwner ? 'var(--accent-primary)' : '#3b82f6', textDecoration: 'none' }}>
                             {b.name}
                           </Link>
                         </div>
@@ -537,7 +552,7 @@ export default function BoardsPage() {
                   </Popup>
                 </Marker>
               ) : null
-            )
+            })
           })()}
         </MapContainer>
       </div>

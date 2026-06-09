@@ -101,6 +101,10 @@ export default function BoardDetailPage() {
   const [editPinContactPhone, setEditPinContactPhone] = useState('')
   const [savingPin, setSavingPin] = useState(false)
 
+  useEffect(() => {
+    import('leaflet/dist/leaflet.css')
+  }, [])
+
   const pinLocations = pins.filter(p => p.latitude && p.longitude)
 
   const fetchBoard = useCallback(async () => {
