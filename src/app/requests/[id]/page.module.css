@@ -239,6 +239,26 @@
 .quickActions {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
+}
+
+.createPlanBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.createPlanBtn:hover {
+  box-shadow: 0 0 12px rgba(0, 217, 255, 0.4);
 }
 
 .actionBtn {

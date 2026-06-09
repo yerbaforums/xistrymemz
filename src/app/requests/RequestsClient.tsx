@@ -106,6 +106,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
   const [supportingIds, setSupportingIds] = useState<Set<string>>(new Set())
   const [donationSelector, setDonationSelector] = useState<{ open: boolean; mode: 'create' | 'edit'; selectedIds: string[] }>({ open: false, mode: 'create', selectedIds: [] })
   const [userDonationAddrs, setUserDonationAddrs] = useState<DonationAddr[]>([])
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
 
   const isAdmin = userRole === 'ADMIN'
@@ -497,9 +498,21 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
                 <span className={styles.resultsCount}>
                   <strong>{filtered.length}</strong> {filtered.length === 1 ? 'request' : 'requests'} found
                 </span>
+                <div className={styles.viewToggle}>
+                  <button
+                    className={`${styles.viewBtn} ${viewMode === 'grid' ? styles.viewBtnActive : ''}`}
+                    onClick={() => setViewMode('grid')}
+                    title="Grid view"
+                  >▦</button>
+                  <button
+                    className={`${styles.viewBtn} ${viewMode === 'list' ? styles.viewBtnActive : ''}`}
+                    onClick={() => setViewMode('list')}
+                    title="List view"
+                  >☰</button>
+                </div>
               </div>
 
-              <div className={styles.cardGrid}>
+              <div className={viewMode === 'grid' ? styles.cardGrid : styles.cardList}>
                 {filtered.map((req) => {
                   const isOwner = req.user.id === userId
                   const link = getLinkInfo(req)

@@ -289,23 +289,21 @@ export default function EventFormFields({
             <HashtagInput value={formData.hashtags} onChange={(tags) => set({ hashtags: tags })} placeholder="Add hashtags..." />
           </div>
 
-          {mode === 'create' && (
-            <details className={styles.settingsDetails}>
-              <summary className={styles.settingsSummary}>Entity Linking</summary>
-              {fixedPlanId ? (
-                <div className={styles.fixedPlanNotice}>
-                  This event will be linked to: <strong>{fixedPlanTitle || 'this plan'}</strong>
-                </div>
-              ) : (
-                <AssetPicker
-                  filterTypes={['PLAN', 'GROUP', 'SHOP', 'SCHOOL']}
-                  selectedAsset={selectedLinkedAsset}
-                  onSelect={handleLinkedAsset}
-                  label="Link to a plan, group, shop, or school"
-                />
-              )}
-            </details>
-          )}
+          <details className={styles.settingsDetails}>
+            <summary className={styles.settingsSummary}>Entity Linking</summary>
+            {fixedPlanId ? (
+              <div className={styles.fixedPlanNotice}>
+                This event will be linked to: <strong>{fixedPlanTitle || 'this plan'}</strong>
+              </div>
+            ) : (
+              <AssetPicker
+                filterTypes={['PLAN', 'GROUP', 'SHOP', 'SCHOOL']}
+                selectedAsset={selectedLinkedAsset}
+                onSelect={handleLinkedAsset}
+                label="Link to a plan, group, shop, or school"
+              />
+            )}
+          </details>
         </>
       )}
 

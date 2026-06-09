@@ -969,6 +969,15 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   Add to Plan
                 </Button>
               )}
+              {session?.user && (
+                <Button 
+                  className={styles.addToPlanBtn}
+                  variant="ghost"
+                  onClick={() => window.location.href = '/dashboard/projects'}
+                >
+                  Create Project
+                </Button>
+              )}
             </div>
           )}
 

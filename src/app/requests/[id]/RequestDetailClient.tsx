@@ -940,6 +940,9 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                 variant="ghost"
                 label="Pin to Board"
               />
+              <Link href="/dashboard/projects" className={styles.createPlanBtn}>
+                Create Project
+              </Link>
             </div>
           )}
 

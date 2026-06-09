@@ -918,7 +918,7 @@ model Post {
   content         String
   imageUrl        String?
   pinned          Boolean       @default(false)
-  context         String        @default("PROFILE") // PROFILE | SHOP | SCHOOL | WALL
+  context         String        @default("PROFILE") // PROFILE | SHOP | SCHOOL | GROUP | WALL
   images          String? // JSON array of URLs
   mentions        String? // JSON array of mentioned user IDs
   userId          String

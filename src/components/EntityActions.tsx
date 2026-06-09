@@ -87,7 +87,8 @@ export default function EntityActions({
   }, [showTipModal])
   const [qrAddr, setQrAddr] = useState<{ address: string; currency: string } | null>(null)
   const [feedContent, setFeedContent] = useState('')
-  const [feedDestination, setFeedDestination] = useState<'PROFILE' | 'SHOP' | 'SCHOOL'>('PROFILE')
+  const [feedDestination, setFeedDestination] = useState<'PROFILE' | 'SHOP' | 'SCHOOL' | 'GROUP'>('PROFILE')
+  const [hasGroups, setHasGroups] = useState(false)
   const [posting, setPosting] = useState(false)
   const [showMore, setShowMore] = useState(false)
   const [replyText, setReplyText] = useState('')
@@ -97,6 +98,17 @@ export default function EntityActions({
   const walletEnabled = settings?.enableWallet !== false
   const hasShop = !!(session?.user as any)?.shopSlug
   const hasSchool = !!(session?.user as any)?.schoolSlug
+
+  useEffect(() => {
+    if (!session?.user?.id) return
+    fetch('/api/groups?my=true&limit=1')
+      .then(r => r.json())
+      .then(data => {
+        const items = data.items || data || []
+        setHasGroups(items.length > 0)
+      })
+      .catch(() => {})
+  }, [session])
   const canLike = authorSettings?.enableLikes !== false
   const canReply = authorSettings?.enableReplies !== false
   const canTip = authorSettings?.enableTips !== false && !isOwner
@@ -291,9 +303,10 @@ export default function EntityActions({
             <textarea value={feedContent} onChange={e => setFeedContent(e.target.value)} placeholder={entityType === 'PROFILE' ? 'Add a comment about this profile (optional)...' : 'Add a comment (optional)...'} rows={3} className={styles.feedTextarea} />
             {entityType !== 'PROFILE' && (
               <div className={styles.destRow}>
-                {(['PROFILE', 'SHOP', 'SCHOOL'] as const).map(d => {
-                  const disabled = (d === 'SHOP' && !hasShop) || (d === 'SCHOOL' && !hasSchool)
-                  return <button key={d} disabled={disabled} onClick={() => setFeedDestination(d)} className={`${styles.destBtn} ${feedDestination === d ? styles.destActive : ''}`}>{d === 'PROFILE' ? 'My Profile' : d === 'SHOP' ? 'My Shop' : 'My School'}</button>
+                {(['PROFILE', 'SHOP', 'SCHOOL', 'GROUP'] as const).map(d => {
+                  const disabled = (d === 'SHOP' && !hasShop) || (d === 'SCHOOL' && !hasSchool) || (d === 'GROUP' && !hasGroups)
+                  const label = d === 'PROFILE' ? 'My Profile' : d === 'SHOP' ? 'My Shop' : d === 'SCHOOL' ? 'My School' : 'My Group'
+                  return <button key={d} disabled={disabled} onClick={() => setFeedDestination(d)} className={`${styles.destBtn} ${feedDestination === d ? styles.destActive : ''}`}>{label}</button>
                 })}
               </div>
             )}
