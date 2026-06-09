@@ -99,26 +99,23 @@ export default function BoardsPage() {
 
   const getBoardIcon = useCallback((highlighted: boolean, isOwner?: boolean) => {
     if (!L) return undefined
-    const grain = isOwner
-      ? 'linear-gradient(135deg, #00d9ff, #0099cc)'
-      : 'linear-gradient(135deg, #8B6914, #A0782C, #8B6914)'
-    const borderColor = isOwner ? 'var(--accent-primary)' : '#654321'
-    const glow = highlighted ? `0 0 0 3px rgba(0,217,255,0.4),` : ''
+    const bg = isOwner ? '#00d9ff' : '#8B6914'
+    const border = isOwner ? '#00d9ff' : '#654321'
+    const glow = highlighted ? '0 0 0 3px rgba(0,217,255,0.4),' : ''
     return L.divIcon({
       className: '',
-      html: `<div style="width:32px;height:24px;background:${grain};border:2px solid ${borderColor};border-radius:4px;box-shadow:${glow}0 2px 6px rgba(0,0,0,0.3);position:relative;"><div style="position:absolute;top:-4px;left:50%;transform:translateX(-50%);width:6px;height:6px;background:#654321;border-radius:50%;"></div></div>`,
-      iconSize: [36, 28],
-      iconAnchor: [18, 24],
+      html: `<div style="width:28px;height:20px;background:${bg};border:2px solid ${border};border-radius:3px;box-shadow:${glow}0 1px 4px rgba(0,0,0,0.3);"></div>`,
+      iconSize: [32, 24],
+      iconAnchor: [16, 22],
     })
   }, [L])
 
-  const getClusterIcon = useCallback((count: number, hasOwner?: boolean) => {
+  const getClusterIcon = useCallback((count: number) => {
     if (!L) return undefined
-    const bgColor = hasOwner ? 'var(--accent-primary)' : '#666'
     const size = 24 + Math.min(count, 5) * 2
     return L.divIcon({
       className: '',
-      html: `<div style="width:${size}px;height:${size}px;background:${bgColor};border:2px solid white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;box-shadow:0 2px 4px rgba(0,0,0,0.3);color:white;">${count}</div>`,
+      html: `<div style="width:${size}px;height:${size}px;background:#666;border:2px solid white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,0.3);color:white;">${count}</div>`,
       iconSize: [size + 4, size + 4],
       iconAnchor: [(size + 4) / 2, (size + 4) / 2],
     })
@@ -549,7 +546,7 @@ export default function BoardsPage() {
               const offset = (idx + 1) * 0.003
               const clusterPos: [number, number] = [mapCenter[0] + offset, mapCenter[1] + offset]
               return L ? (
-                <Marker key={`no-loc-${area}`} position={clusterPos} icon={getClusterIcon(group.length, hasOwner)}>
+                <Marker key={`no-loc-${area}`} position={clusterPos} icon={getClusterIcon(group.length)}>
                   <Tooltip>📍 {group.length} board{group.length !== 1 ? 's' : ''} in {area}</Tooltip>
                   <Popup>
                     <div style={{ minWidth: 180 }}>
