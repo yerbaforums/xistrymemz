@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import StatsCard from '@/components/admin/StatsCard'
 import styles from './page.module.css'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface ViewData {
   date: string
@@ -258,6 +259,7 @@ export default function AdminAnalyticsPage() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Admin', href: '/admin' }, { label: 'Analytics' }]} />
       <div className={styles.header}>
         <h1>📊 Admin Analytics</h1>
         <div className={styles.dateRange}>

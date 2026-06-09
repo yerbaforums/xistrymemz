@@ -31,19 +31,28 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    const rawServices = await prisma.serviceOffering.findMany({
-      where,
-      include: {
-        user: { select: { id: true, name: true, image: true, username: true } },
-      },
-      orderBy: sort === 'price-low'
-        ? { price: 'asc' }
-        : sort === 'price-high'
-        ? { price: 'desc' }
-        : sort === 'duration'
-        ? { duration: 'asc' }
-        : { createdAt: 'desc' },
-    })
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
+    const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') || '20')))
+    const skip = (page - 1) * pageSize
+
+    const [rawServices, total] = await Promise.all([
+      prisma.serviceOffering.findMany({
+        where,
+        include: {
+          user: { select: { id: true, name: true, image: true, username: true } },
+        },
+        skip,
+        take: pageSize,
+        orderBy: sort === 'price-low'
+          ? { price: 'asc' }
+          : sort === 'price-high'
+          ? { price: 'desc' }
+          : sort === 'duration'
+          ? { duration: 'asc' }
+          : { createdAt: 'desc' },
+      }),
+      prisma.serviceOffering.count({ where })
+    ])
 
     const services = rawServices.map(s => ({
       id: s.id,
@@ -68,7 +77,7 @@ export async function GET(request: NextRequest) {
       updatedAt: s.updatedAt instanceof Date ? s.updatedAt.toISOString() : String(s.updatedAt),
     }))
 
-    return NextResponse.json({ services })
+    return NextResponse.json({ services, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
   } catch (error) {
     console.error('Error fetching services:', error)
     return NextResponse.json({ error: 'Failed to fetch services' }, { status: 500 })

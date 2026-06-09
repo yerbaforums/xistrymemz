@@ -343,6 +343,8 @@ model Plan {
   @@index([userId])
   @@index([category])
   @@index([location])
+  @@index([createdAt])
+  @@index([pinned])
 }
 
 model PlanStatusHistory {
@@ -421,6 +423,11 @@ model Event {
   @@index([groupId])
   @@index([eventDate])
   @@index([organizerId])
+  @@index([eventCategory])
+  @@index([location])
+  @@index([createdAt])
+  @@index([schoolId])
+  @@index([shopId])
 }
 
 model EventJoiner {
@@ -519,6 +526,9 @@ model BulletinBoard {
   @@index([latitude, longitude])
   @@index([city])
   @@index([slug])
+  @@index([ownerId])
+  @@index([isPublic])
+  @@index([createdAt])
 }
 
 model BulletinPin {
@@ -551,6 +561,7 @@ model BulletinPin {
   @@index([userId])
   @@index([entityType, entityId])
   @@index([category])
+  @@index([latitude, longitude])
 }
 
 model Request {
@@ -607,6 +618,11 @@ model Request {
   @@index([planId])
   @@index([groupId])
   @@index([productId])
+  @@index([createdAt])
+  @@index([priority])
+  @@index([deadline])
+  @@index([location])
+  @@index([budget])
 }
 
 model RequestSupport {
@@ -733,6 +749,10 @@ model Product {
   @@index([type])
   @@index([userId])
   @@index([location])
+  @@index([price])
+  @@index([createdAt])
+  @@index([condition])
+  @@index([latitude, longitude])
 }
 
 model SchoolContent {
@@ -763,6 +783,14 @@ model SchoolContent {
   hashtags          SchoolContentHashtag[]
   createdAt         DateTime               @default(now())
   updatedAt         DateTime               @updatedAt
+
+  @@index([userId])
+  @@index([authorId])
+  @@index([contentType])
+  @@index([isPaid])
+  @@index([isSubscription])
+  @@index([pinned])
+  @@index([createdAt])
 }
 
 model SchoolContentLike {
@@ -920,6 +948,8 @@ model Post {
   @@index([targetUserId])
   @@index([parentId])
   @@index([context])
+  @@index([createdAt])
+  @@index([referenceType, referenceId])
 }
 
 model PostLike {
@@ -1109,6 +1139,11 @@ model Group {
   updatedAt       DateTime       @updatedAt
 
   @@index([location])
+  @@index([userId])
+  @@index([name])
+  @@index([category])
+  @@index([isPrivate])
+  @@index([createdAt])
 }
 
 model GroupMember {
@@ -1860,6 +1895,10 @@ model ServiceOffering {
   @@index([userId])
   @@index([category])
   @@index([isActive])
+  @@index([createdAt])
+  @@index([price])
+  @@index([location])
+  @@index([duration])
 }
 
 model ServiceOfferingHashtag {

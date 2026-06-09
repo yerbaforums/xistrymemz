@@ -59,31 +59,40 @@ export async function GET(request: Request) {
       ].filter(Boolean)
     }
 
-    const requests = await prisma.request.findMany({
-      where,
-      include: {
-        plan: true,
-        group: { select: { id: true, name: true } },
-        product: { select: { id: true, title: true } },
-        schoolContent: { select: { id: true, title: true } },
-        event: { select: { id: true, title: true } },
-        user: {
-          select: {
-            id: true, name: true, username: true, email: true, image: true, shopSlug: true,
-            donationAddresses: {
-              where: { isPublic: true },
-              orderBy: { sortOrder: 'asc' }
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
+    const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') || '20')))
+    const skip = (page - 1) * pageSize
+
+    const [requests, total] = await Promise.all([
+      prisma.request.findMany({
+        where,
+        include: {
+          plan: { select: { id: true, title: true, imageUrl: true, status: true, published: true } },
+          group: { select: { id: true, name: true } },
+          product: { select: { id: true, title: true } },
+          schoolContent: { select: { id: true, title: true } },
+          event: { select: { id: true, title: true } },
+          user: {
+            select: {
+              id: true, name: true, username: true, email: true, image: true, shopSlug: true,
+              donationAddresses: {
+                where: { isPublic: true },
+                orderBy: { sortOrder: 'asc' }
+              }
             }
+          },
+          _count: {
+            select: { comments: true, fulfillments: true, supports: true, contributions: true }
           }
         },
-        _count: {
-          select: { comments: true, fulfillments: true, supports: true, contributions: true }
-        }
-      },
-      orderBy: { createdAt: 'desc' }
-    })
+        skip,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.request.count({ where })
+    ])
 
-    return NextResponse.json(requests)
+    return NextResponse.json({ items: requests, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
   } catch (error) {
     console.error('GET /api/requests:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

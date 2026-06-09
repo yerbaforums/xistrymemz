@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import styles from './page.module.css'
 import { EmptyState } from '@/components/EmptyState'
 import Skeleton from '@/components/Skeleton'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface Message {
   id: string
@@ -63,6 +64,7 @@ export default function AdminMessagesPage() {
 
   return (
     <div className={styles.container}>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Admin', href: '/admin' }, { label: 'Messages' }]} />
       <h1 className={styles.title}>Contact Messages</h1>
       <p className={styles.subtitle}>Shared inbox for all contact form submissions</p>
 

@@ -20,23 +20,32 @@ export async function GET(request: Request) {
       }
     }
 
-    const groups = await prisma.group.findMany({
-      where,
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        imageUrl: true,
-        isPrivate: true,
-        category: true,
-        user: { select: { id: true, name: true, image: true } },
-        _count: { select: { members: true, posts: true } },
-        members: userId ? { where: { userId }, select: { id: true, role: true, userId: true } } : false
-      },
-      orderBy: { createdAt: 'desc' }
-    })
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
+    const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') || '20')))
+    const skip = (page - 1) * pageSize
 
-    return NextResponse.json(groups)
+    const [groups, total] = await Promise.all([
+      prisma.group.findMany({
+        where,
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          imageUrl: true,
+          isPrivate: true,
+          category: true,
+          user: { select: { id: true, name: true, image: true } },
+          _count: { select: { members: true, posts: true } },
+          members: userId ? { where: { userId }, select: { id: true, role: true, userId: true } } : false
+        },
+        skip,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.group.count({ where })
+    ])
+
+    return NextResponse.json({ items: groups, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
   } catch (error) {
     console.error('GET /api/groups:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

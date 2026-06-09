@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
 import dynamic from 'next/dynamic'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import Skeleton from '@/components/Skeleton'
 import styles from './passport.module.css'
 
@@ -364,6 +365,7 @@ export default function PassportPage() {
     <>
       <style>{`.leaflet-pane { z-index: 1; } .leaflet-top, .leaflet-bottom { z-index: 2; }`}</style>
     <div className={styles.container}>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard' }, { label: 'Passport' }]} />
       {/* Earth Passport Section */}
       <div className={styles.card}>
         <h1 className={styles.passportHeading}>🌍 Earth Passport</h1>

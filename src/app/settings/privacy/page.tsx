@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
 import Skeleton from '@/components/Skeleton'
 import styles from './page.module.css'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface PrivacySettings {
   showShop: boolean
@@ -103,6 +104,7 @@ export default function PrivacySettingsPage() {
   return (
     <div>
       <div className={styles.header}>
+        <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Settings', href: '/settings' }, { label: 'Privacy' }]} />
         <h1>Privacy Settings</h1>
         <p>Control your visibility and how others interact with you on the platform</p>
       </div>

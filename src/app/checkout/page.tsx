@@ -11,6 +11,7 @@ import { getCryptoInfo, CRYPTO_ICONS } from '@/lib/crypto-icons'
 import { useToast } from '@/context/ToastContext'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import Skeleton from '@/components/Skeleton'
+import Loading from '@/components/Loading'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface Product {
@@ -495,7 +496,7 @@ function CheckoutContent() {
 
 export default function CheckoutPage() {
   return (
-    <Suspense fallback={<Skeleton width="100%" height="2rem" />}>
+    <Suspense fallback={<Loading size="medium" />}>
       <CheckoutContent />
     </Suspense>
   )

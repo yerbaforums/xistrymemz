@@ -26,45 +26,52 @@ export default function ServicesPage() {
   const { data: session } = useSession()
   const [services, setServices] = useState<ServiceOffering[]>([])
   const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(1)
+  const [totalServices, setTotalServices] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const [category, setCategory] = useState('ALL')
   const [location, setLocation] = useState('ALL')
   const [sortBy, setSortBy] = useState('newest')
   const [selectedService, setSelectedService] = useState<ServiceOffering | null>(null)
   const [showBooking, setShowBooking] = useState(false)
+  const PAGE_SIZE = 20
+
+  const fetchServices = async (pageNum: number, append: boolean) => {
+    const res = await fetch(`/api/services?page=${pageNum}&pageSize=${PAGE_SIZE}`)
+    const data = await res.json()
+    const raw = data.services || []
+    const cleaned = raw.map((s: any) => {
+      if (!s || typeof s !== 'object') return null
+      return {
+        id: String(s.id ?? ''),
+        title: typeof s.title === 'string' ? s.title : 'Untitled',
+        description: typeof s.description === 'string' ? s.description : null,
+        category: typeof s.category === 'string' ? s.category : 'OTHER',
+        duration: typeof s.duration === 'number' ? s.duration : 60,
+        price: typeof s.price === 'number' ? s.price : null,
+        location: typeof s.location === 'string' ? s.location : null,
+        meetingLink: typeof s.meetingLink === 'string' ? s.meetingLink : null,
+        imageUrl: typeof s.imageUrl === 'string' ? s.imageUrl : null,
+        isActive: s.isActive === true,
+        userId: String(s.userId ?? ''),
+        user: s.user && typeof s.user === 'object' ? {
+          id: String(s.user.id ?? ''),
+          name: typeof s.user.name === 'string' ? s.user.name : null,
+          image: typeof s.user.image === 'string' ? s.user.image : null,
+          username: typeof s.user.username === 'string' ? s.user.username : null,
+        } : { id: '', name: null, image: null, username: null },
+        viewCount: typeof s.viewCount === 'number' ? s.viewCount : 0,
+      }
+    }).filter(Boolean)
+    setServices(prev => append ? [...prev, ...cleaned] : cleaned as ServiceOffering[])
+    setTotalServices(data.total || 0)
+    setPage(pageNum)
+    setLoading(false)
+  }
 
   useEffect(() => {
-    fetch('/api/services')
-      .then(r => r.json())
-      .then(data => {
-        const raw = data.services || []
-        const cleaned = raw.map((s: any) => {
-          if (!s || typeof s !== 'object') return null
-          return {
-            id: String(s.id ?? ''),
-            title: typeof s.title === 'string' ? s.title : 'Untitled',
-            description: typeof s.description === 'string' ? s.description : null,
-            category: typeof s.category === 'string' ? s.category : 'OTHER',
-            duration: typeof s.duration === 'number' ? s.duration : 60,
-            price: typeof s.price === 'number' ? s.price : null,
-            location: typeof s.location === 'string' ? s.location : null,
-            meetingLink: typeof s.meetingLink === 'string' ? s.meetingLink : null,
-            imageUrl: typeof s.imageUrl === 'string' ? s.imageUrl : null,
-            isActive: s.isActive === true,
-            userId: String(s.userId ?? ''),
-            user: s.user && typeof s.user === 'object' ? {
-              id: String(s.user.id ?? ''),
-              name: typeof s.user.name === 'string' ? s.user.name : null,
-              image: typeof s.user.image === 'string' ? s.user.image : null,
-              username: typeof s.user.username === 'string' ? s.user.username : null,
-            } : { id: '', name: null, image: null, username: null },
-            viewCount: typeof s.viewCount === 'number' ? s.viewCount : 0,
-          }
-        }).filter(Boolean)
-        setServices(cleaned as ServiceOffering[])
-        setLoading(false)
-      })
-      .catch(() => setLoading(false))
+    setLoading(true)
+    fetchServices(1, false)
   }, [])
 
   const filteredServices = useMemo(() => {
@@ -167,15 +174,24 @@ export default function ServicesPage() {
           ) : filteredServices.length === 0 ? (
             <EmptyState icon="🔧" title="No services found" description="Try adjusting your filters or check back later." action={{ label: 'Clear Filters', onClick: clearFilters }} />
           ) : (
-            <div className={styles.grid}>
-              {filteredServices.map(s => (
-                <ServiceCard
-                  key={s.id}
-                  service={s}
-                  onClick={() => setSelectedService(s)}
-                />
-              ))}
-            </div>
+            <>
+              <div className={styles.grid}>
+                {filteredServices.slice(0, page * PAGE_SIZE).map(s => (
+                  <ServiceCard
+                    key={s.id}
+                    service={s}
+                    onClick={() => setSelectedService(s)}
+                  />
+                ))}
+              </div>
+              {filteredServices.length > page * PAGE_SIZE && (
+                <div style={{ textAlign: 'center', marginTop: 'var(--space-6)' }}>
+                  <Button onClick={() => fetchServices(page + 1, true)}>
+                    Load More ({filteredServices.length - page * PAGE_SIZE} remaining)
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </main>
       </div>

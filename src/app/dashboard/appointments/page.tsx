@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { useToast } from '@/context/ToastContext'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import styles from '../events/events.module.css'
 
 interface AppointmentItem {
@@ -227,11 +228,12 @@ export default function DashboardAppointments() {
   }
 
   if (loading) {
-    return <div className={styles.page}><div className={styles.loading}>Loading your planner...</div></div>
+    return <div className={styles.page}><Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard' }, { label: 'Appointments' }]} /><div className={styles.loading}>Loading your planner...</div></div>
   }
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard' }, { label: 'Appointments' }]} />
       <div className={styles.header}>
         <div>
           <h1>My Planner</h1>

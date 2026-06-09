@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import styles from '../login/page.module.css'
-import Skeleton from '@/components/Skeleton'
+import Loading from '@/components/Loading'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 function ResetPasswordContent() {
   const router = useRouter()
@@ -64,10 +65,11 @@ function ResetPasswordContent() {
   }
 
   if (!token) {
-    return (
-      <div className={styles.authPage}>
-        <div className={styles.authContainer}>
-          <div className={styles.logo}>
+  return (
+    <div className={styles.authPage}>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Reset Password' }]} />
+      <div className={styles.authContainer}>
+        <div className={styles.logo}>
             <Image src="/logo.png" alt="XistrYmemZ" width={40} height={40} style={{marginRight: '10px'}} />
             XistrYmemZ
           </div>
@@ -90,6 +92,7 @@ function ResetPasswordContent() {
   if (success) {
     return (
       <div className={styles.authPage}>
+        <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Reset Password' }]} />
         <div className={styles.authContainer}>
           <div className={styles.logo}>
             <Image src="/logo.png" alt="XistrYmemZ" width={40} height={40} style={{marginRight: '10px'}} />
@@ -112,9 +115,10 @@ function ResetPasswordContent() {
   }
 
   return (
-    <div className={styles.authPage}>
-      <div className={styles.authContainer}>
-        <div className={styles.logo}>
+      <div className={styles.authPage}>
+        <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Reset Password' }]} />
+        <div className={styles.authContainer}>
+          <div className={styles.logo}>
           <Image src="/logo.png" alt="XistrYmemZ" width={40} height={40} style={{marginRight: '10px'}} />
           XistrYmemZ
         </div>
@@ -163,7 +167,7 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div style={{ padding: 40, textAlign: 'center' }}><Skeleton width="200px" height="1rem" /></div>}>
+    <Suspense fallback={<Loading size="medium" />}>
       <ResetPasswordContent />
     </Suspense>
   )

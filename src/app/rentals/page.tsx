@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import RentalsBrowseClient from './RentalsBrowseClient'
-import Link from 'next/link'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 export const dynamic = 'force-dynamic'
 
@@ -58,11 +58,7 @@ export default async function RentalsBrowsePage() {
 
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px' }}>
-      <nav className="breadcrumbs" style={{ marginBottom: 16 }}>
-        <Link href="/" className="breadcrumb-link">Home</Link>
-        <span className="breadcrumb-sep"> / </span>
-        <span className="breadcrumb-current">Rentals</span>
-      </nav>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Rentals' }]} />
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ margin: 0 }}>Browse Rentals</h1>
         <p style={{ color: 'var(--text-secondary)', margin: '4px 0 0' }}>

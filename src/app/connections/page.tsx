@@ -8,6 +8,7 @@ import Image from 'next/image'
 import { getUserProfileUrl } from '@/lib/utils'
 import Skeleton, { SkeletonCard, SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface ConnectionUser {
   id: string
@@ -117,6 +118,7 @@ export default function ConnectionsPage() {
         <Link href="/profile" style={{ color: 'var(--accent-primary)', textDecoration: 'none', fontSize: '13px' }}>
           ← Back to Profile
         </Link>
+        <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Connections' }]} />
         <h1 style={{ margin: '8px 0' }}>Connections</h1>
         <p style={{ color: 'var(--text-secondary)', margin: 0 }}>
           {pendingTotal > 0 ? `${pendingTotal} pending request(s)` : 'No pending requests'}

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import styles from './page.module.css'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { getAllCryptos, getCryptoIcon, getCryptoName } from '@/lib/crypto-icons'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface SiteSettings {
   enableCheckout: boolean
@@ -225,6 +226,7 @@ export default function AdminSettingsPage() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Admin', href: '/admin' }, { label: 'Settings' }]} />
       <div className={styles.header}>
         <div>
           <h1>Platform Settings</h1>

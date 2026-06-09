@@ -7,13 +7,14 @@ import { useToast } from '@/context/ToastContext'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
-import Skeleton from '@/components/Skeleton'
+import Loading from '@/components/Loading'
 import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import type { DonationAddr } from '@/types/product'
 import ImageUploader from '@/components/ImageUploader'
 import { useTranslations } from 'next-intl'
 import { SHOP_CATEGORIES } from '@/lib/shop-categories'
 import { PRODUCT_CONDITIONS, PRODUCT_TYPES } from '@/lib/product-categories'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import { EmptyState } from '@/components/EmptyState'
 import styles from './marketplace.module.css'
 
@@ -387,11 +388,12 @@ function MarketplaceContent() {
   }
 
   if (loading) {
-    return <div className={styles.page}><div className={styles.loading}>{t('loading')}</div></div>
+    return <div className={styles.page}><Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard' }, { label: 'Marketplace' }]} /><div className={styles.loading}>{t('loading')}</div></div>
   }
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard' }, { label: 'Marketplace' }]} />
       <div className={styles.header}>
         <div>
           <h1>🛒 {t('marketplace')}</h1>
@@ -639,7 +641,7 @@ function MarketplaceContent() {
 
 export default function DashboardMarketplace() {
   return (
-    <Suspense fallback={<div className={styles.page}><Skeleton width="100%" height="2rem" /></div>}>
+    <Suspense fallback={<Loading size="medium" />}>
       <MarketplaceContent />
     </Suspense>
   )

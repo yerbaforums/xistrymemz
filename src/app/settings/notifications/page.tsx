@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import styles from './page.module.css'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 const NOTIFICATION_TYPES = [
   { id: 'messages', label: 'Messages', description: 'When someone sends you a message', icon: '💬' },
@@ -61,6 +62,7 @@ export default function NotificationsSettingsPage() {
   return (
     <div>
       <div className={styles.header}>
+        <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Settings', href: '/settings' }, { label: 'Notifications' }]} />
         <h1>Notification Settings</h1>
         <p>Control what notifications you receive and how they are delivered</p>
       </div>

@@ -112,6 +112,7 @@ export default function SchoolsPage() {
       <div className={styles.header}>
         <h1>Learning Center</h1>
         <p className={styles.subtitle}>Browse schools and educational content</p>
+        <Link href="/school/setup" className={styles.createBtn}>+ Create School</Link>
       </div>
 
       <div className={styles.tabs}>

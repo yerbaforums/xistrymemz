@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useQuickCreate } from '@/components/QuickCreateModal'
 import { CONTENT_TYPE_MAP } from '@/lib/content-templates'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import styles from './studio.module.css'
 
 interface UnifiedItem {
@@ -182,6 +183,7 @@ export default function StudioPage() {
   if (loading) {
     return (
       <div className={styles.page}>
+        <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard' }, { label: 'Studio' }]} />
         <div className={styles.header}>
           <h1>🎨 Studio</h1>
           <p className={styles.subtitle}>Your creative hub</p>
@@ -197,6 +199,7 @@ export default function StudioPage() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard' }, { label: 'Studio' }]} />
       <div className={styles.header}>
         <div>
           <h1>🎨 Studio</h1>

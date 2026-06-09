@@ -5,6 +5,7 @@ import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import Skeleton from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface Subscriber {
   id: string
@@ -133,6 +134,7 @@ export default function SubscribersPage() {
 
   return (
     <div className={styles.container}>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Admin', href: '/admin' }, { label: 'Subscribers' }]} />
       <div className={styles.header}>
         <div>
           <h1>Email Subscribers</h1>

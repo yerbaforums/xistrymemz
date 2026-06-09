@@ -9,6 +9,7 @@ import { getCryptoIcon, getCryptoColor } from '@/lib/crypto-icons'
 import { useToast } from '@/context/ToastContext'
 import styles from './requests.module.css'
 import { REQUEST_CATEGORIES, REQUEST_PRIORITIES } from '@/lib/request-categories'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import { EmptyState } from '@/components/EmptyState'
 
 interface DonationAddr {
@@ -306,6 +307,7 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard' }, { label: 'Requests' }]} />
       <div className={styles.header}>
         <div>
           <h1>My Requests</h1>

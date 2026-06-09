@@ -30,6 +30,38 @@
 
 ---
 
+---
+
+## Pass 5: Site Feature Consistency — Scale-Ready Pass
+
+### ✅ Completed
+
+| Phase | Items | Status |
+|-------|-------|--------|
+| **0. DB Indexes** | ~25 indexes across 10 models (SchoolContent went from 0→7 indexes, Group from 1→6, etc.) | ✅ |
+| **1. API Pagination** | Requests, Services, Groups endpoints + frontend pages (3/14 endpoints) | ✅ |
+| **2. Query Optimization** | Requests endpoint: `include: { plan: true }` → `select` (narrowed fields) | ✅ |
+| **3. Breadcrumbs** | 38 pages across dashboard (15), admin (8), auth (5), other (10) | ✅ |
+| **4. Dragon Loading** | 17 sites — 5 plain-text + 12 Suspense fallbacks replaced with animated Loading component | ✅ |
+| **5. Filters & Sort** | Events search input, Groups sort (recent/alpha), Boards sort (recent/alpha) | ✅ |
+| **6. Creation Entry Points** | Schools "+ Create School", Rentals "+ List Rental" (Discover already had FAB) | ✅ |
+| **7. Cross-Linking** | PinToBoardButton added to Post detail page | ✅ |
+
+### ⏳ Remaining
+
+**Phase 1 continued — API Pagination (11 endpoints):**
+Events, Plans, Products, Community Members, Community Connections, Schools, Forum (main), Forum Posts (dedicated), Admin Subscribers, Products/User, Services/User
+
+**Phase 7 continued — Cross-Linking (3 items):**
+- Event linking in edit mode
+- Share to Feed → Group destination
+- "Create Plan" from Product/Request detail
+
+**Phase 8 — View Toggles + Maps (6 pages):**
+Requests, Services, Groups, Community, Schools, Rentals
+
+---
+
 ## ⏳ Remaining — Pass 4 (Estimated ~10-14 hrs total)
 
 ### A. Breadcrumbs (~35 pages, 2-3h)

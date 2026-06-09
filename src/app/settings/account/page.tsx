@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
 import styles from './page.module.css'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 export default function AccountSettingsPage() {
   const { data: session, update } = useSession()
@@ -76,6 +77,7 @@ export default function AccountSettingsPage() {
   return (
     <div>
       <div className={styles.header}>
+        <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Settings', href: '/settings' }, { label: 'Account' }]} />
         <h1>Account Settings</h1>
         <p>Manage your email, password, and account security</p>
       </div>

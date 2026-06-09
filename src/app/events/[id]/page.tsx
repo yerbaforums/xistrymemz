@@ -23,6 +23,7 @@ import TranslateButton from '@/components/TranslateButton'
 import CollaborateButton from '@/components/CollaborateButton'
 import PinToBoardButton from '@/components/PinToBoardButton'
 import Skeleton from '@/components/Skeleton'
+import Loading from '@/components/Loading'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
@@ -776,7 +777,7 @@ function EventDetailContent() {
 export default function PublicEventPage() {
   return (
     <ErrorBoundary>
-      <Suspense fallback={<Skeleton width="100%" height="2rem" />}>
+      <Suspense fallback={<Loading size="medium" />}>
         <EventDetailContent />
       </Suspense>
     </ErrorBoundary>

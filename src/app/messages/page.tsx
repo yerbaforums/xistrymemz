@@ -8,6 +8,7 @@ import styles from './messages.module.css'
 import { getUserProfileUrl } from '@/lib/utils'
 import TranslateButton from '@/components/TranslateButton'
 import Skeleton, { SkeletonCard, SkeletonList } from '@/components/Skeleton'
+import Loading from '@/components/Loading'
 import { EmptyState } from '@/components/EmptyState'
 import InboxView from '@/components/InboxView'
 import Breadcrumbs from '@/components/Breadcrumbs'
@@ -325,7 +326,7 @@ function MessagesContent() {
 
 export default function MessagesPage() {
   return (
-    <Suspense fallback={<SkeletonList count={3} />}>
+    <Suspense fallback={<Loading size="medium" />}>
       <MessagesContent />
     </Suspense>
   )

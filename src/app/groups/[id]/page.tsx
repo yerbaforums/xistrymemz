@@ -17,6 +17,7 @@ import HashtagInput from '@/components/HashtagInput'
 import Button from '@/components/ui/Button'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { SkeletonCard } from '@/components/Skeleton'
+import Loading from '@/components/Loading'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import CollaborateButton from '@/components/CollaborateButton'
 import PinToBoardButton from '@/components/PinToBoardButton'
@@ -1216,7 +1217,7 @@ function GroupDetailContent() {
 
 export default function GroupDetailPage() {
   return (
-    <Suspense fallback={<SkeletonCard />}>
+    <Suspense fallback={<Loading size="medium" />}>
       <GroupDetailContent />
     </Suspense>
   )

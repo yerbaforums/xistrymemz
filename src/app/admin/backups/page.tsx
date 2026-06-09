@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import styles from './page.module.css'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface BackupRecord {
   id: string
@@ -159,6 +160,7 @@ export default function AdminBackupsPage() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Admin', href: '/admin' }, { label: 'Backups' }]} />
       <div className={styles.header}>
         <div>
           <h1>Database Backups</h1>

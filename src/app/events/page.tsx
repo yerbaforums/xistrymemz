@@ -50,6 +50,7 @@ export default function EventsPage() {
   const [userLocation, setUserLocation] = useState<{lat: number, lon: number} | null>(null)
   const [geocodingLoading, setGeocodingLoading] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
   const [joining, setJoining] = useState<string | null>(null)
@@ -174,6 +175,14 @@ export default function EventsPage() {
       result = result.filter(e => e.location === location)
     }
     
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase()
+      result = result.filter(e =>
+        e.title.toLowerCase().includes(q) ||
+        (e.description || '').toLowerCase().includes(q)
+      )
+    }
+
     if (userLocation && radius) {
       const radiusMiles = parseInt(radius)
       result = result.filter(e => {
@@ -246,7 +255,7 @@ export default function EventsPage() {
     }
     
     setFilteredEvents(result)
-  }, [category, location, events, userLocation, radius, sortBy, dateRange, startDate, endDate])
+  }, [category, location, events, userLocation, radius, sortBy, dateRange, startDate, endDate, searchQuery])
 
   const categories = [...new Set(events.map(e => e.eventCategory).filter(Boolean))]
   const locations = [...new Set(events.map(e => e.location).filter(Boolean))]
@@ -506,6 +515,21 @@ export default function EventsPage() {
             </div>
           ) : (
             <>
+              <div className={styles.searchBar}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
+                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                </svg>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder="Search events..."
+                  className={styles.searchInput}
+                />
+                {searchQuery && (
+                  <button className={styles.searchClear} onClick={() => setSearchQuery('')}>✕</button>
+                )}
+              </div>
               <div className={styles.resultsHeader}>
                 <span className={styles.resultsCount}>
                   <strong>{filteredEvents.length}</strong> {filteredEvents.length === 1 ? 'event' : 'events'} found

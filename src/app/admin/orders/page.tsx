@@ -7,6 +7,7 @@ import styles from './page.module.css'
 import Button from '@/components/ui/Button'
 import Skeleton from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface EscrowTransaction {
   id: string
@@ -132,6 +133,7 @@ export default function AdminOrdersPage() {
 
   return (
     <div className={styles.container}>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Admin', href: '/admin' }, { label: 'Orders' }]} />
       <div className={styles.header}>
         <h1>🛠️ Admin - Order Management</h1>
       </div>

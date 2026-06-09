@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
 import ImageUploader from '@/components/ImageUploader'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import styles from './shop.module.css'
 import Skeleton from '@/components/Skeleton'
 
@@ -94,10 +95,11 @@ export default function ShopDashboard() {
     else error('Failed')
   }
 
-  if (loading) return <div className={styles.page}><Skeleton width="100%" height="2rem" /></div>
+  if (loading) return <div className={styles.page}><Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard' }, { label: 'Shop' }]} /><Skeleton width="100%" height="2rem" /></div>
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard' }, { label: 'Shop' }]} />
       <div className={styles.header}>
         <div>
           <h1>🏪 My Shop</h1>

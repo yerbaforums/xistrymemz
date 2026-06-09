@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic'
 import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import Button from '@/components/ui/Button'
+import Loading from '@/components/Loading'
 import { EmptyState } from '@/components/EmptyState'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
@@ -241,7 +242,7 @@ export default function DiscoverPage() {
         </div>
       </div>
 
-      {loading && <div className={styles.loading}>Searching...</div>}
+      {loading && <Loading size="medium" message="Searching..." />}
 
       {!loading && viewMode === 'map' && (
         <div className={styles.mapContainer}>

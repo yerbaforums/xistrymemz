@@ -17,6 +17,7 @@ import ActiveStatus from '@/components/ActiveStatus'
 import LookingForCollaboratorsBadge from '@/components/LookingForCollaboratorsBadge'
 import HashtagText from '@/components/HashtagText'
 import LinkPreview from '@/components/LinkPreview'
+import Loading from '@/components/Loading'
 import MentionInput from '@/components/MentionInput'
 import ImageUploader from '@/components/ImageUploader'
 import EntityActions from '@/components/EntityActions'
@@ -713,7 +714,7 @@ export default function ProfilePage() {
   }
 
   if (status === 'loading' || loading) {
-    return <div className={styles.container}><div className={styles.loading}>Loading profile...</div></div>
+    return <div className={styles.container}><Loading size="medium" message="Loading profile..." /></div>
   }
 
   if (!user) {
@@ -1329,7 +1330,7 @@ export default function ProfilePage() {
                 </div>
                 {hasMorePosts && (
                   <Button onClick={handleLoadMorePosts} disabled={loadingMorePosts} className={styles.loadMoreBtn}>
-                    {loadingMorePosts ? 'Loading posts...' : `Load more posts (${(totalPostCount ?? 0) - posts.length} remaining)`}
+                    {loadingMorePosts ? <Loading size="small" /> : `Load more posts (${(totalPostCount ?? 0) - posts.length} remaining)`}
                   </Button>
                 )}
               </>

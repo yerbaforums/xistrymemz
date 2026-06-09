@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import styles from '../login/page.module.css'
-import Skeleton from '@/components/Skeleton'
+import Loading from '@/components/Loading'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 function VerifyEmailContent() {
   const router = useRouter()
@@ -70,6 +71,7 @@ function VerifyEmailContent() {
   if (status === 'verifying') {
     return (
       <div className={styles.authPage}>
+        <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Verify Email' }]} />
         <div className={styles.authContainer}>
           <div className={styles.logo}>
             <Image src="/logo.png" alt="XistrYmemZ" width={40} height={40} style={{marginRight: '10px'}} />
@@ -88,6 +90,7 @@ function VerifyEmailContent() {
   if (status === 'success') {
     return (
       <div className={styles.authPage}>
+        <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Verify Email' }]} />
         <div className={styles.authContainer}>
           <div className={styles.logo}>
             <Image src="/logo.png" alt="XistrYmemZ" width={40} height={40} style={{marginRight: '10px'}} />
@@ -108,6 +111,7 @@ function VerifyEmailContent() {
 
   return (
     <div className={styles.authPage}>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Verify Email' }]} />
       <div className={styles.authContainer}>
         <div className={styles.logo}>
           <Image src="/logo.png" alt="XistrYmemZ" width={40} height={40} style={{marginRight: '10px'}} />
@@ -180,7 +184,7 @@ function VerifyEmailContent() {
 
 export default function VerifyEmailPage() {
   return (
-    <Suspense fallback={<div style={{ padding: 40, textAlign: 'center' }}><Skeleton width="200px" height="1rem" /></div>}>
+    <Suspense fallback={<Loading size="medium" />}>
       <VerifyEmailContent />
     </Suspense>
   )

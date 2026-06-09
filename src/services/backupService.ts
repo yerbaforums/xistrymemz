@@ -3,13 +3,20 @@ import { exec } from 'child_process'
 import fs from 'fs'
 import path from 'path'
 import crypto from 'crypto'
+import os from 'os'
 import { promisify } from 'util'
 import FormData from 'form-data'
 
 const execAsync = promisify(exec)
 
-const BACKUP_DIR = path.join(process.cwd(), 'backups')
-const PUBLIC_BACKUP_DIR = path.join(process.cwd(), 'public', 'backups')
+const BACKUP_DIR = path.join(
+  fs.existsSync(path.join(process.cwd(), 'backups')) ? process.cwd() : os.tmpdir(),
+  'backups'
+)
+const PUBLIC_BACKUP_DIR = path.join(
+  fs.existsSync(path.join(process.cwd(), 'public', 'backups')) ? process.cwd() : os.tmpdir(),
+  'public', 'backups'
+)
 
 function ensureDirectories() {
   for (const dir of [BACKUP_DIR, PUBLIC_BACKUP_DIR]) {
@@ -130,10 +137,7 @@ export async function saveBackupRecord(metadata: {
   userId: string
 }) {
   const torrentFileName = `${metadata.fileName.replace('.sql.gz', '')}.torrent`
-  const torrentFilePath = path.join(PUBLIC_BACKUP_DIR, torrentFileName)
-
-  const torrentContent = createTorrentContent(metadata)
-  fs.writeFileSync(torrentFilePath, JSON.stringify(torrentContent, null, 2))
+  saveTorrentFile(torrentFileName, metadata, BACKUP_DIR)
 
   const backup = await prisma.backup.create({
     data: {
@@ -152,6 +156,16 @@ export async function saveBackupRecord(metadata: {
   })
 
   return backup
+}
+
+function saveTorrentFile(fileName: string, metadata: { cid: string; fileName: string; fileSize: number }, baseDir: string) {
+  const torrentPath = path.join(baseDir, fileName)
+  const content = {
+    ...createTorrentContent(metadata),
+    createdBy: 'XistryMemz Backup System',
+    creationDate: new Date().toISOString(),
+  }
+  fs.writeFileSync(torrentPath, JSON.stringify(content, null, 2))
 }
 
 function createTorrentContent(metadata: {
@@ -204,7 +218,8 @@ export async function deleteBackup(id: string) {
     fs.unlinkSync(filePath)
   }
 
-  const torrentPath = path.join(process.cwd(), 'public', backup.torrentFile)
+  const torrentFileName = path.basename(backup.torrentFile)
+  const torrentPath = path.join(BACKUP_DIR, torrentFileName)
   if (fs.existsSync(torrentPath)) {
     fs.unlinkSync(torrentPath)
   }

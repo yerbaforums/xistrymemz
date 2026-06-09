@@ -10,6 +10,7 @@ import { getUserProfileUrl } from '@/lib/utils'
 import { CounterOfferModal } from '@/components/CounterOfferModal'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import Skeleton from '@/components/Skeleton'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface BarterOffer {
   id: string
@@ -148,6 +149,7 @@ export default function OfferDetailPage({
 
       <div className={styles.content}>
         <div className={styles.header}>
+          <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Offers', href: '/dashboard/offers' }, { label: offer?.listingTitle || 'Offer Detail' }]} />
           <h1>Barter Offer</h1>
           <span 
             className={styles.status}

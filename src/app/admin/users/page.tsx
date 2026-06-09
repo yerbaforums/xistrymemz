@@ -5,6 +5,7 @@ import Image from 'next/image'
 import styles from './page.module.css'
 import Button from '@/components/ui/Button'
 import { EmptyState } from '@/components/EmptyState'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface User {
   id: string
@@ -165,6 +166,7 @@ export default function AdminUsersPage() {
         </div>
       )}
 
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Admin', href: '/admin' }, { label: 'Users' }]} />
       <div className={styles.header}>
         <div>
           <h1>User Management</h1>

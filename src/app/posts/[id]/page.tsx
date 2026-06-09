@@ -12,6 +12,8 @@ import ViewCount from '@/components/ViewCount'
 import { getUserProfileUrl } from '@/lib/utils'
 import { useRecordView } from '@/hooks/useRecordView'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
+import Breadcrumbs from '@/components/Breadcrumbs'
+import PinToBoardButton from '@/components/PinToBoardButton'
 
 interface PostData {
   id: string
@@ -83,6 +85,7 @@ export default function PostPage() {
 
   return (
     <div style={{ maxWidth: 640, margin: '0 auto', padding: '24px 16px' }}>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Post' }]} />
       <nav style={{ marginBottom: 16 }}>
         <Link href="/dashboard/feed" style={{ color: 'var(--accent-primary)', textDecoration: 'none', fontSize: '0.85rem' }}>← Back to Feed</Link>
       </nav>
@@ -171,6 +174,7 @@ export default function PostPage() {
             reposted={post.reposted || false}
             variant="full"
           />
+          <PinToBoardButton entityType="POST" entityId={post.id} entityTitle={post.content?.slice(0, 50) || 'Post'} />
         </div>
       </div>
 

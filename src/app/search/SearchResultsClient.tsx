@@ -6,6 +6,7 @@ import Link from 'next/link'
 import Skeleton, { SkeletonCard } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import Loading from '@/components/Loading'
 import styles from './page.module.css'
 
 interface SearchResult {
@@ -172,7 +173,7 @@ export default function SearchResultsClient() {
       <div className={styles.header}>
         <h1>Search Results</h1>
         <p className={styles.subtitle}>
-          {loading ? 'Searching...' : `${filteredItems.length} results for "${query}"`}
+          {loading ? <Loading size="small" message="Searching..." /> : `${filteredItems.length} results for "${query}"`}
         </p>
       </div>
 

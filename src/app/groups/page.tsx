@@ -30,10 +30,14 @@ export default function GroupsPage() {
   const { error, success } = useToast()
   const [groups, setGroups] = useState<Group[]>([])
   const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(1)
+  const [totalGroups, setTotalGroups] = useState(0)
   const [showModal, setShowModal] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [filter, setFilter] = useState<'all' | 'my'>('all')
   const [search, setSearch] = useState('')
+  const [sortBy, setSortBy] = useState<'recent' | 'alpha'>('recent')
+  const PAGE_SIZE = 20
   
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -42,12 +46,18 @@ export default function GroupsPage() {
   const [groupHashtags, setGroupHashtags] = useState<string[]>([])
   const [creating, setCreating] = useState(false)
 
-  const filteredGroups = useMemo(() => groups.filter(g => {
-    const matchesSearch = !search || 
-      g.name.toLowerCase().includes(search.toLowerCase()) ||
-      (g.description?.toLowerCase().includes(search.toLowerCase()))
-    return matchesSearch
-  }), [groups, search])
+  const filteredGroups = useMemo(() => {
+    let result = groups.filter(g => {
+      const matchesSearch = !search || 
+        g.name.toLowerCase().includes(search.toLowerCase()) ||
+        (g.description?.toLowerCase().includes(search.toLowerCase()))
+      return matchesSearch
+    })
+    if (sortBy === 'alpha') {
+      result = [...result].sort((a, b) => a.name.localeCompare(b.name))
+    }
+    return result
+  }, [groups, search, sortBy])
 
   const indexItems: IndexItem[] = useMemo(() =>
     filteredGroups.map(g => ({
@@ -69,23 +79,24 @@ export default function GroupsPage() {
       })
   }, [])
 
+  const fetchGroups = async (pageNum: number, append: boolean) => {
+    const myParam = filter === 'my' ? '&my=true' : ''
+    const res = await fetch(`/api/groups?page=${pageNum}&pageSize=${PAGE_SIZE}${myParam}`)
+    if (!res.ok) {
+      setLoading(false)
+      return
+    }
+    const data = await res.json()
+    const items = data.items || data || []
+    setGroups(prev => append ? [...prev, ...items] : items)
+    setTotalGroups(data.total || 0)
+    setPage(pageNum)
+    setLoading(false)
+  }
+
   useEffect(() => {
     setLoading(true)
-    const url = filter === 'my' ? '/api/groups?my=true' : '/api/groups'
-    fetch(url)
-      .then(res => {
-        if (!res.ok) {
-          return res.json().catch(() => ({ error: 'Failed to fetch groups' })).then(data => {
-            throw new Error(data.error || 'Request failed')
-          })
-        }
-        return res.json()
-      })
-      .then(data => {
-        setGroups(data)
-        setLoading(false)
-      })
-      .catch(() => setLoading(false))
+    fetchGroups(1, false)
   }, [filter])
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -201,6 +212,14 @@ export default function GroupsPage() {
             My Groups
           </Button>
         </div>
+        <select
+          value={sortBy}
+          onChange={e => setSortBy(e.target.value as 'recent' | 'alpha')}
+          className={styles.sortSelect}
+        >
+          <option value="recent">Most Recent</option>
+          <option value="alpha">Alphabetical A-Z</option>
+        </select>
       </div>
 
       {loading ? (
@@ -217,6 +236,13 @@ export default function GroupsPage() {
           }}
           sidebarTitle="Browse by Category"
         />
+      )}
+      {!loading && groups.length > 0 && groups.length < totalGroups && (
+        <div style={{ textAlign: 'center', marginTop: 'var(--space-6)' }}>
+          <Button onClick={() => fetchGroups(page + 1, true)}>
+            Load More ({totalGroups - groups.length} remaining)
+          </Button>
+        </div>
       )}
 
       {showModal && (

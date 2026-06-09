@@ -9,6 +9,7 @@ import FormWizard, { useWizard, type WizardStep } from '@/components/FormWizard'
 import { businessTemplates, getTemplateById, type BusinessTemplate } from '@/lib/templates'
 import Button from '@/components/ui/Button'
 import Skeleton from '@/components/Skeleton'
+import Loading from '@/components/Loading'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
 const steps: WizardStep[] = [
@@ -300,7 +301,7 @@ function SchoolSetupContent() {
 
 export default function SchoolSetupPage() {
   return (
-    <Suspense fallback={<Skeleton width="100%" height="2rem" />}>
+    <Suspense fallback={<Loading size="medium" />}>
       <SchoolSetupContent />
     </Suspense>
   )

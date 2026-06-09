@@ -8,6 +8,7 @@ import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/don
 import styles from './events.module.css'
 import type { DashboardEvent } from '@/types/event'
 import type { EventFormData } from '@/components/EventFormFields'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import { EmptyState } from '@/components/EmptyState'
 
 const TYPE_CONFIG: Record<string, { icon: string; label: string; color: string }> = {
@@ -238,6 +239,7 @@ export default function DashboardEvents() {
   if (loading) {
     return (
       <div className={styles.page}>
+        <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard' }, { label: 'Events' }]} />
         <div className={styles.loading}>Loading your events...</div>
       </div>
     )
@@ -245,6 +247,7 @@ export default function DashboardEvents() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard' }, { label: 'Events' }]} />
       <div className={styles.header}>
         <div>
           <h1>My Events</h1>

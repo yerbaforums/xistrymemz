@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import ProjectsClient from './ProjectsClient'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 export const dynamic = 'force-dynamic'
 
@@ -68,5 +69,10 @@ export default async function ProjectsPage() {
     }))
   }))
 
-  return <ProjectsClient initialPlans={serializedPlans} />
+  return (
+    <div>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Projects' }]} />
+      <ProjectsClient initialPlans={serializedPlans} />
+    </div>
+  )
 }

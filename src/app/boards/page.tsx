@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import dynamic from 'next/dynamic'
@@ -52,6 +52,14 @@ export default function BoardsPage() {
   const [boards, setBoards] = useState<Board[]>([])
   const [loading, setLoading] = useState(true)
   const [searchCity, setSearchCity] = useState('')
+  const [sortBy, setSortBy] = useState<'recent' | 'alpha'>('recent')
+
+  const sortedBoards = useMemo(() => {
+    if (sortBy === 'alpha') {
+      return [...boards].sort((a, b) => a.name.localeCompare(b.name))
+    }
+    return boards
+  }, [boards, sortBy])
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [hoveredBoardId, setHoveredBoardId] = useState<string | null>(null)
   const [selectedBoardId, setSelectedBoardId] = useState<string | null>(null)
@@ -342,6 +350,14 @@ export default function BoardsPage() {
             Clear
           </Button>
         )}
+        <select
+          value={sortBy}
+          onChange={e => setSortBy(e.target.value as 'recent' | 'alpha')}
+          className={styles.sortSelect}
+        >
+          <option value="recent">Most Recent</option>
+          <option value="alpha">Alphabetical A-Z</option>
+        </select>
       </form>
 
       <div className={styles.mapWrap}>
@@ -398,7 +414,7 @@ export default function BoardsPage() {
         ) : boards.length === 0 ? (
           <EmptyState icon="📌" title="No boards found" description="No boards near your location. Create one or search for a city." action={session?.user ? { label: 'Create Board', onClick: () => setShowCreateModal(true) } : { label: 'Sign In', onClick: () => window.location.href = '/auth/login' }} />
         ) : (
-          boards.map(board => (
+          sortedBoards.map(board => (
             <div
               key={board.id}
               className={`${styles.card} ${board.id === selectedBoardId ? styles.cardSelected : ''}`}

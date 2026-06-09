@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import dynamic from 'next/dynamic'
 import styles from './planning.module.css'
 import { geocodeLocation, reverseGeocodeLocation } from '@/lib/geocoding'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import { EmptyState } from '@/components/EmptyState'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
@@ -134,6 +135,7 @@ export default function PlanningPage() {
 
   return (
     <div className={styles.container}>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard' }, { label: 'Planning' }]} />
       <aside className={styles.sidebar}>
         <div className={styles.sidebarHeader}>
           <h2 className={styles.sidebarTitle}>Trips</h2>

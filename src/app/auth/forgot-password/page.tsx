@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import styles from '../login/page.module.css'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 export default function ForgotPasswordPage() {
   const router = useRouter()
@@ -43,6 +44,7 @@ export default function ForgotPasswordPage() {
   if (success) {
     return (
       <div className={styles.authPage}>
+        <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Forgot Password' }]} />
         <div className={styles.authContainer}>
           <div className={styles.logo}>
             <Image src="/logo.png" alt="XistrYmemZ" width={40} height={40} style={{marginRight: '10px'}} />
@@ -66,6 +68,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className={styles.authPage}>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Forgot Password' }]} />
       <div className={styles.authContainer}>
         <div className={styles.logo}>
           <Image src="/logo.png" alt="XistrYmemZ" width={40} height={40} style={{marginRight: '10px'}} />

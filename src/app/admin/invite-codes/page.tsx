@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import styles from './page.module.css'
 import { EmptyState } from '@/components/EmptyState'
 import Skeleton from '@/components/Skeleton'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface InviteCode {
   id: string
@@ -116,6 +117,7 @@ export default function AdminInviteCodesPage() {
 
   return (
     <div className={styles.container}>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Admin', href: '/admin' }, { label: 'Invite Codes' }]} />
       <div className={styles.header}>
         <div>
           <h1 className={styles.title}>Invite Codes</h1>

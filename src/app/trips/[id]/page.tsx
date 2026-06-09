@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import TripView from './TripView'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 export default async function TripPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -28,5 +29,10 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
 
   if (!trip) notFound()
 
-  return <TripView trip={JSON.parse(JSON.stringify(trip))} sessionUserId={session?.user?.id} />
+  return (
+    <div>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Trips', href: '/trips' }, { label: trip.title || 'Trip' }]} />
+      <TripView trip={JSON.parse(JSON.stringify(trip))} sessionUserId={session?.user?.id} />
+    </div>
+  )
 }

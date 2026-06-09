@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import styles from './rentals-browse.module.css'
 import { getUserProfileUrl } from '@/lib/utils'
+import { useSession } from 'next-auth/react'
 import { EmptyState } from '@/components/EmptyState'
 
 interface RentalItem {
@@ -43,6 +44,7 @@ interface Props {
 }
 
 export default function RentalsBrowseClient({ initialRentals, categories, locations }: Props) {
+  const { data: session } = useSession()
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('ALL')
   const [locationFilter, setLocationFilter] = useState('ALL')
@@ -104,6 +106,11 @@ export default function RentalsBrowseClient({ initialRentals, categories, locati
 
   return (
     <>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+        {session && (
+          <Link href="/dashboard/rentals" style={{ display: 'inline-block', background: 'var(--accent-primary)', color: 'white', padding: '10px 24px', borderRadius: 'var(--radius-md)', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem' }}>+ List Rental</Link>
+        )}
+      </div>
       <div className={styles.filters}>
         <input
           type="text"

@@ -9,6 +9,7 @@ import HashtagText from '@/components/HashtagText'
 import ImageUploader from '@/components/ImageUploader'
 import { EmptyState } from '@/components/EmptyState'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import Loading from '@/components/Loading'
 import Button from '@/components/ui/Button'
 import styles from './forum.module.css'
 
@@ -334,7 +335,7 @@ export default function ForumPage() {
           </div>
 
           {loading ? (
-            <div className={styles.loading}>Loading posts...</div>
+            <Loading size="medium" message="Loading posts..." />
           ) : error ? (
             <div className={styles.empty}>
               <p>{error}</p>
