@@ -297,6 +297,9 @@ export default function BoardsPage() {
   const [deleteBoardId, setDeleteBoardId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
   const [editDescription, setEditDescription] = useState('')
+  const [editLocation, setEditLocation] = useState('')
+  const [editLatitude, setEditLatitude] = useState('')
+  const [editLongitude, setEditLongitude] = useState('')
   const [editing, setEditing] = useState(false)
 
   const handleEdit = async (e: React.FormEvent) => {
@@ -311,6 +314,9 @@ export default function BoardsPage() {
           id: editBoard.id,
           name: editName.trim(),
           description: editDescription.trim() || null,
+          location: editLocation.trim() || null,
+          latitude: editLatitude ? parseFloat(editLatitude) : null,
+          longitude: editLongitude ? parseFloat(editLongitude) : null,
         }),
       })
       if (res.ok) {
@@ -345,6 +351,9 @@ export default function BoardsPage() {
     setEditBoard(board)
     setEditName(board.name)
     setEditDescription(board.description || '')
+    setEditLocation(board.location || '')
+    setEditLatitude(board.latitude?.toString() || '')
+    setEditLongitude(board.longitude?.toString() || '')
   }
 
   const handleFlyHome = useCallback(() => {
@@ -482,6 +491,36 @@ export default function BoardsPage() {
               </Marker>
             )
           })}
+          {(() => {
+            const noLocBoards = boards.filter(b => !b.latitude || !b.longitude)
+            if (noLocBoards.length === 0) return null
+            const locGroups = new Map<string, typeof noLocBoards>()
+            noLocBoards.forEach(b => {
+              const key = b.city || b.location || 'Unknown Area'
+              if (!locGroups.has(key)) locGroups.set(key, [])
+              locGroups.get(key)!.push(b)
+            })
+            return Array.from(locGroups.entries()).map(([area, group]) =>
+              L ? (
+                <Marker key={`no-loc-${area}`} position={mapCenter} icon={getBoardIcon(false)}>
+                  <Tooltip>📍 {group.length} board{group.length !== 1 ? 's' : ''} in {area}</Tooltip>
+                  <Popup>
+                    <div style={{ minWidth: 180 }}>
+                      <strong>📍 {group.length} board{group.length !== 1 ? 's' : ''} in {area}</strong>
+                      {group.slice(0, 10).map(b => (
+                        <div key={b.id} style={{ marginTop: 4 }}>
+                          <Link href={`/boards/${b.slug}`} style={{ color: 'var(--accent-primary)', textDecoration: 'none' }}>
+                            {b.name}
+                          </Link>
+                        </div>
+                      ))}
+                      {group.length > 10 && <div style={{ marginTop: 4, fontSize: '0.8rem', color: '#666' }}>+{group.length - 10} more</div>}
+                    </div>
+                  </Popup>
+                </Marker>
+              ) : null
+            )
+          })()}
         </MapContainer>
       </div>
       )}
@@ -547,6 +586,20 @@ export default function BoardsPage() {
               <div className="form-group">
                 <label>Description</label>
                 <textarea value={editDescription} onChange={e => setEditDescription(e.target.value)} rows={3} />
+              </div>
+              <div className="form-group">
+                <label>Location</label>
+                <input type="text" value={editLocation} onChange={e => setEditLocation(e.target.value)} placeholder="City, address, etc." />
+              </div>
+              <div className="form-row" style={{ display: 'flex', gap: 8 }}>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label>Latitude</label>
+                  <input type="number" step="any" value={editLatitude} onChange={e => setEditLatitude(e.target.value)} placeholder="40.7128" />
+                </div>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label>Longitude</label>
+                  <input type="number" step="any" value={editLongitude} onChange={e => setEditLongitude(e.target.value)} placeholder="-74.006" />
+                </div>
               </div>
               <div className="form-actions">
                 <Button type="button" variant="ghost" onClick={() => setEditBoard(null)}>Cancel</Button>

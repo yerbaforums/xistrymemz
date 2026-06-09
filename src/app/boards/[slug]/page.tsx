@@ -81,6 +81,9 @@ export default function BoardDetailPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [editName, setEditName] = useState('')
   const [editDescription, setEditDescription] = useState('')
+  const [editLocation, setEditLocation] = useState('')
+  const [editLatitude, setEditLatitude] = useState('')
+  const [editLongitude, setEditLongitude] = useState('')
   const [editing, setEditing] = useState(false)
   const [carouselIndex, setCarouselIndex] = useState<number | null>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'map' | 'calendar'>('grid')
@@ -196,6 +199,9 @@ export default function BoardDetailPage() {
           id: board.id,
           name: editName.trim(),
           description: editDescription.trim() || null,
+          location: editLocation.trim() || null,
+          latitude: editLatitude ? parseFloat(editLatitude) : null,
+          longitude: editLongitude ? parseFloat(editLongitude) : null,
         }),
       })
       if (res.ok) {
@@ -230,6 +236,9 @@ export default function BoardDetailPage() {
     if (!board) return
     setEditName(board.name)
     setEditDescription(board.description || '')
+    setEditLocation(board.location || '')
+    setEditLatitude(board.latitude?.toString() || '')
+    setEditLongitude(board.longitude?.toString() || '')
     setShowEditModal(true)
   }
 
@@ -325,24 +334,14 @@ export default function BoardDetailPage() {
         </button>
       </div>
 
-      {viewMode !== 'calendar' && (
+      {viewMode !== 'calendar' && (board.latitude || pinLocations.length > 0) && (
         <div className={styles.mapWrap}>
           <MapContainer center={mapCenter} zoom={12} className={styles.map} scrollWheelZoom={true}>
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            {board.latitude && board.longitude && pinLocations.length === 0 && (
-              <Marker position={[board.latitude, board.longitude]}>
-                <Popup>
-                  <div className={styles.pinPopup}>
-                    <strong>{board.name} — {board.location || ''}</strong>
-                    {pins.length > 0 && <div className={styles.popupMeta}>📌 {pins.length} pin{pins.length !== 1 ? 's' : ''} at this location</div>}
-                  </div>
-                </Popup>
-              </Marker>
-            )}
-            {board.latitude && board.longitude && pinLocations.length > 0 && (
+            {board.latitude && board.longitude && (
               <Marker position={[board.latitude, board.longitude]}>
                 <Popup>
                   <div className={styles.pinPopup}>
@@ -382,6 +381,15 @@ export default function BoardDetailPage() {
               </Marker>
             )}
           </MapContainer>
+        </div>
+      )}
+      {viewMode !== 'calendar' && !board.latitude && pinLocations.length === 0 && (
+        <div className={styles.noLocation}>
+          <span className={styles.noLocationIcon}>📍</span>
+          <p>No location set for this board.</p>
+          {isBoardOwner && (
+            <Button variant="secondary" onClick={openEdit}>Set Location</Button>
+          )}
         </div>
       )}
 
@@ -459,6 +467,20 @@ export default function BoardDetailPage() {
                   onChange={e => setEditDescription(e.target.value)}
                   rows={3}
                 />
+              </div>
+              <div className="form-group">
+                <label>Location</label>
+                <input type="text" value={editLocation} onChange={e => setEditLocation(e.target.value)} placeholder="City, address, etc." />
+              </div>
+              <div className="form-row" style={{ display: 'flex', gap: 8 }}>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label>Latitude</label>
+                  <input type="number" step="any" value={editLatitude} onChange={e => setEditLatitude(e.target.value)} placeholder="40.7128" />
+                </div>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label>Longitude</label>
+                  <input type="number" step="any" value={editLongitude} onChange={e => setEditLongitude(e.target.value)} placeholder="-74.006" />
+                </div>
               </div>
               <div className="form-actions">
                 <Button type="button" variant="ghost" onClick={() => setShowEditModal(false)}>Cancel</Button>
