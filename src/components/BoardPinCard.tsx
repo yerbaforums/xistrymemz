@@ -153,6 +153,11 @@ function ImageCarousel({ images }: { images: string[] }) {
 
 const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, onDelete, onView }: BoardPinCardProps) {
   const [minimized, setMinimized] = useState(false)
+  const [likes, setLikes] = useState(0)
+  const [liked, setLiked] = useState(false)
+  const [showCommentForm, setShowCommentForm] = useState(false)
+  const [commentText, setCommentText] = useState('')
+  const [comments, setComments] = useState<string[]>([])
   const parsedImages = pin.images ? JSON.parse(pin.images) as string[] : []
   const expirationText = timeUntilExpires(pin.expiresAt)
   const canDelete = isOwner || isBoardOwner
@@ -224,6 +229,74 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, on
           )}
         </div>
       </div>
+
+      <div className={styles.socialActions}>
+        <button
+          className={`${styles.socialBtn} ${liked ? styles.socialBtnActive : ''}`}
+          onClick={() => { setLiked(!liked); setLikes(l => liked ? l - 1 : l + 1) }}
+          aria-label="Like"
+        >
+          {liked ? '❤️' : '🤍'} <span>{likes}</span>
+        </button>
+        <button
+          className={styles.socialBtn}
+          onClick={() => setShowCommentForm(!showCommentForm)}
+          aria-label="Comment"
+        >
+          💬 <span>{comments.length}</span>
+        </button>
+        <button
+          className={styles.socialBtn}
+          onClick={() => {
+            if (navigator.share) {
+              navigator.share({ title: pin.title || '', text: pin.content || '', url: window.location.href })
+            } else {
+              navigator.clipboard.writeText(window.location.href)
+            }
+          }}
+          aria-label="Share"
+        >
+          🔗
+        </button>
+      </div>
+
+      {showCommentForm && (
+        <div className={styles.commentForm}>
+          <input
+            type="text"
+            value={commentText}
+            onChange={e => setCommentText(e.target.value)}
+            placeholder="Write a comment..."
+            className={styles.commentInput}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && commentText.trim()) {
+                setComments(prev => [...prev, commentText.trim()])
+                setCommentText('')
+              }
+            }}
+          />
+          <button
+            className={styles.commentBtn}
+            disabled={!commentText.trim()}
+            onClick={() => {
+              if (commentText.trim()) {
+                setComments(prev => [...prev, commentText.trim()])
+                setCommentText('')
+              }
+            }}
+          >
+            Post
+          </button>
+        </div>
+      )}
+
+      {comments.length > 0 && (
+        <div className={styles.commentsList}>
+          {comments.map((c, i) => (
+            <div key={i} className={styles.commentItem}>{c}</div>
+          ))}
+        </div>
+      )}
     </div>
   )
 })

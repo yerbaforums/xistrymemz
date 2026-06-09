@@ -26,6 +26,7 @@ interface Group {
 
 const catMap = new Map(GROUP_CATEGORIES.map(c => [c.value, c]))
 
+// Note: view toggle is not needed here because AlphabeticalIndex handles its own display layout
 export default function GroupsPage() {
   const { error, success } = useToast()
   const [groups, setGroups] = useState<Group[]>([])

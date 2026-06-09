@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useCallback, type ReactNode } from
 import { useRouter } from 'next/navigation'
 import Modal from '@/components/ui/Modal'
 import ImageUploader from '@/components/ImageUploader'
+import HashtagInput from '@/components/HashtagInput'
 import EventFormFields, { getDefaultEventFormData } from '@/components/EventFormFields'
 import { useToast } from '@/context/ToastContext'
 import { CONTENT_TEMPLATES, CONTENT_TYPE_MAP } from '@/lib/content-templates'
@@ -89,6 +90,7 @@ function PostForm({ onDone }: { onDone: () => void }) {
   const { success, error } = useToast()
   const [content, setContent] = useState('')
   const [images, setImages] = useState<string[]>([])
+  const [hashtags, setHashtags] = useState<string[]>([])
   const [posting, setPosting] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -103,6 +105,7 @@ function PostForm({ onDone }: { onDone: () => void }) {
           content: content.trim(),
           images: images.length > 0 ? JSON.stringify(images) : null,
           context: 'PROFILE',
+          hashtags: hashtags.length > 0 ? hashtags : undefined,
         }),
       })
       if (res.ok) {
@@ -135,6 +138,9 @@ function PostForm({ onDone }: { onDone: () => void }) {
       <div className={styles.formGroup}>
         <ImageUploader images={images} onChange={setImages} maxImages={6} />
       </div>
+      <div className={styles.formGroup}>
+        <HashtagInput value={hashtags} onChange={setHashtags} placeholder="Add hashtags..." />
+      </div>
       <div className={styles.formActions}>
         <button type="button" onClick={onDone} className="btn-ghost">Cancel</button>
         <button type="submit" disabled={posting || !content.trim()} className="btn-primary">
@@ -154,6 +160,7 @@ function ContentForm({ onDone }: { onDone: () => void }) {
   const [price, setPrice] = useState('')
   const [isPaid, setIsPaid] = useState(false)
   const [images, setImages] = useState<string[]>([])
+  const [hashtags, setHashtags] = useState<string[]>([])
   const [creating, setCreating] = useState(false)
 
   const filteredTemplates = CONTENT_TEMPLATES.filter(t => t.contentType === contentType)
@@ -185,6 +192,7 @@ function ContentForm({ onDone }: { onDone: () => void }) {
           price: price ? parseFloat(price) : 0,
           isPaid,
           images: images.length > 0 ? JSON.stringify(images) : null,
+          hashtags: hashtags.length > 0 ? hashtags : undefined,
         }),
       })
       if (res.ok) {
@@ -245,6 +253,10 @@ function ContentForm({ onDone }: { onDone: () => void }) {
       <div className={styles.formGroup}>
         <label className={styles.label}>Images</label>
         <ImageUploader images={images} onChange={setImages} maxImages={5} />
+      </div>
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Hashtags</label>
+        <HashtagInput value={hashtags} onChange={setHashtags} placeholder="Add hashtags..." />
       </div>
       <div className={styles.formActions}>
         <button type="button" onClick={onDone} className="btn-ghost">Cancel</button>

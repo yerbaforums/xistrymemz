@@ -159,6 +159,53 @@
 .freeTag { font-size: 0.8rem; color: #22c55e; font-weight: 600; }
 .createBtn { display: inline-block; margin-top: 1rem; background: var(--accent-primary); color: white; padding: 10px 24px; border-radius: var(--radius-md); text-decoration: none; font-weight: 600; }
 
+.resultsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.resultsCount {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.viewToggles {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+  padding: 2px;
+}
+
+.viewToggle {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 6px 10px;
+  border-radius: 6px;
+  line-height: 1;
+  transition: background 0.15s, color 0.15s;
+}
+
+.viewToggle:hover {
+  color: var(--text-primary);
+}
+
+.viewToggleActive {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
 /* Content type colors */
 .article { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
 .video { background: rgba(239, 68, 68, 0.15); color: #ef4444; }

@@ -39,6 +39,7 @@ export default function StudioPage() {
   const [items, setItems] = useState<UnifiedItem[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('all')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
   const [stats, setStats] = useState({ total: 0, totalViews: 0, totalEarnings: 0 })
 
   useEffect(() => {
@@ -238,6 +239,16 @@ export default function StudioPage() {
             {cfg.icon} {cfg.label} ({counts[key] || 0})
           </button>
         ))}
+        <div className={styles.viewToggle}>
+          <button
+            className={`${styles.viewBtn} ${viewMode === 'list' ? styles.viewBtnActive : ''}`}
+            onClick={() => setViewMode('list')}
+          >📋 List</button>
+          <button
+            className={`${styles.viewBtn} ${viewMode === 'grid' ? styles.viewBtnActive : ''}`}
+            onClick={() => setViewMode('grid')}
+          >📐 Grid</button>
+        </div>
       </div>
 
       {filtered.length === 0 ? (
@@ -250,7 +261,7 @@ export default function StudioPage() {
           </button>
         </div>
       ) : (
-        <div className={styles.contentList}>
+        <div className={`${styles.contentList} ${viewMode === 'grid' ? styles.contentGrid : ''}`}>
           {filtered.map(item => (
             <Link key={item.id} href={item.href} className={styles.contentItem}>
               <div className={styles.contentTypeIcon}>

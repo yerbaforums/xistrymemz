@@ -298,6 +298,35 @@
   cursor: pointer;
 }
 
+.viewToggleBar {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.viewToggleBtn {
+  padding: 6px 14px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: var(--transition);
+}
+
+.viewToggleBtn:hover {
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+}
+
+.viewToggleActive {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border-color: var(--accent-primary);
+}
+
 .cardOwnerActions {
   display: flex;
   gap: 4px;

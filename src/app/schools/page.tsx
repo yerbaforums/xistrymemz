@@ -68,6 +68,7 @@ export default function SchoolsPage() {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('all')
   const [contentType, setContentType] = useState('all')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [sort, setSort] = useState('recent')
 
   useEffect(() => {
@@ -171,13 +172,35 @@ export default function SchoolsPage() {
         </select>
       </div>
 
+      <div className={styles.resultsHeader}>
+        <span className={styles.resultsCount}>
+          <strong>{view === 'schools' ? schools.length : contents.length}</strong> {view === 'schools' ? 'schools' : 'items'} found
+        </span>
+        <div className={styles.viewToggles}>
+          <button
+            className={`${styles.viewToggle} ${viewMode === 'grid' ? styles.viewToggleActive : ''}`}
+            onClick={() => setViewMode('grid')}
+            aria-label="Grid view"
+          >
+            ▦
+          </button>
+          <button
+            className={`${styles.viewToggle} ${viewMode === 'list' ? styles.viewToggleActive : ''}`}
+            onClick={() => setViewMode('list')}
+            aria-label="List view"
+          >
+            ☰
+          </button>
+        </div>
+      </div>
+
       {loading ? (
         <Skeleton width="100%" height="2rem" />
       ) : view === 'schools' ? (
         schools.length === 0 ? (
           <EmptyState icon="🏫" title="No schools found" description="Be the first to create one!" />
         ) : (
-          <div className={styles.schoolsGrid}>
+          <div className={viewMode === 'list' ? styles.list : styles.schoolsGrid}>
             {schools.map(school => (
               <Link key={school.id} href={`/school/${school.schoolSlug}`} className={styles.schoolCard}>
                 {school.schoolImage && (
@@ -200,7 +223,7 @@ export default function SchoolsPage() {
         contents.length === 0 ? (
           <EmptyState icon="📚" title="No content found" description="Be the first to create content!" />
         ) : (
-          <div className={styles.contentGrid}>
+          <div className={viewMode === 'list' ? styles.list : styles.contentGrid}>
             {contents.map(item => (
               <Link key={item.id} href={`/school/${item.school.slug}/${item.id}`} className={styles.contentCard}>
                 <div className={styles.contentHeader}>

@@ -55,6 +55,7 @@ export default function BoardsPage() {
   const [loading, setLoading] = useState(true)
   const [searchCity, setSearchCity] = useState('')
   const [sortBy, setSortBy] = useState<'recent' | 'alpha'>('recent')
+  const [view, setView] = useState<'all' | 'map' | 'list'>('all')
 
   const sortedBoards = useMemo(() => {
     if (sortBy === 'alpha') {
@@ -354,6 +355,11 @@ export default function BoardsPage() {
       <div className={styles.hero}>
         <h1>📌 Community Bulletin Boards</h1>
         <p>Pin your cards, announcements, and listings to local boards</p>
+        <div className={styles.viewToggleBar}>
+          <button className={`${styles.viewToggleBtn} ${view === 'all' ? styles.viewToggleActive : ''}`} onClick={() => setView('all')}>🗺️ Map + List</button>
+          <button className={`${styles.viewToggleBtn} ${view === 'map' ? styles.viewToggleActive : ''}`} onClick={() => setView('map')}>🗺️ Map</button>
+          <button className={`${styles.viewToggleBtn} ${view === 'list' ? styles.viewToggleActive : ''}`} onClick={() => setView('list')}>📋 List</button>
+        </div>
         {session?.user && (
           <Button variant="primary" className={styles.createBtn} onClick={() => setShowCreateModal(true)}>
             ➕ Create Board
@@ -416,6 +422,7 @@ export default function BoardsPage() {
         </select>
       </form>
 
+      {(view === 'all' || view === 'map') && (
       <div className={styles.mapWrap}>
         {settingLocation && <div className={styles.mapOverlay}>Click anywhere on the map to set your home location</div>}
         <MapContainer center={mapCenter} zoom={12} className={styles.map} scrollWheelZoom={true}>
@@ -463,7 +470,9 @@ export default function BoardsPage() {
           })}
         </MapContainer>
       </div>
+      )}
 
+      {(view === 'all' || view === 'list') && (
       <div className={styles.grid}>
         {loading ? (
           <p className={styles.loading}>Loading boards...</p>
@@ -502,6 +511,7 @@ export default function BoardsPage() {
           ))
         )}
       </div>
+      )}
 
       {showCreateModal && (
         <CreateBoardModal

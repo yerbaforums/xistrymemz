@@ -26,6 +26,23 @@ function ensureDirectories() {
   }
 }
 
+function findPgDump(): string | null {
+  const candidates = ['pg_dump', '/usr/bin/pg_dump', '/usr/local/bin/pg_dump', '/opt/homebrew/bin/pg_dump']
+  for (const cmd of candidates) {
+    if (fs.existsSync(cmd)) return cmd
+    try {
+      const result = execSync(`command -v ${cmd} 2>/dev/null`, { encoding: 'utf8', timeout: 2000 })
+      if (result?.trim()) return result.trim()
+    } catch {}
+  }
+  return null
+}
+
+const execSync = (() => {
+  const { execSync } = require('child_process')
+  return execSync
+})()
+
 function getDbType(): 'postgresql' | 'sqlite' {
   const url = process.env.DATABASE_URL || ''
   if (url.includes('postgresql') || url.includes('postgres://')) return 'postgresql'
@@ -34,6 +51,27 @@ function getDbType(): 'postgresql' | 'sqlite' {
 
 function getTimestamp(): string {
   return new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
+}
+
+async function prismaDump(): Promise<string> {
+  const modelNames = [
+    'User', 'Plan', 'Request', 'Product', 'Event', 'ServiceOffering', 'Group',
+    'BulletinBoard', 'BulletinPin', 'Post', 'ForumPost', 'ForumReply',
+    'SchoolContent', 'Notification', 'Message', 'Connection', 'Comment',
+    'PlanUpdate', 'PlanUpdateComment', 'Payment', 'EscrowTransaction',
+    'BarterOffer', 'Appointment', 'Availability', 'Backlink', 'Hashtag',
+    'VideoRoom', 'InviteCode', 'Backup',
+  ]
+  const data: Record<string, unknown[]> = {}
+  for (const name of modelNames) {
+    try {
+      const model = (prisma as any)[name.toLowerCase()]
+      if (model?.findMany) {
+        data[name] = await model.findMany()
+      }
+    } catch {}
+  }
+  return JSON.stringify(data, null, 2)
 }
 
 export async function createDatabaseDump(): Promise<{
@@ -45,26 +83,33 @@ export async function createDatabaseDump(): Promise<{
   ensureDirectories()
 
   const timestamp = getTimestamp()
-  const dbType = getDbType()
   const fileName = `backup-${timestamp}.sql.gz`
   const filePath = path.join(BACKUP_DIR, fileName)
 
   let dbSize = 0
 
-  if (dbType === 'postgresql') {
-    const dumpFile = path.join(BACKUP_DIR, `backup-${timestamp}.sql`)
-    await execAsync(`pg_dump "${process.env.DATABASE_URL}" > "${dumpFile}"`)
+  const pgDumpPath = findPgDump()
+  const dbType = getDbType()
 
-    const stats = fs.statSync(dumpFile)
-    dbSize = stats.size
+  if (dbType === 'postgresql' && pgDumpPath) {
+    try {
+      const dumpFile = path.join(BACKUP_DIR, `backup-${timestamp}.sql`)
+      await execAsync(`"${pgDumpPath}" "${process.env.DATABASE_URL}" > "${dumpFile}"`)
 
-    await execAsync(`gzip -f "${dumpFile}"`)
+      const stats = fs.statSync(dumpFile)
+      dbSize = stats.size
 
-    const gzPath = dumpFile + '.gz'
-    if (fs.existsSync(gzPath) && gzPath !== filePath) {
-      fs.renameSync(gzPath, filePath)
+      await execAsync(`gzip -f "${dumpFile}"`)
+
+      const gzPath = dumpFile + '.gz'
+      if (fs.existsSync(gzPath) && gzPath !== filePath) {
+        fs.renameSync(gzPath, filePath)
+      }
+    } catch (err) {
+      console.error('pg_dump failed, falling back to Prisma dump:', err)
+      return createPrismaDump(timestamp, fileName, filePath)
     }
-  } else {
+  } else if (dbType === 'sqlite') {
     const dbPath = path.join(process.cwd(), 'prisma', 'dev.db')
     if (fs.existsSync(dbPath)) {
       const stats = fs.statSync(dbPath)
@@ -73,10 +118,39 @@ export async function createDatabaseDump(): Promise<{
       await execAsync(`gzip -c "${path.join(BACKUP_DIR, `backup-${timestamp}.db`)}" > "${filePath}"`)
       fs.unlinkSync(path.join(BACKUP_DIR, `backup-${timestamp}.db`))
     }
+  } else {
+    return createPrismaDump(timestamp, fileName, filePath)
   }
 
   const fileStats = fs.statSync(filePath)
+  return { filePath, fileName, fileSize: fileStats.size, dbSize }
+}
 
+async function createPrismaDump(timestamp: string, fileName: string, filePath: string): Promise<{
+  filePath: string
+  fileName: string
+  fileSize: number
+  dbSize: number
+}> {
+  const dumpContent = await prismaDump()
+  const dbSize = Buffer.byteLength(dumpContent, 'utf8')
+  const jsonPath = filePath.replace(/\.gz$/, '')
+  fs.writeFileSync(jsonPath, dumpContent, 'utf8')
+  try {
+    await execAsync(`gzip -f "${jsonPath}"`)
+  } catch {
+    const gzPath = jsonPath + '.gz'
+    if (fs.existsSync(gzPath)) {
+      fs.renameSync(gzPath, filePath)
+    } else {
+      fs.writeFileSync(gzPath, dumpContent)
+    }
+  }
+  const gzPath = jsonPath + '.gz'
+  if (fs.existsSync(gzPath) && gzPath !== filePath) {
+    fs.renameSync(gzPath, filePath)
+  }
+  const fileStats = fs.statSync(filePath)
   return { filePath, fileName, fileSize: fileStats.size, dbSize }
 }
 

@@ -34,6 +34,7 @@ export default function ServicesPage() {
   const [sortBy, setSortBy] = useState('newest')
   const [selectedService, setSelectedService] = useState<ServiceOffering | null>(null)
   const [showBooking, setShowBooking] = useState(false)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const PAGE_SIZE = 20
 
   const fetchServices = async (pageNum: number, append: boolean) => {
@@ -167,6 +168,22 @@ export default function ServicesPage() {
             <span className={styles.resultsCount}>
               <strong>{filteredServices.length}</strong> {filteredServices.length === 1 ? 'service' : 'services'} found
             </span>
+            <div className={styles.viewToggles}>
+              <button
+                className={`${styles.viewToggle} ${viewMode === 'grid' ? styles.viewToggleActive : ''}`}
+                onClick={() => setViewMode('grid')}
+                aria-label="Grid view"
+              >
+                ▦
+              </button>
+              <button
+                className={`${styles.viewToggle} ${viewMode === 'list' ? styles.viewToggleActive : ''}`}
+                onClick={() => setViewMode('list')}
+                aria-label="List view"
+              >
+                ☰
+              </button>
+            </div>
           </div>
 
           {loading ? (
@@ -175,7 +192,7 @@ export default function ServicesPage() {
             <EmptyState icon="🔧" title="No services found" description="Try adjusting your filters or check back later." action={{ label: 'Clear Filters', onClick: clearFilters }} />
           ) : (
             <>
-              <div className={styles.grid}>
+              <div className={viewMode === 'list' ? styles.list : styles.grid}>
                 {filteredServices.slice(0, page * PAGE_SIZE).map(s => (
                   <ServiceCard
                     key={s.id}

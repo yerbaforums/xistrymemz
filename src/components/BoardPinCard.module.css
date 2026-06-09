@@ -332,3 +332,86 @@
 .deleteBtn:hover {
   background: rgba(239, 68, 68, 0.1);
 }
+
+.socialActions {
+  display: flex;
+  gap: 4px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 8px;
+  margin-top: 4px;
+}
+
+.socialBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.socialBtn:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.socialBtnActive {
+  color: var(--accent-secondary);
+}
+
+.commentForm {
+  display: flex;
+  gap: 6px;
+  padding: 4px 0;
+}
+
+.commentInput {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+}
+
+.commentInput:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.commentBtn {
+  padding: 6px 12px;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.commentBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.commentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.commentItem {
+  padding: 6px 10px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}

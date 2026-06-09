@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSession } from 'next-auth/react'
@@ -123,7 +123,9 @@ export default function DiscoverPage() {
   const [typeFilter, setTypeFilter] = useState('')
   const [intentFilter, setIntentFilter] = useState('')
   const [hashtagFilter, setHashtagFilter] = useState('')
-  const [viewMode, setViewMode] = useState<'map' | 'grid'>('map')
+  const [viewMode, setViewMode] = useState<'map' | 'grid' | 'calendar'>('map')
+  const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [sortBy, setSortBy] = useState('newest')
   const [results, setResults] = useState<DiscoverItem[]>([])
   const [loading, setLoading] = useState(false)
   const [total, setTotal] = useState(0)
@@ -161,6 +163,75 @@ export default function DiscoverPage() {
   useEffect(() => {
     fetchResults(1)
   }, [fetchResults])
+
+  const sortedResults = useMemo(() => {
+    const sorted = [...results]
+    if (sortBy === 'newest') {
+      sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    } else if (sortBy === 'popular') {
+      sorted.sort((a, b) => {
+        if (a.lookingForCollaborators !== b.lookingForCollaborators) {
+          return a.lookingForCollaborators ? -1 : 1
+        }
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      })
+    } else if (sortBy === 'nearest') {
+      sorted.sort((a, b) => {
+        if (a.distance === null && b.distance === null) return 0
+        if (a.distance === null) return 1
+        if (b.distance === null) return -1
+        return a.distance - b.distance
+      })
+    }
+    return sorted
+  }, [results, sortBy])
+
+  function getCalendarDays() {
+    const year = currentMonth.getFullYear()
+    const month = currentMonth.getMonth()
+    const firstDay = new Date(year, month, 1)
+    const lastDay = new Date(year, month + 1, 0)
+    const startPadding = firstDay.getDay()
+    const days: React.ReactNode[] = []
+
+    for (let i = 0; i < startPadding; i++) {
+      days.push(<div key={`empty-${i}`} className={styles.calendarCellEmpty}></div>)
+    }
+
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+      const itemsOnDay = sortedResults.filter(r => {
+        const d = new Date(r.createdAt).toISOString().split('T')[0]
+        return d === dateStr
+      })
+
+      days.push(
+        <div key={day} className={`${styles.calendarCell} ${itemsOnDay.length > 0 ? styles.hasEvents : ''}`}>
+          <span className={styles.calendarDayNumber}>{day}</span>
+          <div className={styles.calendarEvents}>
+            {itemsOnDay.slice(0, 3).map(item => {
+              const href =
+                item.type === 'PRODUCT' ? `/products/${item.id}` :
+                item.type === 'SERVICE' ? `/services/${item.id}` :
+                item.type === 'GROUP' ? `/groups/${item.id}` :
+                item.type === 'EVENT' ? `/events/${item.id}` :
+                item.type === 'PLAN' ? `/plans/${item.id}` :
+                item.type === 'MEMBER' ? `/profile/${item.userId}` : '#'
+              return (
+                <Link key={`${item.type}-${item.id}`} href={href} className={styles.calendarEventItem}>
+                  <span className={styles.calendarEventIcon}>{TYPE_ICONS[item.type] || '📄'}</span>
+                  <span className={styles.calendarEventTitle}>{item.title}</span>
+                </Link>
+              )
+            })}
+            {itemsOnDay.length > 3 && <span className={styles.moreEvents}>+{itemsOnDay.length - 3} more</span>}
+          </div>
+        </div>
+      )
+    }
+
+    return days
+  }
 
   if (L && typeof window !== 'undefined') {
     delete L.Icon.Default.prototype._getIconUrl
@@ -228,6 +299,11 @@ export default function DiscoverPage() {
           onChange={e => setHashtagFilter(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && fetchResults(1)}
         />
+        <select className={styles.sortSelect} value={sortBy} onChange={e => setSortBy(e.target.value)}>
+          <option value="newest">🕐 Newest</option>
+          <option value="popular">🔥 Most Popular</option>
+          <option value="nearest">📍 Nearest</option>
+        </select>
         <div className={styles.viewToggle}>
           <Button
             variant="ghost"
@@ -239,6 +315,11 @@ export default function DiscoverPage() {
             className={`${styles.viewBtn} ${viewMode === 'grid' ? styles.viewBtnActive : ''}`}
             onClick={() => setViewMode('grid')}
           >📋 Grid</Button>
+          <Button
+            variant="ghost"
+            className={`${styles.viewBtn} ${viewMode === 'calendar' ? styles.viewBtnActive : ''}`}
+            onClick={() => setViewMode('calendar')}
+          >📅 Calendar</Button>
         </div>
       </div>
 
@@ -251,7 +332,7 @@ export default function DiscoverPage() {
               attribution='&copy; <a href="https://openstreetmap.org">OSM</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            {results.filter(r => r.latitude && r.longitude).map(r => (
+            {sortedResults.filter(r => r.latitude && r.longitude).map(r => (
               <Marker key={`${r.type}-${r.id}`} position={[r.latitude!, r.longitude!]}>
                 <Popup>
                   <div className={styles.popup}>
@@ -280,7 +361,7 @@ export default function DiscoverPage() {
         <>
           <div className={styles.resultInfo}>{total} result{total !== 1 ? 's' : ''} found</div>
           <div className={styles.grid}>
-            {results.map(r => <EntityCard key={`${r.type}-${r.id}`} item={r} />)}
+            {sortedResults.map(r => <EntityCard key={`${r.type}-${r.id}`} item={r} />)}
           </div>
           {results.length === 0 && (
             <EmptyState icon="🔍" title="No results found" description="Try adjusting your filters." />
@@ -291,6 +372,22 @@ export default function DiscoverPage() {
             </Button>
           )}
         </>
+      )}
+
+      {!loading && viewMode === 'calendar' && (
+        <div className={styles.calendarWrap}>
+          <div className={styles.calendarHeader}>
+            <Button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))} className={styles.calendarNavBtn} variant="ghost">←</Button>
+            <h2>{currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h2>
+            <Button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))} className={styles.calendarNavBtn} variant="ghost">→</Button>
+          </div>
+          <div className={styles.calendarGrid}>
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+              <div key={day} className={styles.calendarDayHeader}>{day}</div>
+            ))}
+            {getCalendarDays()}
+          </div>
+        </div>
       )}
     </div>
   )

@@ -82,6 +82,8 @@ export default function BoardDetailPage() {
   const [editDescription, setEditDescription] = useState('')
   const [editing, setEditing] = useState(false)
   const [carouselIndex, setCarouselIndex] = useState<number | null>(null)
+  const [viewMode, setViewMode] = useState<'grid' | 'calendar'>('grid')
+  const [currentMonth, setCurrentMonth] = useState(new Date())
 
   const pinLocations = pins.filter(p => p.latitude && p.longitude)
 
@@ -222,6 +224,21 @@ export default function BoardDetailPage() {
         </div>
       </div>
 
+      <div className={styles.viewToggle}>
+        <button
+          className={`${styles.toggleBtn} ${viewMode === 'grid' ? styles.toggleActive : ''}`}
+          onClick={() => setViewMode('grid')}
+        >
+          📋 Grid
+        </button>
+        <button
+          className={`${styles.toggleBtn} ${viewMode === 'calendar' ? styles.toggleActive : ''}`}
+          onClick={() => setViewMode('calendar')}
+        >
+          📅 Calendar
+        </button>
+      </div>
+
       {pinLocations.length > 0 && (
         <div className={styles.mapWrap}>
           <MapContainer center={mapCenter} zoom={12} className={styles.map} scrollWheelZoom={true}>
@@ -250,7 +267,7 @@ export default function BoardDetailPage() {
               </Marker>
             ))}
           </MapContainer>
-        </div>
+          </div>
       )}
 
       {pinLocations.length === 0 && board.latitude && board.longitude && (
@@ -267,7 +284,21 @@ export default function BoardDetailPage() {
         </div>
       )}
 
-      {pins.length === 0 ? (
+      {viewMode === 'calendar' ? (
+        <div className={styles.calendarWrap}>
+          <div className={styles.calendarHeader}>
+            <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))} className={styles.calendarNavBtn}>←</button>
+            <h3>{currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h3>
+            <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))} className={styles.calendarNavBtn}>→</button>
+          </div>
+          <div className={styles.calendarGrid}>
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+              <div key={day} className={styles.calendarDayHeader}>{day}</div>
+            ))}
+            {getCalendarDays()}
+          </div>
+        </div>
+      ) : pins.length === 0 ? (
         <EmptyState icon="📌" title="No pins yet" description="Be the first to pin something to this board!" action={session?.user ? { label: 'Pin Something', onClick: () => setShowCreateModal(true) } : undefined} />
       ) : (
         <div className={styles.pinsGrid}>
@@ -348,4 +379,46 @@ export default function BoardDetailPage() {
       />
     </div>
   )
+
+  function getCalendarDays() {
+    const year = currentMonth.getFullYear()
+    const month = currentMonth.getMonth()
+    const firstDay = new Date(year, month, 1)
+    const lastDay = new Date(year, month + 1, 0)
+    const startPadding = firstDay.getDay()
+    const days: React.ReactNode[] = []
+
+    for (let i = 0; i < startPadding; i++) {
+      days.push(<div key={`empty-${i}`} className={styles.calendarCellEmpty}></div>)
+    }
+
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+      const pinsOnDay = pins.filter(p => {
+        if (!p.expiresAt) return false
+        const d = new Date(p.expiresAt).toISOString().split('T')[0]
+        return d === dateStr
+      })
+
+      days.push(
+        <div key={day} className={`${styles.calendarCell} ${pinsOnDay.length > 0 ? styles.hasEvents : ''}`}>
+          <span className={styles.calendarDayNumber}>{day}</span>
+          <div className={styles.calendarEvents}>
+            {pinsOnDay.slice(0, 3).map(pin => (
+              <div key={pin.id} className={styles.calendarPinItem} onClick={() => {
+                const idx = pins.findIndex(p => p.id === pin.id)
+                if (idx >= 0) setCarouselIndex(idx)
+              }}>
+                <span className={styles.calendarPinTitle}>{pin.title || pin.content?.slice(0, 30) || 'Untitled'}</span>
+                {pin.latitude && pin.longitude && <span className={styles.calendarPinLoc}>📍</span>}
+              </div>
+            ))}
+            {pinsOnDay.length > 3 && <span className={styles.moreEvents}>+{pinsOnDay.length - 3} more</span>}
+          </div>
+        </div>
+      )
+    }
+
+    return days
+  }
 }

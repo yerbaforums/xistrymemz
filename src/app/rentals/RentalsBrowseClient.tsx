@@ -50,6 +50,7 @@ export default function RentalsBrowseClient({ initialRentals, categories, locati
   const [locationFilter, setLocationFilter] = useState('ALL')
   const [sort, setSort] = useState('newest')
   const [showAvailable, setShowAvailable] = useState(false)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
   const filtered = useMemo(() => {
     let items = [...initialRentals]
@@ -148,10 +149,32 @@ export default function RentalsBrowseClient({ initialRentals, categories, locati
         </label>
       </div>
 
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+          <strong>{filtered.length}</strong> {filtered.length === 1 ? 'rental' : 'rentals'} found
+        </span>
+        <div className={styles.viewToggles}>
+          <button
+            className={`${styles.viewToggle} ${viewMode === 'grid' ? styles.viewToggleActive : ''}`}
+            onClick={() => setViewMode('grid')}
+            aria-label="Grid view"
+          >
+            ▦
+          </button>
+          <button
+            className={`${styles.viewToggle} ${viewMode === 'list' ? styles.viewToggleActive : ''}`}
+            onClick={() => setViewMode('list')}
+            aria-label="List view"
+          >
+            ☰
+          </button>
+        </div>
+      </div>
+
       {filtered.length === 0 ? (
         <EmptyState icon="🏠" title="No rentals found" description="Try adjusting your filters or search terms." action={{ label: 'Browse All', onClick: () => window.location.href = '/rentals' }} />
       ) : (
-        <div className={styles.grid}>
+        <div className={viewMode === 'list' ? styles.list : styles.grid}>
           {filtered.map(item => (
             <Link key={item.id} href={`/products/${item.id}`} className={styles.card}>
               <div className={styles.cardImage}>

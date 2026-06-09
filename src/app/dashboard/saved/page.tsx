@@ -34,6 +34,8 @@ export default function SavedPage() {
   const [saved, setSaved] = useState<SavedItem[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('all')
+  const [search, setSearch] = useState('')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -63,7 +65,8 @@ export default function SavedPage() {
     counts[item.itemType] = (counts[item.itemType] || 0) + 1
   }
 
-  const filtered = filter === 'all' ? saved : saved.filter(s => s.itemType === filter)
+  const filtered = (filter === 'all' ? saved : saved.filter(s => s.itemType === filter))
+    .filter(s => !search || s.title?.toLowerCase().includes(search.toLowerCase()) || (TYPE_CONFIG[s.itemType]?.label || s.itemType).toLowerCase().includes(search.toLowerCase()))
   const typeKeys = Object.keys(counts).sort()
 
   return (
@@ -88,6 +91,13 @@ export default function SavedPage() {
         ) : (
           <>
             <div className={styles.filterRow}>
+              <input
+                type="text"
+                className={styles.searchInput}
+                placeholder="Search saved items..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
               <button className={`${styles.filterBtn} ${filter === 'all' ? styles.filterActive : ''}`} onClick={() => setFilter('all')}>
                 All ({saved.length})
               </button>
@@ -99,9 +109,19 @@ export default function SavedPage() {
                   </button>
                 )
               })}
+              <div className={styles.viewToggle}>
+                <button
+                  className={`${styles.viewBtn} ${viewMode === 'list' ? styles.viewBtnActive : ''}`}
+                  onClick={() => setViewMode('list')}
+                >📋 List</button>
+                <button
+                  className={`${styles.viewBtn} ${viewMode === 'grid' ? styles.viewBtnActive : ''}`}
+                  onClick={() => setViewMode('grid')}
+                >📐 Grid</button>
+              </div>
             </div>
 
-            <div className={styles.list}>
+            <div className={viewMode === 'grid' ? styles.grid : styles.list}>
               {filtered.length === 0 && (
                 <div className={styles.emptySmall}>No saved items in this category</div>
               )}
