@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Image from 'next/image'
 import ImageUploader from '@/components/ImageUploader'
 import AssetPicker from '@/components/AssetPicker'
@@ -54,6 +54,16 @@ export default function CreatePinModal({ boardSlug, boardName, onClose, onCreate
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [selectedAsset, setSelectedAsset] = useState<UserAsset | null>(null)
+
+  const expiryPresets = useMemo(() => {
+    const now = new Date()
+    const day = 86400000
+    return {
+      '7d': new Date(now.getTime() + 7 * day).toISOString().slice(0, 16),
+      '30d': new Date(now.getTime() + 30 * day).toISOString().slice(0, 16),
+      '90d': new Date(now.getTime() + 90 * day).toISOString().slice(0, 16),
+    }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -198,9 +208,9 @@ export default function CreatePinModal({ boardSlug, boardName, onClose, onCreate
           <label className={styles.label}>
             Expires At *
             <div className={styles.expiryPresets}>
-              <button type="button" className={`${styles.expiryPresetBtn} ${expiresAt === (() => { const d = new Date(); d.setDate(d.getDate() + 7); return d.toISOString().slice(0, 16) })() ? styles.expiryPresetActive : ''}`} onClick={() => { const d = new Date(); d.setDate(d.getDate() + 7); setExpiresAt(d.toISOString().slice(0, 16)) }}>7 days</button>
-              <button type="button" className={`${styles.expiryPresetBtn} ${expiresAt === (() => { const d = new Date(); d.setDate(d.getDate() + 30); return d.toISOString().slice(0, 16) })() ? styles.expiryPresetActive : ''}`} onClick={() => { const d = new Date(); d.setDate(d.getDate() + 30); setExpiresAt(d.toISOString().slice(0, 16)) }}>30 days</button>
-              <button type="button" className={`${styles.expiryPresetBtn} ${expiresAt === (() => { const d = new Date(); d.setDate(d.getDate() + 90); return d.toISOString().slice(0, 16) })() ? styles.expiryPresetActive : ''}`} onClick={() => { const d = new Date(); d.setDate(d.getDate() + 90); setExpiresAt(d.toISOString().slice(0, 16)) }}>90 days</button>
+              <button type="button" className={`${styles.expiryPresetBtn} ${expiresAt === expiryPresets['7d'] ? styles.expiryPresetActive : ''}`} onClick={() => setExpiresAt(expiryPresets['7d'])}>7 days</button>
+              <button type="button" className={`${styles.expiryPresetBtn} ${expiresAt === expiryPresets['30d'] ? styles.expiryPresetActive : ''}`} onClick={() => setExpiresAt(expiryPresets['30d'])}>30 days</button>
+              <button type="button" className={`${styles.expiryPresetBtn} ${expiresAt === expiryPresets['90d'] ? styles.expiryPresetActive : ''}`} onClick={() => setExpiresAt(expiryPresets['90d'])}>90 days</button>
             </div>
             <input
               type="datetime-local"

@@ -9,6 +9,7 @@ import Button from '@/components/ui/Button'
 import { usePassportLocation } from '@/hooks/usePassportLocation'
 import { useToast } from '@/context/ToastContext'
 import { reverseGeocodeLocation, shortenLocation } from '@/lib/geocoding'
+import Loading from '@/components/Loading'
 import { EmptyState } from '@/components/EmptyState'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import styles from './page.module.css'
@@ -34,6 +35,7 @@ interface Board {
   city: string | null
   distance: number | null
   pinCount: number
+  memberCount?: number
   isSystem: boolean
   ownerId: string | null
   createdAt: string
@@ -69,6 +71,7 @@ export default function BoardsPage() {
   const [selectedBoardId, setSelectedBoardId] = useState<string | null>(null)
   const [settingLocation, setSettingLocation] = useState(false)
   const [homeCoords, setHomeCoords] = useState<[number, number] | null>(null)
+  const initialFitDone = useRef(false)
   const [homeName, setHomeName] = useState('')
   const [mapReady, setMapReady] = useState(false)
   const [L, setL] = useState<any>(null)
@@ -136,7 +139,7 @@ export default function BoardsPage() {
           )
           params.set('lat', String(pos.coords.latitude))
           params.set('lng', String(pos.coords.longitude))
-        } catch {}
+        } catch (e) { console.error('Geolocation error:', e) }
       }
 
       const res = await fetch(`/api/boards?${params}`)
@@ -144,11 +147,12 @@ export default function BoardsPage() {
       setBoards(data.boards || [])
 
       const locBoards = (data.boards || []).filter((b: Board) => b.latitude && b.longitude)
-      if (locBoards.length > 0 && mapRef.current) {
+      if (locBoards.length > 0 && mapRef.current && !initialFitDone.current) {
+        initialFitDone.current = true
         const bounds = locBoards.map((b: Board) => [b.latitude, b.longitude] as [number, number])
         mapRef.current.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 })
       }
-    } catch {}
+    } catch (e) { console.error('Fetch boards error:', e) }
     setLoading(false)
   }, [])
 
@@ -204,7 +208,7 @@ export default function BoardsPage() {
           }
         }
         fetchBoards()
-      } catch {}
+      } catch (e) { console.error('Auto-create error:', e); error('Failed to create boards for locations') }
     }
     autoCreateFromLocations()
   }, [session, fetchBoards])
@@ -463,7 +467,7 @@ export default function BoardsPage() {
                 position={[b.latitude!, b.longitude!]}
                 icon={getBoardIcon(isHighlighted)}
               >
-                <Tooltip>{b.name} — {b.pinCount} pins</Tooltip>
+                <Tooltip>{b.name} — {b.pinCount} pins{b.memberCount != null ? ` · 👥 ${b.memberCount}` : ''}</Tooltip>
                 <Popup>
                   <div style={{ minWidth: 180 }}>
                     <Link href={`/boards/${b.slug}`} style={{ fontWeight: 600, textDecoration: 'none', color: 'var(--accent-primary)' }}>
@@ -485,7 +489,7 @@ export default function BoardsPage() {
       {(view === 'all' || view === 'list') && (
       <div className={styles.grid}>
         {loading ? (
-          <p className={styles.loading}>Loading boards...</p>
+          <Loading size="medium" message="Loading boards..." />
         ) : boards.length === 0 ? (
           <EmptyState icon="📌" title="No boards found" description="No boards near your location. Create one or search for a city." action={session?.user ? { label: 'Create Board', onClick: () => setShowCreateModal(true) } : { label: 'Sign In', onClick: () => window.location.href = '/auth/login' }} />
         ) : (
@@ -505,6 +509,7 @@ export default function BoardsPage() {
                 {board.description && <p className={styles.cardDesc}>{board.description}</p>}
                 <div className={styles.cardMeta}>
                   <span>📌 {board.pinCount} pins</span>
+                  {board.memberCount != null && <span>👥 {board.memberCount}</span>}
                   {board.location && <span>📍 {board.location}</span>}
                   {board.distance != null && <span>📍 {board.distance} mi</span>}
                   {board.city && <span>🏙️ {board.city}</span>}

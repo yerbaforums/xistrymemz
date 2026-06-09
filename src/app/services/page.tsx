@@ -201,10 +201,10 @@ export default function ServicesPage() {
                   />
                 ))}
               </div>
-              {filteredServices.length > page * PAGE_SIZE && (
+              {totalServices > services.length && (
                 <div style={{ textAlign: 'center', marginTop: 'var(--space-6)' }}>
                   <Button onClick={() => fetchServices(page + 1, true)}>
-                    Load More ({filteredServices.length - page * PAGE_SIZE} remaining)
+                    Load More ({totalServices - services.length} remaining)
                   </Button>
                 </div>
               )}

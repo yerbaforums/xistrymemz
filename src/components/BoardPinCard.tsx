@@ -33,6 +33,7 @@ interface Pin {
   createdAt: string
   likeCount?: number
   commentCount?: number
+  eventDate?: string | null
 }
 
 interface BoardPinCardProps {
@@ -42,6 +43,7 @@ interface BoardPinCardProps {
   boardSlug: string
   onDelete: (pinId: string) => void
   onView?: (pinId: string) => void
+  onEdit?: (pinId: string) => void
 }
 
 function getEntityHref(type: string | null, id: string | null): string {
@@ -146,7 +148,7 @@ function ImageCarousel({ images }: { images: string[] }) {
   )
 }
 
-const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, boardSlug, onDelete, onView }: BoardPinCardProps) {
+const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, boardSlug, onDelete, onView, onEdit }: BoardPinCardProps) {
   const [minimized, setMinimized] = useState(false)
   const [likes, setLikes] = useState(pin.likeCount || 0)
   const [liked, setLiked] = useState(false)
@@ -274,7 +276,10 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
             <button className={styles.viewBtn} onClick={() => onView(pin.id)} aria-label="View in carousel">🔍</button>
           )}
           {canDelete && (
-            <button className={styles.deleteBtn} onClick={() => onDelete(pin.id)} aria-label="Delete pin">🗑️</button>
+            <>
+              <button className={styles.editBtn} onClick={() => onEdit?.(pin.id)} aria-label="Edit pin">✏️</button>
+              <button className={styles.deleteBtn} onClick={() => onDelete(pin.id)} aria-label="Delete pin">🗑️</button>
+            </>
           )}
         </div>
       </div>

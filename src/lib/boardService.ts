@@ -15,6 +15,7 @@ function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
 export interface BoardWithDistance extends BulletinBoard {
   distance: number | null
   pinCount: number
+  memberCount: number
 }
 
 export async function findNearbyBoards(params: {
@@ -56,7 +57,7 @@ export async function findNearbyBoards(params: {
   if (lat !== undefined && lng !== undefined) {
     const rows = await prisma.bulletinBoard.findMany({
       where: where as any,
-      include: { _count: { select: { pins: { where: { expiresAt: { gte: new Date() } } } } } },
+      include: { _count: { select: { pins: { where: { expiresAt: { gte: new Date() } } }, members: true } } },
       orderBy: { createdAt: 'desc' },
     })
 
@@ -64,6 +65,7 @@ export async function findNearbyBoards(params: {
       ...r,
       distance: null,
       pinCount: r._count.pins,
+      memberCount: r._count.members,
     }))
 
     for (const b of boards) {
@@ -85,7 +87,7 @@ export async function findNearbyBoards(params: {
   const [rows, total] = await Promise.all([
     prisma.bulletinBoard.findMany({
       where: where as any,
-      include: { _count: { select: { pins: { where: { expiresAt: { gte: new Date() } } } } } },
+      include: { _count: { select: { pins: { where: { expiresAt: { gte: new Date() } } }, members: true } } },
       orderBy: { createdAt: 'desc' },
       skip: offset,
       take: limit,
@@ -97,6 +99,7 @@ export async function findNearbyBoards(params: {
     ...r,
     distance: null,
     pinCount: r._count.pins,
+    memberCount: r._count.members,
   }))
 
   return { boards, total }
@@ -255,10 +258,23 @@ export async function getPins(params: {
     prisma.bulletinPin.count({ where: where as any }),
   ])
 
+  const eventIds = pins.filter(p => p.entityType === 'EVENT' && p.entityId).map(p => p.entityId)
+  let eventDates = new Map<string, string>()
+  if (eventIds.length > 0) {
+    const events = await prisma.event.findMany({
+      where: { id: { in: eventIds as string[] } },
+      select: { id: true, eventDate: true },
+    })
+    for (const ev of events) {
+      if (ev.eventDate) eventDates.set(ev.id, ev.eventDate.toISOString())
+    }
+  }
+
   const mapped = pins.map(pin => ({
     ...pin,
     likeCount: pin._count.likes,
     commentCount: pin._count.comments,
+    eventDate: pin.entityType === 'EVENT' && pin.entityId ? (eventDates.get(pin.entityId) || null) : undefined,
   }))
 
   return { pins: mapped, total }

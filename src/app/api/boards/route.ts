@@ -28,7 +28,7 @@ export async function GET(request: Request) {
       const [boards, total] = await Promise.all([
         prisma.bulletinBoard.findMany({
           where: { ownerId: session.user.id },
-          include: { _count: { select: { pins: true } } },
+          include: { _count: { select: { pins: true, members: true } } },
           orderBy: { updatedAt: 'desc' },
           skip,
           take: limit,
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
         prisma.bulletinBoard.count({ where: { ownerId: session.user.id } }),
       ])
       return NextResponse.json({
-        boards: boards.map(b => ({ ...b, pinCount: b._count.pins })),
+        boards: boards.map(b => ({ ...b, pinCount: b._count.pins, memberCount: b._count.members })),
         total,
         page,
         pageSize: limit,

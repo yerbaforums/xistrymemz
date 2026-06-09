@@ -47,6 +47,7 @@ interface Pin {
   userId: string
   user: PinUser
   createdAt: string
+  eventDate?: string | null
 }
 
 interface Board {
@@ -84,6 +85,17 @@ export default function BoardDetailPage() {
   const [carouselIndex, setCarouselIndex] = useState<number | null>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'map' | 'calendar'>('grid')
   const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [editingPin, setEditingPin] = useState<Pin | null>(null)
+  const [editPinTitle, setEditPinTitle] = useState('')
+  const [joined, setJoined] = useState(false)
+  const [memberCount, setMemberCount] = useState(0)
+  const [joining, setJoining] = useState(false)
+  const [editPinContent, setEditPinContent] = useState('')
+  const [editPinCategory, setEditPinCategory] = useState('GENERAL')
+  const [editPinContactName, setEditPinContactName] = useState('')
+  const [editPinContactEmail, setEditPinContactEmail] = useState('')
+  const [editPinContactPhone, setEditPinContactPhone] = useState('')
+  const [savingPin, setSavingPin] = useState(false)
 
   const pinLocations = pins.filter(p => p.latitude && p.longitude)
 
@@ -95,13 +107,35 @@ export default function BoardDetailPage() {
       setBoard(data.board)
       setPins(data.pins || [])
       setTotal(data.total || 0)
-    } catch {}
+    } catch (e) { console.error('Fetch board error:', e); toastError('Failed to load board') }
     setLoading(false)
   }, [slug])
 
   useEffect(() => {
     fetchBoard()
   }, [fetchBoard])
+
+  useEffect(() => {
+    if (!session?.user?.id) return
+    fetch(`/api/boards/${slug}/join`)
+      .then(r => r.json())
+      .then(data => {
+        setJoined(data.joined)
+        setMemberCount(data.memberCount)
+      })
+      .catch(() => {})
+  }, [slug, session])
+
+  const handleJoin = async () => {
+    if (joining) return
+    setJoining(true)
+    try {
+      const res = await fetch(`/api/boards/${slug}/join`, { method: 'POST' })
+      const data = await res.json()
+      setJoined(data.joined)
+      setMemberCount(data.memberCount)
+    } catch {} finally { setJoining(false) }
+  }
 
   const handleDelete = async (pinId: string) => {
     if (!confirm('Delete this pin?')) return
@@ -111,7 +145,43 @@ export default function BoardDetailPage() {
         setPins(prev => prev.filter(p => p.id !== pinId))
         setTotal(prev => prev - 1)
       }
-    } catch {}
+    } catch (e) { console.error('Delete pin error:', e); toastError('Failed to delete pin') }
+  }
+
+  const handleEditPin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingPin) return
+    setSavingPin(true)
+    try {
+      const res = await fetch(`/api/boards/${slug}/pins/${editingPin.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: editPinTitle.trim(),
+          content: editPinContent.trim(),
+          category: editPinCategory,
+          contactName: editPinContactName.trim() || null,
+          contactEmail: editPinContactEmail.trim() || null,
+          contactPhone: editPinContactPhone.trim() || null,
+        }),
+      })
+      if (res.ok) {
+        setEditingPin(null)
+        await fetchBoard()
+      }
+    } catch {} finally { setSavingPin(false) }
+  }
+
+  const openEditPin = (pinId: string) => {
+    const pin = pins.find(p => p.id === pinId)
+    if (!pin) return
+    setEditPinTitle(pin.title || '')
+    setEditPinContent(pin.content || '')
+    setEditPinCategory(pin.category || 'GENERAL')
+    setEditPinContactName(pin.contactName || '')
+    setEditPinContactEmail(pin.contactEmail || '')
+    setEditPinContactPhone(pin.contactPhone || '')
+    setEditingPin(pin)
   }
 
   const handleEdit = async (e: React.FormEvent) => {
@@ -210,6 +280,16 @@ export default function BoardDetailPage() {
           </div>
         </div>
         <div className={styles.boardActions}>
+          {session?.user && board.ownerId !== userId && (
+            <Button
+              variant={joined ? 'secondary' : 'primary'}
+              onClick={handleJoin}
+              disabled={joining}
+            >
+              {joined ? '✓ Joined' : '+ Join Board'}
+            </Button>
+          )}
+          {memberCount > 0 && <span className={styles.memberCount}>👥 {memberCount}</span>}
           {session?.user && (
             <Button variant="primary" className={styles.pinBtn} onClick={() => setShowCreateModal(true)}>
               📌 Pin Something
@@ -245,7 +325,7 @@ export default function BoardDetailPage() {
         </button>
       </div>
 
-      {(viewMode === 'map' || viewMode === 'grid') && pinLocations.length > 0 && (
+      {(viewMode === 'map' || (viewMode === 'grid' && pinLocations.length > 0)) && (
         <div className={styles.mapWrap}>
           <MapContainer center={mapCenter} zoom={12} className={styles.map} scrollWheelZoom={true}>
             <TileLayer
@@ -316,6 +396,7 @@ export default function BoardDetailPage() {
               isBoardOwner={isBoardOwner}
               boardSlug={slug}
               onDelete={handleDelete}
+              onEdit={openEditPin}
               onView={(pinId) => {
                 const idx = pins.findIndex(p => p.id === pinId)
                 if (idx >= 0) setCarouselIndex(idx)
@@ -375,6 +456,55 @@ export default function BoardDetailPage() {
         </div>
       )}
 
+      {editingPin && (
+        <div className="modal-overlay" onClick={() => setEditingPin(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2>✏️ Edit Pin</h2>
+            <form onSubmit={handleEditPin}>
+              <div className="form-group">
+                <label>Title</label>
+                <input type="text" value={editPinTitle} onChange={e => setEditPinTitle(e.target.value)} />
+              </div>
+              <div className="form-group">
+                <label>Content</label>
+                <textarea value={editPinContent} onChange={e => setEditPinContent(e.target.value)} rows={3} />
+              </div>
+              <div className="form-group">
+                <label>Category</label>
+                <select value={editPinCategory} onChange={e => setEditPinCategory(e.target.value)}>
+                  <option value="GENERAL">General</option>
+                  <option value="PROMOTION">Promotion</option>
+                  <option value="EVENT">Event</option>
+                  <option value="SERVICE">Service</option>
+                  <option value="HOUSING">Housing</option>
+                  <option value="JOBS">Jobs</option>
+                  <option value="FREE">Free</option>
+                  <option value="LOST_FOUND">Lost & Found</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Contact Name</label>
+                <input type="text" value={editPinContactName} onChange={e => setEditPinContactName(e.target.value)} />
+              </div>
+              <div className="form-group">
+                <label>Contact Email</label>
+                <input type="email" value={editPinContactEmail} onChange={e => setEditPinContactEmail(e.target.value)} />
+              </div>
+              <div className="form-group">
+                <label>Contact Phone</label>
+                <input type="tel" value={editPinContactPhone} onChange={e => setEditPinContactPhone(e.target.value)} />
+              </div>
+              <div className="form-actions">
+                <Button type="button" variant="ghost" onClick={() => setEditingPin(null)}>Cancel</Button>
+                <Button type="submit" variant="primary" disabled={savingPin}>
+                  {savingPin ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <ConfirmDialog
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
@@ -402,8 +532,10 @@ export default function BoardDetailPage() {
     for (let day = 1; day <= lastDay.getDate(); day++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
       const pinsOnDay = pins.filter(p => {
-        if (!p.createdAt) return false
-        const d = new Date(p.createdAt).toISOString().split('T')[0]
+        if (p.entityType !== 'EVENT') return false
+        const dateSource = p.eventDate || p.createdAt
+        if (!dateSource) return false
+        const d = new Date(dateSource).toISOString().split('T')[0]
         return d === dateStr
       })
 

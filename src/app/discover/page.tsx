@@ -131,9 +131,9 @@ export default function DiscoverPage() {
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [mapCenter, setMapCenter] = useState<[number, number]>([40.7128, -74.006])
-  const L = typeof window !== 'undefined' ? require('leaflet') : null
+  const [L, setL] = useState<any>(null)
 
-  const fetchResults = useCallback(async (p = 1) => {
+  const fetchResults = useCallback(async (p = 1, append = false) => {
     setLoading(true)
     const params = new URLSearchParams()
     if (query) params.set('q', query)
@@ -146,7 +146,7 @@ export default function DiscoverPage() {
     try {
       const res = await fetch(`/api/discover?${params}`)
       const data = await res.json()
-      setResults(data.results || [])
+      setResults(prev => append ? [...prev, ...(data.results || [])] : (data.results || []))
       setTotal(data.total || 0)
       setPage(p)
 
@@ -161,8 +161,32 @@ export default function DiscoverPage() {
   }, [query, typeFilter, intentFilter, hashtagFilter])
 
   useEffect(() => {
-    fetchResults(1)
+    fetchResults(1, false)
   }, [fetchResults])
+
+  useEffect(() => {
+    import('leaflet').then(mod => setL(mod))
+  }, [])
+
+  useEffect(() => {
+    if (!L) return
+    delete L.Icon.Default.prototype._getIconUrl
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+    })
+  }, [L])
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setMapCenter([pos.coords.latitude, pos.coords.longitude]),
+        () => {},
+        { timeout: 3000 }
+      )
+    }
+  }, [])
 
   const sortedResults = useMemo(() => {
     const sorted = [...results]
@@ -233,15 +257,6 @@ export default function DiscoverPage() {
     return days
   }
 
-  if (L && typeof window !== 'undefined') {
-    delete L.Icon.Default.prototype._getIconUrl
-    L.Icon.Default.mergeOptions({
-      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-    })
-  }
-
   return (
     <div className={styles.page}>
       <Breadcrumbs items={[
@@ -260,9 +275,9 @@ export default function DiscoverPage() {
           placeholder="Search anything..."
           value={query}
           onChange={e => setQuery(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && fetchResults(1)}
+          onKeyDown={e => e.key === 'Enter' && fetchResults(1, false)}
         />
-        <Button variant="primary" className={styles.searchBtn} onClick={() => fetchResults(1)}>Search</Button>
+        <Button variant="primary" className={styles.searchBtn} onClick={() => fetchResults(1, false)}>Search</Button>
       </div>
 
       <div className={styles.filterRow}>
@@ -367,7 +382,7 @@ export default function DiscoverPage() {
             <EmptyState icon="🔍" title="No results found" description="Try adjusting your filters." />
           )}
           {total > page * 50 && (
-            <Button variant="primary" className={styles.loadMore} onClick={() => fetchResults(page + 1)}>
+            <Button variant="primary" className={styles.loadMore} onClick={() => fetchResults(page + 1, true)}>
               Load More ({Math.min(50, total - page * 50)} remaining)
             </Button>
           )}

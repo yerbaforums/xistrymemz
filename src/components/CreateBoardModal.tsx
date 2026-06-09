@@ -87,7 +87,7 @@ export default function CreateBoardModal({ onClose, onCreated, initialCity, init
           setLatitude(first.latitude!.toString())
           setLongitude(first.longitude!.toString())
         }
-      } catch {}
+      } catch (e) { console.error('Failed to load locations:', e) }
       setLoadingLocations(false)
     }
     fetchLocations()

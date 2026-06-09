@@ -181,6 +181,7 @@ model User {
   sentCollabRequests   CollaborationRequest[] @relation("CollabRequestSender")
   receivedCollabRequests CollaborationRequest[] @relation("CollabRequestReceiver")
   boardsOwned          BulletinBoard[]
+  boardMemberships     BoardMember[]
   bulletinPins         BulletinPin[]
   pinLikes             PinLike[]
   pinComments          PinComment[]
@@ -522,6 +523,7 @@ model BulletinBoard {
   ownerId     String?
   owner       User?    @relation(fields: [ownerId], references: [id], onDelete: SetNull)
   pins        BulletinPin[]
+  members     BoardMember[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -1996,6 +1998,20 @@ model ContentView {
   @@index([serviceOfferingId])
   @@index([requestId])
   @@index([entityType, entityId])
+  @@index([userId])
+}
+
+model BoardMember {
+  id        String         @id @default(cuid())
+  boardId   String
+  board     BulletinBoard  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String         @default("MEMBER") // MEMBER | MODERATOR
+  joinedAt  DateTime       @default(now())
+
+  @@unique([boardId, userId])
+  @@index([boardId])
   @@index([userId])
 }
 
