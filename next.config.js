@@ -1,7 +1,15 @@
 /** @type {import('next').NextConfig} */
 const withNextIntl = require('next-intl/plugin')('./src/i18n/request.ts');
+const { execSync } = require('child_process');
+
+const gitHash = (() => {
+  try { return execSync('git rev-parse --short HEAD', { encoding: 'utf8', timeout: 2000 }).trim() } catch { return 'dev' }
+})()
 
 const nextConfig = {
+  env: {
+    NEXT_PUBLIC_GIT_HASH: gitHash,
+  },
   images: {
     remotePatterns: [
       {

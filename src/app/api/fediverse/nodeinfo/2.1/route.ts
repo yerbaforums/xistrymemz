@@ -9,7 +9,7 @@ export async function GET() {
 
   return NextResponse.json({
     version: '2.1',
-    software: { name: 'xistrymemz', version: '0.7.0' },
+    software: { name: 'xistrymemz', version: '0.8.0' },
     protocols: { inbound: ['activitypub'], outbound: ['activitypub'] },
     services: { inbound: [], outbound: [] },
     openRegistrations: true,

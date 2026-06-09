@@ -8,7 +8,8 @@ import { QRCodeModal } from './QRCodeModal'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import { getCryptoPrices } from '@/lib/prices'
 
-const PACKAGE_VERSION = '0.7.0'
+const PACKAGE_VERSION = '0.8.0'
+const GIT_HASH = process.env.NEXT_PUBLIC_GIT_HASH || 'dev'
 
 interface DonationAddr {
   id: string
@@ -144,7 +145,8 @@ export default function Footer() {
           </div>
           <div className={styles.bottomBuiltWith}>
             <span>{t('builtWith')}</span>
-            <span className={styles.version}>{PACKAGE_VERSION}</span>
+            <span className={styles.version}>v{PACKAGE_VERSION}</span>
+            <span className={styles.hash}>@{GIT_HASH}</span>
           </div>
         </div>
       </div>

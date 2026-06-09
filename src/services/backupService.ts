@@ -9,20 +9,18 @@ import FormData from 'form-data'
 
 const execAsync = promisify(exec)
 
-const BACKUP_DIR = path.join(
-  fs.existsSync(path.join(process.cwd(), 'backups')) ? process.cwd() : os.tmpdir(),
-  'backups'
-)
-const PUBLIC_BACKUP_DIR = path.join(
-  fs.existsSync(path.join(process.cwd(), 'public', 'backups')) ? process.cwd() : os.tmpdir(),
-  'public', 'backups'
-)
+function getBackupDir(): string {
+  const dir = path.join(os.tmpdir(), 'backups')
+  if (!fs.existsSync(dir)) {
+    try { fs.mkdirSync(dir, { recursive: true }) } catch {}
+  }
+  return dir
+}
 
-function ensureDirectories() {
-  for (const dir of [BACKUP_DIR, PUBLIC_BACKUP_DIR]) {
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true })
-    }
+function ensureBackupDirs() {
+  const dir = getBackupDir()
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true })
   }
 }
 
@@ -80,11 +78,11 @@ export async function createDatabaseDump(): Promise<{
   fileSize: number
   dbSize: number
 }> {
-  ensureDirectories()
+  ensureBackupDirs()
 
   const timestamp = getTimestamp()
   const fileName = `backup-${timestamp}.sql.gz`
-  const filePath = path.join(BACKUP_DIR, fileName)
+  const filePath = path.join(getBackupDir(), fileName)
 
   let dbSize = 0
 
@@ -93,7 +91,7 @@ export async function createDatabaseDump(): Promise<{
 
   if (dbType === 'postgresql' && pgDumpPath) {
     try {
-      const dumpFile = path.join(BACKUP_DIR, `backup-${timestamp}.sql`)
+      const dumpFile = path.join(getBackupDir(), `backup-${timestamp}.sql`)
       await execAsync(`"${pgDumpPath}" "${process.env.DATABASE_URL}" > "${dumpFile}"`)
 
       const stats = fs.statSync(dumpFile)
@@ -114,9 +112,9 @@ export async function createDatabaseDump(): Promise<{
     if (fs.existsSync(dbPath)) {
       const stats = fs.statSync(dbPath)
       dbSize = stats.size
-      await execAsync(`sqlite3 "${dbPath}" ".backup '${path.join(BACKUP_DIR, `backup-${timestamp}.db`)}'"`)
-      await execAsync(`gzip -c "${path.join(BACKUP_DIR, `backup-${timestamp}.db`)}" > "${filePath}"`)
-      fs.unlinkSync(path.join(BACKUP_DIR, `backup-${timestamp}.db`))
+      await execAsync(`sqlite3 "${dbPath}" ".backup '${path.join(getBackupDir(), `backup-${timestamp}.db`)}'"`)
+      await execAsync(`gzip -c "${path.join(getBackupDir(), `backup-${timestamp}.db`)}" > "${filePath}"`)
+      fs.unlinkSync(path.join(getBackupDir(), `backup-${timestamp}.db`))
     }
   } else {
     return createPrismaDump(timestamp, fileName, filePath)
@@ -211,7 +209,7 @@ export async function saveBackupRecord(metadata: {
   userId: string
 }) {
   const torrentFileName = `${metadata.fileName.replace('.sql.gz', '')}.torrent`
-  saveTorrentFile(torrentFileName, metadata, BACKUP_DIR)
+  saveTorrentFile(torrentFileName, metadata, getBackupDir())
 
   const backup = await prisma.backup.create({
     data: {
@@ -287,13 +285,13 @@ export async function deleteBackup(id: string) {
   const backup = await prisma.backup.findUnique({ where: { id } })
   if (!backup) return false
 
-  const filePath = path.join(BACKUP_DIR, backup.fileName)
+  const filePath = path.join(getBackupDir(), backup.fileName)
   if (fs.existsSync(filePath)) {
     fs.unlinkSync(filePath)
   }
 
   const torrentFileName = path.basename(backup.torrentFile)
-  const torrentPath = path.join(BACKUP_DIR, torrentFileName)
+  const torrentPath = path.join(getBackupDir(), torrentFileName)
   if (fs.existsSync(torrentPath)) {
     fs.unlinkSync(torrentPath)
   }
@@ -303,7 +301,7 @@ export async function deleteBackup(id: string) {
 }
 
 export async function getBackupStats() {
-  ensureDirectories()
+  ensureBackupDirs()
 
   const backups = await prisma.backup.findMany({
     orderBy: { createdAt: 'desc' },
@@ -313,10 +311,10 @@ export async function getBackupStats() {
   let diskUsage = 0
 
   try {
-    if (fs.existsSync(BACKUP_DIR)) {
-      const files = fs.readdirSync(BACKUP_DIR)
+    if (fs.existsSync(getBackupDir())) {
+      const files = fs.readdirSync(getBackupDir())
       for (const file of files) {
-        const filePath = path.join(BACKUP_DIR, file)
+        const filePath = path.join(getBackupDir(), file)
         if (fs.statSync(filePath).isFile()) {
           diskUsage += fs.statSync(filePath).size
         }
@@ -351,9 +349,14 @@ export async function cleanOldBackups(retentionCount: number) {
 }
 
 export function getBackupFilePath(fileName: string): string | null {
-  const filePath = path.join(BACKUP_DIR, fileName)
-  if (fs.existsSync(filePath)) {
-    return filePath
+  const candidates = [
+    path.join(getBackupDir(), fileName),
+    path.join(process.cwd(), 'backups', fileName),
+    path.join(process.cwd(), 'public', 'backups', fileName),
+    path.join(os.tmpdir(), fileName),
+  ]
+  for (const fp of candidates) {
+    if (fs.existsSync(fp)) return fp
   }
   return null
 }
