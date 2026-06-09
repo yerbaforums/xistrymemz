@@ -11,6 +11,7 @@ import Button from '@/components/ui/Button'
 import PinCarouselModal from '@/components/PinCarouselModal'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { useToast } from '@/context/ToastContext'
+import { geocodeLocation } from '@/lib/geocoding'
 import { EmptyState } from '@/components/EmptyState'
 import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
@@ -251,6 +252,18 @@ export default function BoardDetailPage() {
     } catch { toastError('Failed to delete board') }
   }
 
+  const handleGeocode = async () => {
+    if (!editLocation.trim()) return
+    try {
+      const result = await geocodeLocation(editLocation)
+      if (result) {
+        setEditLatitude(result.latitude.toString())
+        setEditLongitude(result.longitude.toString())
+        success('📍 Location geocoded!')
+      } else { toastError('Could not geocode this location') }
+    } catch { toastError('Geocoding failed') }
+  }
+
   const openEdit = () => {
     if (!board) return
     setEditName(board.name)
@@ -486,7 +499,10 @@ export default function BoardDetailPage() {
               </div>
               <div className="form-group">
                 <label>Location</label>
-                <input type="text" value={editLocation} onChange={e => setEditLocation(e.target.value)} placeholder="City, address, etc." />
+                <div className="form-row" style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                  <input type="text" value={editLocation} onChange={e => setEditLocation(e.target.value)} placeholder="City, address, etc." style={{ flex: 1 }} />
+                  <button type="button" className={styles.overlayBtn} onClick={handleGeocode} title="Look up lat/lng from city name">📍 Geocode</button>
+                </div>
               </div>
               <div className="form-row" style={{ display: 'flex', gap: 8 }}>
                 <div className="form-group" style={{ flex: 1 }}>

@@ -379,6 +379,22 @@
   color: var(--bg-primary);
 }
 
+.overlayBtn {
+  padding: 4px 12px;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.overlayBtn:hover {
+  box-shadow: 0 0 8px rgba(0, 217, 255, 0.4);
+}
+
 .cardOwnerActions {
   display: flex;
   gap: 4px;

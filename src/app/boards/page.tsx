@@ -8,7 +8,7 @@ import CreateBoardModal from '@/components/CreateBoardModal'
 import Button from '@/components/ui/Button'
 import { usePassportLocation } from '@/hooks/usePassportLocation'
 import { useToast } from '@/context/ToastContext'
-import { reverseGeocodeLocation, shortenLocation } from '@/lib/geocoding'
+import { reverseGeocodeLocation, shortenLocation, geocodeLocation } from '@/lib/geocoding'
 import Loading from '@/components/Loading'
 import { EmptyState } from '@/components/EmptyState'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
@@ -99,14 +99,16 @@ export default function BoardsPage() {
 
   const getBoardIcon = useCallback((highlighted: boolean, isOwner?: boolean) => {
     if (!L) return undefined
-    const borderColor = isOwner ? 'var(--accent-primary)' : '#555'
-    const bgColor = isOwner ? 'var(--accent-primary)' : '#2d2d2d'
+    const grain = isOwner
+      ? 'linear-gradient(135deg, #00d9ff, #0099cc)'
+      : 'linear-gradient(135deg, #8B6914, #A0782C, #8B6914)'
+    const borderColor = isOwner ? 'var(--accent-primary)' : '#654321'
     const glow = highlighted ? `0 0 0 3px rgba(0,217,255,0.4),` : ''
     return L.divIcon({
       className: '',
-      html: `<div style="width:26px;height:28px;background:${bgColor};border:2px solid ${borderColor};border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:${glow}0 2px 6px rgba(0,0,0,0.3);color:white;cursor:pointer;">📌</div>`,
-      iconSize: [30, 32],
-      iconAnchor: [15, 28],
+      html: `<div style="width:32px;height:24px;background:${grain};border:2px solid ${borderColor};border-radius:4px;box-shadow:${glow}0 2px 6px rgba(0,0,0,0.3);position:relative;"><div style="position:absolute;top:-4px;left:50%;transform:translateX(-50%);width:6px;height:6px;background:#654321;border-radius:50%;"></div></div>`,
+      iconSize: [36, 28],
+      iconAnchor: [18, 24],
     })
   }, [L])
 
@@ -376,6 +378,18 @@ export default function BoardsPage() {
     } catch { error('Failed to delete board') }
   }
 
+  const handleGeocode = async () => {
+    if (!editLocation.trim()) return
+    try {
+      const result = await geocodeLocation(editLocation)
+      if (result) {
+        setEditLatitude(result.latitude.toString())
+        setEditLongitude(result.longitude.toString())
+        success('📍 Location geocoded!')
+      } else { error('Could not geocode this location') }
+    } catch { error('Geocoding failed') }
+  }
+
   const openEdit = (board: Board) => {
     setEditBoard(board)
     setEditName(board.name)
@@ -625,7 +639,10 @@ export default function BoardsPage() {
               </div>
               <div className="form-group">
                 <label>Location</label>
-                <input type="text" value={editLocation} onChange={e => setEditLocation(e.target.value)} placeholder="City, address, etc." />
+                <div className="form-row" style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                  <input type="text" value={editLocation} onChange={e => setEditLocation(e.target.value)} placeholder="City, address, etc." style={{ flex: 1 }} />
+                  <button type="button" className={styles.overlayBtn} onClick={handleGeocode} title="Look up lat/lng from city name">📍 Geocode</button>
+                </div>
               </div>
               <div className="form-row" style={{ display: 'flex', gap: 8 }}>
                 <div className="form-group" style={{ flex: 1 }}>
