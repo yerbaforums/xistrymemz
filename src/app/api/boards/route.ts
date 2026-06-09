@@ -11,6 +11,7 @@ export async function GET(request: Request) {
     const lng = searchParams.get('lng') ? parseFloat(searchParams.get('lng')!) : undefined
     const radius = searchParams.get('radius') ? parseInt(searchParams.get('radius')!) : undefined
     const city = searchParams.get('city') || undefined
+    const q = searchParams.get('q') || undefined
     const page = parseInt(searchParams.get('page') || '1')
     const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 20
     const north = searchParams.get('north') ? parseFloat(searchParams.get('north')!) : undefined
@@ -66,6 +67,7 @@ export async function GET(request: Request) {
       lng: userLng,
       radius: effectiveRadius || 50,
       city,
+      q,
       page,
       limit,
       north,

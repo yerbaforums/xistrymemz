@@ -53,9 +53,10 @@ export default function BoardsPage() {
   const { success, error } = useToast()
   const [boards, setBoards] = useState<Board[]>([])
   const [loading, setLoading] = useState(true)
-  const [searchCity, setSearchCity] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<'recent' | 'alpha'>('recent')
   const [view, setView] = useState<'all' | 'map' | 'list'>('all')
+  const [myBoards, setMyBoards] = useState(false)
 
   const sortedBoards = useMemo(() => {
     if (sortBy === 'alpha') {
@@ -119,6 +120,8 @@ export default function BoardsPage() {
       const params = new URLSearchParams()
       params.set('limit', '100')
       if (city) params.set('city', city)
+      if (searchQuery && !city) params.set('q', searchQuery)
+      if (myBoards) params.set('my', 'true')
       if (bounds) {
         params.set('north', String(bounds.north))
         params.set('south', String(bounds.south))
@@ -208,14 +211,14 @@ export default function BoardsPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    fetchBoards(undefined, searchCity.trim())
+    fetchBoards(undefined, searchQuery.trim())
   }
 
   const handleMapMove = useCallback((bounds: { north: number; south: number; east: number; west: number }) => {
-    if (!searchCity) {
+    if (!searchQuery) {
       fetchBoards(bounds)
     }
-  }, [fetchBoards, searchCity])
+  }, [fetchBoards, searchQuery])
 
   const handleCardClick = (board: Board) => {
     if (board.latitude && board.longitude) {
@@ -398,29 +401,36 @@ export default function BoardsPage() {
         </div>
       )}
 
-      <form onSubmit={handleSearch} className={styles.search}>
-        <input
-          type="text"
-          value={searchCity}
-          onChange={e => setSearchCity(e.target.value)}
-          placeholder="Search boards by city..."
-          className={styles.searchInput}
-        />
-        <Button type="submit" variant="primary" className={styles.searchBtn}>Search</Button>
-        {searchCity && (
-          <Button type="button" variant="ghost" className={styles.clearBtn} onClick={() => { setSearchCity(''); fetchBoards() }}>
-            Clear
-          </Button>
-        )}
-        <select
-          value={sortBy}
-          onChange={e => setSortBy(e.target.value as 'recent' | 'alpha')}
-          className={styles.sortSelect}
-        >
-          <option value="recent">Most Recent</option>
-          <option value="alpha">Alphabetical A-Z</option>
-        </select>
-      </form>
+      <div className={styles.searchBar}>
+        <form onSubmit={handleSearch} className={styles.search}>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Search boards by name, city, or description..."
+            className={styles.searchInput}
+          />
+          <Button type="submit" variant="primary" className={styles.searchBtn}>Search</Button>
+          {searchQuery && (
+            <Button type="button" variant="ghost" className={styles.clearBtn} onClick={() => { setSearchQuery(''); fetchBoards() }}>
+              Clear
+            </Button>
+          )}
+        </form>
+        <div className={styles.searchControls}>
+          <button className={`${styles.myBtn} ${myBoards ? styles.myBtnActive : ''}`} onClick={() => { setMyBoards(!myBoards); fetchBoards(undefined, undefined) }}>
+            {myBoards ? '📌 All Boards' : '📌 My Boards'}
+          </button>
+          <select
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value as 'recent' | 'alpha')}
+            className={styles.sortSelect}
+          >
+            <option value="recent">Most Recent</option>
+            <option value="alpha">Alphabetical A-Z</option>
+          </select>
+        </div>
+      </div>
 
       {(view === 'all' || view === 'map') && (
       <div className={styles.mapWrap}>

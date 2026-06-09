@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useState, useCallback } from 'react'
+import { memo, useState, useCallback, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { getUserProfileUrl } from '@/lib/utils'
@@ -31,12 +31,15 @@ interface Pin {
   userId: string
   user: PinUser
   createdAt: string
+  likeCount?: number
+  commentCount?: number
 }
 
 interface BoardPinCardProps {
   pin: Pin
   isOwner: boolean
   isBoardOwner: boolean
+  boardSlug: string
   onDelete: (pinId: string) => void
   onView?: (pinId: string) => void
 }
@@ -116,12 +119,9 @@ function timeUntilExpires(expiresAt: string | null): string | null {
 function ImageCarousel({ images }: { images: string[] }) {
   const [current, setCurrent] = useState(0)
   const len = images.length
-
   if (len === 0) return null
-
   const prev = useCallback(() => setCurrent(c => (c - 1 + len) % len), [len])
   const next = useCallback(() => setCurrent(c => (c + 1) % len), [len])
-
   return (
     <div className={styles.carousel}>
       <div className={styles.carouselInner}>
@@ -138,12 +138,7 @@ function ImageCarousel({ images }: { images: string[] }) {
       {len > 1 && (
         <div className={styles.carouselDots}>
           {images.map((_, i) => (
-            <button
-              key={i}
-              className={`${styles.carouselDot} ${i === current ? styles.carouselDotActive : ''}`}
-              onClick={() => setCurrent(i)}
-              aria-label={`Image ${i + 1}`}
-            />
+            <button key={i} className={`${styles.carouselDot} ${i === current ? styles.carouselDotActive : ''}`} onClick={() => setCurrent(i)} aria-label={`Image ${i + 1}`} />
           ))}
         </div>
       )}
@@ -151,16 +146,77 @@ function ImageCarousel({ images }: { images: string[] }) {
   )
 }
 
-const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, onDelete, onView }: BoardPinCardProps) {
+const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, boardSlug, onDelete, onView }: BoardPinCardProps) {
   const [minimized, setMinimized] = useState(false)
-  const [likes, setLikes] = useState(0)
+  const [likes, setLikes] = useState(pin.likeCount || 0)
   const [liked, setLiked] = useState(false)
+  const [liking, setLiking] = useState(false)
   const [showCommentForm, setShowCommentForm] = useState(false)
   const [commentText, setCommentText] = useState('')
-  const [comments, setComments] = useState<string[]>([])
+  const [commentList, setCommentList] = useState<{ id: string; content: string; user: { name: string | null; image: string | null } }[]>([])
+  const [commentCount, setCommentCount] = useState(pin.commentCount || 0)
+  const [commentsLoading, setCommentsLoading] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const parsedImages = pin.images ? JSON.parse(pin.images) as string[] : []
   const expirationText = timeUntilExpires(pin.expiresAt)
   const canDelete = isOwner || isBoardOwner
+
+  useEffect(() => {
+    fetch(`/api/boards/${boardSlug}/pins/${pin.id}/like`)
+      .then(r => r.json())
+      .then(data => {
+        setLiked(data.liked)
+        setLikes(data.count)
+      })
+      .catch(() => {})
+  }, [boardSlug, pin.id])
+
+  const handleLike = async () => {
+    if (liking) return
+    setLiking(true)
+    try {
+      const res = await fetch(`/api/boards/${boardSlug}/pins/${pin.id}/like`, { method: 'POST' })
+      const data = await res.json()
+      setLiked(data.liked)
+      setLikes(data.count)
+    } catch {}
+    setLiking(false)
+  }
+
+  const handleComment = async () => {
+    if (!commentText.trim() || submitting) return
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/boards/${boardSlug}/pins/${pin.id}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: commentText.trim() }),
+      })
+      if (res.ok) {
+        const newComment = await res.json()
+        setCommentList(prev => [newComment, ...prev])
+        setCommentCount(c => c + 1)
+        setCommentText('')
+      }
+    } catch {}
+    setSubmitting(false)
+  }
+
+  const loadComments = async () => {
+    if (commentsLoading || commentList.length > 0) return
+    setCommentsLoading(true)
+    try {
+      const res = await fetch(`/api/boards/${boardSlug}/pins/${pin.id}/comments`)
+      const data = await res.json()
+      setCommentList(data.comments || [])
+    } catch {}
+    setCommentsLoading(false)
+  }
+
+  const toggleComments = () => {
+    if (!showCommentForm && commentList.length === 0) loadComments()
+    setShowCommentForm(!showCommentForm)
+  }
 
   return (
     <div className={`${styles.card} ${minimized ? styles.minimized : ''}`} style={pin.isPinned ? { borderColor: 'var(--accent-primary)' } : undefined}>
@@ -191,13 +247,10 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, on
       {!minimized && (
         <>
           {pin.content && <p className={styles.content}>{pin.content}</p>}
-
           {parsedImages.length > 0 && <ImageCarousel images={parsedImages} />}
-
           {pin.entityType && pin.entityId && (
             <LinkedEntityDetail entityType={pin.entityType} entityId={pin.entityId} />
           )}
-
           {(pin.contactName || pin.contactEmail || pin.contactPhone) && (
             <div className={styles.contact}>
               <span className={styles.contactLabel}>Contact:</span>
@@ -218,83 +271,50 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, on
         )}
         <div className={styles.footerActions}>
           {onView && (
-            <button className={styles.viewBtn} onClick={() => onView(pin.id)} aria-label="View in carousel">
-              🔍
-            </button>
+            <button className={styles.viewBtn} onClick={() => onView(pin.id)} aria-label="View in carousel">🔍</button>
           )}
           {canDelete && (
-            <button className={styles.deleteBtn} onClick={() => onDelete(pin.id)} aria-label="Delete pin">
-              🗑️
-            </button>
+            <button className={styles.deleteBtn} onClick={() => onDelete(pin.id)} aria-label="Delete pin">🗑️</button>
           )}
         </div>
       </div>
 
       <div className={styles.socialActions}>
-        <button
-          className={`${styles.socialBtn} ${liked ? styles.socialBtnActive : ''}`}
-          onClick={() => { setLiked(!liked); setLikes(l => liked ? l - 1 : l + 1) }}
-          aria-label="Like"
-        >
+        <button className={`${styles.socialBtn} ${liked ? styles.socialBtnActive : ''}`} onClick={handleLike} disabled={liking} aria-label="Like">
           {liked ? '❤️' : '🤍'} <span>{likes}</span>
         </button>
-        <button
-          className={styles.socialBtn}
-          onClick={() => setShowCommentForm(!showCommentForm)}
-          aria-label="Comment"
-        >
-          💬 <span>{comments.length}</span>
+        <button className={styles.socialBtn} onClick={toggleComments} aria-label="Comment">
+          💬 <span>{commentCount}</span>
         </button>
-        <button
-          className={styles.socialBtn}
-          onClick={() => {
-            if (navigator.share) {
-              navigator.share({ title: pin.title || '', text: pin.content || '', url: window.location.href })
-            } else {
-              navigator.clipboard.writeText(window.location.href)
-            }
-          }}
-          aria-label="Share"
-        >
+        <button className={styles.socialBtn} onClick={() => {
+          if (navigator.share) {
+            navigator.share({ title: pin.title || '', text: pin.content || '', url: `${window.location.origin}/boards/${boardSlug}` })
+          } else {
+            navigator.clipboard.writeText(`${window.location.origin}/boards/${boardSlug}`)
+          }
+        }} aria-label="Share">
           🔗
         </button>
       </div>
 
       {showCommentForm && (
-        <div className={styles.commentForm}>
-          <input
-            type="text"
-            value={commentText}
-            onChange={e => setCommentText(e.target.value)}
-            placeholder="Write a comment..."
-            className={styles.commentInput}
-            onKeyDown={e => {
-              if (e.key === 'Enter' && commentText.trim()) {
-                setComments(prev => [...prev, commentText.trim()])
-                setCommentText('')
-              }
-            }}
-          />
-          <button
-            className={styles.commentBtn}
-            disabled={!commentText.trim()}
-            onClick={() => {
-              if (commentText.trim()) {
-                setComments(prev => [...prev, commentText.trim()])
-                setCommentText('')
-              }
-            }}
-          >
-            Post
-          </button>
-        </div>
-      )}
-
-      {comments.length > 0 && (
-        <div className={styles.commentsList}>
-          {comments.map((c, i) => (
-            <div key={i} className={styles.commentItem}>{c}</div>
-          ))}
+        <div className={styles.commentSection}>
+          <div className={styles.commentForm}>
+            <input type="text" value={commentText} onChange={e => setCommentText(e.target.value)} placeholder="Write a comment..." className={styles.commentInput}
+              onKeyDown={e => { if (e.key === 'Enter' && commentText.trim() && !submitting) handleComment() }} />
+            <button className={styles.commentBtn} disabled={!commentText.trim() || submitting} onClick={handleComment}>
+              {submitting ? '...' : 'Post'}
+            </button>
+          </div>
+          {commentList.length > 0 && (
+            <div className={styles.commentsList}>
+              {commentList.map(c => (
+                <div key={c.id} className={styles.commentItem}>
+                  <span className={styles.commentAuthor}>{c.user.name || 'User'}:</span> {c.content}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

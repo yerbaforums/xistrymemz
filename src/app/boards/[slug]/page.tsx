@@ -82,7 +82,7 @@ export default function BoardDetailPage() {
   const [editDescription, setEditDescription] = useState('')
   const [editing, setEditing] = useState(false)
   const [carouselIndex, setCarouselIndex] = useState<number | null>(null)
-  const [viewMode, setViewMode] = useState<'grid' | 'calendar'>('grid')
+  const [viewMode, setViewMode] = useState<'grid' | 'map' | 'calendar'>('grid')
   const [currentMonth, setCurrentMonth] = useState(new Date())
 
   const pinLocations = pins.filter(p => p.latitude && p.longitude)
@@ -232,6 +232,12 @@ export default function BoardDetailPage() {
           📋 Grid
         </button>
         <button
+          className={`${styles.toggleBtn} ${viewMode === 'map' ? styles.toggleActive : ''}`}
+          onClick={() => setViewMode('map')}
+        >
+          🗺️ Map
+        </button>
+        <button
           className={`${styles.toggleBtn} ${viewMode === 'calendar' ? styles.toggleActive : ''}`}
           onClick={() => setViewMode('calendar')}
         >
@@ -239,7 +245,7 @@ export default function BoardDetailPage() {
         </button>
       </div>
 
-      {pinLocations.length > 0 && (
+      {(viewMode === 'map' || viewMode === 'grid') && pinLocations.length > 0 && (
         <div className={styles.mapWrap}>
           <MapContainer center={mapCenter} zoom={12} className={styles.map} scrollWheelZoom={true}>
             <TileLayer
@@ -267,10 +273,10 @@ export default function BoardDetailPage() {
               </Marker>
             ))}
           </MapContainer>
-          </div>
+        </div>
       )}
 
-      {pinLocations.length === 0 && board.latitude && board.longitude && (
+      {viewMode === 'grid' && pins.length === 0 && !pinLocations.length && board.latitude && board.longitude && (
         <div className={styles.mapWrap}>
           <MapContainer center={[board.latitude, board.longitude]} zoom={12} className={styles.map} scrollWheelZoom={true}>
             <TileLayer
@@ -308,6 +314,7 @@ export default function BoardDetailPage() {
               pin={pin}
               isOwner={pin.userId === userId}
               isBoardOwner={isBoardOwner}
+              boardSlug={slug}
               onDelete={handleDelete}
               onView={(pinId) => {
                 const idx = pins.findIndex(p => p.id === pinId)
@@ -395,8 +402,8 @@ export default function BoardDetailPage() {
     for (let day = 1; day <= lastDay.getDate(); day++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
       const pinsOnDay = pins.filter(p => {
-        if (!p.expiresAt) return false
-        const d = new Date(p.expiresAt).toISOString().split('T')[0]
+        if (!p.createdAt) return false
+        const d = new Date(p.createdAt).toISOString().split('T')[0]
         return d === dateStr
       })
 

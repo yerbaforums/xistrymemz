@@ -22,6 +22,7 @@ export async function findNearbyBoards(params: {
   lng?: number
   radius?: number
   city?: string
+  q?: string
   page?: number
   limit?: number
   north?: number
@@ -29,13 +30,22 @@ export async function findNearbyBoards(params: {
   east?: number
   west?: number
 }): Promise<{ boards: BoardWithDistance[]; total: number }> {
-  const { lat, lng, radius = 50, city, page = 1, limit = 20, north, south, east, west } = params
+  const { lat, lng, radius = 50, city, q, page = 1, limit = 20, north, south, east, west } = params
   const offset = (page - 1) * limit
 
-  const where: Record<string, unknown> = { isPublic: true }
+  let where: Record<string, unknown> = { isPublic: true }
 
   if (city) {
     where.city = { contains: city, mode: 'insensitive' }
+  }
+
+  if (q) {
+    where.OR = [
+      { name: { contains: q, mode: 'insensitive' } },
+      { description: { contains: q, mode: 'insensitive' } },
+      { city: { contains: q, mode: 'insensitive' } },
+      { location: { contains: q, mode: 'insensitive' } },
+    ]
   }
 
   if (north !== undefined && south !== undefined && east !== undefined && west !== undefined) {
@@ -236,6 +246,7 @@ export async function getPins(params: {
       where: where as any,
       include: {
         user: { select: { id: true, name: true, image: true } },
+        _count: { select: { likes: true, comments: true } },
       },
       orderBy: [{ isPinned: 'desc' }, { pinOrder: 'asc' }, { createdAt: 'desc' }],
       skip: offset,
@@ -244,5 +255,11 @@ export async function getPins(params: {
     prisma.bulletinPin.count({ where: where as any }),
   ])
 
-  return { pins, total }
+  const mapped = pins.map(pin => ({
+    ...pin,
+    likeCount: pin._count.likes,
+    commentCount: pin._count.comments,
+  }))
+
+  return { pins: mapped, total }
 }

@@ -182,6 +182,8 @@ model User {
   receivedCollabRequests CollaborationRequest[] @relation("CollabRequestReceiver")
   boardsOwned          BulletinBoard[]
   bulletinPins         BulletinPin[]
+  pinLikes             PinLike[]
+  pinComments          PinComment[]
 }
 
 // User-defined locations for filtering content
@@ -553,6 +555,8 @@ model BulletinPin {
   pinOrder     Int      @default(0)
   userId       String
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes        PinLike[]
+  comments     PinComment[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -1993,7 +1997,33 @@ model ContentView {
   @@index([requestId])
   @@index([entityType, entityId])
   @@index([userId])
-  @@index([createdAt])
+}
+
+model PinLike {
+  id        String   @id @default(cuid())
+  pinId     String
+  pin       BulletinPin @relation(fields: [pinId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([pinId, userId])
+  @@index([pinId])
+  @@index([userId])
+}
+
+model PinComment {
+  id        String   @id @default(cuid())
+  pinId     String
+  pin       BulletinPin @relation(fields: [pinId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([pinId])
+  @@index([userId])
 }
 
 model PageVisit {
