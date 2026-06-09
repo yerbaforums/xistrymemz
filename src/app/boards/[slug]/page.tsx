@@ -349,8 +349,14 @@ export default function BoardDetailPage() {
         </button>
       </div>
 
-      {viewMode !== 'calendar' && (board.latitude || pinLocations.length > 0) && (
+      {viewMode !== 'calendar' && (
         <div className={styles.mapWrap}>
+          {!board.latitude && !pinLocations.length && (
+            <div className={styles.mapOverlay}>
+              📍 No location set for this board.
+              {isBoardOwner && <span style={{ marginLeft: 8 }}><button onClick={openEdit} className={styles.overlayBtn}>Set Location</button></span>}
+            </div>
+          )}
           <MapContainer ref={mapRef} center={mapCenter} zoom={12} className={styles.map} scrollWheelZoom={true}>
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
@@ -396,15 +402,6 @@ export default function BoardDetailPage() {
               </Marker>
             )}
           </MapContainer>
-        </div>
-      )}
-      {viewMode !== 'calendar' && !board.latitude && pinLocations.length === 0 && (
-        <div className={styles.noLocation}>
-          <span className={styles.noLocationIcon}>📍</span>
-          <p>No location set for this board.</p>
-          {isBoardOwner && (
-            <Button variant="secondary" onClick={openEdit}>Set Location</Button>
-          )}
         </div>
       )}
 
