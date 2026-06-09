@@ -258,16 +258,18 @@ export async function getPins(params: {
     prisma.bulletinPin.count({ where: where as any }),
   ])
 
-  const eventIds = pins.filter(p => p.entityType === 'EVENT' && p.entityId).map(p => p.entityId)
+  const eventIds = pins.filter(p => p.entityType === 'EVENT' && p.entityId).map(p => p.entityId as string)
   let eventDates = new Map<string, string>()
   if (eventIds.length > 0) {
-    const events = await prisma.event.findMany({
-      where: { id: { in: eventIds as string[] } },
-      select: { id: true, eventDate: true },
-    })
-    for (const ev of events) {
-      if (ev.eventDate) eventDates.set(ev.id, ev.eventDate.toISOString())
-    }
+    try {
+      const events = await prisma.event.findMany({
+        where: { id: { in: eventIds } },
+        select: { id: true, eventDate: true },
+      })
+      for (const ev of events) {
+        if (ev.eventDate) eventDates.set(ev.id, ev.eventDate.toISOString())
+      }
+    } catch (e) { console.error('Event date resolution error:', e) }
   }
 
   const mapped = pins.map(pin => ({

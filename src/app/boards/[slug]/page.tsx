@@ -108,11 +108,12 @@ export default function BoardDetailPage() {
     try {
       const res = await fetch(`/api/boards/${slug}?limit=50`)
       const data = await res.json()
+      if (data.error) { console.error('Board API error:', data.error); toastError(data.error); return }
       setBoard(data.board)
       setPins(data.pins || [])
       setTotal(data.total || 0)
     } catch (e) { console.error('Fetch board error:', e); toastError('Failed to load board') }
-    setLoading(false)
+    finally { setLoading(false) }
   }, [slug])
 
   useEffect(() => {

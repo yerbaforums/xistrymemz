@@ -147,6 +147,7 @@ export default function BoardsPage() {
 
       const res = await fetch(`/api/boards?${params}`)
       const data = await res.json()
+      if (data.error) { console.error('Boards API error:', data.error); return }
       setBoards(data.boards || [])
 
       const locBoards = (data.boards || []).filter((b: Board) => b.latitude && b.longitude)
@@ -156,7 +157,7 @@ export default function BoardsPage() {
         mapRef.current.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 })
       }
     } catch (e) { console.error('Fetch boards error:', e) }
-    setLoading(false)
+    finally { setLoading(false) }
   }, [])
 
   useEffect(() => {
