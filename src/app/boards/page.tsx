@@ -145,7 +145,11 @@ export default function BoardsPage() {
         } catch (e) { console.error('Geolocation error:', e) }
       }
 
-      const res = await fetch(`/api/boards?${params}`)
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 15000)
+      const res = await fetch(`/api/boards?${params}`, { signal: controller.signal })
+      clearTimeout(timeout)
+      if (!res.ok) { console.error('Boards fetch not ok:', res.status); return }
       const data = await res.json()
       if (data.error) { console.error('Boards API error:', data.error); return }
       setBoards(data.boards || [])

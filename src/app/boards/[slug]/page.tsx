@@ -106,13 +106,20 @@ export default function BoardDetailPage() {
   const fetchBoard = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/boards/${slug}?limit=50`)
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 15000)
+      const res = await fetch(`/api/boards/${slug}?limit=50`, { signal: controller.signal })
+      clearTimeout(timeout)
+      if (!res.ok) { const err = await res.json().catch(() => ({ error: 'Request failed' })); console.error('Board fetch not ok:', err); toastError(err.error || 'Failed to load board'); return }
       const data = await res.json()
       if (data.error) { console.error('Board API error:', data.error); toastError(data.error); return }
       setBoard(data.board)
       setPins(data.pins || [])
       setTotal(data.total || 0)
-    } catch (e) { console.error('Fetch board error:', e); toastError('Failed to load board') }
+    } catch (e: any) {
+      if (e?.name === 'AbortError') { console.error('Board fetch timed out'); toastError('Request timed out') }
+      else { console.error('Fetch board error:', e); toastError('Failed to load board') }
+    }
     finally { setLoading(false) }
   }, [slug])
 
