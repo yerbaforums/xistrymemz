@@ -361,6 +361,24 @@
   border-color: var(--accent-primary);
 }
 
+.flyBtn {
+  display: block;
+  width: 100%;
+  padding: 6px;
+  background: var(--bg-tertiary);
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  text-align: center;
+  transition: var(--transition);
+  border-radius: 0;
+}
+
+.flyBtn:hover {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+}
+
 .cardOwnerActions {
   display: flex;
   gap: 4px;

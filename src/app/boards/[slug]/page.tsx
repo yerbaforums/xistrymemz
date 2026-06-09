@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -35,15 +35,15 @@ interface Pin {
   entityId: string | null
   entityTitle: string | null
   entityImage: string | null
-  latitude: number | null
-  longitude: number | null
+  latitude?: number | null
+  longitude?: number | null
   contactName: string | null
   contactEmail: string | null
   contactPhone: string | null
   category: string | null
   expiresAt: string | null
   isPinned: boolean
-  pinOrder: number
+  pinOrder?: number
   userId: string
   user: PinUser
   createdAt: string
@@ -86,6 +86,7 @@ export default function BoardDetailPage() {
   const [editLongitude, setEditLongitude] = useState('')
   const [editing, setEditing] = useState(false)
   const [carouselIndex, setCarouselIndex] = useState<number | null>(null)
+  const mapRef = useRef<any>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'map' | 'calendar'>('grid')
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [editingPin, setEditingPin] = useState<Pin | null>(null)
@@ -138,6 +139,12 @@ export default function BoardDetailPage() {
       setJoined(data.joined)
       setMemberCount(data.memberCount)
     } catch {} finally { setJoining(false) }
+  }
+
+  const handlePinFlyTo = (pin: Pin) => {
+    if (pin.latitude && pin.longitude && mapRef.current) {
+      mapRef.current.flyTo([pin.latitude, pin.longitude], 16, { duration: 0.8 })
+    }
   }
 
   const handleDelete = async (pinId: string) => {
@@ -336,7 +343,7 @@ export default function BoardDetailPage() {
 
       {viewMode !== 'calendar' && (board.latitude || pinLocations.length > 0) && (
         <div className={styles.mapWrap}>
-          <MapContainer center={mapCenter} zoom={12} className={styles.map} scrollWheelZoom={true}>
+          <MapContainer ref={mapRef} center={mapCenter} zoom={12} className={styles.map} scrollWheelZoom={true}>
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -419,7 +426,7 @@ export default function BoardDetailPage() {
               isBoardOwner={isBoardOwner}
               boardSlug={slug}
               onDelete={handleDelete}
-              onEdit={openEditPin}
+              onFlyTo={handlePinFlyTo}
               onView={(pinId) => {
                 const idx = pins.findIndex(p => p.id === pinId)
                 if (idx >= 0) setCarouselIndex(idx)

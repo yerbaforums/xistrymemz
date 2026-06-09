@@ -20,8 +20,8 @@ interface Pin {
   entityId: string | null
   entityTitle: string | null
   entityImage: string | null
-  latitude: number | null
-  longitude: number | null
+  latitude?: number | null
+  longitude?: number | null
   contactName: string | null
   contactEmail: string | null
   contactPhone: string | null

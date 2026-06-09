@@ -97,13 +97,16 @@ export default function BoardsPage() {
 
   const mapCenter: [number, number] = homeCoords || [40.7128, -74.006]
 
-  const getBoardIcon = useCallback((highlighted: boolean) => {
+  const getBoardIcon = useCallback((highlighted: boolean, isOwner?: boolean) => {
     if (!L) return undefined
+    const borderColor = isOwner ? 'var(--accent-primary)' : '#555'
+    const bgColor = isOwner ? 'var(--accent-primary)' : '#2d2d2d'
+    const glow = highlighted ? `0 0 0 3px rgba(0,217,255,0.4),` : ''
     return L.divIcon({
       className: '',
-      html: `<div style="width:16px;height:16px;border-radius:50%;background:${highlighted ? 'var(--accent-primary)' : '#888'};border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>`,
-      iconSize: [16, 16],
-      iconAnchor: [8, 8],
+      html: `<div style="width:26px;height:28px;background:${bgColor};border:2px solid ${borderColor};border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:${glow}0 2px 6px rgba(0,0,0,0.3);color:white;cursor:pointer;">📌</div>`,
+      iconSize: [30, 32],
+      iconAnchor: [15, 28],
     })
   }, [L])
 
@@ -230,6 +233,15 @@ export default function BoardsPage() {
       if (mapRef.current) {
         mapRef.current.flyTo([board.latitude, board.longitude], 14, { duration: 1 })
       }
+    }
+  }
+
+  const handleFlyToBoard = (e: React.MouseEvent, board: Board) => {
+    e.stopPropagation()
+    e.preventDefault()
+    if (board.latitude && board.longitude && mapRef.current) {
+      setSelectedBoardId(board.id)
+      mapRef.current.flyTo([board.latitude, board.longitude], 14, { duration: 0.8 })
     }
   }
 
@@ -470,11 +482,12 @@ export default function BoardsPage() {
           )}
           {boards.filter(b => b.latitude && b.longitude).map(b => {
             const isHighlighted = b.id === hoveredBoardId || b.id === selectedBoardId
+            const isOwner = b.ownerId === session?.user?.id
             return (
               <Marker
                 key={b.id}
                 position={[b.latitude!, b.longitude!]}
-                icon={getBoardIcon(isHighlighted)}
+                icon={getBoardIcon(isHighlighted, isOwner)}
               >
                 <Tooltip>{b.name} — {b.pinCount} pins{b.memberCount != null ? ` · 👥 ${b.memberCount}` : ''}</Tooltip>
                 <Popup>
@@ -555,6 +568,9 @@ export default function BoardsPage() {
                 </div>
                 <span className={styles.visitBtn}>View Board →</span>
               </Link>
+              {board.latitude && board.longitude && (
+                <button className={styles.flyBtn} onClick={(e) => handleFlyToBoard(e, board)} title="Fly to on map">📍</button>
+              )}
               {board.ownerId === session?.user?.id && (
                 <div className={styles.cardOwnerActions}>
                   <button className={styles.editBtn} onClick={(e) => { e.stopPropagation(); openEdit(board) }} title="Edit">✏️</button>

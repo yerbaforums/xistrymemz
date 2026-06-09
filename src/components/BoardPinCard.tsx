@@ -31,6 +31,9 @@ interface Pin {
   userId: string
   user: PinUser
   createdAt: string
+  latitude?: number | null
+  longitude?: number | null
+  pinOrder?: number
   likeCount?: number
   commentCount?: number
   eventDate?: string | null
@@ -42,8 +45,9 @@ interface BoardPinCardProps {
   isBoardOwner: boolean
   boardSlug: string
   onDelete: (pinId: string) => void
-  onView?: (pinId: string) => void
+  onFlyTo?: (pin: Pin) => void
   onEdit?: (pinId: string) => void
+  onView?: (pinId: string) => void
 }
 
 function getEntityHref(type: string | null, id: string | null): string {
@@ -148,7 +152,7 @@ function ImageCarousel({ images }: { images: string[] }) {
   )
 }
 
-const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, boardSlug, onDelete, onView, onEdit }: BoardPinCardProps) {
+const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, boardSlug, onDelete, onFlyTo, onView, onEdit }: BoardPinCardProps) {
   const [minimized, setMinimized] = useState(false)
   const [likes, setLikes] = useState(pin.likeCount || 0)
   const [liked, setLiked] = useState(false)
@@ -319,6 +323,9 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
           </span>
         )}
         <div className={styles.footerActions}>
+          {pin.latitude && pin.longitude && onFlyTo && (
+            <button className={styles.viewBtn} onClick={() => onFlyTo(pin)} aria-label="Fly to on map">📍</button>
+          )}
           {onView && (
             <button className={styles.viewBtn} onClick={() => onView(pin.id)} aria-label="View in carousel">🔍</button>
           )}
