@@ -1,6 +1,7 @@
 'use client'
 
 import { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS } from '@/types/service'
+import styles from './ServiceFilters.module.css'
 
 interface ServiceFiltersProps {
   category: string
@@ -25,25 +26,12 @@ export default function ServiceFilters({
   const hasActiveFilters = category !== 'ALL' || location !== 'ALL' || priceMin || priceMax
 
   return (
-    <aside style={{ width: 240, flexShrink: 0 }}>
-      <h3 style={{ fontSize: '0.9rem', margin: '0 0 16px', color: 'var(--text-primary)' }}>
-        Filters
-      </h3>
+    <aside className={styles.aside}>
+      <h3 className={styles.title}>Filters</h3>
 
-      <div style={{ marginBottom: 16 }}>
-        <label style={{ display: 'block', marginBottom: 6, fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-          Category
-        </label>
-        <select
-          value={category}
-          onChange={e => onCategoryChange(e.target.value)}
-          style={{
-            width: '100%', padding: '8px 10px', borderRadius: 8,
-            border: '1px solid var(--border-color)',
-            background: 'var(--bg-tertiary)', color: 'var(--text-primary)',
-            fontSize: '0.82rem'
-          }}
-        >
+      <div className={styles.group}>
+        <label className={styles.label}>Category</label>
+        <select className={styles.select} value={category} onChange={e => onCategoryChange(e.target.value)}>
           <option value="ALL">All Categories</option>
           {SERVICE_CATEGORIES.map(cat => (
             <option key={cat} value={cat}>{SERVICE_CATEGORY_LABELS[cat]}</option>
@@ -51,20 +39,9 @@ export default function ServiceFilters({
         </select>
       </div>
 
-      <div style={{ marginBottom: 16 }}>
-        <label style={{ display: 'block', marginBottom: 6, fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-          Location
-        </label>
-        <select
-          value={location}
-          onChange={e => onLocationChange(e.target.value)}
-          style={{
-            width: '100%', padding: '8px 10px', borderRadius: 8,
-            border: '1px solid var(--border-color)',
-            background: 'var(--bg-tertiary)', color: 'var(--text-primary)',
-            fontSize: '0.82rem'
-          }}
-        >
+      <div className={styles.group}>
+        <label className={styles.label}>Location</label>
+        <select className={styles.select} value={location} onChange={e => onLocationChange(e.target.value)}>
           <option value="ALL">All Locations</option>
           {locations.map(loc => (
             <option key={loc} value={loc!}>{loc}</option>
@@ -72,53 +49,26 @@ export default function ServiceFilters({
         </select>
       </div>
 
-      <div style={{ marginBottom: 16 }}>
-        <label style={{ display: 'block', marginBottom: 6, fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-          Price Range
-        </label>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      <div className={styles.group}>
+        <label className={styles.label}>Price Range</label>
+        <div className={styles.priceRow}>
           <input
-            type="number"
-            value={priceMin}
-            onChange={e => onPriceMinChange(e.target.value)}
+            className={styles.priceInput}
+            type="number" value={priceMin} onChange={e => onPriceMinChange(e.target.value)}
             placeholder="Min"
-            style={{
-              width: '100%', padding: '8px 10px', borderRadius: 8,
-              border: '1px solid var(--border-color)',
-              background: 'var(--bg-tertiary)', color: 'var(--text-primary)',
-              fontSize: '0.82rem', boxSizing: 'border-box'
-            }}
           />
-          <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>—</span>
+          <span className={styles.priceSep}>—</span>
           <input
-            type="number"
-            value={priceMax}
-            onChange={e => onPriceMaxChange(e.target.value)}
+            className={styles.priceInput}
+            type="number" value={priceMax} onChange={e => onPriceMaxChange(e.target.value)}
             placeholder="Max"
-            style={{
-              width: '100%', padding: '8px 10px', borderRadius: 8,
-              border: '1px solid var(--border-color)',
-              background: 'var(--bg-tertiary)', color: 'var(--text-primary)',
-              fontSize: '0.82rem', boxSizing: 'border-box'
-            }}
           />
         </div>
       </div>
 
-      <div style={{ marginBottom: 16 }}>
-        <label style={{ display: 'block', marginBottom: 6, fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-          Sort
-        </label>
-        <select
-          value={sortBy}
-          onChange={e => onSortChange(e.target.value)}
-          style={{
-            width: '100%', padding: '8px 10px', borderRadius: 8,
-            border: '1px solid var(--border-color)',
-            background: 'var(--bg-tertiary)', color: 'var(--text-primary)',
-            fontSize: '0.82rem'
-          }}
-        >
+      <div className={styles.group}>
+        <label className={styles.label}>Sort</label>
+        <select className={styles.select} value={sortBy} onChange={e => onSortChange(e.target.value)}>
           <option value="newest">Newest</option>
           <option value="price-low">Price: Low to High</option>
           <option value="price-high">Price: High to Low</option>
@@ -127,15 +77,7 @@ export default function ServiceFilters({
       </div>
 
       {hasActiveFilters && (
-        <button
-          onClick={onClear}
-          style={{
-            width: '100%', padding: '8px', borderRadius: 8,
-            border: '1px solid var(--border-color)',
-            background: 'transparent', color: 'var(--text-secondary)',
-            fontSize: '0.82rem', cursor: 'pointer'
-          }}
-        >
+        <button className={styles.clearBtn} onClick={onClear}>
           Clear All Filters
         </button>
       )}

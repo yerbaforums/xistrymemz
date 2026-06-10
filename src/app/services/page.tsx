@@ -16,6 +16,7 @@ import Skeleton from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import Button from '@/components/ui/Button'
+import { useQuickCreate } from '@/components/QuickCreateModal'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
@@ -44,6 +45,7 @@ export default function ServicesPage() {
   const { data: session } = useSession()
   const searchParams = useSearchParams()
   const router = useRouter()
+  const quickCreate = useQuickCreate()
   const [services, setServices] = useState<ServiceOffering[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
@@ -171,9 +173,14 @@ export default function ServicesPage() {
         </div>
         <div className={styles.headerActions}>
           {session?.user && (
-            <Link href="/dashboard/services" className={styles.createBtn}>
-              + Manage My Services
-            </Link>
+            <>
+              <button onClick={() => quickCreate.open('service')} className={styles.createBtn}>
+                + New Service
+              </button>
+              <Link href="/dashboard/services" className={styles.createBtn}>
+                Manage My Services
+              </Link>
+            </>
           )}
         </div>
       </div>

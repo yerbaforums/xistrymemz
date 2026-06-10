@@ -91,7 +91,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
     const parsed = await validateBody(serviceOfferingSchema, body)
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error }, { status: 400 })

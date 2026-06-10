@@ -94,6 +94,7 @@ function QuickCreateModalContent({
 }
 
 function PostForm({ onDone }: { onDone: () => void }) {
+  const router = useRouter()
   const { success, error } = useToast()
   const [content, setContent] = useState('')
   const [images, setImages] = useState<string[]>([])
@@ -118,6 +119,7 @@ function PostForm({ onDone }: { onDone: () => void }) {
       if (res.ok) {
         success('Post published!')
         onDone()
+        router.refresh()
       } else {
         const err = await res.json()
         error(err.error || 'Failed to post')

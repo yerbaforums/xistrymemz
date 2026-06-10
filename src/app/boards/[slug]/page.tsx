@@ -61,6 +61,8 @@ interface Pin {
   user: PinUser
   createdAt: string
   eventDate?: string | null
+  likeCount?: number
+  commentCount?: number
 }
 
 interface Board {
@@ -308,7 +310,35 @@ export default function BoardDetailPage() {
     )
   }
 
-  const mapCenter: [number, number] = board.latitude && board.longitude
+  const getBoardIcon = () => {
+    if (!L) return undefined
+    return L.divIcon({
+      className: '',
+      html: `<div style="width:32px;height:32px;background:#00d9ff;border:3px solid white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.3);">📌</div>`,
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+      popupAnchor: [0, -32],
+    })
+  }
+
+  const getPinIcon = (category: string | null) => {
+    if (!L) return undefined
+    const colors: Record<string, string> = {
+      GENERAL: '#00d9ff', LOST_FOUND: '#ef4444', PROMOTION: '#f59e0b',
+      EVENT: '#8b5cf6', SERVICE: '#22c55e', HOUSING: '#3b82f6',
+      JOBS: '#f97316', FREE: '#10b981',
+    }
+    const color = colors[category || 'GENERAL'] || '#00d9ff'
+    return L.divIcon({
+      className: '',
+      html: `<div style="width:24px;height:24px;background:${color};border:2px solid white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;box-shadow:0 1px 4px rgba(0,0,0,0.3);">📍</div>`,
+      iconSize: [24, 24],
+      iconAnchor: [12, 24],
+      popupAnchor: [0, -24],
+    })
+  }
+
+  const mapCenter: [number, number] = board.latitude != null && board.longitude != null
     ? [board.latitude, board.longitude]
     : pinLocations.length > 0
       ? [pinLocations[0].latitude!, pinLocations[0].longitude!]
@@ -391,8 +421,8 @@ export default function BoardDetailPage() {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            {board.latitude && board.longitude && (
-              <Marker position={[board.latitude, board.longitude]}>
+            {board.latitude != null && board.longitude != null && (
+              <Marker position={[board.latitude, board.longitude]} icon={getBoardIcon()}>
                 <Popup>
                   <div className={styles.pinPopup}>
                     <div className={styles.popupTitle}>{board.name}</div>
@@ -408,7 +438,7 @@ export default function BoardDetailPage() {
               </Marker>
             )}
             {pinLocations.map(pin => (
-              <Marker key={pin.id} position={[pin.latitude!, pin.longitude!]}>
+              <Marker key={pin.id} position={[pin.latitude!, pin.longitude!]} icon={getPinIcon(pin.category)}>
                 <Popup>
                   <div className={styles.pinPopup}>
                     <div className={styles.popupHeader}>
@@ -421,6 +451,12 @@ export default function BoardDetailPage() {
                     {pin.content && <div className={styles.popupDesc}>{pin.content.slice(0, 80)}</div>}
                     {pin.entityType && pin.entityTitle && (
                       <div className={styles.popupMeta}>📎 {pin.entityTitle}</div>
+                    )}
+                    {(pin.likeCount != null || pin.commentCount != null) && (
+                      <div className={styles.popupStats}>
+                        {pin.likeCount != null && <span>❤️ {pin.likeCount}</span>}
+                        {pin.commentCount != null && <span>💬 {pin.commentCount}</span>}
+                      </div>
                     )}
                     <div className={styles.popupDate}>
                       {new Date(pin.createdAt).toLocaleDateString()}
@@ -440,8 +476,8 @@ export default function BoardDetailPage() {
                 </Popup>
               </Marker>
             ))}
-            {board.latitude && board.longitude && pins.length > 0 && pinLocations.length === 0 && (
-              <Marker position={[board.latitude, board.longitude]}>
+            {board.latitude != null && board.longitude != null && pins.length > 0 && pinLocations.length === 0 && (
+              <Marker position={[board.latitude, board.longitude]} icon={getBoardIcon()}>
                 <Popup>
                   <div className={styles.pinPopup}>
                     <div className={styles.popupTitle}>📌 {pins.length} pin{pins.length !== 1 ? 's' : ''}</div>
