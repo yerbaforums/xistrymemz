@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import styles from '../plans/page.module.css'
 import { useToast } from '@/context/ToastContext'
@@ -122,6 +123,7 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 export default function PublicPlansClient({ initialPlans }: PublicPlansClientProps) {
+  const router = useRouter()
   const { warning } = useToast()
   const [filter, setFilter] = useState<'ALL' | 'ACTIVE' | 'COMPLETED'>('ALL')
   const [category, setCategory] = useState<string>('ALL')
@@ -521,7 +523,7 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
                 const distance = getPlanDistance(plan)
 
                 return (
-                  <div key={plan.id} className={`${styles.publicCard} ${plan.pinned ? styles.pinnedCard : ''}`} style={{ animationDelay: `${index * 60}ms` }}>
+                  <div key={plan.id} className={`${styles.publicCard} ${plan.pinned ? styles.pinnedCard : ''}`} style={{ animationDelay: `${index * 60}ms`, cursor: 'pointer' }} onClick={(e) => { const t = e.target as HTMLElement; if (t.closest('a, button')) return; router.push(`/plans/${plan.id}`) }}>
                     {plan.pinned && (
                       <div className={styles.pinnedBadge}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">

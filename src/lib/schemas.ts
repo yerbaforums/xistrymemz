@@ -6,9 +6,20 @@ export const planSchema = z.object({
   imageUrl: z.string().optional().nullable(),
   status: z.string().optional(),
   published: z.boolean().optional(),
+  category: z.string().optional(),
   goals: z.string().optional(),
   mileposts: z.string().optional(),
   lookingForCollaborators: z.boolean().optional(),
+  location: z.string().optional(),
+  locationDetails: z.string().optional(),
+  latitude: z.number().optional().nullable(),
+  longitude: z.number().optional().nullable(),
+  images: z.string().optional().nullable(),
+  videoUrl: z.string().optional().nullable(),
+  goalAmount: z.number().optional().nullable(),
+  needsVolunteers: z.boolean().optional(),
+  volunteerRoles: z.string().optional().nullable(),
+  volunteerDescription: z.string().optional().nullable(),
   acceptsDonations: z.boolean().optional(),
   donationAddress: z.string().max(500).optional().nullable(),
   donationCurrency: z.string().max(10).optional(),
@@ -32,6 +43,13 @@ export const requestSchema = z.object({
   goalAmount: z.number().optional().nullable(),
   currentFunding: z.number().optional().nullable(),
   location: z.string().optional(),
+  latitude: z.number().optional().nullable(),
+  longitude: z.number().optional().nullable(),
+  deadline: z.string().optional().nullable(),
+  payoutAddress: z.string().optional().nullable(),
+  payoutCurrency: z.string().optional().nullable(),
+  allowFulfillments: z.boolean().optional(),
+  showDonationAddress: z.boolean().optional(),
   isPublic: z.boolean().optional(),
   createGroup: z.boolean().optional(),
   hashtags: z.array(z.string()).optional()
@@ -101,6 +119,9 @@ export const serviceOfferingSchema = z.object({
   imageUrl: z.string().optional().nullable(),
   isActive: z.boolean().optional(),
   acceptsDonations: z.boolean().optional(),
+  donationAddress: z.string().optional().nullable(),
+  donationCurrency: z.string().optional(),
+  donationAddresses: z.string().optional().nullable(),
   selectedDonationAddrs: z.array(z.object({
     id: z.string(),
     currency: z.string(),
@@ -125,8 +146,13 @@ export const serviceOfferingSchema = z.object({
 export const groupSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   description: z.string().max(1000).optional(),
+  imageUrl: z.string().optional().nullable(),
   privacy: z.enum(['PUBLIC', 'PRIVATE']).optional(),
   category: z.string().optional(),
+  location: z.string().optional(),
+  latitude: z.number().optional().nullable(),
+  longitude: z.number().optional().nullable(),
+  isLocationBased: z.boolean().optional(),
   hashtags: z.array(z.string()).optional()
 })
 
@@ -173,6 +199,33 @@ export const eventSchema = z.object({
   shopId: z.string().optional().nullable(),
   createGroup: z.boolean().optional(),
   hashtags: z.array(z.string()).optional()
+})
+
+export const boardSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100),
+  description: z.string().max(1000).optional().nullable(),
+  location: z.string().optional().nullable(),
+  latitude: z.number().optional().nullable(),
+  longitude: z.number().optional().nullable(),
+  isPublic: z.boolean().optional(),
+})
+
+export const pinSchema = z.object({
+  boardId: z.string().min(1, 'Board ID is required'),
+  title: z.string().max(200).optional().nullable(),
+  content: z.string().max(5000).optional().nullable(),
+  images: z.string().optional().nullable(),
+  entityType: z.string().optional().nullable(),
+  entityId: z.string().optional().nullable(),
+  entityTitle: z.string().optional().nullable(),
+  entityImage: z.string().optional().nullable(),
+  contactName: z.string().max(100).optional().nullable(),
+  contactEmail: z.string().email().optional().nullable().or(z.literal('')),
+  contactPhone: z.string().max(20).optional().nullable(),
+  category: z.string().optional().nullable(),
+  latitude: z.number().optional().nullable(),
+  longitude: z.number().optional().nullable(),
+  expiresAt: z.string().optional().nullable(),
 })
 
 export const contactSchema = z.object({

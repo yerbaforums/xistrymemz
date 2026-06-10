@@ -9,11 +9,11 @@ import styles from './CreateFAB.module.css'
 
 const ACTIONS = [
   { label: 'New Post', icon: '✏️', href: null, action: 'post' },
-  { label: 'New Project', icon: '🚀', href: '/dashboard/projects' },
-  { label: 'New Product', icon: '🛒', href: '/products/new' },
-  { label: 'New Event', icon: '📅', href: '/events/new' },
-  { label: 'New Group', icon: '👥', href: '/groups/new' },
-  { label: 'New Request', icon: '📝', href: '/requests' },
+  { label: 'New Project', icon: '🚀', href: null, action: 'project' },
+  { label: 'New Product', icon: '🛒', href: null, action: 'product' },
+  { label: 'New Event', icon: '📅', href: null, action: 'event' },
+  { label: 'New Group', icon: '👥', href: null, action: 'group' },
+  { label: 'New Request', icon: '📝', href: null, action: 'request' },
   { label: 'New Service', icon: '🔧', href: '/dashboard/services' },
 ]
 
@@ -54,7 +54,7 @@ export default function CreateFAB() {
                   className={styles.menuItem}
                   onClick={() => {
                     setOpen(false)
-                    quickCreate.open('post')
+                    quickCreate.open(action.action)
                   }}
                 >
                   <span className={styles.menuIcon}>{action.icon}</span>

@@ -32,6 +32,8 @@ const TABS = [
   { id: 'product', label: 'Product', icon: '🛒' },
   { id: 'event', label: 'Event', icon: '📅' },
   { id: 'project', label: 'Project', icon: '🚀' },
+  { id: 'group', label: 'Group', icon: '👥' },
+  { id: 'request', label: 'Request', icon: '📝' },
 ]
 
 export function QuickCreateProvider({ children }: { children: ReactNode }) {
@@ -81,6 +83,8 @@ function QuickCreateModalContent({
         {initialTab === 'product' && <ProductForm onDone={onClose} />}
         {initialTab === 'event' && <EventForm onDone={onClose} />}
         {initialTab === 'project' && <ProjectForm onDone={onClose} />}
+        {initialTab === 'group' && <GroupForm onDone={onClose} />}
+        {initialTab === 'request' && <RequestForm onDone={onClose} />}
       </div>
     </Modal>
   )
@@ -274,7 +278,10 @@ function ProductForm({ onDone }: { onDone: () => void }) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState('')
+  const [type, setType] = useState('PRODUCT')
   const [category, setCategory] = useState('OTHER')
+  const [condition, setCondition] = useState<string>(PRODUCT_CONDITIONS[0])
+  const [location, setLocation] = useState('')
   const [images, setImages] = useState<string[]>([])
   const [creating, setCreating] = useState(false)
 
@@ -290,11 +297,12 @@ function ProductForm({ onDone }: { onDone: () => void }) {
           title: title.trim(),
           description,
           price: price ? parseFloat(price) : 0,
-          type: 'PRODUCT',
+          type,
           category,
+          condition,
+          location: location || undefined,
           images: images.length > 0 ? JSON.stringify(images) : null,
           published: false,
-          condition: PRODUCT_CONDITIONS[0],
           paymentMethods: 'Venmo,PayPal,Cash',
           paymentType: 'BOTH',
           acceptsRequests: false,
@@ -328,15 +336,33 @@ function ProductForm({ onDone }: { onDone: () => void }) {
           <input type="number" value={price} onChange={e => setPrice(e.target.value)} className={styles.input} placeholder="0.00" step="0.01" />
         </div>
         <div className={styles.formGroup}>
+          <label className={styles.label}>Type</label>
+          <select value={type} onChange={e => setType(e.target.value)} className={styles.select}>
+            {PRODUCT_TYPES.map(t => (<option key={t} value={t}>{t.charAt(0) + t.slice(1).toLowerCase()}</option>))}
+          </select>
+        </div>
+      </div>
+      <div className={styles.formRow}>
+        <div className={styles.formGroup}>
           <label className={styles.label}>Category</label>
           <select value={category} onChange={e => setCategory(e.target.value)} className={styles.select}>
             {PRODUCT_CATEGORIES.map(c => (<option key={c.value} value={c.value}>{c.label}</option>))}
+          </select>
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Condition</label>
+          <select value={condition} onChange={e => setCondition(e.target.value)} className={styles.select}>
+            {PRODUCT_CONDITIONS.map(c => (<option key={c} value={c}>{c}</option>))}
           </select>
         </div>
       </div>
       <div className={styles.formGroup}>
         <label className={styles.label}>Description</label>
         <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="Describe your product..." />
+      </div>
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Location</label>
+        <input type="text" value={location} onChange={e => setLocation(e.target.value)} className={styles.input} placeholder="City, State" />
       </div>
       <div className={styles.formGroup}>
         <label className={styles.label}>Images</label>
@@ -409,12 +435,180 @@ function EventForm({ onDone }: { onDone: () => void }) {
   )
 }
 
+function GroupForm({ onDone }: { onDone: () => void }) {
+  const { success, error } = useToast()
+  const router = useRouter()
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [isPrivate, setIsPrivate] = useState(false)
+  const [hashtags, setHashtags] = useState<string[]>([])
+  const [creating, setCreating] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!name.trim()) return
+    setCreating(true)
+    try {
+      const res = await fetch('/api/groups', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          description: description.trim() || undefined,
+          privacy: isPrivate ? 'PRIVATE' : 'PUBLIC',
+          hashtags: hashtags.length > 0 ? hashtags : undefined,
+        }),
+      })
+      if (res.ok) {
+        success('Group created!')
+        onDone()
+        router.refresh()
+      } else {
+        const err = await res.json()
+        error(err.error || 'Failed to create')
+      }
+    } catch {
+      error('Failed to create group')
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className={styles.form}>
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Group Name</label>
+        <input type="text" value={name} onChange={e => setName(e.target.value)} className={styles.input} placeholder="Group name" required autoFocus />
+      </div>
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Description</label>
+        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="What is this group about?" />
+      </div>
+      <div className={styles.formGroup}>
+        <label className={styles.checkLabel}>
+          <input type="checkbox" checked={isPrivate} onChange={e => setIsPrivate(e.target.checked)} />
+          Private group
+        </label>
+      </div>
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Hashtags</label>
+        <HashtagInput value={hashtags} onChange={setHashtags} placeholder="Add hashtags..." />
+      </div>
+      <div className={styles.formActions}>
+        <button type="button" onClick={onDone} className="btn-ghost">Cancel</button>
+        <button type="submit" disabled={creating || !name.trim()} className="btn-primary">
+          {creating ? 'Creating...' : '👥 Create Group'}
+        </button>
+      </div>
+    </form>
+  )
+}
+
+function RequestForm({ onDone }: { onDone: () => void }) {
+  const { success, error } = useToast()
+  const router = useRouter()
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [category, setCategory] = useState('GENERAL')
+  const [priority, setPriority] = useState('MEDIUM')
+  const [budget, setBudget] = useState('')
+  const [hashtags, setHashtags] = useState<string[]>([])
+  const [creating, setCreating] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!title.trim()) return
+    setCreating(true)
+    try {
+      const res = await fetch('/api/requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: title.trim(),
+          description,
+          category,
+          priority,
+          budget: budget ? parseFloat(budget) : null,
+          isPublic: true,
+          hashtags: hashtags.length > 0 ? hashtags : undefined,
+        }),
+      })
+      if (res.ok) {
+        success('Request created!')
+        onDone()
+        router.refresh()
+      } else {
+        const err = await res.json()
+        error(err.error || 'Failed to create')
+      }
+    } catch {
+      error('Failed to create request')
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  const REQUEST_CATEGORIES = [
+    'GENERAL', 'FUNDING', 'SERVICES', 'GOODS', 'HOUSING',
+    'TRANSPORTATION', 'FOOD', 'HEALTH', 'EDUCATION', 'OTHER'
+  ]
+
+  return (
+    <form onSubmit={handleSubmit} className={styles.form}>
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Title</label>
+        <input type="text" value={title} onChange={e => setTitle(e.target.value)} className={styles.input} placeholder="What do you need?" required autoFocus />
+      </div>
+      <div className={styles.formRow}>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Category</label>
+          <select value={category} onChange={e => setCategory(e.target.value)} className={styles.select}>
+            {REQUEST_CATEGORIES.map(c => (<option key={c} value={c}>{c.charAt(0) + c.slice(1).toLowerCase()}</option>))}
+          </select>
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Priority</label>
+          <select value={priority} onChange={e => setPriority(e.target.value)} className={styles.select}>
+            <option value="LOW">🟢 Low</option>
+            <option value="MEDIUM">🟡 Medium</option>
+            <option value="HIGH">🔴 High</option>
+            <option value="URGENT">🔥 Urgent</option>
+          </select>
+        </div>
+      </div>
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Budget ($)</label>
+        <input type="number" value={budget} onChange={e => setBudget(e.target.value)} className={styles.input} placeholder="0.00" step="0.01" />
+      </div>
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Description</label>
+        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="Describe what you need..." />
+      </div>
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Hashtags</label>
+        <HashtagInput value={hashtags} onChange={setHashtags} placeholder="Add hashtags..." />
+      </div>
+      <div className={styles.formActions}>
+        <button type="button" onClick={onDone} className="btn-ghost">Cancel</button>
+        <button type="submit" disabled={creating || !title.trim()} className="btn-primary">
+          {creating ? 'Creating...' : '📝 Create Request'}
+        </button>
+      </div>
+    </form>
+  )
+}
+
 function ProjectForm({ onDone }: { onDone: () => void }) {
   const { success, error } = useToast()
   const router = useRouter()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [status, setStatus] = useState('IDEA')
+  const [category, setCategory] = useState('')
+  const [goals, setGoals] = useState('')
+  const [mileposts, setMileposts] = useState('')
+  const [lookingForCollaborators, setLookingForCollaborators] = useState(false)
+  const [hashtags, setHashtags] = useState<string[]>([])
   const [creating, setCreating] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -429,7 +623,12 @@ function ProjectForm({ onDone }: { onDone: () => void }) {
           title: title.trim(),
           description,
           status,
+          category: category || undefined,
+          goals,
+          mileposts,
+          lookingForCollaborators,
           published: false,
+          hashtags: hashtags.length > 0 ? hashtags : undefined,
         }),
       })
       if (res.ok) {
@@ -453,17 +652,42 @@ function ProjectForm({ onDone }: { onDone: () => void }) {
         <label className={styles.label}>Title</label>
         <input type="text" value={title} onChange={e => setTitle(e.target.value)} className={styles.input} placeholder="Project name" required autoFocus />
       </div>
+      <div className={styles.formRow}>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Status</label>
+          <select value={status} onChange={e => setStatus(e.target.value)} className={styles.select}>
+            <option value="IDEA">💡 Idea</option>
+            <option value="IN_PROGRESS">🔨 In Progress</option>
+            <option value="COMPLETED">✅ Completed</option>
+          </select>
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Looking for Collaborators</label>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={lookingForCollaborators} onChange={e => setLookingForCollaborators(e.target.checked)} />
+            Yes
+          </label>
+        </div>
+      </div>
       <div className={styles.formGroup}>
-        <label className={styles.label}>Status</label>
-        <select value={status} onChange={e => setStatus(e.target.value)} className={styles.select}>
-          <option value="IDEA">💡 Idea</option>
-          <option value="IN_PROGRESS">🔨 In Progress</option>
-          <option value="COMPLETED">✅ Completed</option>
-        </select>
+        <label className={styles.label}>Category</label>
+        <input type="text" value={category} onChange={e => setCategory(e.target.value)} className={styles.input} placeholder="e.g. Technology, Community, Art..." />
       </div>
       <div className={styles.formGroup}>
         <label className={styles.label}>Description</label>
-        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={4} className={styles.textarea} placeholder="Describe your project..." />
+        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="Describe your project..." />
+      </div>
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Goals (one per line)</label>
+        <textarea value={goals} onChange={e => setGoals(e.target.value)} rows={3} className={styles.textarea} placeholder="What do you want to achieve?" />
+      </div>
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Milestones (one per line)</label>
+        <textarea value={mileposts} onChange={e => setMileposts(e.target.value)} rows={3} className={styles.textarea} placeholder="Key milestones..." />
+      </div>
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Hashtags</label>
+        <HashtagInput value={hashtags} onChange={setHashtags} placeholder="Add hashtags..." />
       </div>
       <div className={styles.formActions}>
         <button type="button" onClick={onDone} className="btn-ghost">Cancel</button>
