@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import styles from './CollaborateButton.module.css'
 
 interface Props {
-  entityType: 'PRODUCT' | 'EVENT' | 'GROUP' | 'PLAN'
+  entityType: 'PRODUCT' | 'EVENT' | 'GROUP' | 'PLAN' | 'SERVICE' | 'REQUEST'
   entityId: string
   label?: string
   variant?: 'primary' | 'secondary'

@@ -13,6 +13,7 @@ import ViewCount from '@/components/ViewCount'
 import { useRecordView } from '@/hooks/useRecordView'
 import TranslateButton from '@/components/TranslateButton'
 import PinToBoardButton from '@/components/PinToBoardButton'
+import CollaborateButton from '@/components/CollaborateButton'
 import styles from './page.module.css'
 import Skeleton, { SkeletonCard } from '@/components/Skeleton'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
@@ -366,14 +367,17 @@ export default function ServiceDetailPage() {
               </Button>
 
               {session && (
-                <PinToBoardButton
-                  entityType="SERVICE"
-                  entityId={service.id}
-                  entityTitle={title}
-                  entityImage={imageUrl || undefined}
-                  variant="ghost"
-                  label="Pin to Board"
-                />
+                <>
+                  <CollaborateButton entityType="SERVICE" entityId={service.id} label="🤝 Collaborate" variant="secondary" />
+                  <PinToBoardButton
+                    entityType="SERVICE"
+                    entityId={service.id}
+                    entityTitle={title}
+                    entityImage={imageUrl || undefined}
+                    variant="ghost"
+                    label="Pin to Board"
+                  />
+                </>
               )}
 
               {!session && (

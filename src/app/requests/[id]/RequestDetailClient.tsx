@@ -16,6 +16,7 @@ import Button from '@/components/ui/Button'
 import { EmptyState } from '@/components/EmptyState'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import PinToBoardButton from '@/components/PinToBoardButton'
+import CollaborateButton from '@/components/CollaborateButton'
 
 const CATEGORIES = [
   { value: 'GENERAL', label: 'General', icon: '\u{1F4CB}' },
@@ -932,6 +933,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
 
           {userId && (
             <div className={styles.quickActions} style={{ marginTop: 8 }}>
+              <CollaborateButton entityType="REQUEST" entityId={request.id} label="🤝 Collaborate" variant="secondary" />
               <PinToBoardButton
                 entityType="REQUEST"
                 entityId={request.id}

@@ -1,4 +1,5 @@
 import { getLocale, getMessages } from "next-intl/server";
+import "./design-system.css";
 import "./globals.css";
 import "./themes.css";
 import { Providers } from "@/components/Providers";
