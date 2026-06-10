@@ -5,6 +5,8 @@ import styles from './support.module.css'
 import type { PlanContribution, PlanJoiner } from '@/lib/plan-utils'
 import type { DonationAddr } from '@/types/product'
 import { parseDonationAddresses } from '@/lib/donations'
+import { QRCodeModal } from '@/components/QRCodeModal'
+import { useToast } from '@/context/ToastContext'
 
 interface PlanSupportProps {
   planId: string
@@ -41,12 +43,22 @@ export default function PlanSupport({
   userId,
   isOwner
 }: PlanSupportProps) {
+  const { success: toastSuccess } = useToast()
   const [contributeAmount, setContributeAmount] = useState(goalAmount ? Math.min(goalAmount - (currentFunding || 0), goalAmount * 0.1) : 10)
   const [contributeMessage, setContributeMessage] = useState('')
   const [showContributeForm, setShowContributeForm] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [qrModal, setQrModal] = useState<{ open: boolean; address: string; currency: string }>({ open: false, address: '', currency: '' })
+  const [editGoal, setEditGoal] = useState(false)
+  const [editGoalAmount, setEditGoalAmount] = useState(goalAmount || 0)
+  const [savingGoal, setSavingGoal] = useState(false)
+  const [editVolunteers, setEditVolunteers] = useState(false)
+  const [editNeedsVolunteers, setEditNeedsVolunteers] = useState(needsVolunteers)
+  const [editVolunteerRoles, setEditVolunteerRoles] = useState(volunteerRoles || '')
+  const [editVolunteerDescription, setEditVolunteerDescription] = useState(volunteerDescription || '')
+  const [savingVolunteers, setSavingVolunteers] = useState(false)
 
   const funding = currentFunding || 0
   const goal = goalAmount || 0
@@ -184,11 +196,55 @@ export default function PlanSupport({
             {donationAddrs.length > 0 && (
               <div className={styles.addressBox}>
                 {donationAddrs.map((addr, i) => (
-                  <div key={i} style={{ marginBottom: i < donationAddrs.length - 1 ? 8 : 0 }}>
+                  <div key={i} className={styles.addressPill}>
                     <span className={styles.addressLabel}>{addr.label || addr.currency}</span>
                     <code className={styles.addressValue}>{addr.address}</code>
+                    <div className={styles.addressActions}>
+                      <button
+                        className={styles.addressActionBtn}
+                        onClick={() => { navigator.clipboard.writeText(addr.address); toastSuccess('Address copied!') }}
+                        title="Copy address"
+                      >📋</button>
+                      <button
+                        className={styles.addressActionBtn}
+                        onClick={() => setQrModal({ open: true, address: addr.address, currency: addr.currency })}
+                        title="Show QR code"
+                      >🔲</button>
+                    </div>
                   </div>
                 ))}
+              </div>
+            )}
+            {isOwner && (
+              <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--border-color)' }}>
+                {editGoal ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Funding Goal ({donationCurrency}):</label>
+                    <input
+                      type="number" value={editGoalAmount} onChange={e => setEditGoalAmount(parseFloat(e.target.value) || 0)}
+                      style={{ width: 120, padding: '6px 10px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-tertiary)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
+                      min={0} step={1}
+                    />
+                    <button onClick={async () => {
+                      setSavingGoal(true)
+                      try {
+                        await fetch(`/api/plans/${planId}`, {
+                          method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ goalAmount: editGoalAmount || null })
+                        })
+                        toastSuccess('Goal updated!')
+                        setEditGoal(false)
+                      } catch {} finally { setSavingGoal(false) }
+                    }} disabled={savingGoal} className="btn-primary" style={{ padding: '6px 14px', fontSize: '0.8rem' }}>
+                      {savingGoal ? '...' : 'Save'}
+                    </button>
+                    <button onClick={() => setEditGoal(false)} className="btn-ghost" style={{ padding: '6px 14px', fontSize: '0.8rem' }}>Cancel</button>
+                  </div>
+                ) : (
+                  <button onClick={() => { setEditGoalAmount(goalAmount || 0); setEditGoal(true) }} className="btn-ghost" style={{ fontSize: '0.8rem', padding: '4px 12px' }}>
+                    {goalAmount ? `Goal: ${goalAmount} ${donationCurrency} — Edit` : 'Set Funding Goal'}
+                  </button>
+                )}
               </div>
             )}
 
@@ -321,13 +377,74 @@ export default function PlanSupport({
             )}
 
             {isOwner && (
-              <p className={styles.ownerNote}>Manage volunteer settings in plan settings.</p>
+              <div style={{ marginTop: 12 }}>
+                {editVolunteers ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 12, background: 'var(--bg-tertiary)', borderRadius: 8 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: '0.85rem' }}>
+                      <input type="checkbox" checked={editNeedsVolunteers} onChange={e => setEditNeedsVolunteers(e.target.checked)} />
+                      Looking for volunteers
+                    </label>
+                    {editNeedsVolunteers && (
+                      <>
+                        <div>
+                          <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>Roles Needed (comma-separated)</label>
+                          <input type="text" value={editVolunteerRoles} onChange={e => setEditVolunteerRoles(e.target.value)}
+                            placeholder="e.g. Photography, Design, Writing"
+                            style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '0.85rem', boxSizing: 'border-box' }}
+                          />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>Description</label>
+                          <textarea value={editVolunteerDescription} onChange={e => setEditVolunteerDescription(e.target.value)} rows={2}
+                            placeholder="Describe what volunteers will do..."
+                            style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '0.85rem', boxSizing: 'border-box', resize: 'vertical' }}
+                          />
+                        </div>
+                      </>
+                    )}
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button onClick={async () => {
+                        setSavingVolunteers(true)
+                        try {
+                          const roles = editNeedsVolunteers && editVolunteerRoles.trim()
+                            ? JSON.stringify(editVolunteerRoles.split(',').map(r => r.trim()).filter(Boolean))
+                            : null
+                          await fetch(`/api/plans/${planId}`, {
+                            method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              needsVolunteers: editNeedsVolunteers,
+                              volunteerRoles: roles,
+                              volunteerDescription: editNeedsVolunteers ? (editVolunteerDescription || null) : null
+                            })
+                          })
+                          toastSuccess('Volunteer settings saved!')
+                          setEditVolunteers(false)
+                        } catch {} finally { setSavingVolunteers(false) }
+                      }} disabled={savingVolunteers} className="btn-primary" style={{ padding: '6px 14px', fontSize: '0.8rem' }}>
+                        {savingVolunteers ? '...' : 'Save'}
+                      </button>
+                      <button onClick={() => setEditVolunteers(false)} className="btn-ghost" style={{ padding: '6px 14px', fontSize: '0.8rem' }}>Cancel</button>
+                    </div>
+                  </div>
+                ) : (
+                  <button onClick={() => { setEditNeedsVolunteers(needsVolunteers); setEditVolunteerRoles(volunteerRoles || ''); setEditVolunteerDescription(volunteerDescription || ''); setEditVolunteers(true) }} className="btn-ghost" style={{ fontSize: '0.8rem', padding: '4px 12px' }}>
+                    {needsVolunteers ? 'Edit Volunteer Settings' : 'Set Up Volunteer Opportunities'}
+                  </button>
+                )}
+              </div>
             )}
           </div>
         ) : (
           <p className={styles.noVolunteers}>This project is not currently looking for volunteers.</p>
         )}
       </div>
+
+      <QRCodeModal
+        isOpen={qrModal.open}
+        address={qrModal.address}
+        currency={qrModal.currency}
+        onClose={() => setQrModal({ open: false, address: '', currency: '' })}
+      />
     </div>
   )
 }

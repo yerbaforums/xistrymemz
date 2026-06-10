@@ -9,6 +9,7 @@ import PlanGoals from './PlanGoals'
 import PlanMilestones from './PlanMilestones'
 import PlanResources from './PlanResources'
 import PlanSupport from './PlanSupport'
+import PlanUpdates from './PlanUpdates'
 import { parseGoals, parseMilestones, parseResources, stringifyGoals, stringifyMilestones, stringifyResources } from '@/lib/plan-utils'
 import { getUserProfileUrl } from '@/lib/utils'
 import EntityActions from '@/components/EntityActions'
@@ -28,6 +29,7 @@ import type { DonationAddr } from '@/types/product'
 import type { PlanGoal, PlanMilestone, PlanResource, PlanContribution, PlanJoiner } from '@/lib/plan-utils'
 import type { EventFormData } from '@/components/EventFormFields'
 import TranslateButton from '@/components/TranslateButton'
+import ImageUploader from '@/components/ImageUploader'
 import HashtagInput from '@/components/HashtagInput'
 import { EmptyState } from '@/components/EmptyState'
 
@@ -56,9 +58,12 @@ interface Plan {
   id: string; title: string; description: string | null
   goals: string | null; mileposts: string | null; milepostStatus: string | null; resources: string | null
   status: string; published: boolean; schoolId: string | null; shopId: string | null
+  category: string | null
   lookingForCollaborators: boolean
   imageUrl: string | null
+  images: string | null
   location: string | null
+  locationDetails: string | null
   latitude: number | null
   longitude: number | null
   requests: Request[]; isOwner: boolean; isEditor: boolean; events: PlanEvent[]
@@ -101,6 +106,13 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
 
   const [editedTitle, setEditedTitle] = useState(plan.title)
   const [editedDescription, setEditedDescription] = useState(plan.description || '')
+  const [editedCategory, setEditedCategory] = useState(plan.category || '')
+  const [editedLocation, setEditedLocation] = useState(plan.location || '')
+  const [editedLocationDetails, setEditedLocationDetails] = useState(plan.locationDetails || '')
+  const [editedLookingForCollaborators, setEditedLookingForCollaborators] = useState(plan.lookingForCollaborators)
+  const [editedImages, setEditedImages] = useState<string[]>(() => {
+    try { const p = plan.images ? JSON.parse(plan.images) : []; return Array.isArray(p) ? p : [] } catch { return plan.imageUrl ? [plan.imageUrl] : [] }
+  })
   const [planHashtags, setPlanHashtags] = useState<string[]>([])
   const [editingOverview, setEditingOverview] = useState(false)
 
@@ -192,7 +204,17 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
   const handleSaveOverview = async () => {
     setLoading(true)
     try {
-      const updated = await saveField({ title: editedTitle, description: editedDescription || null, hashtags: planHashtags })
+      const updated = await saveField({
+        title: editedTitle,
+        description: editedDescription || null,
+        category: editedCategory || null,
+        location: editedLocation || null,
+        locationDetails: editedLocationDetails || null,
+        lookingForCollaborators: editedLookingForCollaborators,
+        imageUrl: editedImages[0] || null,
+        images: editedImages.length > 0 ? JSON.stringify(editedImages) : null,
+        hashtags: planHashtags,
+      })
       setPlan({ ...plan, ...updated })
       setEditingOverview(false)
     } catch (err) {
@@ -516,7 +538,29 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                   </div>
                   <input type="text" value={editedTitle} onChange={e => setEditedTitle(e.target.value)} className={styles.titleInput} />
                   <textarea value={editedDescription} onChange={e => setEditedDescription(e.target.value)} className={styles.descInput} rows={3} />
-                  <div className={styles.field} style={{ marginTop: '12px' }}>
+                  <div className={styles.formRow} style={{ gap: 12, marginTop: 12 }}>
+                    <div className={styles.field} style={{ flex: 1 }}>
+                      <label>Category</label>
+                      <input type="text" value={editedCategory} onChange={e => setEditedCategory(e.target.value)} placeholder="e.g. Technology, Community..." className={styles.formInput} />
+                    </div>
+                    <div className={styles.field} style={{ flex: 1 }}>
+                      <label>Location</label>
+                      <input type="text" value={editedLocation} onChange={e => setEditedLocation(e.target.value)} placeholder="City, State" className={styles.formInput} />
+                    </div>
+                  </div>
+                  <div className={styles.field} style={{ marginTop: 8 }}>
+                    <label>Location Details</label>
+                    <input type="text" value={editedLocationDetails} onChange={e => setEditedLocationDetails(e.target.value)} placeholder="e.g. Meetup point, address" className={styles.formInput} />
+                  </div>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, cursor: 'pointer' }}>
+                    <input type="checkbox" checked={editedLookingForCollaborators} onChange={e => setEditedLookingForCollaborators(e.target.checked)} />
+                    <span>Looking for collaborators</span>
+                  </label>
+                  <div className={styles.field} style={{ marginTop: 12 }}>
+                    <label>Images</label>
+                    <ImageUploader images={editedImages} onChange={setEditedImages} maxImages={5} />
+                  </div>
+                  <div className={styles.field} style={{ marginTop: 12 }}>
                     <label>Hashtags</label>
                     <HashtagInput value={planHashtags} onChange={setPlanHashtags} placeholder="Add hashtags..." />
                   </div>
@@ -538,6 +582,7 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                           <img src={plan.imageUrl} alt={plan.title} style={{ width: '100%', height: 'auto', maxHeight: 300, objectFit: 'cover', borderRadius: 12 }} />
                         </div>
                       )}
+                      {plan.category && <span className={styles.categoryBadge}>{plan.category}</span>}
                       {plan.description && <p className={styles.description}>{plan.description}</p>}
                       {plan.description && <TranslateButton text={plan.description} />}
                       {plan.hashtags && plan.hashtags.length > 0 && (
@@ -673,6 +718,11 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                       <button onClick={() => { setShowStatusHistory(true); fetchStatusHistory(); }} className={styles.historyBtn}>Status History</button>
                     </div>
                   )}
+
+                  {/* Project Updates - Community Timeline */}
+                  <div style={{ marginTop: 32 }}>
+                    <PlanUpdates planId={plan.id} isOwner={isOwner} />
+                  </div>
                 </>
               )}
             </div>

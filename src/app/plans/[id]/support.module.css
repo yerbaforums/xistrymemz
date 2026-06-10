@@ -101,6 +101,46 @@
   background: var(--bg-primary);
   padding: 8px;
   border-radius: var(--radius-sm);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.addressPill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  margin-bottom: 6px;
+}
+
+.addressActions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.addressActionBtn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: var(--transition);
+}
+
+.addressActionBtn:hover {
+  background: var(--bg-secondary);
+  border-color: var(--accent-primary);
 }
 
 .contributeSection {

@@ -1,8 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import styles from './resources.module.css'
 import { EmptyState } from '@/components/EmptyState'
+import ImageUploader from '@/components/ImageUploader'
+import PlanSortableList from './PlanSortableList'
 import type { PlanResource, ResourceType } from '@/lib/plan-utils'
 
 const RESOURCE_TYPE_ICONS: Record<ResourceType, string> = {
@@ -33,25 +35,30 @@ export default function PlanResources({ resources, isOwner, onChange }: PlanReso
   const [url, setUrl] = useState('')
   const [resourceType, setResourceType] = useState<ResourceType>('LINK')
   const [description, setDescription] = useState('')
+  const [fileUrl, setFileUrl] = useState('')
+  const [uploadedImages, setUploadedImages] = useState<string[]>([])
   const [editingId, setEditingId] = useState<string | null>(null)
 
   const handleSubmit = () => {
     if (!title.trim()) return
+    const resourceUrl = resourceType === 'FILE' ? (fileUrl || url) : url.trim()
+    const resourceFileUrl = resourceType === 'FILE' ? (fileUrl || null) : null
     if (editingId) {
       onChange(resources.map(r =>
         r.id === editingId
-          ? { ...r, title: title.trim(), url: url.trim(), type: resourceType, description: description.trim() }
+          ? { ...r, title: title.trim(), url: resourceUrl, type: resourceType, description: description.trim(), fileUrl: resourceFileUrl }
           : r
       ))
     } else {
       const newResource: PlanResource = {
         id: `r_${Date.now()}`,
         title: title.trim(),
-        url: url.trim(),
+        url: resourceUrl,
         type: resourceType,
         description: description.trim(),
         order: resources.length,
-        completed: false
+        completed: false,
+        fileUrl: resourceFileUrl,
       }
       onChange([...resources, newResource])
     }
@@ -65,6 +72,8 @@ export default function PlanResources({ resources, isOwner, onChange }: PlanReso
     setUrl('')
     setResourceType('LINK')
     setDescription('')
+    setFileUrl('')
+    setUploadedImages([])
   }
 
   const handleEdit = (r: PlanResource) => {
@@ -73,6 +82,8 @@ export default function PlanResources({ resources, isOwner, onChange }: PlanReso
     setUrl(r.url || '')
     setResourceType(r.type)
     setDescription(r.description || '')
+    setFileUrl(r.fileUrl || '')
+    setUploadedImages(r.fileUrl ? [r.fileUrl] : [])
     setShowForm(true)
   }
 
@@ -85,6 +96,10 @@ export default function PlanResources({ resources, isOwner, onChange }: PlanReso
       r.id === id ? { ...r, completed: !r.completed } : r
     ))
   }
+
+  const handleReorder = useCallback((reordered: PlanResource[]) => {
+    onChange(reordered)
+  }, [onChange])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -155,16 +170,22 @@ export default function PlanResources({ resources, isOwner, onChange }: PlanReso
               ))}
             </select>
           </div>
-          <div className={styles.formRow}>
-            <input
-              type="text"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="URL (https://...)"
-              className={styles.formInput}
-            />
-          </div>
+          {resourceType === 'FILE' ? (
+            <div className={styles.formRow}>
+              <ImageUploader images={uploadedImages} onChange={(imgs) => { setUploadedImages(imgs); setFileUrl(imgs[0] || '') }} maxImages={1} />
+            </div>
+          ) : (
+            <div className={styles.formRow}>
+              <input
+                type="text"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="URL (https://...)"
+                className={styles.formInput}
+              />
+            </div>
+          )}
           <div className={styles.formRow}>
             <textarea
               value={description}
@@ -187,49 +208,57 @@ export default function PlanResources({ resources, isOwner, onChange }: PlanReso
         <EmptyState icon="📚" title="No resources yet" description="Add links, documents, checklists, or references to help plan your project." action={isOwner ? { label: 'Add Resource', onClick: () => setShowForm(true) } : undefined} />
       )}
 
-      <div className={styles.resourceList}>
-        {sorted.map((resource) => (
-          <div
-            key={resource.id}
-            className={`${styles.resourceCard} ${resource.completed ? styles.completed : ''}`}
-          >
-            <div className={styles.resourceCheck}>
-              <input
-                type="checkbox"
-                checked={resource.completed}
-                onChange={() => handleToggleComplete(resource.id)}
-                disabled={!isOwner}
-              />
-            </div>
-            <div className={styles.resourceIcon}>
-              {RESOURCE_TYPE_ICONS[resource.type]}
-            </div>
-            <div className={styles.resourceBody}>
-              <div className={styles.resourceTitle}>
-                {resource.url ? (
-                  <a href={resource.url} target="_blank" rel="noopener noreferrer">
-                    {resource.title}
-                  </a>
-                ) : (
-                  <span>{resource.title}</span>
-                )}
-                <span className={styles.resourceTypeBadge}>
-                  {RESOURCE_TYPE_LABELS[resource.type]}
-                </span>
-              </div>
-              {resource.description && (
-                <div className={styles.resourceDescription}>{resource.description}</div>
+      <PlanSortableList items={sorted} onChange={handleReorder} renderItem={(resource, index, handlers) => (
+        <div
+          key={resource.id}
+          className={`${styles.resourceCard} ${resource.completed ? styles.completed : ''} ${handlers.isDragging ? styles.dragging : ''} ${handlers.isDragOver ? styles.dragOver : ''}`}
+          draggable={isOwner}
+          onDragStart={(e) => handlers.handleDragStart(e, index)}
+          onDragOver={(e) => handlers.handleDragOver(e, index)}
+          onDragLeave={handlers.handleDragLeave}
+          onDrop={(e) => handlers.handleDrop(e, index)}
+        >
+          {isOwner && <span className={styles.dragHandle} title="Drag to reorder">⠿</span>}
+          <div className={styles.resourceCheck}>
+            <input
+              type="checkbox"
+              checked={resource.completed}
+              onChange={() => handleToggleComplete(resource.id)}
+              disabled={!isOwner}
+            />
+          </div>
+          <div className={styles.resourceIcon}>
+            {RESOURCE_TYPE_ICONS[resource.type]}
+          </div>
+          <div className={styles.resourceBody}>
+            <div className={styles.resourceTitle}>
+              {resource.fileUrl ? (
+                <a href={resource.fileUrl} target="_blank" rel="noopener noreferrer" download>
+                  {resource.title} 📎
+                </a>
+              ) : resource.url ? (
+                <a href={resource.url} target="_blank" rel="noopener noreferrer">
+                  {resource.title}
+                </a>
+              ) : (
+                <span>{resource.title}</span>
               )}
+              <span className={styles.resourceTypeBadge}>
+                {RESOURCE_TYPE_LABELS[resource.type]}
+              </span>
             </div>
-            {isOwner && (
-              <div className={styles.resourceActions}>
-                <button onClick={() => handleEdit(resource)} className={styles.editBtn} title="Edit">✎</button>
-                <button onClick={() => handleRemove(resource.id)} className={styles.deleteBtn} title="Remove">✕</button>
-              </div>
+            {resource.description && (
+              <div className={styles.resourceDescription}>{resource.description}</div>
             )}
           </div>
-        ))}
-      </div>
+          {isOwner && (
+            <div className={styles.resourceActions}>
+              <button onClick={() => handleEdit(resource)} className={styles.editBtn} title="Edit">✎</button>
+              <button onClick={() => handleRemove(resource.id)} className={styles.deleteBtn} title="Remove">✕</button>
+            </div>
+          )}
+        </div>
+      )} />
     </div>
   )
 }

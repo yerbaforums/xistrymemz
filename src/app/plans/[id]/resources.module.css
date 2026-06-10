@@ -234,6 +234,29 @@
   background: rgba(255, 51, 102, 0.1);
 }
 
+.dragHandle {
+  cursor: grab;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  padding: 4px;
+  user-select: none;
+  line-height: 1;
+}
+
+.dragHandle:hover {
+  color: var(--text-primary);
+}
+
+.dragging {
+  opacity: 0.4;
+  border-style: dashed;
+}
+
+.dragOver {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 8px rgba(0, 217, 255, 0.2);
+}
+
 @media (max-width: 768px) {
   .resourceCard {
     flex-wrap: wrap;
