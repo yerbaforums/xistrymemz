@@ -173,46 +173,10 @@ export const eventSchema = z.object({
   hashtags: z.array(z.string()).optional()
 })
 
-export const updateSchema = z.object({
-  content: z.string().min(1, 'Content is required').max(10000)
-})
-
-export const commentSchema = z.object({
-  content: z.string().min(1, 'Content is required').max(2000)
-})
-
-export const roleSchema = z.object({
-  userId: z.string().min(1, 'User ID is required'),
-  role: z.enum(['ADMIN', 'MODERATOR', 'USER'])
-})
-
-export const settingsSchema = z.object({
-  key: z.string().min(1, 'Key is required'),
-  value: z.string()
-})
-
-export const schoolSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(200),
-  description: z.string().max(5000).optional(),
-  category: z.string().optional()
-})
-
-export const shopSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(100),
-  slug: z.string().min(1, 'Slug is required').max(100),
-  description: z.string().max(2000).optional()
-})
-
 export const contactSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   email: z.string().email('Invalid email').max(200),
   message: z.string().min(1, 'Message is required').max(5000)
-})
-
-export const locationSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(200),
-  lat: z.number().min(-90).max(90),
-  lng: z.number().min(-180).max(180)
 })
 
 export function validateBody<T>(schema: z.ZodSchema<T>, body: unknown): { success: true; data: T } | { success: false; error: string } {

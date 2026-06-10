@@ -265,7 +265,7 @@ export default function CalendarWidget() {
           <p>📅 {new Date(hoveredEvent.startDate).toLocaleDateString()}</p>
           {hoveredEvent.location && <p>📍 {hoveredEvent.location}</p>}
           {hoveredEvent.description && <p className={styles.tooltipDesc}>{hoveredEvent.description.slice(0, 60)}{hoveredEvent.description.length > 60 ? '...' : ''}</p>}
-          <Link href={`/plans?event=${hoveredEvent.id}`} className={styles.tooltipLink}>Click to view details →</Link>
+          <Link href={`/events/${hoveredEvent.id}`} className={styles.tooltipLink}>Click to view details →</Link>
         </div>
       )}
 

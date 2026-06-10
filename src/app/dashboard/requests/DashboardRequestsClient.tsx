@@ -8,7 +8,7 @@ import { getUserProfileUrl } from '@/lib/utils'
 import { getCryptoIcon, getCryptoColor } from '@/lib/crypto-icons'
 import { useToast } from '@/context/ToastContext'
 import styles from './requests.module.css'
-import { REQUEST_CATEGORIES, REQUEST_PRIORITIES } from '@/lib/request-categories'
+import { REQUEST_CATEGORIES, REQUEST_PRIORITIES, PRIORITY_COLORS } from '@/lib/request-categories'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import { EmptyState } from '@/components/EmptyState'
 
@@ -72,13 +72,6 @@ const STATUS_ICONS: Record<string, string> = {
   APPROVED: '✅',
   REJECTED: '❌',
   COMPLETED: '🎯'
-}
-
-const PRIORITY_COLORS: Record<string, string> = {
-  LOW: '#22c55e',
-  MEDIUM: '#f59e0b',
-  HIGH: '#f97316',
-  URGENT: '#ef4444'
 }
 
 type SortOption = 'newest' | 'oldest' | 'mostComments' | 'mostSupported' | 'mostOffers'

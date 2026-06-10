@@ -12,7 +12,7 @@ import { useToast } from '@/context/ToastContext'
 import { calculateDistance, geocodeLocation } from '@/lib/geocoding'
 import { usePassportLocation } from '@/hooks/usePassportLocation'
 import HashtagInput from '@/components/HashtagInput'
-import { REQUEST_CATEGORIES, REQUEST_PRIORITIES } from '@/lib/request-categories'
+import { REQUEST_CATEGORIES, REQUEST_PRIORITIES, PRIORITY_COLORS } from '@/lib/request-categories'
 import { EmptyState } from '@/components/EmptyState'
 
 interface DonationAddr {
@@ -72,13 +72,6 @@ interface RequestsClientProps {
   userId: string
   userRole: string
   isAuthenticated: boolean
-}
-
-const PRIORITY_COLORS: Record<string, string> = {
-  LOW: '#22c55e',
-  MEDIUM: '#f59e0b',
-  HIGH: '#f97316',
-  URGENT: '#ef4444'
 }
 
 export default function RequestsClient({ initialRequests, userId, userRole, isAuthenticated }: RequestsClientProps) {

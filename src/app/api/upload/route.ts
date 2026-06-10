@@ -166,10 +166,6 @@ export async function POST(request: Request) {
         url = `/uploads/${session.user.id}/${safeFilename}`
       }
 
-      if (+compressionRatio > 0) {
-        console.log(`Compressed ${safeFilename}: ${(fileSize / 1024).toFixed(1)}KB → ${(compressedSize / 1024).toFixed(1)}KB (${compressionRatio}%)`)
-      }
-
       return { url, mimeType, size: fileSize }
     }))
 

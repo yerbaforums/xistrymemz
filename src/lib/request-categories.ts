@@ -22,3 +22,10 @@ export const REQUEST_CATEGORY_MAP = new Map(REQUEST_CATEGORIES.map(c => [c.value
 export const REQUEST_PRIORITIES = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'] as const
 
 export type RequestPriority = (typeof REQUEST_PRIORITIES)[number]
+
+export const PRIORITY_COLORS: Record<string, string> = {
+  LOW: '#22c55e',
+  MEDIUM: '#f59e0b',
+  HIGH: '#f97316',
+  URGENT: '#ef4444'
+}

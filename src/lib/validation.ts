@@ -22,16 +22,6 @@ export const escrowSchema = z.object({
   paymentType: z.enum(['DIRECT', 'ESCROW']).optional()
 })
 
-export const paymentAddressSchema = z.string().refine(
-  (addr) => /^0x[a-fA-F0-9]{40}$/.test(addr) || /^#[a-zA-Z0-9]+$/.test(addr),
-  'Invalid payment address format'
-)
-
-export const cryptoAmountSchema = z.object({
-  amount: z.number().positive().max(1e15),
-  txHash: z.string().min(32, 'Invalid transaction hash')
-})
-
 export function validateInput<T>(schema: z.ZodSchema<T>, data: unknown): { success: true; data: T } | { success: false; error: string } {
   const result = schema.safeParse(data)
   if (result.success) {
