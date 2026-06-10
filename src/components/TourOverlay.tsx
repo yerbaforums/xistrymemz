@@ -60,7 +60,7 @@ export default function TourOverlay({ tourKey, steps }: TourOverlayProps) {
     const el = document.querySelector(s.target) as HTMLElement | null
     if (!el) {
       setTargetRect(null)
-      setTooltipStyle({})
+      setTooltipStyle({ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' })
       return
     }
 
@@ -72,39 +72,58 @@ export default function TourOverlay({ tourKey, steps }: TourOverlayProps) {
     const tooltip: React.CSSProperties = {}
     const gap = 12
     const tw = tooltipRef.current?.offsetWidth ?? Math.min(420, window.innerWidth - 40)
-    const th = tooltipRef.current?.offsetHeight ?? 400
+    const th = tooltipRef.current?.offsetHeight ?? Math.min(400, window.innerHeight * 0.4)
 
-    switch (pos) {
-      case 'top':
-        tooltip.left = rect.left + rect.width / 2
-        tooltip.bottom = window.innerHeight - rect.top + gap
-        break
-      case 'bottom':
-        tooltip.left = rect.left + rect.width / 2
-        tooltip.top = rect.bottom + gap
-        break
-      case 'left':
-        tooltip.right = window.innerWidth - rect.left + gap
-        tooltip.top = rect.top + rect.height / 2
-        break
-      case 'right':
-        tooltip.left = rect.right + gap
-        tooltip.top = rect.top + rect.height / 2
-        break
+    const tryPosition = (position: string): boolean => {
+      const t: Record<string, number | string> = {}
+      switch (position) {
+        case 'top':
+          t.left = Math.max(gap + tw / 2, Math.min(rect.left + rect.width / 2, window.innerWidth - gap - tw / 2))
+          t.top = rect.top - gap - th
+          t.transform = 'translate(-50%, 0)'
+          break
+        case 'bottom':
+          t.left = Math.max(gap + tw / 2, Math.min(rect.left + rect.width / 2, window.innerWidth - gap - tw / 2))
+          t.top = rect.bottom + gap
+          t.transform = 'translate(-50%, 0)'
+          break
+        case 'left':
+          t.right = Math.max(gap, Math.min(window.innerWidth - rect.left + gap, window.innerWidth - tw - gap))
+          t.top = Math.max(gap + th / 2, Math.min(rect.top + rect.height / 2, window.innerHeight - gap - th / 2))
+          t.transform = 'translate(0, -50%)'
+          break
+        case 'right':
+          t.left = Math.max(gap, Math.min(rect.right + gap, window.innerWidth - tw - gap))
+          t.top = Math.max(gap + th / 2, Math.min(rect.top + rect.height / 2, window.innerHeight - gap - th / 2))
+          t.transform = 'translate(0, -50%)'
+          break
+      }
+
+      const overflows =
+        (position === 'top' && (t.top as number) < 0) ||
+        (position === 'bottom' && (t.top as number) + th > window.innerHeight) ||
+        (position === 'left' && window.innerWidth - (t.right as number) - tw < 0) ||
+        (position === 'right' && (t.left as number) + tw > window.innerWidth)
+
+      if (!overflows) {
+        Object.assign(tooltip, t)
+        return true
+      }
+      return false
     }
 
-    const overflows =
-      (pos === 'bottom' && rect.bottom + gap + th > window.innerHeight) ||
-      (pos === 'top' && rect.top - gap - th < 0) ||
-      (pos === 'left' && rect.left - gap - tw < 0) ||
-      (pos === 'right' && rect.right + gap + tw > window.innerWidth)
+    const opposite: Record<string, string> = { top: 'bottom', bottom: 'top', left: 'right', right: 'left' }
 
-    if (overflows) {
-      setTargetRect(null)
-      setTooltipStyle({ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' })
-    } else {
+    if (!tryPosition(pos) && opposite[pos]) {
+      tryPosition(opposite[pos])
+    }
+
+    if (tooltip.left !== undefined || tooltip.right !== undefined) {
       setTooltipStyle(tooltip)
       el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    } else {
+      setTargetRect(null)
+      setTooltipStyle({ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' })
     }
   }, [currentStep, steps])
 
@@ -159,7 +178,7 @@ export default function TourOverlay({ tourKey, steps }: TourOverlayProps) {
         />
       )}
 
-      {!step.target && <div className={styles.backdrop} />}
+      {!targetRect && <div className={styles.backdrop} />}
 
       <div
         ref={tooltipRef}
