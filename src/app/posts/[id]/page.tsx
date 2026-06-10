@@ -15,6 +15,7 @@ import LinkedItemsSection from '@/components/LinkedItemsSection'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import PinToBoardButton from '@/components/PinToBoardButton'
 import Loading from '@/components/Loading'
+import styles from '../page.module.css'
 
 interface PostData {
   id: string
@@ -70,9 +71,9 @@ export default function PostPage() {
 
   if (error || !post) {
     return (
-      <div style={{ maxWidth: 640, margin: '0 auto', padding: '24px 16px' }}>
-        <Link href="/dashboard/feed" style={{ color: 'var(--accent-primary)', textDecoration: 'none', fontSize: '0.85rem' }}>← Back to Feed</Link>
-        <p style={{ color: 'var(--text-secondary)', marginTop: 24 }}>{error || 'Post not found'}</p>
+      <div className={styles.errorState}>
+        <Link href="/dashboard/feed" className={styles.backLink}>← Back to Feed</Link>
+        <p className={styles.errorText}>{error || 'Post not found'}</p>
       </div>
     )
   }
@@ -81,33 +82,24 @@ export default function PostPage() {
   const isRepost = post.context === 'REPOST'
 
   return (
-    <div style={{ maxWidth: 640, margin: '0 auto', padding: '24px 16px' }}>
+    <div className={styles.page}>
       <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Post' }]} />
-      <nav style={{ marginBottom: 16 }}>
-        <Link href="/dashboard/feed" style={{ color: 'var(--accent-primary)', textDecoration: 'none', fontSize: '0.85rem' }}>← Back to Feed</Link>
+      <nav className={styles.nav}>
+        <Link href="/dashboard/feed" className={styles.backLink}>← Back to Feed</Link>
       </nav>
 
-      <div style={{
-        background: 'var(--bg-secondary)',
-        border: '1px solid var(--border-color)',
-        borderRadius: 12,
-        padding: 20,
-      }}>
+      <div className={styles.card}>
         {isRepost ? (
           <>
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              fontSize: '0.75rem', color: 'var(--text-secondary)',
-              marginBottom: 12,
-            }}>
+            <div className={styles.repostHeader}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
               </svg>
               <span>
                 Reposted by <strong>{post.user.name || 'Unknown'}</strong>
-                {post.user.username && <span style={{ color: 'var(--text-muted)' }}> @{post.user.username}</span>}
+                {post.user.username && <span className={styles.repostUser}> @{post.user.username}</span>}
               </span>
-              <span style={{ marginLeft: 'auto', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+              <span className={styles.repostMeta}>
                 {new Date(post.createdAt).toLocaleDateString()}
               </span>
             </div>
@@ -121,45 +113,45 @@ export default function PostPage() {
           </>
         ) : (
           <>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-          <Link href={getUserProfileUrl({ id: post.user.id, username: post.user.username })} style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: 'inherit' }}>
-            <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-tertiary)', position: 'relative' }}>
-              {post.user.image ? (
-                <Image src={post.user.image} alt="" fill style={{ objectFit: 'cover' }} />
-              ) : (
-                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>{post.user.name?.[0] || 'U'}</div>
-              )}
-            </div>
-            <div>
-              <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>{post.user.name || 'Unknown'}</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 8 }}>{new Date(post.createdAt).toLocaleDateString()} <ViewCount count={post.viewCount || 0} /></div>
-            </div>
-          </Link>
-        </div>
-
-        <div style={{ lineHeight: 1.6, marginBottom: imageList.length > 0 ? 12 : 0 }}>
-          <HashtagText text={post.content} />
-        </div>
-
-        {imageList.length > 0 && (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
-            {imageList.map((url, i) => (
-              <img key={i} src={url} alt="" style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 8, objectFit: 'cover' }} loading="lazy" />
-            ))}
+          <div className={styles.userRow}>
+            <Link href={getUserProfileUrl({ id: post.user.id, username: post.user.username })} className={styles.userLink}>
+              <div className={styles.avatarWrap}>
+                {post.user.image ? (
+                  <Image src={post.user.image} alt="" fill style={{ objectFit: 'cover' }} />
+                ) : (
+                  <div className={styles.avatarInitial}>{post.user.name?.[0] || 'U'}</div>
+                )}
+              </div>
+              <div className={styles.userInfo}>
+                <div className={styles.userName}>{post.user.name || 'Unknown'}</div>
+                <div className={styles.postDate}>{new Date(post.createdAt).toLocaleDateString()} <ViewCount count={post.viewCount || 0} /></div>
+              </div>
+            </Link>
           </div>
+
+          <div className={`${styles.contentBody} ${imageList.length > 0 ? styles.hasImages : ''}`}>
+            <HashtagText text={post.content} />
+          </div>
+
+          {imageList.length > 0 && (
+            <div className={styles.imageGrid}>
+              {imageList.map((url, i) => (
+                <img key={i} src={url} alt="" loading="lazy" />
+              ))}
+            </div>
+          )}
+
+          {post.referenceType && post.referenceId && (
+            <SharedItemCard
+              referenceType={post.referenceType}
+              referenceId={post.referenceId}
+              referenceTitle={post.referenceTitle}
+            />
+          )}
+          </>
         )}
 
-        {post.referenceType && post.referenceId && (
-          <SharedItemCard
-            referenceType={post.referenceType}
-            referenceId={post.referenceId}
-            referenceTitle={post.referenceTitle}
-          />
-        )}
-        </>
-        )}
-
-        <div style={{ marginTop: 12 }}>
+        <div className={styles.actions}>
           <EntityActions
             entityType="POST"
             entityId={post.id}

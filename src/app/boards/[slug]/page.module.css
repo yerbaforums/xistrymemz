@@ -387,3 +387,18 @@
 .overlayBtn:hover {
   box-shadow: 0 0 8px rgba(0, 217, 255, 0.4);
 }
+
+@media (max-width: 768px) {
+  .page { padding: 12px; }
+  .boardHeader { flex-direction: column; gap: 12px; }
+  .boardInfo h1 { font-size: 1.2rem; }
+  .boardActions { width: 100%; }
+  .pinsGrid { grid-template-columns: 1fr; }
+  .mapWrap { height: 250px; min-height: 250px; }
+  .viewToggle { width: 100%; justify-content: center; }
+  .calendarGrid { grid-template-columns: repeat(7, 1fr); font-size: 0.75rem; }
+  .calendarCell { min-height: 60px; padding: 4px; }
+  .calendarDayHeader { padding: 8px 4px; font-size: 0.75rem; }
+  .calendarPinItem { font-size: 0.65rem; padding: 2px 4px; }
+  .calendarPinTitle { max-width: 40px; }
+}

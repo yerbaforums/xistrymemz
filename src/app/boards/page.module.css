@@ -423,3 +423,15 @@
 .deleteBtn:hover {
   background: rgba(239, 68, 68, 0.15);
 }
+
+@media (max-width: 768px) {
+  .page { padding: 12px; }
+  .header { flex-direction: column; gap: 12px; }
+  .searchBar { flex-direction: column; }
+  .searchControls { flex-wrap: wrap; }
+  .grid { grid-template-columns: 1fr; }
+  .mapWrap { height: 250px; min-height: 250px; }
+  .boardCard { padding: 14px; }
+  .cardBody { flex-direction: column; }
+  .viewToggle { width: 100%; justify-content: center; }
+}
