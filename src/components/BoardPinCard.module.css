@@ -408,6 +408,13 @@
   gap: 4px;
 }
 
+.commentsLoading {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  padding: 8px 0;
+  text-align: center;
+}
+
 .commentItem {
   padding: 6px 10px;
   background: var(--bg-tertiary);

@@ -1,6 +1,6 @@
 # XistrYmemZ — Comprehensive Improvement Plan (Updated)
 
-> **v2.1 — Refreshed from Pass 4 (Site Structure + UX/UI Polish).** Reflects actual completion state after Dragon+Loading animation, EmptyState unification, inline style migration batch 1, hashtag pills, micro-interactions, and type cleanup.
+> **v2.2 — Refreshed from Session 2 (Translations + Community Layout).** Reflects completion of i18n, new languages, language request feature, dashboard breadcrumb cleanup, sidebar sticky fix, project creation error handling, community sidebar unification, and breadcrumb label gaps.
 > **Execution strategy**: All passes follow the 7-step cycle in `.opencode/plans/pass-playbook.md`.
 
 ---
@@ -104,6 +104,18 @@
 | Micro-interactions (keyframes, page-enter, card-hover, btn-press) | ✅ |
 | Type Cleanup (9 TS errors, 4 interfaces extended) | ✅ |
 
+### Phase G: Session 2 — Translations + Community Layout
+| Item | Status |
+|------|--------|
+| i18n Audit: `pt.json` missing key fixed; `de`, `it`, `ru`, `ar`, `hi`, `ja`, `zh` fully translated | ✅ |
+| 5 New Languages: `ko`, `nl`, `pl`, `sv`, `tr` registered across routing, middleware, locale provider, header, mobile nav | ✅ |
+| Language Request Feature: API route + modal + header/mobile-nav UI | ✅ |
+| Dashboard Sidebar Sticky Fix: `overflow-x: hidden` → `clip` | ✅ |
+| Dashboard Breadcrumb Cleanup: Removed duplicates from 15 pages; feed title fix | ✅ |
+| Plan Creation Error Handling: try/catch in API route + `status`/`published` in schema | ✅ |
+| Unified Community Sidebar: sticky layout, profile strip, 5 nav items (Members, Forum, Groups, Connections, Boards) | ✅ |
+| BREADCRUMB_LABELS Gaps: Added `messages`, `community`, `video`, `appointments` | ✅ |
+
 ---
 
 ## ⏳ Remaining Phases
@@ -140,11 +152,13 @@
 - **5.2 ERP-style sidebar**: Collapsible, role-gated
 - **5.3 Mobile bottom nav**: 5 icons, ≥44px
 - **⏳ 5.4 Unified breadcrumbs**: Add `<Breadcrumbs>` to ~35 pages missing them:
-  - Dashboard: 14 pages
+  - Dashboard: 14 pages (redundant ones removed from 15 pages)
   - Admin (partial): 8 pages
   - Auth: 5 pages
   - Other: connections, offers/[id], posts/[id], projects, rentals (2), settings (3), shops, trips/[id]
 - **5.5 Navigation cleanup**: Remove duplicates, hide admin, progressive loading
+- **✅ 5.6 Community sidebar unified**: sticky profile strip, Boards + Connections added, matching dashboard UX pattern
+- **✅ 5.7 BREADCRUMB_LABELS gaps filled**: `messages`, `community`, `video`, `appointments` added
 
 ## Phase 6: UI/UX Consistency (2 days — 5-8h remaining)
 
@@ -227,5 +241,8 @@
 11. ✅ Micro-interactions done
 12. ✅ Inline styles batch 1 (3 files)
 13. ✅ Hashtag pills (Plans, Requests, Groups)
-14. ⏳ Add Breadcrumbs to 35 pages
+14. 🟡 Breadcrumbs: dashboard 14pp done (redundant removed), 35pp total pending
 15. ⏳ Wire ConfirmDialog to 35 DELETE ops
+16. ✅ Language pack: 11 full locales + 5 new languages + language request feature
+17. ✅ Community sidebar: sticky + unified nav + profile strip
+18. ✅ Plan creation error handling + schema fix

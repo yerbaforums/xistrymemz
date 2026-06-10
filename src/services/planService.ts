@@ -66,6 +66,8 @@ export async function createPlan(data: {
   title: string
   description?: string | null
   imageUrl?: string | null
+  status?: string | null
+  published?: boolean | null
   goals?: string | null
   mileposts?: string | null
   userId: string
@@ -79,8 +81,8 @@ export async function createPlan(data: {
       mileposts: data.mileposts || null,
       milepostStatus: '[]',
       userId: data.userId,
-      status: 'ACTIVE',
-      published: true,
+      status: data.status || 'ACTIVE',
+      published: data.published ?? true,
     },
   })
 }

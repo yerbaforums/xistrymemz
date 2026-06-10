@@ -21,6 +21,17 @@ const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), 
 const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false })
 const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false })
 
+let L: any
+if (typeof window !== 'undefined') {
+  L = require('leaflet')
+  delete L.Icon.Default.prototype._getIconUrl
+  L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  })
+}
+
 interface PinUser {
   id: string
   name: string | null
@@ -366,7 +377,7 @@ export default function BoardDetailPage() {
         </button>
       </div>
 
-      {viewMode !== 'calendar' && (
+      {viewMode === 'map' && (
         <div className={styles.mapWrap}>
           {!board.latitude && !pinLocations.length && (
             <div className={styles.mapOverlay}>
@@ -422,7 +433,7 @@ export default function BoardDetailPage() {
         </div>
       )}
 
-      {viewMode === 'calendar' ? (
+      {viewMode === 'calendar' && (
         <div className={styles.calendarWrap}>
           <div className={styles.calendarHeader}>
             <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))} className={styles.calendarNavBtn}>←</button>
@@ -436,26 +447,29 @@ export default function BoardDetailPage() {
             {getCalendarDays()}
           </div>
         </div>
-      ) : pins.length === 0 ? (
-        <EmptyState icon="📌" title="No pins yet" description="Be the first to pin something to this board!" action={session?.user ? { label: 'Pin Something', onClick: () => setShowCreateModal(true) } : undefined} />
-      ) : (
-        <div className={styles.pinsGrid}>
-          {pins.map(pin => (
-            <BoardPinCard
-              key={pin.id}
-              pin={pin}
-              isOwner={pin.userId === userId}
-              isBoardOwner={isBoardOwner}
-              boardSlug={slug}
-              onDelete={handleDelete}
-              onFlyTo={handlePinFlyTo}
-              onView={(pinId) => {
-                const idx = pins.findIndex(p => p.id === pinId)
-                if (idx >= 0) setCarouselIndex(idx)
-              }}
-            />
-          ))}
-        </div>
+      )}
+      {viewMode === 'grid' && (
+        pins.length === 0 ? (
+          <EmptyState icon="📌" title="No pins yet" description="Be the first to pin something to this board!" action={session?.user ? { label: 'Pin Something', onClick: () => setShowCreateModal(true) } : undefined} />
+        ) : (
+          <div className={styles.pinsGrid}>
+            {pins.map(pin => (
+              <BoardPinCard
+                key={pin.id}
+                pin={pin}
+                isOwner={pin.userId === userId}
+                isBoardOwner={isBoardOwner}
+                boardSlug={slug}
+                onDelete={handleDelete}
+                onFlyTo={handlePinFlyTo}
+                onView={(pinId) => {
+                  const idx = pins.findIndex(p => p.id === pinId)
+                  if (idx >= 0) setCarouselIndex(idx)
+                }}
+              />
+            ))}
+          </div>
+        )
       )}
 
       {showCreateModal && (

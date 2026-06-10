@@ -1,6 +1,6 @@
 # Development Priority List
 
-> **v2.1 — Updated from Pass 4 (Site Structure + UX/UI Polish).** Reflects actual completion state after inline style migration, empty state unification, micro-interactions, and hashtag pills pass.
+> **v2.2 — Updated from Session 2 (Translations + Community Layout).** Reflects completion of i18n, new languages, language request feature, dashboard breadcrumb cleanup, sidebar sticky fix, project creation error handling, community sidebar unification, and breadcrumb label gaps.
 > **Execution strategy**: All passes follow the 7-step cycle in `.opencode/plans/pass-playbook.md`.
 
 ---
@@ -82,6 +82,18 @@
 | **Hashtag Pills**: Plans, Requests, Groups detail pages + 4 type interfaces extended | ✅ |
 | **Type Cleanup**: 9 TS errors fixed across 3 detail pages + GroupSummary | ✅ |
 
+### From Session 2 (Translations + Community Layout)
+| Item | Status |
+|------|--------|
+| **i18n Audit**: `pt.json` missing key fixed; `de`, `it`, `ru`, `ar`, `hi`, `ja`, `zh` fully translated from English copies | ✅ |
+| **5 New Languages**: `ko`, `nl`, `pl`, `sv`, `tr` — registered in routing, middleware, LocaleProvider, Header, MobileNav, layout OG_LOCALE_MAP | ✅ |
+| **Language Request Feature**: `/api/language-request` route + `LanguageRequestModal` component + "Request Language" links in header locale dropdowns and mobile nav | ✅ |
+| **Dashboard Sidebar Sticky Fix**: `.layout` `overflow-x: hidden` → `overflow-x: clip` to allow `position: sticky` on sidebar | ✅ |
+| **Dashboard Breadcrumb Cleanup**: Removed duplicate `<Breadcrumbs>` from 15 dashboard page files; feed page title `t('title')` → `t('feed')` | ✅ |
+| **Plan Creation Error Handling**: Added try/catch to `/api/plans` POST handler + added `status`/`published` to `planSchema` | ✅ |
+| **Unified Community Sidebar**: Sticky sidebar w/ profile strip, 5 nav items (Members, Forum, Groups, Connections, Boards), matching dashboard UX | ✅ |
+| **BREADCRUMB_LABELS Gaps Filled**: Added `messages`, `community`, `video`, `appointments` entries | ✅ |
+
 ---
 
 ## ⏳ Remaining Work
@@ -103,6 +115,10 @@
 
 ### 1.4 Deduplicate Notification Button
 - **Status**: ✅ Done
+
+### 1.8 Fix Plan Creation Error Handling
+- **Status**: ✅ Done — added try/catch to `/api/plans` POST handler + `status`/`published` fields to `planSchema`
+- **Note**: Other API routes (products, events, requests, etc.) still lack try/catch — apply same pattern
 
 ### 1.5 Audit `any` Types (Ongoing)
 - **Location**: `src/app/api/` (7 files flagged)
@@ -187,6 +203,13 @@ Add `<Breadcrumbs>` to these missing directories:
 
 ### 6.5 Navigation Cleanup
 - Remove duplicate entry points, hide admin from non-admin, progressive loading
+
+### ✅ 6.6 Unified Community Sidebar
+- **Status**: ✅ Done — sticky sidebar w/ profile strip, 5 nav items (Members, Forum, Groups, Connections, Boards), matching dashboard UX pattern
+- **Note**: Community sidebar now has same sticky behavior, profile dropdown, and responsive mobile layout as dashboard sidebar
+
+### ✅ 6.7 BREADCRUMB_LABELS Gaps
+- **Status**: ✅ Done — added `messages`, `community`, `video`, `appointments` entries for consistent breadcrumb rendering
 
 ---
 
@@ -293,5 +316,8 @@ Add `<Breadcrumbs>` to these missing directories:
 11. ✅ Micro-interactions (globals.css + 7 pages + Button)
 12. ✅ Inline styles: TipModal, ReplySection, ServiceCard
 13. ✅ Hashtag pills on Plans, Requests, Groups
-14. ⏳ Breadcrumbs: add to 35 pages
+14. 🟡 Breadcrumbs: dashboard 14pp ✅ (removed redundant), 35pp total pending
 15. ⏳ ConfirmDialog: wire to 35 DELETE operations
+16. ✅ Language pack: 11 full locales + 5 new languages + language request
+17. ✅ Community sidebar: sticky + unified nav + profile strip
+18. ✅ Plan creation error handling + schema fix

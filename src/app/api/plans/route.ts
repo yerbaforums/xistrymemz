@@ -29,35 +29,43 @@ export async function GET(request: Request) {
 }
 
 export const POST = withValidation(planSchema, async (req, session, data) => {
-  const { title, description, imageUrl, goals, mileposts, lookingForCollaborators, acceptsDonations, donationAddress, donationCurrency, donationDescription, donationAddresses, hashtags } = data
+  try {
+    const { title, description, imageUrl, status, published, goals, mileposts, lookingForCollaborators, acceptsDonations, donationAddress, donationCurrency, donationDescription, donationAddresses, hashtags } = data
 
-  const plan = await createPlan({
-    title,
-    description,
-    imageUrl,
-    goals,
-    mileposts,
-    userId: session.user.id,
-  })
+    const plan = await createPlan({
+      title,
+      description,
+      imageUrl,
+      status,
+      published,
+      goals,
+      mileposts,
+      userId: session.user.id,
+    })
 
-  await prisma.plan.update({
-    where: { id: plan.id },
-    data: {
-      lookingForCollaborators: lookingForCollaborators ?? false,
-      acceptsDonations: acceptsDonations ?? false,
-      donationAddress: donationAddress || null,
-      donationCurrency: donationCurrency || 'ETH',
-      donationDescription: donationDescription || null,
-      donationAddresses: donationAddresses || null,
-    },
-  })
+    await prisma.plan.update({
+      where: { id: plan.id },
+      data: {
+        lookingForCollaborators: lookingForCollaborators ?? false,
+        acceptsDonations: acceptsDonations ?? false,
+        donationAddress: donationAddress || null,
+        donationCurrency: donationCurrency || 'ETH',
+        donationDescription: donationDescription || null,
+        donationAddresses: donationAddresses || null,
+      },
+    })
 
-  if (Array.isArray(hashtags) && hashtags.length > 0) {
-    await linkHashtags('PLAN', plan.id, hashtags)
-  } else {
-    const text = [title, description || ''].join(' ')
-    await extractAndLinkHashtags(text, 'PLAN', plan.id)
+    if (Array.isArray(hashtags) && hashtags.length > 0) {
+      await linkHashtags('PLAN', plan.id, hashtags)
+    } else {
+      const text = [title, description || ''].join(' ')
+      await extractAndLinkHashtags(text, 'PLAN', plan.id)
+    }
+
+    return apiSuccess(plan, 201)
+  } catch (err) {
+    console.error('Failed to create project:', err)
+    const message = err instanceof Error ? err.message : 'Failed to create project'
+    return apiError(message, 500)
   }
-
-  return apiSuccess(plan, 201)
 })

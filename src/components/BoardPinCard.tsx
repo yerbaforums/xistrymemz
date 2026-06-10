@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getUserProfileUrl } from '@/lib/utils'
 import LinkedEntityDetail from '@/components/LinkedEntityDetail'
+import { useToast } from '@/context/ToastContext'
 import styles from './BoardPinCard.module.css'
 
 interface PinUser {
@@ -132,7 +133,7 @@ function ImageCarousel({ images }: { images: string[] }) {
     <div className={styles.carousel}>
       <div className={styles.carouselInner}>
         <div className={styles.carouselImageWrap}>
-          <Image src={images[current]} alt="" fill style={{ objectFit: 'cover' }} />
+          <Image src={images[current]} alt="" fill sizes="(max-width: 768px) 100vw, 320px" style={{ objectFit: 'cover' }} />
         </div>
         {len > 1 && (
           <>
@@ -153,6 +154,7 @@ function ImageCarousel({ images }: { images: string[] }) {
 }
 
 const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, boardSlug, onDelete, onFlyTo, onView, onEdit }: BoardPinCardProps) {
+  const { success: toastSuccess } = useToast()
   const [minimized, setMinimized] = useState(false)
   const [likes, setLikes] = useState(pin.likeCount || 0)
   const [liked, setLiked] = useState(false)
@@ -346,10 +348,11 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
           💬 <span>{commentCount}</span>
         </button>
         <button className={styles.socialBtn} onClick={() => {
+          const url = `${window.location.origin}/boards/${boardSlug}?pin=${pin.id}`
           if (navigator.share) {
-            navigator.share({ title: pin.title || '', text: pin.content || '', url: `${window.location.origin}/boards/${boardSlug}` })
+            navigator.share({ title: pin.title || '', text: pin.content || '', url })
           } else {
-            navigator.clipboard.writeText(`${window.location.origin}/boards/${boardSlug}`)
+            navigator.clipboard.writeText(url).then(() => toastSuccess('Link copied!'))
           }
         }} aria-label="Share">
           🔗
@@ -365,7 +368,8 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
               {submitting ? '...' : 'Post'}
             </button>
           </div>
-          {commentList.length > 0 && (
+          {commentsLoading && <div className={styles.commentsLoading}>Loading comments...</div>}
+          {!commentsLoading && commentList.length > 0 && (
             <div className={styles.commentsList}>
               {commentList.map(c => (
                 <div key={c.id} className={styles.commentItem}>
