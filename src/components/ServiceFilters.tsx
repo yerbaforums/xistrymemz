@@ -7,17 +7,22 @@ interface ServiceFiltersProps {
   location: string
   locations: string[]
   sortBy: string
+  priceMin: string
+  priceMax: string
   onCategoryChange: (v: string) => void
   onLocationChange: (v: string) => void
   onSortChange: (v: string) => void
+  onPriceMinChange: (v: string) => void
+  onPriceMaxChange: (v: string) => void
   onClear: () => void
 }
 
 export default function ServiceFilters({
-  category, location, locations, sortBy,
-  onCategoryChange, onLocationChange, onSortChange, onClear
+  category, location, locations, sortBy, priceMin, priceMax,
+  onCategoryChange, onLocationChange, onSortChange,
+  onPriceMinChange, onPriceMaxChange, onClear
 }: ServiceFiltersProps) {
-  const hasActiveFilters = category !== 'ALL' || location !== 'ALL'
+  const hasActiveFilters = category !== 'ALL' || location !== 'ALL' || priceMin || priceMax
 
   return (
     <aside style={{ width: 240, flexShrink: 0 }}>
@@ -65,6 +70,39 @@ export default function ServiceFilters({
             <option key={loc} value={loc!}>{loc}</option>
           ))}
         </select>
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <label style={{ display: 'block', marginBottom: 6, fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+          Price Range
+        </label>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <input
+            type="number"
+            value={priceMin}
+            onChange={e => onPriceMinChange(e.target.value)}
+            placeholder="Min"
+            style={{
+              width: '100%', padding: '8px 10px', borderRadius: 8,
+              border: '1px solid var(--border-color)',
+              background: 'var(--bg-tertiary)', color: 'var(--text-primary)',
+              fontSize: '0.82rem', boxSizing: 'border-box'
+            }}
+          />
+          <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>—</span>
+          <input
+            type="number"
+            value={priceMax}
+            onChange={e => onPriceMaxChange(e.target.value)}
+            placeholder="Max"
+            style={{
+              width: '100%', padding: '8px 10px', borderRadius: 8,
+              border: '1px solid var(--border-color)',
+              background: 'var(--bg-tertiary)', color: 'var(--text-primary)',
+              fontSize: '0.82rem', boxSizing: 'border-box'
+            }}
+          />
+        </div>
       </div>
 
       <div style={{ marginBottom: 16 }}>

@@ -9,6 +9,7 @@ import EventFormFields, { getDefaultEventFormData } from '@/components/EventForm
 import { useToast } from '@/context/ToastContext'
 import { CONTENT_TEMPLATES, CONTENT_TYPE_MAP } from '@/lib/content-templates'
 import { PRODUCT_CATEGORIES, PRODUCT_CONDITIONS, PRODUCT_TYPES } from '@/lib/product-categories'
+import { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS } from '@/types/service'
 import styles from './QuickCreateModal.module.css'
 import type { EventFormData } from '@/components/EventFormFields'
 
@@ -34,6 +35,7 @@ const TABS = [
   { id: 'project', label: 'Project', icon: '🚀' },
   { id: 'group', label: 'Group', icon: '👥' },
   { id: 'request', label: 'Request', icon: '📝' },
+  { id: 'service', label: 'Service', icon: '🔧' },
 ]
 
 export function QuickCreateProvider({ children }: { children: ReactNode }) {
@@ -85,6 +87,7 @@ function QuickCreateModalContent({
         {initialTab === 'project' && <ProjectForm onDone={onClose} />}
         {initialTab === 'group' && <GroupForm onDone={onClose} />}
         {initialTab === 'request' && <RequestForm onDone={onClose} />}
+        {initialTab === 'service' && <ServiceForm onDone={onClose} />}
       </div>
     </Modal>
   )
@@ -592,6 +595,93 @@ function RequestForm({ onDone }: { onDone: () => void }) {
         <button type="button" onClick={onDone} className="btn-ghost">Cancel</button>
         <button type="submit" disabled={creating || !title.trim()} className="btn-primary">
           {creating ? 'Creating...' : '📝 Create Request'}
+        </button>
+      </div>
+    </form>
+  )
+}
+
+function ServiceForm({ onDone }: { onDone: () => void }) {
+  const { success, error } = useToast()
+  const router = useRouter()
+  const [title, setTitle] = useState('')
+  const [category, setCategory] = useState('OTHER')
+  const [duration, setDuration] = useState('60')
+  const [price, setPrice] = useState('')
+  const [location, setLocation] = useState('')
+  const [description, setDescription] = useState('')
+  const [creating, setCreating] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!title.trim()) return
+    setCreating(true)
+    try {
+      const res = await fetch('/api/services', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: title.trim(),
+          description: description.trim() || undefined,
+          category,
+          duration: parseInt(duration) || 60,
+          price: price ? parseFloat(price) : null,
+          location: location.trim() || undefined,
+        }),
+      })
+      if (res.ok) {
+        success('Service created!')
+        onDone()
+        router.refresh()
+      } else {
+        const err = await res.json()
+        error(err.error || 'Failed to create')
+      }
+    } catch {
+      error('Failed to create service')
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className={styles.form}>
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Title</label>
+        <input type="text" value={title} onChange={e => setTitle(e.target.value)} className={styles.input} placeholder="Service title" required autoFocus />
+      </div>
+      <div className={styles.formRow}>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Category</label>
+          <select value={category} onChange={e => setCategory(e.target.value)} className={styles.select}>
+            {SERVICE_CATEGORIES.map(cat => (
+              <option key={cat} value={cat}>{SERVICE_CATEGORY_LABELS[cat]}</option>
+            ))}
+          </select>
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Duration (min)</label>
+          <input type="number" value={duration} onChange={e => setDuration(e.target.value)} className={styles.input} placeholder="60" min="5" />
+        </div>
+      </div>
+      <div className={styles.formRow}>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Price ($)</label>
+          <input type="number" value={price} onChange={e => setPrice(e.target.value)} className={styles.input} placeholder="0.00" step="0.01" />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Location</label>
+          <input type="text" value={location} onChange={e => setLocation(e.target.value)} className={styles.input} placeholder="City, State" />
+        </div>
+      </div>
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Description</label>
+        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="Describe your service..." />
+      </div>
+      <div className={styles.formActions}>
+        <button type="button" onClick={onDone} className="btn-ghost">Cancel</button>
+        <button type="submit" disabled={creating || !title.trim()} className="btn-primary">
+          {creating ? 'Creating...' : '🔧 Create Service'}
         </button>
       </div>
     </form>

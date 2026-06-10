@@ -3,6 +3,8 @@
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
+import { useSearchParams, useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import Modal from '@/components/ui/Modal'
 import ServiceFilters from '@/components/ServiceFilters'
 import ServiceCard from '@/components/ServiceCard'
@@ -15,6 +17,22 @@ import { EmptyState } from '@/components/EmptyState'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import Button from '@/components/ui/Button'
 
+const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
+const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
+const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false })
+const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false })
+
+let L: any
+if (typeof window !== 'undefined') {
+  L = require('leaflet')
+  delete L.Icon.Default.prototype._getIconUrl
+  L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  })
+}
+
 function safeStr(v: unknown): string | null {
   return typeof v === 'string' ? v : null
 }
@@ -24,17 +42,21 @@ function safeNum(v: unknown): number | null {
 
 export default function ServicesPage() {
   const { data: session } = useSession()
+  const searchParams = useSearchParams()
+  const router = useRouter()
   const [services, setServices] = useState<ServiceOffering[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [totalServices, setTotalServices] = useState(0)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [category, setCategory] = useState('ALL')
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '')
+  const [category, setCategory] = useState(searchParams.get('category') || 'ALL')
   const [location, setLocation] = useState('ALL')
-  const [sortBy, setSortBy] = useState('newest')
+  const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'newest')
+  const [priceMin, setPriceMin] = useState('')
+  const [priceMax, setPriceMax] = useState('')
   const [selectedService, setSelectedService] = useState<ServiceOffering | null>(null)
   const [showBooking, setShowBooking] = useState(false)
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>((searchParams.get('view') as any) || 'grid')
   const PAGE_SIZE = 20
 
   const fetchServices = async (pageNum: number, append: boolean) => {
@@ -75,6 +97,19 @@ export default function ServicesPage() {
     fetchServices(1, false)
   }, [])
 
+  useEffect(() => {
+    const params = new URLSearchParams()
+    if (category !== 'ALL') params.set('category', category)
+    if (sortBy !== 'newest') params.set('sort', sortBy)
+    if (searchQuery) params.set('q', searchQuery)
+    if (viewMode !== 'grid') params.set('view', viewMode)
+    const qs = params.toString()
+    const newUrl = `/services${qs ? '?' + qs : ''}`
+    if (newUrl !== window.location.pathname + window.location.search) {
+      window.history.replaceState(null, '', newUrl)
+    }
+  }, [category, sortBy, searchQuery, viewMode])
+
   const filteredServices = useMemo(() => {
     let result = [...services]
     if (category !== 'ALL') result = result.filter(s => s.category === category)
@@ -86,12 +121,20 @@ export default function ServicesPage() {
         (s.description || '').toLowerCase().includes(q)
       )
     }
+    if (priceMin) {
+      const min = parseFloat(priceMin)
+      if (!isNaN(min)) result = result.filter(s => (s.price || 0) >= min)
+    }
+    if (priceMax) {
+      const max = parseFloat(priceMax)
+      if (!isNaN(max)) result = result.filter(s => (s.price || 0) <= max)
+    }
     if (sortBy === 'price-low') result.sort((a, b) => (a.price || 0) - (b.price || 0))
     else if (sortBy === 'price-high') result.sort((a, b) => (b.price || 0) - (a.price || 0))
     else if (sortBy === 'duration') result.sort((a, b) => a.duration - b.duration)
     else result.reverse()
     return result
-  }, [services, category, location, searchQuery, sortBy])
+  }, [services, category, location, searchQuery, sortBy, priceMin, priceMax])
 
   const locations = useMemo(
     () => [...new Set(services.map(s => s.location).filter(Boolean))] as string[],
@@ -99,7 +142,7 @@ export default function ServicesPage() {
   )
 
   const clearFilters = () => {
-    setCategory('ALL'); setLocation('ALL'); setSearchQuery('')
+    setCategory('ALL'); setLocation('ALL'); setSearchQuery(''); setPriceMin(''); setPriceMax('')
   }
 
   const sel = selectedService
@@ -157,9 +200,13 @@ export default function ServicesPage() {
           location={location}
           locations={locations}
           sortBy={sortBy}
+          priceMin={priceMin}
+          priceMax={priceMax}
           onCategoryChange={setCategory}
           onLocationChange={setLocation}
           onSortChange={setSortBy}
+          onPriceMinChange={setPriceMin}
+          onPriceMaxChange={setPriceMax}
           onClear={clearFilters}
         />
 
@@ -183,11 +230,27 @@ export default function ServicesPage() {
               >
                 ☰
               </button>
+              <button
+                className={`${styles.viewToggle} ${viewMode === 'map' ? styles.viewToggleActive : ''}`}
+                onClick={() => setViewMode('map')}
+                aria-label="Map view"
+              >
+                🗺️
+              </button>
             </div>
           </div>
 
           {loading ? (
             <Skeleton width="100%" height="2rem" />
+          ) : viewMode === 'map' ? (
+            <div className={styles.mapWrap}>
+              <div className={styles.mapPlaceholder}>
+                <span className={styles.mapPlaceholderIcon}>🗺️</span>
+                <p>Map view coming soon for services!</p>
+                <p className={styles.mapPlaceholderSub}>We're adding location coordinates to services so you can find nearby providers on the map.</p>
+                <button className={styles.mapToggleBack} onClick={() => setViewMode('grid')}>← Back to Grid View</button>
+              </div>
+            </div>
           ) : filteredServices.length === 0 ? (
             <EmptyState icon="🔧" title="No services found" description="Try adjusting your filters or check back later." action={{ label: 'Clear Filters', onClick: clearFilters }} />
           ) : (

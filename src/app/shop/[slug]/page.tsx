@@ -18,6 +18,7 @@ import EntityActions from '@/components/EntityActions'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
 import Rating from '@/components/Rating'
+import Loading from '@/components/Loading'
 import HashtagText from '@/components/HashtagText'
 import LinkPreview from '@/components/LinkPreview'
 import { SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service'
@@ -302,7 +303,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
     } catch { /* ignore */ }
   }
 
-  if (loading) return <div className={styles.loading}>Loading shop...</div>
+  if (loading) return <Loading size="medium" />
   if (!shop) return <div className={styles.error}>Shop not found</div>
 
   const userClasses = shop.user.userClass?.split(',').map(c => c.trim()).filter(Boolean) || []

@@ -15,6 +15,7 @@ import { geocodeLocation } from '@/lib/geocoding'
 import { EmptyState } from '@/components/EmptyState'
 import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import Loading from '@/components/Loading'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
@@ -291,7 +292,7 @@ export default function BoardDetailPage() {
   if (loading) {
     return (
       <div className={styles.page}>
-        <p className={styles.loading}>Loading board...</p>
+        <Loading size="medium" />
       </div>
     )
   }

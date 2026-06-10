@@ -19,6 +19,7 @@ import { CONTENT_TEMPLATES } from '@/lib/content-templates'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
 import Rating from '@/components/Rating'
+import Loading from '@/components/Loading'
 import HashtagText from '@/components/HashtagText'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import LinkPreview from '@/components/LinkPreview'
@@ -340,7 +341,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
     } catch { /* ignore */ }
   }
 
-  if (loading) return <div className={styles.loading}>Loading school...</div>
+  if (loading) return <Loading size="medium" />
   if (!school) return <div className={styles.error}>School not found</div>
 
   const userClasses = school.user.userClass?.split(',').map(c => c.trim()).filter(Boolean) || []

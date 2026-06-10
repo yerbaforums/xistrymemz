@@ -14,7 +14,8 @@ const ACTIONS = [
   { label: 'New Event', icon: '📅', href: null, action: 'event' },
   { label: 'New Group', icon: '👥', href: null, action: 'group' },
   { label: 'New Request', icon: '📝', href: null, action: 'request' },
-  { label: 'New Service', icon: '🔧', href: '/dashboard/services' },
+  { label: 'New Service', icon: '🔧', href: null, action: 'service' },
+  { label: 'New Board', icon: '📌', href: '/boards' },
 ]
 
 export default function CreateFAB() {

@@ -14,6 +14,7 @@ import { useRecordView } from '@/hooks/useRecordView'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import PinToBoardButton from '@/components/PinToBoardButton'
+import Loading from '@/components/Loading'
 
 interface PostData {
   id: string
@@ -64,11 +65,7 @@ export default function PostPage() {
   useRecordView('post', post?.id || '')
 
   if (loading) {
-    return (
-      <div style={{ maxWidth: 640, margin: '0 auto', padding: '24px 16px' }}>
-        <p style={{ color: 'var(--text-secondary)' }}>Loading post...</p>
-      </div>
-    )
+    return <Loading size="medium" />
   }
 
   if (error || !post) {
