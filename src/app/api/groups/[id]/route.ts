@@ -89,7 +89,13 @@ export async function PUT(
     }
 
     const { id } = await params
-    const { name, description, imageUrl, coverImage, bannerColor, isPrivate, hashtags } = await request.json()
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
+    const { name, description, imageUrl, coverImage, bannerColor, isPrivate, hashtags } = body as any
 
     const member = await prisma.groupMember.findFirst({
       where: { groupId: id, userId: session.user.id, role: 'ADMIN' }

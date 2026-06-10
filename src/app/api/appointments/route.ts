@@ -45,8 +45,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
-    const { title, description, startTime, endTime, duration, location, meetingLink, sellerId, productId, formResponses, category, serviceOfferingId } = body
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
+    const { title, description, startTime, endTime, duration, location, meetingLink, sellerId, productId, formResponses, category, serviceOfferingId } = body as any
 
     if (!title || !startTime || !endTime || !sellerId) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })

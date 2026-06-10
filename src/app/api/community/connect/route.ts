@@ -14,7 +14,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized - Please log in' }, { status: 401 })
     }
 
-    const body = await request.json()
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
     const validation = validateBody(connectionSchema, body)
     if (!validation.success) {
       return NextResponse.json({ error: validation.error }, { status: 400 })

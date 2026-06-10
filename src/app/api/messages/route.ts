@@ -15,12 +15,23 @@ export const GET = withAuth(async (req, session, context) => {
 })
 
 export const POST = withAuth(async (req, session) => {
-  const { receiverId, content } = await req.json()
+  try {
+    let body: unknown
+    try {
+      body = await req.json()
+    } catch {
+      return apiError('Invalid JSON body', 400)
+    }
+    const { receiverId, content } = body as any
 
-  if (!receiverId || !content) {
-    return apiError('Receiver and content required', 400)
+    if (!receiverId || !content) {
+      return apiError('Receiver and content required', 400)
+    }
+
+    const message = await sendMessage(session.user.id, receiverId, content)
+    return apiSuccess({ message }, 201)
+  } catch (error) {
+    console.error('Send message error:', error)
+    return apiError('Failed to send message', 500)
   }
-
-  const message = await sendMessage(session.user.id, receiverId, content)
-  return apiSuccess({ message }, 201)
 })

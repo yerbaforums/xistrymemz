@@ -80,7 +80,12 @@ export async function PUT(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const body = await request.json()
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
     const parsed = await validateBody(serviceOfferingSchema.partial(), body)
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error }, { status: 400 })

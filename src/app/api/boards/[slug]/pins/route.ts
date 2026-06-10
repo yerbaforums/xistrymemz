@@ -21,8 +21,13 @@ export async function POST(
       return NextResponse.json({ error: 'Board not found' }, { status: 404 })
     }
 
-    const body = await request.json()
-    const { title, content, images, entityType, entityId, entityTitle, entityImage, contactName, contactEmail, contactPhone, category, expiresAt, latitude, longitude } = body
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
+    const { title, content, images, entityType, entityId, entityTitle, entityImage, contactName, contactEmail, contactPhone, category, expiresAt, latitude, longitude } = body as any
 
     if (!content) {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 })

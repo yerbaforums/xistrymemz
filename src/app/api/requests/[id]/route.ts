@@ -102,7 +102,13 @@ export async function PUT(
       return NextResponse.json({ error: 'Request not found or unauthorized' }, { status: 404 })
     }
 
-    const body = await request.json()
+    let parsedBody: unknown
+    try {
+      parsedBody = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
+    const body: any = parsedBody
     const existingRequest = await prisma.request.findUnique({ where: { id } })
     if (!existingRequest) {
       return NextResponse.json({ error: 'Request not found' }, { status: 404 })
@@ -199,7 +205,13 @@ export async function PATCH(
       return NextResponse.json({ error: 'Request not found or unauthorized' }, { status: 404 })
     }
 
-    const body = await request.json()
+    let parsedBody: unknown
+    try {
+      parsedBody = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
+    const body: any = parsedBody
     const existingRequest = await prisma.request.findUnique({ where: { id } })
     if (!existingRequest) {
       return NextResponse.json({ error: 'Request not found' }, { status: 404 })

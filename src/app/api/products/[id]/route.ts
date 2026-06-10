@@ -43,7 +43,13 @@ export async function PUT(
     }
 
     const { id } = await params
-    const body = await request.json()
+    let parsedBody: unknown
+    try {
+      parsedBody = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
+    const body: any = parsedBody
 
     const validation = validateBody(productSchema.partial(), body)
     if (!validation.success) {
@@ -142,8 +148,8 @@ export async function PUT(
     return NextResponse.json(product)
   } catch (error) {
     console.error('PUT /api/products/[id]:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    return NextResponse.json({ error: `Update failed: ${errorMessage}` }, { status: 500 })
+    console.error('Product update failed:', error)
+    return NextResponse.json({ error: 'Failed to update product' }, { status: 500 })
   }
 }
 

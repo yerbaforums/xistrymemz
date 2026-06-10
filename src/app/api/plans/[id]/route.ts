@@ -60,7 +60,13 @@ export async function PUT(
     }
 
     const { id } = await params
-    const body = await request.json()
+    let parsedBody: any
+    try {
+      parsedBody = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
+    const body = parsedBody
 
     const existingPlan = await prisma.plan.findUnique({
       where: { id }
@@ -84,7 +90,7 @@ export async function PUT(
     const plan = await prisma.plan.update({
       where: { id },
       data: {
-        title: body.title ?? existingPlan.title,
+        title: (body as any).title ?? existingPlan.title,
         description: body.description ?? existingPlan.description,
         imageUrl: body.imageUrl !== undefined ? body.imageUrl : existingPlan.imageUrl,
         status: body.status ?? existingPlan.status,
