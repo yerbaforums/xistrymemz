@@ -8,6 +8,7 @@ import { useToast } from '@/context/ToastContext'
 import ImageUploader from '@/components/ImageUploader'
 
 import styles from './shop.module.css'
+import Loading from '@/components/Loading'
 import Skeleton from '@/components/Skeleton'
 
 interface ShopData {
@@ -95,7 +96,7 @@ export default function ShopDashboard() {
     else error('Failed')
   }
 
-  if (loading) return <div className={styles.page}><Skeleton width="100%" height="2rem" /></div>
+  if (loading) return <Loading size="medium" />
 
   return (
     <div className={styles.page}>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useSearchParams } from 'next/navigation'
 import ImageUploader from '@/components/ImageUploader'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import styles from './page.module.css'
@@ -75,12 +76,13 @@ interface RequestsClientProps {
 }
 
 export default function RequestsClient({ initialRequests, userId, userRole, isAuthenticated }: RequestsClientProps) {
+  const searchParams = useSearchParams()
   const { success, error: toastError, warning } = useToast()
   const [requests, setRequests] = useState(initialRequests)
-  const [tab, setTab] = useState<'active' | 'mine'>('active')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [categoryFilter, setCategoryFilter] = useState('ALL')
-  const [sortBy, setSortBy] = useState('newest')
+  const [tab, setTab] = useState<'active' | 'mine'>((searchParams.get('tab') as any) || 'active')
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '')
+  const [categoryFilter, setCategoryFilter] = useState(searchParams.get('category') || 'ALL')
+  const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'newest')
   const [showCreate, setShowCreate] = useState(false)
   const [editingRequest, setEditingRequest] = useState<Request | null>(null)
   const [editForm, setEditForm] = useState({ title: '', description: '', category: 'GENERAL', priority: 'MEDIUM', budget: '', goalAmount: '', location: '', isPublic: true, allowFulfillments: true, showDonationAddress: true, images: [] as string[], hashtags: [] as string[] })
@@ -99,7 +101,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
   const [supportingIds, setSupportingIds] = useState<Set<string>>(new Set())
   const [donationSelector, setDonationSelector] = useState<{ open: boolean; mode: 'create' | 'edit'; selectedIds: string[] }>({ open: false, mode: 'create', selectedIds: [] })
   const [userDonationAddrs, setUserDonationAddrs] = useState<DonationAddr[]>([])
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>((searchParams.get('view') as any) || 'grid')
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
 
   const isAdmin = userRole === 'ADMIN'
@@ -115,6 +117,20 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
       setRadius(String(passportLocation.searchRadius || 25))
     }
   }, [passportLocation])
+
+  useEffect(() => {
+    const params = new URLSearchParams()
+    if (tab !== 'active') params.set('tab', tab)
+    if (categoryFilter !== 'ALL') params.set('category', categoryFilter)
+    if (sortBy !== 'newest') params.set('sort', sortBy)
+    if (searchQuery) params.set('q', searchQuery)
+    if (viewMode !== 'grid') params.set('view', viewMode)
+    const qs = params.toString()
+    const newUrl = `/requests${qs ? '?' + qs : ''}`
+    if (newUrl !== window.location.pathname + window.location.search) {
+      window.history.replaceState(null, '', newUrl)
+    }
+  }, [tab, categoryFilter, sortBy, searchQuery, viewMode])
 
   const geocodeZipCode = async () => {
     if (!zipCode.trim()) { setUserLocation(null); return }

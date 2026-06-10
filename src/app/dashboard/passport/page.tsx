@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
 import dynamic from 'next/dynamic'
 
+import Loading from '@/components/Loading'
 import Skeleton from '@/components/Skeleton'
 import styles from './passport.module.css'
 
@@ -359,7 +360,7 @@ export default function PassportPage() {
     } catch { toastError('Failed to delete category') }
   }
 
-  if (loading) return <Skeleton width="100%" height="2rem" />
+  if (loading) return <Loading size="medium" />
 
   return (
     <>

@@ -105,6 +105,20 @@ export default function CommunityLayout({
     )
   }
 
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (!e.altKey) return
+      const shortcuts: Record<string, string> = {
+        '1': '/community', '2': '/community/forum', '3': '/community/groups',
+        '4': '/connections', '5': '/boards',
+      }
+      const href = shortcuts[e.key]
+      if (href) { e.preventDefault(); router.push(href) }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [router])
+
   if (!session) {
     return null
   }

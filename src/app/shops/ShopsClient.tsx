@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useRef, useMemo, useCallback } from 'react'
+import { useState, useRef, useMemo, useCallback, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import styles from './page.module.css'
 import AlphabeticalIndex, { type IndexItem } from '@/components/AlphabeticalIndex'
 import { SHOP_CATEGORIES } from '@/lib/shop-categories'
@@ -36,12 +37,25 @@ interface ShopsClientProps {
 const catMap = new Map(SHOP_CATEGORIES.map(c => [c.value, c]))
 
 export function ShopsClient({ initialShops }: ShopsClientProps) {
+  const searchParams = useSearchParams()
   const [shops] = useState<Shop[]>(initialShops)
-  const [mapExpanded, setMapExpanded] = useState(false)
+  const [mapExpanded, setMapExpanded] = useState(searchParams.get('map') === 'true')
   const [selectedShop, setSelectedShop] = useState<string | null>(null)
-  const [search, setSearch] = useState('')
-  const [categoryFilter, setCategoryFilter] = useState('all')
+  const [search, setSearch] = useState(searchParams.get('q') || '')
+  const [categoryFilter, setCategoryFilter] = useState(searchParams.get('category') || 'all')
   const mapRef = useRef<any>(null)
+
+  useEffect(() => {
+    const params = new URLSearchParams()
+    if (categoryFilter !== 'all') params.set('category', categoryFilter)
+    if (search) params.set('q', search)
+    if (mapExpanded) params.set('map', 'true')
+    const qs = params.toString()
+    const newUrl = `/shops${qs ? '?' + qs : ''}`
+    if (newUrl !== window.location.pathname + window.location.search) {
+      window.history.replaceState(null, '', newUrl)
+    }
+  }, [categoryFilter, search, mapExpanded])
 
   const filtered = useMemo(() =>
     shops.filter(s => {

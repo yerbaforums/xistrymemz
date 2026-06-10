@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useSearchParams } from 'next/navigation'
 import styles from './rentals-browse.module.css'
 import { getUserProfileUrl } from '@/lib/utils'
 import { useSession } from 'next-auth/react'
@@ -44,13 +45,29 @@ interface Props {
 }
 
 export default function RentalsBrowseClient({ initialRentals, categories, locations }: Props) {
+  const searchParams = useSearchParams()
   const { data: session } = useSession()
-  const [search, setSearch] = useState('')
-  const [categoryFilter, setCategoryFilter] = useState('ALL')
-  const [locationFilter, setLocationFilter] = useState('ALL')
-  const [sort, setSort] = useState('newest')
-  const [showAvailable, setShowAvailable] = useState(false)
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [search, setSearch] = useState(searchParams.get('q') || '')
+  const [categoryFilter, setCategoryFilter] = useState(searchParams.get('category') || 'ALL')
+  const [locationFilter, setLocationFilter] = useState(searchParams.get('location') || 'ALL')
+  const [sort, setSort] = useState(searchParams.get('sort') || 'newest')
+  const [showAvailable, setShowAvailable] = useState(searchParams.get('available') === 'true')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>((searchParams.get('view') as any) || 'grid')
+
+  useEffect(() => {
+    const params = new URLSearchParams()
+    if (categoryFilter !== 'ALL') params.set('category', categoryFilter)
+    if (locationFilter !== 'ALL') params.set('location', locationFilter)
+    if (sort !== 'newest') params.set('sort', sort)
+    if (search) params.set('q', search)
+    if (showAvailable) params.set('available', 'true')
+    if (viewMode !== 'grid') params.set('view', viewMode)
+    const qs = params.toString()
+    const newUrl = `/rentals${qs ? '?' + qs : ''}`
+    if (newUrl !== window.location.pathname + window.location.search) {
+      window.history.replaceState(null, '', newUrl)
+    }
+  }, [categoryFilter, locationFilter, sort, search, showAvailable, viewMode])
 
   const filtered = useMemo(() => {
     let items = [...initialRentals]

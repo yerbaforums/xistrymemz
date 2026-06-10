@@ -16,6 +16,7 @@ import FeatureBanner from './FeatureBanner'
 import StreakCard from './StreakCard'
 import DashboardWidgets from '@/components/DashboardWidgets'
 import AchievementCard from './AchievementCard'
+import DashboardSection from './DashboardSection'
 import { EmptyState } from '@/components/EmptyState'
 
 
@@ -288,6 +289,8 @@ export default async function DashboardOverview({
     { label: 'New Project', icon: '🚀', href: '/dashboard/projects' },
     { label: 'New Product', icon: '🛒', href: '/products/new' },
     { label: 'New Service', icon: '🔧', href: '/dashboard/services' },
+    { label: 'New Rental', icon: '🏠', href: '/dashboard/rentals' },
+    { label: 'New Teaching Content', icon: '🏫', href: '/dashboard/teaching' },
     { label: 'New Event', icon: '📅', href: '/events/new' },
     { label: t('requests'), icon: '📝', href: '/requests' },
     { label: 'New Group', icon: '👥', href: '/groups/new' },
@@ -411,12 +414,8 @@ export default async function DashboardOverview({
             )}
           </div>
 
-          <div className={styles.activityGrid}>
-            <div className={styles.activitySection}>
-              <div className={styles.sectionHeader}>
-                <h3>📦 {t('projects')}</h3>
-                <Link href="/dashboard/projects" className={styles.viewAll}>View all →</Link>
-              </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 20 }}>
+            <DashboardSection id="projects" title={t('projects')} icon="📦" action={<Link href="/dashboard/projects" className={styles.viewAll}>View all →</Link>}>
               {plans.length > 0 ? (
                 <div className={styles.activityList}>
                   {plans.map(plan => (
@@ -433,13 +432,9 @@ export default async function DashboardOverview({
               ) : (
                 <EmptyState icon="🚀" title="No projects yet" description="Start your first project and track progress with milestones." action={{ label: 'Create Project', href: '/dashboard/projects' }} />
               )}
-            </div>
+            </DashboardSection>
 
-            <div className={styles.activitySection}>
-              <div className={styles.sectionHeader}>
-                <h3>📡 {t('feed')}</h3>
-                <Link href="/dashboard/feed" className={styles.viewAll}>View all →</Link>
-              </div>
+            <DashboardSection id="feed" title={t('feed')} icon="📡" action={<Link href="/dashboard/feed" className={styles.viewAll}>View all →</Link>}>
               {recentFeedPosts.length > 0 ? (
                 <div className={styles.feedCompact}>
                   {recentFeedPosts.map(post => (
@@ -457,14 +452,9 @@ export default async function DashboardOverview({
               ) : (
                 <EmptyState icon="✏️" title="No recent posts" description="Connect with people or write your own post to get started." action={{ label: 'Write a Post', href: '/dashboard/feed' }} />
               )}
-            </div>
-          </div>
+            </DashboardSection>
 
-          <div className={styles.activitySection} style={{ marginTop: 20 }}>
-            <div className={styles.sectionHeader}>
-              <h3>🎨 Recent Studio Items</h3>
-              <Link href="/dashboard/studio" className={styles.viewAll}>Open Studio →</Link>
-            </div>
+            <DashboardSection id="studio" title="Recent Studio Items" icon="🎨" action={<Link href="/dashboard/studio" className={styles.viewAll}>Open Studio →</Link>}>
             {(() => {
               const studioItems = [
                 ...plans.map(p => ({ type: '🚀', label: 'Project', title: p.title, date: p.createdAt, href: `/plans/${p.id}` })),
@@ -490,6 +480,7 @@ export default async function DashboardOverview({
                 </div>
               )
             })()}
+            </DashboardSection>
           </div>
 
           <details className={styles.collapsibleSection}>

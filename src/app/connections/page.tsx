@@ -6,9 +6,10 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { getUserProfileUrl } from '@/lib/utils'
-import Skeleton, { SkeletonCard, SkeletonList } from '@/components/Skeleton'
+import { SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import styles from './connections.module.css'
 
 interface ConnectionUser {
   id: string
@@ -113,105 +114,66 @@ export default function ConnectionsPage() {
   const pendingTotal = pendingReceived.length + pendingSent.length
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '24px' }}>
-      <div style={{ marginBottom: '24px' }}>
-        <Link href="/profile" style={{ color: 'var(--accent-primary)', textDecoration: 'none', fontSize: '13px' }}>
+    <div className={styles.page}>
+      <div className={styles.header}>
+        <Link href="/profile" className={styles.backLink}>
           ← Back to Profile
         </Link>
         <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Connections' }]} />
-        <h1 style={{ margin: '8px 0' }}>Connections</h1>
-        <p style={{ color: 'var(--text-secondary)', margin: 0 }}>
+        <h1 className={styles.title}>Connections</h1>
+        <p className={styles.subtitle}>
           {pendingTotal > 0 ? `${pendingTotal} pending request(s)` : 'No pending requests'}
         </p>
       </div>
 
       {pendingReceived.length > 0 && (
-        <div style={{ marginBottom: '32px' }}>
-          <h2 style={{ fontSize: '16px', marginBottom: '16px' }}>
+        <div className={styles.section}>
+          <h2 className={styles.sectionTitle}>
             Requests Received ({pendingReceived.length})
           </h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className={styles.list}>
             {pendingReceived.map(conn => (
-              <div 
-                key={conn.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '16px',
-                  padding: '16px',
-                  background: 'var(--bg-secondary)',
-                  borderRadius: '12px'
-                }}
-              >
+              <div key={conn.id} className={styles.card}>
                 <Link href={getUserProfileUrl(conn.requester)}>
-                  <div style={{
-                    width: '60px',
-                    height: '60px',
-                    borderRadius: '50%',
-                    overflow: 'hidden',
-                    background: 'var(--bg-tertiary)',
-                    position: 'relative'
-                  }}>
+                  <div className={styles.avatarWrap}>
                     {conn.requester.image ? (
                       <Image src={conn.requester.image} alt="" fill style={{ objectFit: 'cover' }} />
                     ) : (
-                      <div style={{
-                        width: '100%',
-                        height: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '24px'
-                      }}>
+                      <div className={styles.avatarInitial}>
                         {conn.requester.name?.[0] || '?'}
                       </div>
                     )}
                   </div>
                 </Link>
-                <div style={{ flex: 1 }}>
-                  <Link href={getUserProfileUrl(conn.requester)} style={{ color: 'inherit', textDecoration: 'none' }}>
-                    <div style={{ fontWeight: '600', marginBottom: '4px' }}>
+                <div className={styles.info}>
+                  <Link href={getUserProfileUrl(conn.requester)} className={styles.userNameLink}>
+                    <div className={styles.userName}>
                       {conn.requester.name || 'Unknown'}
                     </div>
                   </Link>
                   {conn.requester.earthId && (
-                    <div style={{ fontSize: '12px', color: '#7fff7f', marginBottom: '4px' }}>
+                    <div className={styles.earthId}>
                       🌍 Passport {conn.requester.earthId}
                     </div>
                   )}
                   {conn.message && (
-                    <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                    <div className={styles.message}>
                       &quot;{conn.message}&quot;
                     </div>
                   )}
                 </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div className={styles.actions}>
                   <button
                     onClick={() => handleResponse(conn.id, 'ACCEPTED')}
                     disabled={updating === conn.id}
-                    style={{
-                      padding: '8px 16px',
-                      background: '#10b981',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontWeight: '600'
-                    }}
+                    className={styles.acceptBtn}
                   >
                     Accept
                   </button>
                   <button
                     onClick={() => handleResponse(conn.id, 'REJECTED')}
                     disabled={updating === conn.id}
-                    style={{
-                      padding: '8px 16px',
-                      background: 'transparent',
-                      color: '#ef4444',
-                      border: '1px solid #ef4444',
-                      borderRadius: '8px',
-                      cursor: 'pointer'
-                    }}
+                    className={styles.declineBtn}
                   >
                     Decline
                   </button>
@@ -224,69 +186,37 @@ export default function ConnectionsPage() {
 
       {pendingSent.length > 0 && (
         <div>
-          <h2 style={{ fontSize: '16px', marginBottom: '16px' }}>
+          <h2 className={styles.sectionTitle}>
             Requests Sent ({pendingSent.length})
           </h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className={styles.list}>
             {pendingSent.map(conn => (
-              <div 
-                key={conn.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '16px',
-                  padding: '16px',
-                  background: 'var(--bg-secondary)',
-                  borderRadius: '12px',
-                  opacity: 0.7
-                }}
-              >
+              <div key={conn.id} className={styles.cardSent}>
                 <Link href={getUserProfileUrl(conn.receiver)}>
-                  <div style={{
-                    width: '50px',
-                    height: '50px',
-                    borderRadius: '50%',
-                    overflow: 'hidden',
-                    background: 'var(--bg-tertiary)',
-                    position: 'relative'
-                  }}>
+                  <div className={styles.avatarWrapSmall}>
                     {conn.receiver.image ? (
                       <Image src={conn.receiver.image} alt="" fill style={{ objectFit: 'cover' }} />
                     ) : (
-                      <div style={{
-                        width: '100%',
-                        height: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '18px'
-                      }}>
+                      <div className={styles.avatarInitialSmall}>
                         {conn.receiver.name?.[0] || '?'}
                       </div>
                     )}
                   </div>
                 </Link>
-                <div style={{ flex: 1 }}>
-                  <Link href={getUserProfileUrl(conn.receiver)} style={{ color: 'inherit', textDecoration: 'none' }}>
-                    <div style={{ fontWeight: '500' }}>
+                <div className={styles.info}>
+                  <Link href={getUserProfileUrl(conn.receiver)} className={styles.userNameLink}>
+                    <div className={styles.userNameSmall}>
                       {conn.receiver.name || 'Unknown'}
                     </div>
                   </Link>
-                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                  <div className={styles.waiting}>
                     Waiting for response...
                   </div>
                 </div>
                 <button
                   onClick={() => cancelRequest(conn.id)}
                   disabled={updating === conn.id}
-                  style={{
-                    padding: '8px 16px',
-                    background: 'transparent',
-                    color: '#ef4444',
-                    border: '1px solid #ef4444',
-                    borderRadius: '8px',
-                    cursor: 'pointer'
-                  }}
+                  className={styles.cancelBtn}
                 >
                   Cancel
                 </button>

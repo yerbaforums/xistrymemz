@@ -8,6 +8,7 @@ import styles from './teaching.module.css'
 import Button from '@/components/ui/Button'
 
 import { EmptyState } from '@/components/EmptyState'
+import Loading from '@/components/Loading'
 import Skeleton from '@/components/Skeleton'
 
 interface SchoolInfo {
@@ -132,7 +133,7 @@ export default function TeachingPage() {
     } catch { error('Failed') }
   }
 
-  if (loading) return <div className={styles.page}><Skeleton width="100%" height="2rem" /></div>
+  if (loading) return <Loading size="medium" />
 
   return (
     <div className={styles.page}>
