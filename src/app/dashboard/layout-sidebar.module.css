@@ -1,9 +1,15 @@
 .nav {
+  position: sticky;
+  top: var(--header-height);
+  height: calc(100vh - var(--header-height));
+  overflow-y: auto;
+  align-self: flex-start;
   display: flex;
   flex-direction: column;
   gap: 4px;
   padding: 16px 0;
-  min-width: 200px;
+  width: var(--sidebar-width);
+  flex-shrink: 0;
 }
 
 .profileStrip {
@@ -180,6 +186,7 @@
 
 @media (max-width: 768px) {
   .nav {
+    position: static;
     flex-direction: row;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
