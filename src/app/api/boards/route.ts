@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     const city = searchParams.get('city') || undefined
     const q = searchParams.get('q') || undefined
     const page = parseInt(searchParams.get('page') || '1')
-    const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 20
+    const limit = Math.min(100, searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 20)
     const north = searchParams.get('north') ? parseFloat(searchParams.get('north')!) : undefined
     const south = searchParams.get('south') ? parseFloat(searchParams.get('south')!) : undefined
     const east = searchParams.get('east') ? parseFloat(searchParams.get('east')!) : undefined

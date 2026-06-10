@@ -74,7 +74,7 @@ export async function GET(request: Request) {
           event: { select: { id: true, title: true } },
           user: {
             select: {
-              id: true, name: true, username: true, email: true, image: true, shopSlug: true,
+              id: true, name: true, username: true, image: true, shopSlug: true,
               donationAddresses: {
                 where: { isPublic: true },
                 orderBy: { sortOrder: 'asc' }

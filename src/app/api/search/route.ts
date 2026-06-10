@@ -54,7 +54,7 @@ export async function GET(request: Request) {
       where: {
         OR: [
           { name: { contains: query } },
-          { email: { contains: query } },
+          { username: { contains: query } },
         ]
       },
       select: { id: true, name: true, image: true, bio: true, username: true },

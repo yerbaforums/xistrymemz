@@ -31,7 +31,7 @@ export async function GET(
     const fulfillments = await prisma.requestFulfillment.findMany({
       where: { requestId: id },
       include: {
-        user: { select: { id: true, name: true, username: true, email: true, image: true, shopSlug: true } }
+        user: { select: { id: true, name: true, username: true, image: true, shopSlug: true } }
       },
       orderBy: { createdAt: 'desc' }
     })

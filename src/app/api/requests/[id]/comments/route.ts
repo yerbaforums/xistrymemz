@@ -19,7 +19,7 @@ export async function GET(
     where: { requestId: id },
     include: {
       user: {
-        select: { id: true, name: true, email: true }
+        select: { id: true, name: true }
       }
     },
     orderBy: { createdAt: 'asc' }

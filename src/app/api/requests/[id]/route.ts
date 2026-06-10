@@ -46,12 +46,12 @@ export async function GET(
       include: {
         plan: {
           include: {
-            user: { select: { id: true, name: true, username: true, email: true, shopSlug: true } }
+            user: { select: { id: true, name: true, username: true, shopSlug: true } }
           }
         },
         user: {
           select: {
-            id: true, name: true, username: true, email: true, image: true, shopSlug: true,
+            id: true, name: true, username: true, image: true, shopSlug: true,
             donationAddresses: {
               where: { isPublic: true },
               orderBy: { sortOrder: 'asc' }
@@ -61,13 +61,13 @@ export async function GET(
         product: { select: { id: true, title: true, price: true, imageUrl: true } },
         comments: {
           include: {
-            user: { select: { id: true, name: true, username: true, email: true, image: true, shopSlug: true } }
+            user: { select: { id: true, name: true, username: true, image: true, shopSlug: true } }
           },
           orderBy: { createdAt: 'asc' }
         },
         statusHistory: {
           include: {
-            changedBy: { select: { id: true, name: true, email: true } }
+            changedBy: { select: { id: true, name: true } }
           },
           orderBy: { createdAt: 'desc' }
         },

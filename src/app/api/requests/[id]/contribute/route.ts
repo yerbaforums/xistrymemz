@@ -32,20 +32,21 @@ export async function POST(
     return NextResponse.json({ error: 'Funding request not found or not active' }, { status: 404 })
   }
 
-  const contribution = await prisma.contribution.create({
-    data: {
-      amount,
-      requestId: id,
-      userId: session.user.id
-    }
-  })
-
-  await prisma.request.update({
-    where: { id },
-    data: {
-      currentFunding: (fundingRequest.currentFunding || 0) + amount
-    }
-  })
+  const [contribution] = await prisma.$transaction([
+    prisma.contribution.create({
+      data: {
+        amount,
+        requestId: id,
+        userId: session.user.id
+      }
+    }),
+    prisma.request.update({
+      where: { id },
+      data: {
+        currentFunding: (fundingRequest.currentFunding || 0) + amount
+      }
+    })
+  ])
 
   return NextResponse.json(contribution)
 }

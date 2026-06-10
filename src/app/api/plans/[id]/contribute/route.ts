@@ -32,21 +32,22 @@ export async function POST(
       return NextResponse.json({ error: 'This plan does not accept donations' }, { status: 400 })
     }
 
-    const contribution = await prisma.planContribution.create({
-      data: {
-        amount,
-        message: body.message || null,
-        planId: id,
-        userId: session.user.id
-      }
-    })
-
-    await prisma.plan.update({
-      where: { id },
-      data: {
-        currentFunding: (plan.currentFunding || 0) + amount
-      }
-    })
+    const [contribution] = await prisma.$transaction([
+      prisma.planContribution.create({
+        data: {
+          amount,
+          message: body.message || null,
+          planId: id,
+          userId: session.user.id
+        }
+      }),
+      prisma.plan.update({
+        where: { id },
+        data: {
+          currentFunding: (plan.currentFunding || 0) + amount
+        }
+      })
+    ])
 
     return NextResponse.json(contribution)
   } catch (error) {

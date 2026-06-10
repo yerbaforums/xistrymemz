@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 
 interface ConversationEntry {
   userId: string
-  user: { id: string; name: string | null; email: string; image: string | null; location: string | null }
+  user: { id: string; name: string | null; image: string | null; location: string | null }
   lastMessage: { id: string; content: string; createdAt: Date }
   unreadCount: number
 }
@@ -22,7 +22,7 @@ export async function GET() {
       where: { senderId: session.user.id },
       include: {
         receiver: {
-          select: { id: true, name: true, email: true, image: true, location: true }
+          select: { id: true, name: true, image: true, location: true }
         }
       },
       orderBy: { createdAt: 'desc' }
@@ -32,7 +32,7 @@ export async function GET() {
       where: { receiverId: session.user.id },
       include: {
         sender: {
-          select: { id: true, name: true, email: true, image: true, location: true }
+          select: { id: true, name: true, image: true, location: true }
         }
       },
       orderBy: { createdAt: 'desc' }

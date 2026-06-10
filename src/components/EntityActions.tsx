@@ -84,7 +84,7 @@ export default function EntityActions({
         .catch(() => setFetchedDonations([]))
         .finally(() => setLoadingDonations(false))
     }
-  }, [showTipModal])
+  }, [showTipModal, authorId, donationAddresses])
   const [qrAddr, setQrAddr] = useState<{ address: string; currency: string } | null>(null)
   const [feedContent, setFeedContent] = useState('')
   const [feedDestination, setFeedDestination] = useState<'PROFILE' | 'SHOP' | 'SCHOOL' | 'GROUP'>('PROFILE')
@@ -108,7 +108,7 @@ export default function EntityActions({
         setHasGroups(items.length > 0)
       })
       .catch(() => {})
-  }, [session])
+  }, [session?.user?.id])
   const canLike = authorSettings?.enableLikes !== false
   const canReply = authorSettings?.enableReplies !== false
   const canTip = authorSettings?.enableTips !== false && !isOwner
@@ -174,7 +174,7 @@ export default function EntityActions({
       setFeedContent(`@${description} ${profileUrl}`)
       profilePrefilled.current = true
     }
-  }, [showFeedModal])
+  }, [showFeedModal, entityType, description])
 
   const closeFeedModal = () => {
     setShowFeedModal(false)

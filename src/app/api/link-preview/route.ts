@@ -7,6 +7,13 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    let parsed: URL
+    try { parsed = new URL(url) } catch {
+      return NextResponse.json({ error: 'Invalid URL' }, { status: 400 })
+    }
+    if (['http:', 'https:'].indexOf(parsed.protocol) === -1) {
+      return NextResponse.json({ error: 'Invalid protocol' }, { status: 400 })
+    }
     const res = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; LinkPreviewBot/1.0)',

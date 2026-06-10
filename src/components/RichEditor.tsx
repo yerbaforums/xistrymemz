@@ -23,8 +23,10 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
   }, [onChange])
 
   const handleInsertImage = useCallback(() => {
-    const url = prompt('Enter image URL:')
+    const url = window.prompt('Enter image URL:')
     if (url) {
+      try { new URL(url) } catch { return }
+      if (url.startsWith('javascript:')) return
       exec('insertImage', url)
       if (editorRef.current) {
         const img = editorRef.current.querySelector('img:last-child')
@@ -34,8 +36,10 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
   }, [exec])
 
   const handleInsertVideo = useCallback(() => {
-    const url = prompt('Enter video URL (YouTube, Vimeo, or direct video link):')
+    const url = window.prompt('Enter video URL (YouTube, Vimeo, or direct video link):')
     if (!url) return
+    try { new URL(url) } catch { return }
+    if (url.startsWith('javascript:')) return
     const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/)
     const vimeoMatch = url.match(/vimeo\.com\/(\d+)/)
     if (youtubeMatch) {
@@ -43,6 +47,8 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
     } else if (vimeoMatch) {
       exec('insertHTML', `<div style="position:relative;padding-bottom:56.25%;height:0;margin:12px 0;border-radius:8px;overflow:hidden"><iframe src="https://player.vimeo.com/video/${vimeoMatch[1]}" style="position:absolute;top:0;left:0;width:100%;height:100%" frameborder="0" allowfullscreen></iframe></div>`)
     } else {
+      const videoUrl = new URL(url)
+      if (['http:', 'https:'].indexOf(videoUrl.protocol) === -1 || !videoUrl.pathname.match(/\.(mp4|webm|ogg)$/i)) return
       exec('insertHTML', `<video src="${url}" controls style="max-width:100%;border-radius:8px;margin:12px 0;" />`)
     }
   }, [exec])

@@ -26,7 +26,7 @@ export async function GET(request: Request) {
         group: { select: { id: true, name: true, imageUrl: true } },
         school: { select: { id: true, schoolName: true, schoolImage: true } },
         shop: { select: { id: true, shopName: true, shopImage: true } },
-        organizer: { select: { id: true, name: true, email: true } },
+        organizer: { select: { id: true, name: true } },
         _count: { select: { eventJoiners: true } }
       },
       orderBy: { eventDate: 'asc' }
