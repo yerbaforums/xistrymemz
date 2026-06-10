@@ -6,7 +6,7 @@ import { useToast } from '@/context/ToastContext'
 import ImageUploader from '@/components/ImageUploader'
 import styles from './teaching.module.css'
 import Button from '@/components/ui/Button'
-import Breadcrumbs from '@/components/Breadcrumbs'
+
 import { EmptyState } from '@/components/EmptyState'
 import Skeleton from '@/components/Skeleton'
 
@@ -132,11 +132,10 @@ export default function TeachingPage() {
     } catch { error('Failed') }
   }
 
-  if (loading) return <div className={styles.page}><Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard' }, { label: 'Teaching' }]} /><Skeleton width="100%" height="2rem" /></div>
+  if (loading) return <div className={styles.page}><Skeleton width="100%" height="2rem" /></div>
 
   return (
     <div className={styles.page}>
-      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard' }, { label: 'Teaching' }]} />
       <div className={styles.header}>
         <div>
           <h1>🏫 Teaching</h1>

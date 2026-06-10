@@ -10,7 +10,7 @@ import TranslateButton from '@/components/TranslateButton'
 import Skeleton, { SkeletonList } from '@/components/Skeleton'
 import Loading from '@/components/Loading'
 import { EmptyState } from '@/components/EmptyState'
-import Breadcrumbs from '@/components/Breadcrumbs'
+
 import InboxView from '@/components/InboxView'
 
 interface User {
@@ -156,7 +156,7 @@ function DashboardMessagesContent() {
 
   return (
     <>
-      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard' }, { label: 'Messages' }]} />
+
       <div className={styles.modeTabs}>
         <button
           className={`${styles.modeTab} ${mode === 'inbox' ? styles.modeTabActive : ''}`}

@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { getUserProfileUrl } from '@/lib/utils'
-import Breadcrumbs from '@/components/Breadcrumbs'
+
 import { EmptyState } from '@/components/EmptyState'
 import styles from './page.module.css'
 
@@ -162,7 +162,6 @@ export default function CommunityManagement() {
 
   return (
     <div className={styles.page}>
-      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard' }, { label: 'Community' }]} />
       <div className={styles.header}>
         <h1>🌐 Community</h1>
         <p className={styles.subtitle}>Manage connections, groups, and forum activity</p>

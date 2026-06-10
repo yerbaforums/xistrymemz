@@ -14,7 +14,7 @@ import ImageUploader from '@/components/ImageUploader'
 import { useTranslations } from 'next-intl'
 import { SHOP_CATEGORIES } from '@/lib/shop-categories'
 import { PRODUCT_CONDITIONS, PRODUCT_TYPES } from '@/lib/product-categories'
-import Breadcrumbs from '@/components/Breadcrumbs'
+
 import { EmptyState } from '@/components/EmptyState'
 import styles from './marketplace.module.css'
 
@@ -388,12 +388,12 @@ function MarketplaceContent() {
   }
 
   if (loading) {
-    return <div className={styles.page}><Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard' }, { label: 'Marketplace' }]} /><div className={styles.loading}>{t('loading')}</div></div>
+    return <div className={styles.page}><div className={styles.loading}>{t('loading')}</div></div>
   }
 
   return (
     <div className={styles.page}>
-      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard' }, { label: 'Marketplace' }]} />
+      
       <div className={styles.header}>
         <div>
           <h1>🛒 {t('marketplace')}</h1>

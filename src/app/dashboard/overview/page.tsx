@@ -17,7 +17,7 @@ import StreakCard from './StreakCard'
 import DashboardWidgets from '@/components/DashboardWidgets'
 import AchievementCard from './AchievementCard'
 import { EmptyState } from '@/components/EmptyState'
-import Breadcrumbs from '@/components/Breadcrumbs'
+
 
 export const dynamic = 'force-dynamic'
 
@@ -304,7 +304,8 @@ export default async function DashboardOverview({
 
   return (
     <div className={styles.overview}>
-      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Dashboard' }]} />
+
+
       <div className={styles.welcomeHeader}>
         <h2>Welcome back, {session.user.name?.split(' ')[0] || 'User'}! 👋</h2>
         <p>{isNewUser ? 'Let&apos;s get started — here are your first steps.' : `${allStats[6]} posts · ${connectionCount} connections${totalViews > 0 ? ` · ${totalViews} views` : ''}${totalEarnings > 0 ? ` · $${totalEarnings.toFixed(0)} earned` : ''}`}</p>

@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import VideoChatModal from '@/components/VideoChatModal'
 import styles from './video.module.css'
 import { EmptyState } from '@/components/EmptyState'
-import Breadcrumbs from '@/components/Breadcrumbs'
+
 import Skeleton from '@/components/Skeleton'
 
 interface RoomSummary {
@@ -101,7 +101,6 @@ export default function VideoChatPage() {
 
   return (
     <div className={styles.page}>
-      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard' }, { label: 'Video' }]} />
       <div className={styles.header}>
         <h1>📹 Video Chat</h1>
         <p>Start or join a video session with other members.</p>

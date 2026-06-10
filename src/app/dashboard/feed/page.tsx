@@ -10,7 +10,7 @@ import ImageUploader from '@/components/ImageUploader'
 import dynamic from 'next/dynamic'
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false })
 import { useTranslations } from 'next-intl'
-import Breadcrumbs from '@/components/Breadcrumbs'
+
 import Button from '@/components/ui/Button'
 import styles from './page.module.css'
 
@@ -167,9 +167,7 @@ export default function DashboardFeed() {
 
   return (
     <div className={styles.page}>
-      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard' }, { label: 'Feed' }]} />
-
-      <h1 className={styles.title}>{t('title')}</h1>
+      <h1 className={styles.title}>{t('feed')}</h1>
 
       {session && (
         <form id="feed-post-form" onSubmit={handleCreatePost} className={styles.card}>

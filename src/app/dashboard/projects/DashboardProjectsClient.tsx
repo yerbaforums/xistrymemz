@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useToast } from '@/context/ToastContext'
 import styles from './projects.module.css'
-import Breadcrumbs from '@/components/Breadcrumbs'
+
 import { EmptyState } from '@/components/EmptyState'
 import Button from '@/components/ui/Button'
 
@@ -191,7 +191,6 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
 
   return (
     <div className={styles.page}>
-      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard' }, { label: 'Projects' }]} />
       <div className={styles.header}>
         <div>
           <h1>My Projects</h1>
