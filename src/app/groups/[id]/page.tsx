@@ -446,7 +446,7 @@ function GroupDetailContent() {
       const res = await fetch(`/api/products?q=${encodeURIComponent(marketplaceSearch)}&limit=10`)
       if (res.ok) {
         const data = await res.json()
-        setMarketplaceResults(data.slice(0, 10))
+        setMarketplaceResults(data?.items ? data.items.slice(0, 10) : [])
       }
     } catch {
       error('Failed to search marketplace')

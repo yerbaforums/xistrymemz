@@ -478,7 +478,7 @@ export default async function DashboardOverview({
               return (
                 <div className={styles.activityList}>
                   {studioItems.map((item, i) => (
-                    <Link key={i} href={item.href} className={styles.activityItem}>
+                    <Link key={item.href} href={item.href} className={styles.activityItem}>
                       <div className={styles.activityIcon}>{item.type}</div>
                       <div className={styles.activityInfo}>
                         <span className={styles.activityTitle}>{item.title}</span>

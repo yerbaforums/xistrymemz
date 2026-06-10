@@ -127,12 +127,12 @@ export default function CommunityPage() {
       
       if (groupsRes.ok) {
         const groupsData = await groupsRes.json()
-        setGroups(groupsData || [])
+        setGroups(groupsData?.items || [])
       }
 
       if (requestsRes.ok) {
         const requestsData = await requestsRes.json()
-        setMarketRequests(requestsData || [])
+        setMarketRequests(requestsData?.items || [])
       }
 
       if (forumCatRes.ok) {

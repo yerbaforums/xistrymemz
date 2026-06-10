@@ -160,7 +160,7 @@ export default function OnboardingPage() {
 
       fetch('/api/groups?limit=6&sort=members')
         .then(res => res.ok ? res.json() : [])
-        .then(data => setCommunityGroups(Array.isArray(data) ? data : []))
+        .then(data => setCommunityGroups(data?.items || []))
         .catch(() => {})
 
       fetch('/api/community/members')
@@ -176,9 +176,10 @@ export default function OnboardingPage() {
       fetch(`/api/hashtags/search?q=${encodeURIComponent(searchTagInput)}`)
         .then(res => res.ok ? res.json() : [])
         .then(data => {
-          if (Array.isArray(data)) {
+          const tags = data?.hashtags || []
+          if (Array.isArray(tags)) {
             const existing = new Set(interestTags.map(t => t.toLowerCase()))
-            const filtered = data.filter((h: {tag: string}) => !existing.has(h.tag.toLowerCase()))
+            const filtered = tags.filter((h: {tag: string}) => !existing.has(h.tag.toLowerCase()))
             setSuggestedTags(filtered)
           }
         })

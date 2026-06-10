@@ -114,7 +114,7 @@ export default function GroupsPage() {
       
       if (res.ok) {
         const newGroup = await res.json()
-        setGroups([newGroup, ...groups])
+        setGroups(prev => [newGroup, ...prev])
         setShowModal(false)
         setName('')
         setDescription('')

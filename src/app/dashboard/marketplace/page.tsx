@@ -182,7 +182,7 @@ function MarketplaceContent() {
         email: shopData.email || '',
         name: shopData.name || ''
       })
-      setProducts(productsData)
+      setProducts(productsData?.items || [])
     } catch (err) {
       console.error(err)
     } finally {

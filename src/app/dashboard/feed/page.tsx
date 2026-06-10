@@ -118,7 +118,7 @@ export default function DashboardFeed() {
           setFeed(prev => [...prev, ...data.feed])
         }
         setHasMore(data.feed.length === 20)
-        setOffset(currentOffset + data.feed.length)
+        setOffset(prev => prev + data.feed.length)
       }
     } catch {} finally {
       setLoading(false)

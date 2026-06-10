@@ -28,7 +28,7 @@ export default function GroupsPage() {
     fetch('/api/groups')
       .then(res => res.json())
       .then(data => {
-        setGroups(data)
+        setGroups(data?.items || data || [])
         setLoading(false)
       })
       .catch(() => setLoading(false))
