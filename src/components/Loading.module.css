@@ -41,6 +41,7 @@
   line-height: 1;
   animation: dragonFloat 2s ease-in-out infinite;
   filter: drop-shadow(0 0 12px var(--accent-primary));
+  z-index: 2;
 }
 
 .small .dragon {
@@ -59,13 +60,118 @@
   animation: glowPulse 2s ease-in-out infinite;
 }
 
+/* Fire breathing flames */
+.flames {
+  position: absolute;
+  top: 50%;
+  right: -20px;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 2px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.small .flames,
+.large .flames {
+  display: flex;
+}
+
+.flame {
+  font-size: 0.8rem;
+  animation: flameBurst 0.8s ease-out infinite;
+  opacity: 0;
+}
+
+.flame:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.flame:nth-child(2) {
+  animation-delay: 0.3s;
+  font-size: 0.6rem;
+}
+
+.flame:nth-child(3) {
+  animation-delay: 0.6s;
+  font-size: 0.7rem;
+}
+
+/* Particle field */
+.particles {
+  position: absolute;
+  inset: -20px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  opacity: 0;
+  animation: particleFloat 3s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 0.4s);
+}
+
+.particle:nth-child(1) { top: 20%; left: 10%; }
+.particle:nth-child(2) { top: 10%; left: 40%; }
+.particle:nth-child(3) { top: 15%; left: 70%; }
+.particle:nth-child(4) { top: 40%; left: 85%; }
+.particle:nth-child(5) { top: 70%; left: 80%; }
+.particle:nth-child(6) { top: 80%; left: 50%; }
+.particle:nth-child(7) { top: 75%; left: 20%; }
+.particle:nth-child(8) { top: 50%; left: 5%; }
+
+.particle:nth-child(1) { --dx: 10px; --dy: -20px; }
+.particle:nth-child(2) { --dx: 8px; --dy: -18px; }
+.particle:nth-child(3) { --dx: -10px; --dy: -15px; }
+.particle:nth-child(4) { --dx: -8px; --dy: -10px; }
+.particle:nth-child(5) { --dx: 6px; --dy: 12px; }
+.particle:nth-child(6) { --dx: -6px; --dy: 10px; }
+.particle:nth-child(7) { --dx: 12px; --dy: 8px; }
+.particle:nth-child(8) { --dx: -12px; --dy: 6px; }
+
+/* Progress bar */
+.progressTrack {
+  width: 160px;
+  height: 3px;
+  background: var(--bg-tertiary);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.small .progressTrack {
+  width: 100px;
+}
+
+.large .progressTrack {
+  width: 220px;
+}
+
+.progressBar {
+  height: 100%;
+  width: 30%;
+  background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+  border-radius: 2px;
+  animation: progressSweep 1.8s ease-in-out infinite;
+}
+
+/* Logo with shimmer */
 .logo {
   font-family: var(--font-heading);
   font-size: 1rem;
   color: var(--text-secondary);
   letter-spacing: 2px;
   text-transform: uppercase;
-  animation: logoFade 2.5s ease-in-out infinite;
+  background: linear-gradient(90deg, var(--text-secondary) 0%, var(--accent-primary) 50%, var(--text-secondary) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 2.5s ease-in-out infinite;
 }
 
 .small .logo {
@@ -77,7 +183,7 @@
 }
 
 .logoGlow {
-  text-shadow: 0 0 8px rgba(0, 217, 255, 0.3);
+  filter: drop-shadow(0 0 8px rgba(0, 217, 255, 0.3));
 }
 
 .message {
@@ -95,6 +201,27 @@
 @keyframes glowPulse {
   0%, 100% { opacity: 0.5; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes flameBurst {
+  0% { opacity: 1; transform: translateX(0) scale(1); }
+  100% { opacity: 0; transform: translateX(20px) scale(0.3); }
+}
+
+@keyframes particleFloat {
+  0% { opacity: 0; transform: translate(0, 0) scale(0); }
+  50% { opacity: 0.8; transform: translate(8px, -12px) scale(1); }
+  100% { opacity: 0; transform: translate(16px, -24px) scale(0); }
+}
+
+@keyframes progressSweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
+@keyframes shimmer {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 100% center; }
 }
 
 @keyframes logoFade {

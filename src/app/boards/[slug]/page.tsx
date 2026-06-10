@@ -381,8 +381,8 @@ export default function BoardDetailPage() {
         <div className={styles.mapWrap}>
           {!board.latitude && !pinLocations.length && (
             <div className={styles.mapOverlay}>
-              📍 No location set for this board.
-              {isBoardOwner && <span style={{ marginLeft: 8 }}><button onClick={openEdit} className={styles.overlayBtn}>Set Location</button></span>}
+              <span>📍 No location set for this board.</span>
+              {isBoardOwner && <button onClick={openEdit} className={styles.overlayBtn}>Set Location</button>}
             </div>
           )}
           <MapContainer ref={mapRef} center={mapCenter} zoom={12} className={styles.map} scrollWheelZoom={true}>
@@ -394,8 +394,14 @@ export default function BoardDetailPage() {
               <Marker position={[board.latitude, board.longitude]}>
                 <Popup>
                   <div className={styles.pinPopup}>
-                    <strong>{board.name}</strong>
-                    <div className={styles.popupMeta}>📍 {board.location || ''}</div>
+                    <div className={styles.popupTitle}>{board.name}</div>
+                    {board.description && <div className={styles.popupDesc}>{board.description.slice(0, 100)}</div>}
+                    <div className={styles.popupStats}>
+                      <span>📍 {board.location || 'Unknown location'}</span>
+                      <span>📌 {board.pinCount || pins.length} pins</span>
+                      <span>👥 {memberCount} members</span>
+                    </div>
+                    <Link href={`/boards/${board.slug}`} className={styles.popupLink}>View Board →</Link>
                   </div>
                 </Popup>
               </Marker>
@@ -404,13 +410,31 @@ export default function BoardDetailPage() {
               <Marker key={pin.id} position={[pin.latitude!, pin.longitude!]}>
                 <Popup>
                   <div className={styles.pinPopup}>
-                    <strong>{pin.title || pin.content?.slice(0, 60)}</strong>
+                    <div className={styles.popupHeader}>
+                      <span className={styles.popupUserName}>{pin.user.name || 'Unknown'}</span>
+                      {pin.category && (
+                        <span className={styles.popupCategory}>{pin.category}</span>
+                      )}
+                    </div>
+                    <div className={styles.popupTitle}>{pin.title || pin.content?.slice(0, 60)}</div>
+                    {pin.content && <div className={styles.popupDesc}>{pin.content.slice(0, 80)}</div>}
                     {pin.entityType && pin.entityTitle && (
                       <div className={styles.popupMeta}>📎 {pin.entityTitle}</div>
                     )}
                     <div className={styles.popupDate}>
-                      {pin.user.name} · {new Date(pin.createdAt).toLocaleDateString()}
+                      {new Date(pin.createdAt).toLocaleDateString()}
                     </div>
+                    <Link
+                      href="#"
+                      className={styles.popupLink}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        const idx = pins.findIndex(p => p.id === pin.id)
+                        if (idx >= 0) setCarouselIndex(idx)
+                      }}
+                    >
+                      View Details →
+                    </Link>
                   </div>
                 </Popup>
               </Marker>
@@ -419,12 +443,17 @@ export default function BoardDetailPage() {
               <Marker position={[board.latitude, board.longitude]}>
                 <Popup>
                   <div className={styles.pinPopup}>
-                    <strong>📌 {pins.length} pin{pins.length !== 1 ? 's' : ''}</strong>
+                    <div className={styles.popupTitle}>📌 {pins.length} pin{pins.length !== 1 ? 's' : ''}</div>
                     <div className={styles.popupDate}>at {board.location || 'this location'}</div>
+                    <div className={styles.popupStats}>
+                      <span>👥 {memberCount} members</span>
+                      <span>📌 {pins.length} total</span>
+                    </div>
                     {pins.slice(0, 5).map(p => (
                       <div key={p.id} className={styles.popupMeta}>• {p.title || p.content?.slice(0, 30) || 'Untitled'}</div>
                     ))}
                     {pins.length > 5 && <div className={styles.popupMeta}>+{pins.length - 5} more</div>}
+                    <Link href={`/boards/${board.slug}`} className={styles.popupLink}>View Board →</Link>
                   </div>
                 </Popup>
               </Marker>

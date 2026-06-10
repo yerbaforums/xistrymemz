@@ -193,7 +193,8 @@
 }
 
 .mapWrap {
-  height: 300px;
+  min-height: 400px;
+  height: 50vh;
   border-radius: var(--radius-lg);
   overflow: hidden;
   border: 1px solid var(--border-color);
