@@ -181,6 +181,7 @@ export const eventSchema = z.object({
   location: z.string().optional(),
   locationDetails: z.string().optional(),
   maxJoiners: z.coerce.number().int().min(0).optional(),
+  isPrivate: z.boolean().optional(),
   isTicketed: z.boolean().optional(),
   ticketPrice: z.coerce.number().min(0).optional(),
   currency: z.string().optional(),

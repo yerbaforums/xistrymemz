@@ -129,6 +129,8 @@ model User {
   organizedEvents        Event[]
   eventJoiners           EventJoiner[]
   eventTickets           EventTicket[]
+  eventInvitations       EventInvitation[]
+  sentInvitations        EventInvitation[]    @relation("SentInvitations")
   badges                 Badge[]
   passwordResetTokens    PasswordResetToken[]
   verificationTokens     VerificationToken[]
@@ -386,6 +388,8 @@ model Event {
   maxJoiners      Int       @default(0)
   pinned          Boolean   @default(false)
 
+  isPrivate   Boolean @default(false)
+
   // Ticketing
   isTicketed  Boolean @default(false)
   ticketPrice Float   @default(0)
@@ -416,6 +420,7 @@ model Event {
 
   eventJoiners  EventJoiner[]
   eventTickets  EventTicket[]
+  invitations   EventInvitation[]
   requests      Request[]
   eventHashtags EventHashtag[]
 
@@ -455,10 +460,33 @@ model EventTicket {
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   quantity      Int      @default(1)
   totalPaid     Float    @default(0)
-  paymentStatus String   @default("PENDING")
+  paymentStatus String   @default("PENDING") // PENDING | PAID | APPROVED | VERIFIED | CANCELLED
+  ticketCode    String   @unique @default(cuid())
+  verifiedAt    DateTime?
   purchasedAt   DateTime @default(now())
 
   @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+  @@index([ticketCode])
+}
+
+model EventInvitation {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invitedBy String
+  inviter   User     @relation("SentInvitations", fields: [invitedBy], references: [id])
+  status    String   @default("PENDING") // PENDING | ACCEPTED | DECLINED
+  message   String?
+  createdAt DateTime @default(now())
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+  @@index([status])
 }
 
 model PlanJoiner {

@@ -48,6 +48,17 @@ function EventDetailContent() {
   const [joinRole, setJoinRole] = useState<'ATTENDEE' | 'VOLUNTEER'>('ATTENDEE')
   const [copiedDonation, setCopiedDonation] = useState(false)
   const [qrOpen, setQrOpen] = useState<string | null>(null)
+  const [ticketQuantity, setTicketQuantity] = useState(1)
+  const [purchasing, setPurchasing] = useState(false)
+  const [showInviteModal, setShowInviteModal] = useState(false)
+  const [inviteSearch, setInviteSearch] = useState('')
+  const [inviteResults, setInviteResults] = useState<Array<{ id: string; name: string | null; image: string | null }>>([])
+  const [selectedUsers, setSelectedUsers] = useState<Array<{ id: string; name: string | null }>>([])
+  const [searchingUsers, setSearchingUsers] = useState(false)
+  const [invitations, setInvitations] = useState<Array<{ id: string; user: { id: string; name: string | null; image: string | null }; status: string }>>([])
+  const [tickets, setTickets] = useState<Array<{ id: string; user: { id: string; name: string | null; image: string | null }; quantity: number; paymentStatus: string; ticketCode: string }>>([])
+  const [showTicketModal, setShowTicketModal] = useState(false)
+  const [verifyingTicket, setVerifyingTicket] = useState<string | null>(null)
   const userDonationAddrs = useDonationAddresses()
   const [isEditing, setIsEditing] = useState(false)
   const [editFormData, setEditFormData] = useState<EventFormData>(() => getDefaultEventFormData())
@@ -278,6 +289,120 @@ function EventDetailContent() {
     }
   }
 
+  const handlePurchaseTickets = async () => {
+    if (!userId || !event) return
+    setPurchasing(true)
+    try {
+      const res = await fetch(`/api/events/${event.id}/tickets`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity: ticketQuantity })
+      })
+      if (res.ok) {
+        success('Tickets purchased!')
+        setEvent(prev => prev ? { ...prev, joined: true } : prev)
+      } else {
+        const data = await res.json()
+        error(data.error || 'Failed to purchase tickets')
+      }
+    } catch {
+      error('Failed to purchase tickets')
+    } finally {
+      setPurchasing(false)
+    }
+  }
+
+  const loadInvitations = async () => {
+    if (!event) return
+    try {
+      const res = await fetch(`/api/events/${event.id}/invite`)
+      const data = await res.json()
+      setInvitations(data.invitations || [])
+    } catch {}
+  }
+
+  const handleSearchUsers = async (q: string) => {
+    setInviteSearch(q)
+    if (q.length < 2) { setInviteResults([]); return }
+    setSearchingUsers(true)
+    try {
+      const res = await fetch(`/api/users/search?q=${encodeURIComponent(q)}&limit=10`)
+      const data = await res.json()
+      setInviteResults(data.users || [])
+    } catch {} finally { setSearchingUsers(false) }
+  }
+
+  const handleSendInvites = async () => {
+    if (!event || selectedUsers.length === 0) return
+    try {
+      const res = await fetch(`/api/events/${event.id}/invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userIds: selectedUsers.map(u => u.id), message: '' })
+      })
+      if (res.ok) {
+        success('Invitations sent!')
+        setShowInviteModal(false)
+        setSelectedUsers([])
+        loadInvitations()
+      } else {
+        const data = await res.json()
+        error(data.error || 'Failed to send invites')
+      }
+    } catch {
+      error('Failed to send invites')
+    }
+  }
+
+  const handleRespondInvite = async (status: 'ACCEPTED' | 'DECLINED') => {
+    if (!event) return
+    try {
+      const res = await fetch(`/api/events/${event.id}/invite`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      })
+      if (res.ok) {
+        if (status === 'ACCEPTED') {
+          setEvent(prev => prev ? { ...prev, joined: true } : prev)
+        }
+        loadInvitations()
+      }
+    } catch {}
+  }
+
+  const handleVerifyTicket = async (ticketId: string, action: string) => {
+    if (!event) return
+    setVerifyingTicket(ticketId)
+    try {
+      const res = await fetch(`/api/events/${event.id}/tickets/${ticketId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action })
+      })
+      if (res.ok) {
+        success(action === 'verify' ? 'Ticket verified!' : action === 'approve' ? 'Ticket approved!' : 'Ticket updated!')
+        setEvent(prev => prev ? { ...prev } : prev)
+      } else {
+        const data = await res.json()
+        error(data.error || 'Failed to update ticket')
+      }
+    } catch {
+      error('Failed to update ticket')
+    } finally {
+      setVerifyingTicket(null)
+    }
+  }
+
+  const loadTickets = async () => {
+    if (!event) return
+    try {
+      const res = await fetch(`/api/events/${event.id}/tickets`)
+      const data = await res.json()
+      setTickets(data.tickets || [])
+    } catch {}
+  }
+
   const handleBulkMessage = async () => {
     if (!bulkMessage.trim() || !event) return
     
@@ -459,38 +584,41 @@ function EventDetailContent() {
               {!isOwner && !event.joined && (
                 <>
                   {event.maxJoiners === 0 || joinerCount < event.maxJoiners ? (
-                    <div className={styles.joinButtonGroup}>
-                      <Button
-                        onClick={() => handleJoin('ATTENDEE')}
-                        disabled={joining}
-                        className={styles.joinBtn}
-                        variant="primary"
-                      >
-                        {joining ? 'Processing...' : (event.isTicketed ? 'Get Tickets' : 'RSVP as Attendee')}
-                      </Button>
-                      {event.needsVolunteers && (
-                        <Button
-                          onClick={() => handleJoin('VOLUNTEER')}
-                          disabled={joining}
-                          className={styles.volunteerBtn}
-                          variant="secondary"
-                        >
-                          🙋 Volunteer
+                    event.isTicketed ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <button onClick={() => setTicketQuantity(Math.max(1, ticketQuantity - 1))} className={styles.qtyBtn}>−</button>
+                          <span style={{ minWidth: 24, textAlign: 'center', fontWeight: 600 }}>{ticketQuantity}</span>
+                          <button onClick={() => setTicketQuantity(Math.min(10, ticketQuantity + 1))} className={styles.qtyBtn}>+</button>
+                        </div>
+                        <Button onClick={handlePurchaseTickets} disabled={purchasing} variant="primary" className={styles.joinBtn}>
+                          {purchasing ? 'Processing...' : `Purchase ${ticketQuantity} Ticket${ticketQuantity > 1 ? 's' : ''} $${(event.ticketPrice * ticketQuantity).toFixed(2)}`}
                         </Button>
-                      )}
-                    </div>
+                        {event.needsVolunteers && (
+                          <Button onClick={() => handleJoin('VOLUNTEER')} disabled={joining} variant="secondary" className={styles.volunteerBtn}>
+                            🙋 Volunteer
+                          </Button>
+                        )}
+                      </div>
+                    ) : (
+                      <div className={styles.joinButtonGroup}>
+                        <Button onClick={() => handleJoin('ATTENDEE')} disabled={joining} className={styles.joinBtn} variant="primary">
+                          {joining ? 'Processing...' : 'RSVP as Attendee'}
+                        </Button>
+                        {event.needsVolunteers && (
+                          <Button onClick={() => handleJoin('VOLUNTEER')} disabled={joining} className={styles.volunteerBtn} variant="secondary">
+                            🙋 Volunteer
+                          </Button>
+                        )}
+                      </div>
+                    )
                   ) : (
                     <span className={styles.fullBadge}>Event is Full</span>
                   )}
                 </>
               )}
               {!isOwner && event.joined && (
-                <Button
-                  onClick={handleLeave}
-                  disabled={joining}
-                  className={styles.leaveBtn}
-                  variant="secondary"
-                >
+                <Button onClick={handleLeave} disabled={joining} className={styles.leaveBtn} variant="secondary">
                   {joining ? 'Processing...' : 'Leave Event'}
                 </Button>
               )}
@@ -509,7 +637,114 @@ function EventDetailContent() {
                   label="Pin to Board"
                 />
               )}
+              {isOwner && (
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8, width: '100%' }}>
+                  <Button onClick={() => { loadInvitations(); setShowInviteModal(true) }} variant="secondary">
+                    👥 Invite People
+                  </Button>
+                  {event.isTicketed && (
+                    <Button onClick={() => { loadTickets(); setShowTicketModal(true) }} variant="secondary">
+                      🎟️ Manage Tickets ({tickets.length})
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
+
+            {/* Invite Modal */}
+            {showInviteModal && (
+              <div className={styles.modalOverlay} onClick={() => setShowInviteModal(false)}>
+                <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+                  <div className={styles.modalHeader}>
+                    <h3>Invite People</h3>
+                    <button onClick={() => setShowInviteModal(false)} className={styles.modalClose}>✕</button>
+                  </div>
+                  <div className={styles.modalBody}>
+                    <input
+                      type="text" value={inviteSearch} onChange={e => handleSearchUsers(e.target.value)}
+                      placeholder="Search users by name..."
+                      className={styles.inviteSearch}
+                    />
+                    {searchingUsers && <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Searching...</p>}
+                    {inviteResults.length > 0 && (
+                      <div className={styles.inviteResults}>
+                        {inviteResults.map(u => (
+                          <div key={u.id} className={styles.inviteResultItem}
+                            onClick={() => {
+                              if (!selectedUsers.find(s => s.id === u.id)) {
+                                setSelectedUsers([...selectedUsers, { id: u.id, name: u.name }])
+                              }
+                            }}
+                          >
+                            <span>{u.name || 'Unknown'}</span>
+                            {selectedUsers.find(s => s.id === u.id) && <span>✓</span>}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {selectedUsers.length > 0 && (
+                      <div className={styles.selectedUsers}>
+                        {selectedUsers.map(u => (
+                          <span key={u.id} className={styles.selectedUserChip}>
+                            {u.name} <button onClick={() => setSelectedUsers(selectedUsers.filter(s => s.id !== u.id))}>✕</button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className={styles.modalFooter}>
+                    <Button onClick={() => setShowInviteModal(false)} variant="ghost">Cancel</Button>
+                    <Button onClick={handleSendInvites} disabled={selectedUsers.length === 0} variant="primary">
+                      Send Invitations ({selectedUsers.length})
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Ticket Management Modal (Organizer) */}
+            {showTicketModal && (
+              <div className={styles.modalOverlay} onClick={() => setShowTicketModal(false)}>
+                <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+                  <div className={styles.modalHeader}>
+                    <h3>Ticket Management</h3>
+                    <button onClick={() => setShowTicketModal(false)} className={styles.modalClose}>✕</button>
+                  </div>
+                  <div className={styles.modalBody}>
+                    {tickets.length === 0 ? (
+                      <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>No tickets purchased yet.</p>
+                    ) : (
+                      <div className={styles.ticketList}>
+                        {tickets.map(t => (
+                          <div key={t.id} className={styles.ticketCard}>
+                            <div className={styles.ticketInfo}>
+                              <strong>{t.user.name || 'Unknown'}</strong>
+                              <span className={styles.ticketMeta}>Qty: {t.quantity} · {t.paymentStatus}</span>
+                              <code className={styles.ticketCode}>Code: {t.ticketCode.slice(0, 8)}...</code>
+                            </div>
+                            <div className={styles.ticketActions}>
+                              {t.paymentStatus === 'PENDING' && (
+                                <button onClick={() => handleVerifyTicket(t.id, 'mark-paid')} disabled={verifyingTicket === t.id} className={styles.ticketActionBtn}>Mark Paid</button>
+                              )}
+                              {t.paymentStatus === 'PAID' && (
+                                <button onClick={() => handleVerifyTicket(t.id, 'approve')} disabled={verifyingTicket === t.id} className={styles.ticketActionBtn}>Approve</button>
+                              )}
+                              {t.paymentStatus === 'APPROVED' && (
+                                <button onClick={() => handleVerifyTicket(t.id, 'verify')} disabled={verifyingTicket === t.id} className={styles.ticketActionBtn}>Verify ✓</button>
+                              )}
+                              {!['VERIFIED', 'CANCELLED'].includes(t.paymentStatus) && (
+                                <button onClick={() => handleVerifyTicket(t.id, 'cancel')} disabled={verifyingTicket === t.id} className={styles.ticketActionBtnDanger}>Cancel</button>
+                              )}
+                              {t.paymentStatus === 'VERIFIED' && <span className={styles.verifiedBadge}>✅ Verified</span>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {event.needsVolunteers && event.volunteerDescription && (
               <div className={styles.volunteerSection}>

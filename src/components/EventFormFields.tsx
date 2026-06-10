@@ -27,6 +27,7 @@ export interface EventFormData {
   currency: string
   visibility: string
   eventType: string
+  isPrivate?: boolean
   needsVolunteers: boolean
   volunteerRoles: string
   volunteerDescription: string
@@ -158,6 +159,12 @@ export default function EventFormFields({
             Public Event
           </button>
         </div>
+      )}
+      {formData.eventType === 'public' && (
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, cursor: 'pointer', fontSize: '0.85rem' }}>
+          <input type="checkbox" checked={formData.isPrivate || false} onChange={e => set({ isPrivate: e.target.checked })} />
+          Private event — only invited users can join
+        </label>
       )}
 
       <div className={styles.field}>
