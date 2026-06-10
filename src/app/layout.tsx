@@ -19,6 +19,13 @@ const OG_LOCALE_MAP: Record<string, string> = {
   es: "es_ES",
   fr: "fr_FR",
   pt: "pt_BR",
+  it: "it_IT",
+  ru: "ru_RU",
+  de: "de_DE",
+  hi: "hi_IN",
+  ja: "ja_JP",
+  zh: "zh_CN",
+  ar: "ar_SA",
 };
 
 export async function generateMetadata() {

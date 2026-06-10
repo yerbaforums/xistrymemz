@@ -22,6 +22,13 @@ const LOCALES = [
   { code: 'es', label: 'ES' },
   { code: 'fr', label: 'FR' },
   { code: 'pt', label: 'PT' },
+  { code: 'it', label: 'IT' },
+  { code: 'ru', label: 'RU' },
+  { code: 'de', label: 'DE' },
+  { code: 'hi', label: 'HI' },
+  { code: 'ja', label: 'JA' },
+  { code: 'zh', label: '中文' },
+  { code: 'ar', label: 'العربية' },
 ]
 
 export default function Header() {

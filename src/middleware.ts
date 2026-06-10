@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const LOCALES = ['en', 'es', 'fr', 'pt']
+const LOCALES = ['en', 'es', 'fr', 'pt', 'it', 'ru', 'ar', 'de', 'hi', 'ja', 'zh']
 const DEFAULT_LOCALE = 'en'
 
 const ALLOWED_ORIGIN = process.env.NEXTAUTH_URL || 'http://localhost:3000'
