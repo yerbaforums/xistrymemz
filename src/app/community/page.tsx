@@ -120,9 +120,9 @@ export default function CommunityPage() {
       
       if (membersRes.ok) {
         const membersData = await membersRes.json()
-        setMembers(membersData.members || [])
-        setConnections(membersData.connections || [])
-        setPendingRequests(membersData.pendingRequests || [])
+        setMembers(membersData.members?.items || [])
+        setConnections(membersData.connections?.items || [])
+        setPendingRequests(membersData.pendingRequests?.items || [])
       }
       
       if (groupsRes.ok) {

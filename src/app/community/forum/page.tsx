@@ -93,18 +93,21 @@ export default function ForumPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    const filtered = searchQuery.trim()
-      ? posts.filter(p => 
-          p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.content.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      : (categorySlug ? posts.filter(p => p.category.slug === categorySlug) : posts)
-    setPosts(filtered)
   }
 
-  const filteredPosts = categorySlug 
-    ? posts.filter(p => p.category.slug === categorySlug)
-    : posts
+  const filteredPosts = (() => {
+    let result = posts
+    if (searchQuery.trim()) {
+      result = result.filter(p =>
+        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.content.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    }
+    if (categorySlug) {
+      result = result.filter(p => p.category.slug === categorySlug)
+    }
+    return result
+  })()
 
   const sortedPosts = [...filteredPosts].sort((a, b) => {
     switch (sortBy) {

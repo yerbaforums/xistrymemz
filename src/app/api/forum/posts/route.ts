@@ -35,7 +35,8 @@ export async function GET(request: Request) {
       ...p,
       viewCount: p.viewCount || 0,
       replyCount: p._count?.replies || 0,
-      totalVotes: p.pollOptions.reduce((sum, opt) => sum + opt.voteCount, 0) || 0
+      totalVotes: p.pollOptions.reduce((sum, opt) => sum + opt.voteCount, 0) || 0,
+      totalTips: p.totalTips || 0
     }))
 
     return NextResponse.json(postsWithMeta)

@@ -6,7 +6,7 @@
   height: var(--header-height);
   background: var(--bg-primary);
   border-bottom: 1px solid var(--border-color);
-  z-index: 50;
+  z-index: 100;
 }
 
 .container {

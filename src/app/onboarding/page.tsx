@@ -165,7 +165,7 @@ export default function OnboardingPage() {
 
       fetch('/api/community/members')
         .then(res => res.ok ? res.json() : { members: [] })
-        .then(data => setCommunityMembers(Array.isArray(data.members) ? data.members.slice(0, 6) : []))
+        .then(data => setCommunityMembers(Array.isArray(data.members?.items) ? data.members.items.slice(0, 6) : []))
         .catch(() => {})
     }
   }, [step])

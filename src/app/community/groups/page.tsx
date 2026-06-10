@@ -40,10 +40,9 @@ export default function GroupsPage() {
     ? groups.filter(g => g.name.toLowerCase().includes(search.toLowerCase()))
     : groups
 
-  const sortedGroups = [...filteredGroups].sort((a, b) => {
-    if (sortBy === 'members') return b._count.members - a._count.members
-    return 0
-  })
+  const sortedGroups = sortBy === 'members'
+    ? [...filteredGroups].sort((a, b) => b._count.members - a._count.members)
+    : filteredGroups
 
   return (
     <div className={styles.page}>

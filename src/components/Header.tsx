@@ -77,7 +77,7 @@ export default function Header() {
       ])
       if (connRes.ok) {
         const connData = await connRes.json()
-        setNotificationCount(connData.pendingRequests?.length || 0)
+        setNotificationCount(connData.pendingRequests?.items?.length || 0)
       }
       if (msgRes.ok) {
         const msgData = await msgRes.json()
@@ -105,7 +105,7 @@ export default function Header() {
         ])
         if (connRes.ok) {
           const connData = await connRes.json()
-          setNotificationCount(connData.pendingRequests?.length || 0)
+          setNotificationCount(connData.pendingRequests?.items?.length || 0)
         }
         if (msgRes.ok) {
           const msgData = await msgRes.json()
