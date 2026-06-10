@@ -569,6 +569,12 @@
   background: var(--bg-tertiary);
 }
 
+.localeDivider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 4px 0;
+}
+
 /* Mobile Language */
 .mobileLangRow {
   display: flex;
@@ -591,6 +597,28 @@
 .mobileLangLink:hover {
   border-color: var(--accent-primary);
   color: var(--accent-primary);
+}
+
+.mobileLangRequest {
+  display: block;
+  width: calc(100% - 32px);
+  margin: 0 16px 12px;
+  padding: 8px 14px;
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  transition: var(--transition);
+}
+
+.mobileLangRequest:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background: var(--bg-tertiary);
 }
 
 .mobileLangActive {

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { signOut } from 'next-auth/react'
 import type { Session } from 'next-auth'
 import Link from 'next/link'
@@ -10,6 +11,7 @@ import { useTheme, type ThemeAccent } from '@/context/ThemeContext'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { getUserProfileUrl } from '@/lib/utils'
 import { useQuickCreate } from '@/components/QuickCreateModal'
+import LanguageRequestModal from './LanguageRequestModal'
 import styles from './Header.module.css'
 
 const LOCALES = [
@@ -24,6 +26,11 @@ const LOCALES = [
   { code: 'ja', label: 'JA' },
   { code: 'zh', label: '中文' },
   { code: 'ar', label: 'العربية' },
+  { code: 'ko', label: 'KO' },
+  { code: 'nl', label: 'NL' },
+  { code: 'pl', label: 'PL' },
+  { code: 'sv', label: 'SV' },
+  { code: 'tr', label: 'TR' },
 ]
 
 interface MobileNavProps {
@@ -41,6 +48,7 @@ export default function MobileNav({ open, onClose, isAdmin, isAuthenticated, ses
   const { mode, accent, setAccent, toggleMode } = useTheme()
   const { settings } = useSiteSettings()
   const quickCreate = useQuickCreate()
+  const [langReqOpen, setLangReqOpen] = useState(false)
 
   return (
     <div className={`${styles.mobileNav} ${open ? styles.mobileNavOpen : ''}`} id="mobile-nav-drawer" role="dialog" aria-modal="true" aria-label="Navigation menu">
@@ -85,21 +93,27 @@ export default function MobileNav({ open, onClose, isAdmin, isAuthenticated, ses
         ))}
       </div>
 
-      <div className={styles.mobileSection}>
-        <div className={styles.mobileSectionTitle}>Language</div>
-        <div className={styles.mobileLangRow}>
-          {LOCALES.map(l => (
-            <Link
-              key={l.code}
-              href={l.code === 'en' ? '/' : `/${l.code}`}
-              className={`${styles.mobileLangLink} ${l.code === currentLocale ? styles.mobileLangActive : ''}`}
-              onClick={onClose}
-            >
-              {l.label}
-            </Link>
-          ))}
+        <div className={styles.mobileSection}>
+          <div className={styles.mobileSectionTitle}>Language</div>
+          <div className={styles.mobileLangRow}>
+            {LOCALES.map(l => (
+              <Link
+                key={l.code}
+                href={l.code === 'en' ? '/' : `/${l.code}`}
+                className={`${styles.mobileLangLink} ${l.code === currentLocale ? styles.mobileLangActive : ''}`}
+                onClick={onClose}
+              >
+                {l.label}
+              </Link>
+            ))}
+          </div>
+          <button
+            className={styles.mobileLangRequest}
+            onClick={() => { onClose(); setLangReqOpen(true) }}
+          >
+            🌐 Request Language
+          </button>
         </div>
-      </div>
 
       <div className={styles.mobileSection}>
         <div className={styles.mobileSectionTitle}>Theme</div>
@@ -172,6 +186,7 @@ export default function MobileNav({ open, onClose, isAdmin, isAuthenticated, ses
           </div>
         </div>
       )}
+      <LanguageRequestModal open={langReqOpen} onClose={() => setLangReqOpen(false)} />
     </div>
   )
 }

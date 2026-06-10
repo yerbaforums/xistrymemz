@@ -16,6 +16,7 @@ import { useNotificationSSE } from '@/hooks/useNotificationSSE'
 import { EmptyState } from '@/components/EmptyState'
 import MobileNav from './MobileNav'
 import UserDropdown from './UserDropdown'
+import LanguageRequestModal from './LanguageRequestModal'
 
 const LOCALES = [
   { code: 'en', label: 'EN' },
@@ -29,6 +30,11 @@ const LOCALES = [
   { code: 'ja', label: 'JA' },
   { code: 'zh', label: '中文' },
   { code: 'ar', label: 'العربية' },
+  { code: 'ko', label: 'KO' },
+  { code: 'nl', label: 'NL' },
+  { code: 'pl', label: 'PL' },
+  { code: 'sv', label: 'SV' },
+  { code: 'tr', label: 'TR' },
 ]
 
 export default function Header() {
@@ -42,6 +48,7 @@ export default function Header() {
   const [isTraveling, setIsTraveling] = useState(false)
   const [notificationCount, setNotificationCount] = useState(0)
   const [messagesUnread, setMessagesUnread] = useState(0)
+  const [langReqOpen, setLangReqOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const headerRef = useRef<HTMLElement>(null)
   const quickCreate = useQuickCreate()
@@ -414,6 +421,10 @@ export default function Header() {
                       {l.label}
                     </Link>
                   ))}
+                  <div className={styles.localeDivider} />
+                  <button className={styles.localeOption} onClick={() => { closeDropdown(); setLangReqOpen(true) }}>
+                    🌐 Request Language
+                  </button>
                 </div>
               </div>
               <button className={styles.themeToggle} onClick={toggleMode} aria-label={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`} title={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`}>
@@ -599,6 +610,10 @@ export default function Header() {
                       {l.label}
                     </Link>
                   ))}
+                  <div className={styles.localeDivider} />
+                  <button className={styles.localeOption} onClick={() => { closeDropdown(); setLangReqOpen(true) }}>
+                    🌐 Request Language
+                  </button>
                 </div>
               </div>
               <button className={styles.themeToggle} onClick={toggleMode} aria-label={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`} title={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`}>
@@ -612,6 +627,7 @@ export default function Header() {
           )}
         </div>
       </div>
+      <LanguageRequestModal open={langReqOpen} onClose={() => setLangReqOpen(false)} />
     </header>
   )
 }

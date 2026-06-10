@@ -4,7 +4,7 @@ import { NextIntlClientProvider } from 'next-intl'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 
-const LOCALE_PATTERN = /^\/(en|es|fr|pt|it|ru|ar|de|hi|ja|zh)(\/|$)/
+const LOCALE_PATTERN = /^\/(en|es|fr|pt|it|ru|ar|de|hi|ja|zh|ko|nl|pl|sv|tr)(\/|$)/
 
 function detectLocale(pathname: string): string {
   const match = pathname.match(LOCALE_PATTERN)
