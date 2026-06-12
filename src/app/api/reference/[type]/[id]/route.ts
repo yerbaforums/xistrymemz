@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiNotFound, apiServerError } from '@/lib/api-helpers'
+import { apiSuccess, apiError, apiNotFound, apiServerError, NextResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(

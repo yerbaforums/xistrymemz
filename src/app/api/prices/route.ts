@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
+import { apiSuccess, apiError, apiServerError, NextResponse } from '@/lib/api-helpers'
 import { getCryptoPrices } from '@/lib/prices'
 
 export async function GET() {

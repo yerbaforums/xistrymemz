@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
+import { apiSuccess, apiError, apiServerError, NextResponse } from '@/lib/api-helpers'
 import type { NextRequest } from 'next/server'
 
 const DEEPL_API_BASE = process.env.DEEPL_API_KEY?.startsWith('fake') || process.env.DEEPL_API_KEY?.startsWith('test')

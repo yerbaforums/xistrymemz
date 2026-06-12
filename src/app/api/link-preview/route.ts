@@ -1,4 +1,4 @@
-import { NextRequest, apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
+import { NextRequest, apiSuccess, apiError, apiServerError, NextResponse } from '@/lib/api-helpers'
 
 export async function GET(request: NextRequest) {
   const url = request.nextUrl.searchParams.get('url')

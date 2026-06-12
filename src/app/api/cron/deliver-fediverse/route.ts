@@ -1,4 +1,4 @@
-import { apiSuccess, apiServerError } from '@/lib/api-helpers'
+import { apiSuccess, apiServerError, NextResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { deliverToInbox } from '@/lib/federation'
 

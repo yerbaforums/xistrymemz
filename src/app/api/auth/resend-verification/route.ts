@@ -1,4 +1,4 @@
-import { NextRequest, apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
+import { NextRequest, apiSuccess, apiError, apiServerError, NextResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { randomBytes } from 'crypto'
 import { resendVerificationSchema } from '@/lib/validation'

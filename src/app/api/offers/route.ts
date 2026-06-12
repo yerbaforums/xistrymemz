@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError, NextResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { barterOfferCreateSchema, validateBody } from '@/lib/schemas'
 import { Prisma } from '@prisma/client'
