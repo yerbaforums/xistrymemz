@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import styles from './HomeMap.module.css'
 import { useTheme } from '@/context/ThemeContext'
 import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
+import { fetchApi } from '@/lib/fetch-api'
 
 
 const DARK_TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'

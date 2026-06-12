@@ -227,7 +227,7 @@ export function useVideoChat(initialRoomId?: string, currentUserId?: string) {
 
   const createRoom = useCallback(async (name?: string) => {
     try {
-      const { room } = await fetchApi<{ room: VideoRoom }>('/api/video/rooms', {
+      const { room } = await fetchApi<any>('/api/video/rooms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name }),
@@ -242,7 +242,7 @@ export function useVideoChat(initialRoomId?: string, currentUserId?: string) {
 
   const joinRoom = useCallback(async (inviteCode: string) => {
     try {
-      const { room } = await fetchApi<{ room: VideoRoom }>('/api/video/rooms/join', {
+      const { room } = await fetchApi<any>('/api/video/rooms/join', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ inviteCode }),
@@ -257,7 +257,7 @@ export function useVideoChat(initialRoomId?: string, currentUserId?: string) {
 
   const fetchRoom = useCallback(async (roomId: string) => {
     try {
-      const { room } = await fetchApi<{ room: VideoRoom }>(`/api/video/rooms/${roomId}`)
+      const { room } = await fetchApi<any>(`/api/video/rooms/${roomId}`)
       setRoom(room)
       return room
     } catch (err: any) {

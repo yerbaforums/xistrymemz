@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl'
 import styles from './Footer.module.css'
 import { QRCodeModal } from './QRCodeModal'
 import { CRYPTO_LOGOS } from '@/lib/constants'
+import { fetchApi } from '@/lib/fetch-api'
 import { getCryptoPrices } from '@/lib/prices'
 
 const PACKAGE_VERSION = '0.8.0'
