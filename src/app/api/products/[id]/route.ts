@@ -2,6 +2,10 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getProductById, updateProduct, deleteProduct } from '@/services/productService'
 import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { prisma } from '@/lib/prisma'
+import { validateBody, productSchema } from '@/lib/schemas'
+import { geocodeLocation } from '@/lib/geocoding'
+import { extractHashtags, linkHashtags, removeHashtags } from '@/services/hashtagService'
 
 export async function GET(
   request: Request,

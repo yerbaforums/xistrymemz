@@ -45,6 +45,7 @@ export default function AdminSettingsPage() {
   const [qrAddress, setQrAddress] = useState<string | null>(null)
   const [qrDonationCurrency, setQrDonationCurrency] = useState<string | null>(null)
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
   const allCryptos = getAllCryptos()
 
@@ -494,7 +495,7 @@ export default function AdminSettingsPage() {
       <ConfirmDialog
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
-        onConfirm={handleDeleteDonation}
+        onConfirm={() => { handleDeleteDonation(deleteTarget); setDeleteTarget(null) }}
         title="Delete Donation Address"
         message="Delete this donation address?"
         confirmLabel="Delete"

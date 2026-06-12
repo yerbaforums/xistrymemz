@@ -25,6 +25,7 @@ export default function AdminInviteCodesPage() {
   const [form, setForm] = useState({ type: 'BETA', maxUses: 1, expiresAt: '', count: 1 })
   const [saving, setSaving] = useState(false)
   const [copied, setCopied] = useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
   useEffect(() => {
     fetchCodes()
@@ -89,6 +90,10 @@ export default function AdminInviteCodesPage() {
     } catch (error) {
       console.error('Failed to delete code:', error)
     }
+  }
+
+  const handleDelete = () => {
+    if (deleteTarget) { deleteCode(deleteTarget); setDeleteTarget(null) }
   }
 
   function copyCode(code: string) {

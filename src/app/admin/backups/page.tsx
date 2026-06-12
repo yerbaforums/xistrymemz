@@ -57,6 +57,7 @@ export default function AdminBackupsPage() {
   const [autoBackup, setAutoBackup] = useState(false)
   const [intervalHours, setIntervalHours] = useState(24)
   const [retentionCount, setRetentionCount] = useState(7)
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
   const fetchData = useCallback(async () => {
     try {
@@ -83,6 +84,10 @@ export default function AdminBackupsPage() {
       setLoading(false)
     }
   }, [])
+
+  const handleDelete = useCallback(() => {
+    if (deleteTarget) { handleDeleteBackup(deleteTarget); setDeleteTarget(null) }
+  }, [deleteTarget])
 
   useEffect(() => {
     fetchData()

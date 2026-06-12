@@ -41,11 +41,12 @@ function SchoolSetupContent() {
     fetch('/api/school')
       .then(res => res.json())
       .then(data => {
-        if (data.schoolName) {
-          setSchoolName(data.schoolName || '')
-          setSchoolAbout(data.schoolAbout || '')
-          setSchoolImage(data.schoolImage || '')
-          setSchoolSlug(data.schoolSlug || '')
+        const s = data?.data || data
+        if (s.schoolName) {
+          setSchoolName(s.schoolName || '')
+          setSchoolAbout(s.schoolAbout || '')
+          setSchoolImage(s.schoolImage || '')
+          setSchoolSlug(s.schoolSlug || '')
           setHasSchool(true)
         }
         setLoading(false)
