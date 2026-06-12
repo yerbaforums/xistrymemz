@@ -132,7 +132,7 @@ export default function ServiceDetailPage() {
     fetch(`/api/services/${params.id}`)
       .then(r => r.json())
       .then(data => {
-        const svc = sanitizeService(data.service) || null
+        const svc = sanitizeService(data?.data?.service || data?.service) || null
         setService(svc)
         setLoading(false)
         if (svc) {

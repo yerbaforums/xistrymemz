@@ -59,8 +59,8 @@ export default function ShopDashboard() {
         email: shopData.email || '',
         name: shopData.name || ''
       })
-      const products = Array.isArray(productsData) ? productsData : productsData?.products || []
-      const services = servicesData.services || []
+      const products = Array.isArray(productsData) ? productsData : productsData?.items || productsData?.products || []
+      const services = servicesData?.data?.services || servicesData?.services || []
       setStats({
         products: products.filter((p: any) => p.type === 'PRODUCT').length,
         services: services.length,

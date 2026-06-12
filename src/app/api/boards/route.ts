@@ -96,7 +96,7 @@ export async function POST(request: Request) {
     } catch {
       return apiError("Invalid JSON body", 400)
     }
-    const { name, location, latitude, longitude, city, region, country, description } = body as any
+    const { name, location, latitude, longitude, city, region, country, description, isSystem } = body as any
 
     if (!name || !location) {
       return apiError("Name and location are required", 400)
@@ -120,7 +120,7 @@ export async function POST(request: Request) {
         city: city || null,
         region: region || null,
         country: country || null,
-        isSystem: false,
+        isSystem: isSystem || false,
         ownerId: session.user.id,
       },
     })

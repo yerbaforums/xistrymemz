@@ -149,7 +149,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
     if (isAuthenticated) {
       fetch('/api/users/donations')
         .then(r => r.ok ? r.json() : null)
-        .then(data => { if (data?.addresses) setUserDonationAddrs(data.addresses) })
+        .then(data => { if (data?.data?.addresses || data?.addresses) setUserDonationAddrs(data?.data?.addresses || data?.addresses || []) })
         .catch(() => {})
     }
   }, [isAuthenticated])

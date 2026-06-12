@@ -233,8 +233,8 @@ export function useVideoChat(initialRoomId?: string, currentUserId?: string) {
       })
       if (!res.ok) throw new Error('Failed to create room')
       const data = await res.json()
-      setRoom(data.room)
-      return data.room
+      setRoom(data?.data?.room || data?.room)
+      return data?.data?.room || data?.room
     } catch (err: any) {
       setError(err.message)
       return null
@@ -250,8 +250,8 @@ export function useVideoChat(initialRoomId?: string, currentUserId?: string) {
       })
       if (!res.ok) throw new Error('Failed to join room')
       const data = await res.json()
-      setRoom(data.room)
-      return data.room
+      setRoom(data?.data?.room || data?.room)
+      return data?.data?.room || data?.room
     } catch (err: any) {
       setError(err.message)
       return null
@@ -263,8 +263,8 @@ export function useVideoChat(initialRoomId?: string, currentUserId?: string) {
       const res = await fetch(`/api/video/rooms/${roomId}`)
       if (!res.ok) throw new Error('Failed to fetch room')
       const data = await res.json()
-      setRoom(data.room)
-      return data.room
+      setRoom(data?.data?.room || data?.room)
+      return data?.data?.room || data?.room
     } catch (err: any) {
       setError(err.message)
       return null

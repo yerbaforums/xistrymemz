@@ -128,8 +128,9 @@ export default function SchoolContentDetailPage() {
     fetch(`/api/school/progress?schoolId=${content.user.id}`)
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        if (data?.progress) {
-          const found = data.progress.find((p: any) => p.contentId === content.id)
+        const progress = data?.data?.progress || data?.progress
+        if (progress) {
+          const found = progress.find((p: any) => p.contentId === content.id)
           if (found) setCompleted(found.completed)
         }
       })

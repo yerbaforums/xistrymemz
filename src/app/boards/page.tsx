@@ -175,15 +175,20 @@ export default function BoardsPage() {
     fetchBoards()
   }, [fetchBoards])
 
+  const autoCreateAttempted = useRef(false)
+
   useEffect(() => {
     if (!session?.user?.id) return
     const autoCreateFromLocations = async () => {
+      if (autoCreateAttempted.current) return
+      autoCreateAttempted.current = true
       try {
         const res = await fetch('/api/users/me')
         if (!res.ok) return
         const data = await res.json()
-        const user = data?.user
-        const locations: UserLocation[] = user?.locations || data?.locations || []
+        const me = data?.data || data
+        const user = me?.user
+        const locations: UserLocation[] = user?.locations || me?.locations || []
 
         const locsToCheck: { name: string; location: string; lat: number; lng: number }[] = []
 
@@ -209,7 +214,8 @@ export default function BoardsPage() {
         for (const loc of locsToCheck) {
           const checkRes = await fetch(`/api/boards?lat=${loc.lat}&lng=${loc.lng}&radius=25&limit=1`)
           const checkData = await checkRes.json()
-          if (!checkData.boards || checkData.boards.length === 0) {
+          const existingBoards = checkData?.data?.boards || checkData?.boards || []
+          if (existingBoards.length === 0) {
             await fetch('/api/boards', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -218,6 +224,7 @@ export default function BoardsPage() {
                 location: loc.location,
                 latitude: loc.lat,
                 longitude: loc.lng,
+                isSystem: true,
               }),
             })
           }

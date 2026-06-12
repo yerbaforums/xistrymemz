@@ -34,7 +34,7 @@ export default function Footer() {
   useEffect(() => {
     fetch('/api/site/donations')
       .then(res => res.ok ? res.json() : null)
-      .then(data => { if (data?.addresses) setDonations(data.addresses) })
+      .then(data => { if (data?.data?.addresses || data?.addresses) setDonations(data?.data?.addresses || data?.addresses || []) })
       .catch(() => {})
   }, [])
 

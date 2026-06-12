@@ -132,7 +132,7 @@ export function useEntityActions({
     })
     if (res.ok) {
       const data = await res.json()
-      setReplies(r => [...r, data.reply])
+      setReplies(r => [...r, data?.data?.reply || data?.reply])
       setReplyCount(c => c + 1)
       return true
     }
@@ -143,7 +143,7 @@ export function useEntityActions({
     const res = await fetch(`/api/actions/replies?entityType=${entityType}&entityId=${entityId}`)
     if (res.ok) {
       const data = await res.json()
-      setReplies(data.replies)
+      setReplies(data?.data?.replies || data?.replies || [])
     }
   }, [entityType, entityId])
 

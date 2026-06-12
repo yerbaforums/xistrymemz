@@ -54,7 +54,7 @@ export default function HomeMap() {
   useEffect(() => {
     fetch('/api/map-data')
       .then(res => res.ok ? res.json() : null)
-      .then(data => { if (data?.items) setItems(data.items); setLoading(false) })
+      .then(data => { if (data?.data?.items || data?.items) setItems(data?.data?.items || data?.items || []); setLoading(false) })
       .catch(() => setLoading(false))
   }, [])
 

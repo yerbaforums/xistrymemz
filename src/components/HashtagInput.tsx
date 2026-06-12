@@ -41,7 +41,7 @@ export default function HashtagInput({
       if (res.ok) {
         const data = await res.json()
         const existing = new Set(value.map(t => t.toLowerCase()))
-        const filtered = (data.hashtags || []).filter((h: HashtagSuggestion) => !existing.has(h.tag))
+        const filtered = (data?.data?.hashtags || data?.hashtags || []).filter((h: HashtagSuggestion) => !existing.has(h.tag))
         setSuggestions(filtered)
         setShowSuggestions(filtered.length > 0)
       }

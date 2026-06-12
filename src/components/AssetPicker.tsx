@@ -47,7 +47,7 @@ export default function AssetPicker({ filterTypes, selectedAsset, onSelect, labe
         const res = await fetch('/api/user/assets')
         if (res.ok) {
           const data = await res.json()
-          let all = data.assets || []
+          let all = data?.data?.assets || data?.assets || []
           if (filterTypes) {
             all = all.filter((a: UserAsset) => filterTypes.includes(a.type))
           }

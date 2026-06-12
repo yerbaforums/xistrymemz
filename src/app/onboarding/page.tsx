@@ -146,7 +146,7 @@ export default function OnboardingPage() {
           if (!res.ok) throw new Error('Failed to fetch locations')
           return res.json()
         })
-        .then(data => setUserLocations(data || []))
+        .then(data => setUserLocations(data?.data || data || []))
         .catch(() => {})
     }
   }, [step])
@@ -155,7 +155,7 @@ export default function OnboardingPage() {
     if (step === 'community') {
       fetch('/api/hashtags?mode=trending&limit=12')
         .then(res => res.ok ? res.json() : { hashtags: [] })
-        .then(data => setSuggestedTags(Array.isArray(data.hashtags) ? data.hashtags.map((h: {tag: string}) => ({tag: h.tag, postCount: 0})) : []))
+        .then(data => setSuggestedTags(Array.isArray(data?.data?.hashtags || data?.hashtags) ? (data?.data?.hashtags || data?.hashtags).map((h: {tag: string}) => ({tag: h.tag, postCount: 0})) : []))
         .catch(() => {})
 
       fetch('/api/groups?limit=6&sort=members')
@@ -165,7 +165,7 @@ export default function OnboardingPage() {
 
       fetch('/api/community/members')
         .then(res => res.ok ? res.json() : { members: [] })
-        .then(data => setCommunityMembers(Array.isArray(data.members?.items) ? data.members.items.slice(0, 6) : []))
+        .then(data => setCommunityMembers(Array.isArray(data?.data?.members?.items || data?.members?.items) ? (data?.data?.members?.items || data?.members?.items).slice(0, 6) : []))
         .catch(() => {})
     }
   }, [step])

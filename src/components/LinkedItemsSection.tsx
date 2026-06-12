@@ -87,12 +87,12 @@ export default function LinkedItemsSection({
 
       if (refRes.ok) {
         const data = await refRes.json()
-        setItems(data.items || [])
+        setItems(data?.data?.items || data?.items || [])
       }
 
       if (blRes.ok) {
         const data = await blRes.json()
-        setBacklinks(data.backlinks || [])
+        setBacklinks(data?.data?.backlinks || data?.backlinks || [])
       }
     } catch {
     } finally {

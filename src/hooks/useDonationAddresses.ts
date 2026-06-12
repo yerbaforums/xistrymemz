@@ -12,7 +12,7 @@ export function useDonationAddresses() {
     if (session?.user) {
       fetch('/api/users/donations')
         .then(r => r.ok ? r.json() : null)
-        .then(data => { if (data?.addresses) setAddresses(data.addresses) })
+        .then(data => { if (data?.data?.addresses || data?.addresses) setAddresses(data?.data?.addresses || data?.addresses || []) })
         .catch(() => {})
     }
   }, [session])

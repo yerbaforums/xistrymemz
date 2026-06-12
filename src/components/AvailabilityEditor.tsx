@@ -32,7 +32,7 @@ export default function AvailabilityEditor({ userId }: AvailabilityEditorProps) 
     fetch(`/api/availability?userId=${userId}`)
       .then(res => res.json())
       .then(data => {
-        if (data.slots) setSlots(data.slots)
+        if (data?.data?.slots || data?.slots) setSlots(data?.data?.slots || data?.slots)
       })
       .finally(() => setLoading(false))
   }, [userId])

@@ -203,7 +203,8 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
         body: JSON.stringify({ content: commentText.trim() }),
       })
       if (res.ok) {
-        const newComment = await res.json()
+        const commentRes = await res.json()
+        const newComment = commentRes?.data || commentRes
         setCommentList(prev => [newComment, ...prev])
         setCommentCount(c => c + 1)
         setCommentText('')
@@ -218,7 +219,7 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
     try {
       const res = await fetch(`/api/boards/${boardSlug}/pins/${pin.id}/comments`)
       const data = await res.json()
-      setCommentList(data.comments || [])
+      setCommentList(data?.data?.comments || data?.comments || [])
     } catch {}
     setCommentsLoading(false)
   }

@@ -169,7 +169,8 @@ function EventDetailContent() {
 
       if (res.ok) {
         const updated = await res.json()
-        setEvent(prev => prev ? { ...prev, ...updated, volunteerRoles: editFormData.needsVolunteers ? editFormData.volunteerRoles.split(',').map(r => r.trim()).filter(Boolean) : [] } : prev)
+        const evt = updated?.data || updated
+        setEvent(prev => prev ? { ...prev, ...evt, volunteerRoles: editFormData.needsVolunteers ? editFormData.volunteerRoles.split(',').map(r => r.trim()).filter(Boolean) : [] } : prev)
         success('Event updated')
         setIsEditing(false)
       } else {
@@ -218,8 +219,9 @@ function EventDetailContent() {
           fetch('/api/events')
             .then(res => res.ok ? res.json() : [])
             .then(events => {
-              const items = Array.isArray(events)
-                ? events
+              const itemsList = events?.data?.items || events?.items || []
+              const items = Array.isArray(itemsList)
+                ? itemsList
                     .filter((e: Event) => e.id !== data.id && (!data.eventCategory || e.eventCategory === data.eventCategory))
                     .slice(0, 3)
                 : []

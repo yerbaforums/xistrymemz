@@ -75,8 +75,8 @@ const MentionInput = forwardRef<MentionInputHandle, MentionInputProps>(function 
       const res = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`)
       if (res.ok) {
         const data = await res.json()
-        setSuggestions(data.users || [])
-        setShowSuggestions(data.users?.length > 0)
+        setSuggestions(data?.data?.users || data?.users || [])
+        setShowSuggestions((data?.data?.users || data?.users || []).length > 0)
         setActiveIndex(0)
       }
     } catch {
@@ -96,8 +96,8 @@ const MentionInput = forwardRef<MentionInputHandle, MentionInputProps>(function 
       const res = await fetch(`/api/hashtags/search?q=${encodeURIComponent(query)}`)
       if (res.ok) {
         const data = await res.json()
-        setSuggestions(data.hashtags || [])
-        setShowSuggestions((data.hashtags?.length || 0) > 0)
+        setSuggestions(data?.data?.hashtags || data?.hashtags || [])
+        setShowSuggestions((data?.data?.hashtags || data?.hashtags || []).length > 0)
         setActiveIndex(0)
       }
     } catch {

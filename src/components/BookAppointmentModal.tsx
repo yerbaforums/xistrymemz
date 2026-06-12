@@ -100,7 +100,7 @@ export default function BookAppointmentModal({
     setPlatformRoom(null)
     fetch(`/api/availability?userId=${sellerId}`)
       .then(r => r.json())
-      .then(data => setAvailSlots(data.slots || []))
+      .then(data => setAvailSlots(data?.data?.slots || data?.slots || []))
       .catch(() => setAvailSlots([]))
       .finally(() => setLoadingAvail(false))
   }, [isOpen, sellerId])
@@ -110,7 +110,7 @@ export default function BookAppointmentModal({
     setLoadingBusy(true)
     fetch(`/api/appointments/busy-slots?userId=${sellerId}&date=${selectedDate}`)
       .then(r => r.json())
-      .then(data => setBusySlots(data.slots || []))
+      .then(data => setBusySlots(data?.data?.slots || data?.slots || []))
       .catch(() => setBusySlots([]))
       .finally(() => setLoadingBusy(false))
   }, [selectedDate, sellerId])
@@ -213,8 +213,8 @@ export default function BookAppointmentModal({
       })
       if (!res.ok) throw new Error('Failed to create room')
       const data = await res.json()
-      setPlatformRoom(data.room)
-      return data.room
+      setPlatformRoom(data?.data?.room || data?.room)
+      return data?.data?.room || data?.room
     } catch {
       toastError('Failed to create video room')
       return null

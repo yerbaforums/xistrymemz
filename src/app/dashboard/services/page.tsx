@@ -88,7 +88,7 @@ export default function DashboardServices() {
       ])
       const servicesData = await servicesRes.json()
       const shopData = await shopRes.json()
-      setServices(servicesData.services || [])
+      setServices(servicesData?.data?.services || servicesData?.services || [])
       setShopSettings(shopData)
       setShopForm({
         shopName: shopData.shopName || '',

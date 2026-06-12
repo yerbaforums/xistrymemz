@@ -71,8 +71,8 @@ export default function QuickPinModal({ entityType, entityId, entityTitle, entit
         }
         const res = await fetch(`/api/boards?${params}`)
         const data = await res.json()
-        setBoards(data.boards || [])
-        if (data.boards?.length > 0) setSelectedBoard(data.boards[0])
+        setBoards(data?.data?.boards || data?.boards || [])
+        if ((data?.data?.boards || data?.boards || []).length > 0) setSelectedBoard((data?.data?.boards || data?.boards)[0])
       } catch {}
       setLoadingBoards(false)
     }

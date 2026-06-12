@@ -65,10 +65,11 @@ export default function ForumPage() {
       const res = await fetch('/api/community/forum')
       if (!res.ok) throw new Error('Failed to fetch')
       const data = await res.json()
-      setCategories(data?.data?.categories || data?.categories || [])
+      const cats = data?.data?.categories || data?.categories || []
+      setCategories(cats)
       setPosts(data?.data?.posts || data?.posts || [])
       
-      if (data.categories?.length === 0) {
+      if (cats.length === 0) {
         await seedCategories()
       }
     } catch {

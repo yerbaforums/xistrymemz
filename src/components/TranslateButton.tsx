@@ -77,7 +77,7 @@ export default function TranslateButton({ text, className }: Props) {
       }
 
       const data = await res.json()
-      setTranslated(data.translated)
+      setTranslated(data?.data?.translated || data?.translated)
       setShowOriginal(false)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Translation failed')

@@ -16,7 +16,7 @@ export default function StudentList({ resolvedSlug, userId }: StudentListProps) 
     if (!resolvedSlug) return
     fetch(`/api/school/students?schoolId=${userId}`)
       .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data?.students) setStudents(data.students); setLoading(false) })
+      .then(data => { if (data?.data?.students || data?.students) setStudents(data?.data?.students || data?.students || []); setLoading(false) })
       .catch(() => setLoading(false))
   }, [resolvedSlug, userId])
 
