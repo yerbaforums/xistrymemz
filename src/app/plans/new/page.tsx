@@ -10,10 +10,13 @@ import Breadcrumbs from '@/components/Breadcrumbs'
 export default function NewPlanPage() {
   const router = useRouter()
   const { success, error: toastError } = useToast()
+  const [step, setStep] = useState(0)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [category, setCategory] = useState('')
   const [goals, setGoals] = useState('')
   const [mileposts, setMileposts] = useState('')
+  const [location, setLocation] = useState('')
   const [lookingForCollaborators, setLookingForCollaborators] = useState(false)
   const [saving, setSaving] = useState(false)
   const [quickTemplate, setQuickTemplate] = useState('')
@@ -27,12 +30,24 @@ export default function NewPlanPage() {
     { id: 'custom', icon: '✏️', name: 'Custom Project', description: 'Start from scratch with your own project idea', sampleTitle: '', sampleDesc: '', sampleGoals: '', sampleMileposts: '' },
   ]
 
+  const CATEGORIES = [
+    'TECHNOLOGY', 'CREATIVE', 'EDUCATION', 'ENVIRONMENT', 'COMMUNITY',
+    'SCIENCE', 'FOOD', 'HEALTH', 'SOCIAL', 'BUSINESS', 'SPORTS', 'OTHER'
+  ]
+
+  const STEPS = [
+    { label: 'Basics', icon: '📋' },
+    { label: 'Goals', icon: '🎯' },
+    { label: 'Review', icon: '✅' },
+  ]
+
   const applyTemplate = (tpl: typeof TEMPLATES[0]) => {
     setQuickTemplate(tpl.id)
     setTitle(tpl.sampleTitle)
     setDescription(tpl.sampleDesc)
     setGoals(tpl.sampleGoals)
     setMileposts(tpl.sampleMileposts)
+    setStep(1)
   }
 
   const handleCreate = async () => {
@@ -43,7 +58,7 @@ export default function NewPlanPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title, description, goals, mileposts, lookingForCollaborators,
+          title, description, category, goals, mileposts, location, lookingForCollaborators,
         })
       })
       if (!res.ok) {
@@ -91,43 +106,90 @@ export default function NewPlanPage() {
             <div className={styles.banner}>
               <span>{TEMPLATES.find(t => t.id === quickTemplate)?.icon}</span>
               <span>{TEMPLATES.find(t => t.id === quickTemplate)?.name} template applied</span>
-              <button className={styles.changeBtn} onClick={() => { setQuickTemplate(''); setTitle(''); setDescription(''); setGoals(''); setMileposts('') }}>
+              <button className={styles.changeBtn} onClick={() => { setQuickTemplate(''); setTitle(''); setDescription(''); setGoals(''); setMileposts(''); setStep(0) }}>
                 Change
               </button>
             </div>
           )}
 
-          <div className={styles.field}>
-            <label>Project Title</label>
-            <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Name your project" />
+          <div className={styles.steps}>
+            {STEPS.map((s, i) => (
+              <div key={s.label} className={`${styles.step} ${i === step ? styles.stepActive : ''} ${i < step ? styles.stepDone : ''}`}>
+                <div className={styles.stepNumber}>{i < step ? '✓' : s.icon}</div>
+                <span>{s.label}</span>
+              </div>
+            ))}
           </div>
 
-          <div className={styles.field}>
-            <label>Description</label>
-            <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="What is this project about?" rows={3} />
-          </div>
+          {step === 0 && (
+            <>
+              <div className={styles.field}>
+                <label>Project Title *</label>
+                <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Name your project" />
+              </div>
+              <div className={styles.field}>
+                <label>Description</label>
+                <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="What is this project about?" rows={3} />
+              </div>
+              <div className={styles.field}>
+                <label>Category</label>
+                <select value={category} onChange={e => setCategory(e.target.value)}>
+                  <option value="">Select a category...</option>
+                  {CATEGORIES.map(c => <option key={c} value={c}>{c.charAt(0) + c.slice(1).toLowerCase()}</option>)}
+                </select>
+              </div>
+              <div className={styles.field}>
+                <label>Location</label>
+                <input type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder="City, State (optional)" />
+              </div>
+              <label className={styles.checkField}>
+                <input type="checkbox" checked={lookingForCollaborators} onChange={e => setLookingForCollaborators(e.target.checked)} />
+                <span>Looking for collaborators</span>
+              </label>
+              <div className={styles.actions}>
+                <button className={styles.createBtn} onClick={() => setStep(1)} disabled={!title.trim()}>
+                  Next: Goals →
+                </button>
+              </div>
+            </>
+          )}
 
-          <div className={styles.field}>
-            <label>Goals (one per line)</label>
-            <textarea value={goals} onChange={e => setGoals(e.target.value)} placeholder="What do you want to achieve?" rows={4} />
-          </div>
+          {step === 1 && (
+            <>
+              <div className={styles.field}>
+                <label>Goals (one per line)</label>
+                <textarea value={goals} onChange={e => setGoals(e.target.value)} placeholder="What do you want to achieve?" rows={4} />
+              </div>
+              <div className={styles.field}>
+                <label>Milestones (one per line)</label>
+                <textarea value={mileposts} onChange={e => setMileposts(e.target.value)} placeholder="Key milestones or phases" rows={4} />
+              </div>
+              <div className={styles.actions}>
+                <button className={styles.cancelBtn} onClick={() => setStep(0)}>← Back</button>
+                <button className={styles.createBtn} onClick={() => setStep(2)}>Next: Review →</button>
+              </div>
+            </>
+          )}
 
-          <div className={styles.field}>
-            <label>Milestones (one per line)</label>
-            <textarea value={mileposts} onChange={e => setMileposts(e.target.value)} placeholder="Key milestones or phases" rows={4} />
-          </div>
-
-          <label className={styles.checkField}>
-            <input type="checkbox" checked={lookingForCollaborators} onChange={e => setLookingForCollaborators(e.target.checked)} />
-            <span>Looking for collaborators</span>
-          </label>
-
-          <div className={styles.actions}>
-            <button className={styles.createBtn} onClick={handleCreate} disabled={saving || !title.trim()}>
-              {saving ? 'Creating...' : 'Create Project →'}
-            </button>
-            <Link href="/dashboard/projects" className={styles.cancelBtn}>Cancel</Link>
-          </div>
+          {step === 2 && (
+            <>
+              <div className={styles.reviewCard}>
+                <h3>{title || 'Untitled Project'}</h3>
+                {category && <span className={styles.reviewTag}>{category}</span>}
+                <p>{description || 'No description'}</p>
+                {location && <p>📍 {location}</p>}
+                {goals && <div><strong>Goals:</strong><p style={{ whiteSpace: 'pre-wrap' }}>{goals}</p></div>}
+                {mileposts && <div><strong>Milestones:</strong><p style={{ whiteSpace: 'pre-wrap' }}>{mileposts}</p></div>}
+                {lookingForCollaborators && <p>🤝 Looking for collaborators</p>}
+              </div>
+              <div className={styles.actions}>
+                <button className={styles.cancelBtn} onClick={() => setStep(1)}>← Back</button>
+                <button className={styles.createBtn} onClick={handleCreate} disabled={saving || !title.trim()}>
+                  {saving ? 'Creating...' : 'Create Project →'}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

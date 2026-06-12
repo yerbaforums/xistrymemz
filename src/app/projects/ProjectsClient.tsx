@@ -125,6 +125,7 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
   const [filter, setFilter] = useState<'ALL' | 'ACTIVE' | 'COMPLETED'>('ALL')
   const [category, setCategory] = useState<string>('ALL')
   const [showPinned, setShowPinned] = useState<boolean | null>(null)
+  const [showCollaborators, setShowCollaborators] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<SortOption>('newest')
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
@@ -177,6 +178,10 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
       result = result.filter(p => p.pinned === showPinned)
     }
 
+    if (showCollaborators) {
+      result = result.filter(p => p.lookingForCollaborators)
+    }
+
     if (nearbyMode === 'NEARBY' && userLocation) {
       result = result.filter(p => {
         if (!p.latitude || !p.longitude) return false
@@ -210,7 +215,7 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
     }
 
     return result
-  }, [initialPlans, filter, category, showPinned, searchQuery, sortBy, nearbyMode, userLocation])
+  }, [initialPlans, filter, category, showPinned, showCollaborators, searchQuery, sortBy, nearbyMode, userLocation])
 
   const mapLocations = useMemo(() => {
     const locations: { lat: number; lng: number; title: string; type: string; id: string; info: string }[] = []
@@ -369,6 +374,12 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
             onClick={() => setShowPinned(showPinned === true ? null : true)}
           >
             📌 Featured
+          </button>
+          <button
+            className={`${styles.filterToggle} ${showCollaborators ? styles.filterToggleActive : ''}`}
+            onClick={() => setShowCollaborators(!showCollaborators)}
+          >
+            🤝 Collaborators
           </button>
         </div>
       </div>
