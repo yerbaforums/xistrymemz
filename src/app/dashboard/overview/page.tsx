@@ -521,7 +521,7 @@ export default async function DashboardOverview({
               />
             </div>
 
-            <div className={`$1 $2`}>
+            <div className={styles.card}>
               <h3 style={{ marginBottom: 12, fontSize: '1rem' }}>🌍 Discover</h3>
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                 <Link href="/plans/public" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
@@ -546,7 +546,7 @@ export default async function DashboardOverview({
             </div>
 
             {connectionFeed.length > 0 && (
-              <div className={`$1 $2`}>
+              <div className={styles.card}>
                 <div className={styles.sectionHeader}>
                   <h3>🤝 Activity from Connections</h3>
                   <Link href="/community" className={styles.viewAll}>View all →</Link>
@@ -572,7 +572,7 @@ export default async function DashboardOverview({
             <StreakCard postCount={allStats[6]} connectionCount={connectionCount} />
 
             {user && (user.walletAddress || user.paymentAddress || user.refundAddress || (user.acceptsDonations && user.donationAddress)) && (
-              <div className={`$1 $2`}>
+              <div className={styles.card}>
                 <h4>💳 {t('wallet')}</h4>
                 {user.walletAddress && <code title={user.walletAddress}>{user.walletAddress.slice(0, 10)}...{user.walletAddress.slice(-4)}</code>}
                 {user.paymentAddress && <code title={user.paymentAddress}>Pay: {user.paymentAddress.slice(0, 8)}...{user.paymentAddress.slice(-4)}</code>}

@@ -615,7 +615,7 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                       {plan.hashtags && plan.hashtags.length > 0 && (
                         <div className={styles.flexWrap}>
                           {plan.hashtags.map((h: any) => (
-                            <Link key={h.hashtag?.id || h.id} href={`/hashtag/${h.hashtag?.tag || h.tag}`} className={`$2 $1`}>#{h.hashtag?.tag || h.tag}</Link>
+                            <Link key={h.hashtag?.id || h.id} href={`/hashtag/${h.hashtag?.tag || h.tag}`} className={styles.hashtag}>#{h.hashtag?.tag || h.tag}</Link>
                           ))}
                         </div>
                       )}
@@ -810,7 +810,7 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                              selectedAddresses={editSelectedDonationAddrs}
                              onAddressesChange={(addrs) => setEditSelectedDonationAddrs(addrs)}
                            />
-                          <div className={`$2 $1`}>
+                           <div className={styles.field}>
                             <label>Donation Description</label>
                             <textarea
                               value={editDonationDescription}
