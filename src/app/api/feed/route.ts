@@ -151,7 +151,16 @@ export async function GET(request: Request) {
         sourceType: 'GROUPPOST' as const,
         groupName: p.group.name,
         groupId: p.group.id,
-        type: 'groupPost' as const
+        type: 'groupPost' as const,
+        liked: false,
+        likes: 0,
+        replyCount: 0,
+        repostCount: 0,
+        reposted: false,
+        context: null,
+        referenceType: null,
+        referenceId: null,
+        referenceTitle: null
       })),
       ...forumPosts.map(p => ({
         id: p.id,
@@ -160,7 +169,16 @@ export async function GET(request: Request) {
         createdAt: p.createdAt.toISOString(),
         user: p.author,
         sourceType: 'FORUMPOST' as const,
-        type: 'forumPost' as const
+        type: 'forumPost' as const,
+        liked: false,
+        likes: 0,
+        replyCount: 0,
+        repostCount: 0,
+        reposted: false,
+        context: null,
+        referenceType: null,
+        referenceId: null,
+        referenceTitle: null
       }))
     ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, limit)

@@ -112,7 +112,9 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
   const [editedImages, setEditedImages] = useState<string[]>(() => {
     try { const p = plan.images ? JSON.parse(plan.images) : []; return Array.isArray(p) ? p : [] } catch { return plan.imageUrl ? [plan.imageUrl] : [] }
   })
-  const [planHashtags, setPlanHashtags] = useState<string[]>([])
+  const [planHashtags, setPlanHashtags] = useState<string[]>(() => {
+    try { return Array.isArray(plan.hashtags) ? plan.hashtags : [] } catch { return [] }
+  })
   const [editingOverview, setEditingOverview] = useState(false)
 
   const [showRequestModal, setShowRequestModal] = useState(false)
@@ -181,7 +183,7 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
     if (showRequestModal) {
       fetch('/api/products?all=true')
         .then(res => res.json())
-        .then((data: Product[]) => setAvailableProducts(data.filter(p => p.type === 'PRODUCT' || p.type === 'SERVICE')))
+        .then(data => setAvailableProducts((data?.data || []).filter((p: Product) => p.type === 'PRODUCT' || p.type === 'SERVICE')))
         .catch(console.error)
     }
   }, [showRequestModal])
@@ -427,7 +429,7 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
         body: JSON.stringify({ title: requestTitle, description: requestDesc, planId: plan.id, productId: selectedProductId || null })
       })
       if (res.ok) {
-        const newRequest = await res.json()
+        const newRequest = (await res.json())?.data
         const selectedProduct = selectedProductId ? availableProducts.find(p => p.id === selectedProductId) : null
         setPlan({ ...plan, requests: [{ ...newRequest, user: { name: null, email: '' }, productId: selectedProductId, product: selectedProduct ? { id: selectedProduct.id, title: selectedProduct.title, price: selectedProduct.price, imageUrl: selectedProduct.imageUrl } : null }, ...plan.requests] })
         setShowRequestModal(false)
@@ -540,17 +542,17 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                   </div>
                   <input type="text" value={editedTitle} onChange={e => setEditedTitle(e.target.value)} className={styles.titleInput} />
                   <textarea value={editedDescription} onChange={e => setEditedDescription(e.target.value)} className={styles.descInput} rows={3} />
-                  <div className={styles.formRow} style={{ gap: 12, marginTop: 12 }}>
-                    <div className={`$1 $2`}>
+                    <div className={styles.formRow} style={{ gap: 12, marginTop: 12 }}>
+                      <div className={styles.formGroup}>
                       <label>Category</label>
                       <input type="text" value={editedCategory} onChange={e => setEditedCategory(e.target.value)} placeholder="e.g. Technology, Community..." className={styles.formInput} />
                     </div>
-                    <div className={`$1 $2`}>
+                    <div className={styles.formGroup}>
                       <label>Location</label>
                       <input type="text" value={editedLocation} onChange={e => setEditedLocation(e.target.value)} placeholder="City, State" className={styles.formInput} />
                     </div>
                   </div>
-                  <div className={`$1 $2`}>
+                  <div className={styles.formGroup}>
                     <label>Location Details</label>
                     <input type="text" value={editedLocationDetails} onChange={e => setEditedLocationDetails(e.target.value)} placeholder="e.g. Meetup point, address" className={styles.formInput} />
                   </div>
@@ -558,11 +560,11 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                     <input type="checkbox" checked={editedLookingForCollaborators} onChange={e => setEditedLookingForCollaborators(e.target.checked)} />
                     <span>Looking for collaborators</span>
                   </label>
-                  <div className={`$1 $2`}>
+                  <div className={styles.formGroup}>
                     <label>Images</label>
                     <ImageUploader images={editedImages} onChange={setEditedImages} maxImages={5} />
                   </div>
-                  <div className={`$1 $2`}>
+                  <div className={styles.formGroup}>
                     <label>Hashtags</label>
                     <HashtagInput value={planHashtags} onChange={setPlanHashtags} placeholder="Add hashtags..." />
                   </div>
@@ -767,8 +769,7 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                         }
                         setEditDonations(!editDonations)
                       }}
-                      className="btn-ghost"
-                      className={styles.small}
+                      className={`btn-ghost ${styles.small}`}
                     >
                       {editDonations ? 'Cancel' : 'Edit'}
                     </button>
@@ -816,9 +817,8 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                             setLoading(false)
                           }
                         }}
-                        className="btn-primary"
+                        className={`btn-primary ${styles.mt8}`}
                         disabled={loading}
-                        className={styles.mt8}
                       >
                         {loading ? 'Saving...' : 'Save Donation Settings'}
                       </button>
@@ -896,7 +896,7 @@ donationDescription={plan.donationDescription}
                       {isOwner && (
                         <div className={styles.eventActions}>
                           <button onClick={() => openEventModal(event)} className={styles.editBtn}>Edit</button>
-                          <button onClick={() => handleDeleteEvent(event.id)} className={styles.deleteBtn}>Delete</button>
+                          <button onClick={() => setDeleteEventTarget(event.id)} className={styles.deleteBtn}>Delete</button>
                         </div>
                       )}
                     </div>

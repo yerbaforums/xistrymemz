@@ -140,7 +140,8 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
       try {
         const res = await fetch('/api/users/me')
         if (res.ok) {
-          const user = await res.json()
+          const me = await res.json()
+          const user = me?.data || me
           if (user.latitude && user.longitude) {
             setUserLocation({
               lat: user.latitude,

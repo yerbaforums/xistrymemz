@@ -214,8 +214,8 @@ export default function DashboardFeed() {
       {feed.length > 0 ? (
         <>
           <div className={`${styles.flexCol} ${styles.gap16}`}>
-            {feed.map((item, i) => (
-              <div key={`${item.sourceType}-${item.id}-${i}`}>
+            {feed.map((item) => (
+              <div key={`${item.sourceType}-${item.id}`}>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: 4, paddingLeft: 4 }}>{getContextLabel(item)}</div>
                 <FeedItem post={item} />
               </div>

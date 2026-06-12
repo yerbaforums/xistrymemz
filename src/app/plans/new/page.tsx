@@ -52,7 +52,7 @@ export default function NewPlanPage() {
       }
       const data = await res.json()
       success('Project created!')
-      router.push(`/plans/${data.id}`)
+      router.push(`/plans/${data.data.id}`)
     } catch (err: any) {
       toastError(err.message)
     } finally {

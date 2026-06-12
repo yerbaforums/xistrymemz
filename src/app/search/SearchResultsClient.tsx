@@ -26,6 +26,7 @@ interface SearchResults {
   requests: SearchResult[]
   hashtags: { tag: string; postCount: number; type: string; url: string }[]
   schoolContent: SearchResult[]
+  forumPosts: SearchResult[]
 }
 
 export default function SearchResultsClient() {
@@ -103,12 +104,13 @@ export default function SearchResultsClient() {
         ...results.plans.map(r => ({ ...r, section: '🚀 Projects' })),
         ...results.products.map(r => ({ ...r, section: '🛒 Products' })),
         ...results.services.map(r => ({ ...r, section: '🔧 Services' })),
-        ...results.users.map(r => ({ ...r, section: '👤 Users', title: r.title || 'Unknown' })),
+        ...results.users.map(r => ({ ...r, section: '👤 Users', title: r.name || r.username || r.title || 'Unknown' })),
         ...results.groups.map(r => ({ ...r, section: '👥 Groups' })),
         ...results.events.map(r => ({ ...r, section: '📅 Events' })),
         ...results.requests.map(r => ({ ...r, section: '📝 Requests' })),
         ...(results.hashtags || []).map(h => ({ id: h.tag, title: `#${h.tag} (${h.postCount} posts)`, type: 'hashtag', url: h.url, section: '# Hashtags' })),
         ...results.schoolContent.map(r => ({ ...r, section: '🎓 School' })),
+        ...(results.forumPosts || []).map(r => ({ ...r, section: '💬 Forum Posts', title: r.title || r.content?.slice(0, 100) || 'Untitled' })),
       ]
     }
     if (filter === 'hashtags') {
@@ -129,7 +131,7 @@ export default function SearchResultsClient() {
     return ((results[filter as keyof SearchResults] || []) as SearchResult[]).map(r => ({
       ...r,
       section: sectionMap[filter] || '',
-      title: filter === 'users' ? (r.title || 'Unknown') : r.title,
+      title: filter === 'users' ? (r.name || r.username || r.title || 'Unknown') : r.title,
     }))
   }
 

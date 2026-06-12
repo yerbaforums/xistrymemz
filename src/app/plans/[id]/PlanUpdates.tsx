@@ -100,7 +100,8 @@ export default function PlanUpdates({ planId, isOwner }: Props) {
       )}
 
       {updates.length === 0 && (
-        <EmptyState icon="📡" title="No updates yet" description={isOwner ? 'Post the first update to share your progress.' : 'Check back later for project updates.'} action={isOwner ? { label: 'Post Update', onClick: () => setContent(' ') } : undefined} />
+        <EmptyState icon="📡" title="No updates yet" description={isOwner ? 'Post the first update to share your progress.' : 'Check back later for project updates.'} action={isOwner ? { label: 'Post Update', onClick: () => setContent('') } : undefined}
+ />
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -161,7 +162,7 @@ function CommentsList({ updateId, planId }: { updateId: string; planId: string }
   useEffect(() => {
     fetch(`/api/plans/${planId}/updates/${updateId}/comments`)
       .then(r => r.ok ? r.json() : [])
-      .then(setComments)
+      .then(data => setComments(data?.data || data || []))
       .catch(() => {})
   }, [planId, updateId])
 
@@ -173,7 +174,7 @@ function CommentsList({ updateId, planId }: { updateId: string; planId: string }
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: text })
       })
-      if (res.ok) { setText(''); const data = await res.json(); setComments(prev => [...prev, data]) }
+      if (res.ok) { setText(''); const data = await res.json(); setComments(prev => [...prev, data?.data || data]) }
     } finally { setPosting(false) }
   }
 

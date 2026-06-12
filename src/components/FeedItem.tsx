@@ -48,6 +48,7 @@ const CONTEXT_CONFIG: Record<string, { label: string; icon: string; className: s
   PROFILE: { label: 'Post', icon: '👤', className: 'contextProfile' },
   GROUPPOST: { label: 'Group', icon: '👥', className: 'contextGroup' },
   FORUMPOST: { label: 'Forum', icon: '💬', className: 'contextForum' },
+  REPOST: { label: 'Repost', icon: '🔁', className: 'contextRepost' },
 }
 
 function getImages(images: string | null): string[] {
@@ -66,12 +67,12 @@ export default function FeedItem({ post }: { post: FeedPost }) {
   const [editContent, setEditContent] = useState(post.content)
   const { data: session } = useSession()
   const imageList = getImages(post.images)
-  const displayContent = post.content.replace(URL_REGEX, '').trim()
+  const displayContent = post.content ? post.content.replace(URL_REGEX, '').trim() : ''
   const contextKey = post.context || post.sourceType || 'PROFILE'
   const ctxConfig = CONTEXT_CONFIG[contextKey] || CONTEXT_CONFIG.PROFILE
   const borderStyle = contextKey === 'GROUPPOST' || contextKey === 'FORUMPOST'
     ? {}
-    : { borderLeft: `4px solid var(--context-${contextKey.toLowerCase()})` }
+    : { borderLeft: `4px solid var(--context-${(CONTEXT_CONFIG[contextKey] ? contextKey : 'profile').toLowerCase()})` }
   const isRepost = contextKey === 'REPOST'
 
   return (
