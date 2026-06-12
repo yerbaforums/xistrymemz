@@ -97,7 +97,7 @@ export default function ProductsPage() {
     try {
       const res = await fetch('/api/products/user')
       const data = await res.json()
-      setMyProducts(data)
+      setMyProducts(data?.items || data || [])
     } catch {
       // silently fail
     } finally {
@@ -198,7 +198,7 @@ export default function ProductsPage() {
         return res.json()
       })
       .then(data => {
-        const items = Array.isArray(data) ? data : data?.products || []
+        const items = Array.isArray(data) ? data : data?.items || data?.products || []
         setProducts(items)
         setLoading(false)
       })

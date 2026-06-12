@@ -137,7 +137,7 @@ export default function ProfileEditPage() {
   const fetchLinks = async () => {
     try {
       const r = await fetch('/api/users/links')
-      if (r.ok) setLinks((await r.json()).links || [])
+      if (r.ok) { const d = await r.json(); setLinks(d?.data?.links || d?.links || []) }
     } catch {}
   }
 
@@ -175,9 +175,9 @@ export default function ProfileEditPage() {
       setEnableReplies(user.enableReplies ?? true)
       setEnableLikes(user.enableLikes ?? true)
       setShowViewCount(user.showViewCount ?? true)
-      setLinks(data.data.links || [])
+      setLinks(data?.data?.links || data?.links || [])
 
-      try { const r = await fetch('/api/users/donations'); if (r.ok) setDonationAddresses((await r.json()).addresses || []) } catch {}
+      try { const r = await fetch('/api/users/donations'); if (r.ok) { const d = await r.json(); setDonationAddresses(d?.data?.addresses || d?.addresses || []) } } catch {}
     } catch (err) {
       console.error('Error fetching profile:', err)
       setError('Failed to load profile')

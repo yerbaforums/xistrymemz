@@ -156,7 +156,7 @@ export default function NewProductPage() {
         }),
       })
       if (res.ok) {
-        const product = await res.json()
+        const productRes = await res.json(); const product = productRes?.data || productRes
         if (form.shareToFeed) {
           await fetch('/api/posts', {
             method: 'POST',

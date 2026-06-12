@@ -65,8 +65,8 @@ export default function ForumPage() {
       const res = await fetch('/api/community/forum')
       if (!res.ok) throw new Error('Failed to fetch')
       const data = await res.json()
-      setCategories(data.categories || [])
-      setPosts(data.posts || [])
+      setCategories(data?.data?.categories || data?.categories || [])
+      setPosts(data?.data?.posts || data?.posts || [])
       
       if (data.categories?.length === 0) {
         await seedCategories()
@@ -156,7 +156,7 @@ export default function ForumPage() {
         setPollOptions(['', '', '', ''])
         setPostImages([])
         const updated = await fetch('/api/community/forum').then(r => r.json())
-        setPosts(updated.posts || [])
+        setPosts(updated?.data?.posts || updated?.posts || [] || [])
       }
     } catch (error) {
       console.error('Failed to create post:', error)

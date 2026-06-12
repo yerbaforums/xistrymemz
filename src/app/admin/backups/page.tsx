@@ -71,10 +71,11 @@ export default function AdminBackupsPage() {
       }
       if (statsRes.ok) {
         const data = await statsRes.json()
-        setStats(data)
-        setAutoBackup(data.autoBackupEnabled)
-        setIntervalHours(data.backupIntervalHours)
-        setRetentionCount(data.backupRetentionCount)
+        const sd = data?.data || data
+        setStats(sd)
+        setAutoBackup(sd.autoBackupEnabled)
+        setIntervalHours(sd.backupIntervalHours)
+        setRetentionCount(sd.backupRetentionCount)
       }
     } catch {
       setError('Failed to load backup data')

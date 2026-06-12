@@ -65,7 +65,7 @@ export default function AdminOrdersPage() {
       const res = await fetch(url)
       if (res.ok) {
         const data = await res.json()
-        setOrders(data)
+        setOrders(data?.data || data || [])
       }
     } catch (error) {
       console.error('Failed to fetch orders:', error)

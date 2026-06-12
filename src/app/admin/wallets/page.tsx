@@ -108,7 +108,7 @@ export default function AdminWalletsPage() {
       
       if (!userRes.ok) throw new Error('Failed to fetch user wallets')
       const userData = await userRes.json()
-      if (userData.wallets) setUserWallets(userData.wallets)
+      if ((userData?.data?.wallets || userData?.wallets || [])) setUserWallets((userData?.data?.wallets || userData?.wallets || []))
     } catch (err) {
       console.error('Failed to fetch wallets:', err)
     } finally {

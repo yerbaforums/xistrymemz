@@ -159,7 +159,7 @@ export default function BoardsPage() {
       if (!res.ok) { console.error('Boards fetch not ok:', res.status); return }
       const data = await res.json()
       if (data.error) { console.error('Boards API error:', data.error); return }
-      setBoards(data.data.boards || [])
+      setBoards(data?.data?.boards || data?.boards || [])
 
       const locBoards = (data.data.boards || []).filter((b: Board) => b.latitude && b.longitude)
       if (locBoards.length > 0 && mapRef.current && !initialFitDone.current) {

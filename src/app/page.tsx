@@ -85,7 +85,7 @@ export default function Home() {
       const res = await fetch(`/api/products?${params}`)
       if (res.ok) {
         const data = await res.json()
-        if (data?.products) setProducts(data.products)
+        if (data?.items) setProducts(data.items)
       }
     } catch { } finally { setLoadingProducts(false) }
   }, [])
@@ -93,7 +93,7 @@ export default function Home() {
   useEffect(() => {
     fetch('/api/stats')
       .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d) setStats(d) })
+      .then(d => { if (d?.data) setStats(d.data) })
       .catch(() => {})
 
     fetch('/api/shops')
@@ -106,7 +106,7 @@ export default function Home() {
     fetch('/api/requests?isPublic=true&take=4')
       .then(r => r.ok ? r.json() : null)
       .then(d => {
-        const list = d?.requests || (Array.isArray(d) ? d : [])
+        const list = d?.items || d?.data?.items || (Array.isArray(d) ? d : [])
         if (Array.isArray(list)) setRequests(list.slice(0, 4))
         setLoadingRequests(false)
       })

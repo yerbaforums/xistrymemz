@@ -39,7 +39,7 @@ export default function SubscribersPage() {
       const res = await fetch('/api/admin/subscribers')
       if (res.ok) {
         const data = await res.json()
-        setSubscribers(data)
+        setSubscribers(data?.data || data || [])
       }
     } catch (err) {
       console.error(err)

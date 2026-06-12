@@ -89,7 +89,7 @@ export default function SearchResultsClient() {
     fetch(`/api/search?q=${encodeURIComponent(query)}&limit=50&offset=${newOffset}`)
       .then(res => res.json())
       .then(data => {
-        setResults(prev => mergeResults(prev, data.results))
+        setResults(prev => mergeResults(prev, data?.data?.results || data?.results || []))
         setHasMore(countResults(data.results) >= 50)
         setLoadingMore(false)
       })

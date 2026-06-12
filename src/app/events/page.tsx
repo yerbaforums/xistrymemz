@@ -92,8 +92,8 @@ export default function EventsPage() {
         return res.json()
       })
       .then(data => {
-        setEvents(data)
-        setFilteredEvents(data)
+        setEvents(data?.data || [])
+        setFilteredEvents(data?.data || [])
         setLoading(false)
       })
       .catch(() => setLoading(false))
