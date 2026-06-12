@@ -455,6 +455,7 @@ function EventDetailContent() {
         { label: 'Events', href: '/events' },
         { label: event.title || 'Event' },
       ]} />
+      <ShareBar entityType="EVENT" title={event.title} description={event.description} image={event.imageUrl} variant="compact" />
       <Link href="/events" className={styles.backLink}>
         ← Back to Events
       </Link>

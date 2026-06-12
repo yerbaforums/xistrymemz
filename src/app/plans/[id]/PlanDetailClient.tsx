@@ -493,6 +493,7 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
   return (
     <div className={styles.page}>
         <Link href="/dashboard/projects" className={styles.backLink}>← Back to Projects</Link>
+        <ShareBar entityType="PLAN" title={plan.title} description={plan.description} variant="compact" />
 
         <div className={styles.creatorInfo}>
           <Link href={getUserProfileUrl(plan.user)} className={styles.creatorLink}>

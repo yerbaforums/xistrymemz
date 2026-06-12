@@ -731,6 +731,7 @@ export default function ProfilePage() {
         { label: 'Home', href: '/' },
         { label: 'Profile' },
       ]} />
+      <ShareBar entityType="PROFILE" title={(user.name || user.username || 'Profile')} description={user.bio} image={user.image} variant="compact" />
       <div className={styles.profileHeader}>
         <div 
           className={styles.coverImage}

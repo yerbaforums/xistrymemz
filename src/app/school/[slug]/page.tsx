@@ -393,6 +393,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
         { label: 'Schools', href: '/schools' },
         { label: school.schoolName || 'School' },
       ]} />
+      <ShareBar entityType="SCHOOL" title={school.schoolName || 'School'} description={school.schoolAbout} image={school.schoolImage} variant="compact" />
 
       <div className={styles.schoolHeader}>
         <div

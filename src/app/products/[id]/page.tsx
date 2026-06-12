@@ -539,6 +539,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         { label: 'Marketplace', href: '/products' },
         { label: product.title }
       ]} />
+      <ShareBar entityType="PRODUCT" title={product.title} description={product.description} image={product.imageUrl} variant="compact" />
 
       <div className={styles.content}>
         <div className={styles.main}>

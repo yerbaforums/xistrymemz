@@ -203,6 +203,7 @@ export default function ServiceDetailPage() {
           { label: 'Services', href: '/services' },
           { label: title || 'Service' },
         ]} />
+        <ShareBar entityType="SERVICE" title={title} description={description} image={imageUrl} variant="compact" />
         <Link href="/services" className={styles.breadcrumb}>← Back to Services</Link>
 
         <div className={styles.layout}>

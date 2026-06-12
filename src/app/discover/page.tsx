@@ -11,6 +11,7 @@ import Button from '@/components/ui/Button'
 import Loading from '@/components/Loading'
 import { EmptyState } from '@/components/EmptyState'
 import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
+import { usePassportLocation } from '@/hooks/usePassportLocation'
 
 
 const ENTITY_TYPES = [
@@ -116,6 +117,7 @@ function EntityCard({ item }: { item: DiscoverItem }) {
 
 export default function DiscoverPage() {
   const { data: session } = useSession()
+  const { location: passportLoc } = usePassportLocation()
   const [query, setQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
   const [intentFilter, setIntentFilter] = useState('')
@@ -149,7 +151,8 @@ export default function DiscoverPage() {
       setPage(p)
 
       const locResults = resData.results?.filter((r: DiscoverItem) => r.latitude && r.longitude) || []
-      if (locResults.length > 0) {
+      const userHasLocation = passportLoc?.latitude || mapCenter[0] !== 51.505
+      if (locResults.length > 0 && !userHasLocation) {
         const avgLat = locResults.reduce((s: number, r: DiscoverItem) => s + r.latitude!, 0) / locResults.length
         const avgLng = locResults.reduce((s: number, r: DiscoverItem) => s + r.longitude!, 0) / locResults.length
         setMapCenter([avgLat, avgLng])
@@ -223,7 +226,10 @@ export default function DiscoverPage() {
     for (let day = 1; day <= lastDay.getDate(); day++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
       const itemsOnDay = sortedResults.filter(r => {
-        const d = new Date(r.createdAt).toISOString().split('T')[0]
+        if (r.type !== 'EVENT') return false
+        const date = r.eventDate || r.createdAt
+        if (!date) return false
+        const d = new Date(date).toISOString().split('T')[0]
         return d === dateStr
       })
 

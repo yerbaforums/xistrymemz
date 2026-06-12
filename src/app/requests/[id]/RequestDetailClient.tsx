@@ -601,6 +601,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
       <Link href="/requests" className={styles.backLink}>
         ← Back to Requests
       </Link>
+      <ShareBar entityType="REQUEST" title={request.title} description={request.description} variant="compact" />
 
       <div className={styles.detailLayout}>
         {/* LEFT COLUMN */}

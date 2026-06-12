@@ -320,6 +320,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
         { label: 'Shops', href: '/shops' },
         { label: shop.shopName || 'Shop' },
       ]} />
+      <ShareBar entityType="SHOP" title={shop.shopName || 'Shop'} description={shop.shopAbout} image={shop.shopImage} variant="compact" />
 
       <div className={styles.shopHeader}>
         <div
