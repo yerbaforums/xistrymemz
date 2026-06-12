@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 interface BackupRecord {
   id: string
@@ -109,7 +110,6 @@ export default function AdminBackupsPage() {
   }
 
   const handleDeleteBackup = async (id: string) => {
-    if (!confirm('Delete this backup permanently?')) return
     try {
       const res = await fetch(`/api/admin/backup/${id}`, { method: 'DELETE' })
       if (res.ok) {
@@ -346,6 +346,17 @@ export default function AdminBackupsPage() {
           </table>
         )}
       </div>
+
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        title="Delete Backup"
+        message="Delete this backup permanently?"
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   )
 }

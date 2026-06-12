@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -8,7 +8,7 @@ export async function GET(request: Request) {
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { searchParams } = new URL(request.url)
@@ -24,10 +24,10 @@ export async function GET(request: Request) {
       orderBy: { createdAt: 'desc' }
     })
 
-    return NextResponse.json(deposits)
+    return apiSuccess(deposits)
   } catch (error) {
     console.error('Error fetching deposits:', error)
-    return NextResponse.json({ error: 'Failed to fetch deposits' }, { status: 500 })
+    return apiError("Failed to fetch deposits", 500)
   }
 }
 
@@ -36,14 +36,14 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const body = await request.json()
     const { walletId, cryptoType, amount, txHash, fromAddress } = body
 
     if (!cryptoType || !amount || !txHash) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+      return apiError("Missing required fields", 400)
     }
 
     // Check if txHash already exists
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     })
 
     if (existingDeposit) {
-      return NextResponse.json({ error: 'Transaction already recorded' }, { status: 400 })
+      return apiError("Transaction already recorded", 400)
     }
 
     const deposit = await prisma.deposit.create({
@@ -67,9 +67,9 @@ export async function POST(request: Request) {
       }
     })
 
-    return NextResponse.json(deposit)
+    return apiSuccess(deposit)
   } catch (error) {
     console.error('Error creating deposit:', error)
-    return NextResponse.json({ error: 'Failed to create deposit' }, { status: 500 })
+    return apiError("Failed to create deposit", 500)
   }
 }

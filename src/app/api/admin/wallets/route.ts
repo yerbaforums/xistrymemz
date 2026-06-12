@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     const session = await getServerSession(authOptions)
     
     if (!session || session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { searchParams } = new URL(request.url)
@@ -38,7 +38,7 @@ export async function GET(request: Request) {
         },
         orderBy: { createdAt: 'desc' }
       })
-      return NextResponse.json({ wallets: userWallets })
+      return apiSuccess({ wallets: userWallets })
     }
 
     const settings = await prisma.platformSettings.findFirst()
@@ -64,7 +64,7 @@ export async function GET(request: Request) {
     })
   } catch (error) {
     console.error('Error fetching wallets:', error)
-    return NextResponse.json({ error: 'Failed to fetch wallets' }, { status: 500 })
+    return apiError("Failed to fetch wallets", 500)
   }
 }
 
@@ -73,7 +73,7 @@ export async function PUT(req: Request) {
     const session = await getServerSession(authOptions)
     
     if (!session || session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const body = await req.json()
@@ -132,7 +132,7 @@ export async function PUT(req: Request) {
       })
       
       if (!wallet) {
-        return NextResponse.json({ error: 'Wallet not found' }, { status: 404 })
+        return apiError("Wallet not found", 404)
       }
 
       await prisma.adminWallet.delete({
@@ -173,7 +173,7 @@ export async function PUT(req: Request) {
       })
       
       if (!wallet) {
-        return NextResponse.json({ error: 'Wallet not found' }, { status: 404 })
+        return apiError("Wallet not found", 404)
       }
 
       await prisma.userWallet.delete({
@@ -193,11 +193,11 @@ export async function PUT(req: Request) {
       })
       
       if (!wallet) {
-        return NextResponse.json({ error: 'Wallet not found' }, { status: 404 })
+        return apiError("Wallet not found", 404)
       }
 
       if (!wallet.privateKey) {
-        return NextResponse.json({ error: 'No private key stored' }, { status: 400 })
+        return apiError("No private key stored", 400)
       }
 
       try {
@@ -209,7 +209,7 @@ export async function PUT(req: Request) {
         })
       } catch (error) {
         console.error('Error decrypting private key:', error)
-        return NextResponse.json({ error: 'Failed to decrypt private key' }, { status: 500 })
+        return apiError("Failed to decrypt private key", 500)
       }
     }
 
@@ -220,11 +220,11 @@ export async function PUT(req: Request) {
       })
       
       if (!wallet) {
-        return NextResponse.json({ error: 'Wallet not found' }, { status: 404 })
+        return apiError("Wallet not found", 404)
       }
 
       if (!wallet.seedPhrase) {
-        return NextResponse.json({ error: 'No seed phrase stored for this wallet' }, { status: 400 })
+        return apiError("No seed phrase stored for this wallet", 400)
       }
 
       try {
@@ -236,7 +236,7 @@ export async function PUT(req: Request) {
         })
       } catch (error) {
         console.error('Error decrypting seed phrase:', error)
-        return NextResponse.json({ error: 'Failed to decrypt seed phrase' }, { status: 500 })
+        return apiError("Failed to decrypt seed phrase", 500)
       }
     }
 
@@ -261,9 +261,9 @@ export async function PUT(req: Request) {
       })
     }
 
-    return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+    return apiError("Invalid action", 400)
   } catch (error) {
     console.error('Error updating wallet:', error)
-    return NextResponse.json({ error: 'Failed to update wallet: ' + (error instanceof Error ? error.message : 'Unknown error') }, { status: 500 })
+    return apiSuccess({ error: 'Failed to update wallet: ' + (error instanceof Error ? error.message : 'Unknown error') }, { status: 500 })
   }
 }

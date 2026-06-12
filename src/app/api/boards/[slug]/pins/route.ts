@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -10,7 +10,7 @@ export async function POST(
 ) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const { slug } = await params
@@ -18,19 +18,19 @@ export async function POST(
   try {
     const board = await prisma.bulletinBoard.findUnique({ where: { slug } })
     if (!board) {
-      return NextResponse.json({ error: 'Board not found' }, { status: 404 })
+      return apiError("Board not found", 404)
     }
 
     let body: unknown
     try {
       body = await request.json()
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+      return apiError("Invalid JSON body", 400)
     }
     const { title, content, images, entityType, entityId, entityTitle, entityImage, contactName, contactEmail, contactPhone, category, expiresAt, latitude, longitude } = body as any
 
     if (!content) {
-      return NextResponse.json({ error: 'Content is required' }, { status: 400 })
+      return apiError("Content is required", 400)
     }
 
     const pin = await createPin({
@@ -55,6 +55,6 @@ export async function POST(
     return NextResponse.json(pin, { status: 201 })
   } catch (error) {
     console.error('POST /api/boards/[slug]/pins:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }

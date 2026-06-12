@@ -14,6 +14,7 @@ import type { EventFormData } from '@/components/EventFormFields'
 import { getUserProfileUrl } from '@/lib/utils'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
+import ShareBar from '@/components/ShareBar'
 import EntityActions from '@/components/EntityActions'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import type { Event } from '@/types/event'
@@ -26,13 +27,10 @@ import Skeleton from '@/components/Skeleton'
 import Loading from '@/components/Loading'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
 
 const QRCodeModal = dynamic(() => import('@/components/QRCodeModal').then(mod => mod.QRCodeModal), { ssr: false })
 
-const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
-const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
-const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false })
-const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false })
 
 function EventDetailContent() {
   const params = useParams()

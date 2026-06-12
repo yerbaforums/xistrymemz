@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -9,13 +9,13 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { productId, amount } = await request.json()
 
     if (!productId || !amount || amount <= 0) {
-      return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
+      return apiError("Invalid request", 400)
     }
 
     const product = await prisma.product.findUnique({
@@ -23,11 +23,11 @@ export async function POST(request: Request) {
     })
 
     if (!product) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+      return apiError("Product not found", 404)
     }
 
     if (!product.acceptsRequests) {
-      return NextResponse.json({ error: 'This product does not accept requests' }, { status: 400 })
+      return apiError("This product does not accept requests", 400)
     }
 
     const contribution = await prisma.payment.create({
@@ -66,6 +66,6 @@ export async function POST(request: Request) {
     })
   } catch (error) {
     console.error('Fund product error:', error)
-    return NextResponse.json({ error: 'Failed to process contribution' }, { status: 500 })
+    return apiError("Failed to process contribution", 500)
   }
 }

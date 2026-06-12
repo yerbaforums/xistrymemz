@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -7,18 +7,18 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const body = await req.json()
     const { userId, amount } = body
 
     if (!userId || !amount || amount <= 0) {
-      return NextResponse.json({ error: 'Invalid parameters' }, { status: 400 })
+      return apiError("Invalid parameters", 400)
     }
 
     if (userId === session.user.id) {
-      return NextResponse.json({ error: 'Cannot tip yourself' }, { status: 400 })
+      return apiError("Cannot tip yourself", 400)
     }
 
     const targetUser = await prisma.user.findUnique({
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     })
 
     if (!targetUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      return apiError("User not found", 404)
     }
 
     const sender = await prisma.user.findUnique({
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     })
 
     if (!sender || sender.balance < amount) {
-      return NextResponse.json({ error: 'Insufficient balance' }, { status: 400 })
+      return apiError("Insufficient balance", 400)
     }
 
     await prisma.$transaction([
@@ -55,6 +55,6 @@ export async function POST(req: Request) {
     })
   } catch (error) {
     console.error('Error tipping user:', error)
-    return NextResponse.json({ error: 'Failed to tip user' }, { status: 500 })
+    return apiError("Failed to tip user", 500)
   }
 }

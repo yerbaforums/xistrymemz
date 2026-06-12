@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -8,7 +8,7 @@ export async function GET(request: Request) {
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { searchParams } = new URL(request.url)
@@ -34,6 +34,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
   } catch (error) {
     console.error('GET /api/products/user:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(
@@ -20,7 +20,7 @@ export async function GET(
   })
 
   if (!plan) {
-    return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+    return apiError("Event not found", 404)
   }
 
   const event = plan.events[0]

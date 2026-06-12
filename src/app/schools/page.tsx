@@ -6,6 +6,7 @@ import styles from './page.module.css'
 import { EmptyState } from '@/components/EmptyState'
 import Skeleton from '@/components/Skeleton'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
 
 interface School {
   id: string
@@ -68,7 +69,7 @@ export default function SchoolsPage() {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('all')
   const [contentType, setContentType] = useState('all')
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>('grid')
   const [sort, setSort] = useState('recent')
 
   useEffect(() => {
@@ -199,6 +200,13 @@ export default function SchoolsPage() {
       ) : view === 'schools' ? (
         schools.length === 0 ? (
           <EmptyState icon="🏫" title="No schools found" description="Be the first to create one!" />
+        ) : viewMode === 'map' ? (
+          <div style={{ height: 500, borderRadius: 12, overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+            <MapContainer center={[39.8283, -98.5795]} zoom={4} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              <Popup><strong>Map view for schools coming soon with location data</strong></Popup>
+            </MapContainer>
+          </div>
         ) : (
           <div className={viewMode === 'list' ? styles.list : styles.schoolsGrid}>
             {schools.map(school => (

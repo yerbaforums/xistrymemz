@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -8,14 +8,14 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const body = await request.json()
     const { type, amount, eventId, productId, planId, description, fromAddress, toAddress } = body
 
     if (!amount || amount <= 0) {
-      return NextResponse.json({ error: 'Invalid amount' }, { status: 400 })
+      return apiError("Invalid amount", 400)
     }
 
     const platformFee = calculatePlatformFee(amount)
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Payment error:', error)
-    return NextResponse.json({ error: 'Payment failed' }, { status: 500 })
+    return apiError("Payment failed", 500)
   }
 }
 
@@ -64,7 +64,7 @@ export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { searchParams } = new URL(request.url)
@@ -95,6 +95,6 @@ export async function GET(request: Request) {
     })
   } catch (error) {
     console.error('Get payments error:', error)
-    return NextResponse.json({ error: 'Failed to fetch payments' }, { status: 500 })
+    return apiError("Failed to fetch payments", 500)
   }
 }

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -11,7 +11,7 @@ export async function GET() {
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const links = await prisma.userLink.findMany({
@@ -19,10 +19,10 @@ export async function GET() {
       orderBy: { sortOrder: 'asc' }
     })
 
-    return NextResponse.json({ links })
+    return apiSuccess({ links })
   } catch (error) {
     console.error('Error fetching links:', error)
-    return NextResponse.json({ error: 'Failed to fetch links' }, { status: 500 })
+    return apiError("Failed to fetch links", 500)
   }
 }
 
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const body = await request.json()
@@ -52,9 +52,9 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    return NextResponse.json({ link })
+    return apiSuccess({ link })
   } catch (error) {
     console.error('Error creating link:', error)
-    return NextResponse.json({ error: 'Failed to create link' }, { status: 500 })
+    return apiError("Failed to create link", 500)
   }
 }

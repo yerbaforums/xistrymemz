@@ -10,11 +10,8 @@ import Breadcrumbs from '@/components/Breadcrumbs'
 import Button from '@/components/ui/Button'
 import Loading from '@/components/Loading'
 import { EmptyState } from '@/components/EmptyState'
+import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
 
-const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
-const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
-const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false })
-const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false })
 
 const ENTITY_TYPES = [
   { key: '', label: 'All', icon: '🌐' },

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ posts: enriched, total })
   } catch (error) {
     console.error('Error fetching posts:', error)
-    return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 })
+    return apiError("Failed to fetch posts", 500)
   }
 }
 
@@ -119,14 +119,14 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     let body: unknown
     try {
       body = await request.json()
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+      return apiError("Invalid JSON body", 400)
     }
     const validation = validateBody(postSchema, body)
     if (!validation.success) {
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
     const { content, imageUrl, images, targetUserId, context, parentId, referenceType, referenceId, referenceTitle } = validation.data
 
     if (!content?.trim() && !referenceType && !parentId) {
-      return NextResponse.json({ error: 'Content is required' }, { status: 400 })
+      return apiError("Content is required", 400)
     }
 
     const resolvedImageUrl = imageUrl || (images && images.length > 0 ? images[0] : null)
@@ -215,6 +215,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ post }, { status: 201 })
   } catch (error) {
     console.error('Error creating post:', error)
-    return NextResponse.json({ error: 'Failed to create post' }, { status: 500 })
+    return apiError("Failed to create post", 500)
   }
 }

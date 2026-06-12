@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -16,7 +16,7 @@ export async function POST() {
   try {
     const session = await getServerSession(authOptions)
     if (!session || session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const created = []
@@ -38,6 +38,6 @@ export async function POST() {
     })
   } catch (error) {
     console.error('Error seeding forum categories:', error)
-    return NextResponse.json({ error: 'Failed to seed categories' }, { status: 500 })
+    return apiError("Failed to seed categories", 500)
   }
 }

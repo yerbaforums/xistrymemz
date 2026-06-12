@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     const authorId = searchParams.get('authorId')
 
     if (!entityType || !entityId) {
-      return NextResponse.json({ error: 'Missing entityType or entityId' }, { status: 400 })
+      return apiError("Missing entityType or entityId", 400)
     }
 
     const session = await getServerSession(authOptions)
@@ -50,6 +50,6 @@ export async function GET(request: Request) {
     })
   } catch (error) {
     console.error('Counts error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }

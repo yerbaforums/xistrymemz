@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (body.website) {
-      return NextResponse.json({ success: true });
+      return apiSuccess({ success: true });
     }
 
     const validation = validateBody(contactSchema, body)
@@ -57,7 +57,7 @@ export async function GET() {
     const session = await getServerSession(authOptions)
     
     if (!session || session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const messages = await prisma.contactMessage.findMany({
@@ -65,7 +65,7 @@ export async function GET() {
       take: 100
     })
 
-    return NextResponse.json({ messages })
+    return apiSuccess({ messages })
   } catch (error) {
     console.error('Get messages error:', error)
     return NextResponse.json(

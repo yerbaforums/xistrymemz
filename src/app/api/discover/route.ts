@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { discover } from '@/lib/discover'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
@@ -43,9 +43,9 @@ export async function GET(request: Request) {
 
     const result = await discover({ q, type, lat, lng, radius, intent, hashtag, page, limit })
 
-    return NextResponse.json(result)
+    return apiSuccess(result)
   } catch (error) {
     console.error('GET /api/discover:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }

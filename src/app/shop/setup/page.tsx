@@ -11,6 +11,7 @@ import { EmptyState } from '@/components/EmptyState'
 import Button from '@/components/ui/Button'
 import Skeleton from '@/components/Skeleton'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 interface ShopData {
   shopName: string | null
@@ -331,8 +332,9 @@ export default function SetupShopPage() {
     }
   }
 
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+
   const handleDeleteProduct = async (id: string) => {
-    if (!confirm('Delete this listing?')) return
     try {
       const res = await fetch(`/api/products/${id}`, { method: 'DELETE' })
       if (res.ok) fetchShopData()
@@ -815,6 +817,17 @@ export default function SetupShopPage() {
           </div>
         </div>
       )}
+
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteProduct}
+        title="Delete Listing"
+        message="Delete this listing permanently?"
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -18,13 +18,13 @@ export async function GET(
     })
 
     if (!service) {
-      return NextResponse.json({ error: 'Service not found' }, { status: 404 })
+      return apiError("Service not found", 404)
     }
 
-    return NextResponse.json(service)
+    return apiSuccess(service)
   } catch (error) {
     console.error('Error fetching courier service:', error)
-    return NextResponse.json({ error: 'Failed to fetch service' }, { status: 500 })
+    return apiError("Failed to fetch service", 500)
   }
 }
 
@@ -37,7 +37,7 @@ export async function PUT(
     const { id } = await params
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const service = await prisma.courierService.findUnique({
@@ -45,11 +45,11 @@ export async function PUT(
     })
 
     if (!service) {
-      return NextResponse.json({ error: 'Service not found' }, { status: 404 })
+      return apiError("Service not found", 404)
     }
 
     if (service.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+      return apiError("Access denied", 403)
     }
 
     const body = await request.json()
@@ -78,10 +78,10 @@ export async function PUT(
       }
     })
 
-    return NextResponse.json(updated)
+    return apiSuccess(updated)
   } catch (error) {
     console.error('Error updating courier service:', error)
-    return NextResponse.json({ error: 'Failed to update service' }, { status: 500 })
+    return apiError("Failed to update service", 500)
   }
 }
 
@@ -94,7 +94,7 @@ export async function DELETE(
     const { id } = await params
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const service = await prisma.courierService.findUnique({
@@ -102,18 +102,18 @@ export async function DELETE(
     })
 
     if (!service) {
-      return NextResponse.json({ error: 'Service not found' }, { status: 404 })
+      return apiError("Service not found", 404)
     }
 
     if (service.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+      return apiError("Access denied", 403)
     }
 
     await prisma.courierService.delete({ where: { id } })
 
-    return NextResponse.json({ success: true })
+    return apiSuccess({ success: true })
   } catch (error) {
     console.error('Error deleting courier service:', error)
-    return NextResponse.json({ error: 'Failed to delete service' }, { status: 500 })
+    return apiError("Failed to delete service", 500)
   }
 }

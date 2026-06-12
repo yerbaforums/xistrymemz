@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -84,7 +84,7 @@ export async function GET() {
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiSuccess({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const categories = await prisma.forumCategory.findMany({
@@ -117,7 +117,7 @@ export async function GET() {
       return NextResponse.redirect('/community/forum')
     }
 
-    return NextResponse.json({
+    return apiSuccess({
       categories: categories.map(c => ({
         ...c,
         _count: { posts: c._count?.posts || 0 }
@@ -126,6 +126,6 @@ export async function GET() {
     })
   } catch (error) {
     console.error('Error fetching forum data:', error)
-    return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 })
+    return apiSuccess({ error: 'Failed to fetch data' }, { status: 500 })
   }
 }

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { resetPasswordSchema } from '@/lib/validation'
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     const ip = request.headers.get('x-forwarded-for') || 'unknown'
     if (!checkRateLimit(`reset:${ip}`)) {
-      return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
+      return apiError("Too many requests. Please try again later.", 429)
     }
 
     const resetToken = await prisma.passwordResetToken.findUnique({
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       if (resetToken && resetToken.expiresAt < new Date()) {
         await prisma.passwordResetToken.delete({ where: { id: resetToken.id } })
       }
-      return NextResponse.json({ error: 'Invalid or expired token' }, { status: 400 })
+      return apiError("Invalid or expired token", 400)
     }
 
     const hashedPassword = await bcrypt.hash(password, 10)
@@ -68,6 +68,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, message: 'Password reset successful' })
   } catch (error) {
     console.error('Reset password error:', error)
-    return NextResponse.json({ error: 'An error occurred' }, { status: 500 })
+    return apiError("An error occurred", 500)
   }
 }

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 
@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const where: Prisma.NotificationWhereInput = { userId: session.user.id }
@@ -26,10 +26,10 @@ export async function GET(request: Request) {
       take: 50
     })
 
-    return NextResponse.json(notifications)
+    return apiSuccess(notifications)
   } catch (error) {
     console.error('Error fetching notifications:', error)
-    return NextResponse.json({ error: 'Failed to fetch notifications' }, { status: 500 })
+    return apiError("Failed to fetch notifications", 500)
   }
 }
 
@@ -40,7 +40,7 @@ export async function PUT(request: Request) {
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { searchParams } = new URL(request.url)
@@ -51,12 +51,12 @@ export async function PUT(request: Request) {
         where: { userId: session.user.id, read: false },
         data: { read: true }
       })
-      return NextResponse.json({ message: 'All notifications marked as read' })
+      return apiSuccess({ message: 'All notifications marked as read' })
     }
 
-    return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
+    return apiError("Invalid request", 400)
   } catch (error) {
     console.error('Error updating notifications:', error)
-    return NextResponse.json({ error: 'Failed to update notifications' }, { status: 500 })
+    return apiError("Failed to update notifications", 500)
   }
 }

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: Request, { params }: { params: Promise<{ slug: string }> }) {
@@ -40,7 +40,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
   })
 
   if (!user) {
-    return NextResponse.json({ error: 'Shop not found' }, { status: 404 })
+    return apiError("Shop not found", 404)
   }
 
   const products = await prisma.product.findMany({

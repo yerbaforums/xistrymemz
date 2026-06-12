@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -23,7 +23,7 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
     })
 
     if (!group) {
-      return NextResponse.json({ error: 'Group not found' }, { status: 404 })
+      return apiError("Group not found", 404)
     }
 
     if (group.isPrivate) {
@@ -31,14 +31,14 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
         where: { groupId: params.id, userId: userId || '' }
       })
       if (!isMember && !userId) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+        return apiError("Unauthorized", 403)
       }
     }
 
-    return NextResponse.json(group.groupBuys)
+    return apiSuccess(group.groupBuys)
   } catch (error) {
     console.error('GET /api/groups/[id]/group-buys:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }
 
@@ -48,26 +48,26 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const group = await prisma.group.findUnique({ where: { id: params.id } })
     if (!group) {
-      return NextResponse.json({ error: 'Group not found' }, { status: 404 })
+      return apiError("Group not found", 404)
     }
 
     const isMember = await prisma.groupMember.findFirst({
       where: { groupId: params.id, userId: session.user.id }
     })
     if (!isMember) {
-      return NextResponse.json({ error: 'Must be a member to create group buys' }, { status: 403 })
+      return apiError("Must be a member to create group buys", 403)
     }
 
     const body = await request.json()
     const { title, description, targetPrice, minSupporters, productUrl, productImage } = body
 
     if (!title || !targetPrice || targetPrice <= 0 || !minSupporters || minSupporters < 2) {
-      return NextResponse.json({ error: 'Title, valid target price, and min 2 supporters required' }, { status: 400 })
+      return apiError("Title, valid target price, and min 2 supporters required", 400)
     }
 
     const groupBuy = await prisma.groupBuy.create({
@@ -90,6 +90,6 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
     return NextResponse.json(groupBuy, { status: 201 })
   } catch (error) {
     console.error('POST /api/groups/[id]/group-buys:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }

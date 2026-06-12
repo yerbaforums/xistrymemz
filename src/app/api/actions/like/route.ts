@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -9,17 +9,17 @@ export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { entityType, entityId, liked } = await request.json()
     if (!entityType || !entityId) {
-      return NextResponse.json({ error: 'Missing entityType or entityId' }, { status: 400 })
+      return apiError("Missing entityType or entityId", 400)
     }
 
     const type = entityType.toUpperCase()
     if (!VALID_TYPES.includes(type)) {
-      return NextResponse.json({ error: 'Invalid entity type' }, { status: 400 })
+      return apiError("Invalid entity type", 400)
     }
 
     if (liked) {
@@ -55,6 +55,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ liked, likeCount })
   } catch (error) {
     console.error('Like error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }

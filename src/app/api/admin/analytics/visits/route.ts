@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session || (session.user as { role?: string }).role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+      return apiError("Unauthorized", 403)
     }
 
     const url = new URL(request.url)
@@ -65,6 +65,6 @@ export async function GET(request: Request) {
     })
   } catch (error) {
     console.error('Error fetching visits:', error)
-    return NextResponse.json({ error: 'Failed to fetch visits' }, { status: 500 })
+    return apiError("Failed to fetch visits", 500)
   }
 }

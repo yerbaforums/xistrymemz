@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -21,7 +21,7 @@ export async function GET(
     })
 
     if (!post || !post.isPoll) {
-      return NextResponse.json({ error: 'Poll not found' }, { status: 404 })
+      return apiError("Poll not found", 404)
     }
 
     const totalVotes = post.pollOptions.reduce((sum, opt) => sum + opt.voteCount, 0)
@@ -61,6 +61,6 @@ export async function GET(
     })
   } catch (error) {
     console.error('Error fetching poll:', error)
-    return NextResponse.json({ error: 'Failed to fetch poll' }, { status: 500 })
+    return apiError("Failed to fetch poll", 500)
   }
 }

@@ -17,6 +17,7 @@ import { ComingSoonModal } from '@/components/ComingSoonModal'
 import EntityActions from '@/components/EntityActions'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
+import ShareBar from '@/components/ShareBar'
 import ViewCount from '@/components/ViewCount'
 import { useRecordView } from '@/hooks/useRecordView'
 import Breadcrumbs from '@/components/Breadcrumbs'
@@ -29,14 +30,11 @@ import { hydrateDonationAddresses, serializeDonationAddresses, donationAddresses
 import type { DonationAddr } from '@/types/product'
 import dynamic from 'next/dynamic'
 
-const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
-const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
-const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false })
-const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false })
 import TranslateButton from '@/components/TranslateButton'
 import Skeleton from '@/components/Skeleton'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
+import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
 
 interface Product {
   id: string

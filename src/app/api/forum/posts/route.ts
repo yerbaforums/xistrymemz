@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -39,10 +39,10 @@ export async function GET(request: Request) {
       totalTips: p.totalTips || 0
     }))
 
-    return NextResponse.json(postsWithMeta)
+    return apiSuccess(postsWithMeta)
   } catch (error) {
     console.error('Error fetching forum posts:', error)
-    return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 })
+    return apiError("Failed to fetch posts", 500)
   }
 }
 
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const body = await req.json()
@@ -63,7 +63,7 @@ export async function POST(req: Request) {
     const { title, content, categoryId, isPoll, pollType, pollEndsAt, pollOptions } = validation.data
 
     if (!categoryId) {
-      return NextResponse.json({ error: 'Category is required' }, { status: 400 })
+      return apiError("Category is required", 400)
     }
 
     const post = await prisma.forumPost.create({
@@ -125,9 +125,9 @@ export async function POST(req: Request) {
       })
     }
 
-    return NextResponse.json(post)
+    return apiSuccess(post)
   } catch (error) {
     console.error('Error creating forum post:', error)
-    return NextResponse.json({ error: 'Failed to create post' }, { status: 500 })
+    return apiError("Failed to create post", 500)
   }
 }

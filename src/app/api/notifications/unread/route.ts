@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: Request) {
@@ -8,16 +8,16 @@ export async function GET(request: Request) {
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const unreadCount = await prisma.notification.count({
       where: { userId: session.user.id, read: false }
     })
 
-    return NextResponse.json({ unreadCount })
+    return apiSuccess({ unreadCount })
   } catch (error) {
     console.error('Error fetching unread count:', error)
-    return NextResponse.json({ error: 'Failed to fetch unread count' }, { status: 500 })
+    return apiError("Failed to fetch unread count", 500)
   }
 }

@@ -13,6 +13,7 @@ import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
 import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import { PRODUCT_CONDITIONS, PRODUCT_TYPES } from '@/lib/product-categories'
+import LocationOption from '@/components/LocationOption'
 import type { DonationAddr } from '@/types/product'
 import styles from './page.module.css'
 
@@ -47,6 +48,9 @@ export default function NewProductPage() {
     condition: '',
     location: '',
     locationDetails: '',
+    latitude: null as number | null,
+    longitude: null as number | null,
+    locationMode: 'custom' as 'passport' | 'custom' | 'global',
     isGlobal: false,
     imageUrl: '',
     paymentMethods: [] as string[],
@@ -118,9 +122,11 @@ export default function NewProductPage() {
           type: form.type,
           category: form.category || null,
           condition: form.condition || null,
-          location: form.isGlobal ? 'GLOBAL' : (form.location || null),
+          location: form.locationMode === 'global' ? 'GLOBAL' : (form.location || null),
           locationDetails: form.locationDetails || null,
-          isGlobal: form.isGlobal,
+          latitude: form.latitude,
+          longitude: form.longitude,
+          isGlobal: form.locationMode === 'global',
           imageUrl: form.imageUrl || null,
           paymentMethods: form.paymentMethods.join(','),
           paymentType: settings.enableCheckout && settings.enableWallet ? form.paymentType : 'BOTH',

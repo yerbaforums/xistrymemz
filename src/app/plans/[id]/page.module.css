@@ -822,3 +822,24 @@
     font-size: 0.75rem;
   }
 }
+
+/* Inline style replacement utilities */
+.flex1 { flex: 1; }
+.clickable { cursor: pointer; }
+.mt8 { margin-top: 8px; }
+.mt12 { margin-top: 12px; }
+.mt16 { margin-top: 16px; }
+.mt32 { margin-top: 32px; }
+.my12 { margin: 12px 0; }
+.mb8 { margin-bottom: 8px; }
+.mb16 { margin-bottom: 16px; }
+.small { font-size: 0.85rem; }
+.mutedSmall { color: var(--text-muted); font-size: 0.85rem; }
+.flexRow { display: flex; align-items: center; }
+.flexBetween { display: flex; justify-content: space-between; align-items: center; }
+.flexWrap { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+.gap8 { gap: 8px; }
+.gap12 { gap: 12px; }
+.gap16 { gap: 16px; }
+.mlAuto { margin-left: auto; }
+.textCenter { text-align: center; }

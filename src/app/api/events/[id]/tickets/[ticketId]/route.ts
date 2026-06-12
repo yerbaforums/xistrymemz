@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -10,22 +10,22 @@ export async function PUT(
   const { id, ticketId } = await params
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   try {
     const event = await prisma.event.findUnique({ where: { id } })
-    if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+    if (!event) return apiError("Event not found", 404)
     if (event.organizerId !== session.user.id) {
-      return NextResponse.json({ error: 'Only the organizer can manage tickets' }, { status: 403 })
+      return apiError("Only the organizer can manage tickets", 403)
     }
 
     let body: any
-    try { body = await request.json() } catch { return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 }) }
+    try { body = await request.json() } catch { return apiError("Invalid JSON body", 400) }
     const { action } = body
 
     const ticket = await prisma.eventTicket.findUnique({ where: { id: ticketId } })
-    if (!ticket) return NextResponse.json({ error: 'Ticket not found' }, { status: 404 })
+    if (!ticket) return apiError("Ticket not found", 404)
 
     switch (action) {
       case 'approve':
@@ -53,12 +53,12 @@ export async function PUT(
         })
         break
       default:
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+        return apiError("Invalid action", 400)
     }
 
-    return NextResponse.json({ success: true })
+    return apiSuccess({ success: true })
   } catch (error) {
     console.error('PUT ticket verify error:', error)
-    return NextResponse.json({ error: 'Failed to update ticket' }, { status: 500 })
+    return apiError("Failed to update ticket", 500)
   }
 }

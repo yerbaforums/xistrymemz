@@ -6,6 +6,7 @@ import styles from './page.module.css'
 import { getCryptoIcon, CRYPTO_ICONS } from '@/lib/crypto-icons'
 import { useToast } from '@/context/ToastContext'
 import { EmptyState } from '@/components/EmptyState'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 import Skeleton from '@/components/Skeleton'
 
 function Breadcrumbs() {
@@ -71,6 +72,11 @@ export default function AdminWalletsPage() {
   const [selectAll, setSelectAll] = useState(false)
   const [userWalletSelectAll, setUserWalletSelectAll] = useState(false)
   const [selectedUserWallets, setSelectedUserWallets] = useState<Set<string>>(new Set())
+  const [walletToDelete, setWalletToDelete] = useState<string | null>(null)
+  const [showDeleteWallet, setShowDeleteWallet] = useState(false)
+  const [showReplaceConfirm, setShowReplaceConfirm] = useState(false)
+  const [showBulkConfirm, setShowBulkConfirm] = useState(false)
+  const [showBulkUserConfirm, setShowBulkUserConfirm] = useState(false)
   const [showKeyWarning, setShowKeyWarning] = useState(false)
   const [viewedData, setViewedData] = useState<{type: 'key' | 'seed', data: string} | null>(null)
   const [sortField, setSortField] = useState<SortField>('createdAt')
@@ -138,14 +144,9 @@ export default function AdminWalletsPage() {
     const wallet = wallets.find(w => w.id === walletId)
     if (!wallet) return
 
-    const confirmed = confirm(
-      `Are you sure you want to delete this ${wallet.cryptoName} wallet?\n\n` +
-      `Address: ${wallet.address}\n\n` +
-      `⚠️ WARNING: If this wallet has funds, make sure you have backed up the seed phrase/private key before deleting!\n\n` +
-      `Click OK to delete, or Cancel to keep the wallet.`
-    )
-
-    if (!confirmed) return
+    setWalletToDelete(walletId)
+    setShowDeleteWallet(true)
+    return
 
     setSaving(true)
     try {
@@ -176,9 +177,9 @@ export default function AdminWalletsPage() {
     const coinPrimaryCount = wallets.filter(w => w.cryptoType === wallet.cryptoType && w.isPrimary).length
     
     if (coinPrimaryCount > 0 && !wallet.isPrimary) {
-      if (!confirm(`This coin (${wallet.cryptoType}) already has a primary wallet. Replace it with this one?`)) {
-        return
-      }
+      setWalletToReplace(wallet.id)
+      setShowReplaceConfirm(true)
+      return
     }
     
     setSaving(true)
@@ -288,12 +289,8 @@ export default function AdminWalletsPage() {
   async function deleteSelectedWallets() {
     if (selectedWallets.size === 0) return
 
-    const confirmed = confirm(
-      `Are you sure you want to delete ${selectedWallets.size} wallet(s)?\n\n` +
-      `⚠️ WARNING: If these wallets have funds, make sure you have backed up the seed phrases before deleting!`
-    )
-
-    if (!confirmed) return
+    setShowBulkConfirm(true)
+    return
 
     setSaving(true)
     try {
@@ -319,12 +316,8 @@ export default function AdminWalletsPage() {
   async function deleteSelectedUserWallets() {
     if (selectedUserWallets.size === 0) return
 
-    const confirmed = confirm(
-      `Are you sure you want to delete ${selectedUserWallets.size} user wallet(s)?\n\n` +
-      `This action cannot be undone.`
-    )
-
-    if (!confirmed) return
+    setShowBulkUserConfirm(true)
+    return
 
     setSaving(true)
     try {
@@ -937,6 +930,66 @@ export default function AdminWalletsPage() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={showDeleteWallet}
+        onClose={() => { setShowDeleteWallet(false); setWalletToDelete(null) }}
+        onConfirm={() => {
+          const doDelete = async () => {
+            if (!walletToDelete) return
+            setSaving(true)
+            try {
+              const res = await fetch('/api/admin/wallets', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'delete', walletId: walletToDelete })
+              })
+              if (!res.ok) throw new Error()
+              const data = await res.json()
+              if (data.success) {
+                setWallets(prev => prev.filter(w => w.id !== walletToDelete))
+                success('Wallet deleted')
+              }
+            } catch { error('Failed to delete wallet') }
+            setSaving(false)
+            setShowDeleteWallet(false)
+            setWalletToDelete(null)
+          }
+          doDelete()
+        }}
+        title="Delete Wallet"
+        message="Are you sure? Make sure you have backed up the seed phrase/private key before deleting!"
+        confirmLabel="Delete"
+        variant="danger"
+      />
+      <ConfirmDialog
+        isOpen={showReplaceConfirm}
+        onClose={() => setShowReplaceConfirm(false)}
+        onConfirm={() => setShowReplaceConfirm(false)}
+        title="Replace Primary Wallet"
+        message="This coin already has a primary wallet. Replace it?"
+        confirmLabel="Replace"
+        variant="warning"
+      />
+      <ConfirmDialog
+        isOpen={showBulkConfirm}
+        onClose={() => setShowBulkConfirm(false)}
+        onConfirm={() => setShowBulkConfirm(false)}
+        title="Delete Wallets"
+        message="Are you sure? Make sure you have backed up seed phrases before deleting!"
+        confirmLabel="Delete All"
+        variant="danger"
+      />
+      <ConfirmDialog
+        isOpen={showBulkUserConfirm}
+        onClose={() => setShowBulkUserConfirm(false)}
+        onConfirm={() => setShowBulkUserConfirm(false)}
+        title="Delete User Wallets"
+        message="This action cannot be undone."
+        confirmLabel="Delete All"
+        variant="danger"
+      />
+
     </div>
   )
 }

@@ -23,6 +23,7 @@ import ImageUploader from '@/components/ImageUploader'
 import Skeleton, { SkeletonCard, SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import Button from '@/components/ui/Button'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 const DEBOUNCE_MS = 300
 
@@ -320,7 +321,7 @@ export default function ProductsPage() {
 
   const toggleMyPublish = async (product: Product) => {
     try {
-      const res = await fetch(`/api/products/${product.id}`, {
+      const res = await fetch(`/api/products/${deleteTarget}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ published: !product.published }),
@@ -337,9 +338,8 @@ export default function ProductsPage() {
   }
 
   const deleteMyListing = async (product: Product) => {
-    if (!confirm(`Delete "${product.title}"? This cannot be undone.`)) return
     try {
-      const res = await fetch(`/api/products/${product.id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/products/${deleteTarget}`, { method: 'DELETE' })
       if (res.ok) {
         success('Listing deleted')
         fetchMyProducts()
@@ -720,7 +720,7 @@ export default function ProductsPage() {
                     </div>
                   </div>
                   <div className={styles.myListingActions}>
-                    <Link href={`/products/${product.id}`} className={styles.myListingActionBtn} title="View">👁️</Link>
+                    <Link href={`/products/${deleteTarget}`} className={styles.myListingActionBtn} title="View">👁️</Link>
                     <Button onClick={() => startMyEdit(product)} className={styles.myListingActionBtn} title="Edit">✏️</Button>
                     <Button onClick={() => toggleMyPublish(product)} className={styles.myListingActionBtn} title={product.published ? 'Hide' : 'Publish'}>{product.published ? '👁️‍🗨️' : '✅'}</Button>
                     <Button onClick={() => deleteMyListing(product)} className={styles.myListingActionBtn} title="Delete">🗑️</Button>
@@ -760,6 +760,17 @@ export default function ProductsPage() {
           </div>
         </div>
       )}
+
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteProduct}
+        title="Delete Product"
+        message="Delete this product permanently?"
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   )
 }

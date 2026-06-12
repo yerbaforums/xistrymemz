@@ -1,105 +1,160 @@
-import { NextResponse, NextRequest } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
+export type { NextRequest }
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 import type { Session } from 'next-auth'
-import type { z } from 'zod'
 
 export interface ApiResponse<T = unknown> {
   success: boolean
   data?: T
   error?: string
-  metadata?: {
-    total?: number
-    page?: number
-    limit?: number
-    [key: string]: unknown
+  errors?: Record<string, string[]>
+}
+
+export function apiSuccess<T>(data: T, status = 200) {
+  return NextResponse.json({ success: true, data }, { status })
+}
+
+export function apiError(error: string, status = 400) {
+  return NextResponse.json({ success: false, error }, { status })
+}
+
+export function apiErrors(errors: Record<string, string[]>, status = 400) {
+  return NextResponse.json({ success: false, error: 'Validation failed', errors }, { status })
+}
+
+export function apiUnauthorized(msg = 'Unauthorized') {
+  return apiError(msg, 401)
+}
+
+export function apiNotFound(msg = 'Not found') {
+  return apiError(msg, 404)
+}
+
+export function apiServerError(error: unknown) {
+  console.error('API Error:', error)
+  return apiError('Internal server error', 500)
+}
+
+export async function getAuthSession(): Promise<Session | null> {
+  return getServerSession(authOptions)
+}
+
+export async function requireAuth(): Promise<{ session: Session; userId: string }> {
+  const session = await getAuthSession()
+  if (!session?.user?.id) throw new AuthError()
+  return { session, userId: session.user.id }
+}
+
+export async function requireAdmin(): Promise<{ session: Session; userId: string }> {
+  const { session, userId } = await requireAuth()
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
+  if (user?.role !== 'ADMIN') throw new AuthError('Admin access required')
+  return { session, userId }
+}
+
+export class AuthError extends Error {
+  status = 401
+  constructor(msg = 'Unauthorized') { super(msg) }
+}
+
+export class NotFoundError extends Error {
+  status = 404
+  constructor(msg = 'Not found') { super(msg) }
+}
+
+export class ValidationError extends Error {
+  status = 400
+  errors: Record<string, string[]>
+  constructor(errors: Record<string, string[]>) {
+    super('Validation failed')
+    this.errors = errors
   }
 }
 
-export function apiSuccess<T>(data: T, status = 200, metadata?: ApiResponse['metadata']): NextResponse {
-  const body: ApiResponse<T> = { success: true, data }
-  if (metadata) body.metadata = metadata
-  return NextResponse.json(body, { status })
-}
-
-export function apiError(message: string, status = 400): NextResponse {
-  return NextResponse.json({ success: false, error: message } satisfies ApiResponse, { status })
-}
-
-export function apiPaginated<T>(data: T[], total: number, page: number, limit: number): NextResponse {
-  return apiSuccess(data, 200, { total, page, limit })
-}
-
-function getSessionOrError(session: Session | null): { error: NextResponse } | null {
-  if (!session?.user?.id) {
-    return { error: apiError('Unauthorized', 401) }
-  }
-  return null
-}
-
-export function requireAdmin(session: Session | null): NextResponse | null {
-  if (!session?.user?.id) {
-    return apiError('Unauthorized', 401)
-  }
-  if (session.user.role !== 'ADMIN') {
-    return apiError('Forbidden', 403)
-  }
-  return null
-}
-
-interface HandlerContext<T = Record<string, string>> {
-  params: T
-  searchParams: URLSearchParams
-}
-
-type AuthenticatedHandler<T = Record<string, string>> = (
-  req: NextRequest,
-  session: Session,
-  context: HandlerContext<T>
-) => Promise<NextResponse>
-
-export function withAuth<T extends Record<string, string> = Record<string, string>>(
-  handler: AuthenticatedHandler<T>
-): (req: NextRequest, context: { params: Promise<T> }) => Promise<NextResponse> {
-  return async (req: NextRequest, context: { params: Promise<T> }) => {
-    const session = await getServerSession(authOptions)
-    const err = getSessionOrError(session)
-    if (err) return err.error
-
-    const searchParams = req.nextUrl.searchParams
-    const params = await context.params
-    return handler(req, session!, { params, searchParams })
+export function withAuth<T>(
+  handler: (req: Request, session: Session, context: { params: Record<string, string>; searchParams: Record<string, string> }) => Promise<NextResponse<T>>
+) {
+  return async (req: Request, context: { params: Promise<Record<string, string>> } | Record<string, string>) => {
+    try {
+      const session = await getAuthSession()
+      if (!session?.user?.id) return apiUnauthorized()
+      const params = context && 'then' in context ? await context : (context || {})
+      const url = new URL(req.url)
+      const searchParams = Object.fromEntries(url.searchParams)
+      return handler(req, session, { params: params as Record<string, string>, searchParams })
+    } catch (err) {
+      return apiServerError(err)
+    }
   }
 }
-
-type ValidatedHandler<T> = (
-  req: NextRequest,
-  session: Session,
-  data: T
-) => Promise<NextResponse>
 
 export function withValidation<T>(
-  schema: z.ZodSchema<T>,
-  handler: ValidatedHandler<T>
-): (req: NextRequest) => Promise<NextResponse> {
-  return async (req: NextRequest) => {
-    const session = await getServerSession(authOptions)
-    const err = getSessionOrError(session)
-    if (err) return err.error
-
-    let body: unknown
+  schema: { parse: (data: unknown) => T },
+  handler: (data: T, req: Request, session: Session) => Promise<NextResponse<unknown>>
+) {
+  return async (req: Request, context?: unknown) => {
     try {
-      body = await req.json()
-    } catch {
-      return apiError('Invalid JSON body', 400)
+      const session = await getAuthSession()
+      if (!session?.user?.id) return apiUnauthorized()
+      const body = await req.json()
+      const parsed = schema.parse(body)
+      return handler(parsed, req, session)
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'issues' in err) {
+        const issues = (err as { issues: { path: (string | number)[]; message: string }[] }).issues
+        const errors: Record<string, string[]> = {}
+        for (const issue of issues) {
+          const key = issue.path.join('.')
+          if (!errors[key]) errors[key] = []
+          errors[key].push(issue.message)
+        }
+        return apiErrors(errors)
+      }
+      return apiServerError(err)
     }
-
-    const result = schema.safeParse(body)
-    if (!result.success) {
-      const messages = result.error.issues.map(i => i.message).join(', ')
-      return apiError(messages, 400)
-    }
-
-    return handler(req, session!, result.data)
   }
+}
+
+export async function handleApi<T>(fn: () => Promise<T>) {
+  try {
+    const result = await fn()
+    if (result === undefined || result === null) return apiNotFound()
+    return apiSuccess(result)
+  } catch (err) {
+    if (err instanceof AuthError) return apiUnauthorized(err.message)
+    if (err instanceof NotFoundError) return apiNotFound(err.message)
+    if (err instanceof ValidationError) return apiErrors(err.errors)
+    return apiServerError(err)
+  }
+}
+
+export async function apiGet<T>(url: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(url, { method: 'GET', ...options })
+  const body: ApiResponse<T> = await res.json()
+  if (!body.success) throw new Error(body.error || 'Request failed')
+  return body.data as T
+}
+
+export async function apiPost<T>(url: string, data?: unknown): Promise<T> {
+  const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: data ? JSON.stringify(data) : undefined })
+  const body: ApiResponse<T> = await res.json()
+  if (!body.success) throw new Error(body.error || 'Request failed')
+  return body.data as T
+}
+
+export async function apiPut<T>(url: string, data?: unknown): Promise<T> {
+  const res = await fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: data ? JSON.stringify(data) : undefined })
+  const body: ApiResponse<T> = await res.json()
+  if (!body.success) throw new Error(body.error || 'Request failed')
+  return body.data as T
+}
+
+export async function apiDelete<T>(url: string): Promise<T> {
+  const res = await fetch(url, { method: 'DELETE' })
+  const body: ApiResponse<T> = await res.json()
+  if (!body.success) throw new Error(body.error || 'Request failed')
+  return body.data as T
 }

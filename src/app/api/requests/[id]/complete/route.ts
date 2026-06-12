@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -10,7 +10,7 @@ export async function POST(
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const { id } = await params
@@ -28,7 +28,7 @@ export async function POST(
   })
 
   if (!req) {
-    return NextResponse.json({ error: 'Request not found or already processed' }, { status: 404 })
+    return apiError("Request not found or already processed", 404)
   }
 
   const isOwner = req.userId === session.user.id
@@ -36,7 +36,7 @@ export async function POST(
   const isAdmin = userRole === 'ADMIN'
 
   if (!isOwner && !isAdmin) {
-    return NextResponse.json({ error: 'Only request owner can mark as purchased' }, { status: 403 })
+    return apiError("Only request owner can mark as purchased", 403)
   }
 
   const updatedRequest = await prisma.request.update({
@@ -76,5 +76,5 @@ export async function POST(
     }
   })
 
-  return NextResponse.json(updatedRequest)
+  return apiSuccess(updatedRequest)
 }

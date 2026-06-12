@@ -1959,6 +1959,10 @@
   background: color-mix(in srgb, var(--accent-primary) 5%, transparent);
 }
 
+.resumeBanner {
+  border-left: 3px solid var(--accent-primary);
+}
+
 .collapsibleSection {
   margin-top: 24px;
   border: 1px solid var(--border-color);
@@ -1983,3 +1987,28 @@
 .collapsibleSummary:hover {
   color: var(--accent-primary);
 }
+
+/* Inline style utilities */
+.mt8 { margin-top: 8px; }
+.mt12 { margin-top: 12px; }
+.mt16 { margin-top: 16px; }
+.mt20 { margin-top: 20px; }
+.mb8 { margin-bottom: 8px; }
+.mb12 { margin-bottom: 12px; }
+.mb16 { margin-bottom: 16px; }
+.flexRow { display: flex; align-items: center; }
+.flex1 { flex: 1; }
+.clickable { cursor: pointer; }
+.gap8 { gap: 8px; }
+.gap12 { gap: 12px; }
+.small { font-size: 0.85rem; }
+.textMuted { color: var(--text-muted); }
+
+.mt10 { margin-top: 10px; }
+.mt24 { margin-top: 24px; }
+.mt32 { margin-top: 32px; }
+.mb20 { margin-bottom: 20px; }
+.mb24 { margin-bottom: 24px; }
+.noUnderline { text-decoration: none; }
+.inlineFlex { display: inline-flex; align-items: center; }
+.flexWrap { display: flex; flex-wrap: wrap; }

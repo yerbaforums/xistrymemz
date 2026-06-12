@@ -5,11 +5,8 @@ import { useTranslations } from 'next-intl'
 import dynamic from 'next/dynamic'
 import styles from './HomeMap.module.css'
 import { useTheme } from '@/context/ThemeContext'
+import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
 
-const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
-const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
-const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false })
-const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false })
 
 const DARK_TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
 const LIGHT_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'

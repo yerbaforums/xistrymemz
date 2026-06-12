@@ -10,6 +10,7 @@ import ImageUploader from '@/components/ImageUploader'
 import styles from './shop.module.css'
 import Loading from '@/components/Loading'
 import Skeleton from '@/components/Skeleton'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 interface ShopData {
   shopName: string | null
@@ -20,6 +21,8 @@ interface ShopData {
   name: string | null
 }
 
+type DeleteAction = 'unpublish' | 'delete'
+
 export default function ShopDashboard() {
   const { success, error } = useToast()
   const router = useRouter()
@@ -28,6 +31,7 @@ export default function ShopDashboard() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [editing, setEditing] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<DeleteAction | null>(null)
   const [form, setForm] = useState({
     shopName: '', shopAbout: '', shopImage: '', shopImages: [] as string[],
     shopSlug: '', email: '', name: ''
@@ -82,17 +86,14 @@ export default function ShopDashboard() {
   }
 
   const handleUnpublish = async () => {
-    if (!confirm('Unpublish your shop?')) return
     const res = await fetch('/api/shop?action=unpublish', { method: 'DELETE' })
     if (res.ok) { success('Shop unpublished'); fetchShop() }
     else error('Failed')
   }
 
   const handleDelete = async () => {
-    if (!confirm('Permanently delete your shop?')) return
-    if (!confirm('Are you sure?')) return
     const res = await fetch('/api/shop?action=delete', { method: 'DELETE' })
-    if (res.ok) { success('Shop deleted'); fetchShop() }
+    if (res.ok) { success('Shop deleted'); setDeleteTarget(null); fetchShop() }
     else error('Failed')
   }
 
@@ -159,8 +160,8 @@ export default function ShopDashboard() {
               <h3>Danger Zone</h3>
               <p>These actions affect your entire shop and all its listings.</p>
               <div className={styles.dangerActions}>
-                <button onClick={handleUnpublish} className={styles.unpublishBtn}>Unpublish Shop</button>
-                <button onClick={handleDelete} className={styles.deleteBtn}>Delete Shop</button>
+                <button onClick={() => setDeleteTarget('unpublish')} className={styles.unpublishBtn}>Unpublish Shop</button>
+                <button onClick={() => setDeleteTarget('delete')} className={styles.deleteBtn}>Delete Shop</button>
               </div>
             </div>
           )}
@@ -209,6 +210,25 @@ export default function ShopDashboard() {
           )}
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={deleteTarget === 'unpublish'}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleUnpublish}
+        title="Unpublish Shop"
+        message="Your shop will no longer appear in the directory. All products are preserved."
+        confirmLabel="Unpublish"
+        variant="warning"
+      />
+      <ConfirmDialog
+        isOpen={deleteTarget === 'delete'}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        title="Delete Shop"
+        message="This permanently removes your shop name, description, and image. Your products will remain but will no longer be linked to a shop. This cannot be undone."
+        confirmLabel="Delete Shop"
+        variant="danger"
+      />
     </div>
   )
 }

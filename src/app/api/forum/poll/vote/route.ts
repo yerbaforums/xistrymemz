@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -8,14 +8,14 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     let body
     try {
       body = await req.json()
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+      return apiError("Invalid JSON body", 400)
     }
 
     const validation = validateBody(pollVoteSchema, body)
@@ -32,12 +32,12 @@ export async function POST(req: Request) {
     })
 
     if (!post || !post.isPoll) {
-      return NextResponse.json({ error: 'Poll not found' }, { status: 404 })
+      return apiError("Poll not found", 404)
     }
 
     const validOption = post.pollOptions.find(o => o.id === optionId)
     if (!validOption) {
-      return NextResponse.json({ error: 'Invalid option' }, { status: 400 })
+      return apiError("Invalid option", 400)
     }
 
     if (post.pollType === 'single') {
@@ -81,7 +81,7 @@ export async function POST(req: Request) {
       })
 
       if (existingVote) {
-        return NextResponse.json({ error: 'Already voted for this option' }, { status: 400 })
+        return apiError("Already voted for this option", 400)
       }
 
       await prisma.$transaction([
@@ -103,7 +103,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, pollOptions })
   } catch (error) {
     console.error('Error voting on poll:', error)
-    return NextResponse.json({ error: 'Failed to vote' }, { status: 500 })
+    return apiError("Failed to vote", 500)
   }
 }
 
@@ -111,14 +111,14 @@ export async function DELETE(req: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     let body
     try {
       body = await req.json()
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+      return apiError("Invalid JSON body", 400)
     }
 
     const validation = validateBody(pollVoteSchema, body)
@@ -134,7 +134,7 @@ export async function DELETE(req: Request) {
     })
 
     if (!existingVote) {
-      return NextResponse.json({ error: 'Vote not found' }, { status: 404 })
+      return apiError("Vote not found", 404)
     }
 
     await prisma.$transaction([
@@ -147,9 +147,9 @@ export async function DELETE(req: Request) {
       })
     ])
 
-    return NextResponse.json({ success: true })
+    return apiSuccess({ success: true })
   } catch (error) {
     console.error('Error removing vote:', error)
-    return NextResponse.json({ error: 'Failed to remove vote' }, { status: 500 })
+    return apiError("Failed to remove vote", 500)
   }
 }

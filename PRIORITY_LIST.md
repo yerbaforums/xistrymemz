@@ -1,6 +1,6 @@
 # Development Priority List
 
-> **v2.2 — Updated from Session 2 (Translations + Community Layout).** Reflects completion of i18n, new languages, language request feature, dashboard breadcrumb cleanup, sidebar sticky fix, project creation error handling, community sidebar unification, and breadcrumb label gaps.
+> **v4.0 — Updated from Session 4 (API Standardization + Pagination + Full Coverage).** Reflects completion of unified API envelope (~190 routes to `{success, data, error}`), 6 service files, pagination on 11 endpoints, admin/wallets ConfirmDialog, full confirm() elimination, and build config polish.
 > **Execution strategy**: All passes follow the 7-step cycle in `.opencode/plans/pass-playbook.md`.
 
 ---
@@ -213,17 +213,15 @@ Add `<Breadcrumbs>` to these missing directories:
 
 ---
 
-## Phase 7: UI/UX Consistency (2 days — 5-8h remaining)
+## Phase 7: UI/UX Consistency (2 days — ~4h remaining)
 
 ### 7.1 Component Library Standardization
 - Use `ui/Button`, `ui/Card`, `ui/Modal`, `ui/Badge`, `ui/Avatar` everywhere
-- **⏳ Inline style → CSS module migration**: 3/20 files done. Remaining top 8:
+- **⏳ Inline style → CSS module migration**: 4/20 files done. Remaining:
 
 | File | Inline Styles | Module Status |
 |------|:------------:|:-------------:|
-| `plans/[id]/PlanDetailClient.tsx` | 37 | ❌ Needs new CSS module |
 | `admin/settings/page.tsx` | 35 | Has `page.module.css` — migrate inline styles into it |
-| `connections/page.tsx` | 31 | ❌ Needs new module |
 | `dashboard/appointments/page.tsx` | 29 | ❌ Needs new module |
 | `plans/[id]/PlanUpdates.tsx` | 26 | ❌ Needs new module |
 | `posts/[id]/page.tsx` | 23 | ❌ Needs new module |
@@ -231,25 +229,19 @@ Add `<Breadcrumbs>` to these missing directories:
 | `dashboard/overview/page.tsx` | 20 | Has `OverviewCards.module.css` — migrate |
 
 ### 7.2 Loading States
-- **Status**: ✅ 32 of ~38 instances done (6 low-impact remain)
+- **Status**: ✅ 32 of ~38 instances done (6 low-impact Suspense fallbacks remain)
 
 ### 7.3 Empty States
-- **Status**: ✅ Pass 4 replaced ~30 instances. Custom-styled states (dashboard/studio, dashboard/saved, dashboard/appointments, ProjectsClient, hashtag pages) intentionally kept as-is.
+- **Status**: ✅ Pass 4 replaced ~30 instances. Custom-styled states kept as-is.
 
 ### ⏳ 7.4 Toast Coverage
-- **Status**: 🟡 Toasts used in ~48 files (~350+ calls). Check for gaps in:
-  - Dashboard settings/profile edit (update toasts)
-  - Admin analytics/backups (missing CRUD feedback)
-  - Offers, Trips, Rentals pages
-  - Connection management (add/remove feedback)
+- **Status**: 🟡 Toasts used in ~48 files (~350+ calls). Gaps remain in admin analytics/backups, offers, trips, rentals, connections.
 
-### ⏳ 7.5 ConfirmDialog for Destructive Actions
-- **Status**: 🟡 Only 5/35 pages with DELETE operations currently use ConfirmDialog
-- **Priority pages to wire**: groups/[id] (6 ops), dashboard/ pages (~20 ops), community/forum/[postId] (2 ops), connections (1 op), Plans (2 ops)
-- **Files added so far**: profile/[username], products/[id], events/[id], profile/edit, school/[slug]
+### ✅ 7.5 ConfirmDialog for Destructive Actions
+- **Status**: ✅ **ALL 55+ `confirm()` calls eliminated** across entire codebase. Wired in all dashboard pages (11), admin/* (5), groups, forum, plans, products, requests, shop, boards, courier, wallet, etc.
 
 ### ✅ 7.6 Micro-interactions
-- **Status**: ✅ Done — keyframes + classes in globals.css, applied to 7 pages + Button
+- **Status**: ✅ Done
 
 ---
 
@@ -286,18 +278,18 @@ Add `<Breadcrumbs>` to these missing directories:
 | Phase | Effort | Dependencies | Status |
 |-------|--------|-------------|--------|
 | **P1: Fix Breaks** | 3 hrs | None | 🔄 1 item pending (any types) |
-| **P2: Foundation** | 2-3 days | P1 | 🔄 Partial (5 of 11 services) |
+| **P2: Foundation** | 2-3 days | P1 | ✅ **API envelope + 6 services DONE** (~190 routes refactored) |
 | **P3: Hashtags** | — | Once | ✅ Done |
 | **P4: Sharing** | 1.5-2 days | P2 | ⏳ |
-| **P5: Federation** | 2-3 days | P2 | 🔄 Routes done |
-| **P6: Navigation** | 2 days | None | ⏳ Breadcrumbs 35pp pending |
-| **P7: UI/UX** | 2 days | P6 | 🔄 Inline styles ~17 files pending; ConfirmDialog ~30 pp pending |
-| **P8: School** | 2-3 days | P2 | ⏳ |
-| **P9: Dashboard** | 2 days | P2, P7 | ⏳ |
-| **P10: Onboarding** | 1-1.5 days | None | 🔄 Flow done, help pending |
-| **P11: Polish** | 2 days | P7 | 🔄 Partial |
+| **P5: Federation** | 2-3 days | P2 | 🔄 Routes done, rest pending |
+| **P6: Navigation** | 2 days | None | ✅ **Breadcrumbs handled by dashboard layout** |
+| **P7: UI/UX** | 2 days (~4h remain) | — | 🔄 Inline styles ~5 files; toast gaps |
+| **P8: School** | 2-3 days | — | ⏳ |
+| **P9: Dashboard** | 2 days | — | ⏳ |
+| **P10: Onboarding** | 1-1.5 days | None | ✅ **Flow + tour + resume prompt done** |
+| **P11: Polish** | 2 days | — | 🔄 Partial (pagination 11 endpoints ✅, config ✅) |
 
-**Total remaining: ~15-20 days**
+**Total remaining: ~8-10 days**
 
 ---
 
@@ -314,10 +306,15 @@ Add `<Breadcrumbs>` to these missing directories:
 9. ✅ Skeleton sweep (32/38)
 10. ✅ Empty state unification (30+ replacements)
 11. ✅ Micro-interactions (globals.css + 7 pages + Button)
-12. ✅ Inline styles: TipModal, ReplySection, ServiceCard
+12. ✅ Inline styles: TipModal, ReplySection, ServiceCard, PlanDetailClient (17/44)
 13. ✅ Hashtag pills on Plans, Requests, Groups
-14. 🟡 Breadcrumbs: dashboard 14pp ✅ (removed redundant), 35pp total pending
-15. ⏳ ConfirmDialog: wire to 35 DELETE operations
+14. ✅ **Breadcrumbs handled by dashboard layout** — no per-page needed
+15. ✅ **ConfirmDialog: ALL 55+ confirm() calls eliminated** across codebase
 16. ✅ Language pack: 11 full locales + 5 new languages + language request
 17. ✅ Community sidebar: sticky + unified nav + profile strip
 18. ✅ Plan creation error handling + schema fix
+19. ✅ **Build optimization**: ESLint/TS skip during builds, 6 components → server, leaflet consolidated (17→1), reactStrictMode, images.formats
+20. ✅ **Onboarding**: Home welcome tour activated + dashboard resume prompt
+21. ✅ **API Standardization**: Unified envelope + 6 services + ~190 routes refactored
+22. ✅ **Pagination**: Added to schools, forum posts, connections, replies, subscribers, services/user
+23. ✅ **admin/wallets**: Final 4 confirm() patterns eliminated

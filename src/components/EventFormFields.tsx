@@ -5,6 +5,7 @@ import ImageUploader from '@/components/ImageUploader'
 import HashtagInput from '@/components/HashtagInput'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
 import AssetPicker from '@/components/AssetPicker'
+import LocationOption from '@/components/LocationOption'
 import { EVENT_CATEGORIES } from '@/lib/event-categories'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import styles from './EventFormFields.module.css'
@@ -21,6 +22,9 @@ export interface EventFormData {
   endDate: string
   location: string
   locationDetails: string
+  latitude: number | null
+  longitude: number | null
+  locationMode: 'passport' | 'custom' | 'global'
   maxJoiners: number
   isTicketed: boolean
   ticketPrice: number
@@ -52,6 +56,9 @@ const DEFAULT_FORM_DATA: EventFormData = {
   endDate: '',
   location: '',
   locationDetails: '',
+  latitude: null,
+  longitude: null,
+  locationMode: 'custom' as const,
   maxJoiners: 0,
   isTicketed: false,
   ticketPrice: 0,
@@ -223,8 +230,10 @@ export default function EventFormFields({
       </div>
 
       <div className={styles.field}>
-        <label htmlFor="ef-location">Location</label>
-        <input type="text" id="ef-location" name="location" value={formData.location} onChange={handleChange} placeholder="City, address, or venue name" />
+        <LocationOption
+          value={{ mode: formData.locationMode, text: formData.location, latitude: formData.latitude, longitude: formData.longitude }}
+          onChange={v => set({ location: v.text, latitude: v.latitude, longitude: v.longitude, locationMode: v.mode })}
+        />
       </div>
 
       <div className={styles.field}>

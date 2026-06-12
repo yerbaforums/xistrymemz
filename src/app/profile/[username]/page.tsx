@@ -20,6 +20,8 @@ import LinkPreview from '@/components/LinkPreview'
 import Loading from '@/components/Loading'
 import MentionInput from '@/components/MentionInput'
 import ImageUploader from '@/components/ImageUploader'
+import FollowButton from '@/components/FollowButton'
+import ShareBar from '@/components/ShareBar'
 import EntityActions from '@/components/EntityActions'
 import SharedItemCard from '@/components/SharedItemCard'
 import ReplySection from '@/components/ReplySection'
@@ -31,11 +33,8 @@ import Button from '@/components/ui/Button'
 import { EmptyState } from '@/components/EmptyState'
 import Skeleton from '@/components/Skeleton'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
 
-const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
-const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
-const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false })
-const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false })
 
 interface UserLink {
   id: string
@@ -96,6 +95,8 @@ interface ProfileUser {
   postCount: number
   productCount: number
   connectionCount: number
+  followerCount: number
+  followingCount: number
   inviteCount: number
   isConnected: boolean
   hasPendingRequest: boolean
@@ -117,6 +118,7 @@ interface ProfileUser {
   badges?: Badge[]
   lookingForCollaborators?: boolean
   lastActiveAt?: string | null
+  federatedUrl: string | null
 }
 
 interface Badge {
@@ -919,6 +921,14 @@ export default function ProfilePage() {
               </div>
               <div className={styles.stat}>
                 <span className={styles.statValue}>{user.inviteCount ?? 0}</span>
+              <div class="stat">
+                <span class="statValue">{user.followerCount}</span>
+                <span class="statLabel">Followers</span>
+              </div>
+              <div class="stat">
+                <span class="statValue">{user.followingCount}</span>
+                <span class="statLabel">Following</span>
+              </div>
                 <span className={styles.statLabel}>Invited</span>
               </div>
               {user.volunteerCount !== undefined && user.volunteerCount > 0 && (
@@ -991,6 +1001,8 @@ export default function ProfilePage() {
                 >
                   📹 Video Chat
                 </Button>
+
+                <FollowButton userId={user.id} className={styles.followBtn} />
 
                 {user.isConnected ? (
                   <Button 

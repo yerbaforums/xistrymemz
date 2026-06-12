@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -75,21 +75,21 @@ export async function GET(request: Request) {
     const id = searchParams.get('id')
 
     if (!type || !id) {
-      return NextResponse.json({ items: [] })
+      return apiSuccess({ items: [] })
     }
 
     const items = await getRelatedEntitiesData(type as EntityType, id)
-    return NextResponse.json({ items })
+    return apiSuccess({ items })
   } catch (error) {
     console.error('Error fetching related items:', error)
-    return NextResponse.json({ items: [] })
+    return apiSuccess({ items: [] })
   }
 }
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   try {
@@ -157,7 +157,7 @@ export async function POST(request: Request) {
 export async function DELETE(request: Request) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   try {
@@ -196,7 +196,7 @@ export async function DELETE(request: Request) {
       targetId,
     )
 
-    return NextResponse.json({ success: true })
+    return apiSuccess({ success: true })
   } catch (error) {
     console.error('Error removing backlink:', error)
     return NextResponse.json(

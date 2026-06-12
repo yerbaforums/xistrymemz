@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -12,7 +12,7 @@ export async function POST(
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     let body: { role?: string } = {}
@@ -34,15 +34,15 @@ export async function POST(
     })
 
     if (!event) {
-      return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+      return apiError("Event not found", 404)
     }
 
     if (event.eventDate && new Date(event.eventDate) < new Date()) {
-      return NextResponse.json({ error: 'Event has already occurred' }, { status: 400 })
+      return apiError("Event has already occurred", 400)
     }
 
     if (event.maxJoiners > 0 && event._count.eventJoiners >= event.maxJoiners) {
-      return NextResponse.json({ error: 'Event is full' }, { status: 400 })
+      return apiError("Event is full", 400)
     }
 
     const existing = await prisma.eventJoiner.findUnique({
@@ -55,7 +55,7 @@ export async function POST(
     })
 
     if (existing) {
-      return NextResponse.json({ error: 'Already joined' }, { status: 400 })
+      return apiError("Already joined", 400)
     }
 
     await prisma.eventJoiner.create({
@@ -69,7 +69,7 @@ export async function POST(
     return NextResponse.json({ success: true, role })
   } catch (error) {
     console.error('POST /api/events/[id]/join:', error)
-    return NextResponse.json({ error: 'Failed to join event' }, { status: 500 })
+    return apiError("Failed to join event", 500)
   }
 }
 
@@ -82,7 +82,7 @@ export async function DELETE(
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     await prisma.eventJoiner.deleteMany({
@@ -92,9 +92,9 @@ export async function DELETE(
       }
     })
 
-    return NextResponse.json({ success: true })
+    return apiSuccess({ success: true })
   } catch (error) {
     console.error('DELETE /api/events/[id]/join:', error)
-    return NextResponse.json({ error: 'Failed to leave event' }, { status: 500 })
+    return apiError("Failed to leave event", 500)
   }
 }

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 export async function GET() {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   try {
@@ -15,16 +15,16 @@ export async function GET() {
       include: { hashtag: true },
       orderBy: { createdAt: 'desc' },
     })
-    return NextResponse.json(follows.map(f => f.hashtag))
+    return apiSuccess(follows.map(f => f.hashtag))
   } catch {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   try {
@@ -48,12 +48,12 @@ export async function POST(request: Request) {
     }
 
     if (!tag || typeof tag !== 'string') {
-      return NextResponse.json({ error: 'Missing or invalid tag' }, { status: 400 })
+      return apiError("Missing or invalid tag", 400)
     }
 
     const hashtag = await prisma.hashtag.findUnique({ where: { tag: tag.toLowerCase() } })
     if (!hashtag) {
-      return NextResponse.json({ error: 'Hashtag not found' }, { status: 404 })
+      return apiError("Hashtag not found", 404)
     }
 
     const existing = await prisma.userHashtagFollow.findUnique({
@@ -61,42 +61,42 @@ export async function POST(request: Request) {
     })
 
     if (existing) {
-      return NextResponse.json({ message: 'Already following' })
+      return apiSuccess({ message: 'Already following' })
     }
 
     await prisma.userHashtagFollow.create({
       data: { userId: session.user.id, hashtagId: hashtag.id },
     })
 
-    return NextResponse.json({ success: true })
+    return apiSuccess({ success: true })
   } catch {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }
 
 export async function DELETE(request: Request) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   try {
     const { tag } = await request.json()
     if (!tag || typeof tag !== 'string') {
-      return NextResponse.json({ error: 'Missing or invalid tag' }, { status: 400 })
+      return apiError("Missing or invalid tag", 400)
     }
 
     const hashtag = await prisma.hashtag.findUnique({ where: { tag: tag.toLowerCase() } })
     if (!hashtag) {
-      return NextResponse.json({ error: 'Hashtag not found' }, { status: 404 })
+      return apiError("Hashtag not found", 404)
     }
 
     await prisma.userHashtagFollow.deleteMany({
       where: { userId: session.user.id, hashtagId: hashtag.id },
     })
 
-    return NextResponse.json({ success: true })
+    return apiSuccess({ success: true })
   } catch {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }

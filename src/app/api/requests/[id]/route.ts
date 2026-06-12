@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -32,13 +32,13 @@ export async function GET(
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { id } = await params
     const access = await canAccessRequest(session.user.id, (session.user as { role?: string }).role || 'USER', id)
     if (!access || !access.hasAccess) {
-      return NextResponse.json({ error: 'Request not found' }, { status: 404 })
+      return apiError("Request not found", 404)
     }
 
     const req = await prisma.request.findUnique({
@@ -76,13 +76,13 @@ export async function GET(
     })
 
     if (!req) {
-      return NextResponse.json({ error: 'Request not found' }, { status: 404 })
+      return apiError("Request not found", 404)
     }
 
-    return NextResponse.json(req)
+    return apiSuccess(req)
   } catch (error) {
     console.error('GET /api/requests/[id]:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }
 
@@ -93,25 +93,25 @@ export async function PUT(
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { id } = await params
     const access = await canAccessRequest(session.user.id, (session.user as { role?: string }).role || 'USER', id)
     if (!access || !(access.isOwner || access.isPlanOwner || access.isPlanEditor || access.isAdmin)) {
-      return NextResponse.json({ error: 'Request not found or unauthorized' }, { status: 404 })
+      return apiError("Request not found or unauthorized", 404)
     }
 
     let parsedBody: unknown
     try {
       parsedBody = await request.json()
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+      return apiError("Invalid JSON body", 400)
     }
     const body: any = parsedBody
     const existingRequest = await prisma.request.findUnique({ where: { id } })
     if (!existingRequest) {
-      return NextResponse.json({ error: 'Request not found' }, { status: 404 })
+      return apiError("Request not found", 404)
     }
 
     const newStatus = body.status ?? existingRequest.status
@@ -158,10 +158,10 @@ export async function PUT(
       await extractAndLinkHashtags(title + ' ' + (description || ''), 'REQUEST', id)
     }
 
-    return NextResponse.json(req)
+    return apiSuccess(req)
   } catch (error) {
     console.error('PUT /api/requests/[id]:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }
 
@@ -172,20 +172,20 @@ export async function DELETE(
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { id } = await params
     const access = await canAccessRequest(session.user.id, (session.user as { role?: string }).role || 'USER', id)
     if (!access || !(access.isOwner || access.isPlanOwner || access.isPlanEditor || access.isAdmin)) {
-      return NextResponse.json({ error: 'Request not found or unauthorized' }, { status: 404 })
+      return apiError("Request not found or unauthorized", 404)
     }
 
     await prisma.request.delete({ where: { id } })
-    return NextResponse.json({ success: true })
+    return apiSuccess({ success: true })
   } catch (error) {
     console.error('DELETE /api/requests/[id]:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }
 
@@ -196,25 +196,25 @@ export async function PATCH(
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { id } = await params
     const access = await canAccessRequest(session.user.id, (session.user as { role?: string }).role || 'USER', id)
     if (!access || !(access.isOwner || access.isPlanOwner || access.isPlanEditor || access.isAdmin)) {
-      return NextResponse.json({ error: 'Request not found or unauthorized' }, { status: 404 })
+      return apiError("Request not found or unauthorized", 404)
     }
 
     let parsedBody: unknown
     try {
       parsedBody = await request.json()
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+      return apiError("Invalid JSON body", 400)
     }
     const body: any = parsedBody
     const existingRequest = await prisma.request.findUnique({ where: { id } })
     if (!existingRequest) {
-      return NextResponse.json({ error: 'Request not found' }, { status: 404 })
+      return apiError("Request not found", 404)
     }
 
     const req = await prisma.request.update({
@@ -227,9 +227,9 @@ export async function PATCH(
       }
     })
 
-    return NextResponse.json(req)
+    return apiSuccess(req)
   } catch (error) {
     console.error('PATCH /api/requests/[id]:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }

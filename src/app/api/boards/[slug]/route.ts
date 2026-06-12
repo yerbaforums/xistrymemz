@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getBoardBySlug, getPins } from '@/lib/boardService'
@@ -12,7 +12,7 @@ export async function GET(
   try {
     const board = await getBoardBySlug(slug)
     if (!board) {
-      return NextResponse.json({ error: 'Board not found' }, { status: 404 })
+      return apiError("Board not found", 404)
     }
 
     const { searchParams } = new URL(_request.url)
@@ -24,6 +24,6 @@ export async function GET(
     return NextResponse.json({ board, ...pinsResult })
   } catch (error) {
     console.error('GET /api/boards/[slug]:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }

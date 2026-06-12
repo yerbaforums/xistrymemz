@@ -10,6 +10,7 @@ import type { DashboardEvent } from '@/types/event'
 import type { EventFormData } from '@/components/EventFormFields'
 
 import { EmptyState } from '@/components/EmptyState'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 const TYPE_CONFIG: Record<string, { icon: string; label: string; color: string }> = {
   ORGANIZED: { icon: '🎯', label: 'Organized', color: '#00d9ff' },
@@ -40,6 +41,7 @@ export default function DashboardEvents() {
   const [editingEvent, setEditingEvent] = useState<DashboardEvent | null>(null)
   const [saving, setSaving] = useState(false)
   const [editFormData, setEditFormData] = useState<EventFormData>(() => getDefaultEventFormData())
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; type: string } | null>(null)
 
   useEffect(() => {
     if (editingEvent) {
@@ -75,24 +77,26 @@ export default function DashboardEvents() {
     }
   }, [editingEvent])
 
-  const handleDeleteEvent = async (id: string, eventType: string) => {
-    if (!confirm('Delete this event? This cannot be undone.')) return
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return
+    const { id, type } = deleteTarget
+    const endpoint = type === 'PERSONAL'
+      ? `/api/events/personal/${id}`
+      : `/api/events/${id}`
     try {
-      const endpoint = eventType === 'PERSONAL' 
-        ? `/api/events/personal/${id}`
-        : `/api/events/${id}`
-      const method = eventType === 'PERSONAL' ? 'DELETE' : 'DELETE'
-      
-      const res = await fetch(endpoint, { method })
+      const res = await fetch(endpoint, { method: 'DELETE' })
       if (res.ok) {
         success('Event deleted')
         setSelectedEvent(null)
+        setDeleteTarget(null)
         fetchAll()
       } else {
         error('Failed to delete')
+        setDeleteTarget(null)
       }
     } catch (err) {
       error('Failed to delete')
+      setDeleteTarget(null)
     }
   }
 
@@ -401,7 +405,7 @@ export default function DashboardEvents() {
                           ✏️ Edit
                         </button>
                         <button 
-                          onClick={() => handleDeleteEvent(event.id, event.type)} 
+                          onClick={() => setDeleteTarget({ id: event.id, type: event.type })} 
                           className={styles.cardDeleteBtn}
                         >
                           🗑️
@@ -524,7 +528,7 @@ export default function DashboardEvents() {
                     View Full Details
                   </Link>
                   {(selectedEvent.type === 'ORGANIZED' || selectedEvent.type === 'PERSONAL') && (
-                    <button onClick={() => handleDeleteEvent(selectedEvent.id, selectedEvent.type)} className={styles.deleteBtn}>
+                    <button onClick={() => setDeleteTarget({ id: selectedEvent.id, type: selectedEvent.type })} className={styles.deleteBtn}>
                       🗑️ Delete
                     </button>
                   )}
@@ -552,6 +556,15 @@ export default function DashboardEvents() {
           </div>
         </div>
       )}
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Event"
+        message="This will permanently delete this event and all associated data. This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
@@ -14,9 +14,9 @@ export async function GET() {
     } catch {
       donationAddresses = []
     }
-    return NextResponse.json({ addresses: donationAddresses })
+    return apiSuccess({ addresses: donationAddresses })
   } catch (error) {
     console.error('Error fetching site donation addresses:', error)
-    return NextResponse.json({ error: 'Failed to fetch' }, { status: 500 })
+    return apiError("Failed to fetch", 500)
   }
 }

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(
@@ -10,7 +10,7 @@ export async function GET(
 
     const post = await prisma.post.findUnique({ where: { id } })
     if (!post) {
-      return NextResponse.json({ error: 'Post not found' }, { status: 404 })
+      return apiError("Post not found", 404)
     }
 
     const { searchParams } = new URL(request.url)
@@ -35,6 +35,6 @@ export async function GET(
     return NextResponse.json({ replies, total })
   } catch (error) {
     console.error('Error fetching replies:', error)
-    return NextResponse.json({ error: 'Failed to fetch replies' }, { status: 500 })
+    return apiError("Failed to fetch replies", 500)
   }
 }

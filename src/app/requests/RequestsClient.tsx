@@ -15,6 +15,8 @@ import { usePassportLocation } from '@/hooks/usePassportLocation'
 import HashtagInput from '@/components/HashtagInput'
 import { REQUEST_CATEGORIES, REQUEST_PRIORITIES, PRIORITY_COLORS } from '@/lib/request-categories'
 import { EmptyState } from '@/components/EmptyState'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
+import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
 
 interface DonationAddr {
   id: string
@@ -101,7 +103,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
   const [supportingIds, setSupportingIds] = useState<Set<string>>(new Set())
   const [donationSelector, setDonationSelector] = useState<{ open: boolean; mode: 'create' | 'edit'; selectedIds: string[] }>({ open: false, mode: 'create', selectedIds: [] })
   const [userDonationAddrs, setUserDonationAddrs] = useState<DonationAddr[]>([])
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>((searchParams.get('view') as any) || 'grid')
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>((searchParams.get('view') as any) || 'grid')
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
 
   const isAdmin = userRole === 'ADMIN'
@@ -287,8 +289,9 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
     } catch (err) { console.error(err) } finally { setSaving(false) }
   }
 
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this request?')) return
     try {
       const res = await fetch(`/api/requests/${id}`, { method: 'DELETE' })
       if (res.ok) { setRequests(requests.filter(r => r.id !== id)); success('Deleted') }
@@ -521,6 +524,39 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
                 </div>
               </div>
 
+              {viewMode === 'map' ? (
+                <div>
+                  <div style={{ height: '500px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+                    <MapContainer center={userLocation ? [userLocation.lat, userLocation.lon] : [39.8283, -98.5795]} zoom={userLocation ? 10 : 4} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
+                      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                      {filtered.filter(r => r.latitude && r.longitude).map(req => (
+                        <Marker key={req.id} position={[req.latitude!, req.longitude!]}>
+                          <Popup>
+                            <strong>{req.title}</strong>
+                            <br />
+                            {req.location && <span>📍 {req.location}</span>}
+                            <br />
+                            <Link href={`/requests/${req.id}`}>View Details →</Link>
+                          </Popup>
+                        </Marker>
+                      ))}
+                    </MapContainer>
+                  </div>
+                  {filtered.filter(r => !r.latitude || !r.longitude).length > 0 && (
+                    <div style={{ marginTop: 16 }}>
+                      <h3 style={{ fontSize: '0.9rem', marginBottom: 8, color: 'var(--text-secondary)' }}>Global / Not location specific</h3>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {filtered.filter(r => !r.latitude || !r.longitude).map(req => (
+                          <Link key={req.id} href={`/requests/${req.id}`} style={{ padding: '10px 14px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', textDecoration: 'none', color: 'inherit' }}>
+                            <strong>{req.title}</strong>
+                            {req.location && <span style={{ marginLeft: 8, fontSize: '0.85rem', color: 'var(--text-muted)' }}>📍 {req.location}</span>}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
               <div className={viewMode === 'grid' ? styles.cardGrid : styles.cardList}>
                 {filtered.map((req) => {
                   const isOwner = req.user.id === userId
@@ -624,13 +660,14 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
                         {canManage && (
                           <button onClick={() => { setEditingRequest(req); setEditForm({ title: req.title, description: req.description || '', category: req.category, priority: req.priority, budget: req.budget?.toString() || '', goalAmount: req.goalAmount?.toString() || '', location: req.location || '', isPublic: req.isPublic, allowFulfillments: req.allowFulfillments, showDonationAddress: req.showDonationAddress, images: (req as any).imageUrl ? [(req as any).imageUrl] : [], hashtags: (req as any).hashtags || [] }) }} className={styles.editBtn}>Edit</button>
                         )}
-                        {canManage && <button onClick={() => handleDelete(req.id)} className={styles.deleteBtn}>Delete</button>}
+                        {canManage && <button onClick={() => setDeleteTarget(req.id)} className={styles.deleteBtn}>Delete</button>}
                         <Link href={`/requests/${req.id}`} className={styles.viewDetailsBtn}>View Details →</Link>
                       </div>
                     </div>
                   )
                 })}
               </div>
+              )}
             </>
           )}
         </main>
@@ -720,6 +757,17 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
           </div>
         </div>
       )}
+
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        title="Delete Request"
+        message="Delete this request permanently?"
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   )
 }

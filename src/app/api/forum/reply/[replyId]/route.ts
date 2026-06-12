@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -10,7 +10,7 @@ export async function PUT(
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const { replyId } = await params
@@ -18,7 +18,7 @@ export async function PUT(
   const { content } = body
 
   if (!content) {
-    return NextResponse.json({ error: 'Content is required' }, { status: 400 })
+    return apiError("Content is required", 400)
   }
 
   const existingReply = await prisma.forumReply.findUnique({
@@ -26,7 +26,7 @@ export async function PUT(
   })
 
   if (!existingReply) {
-    return NextResponse.json({ error: 'Reply not found' }, { status: 404 })
+    return apiError("Reply not found", 404)
   }
 
   // Check if user is author or admin
@@ -35,7 +35,7 @@ export async function PUT(
   const isAdmin = userRole === 'ADMIN'
 
   if (!isAuthor && !isAdmin) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    return apiError("Forbidden", 403)
   }
 
   const updated = await prisma.forumReply.update({
@@ -43,7 +43,7 @@ export async function PUT(
     data: { content }
   })
 
-  return NextResponse.json(updated)
+  return apiSuccess(updated)
 }
 
 export async function DELETE(
@@ -53,7 +53,7 @@ export async function DELETE(
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const { replyId } = await params
@@ -63,7 +63,7 @@ export async function DELETE(
   })
 
   if (!existingReply) {
-    return NextResponse.json({ error: 'Reply not found' }, { status: 404 })
+    return apiError("Reply not found", 404)
   }
 
   // Check if user is author or admin
@@ -72,7 +72,7 @@ export async function DELETE(
   const isAdmin = userRole === 'ADMIN'
 
   if (!isAuthor && !isAdmin) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    return apiError("Forbidden", 403)
   }
 
   // Delete tips first
@@ -91,5 +91,5 @@ export async function DELETE(
     data: { replyCount: { decrement: 1 } }
   })
 
-  return NextResponse.json({ success: true })
+  return apiSuccess({ success: true })
 }

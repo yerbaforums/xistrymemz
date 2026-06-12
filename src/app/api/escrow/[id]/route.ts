@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -12,7 +12,7 @@ export async function GET(
     const { id } = await params
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const transaction = await prisma.escrowTransaction.findUnique({
@@ -26,7 +26,7 @@ export async function GET(
     })
 
     if (!transaction) {
-      return NextResponse.json({ error: 'Transaction not found' }, { status: 404 })
+      return apiError("Transaction not found", 404)
     }
 
     // Check if user is part of this transaction
@@ -35,13 +35,13 @@ export async function GET(
       transaction.sellerId !== session.user.id &&
       transaction.courierId !== session.user.id
     ) {
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+      return apiError("Access denied", 403)
     }
 
-    return NextResponse.json(transaction)
+    return apiSuccess(transaction)
   } catch (error) {
     console.error('Error fetching escrow transaction:', error)
-    return NextResponse.json({ error: 'Failed to fetch transaction' }, { status: 500 })
+    return apiError("Failed to fetch transaction", 500)
   }
 }
 
@@ -54,7 +54,7 @@ export async function PUT(
     const { id } = await params
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const transaction = await prisma.escrowTransaction.findUnique({
@@ -62,7 +62,7 @@ export async function PUT(
     })
 
     if (!transaction) {
-      return NextResponse.json({ error: 'Transaction not found' }, { status: 404 })
+      return apiError("Transaction not found", 404)
     }
 
     const body = await request.json()
@@ -85,8 +85,8 @@ export async function PUT(
 
     switch (action) {
       case 'fund':
-        if (!isBuyer) return NextResponse.json({ error: 'Only buyer can fund' }, { status: 403 })
-        if (!txHash) return NextResponse.json({ error: 'Transaction hash required' }, { status: 400 })
+        if (!isBuyer) return apiError("Only buyer can fund", 403)
+        if (!txHash) return apiError("Transaction hash required", 400)
         
         // Update escrow to FUNDED
         newStatus = 'FUNDED'
@@ -108,8 +108,8 @@ export async function PUT(
         break
          
       case 'release':
-        if (!isBuyer) return NextResponse.json({ error: 'Only buyer can release' }, { status: 403 })
-        if (transaction.status !== 'FUNDED') return NextResponse.json({ error: 'Must be funded first' }, { status: 400 })
+        if (!isBuyer) return apiError("Only buyer can release", 403)
+        if (transaction.status !== 'FUNDED') return apiError("Must be funded first", 400)
         
         // Update seller balance with net amount
         await prisma.user.update({
@@ -126,37 +126,37 @@ export async function PUT(
         break
          
       case 'dispute':
-        if (!isBuyer && !isSeller) return NextResponse.json({ error: 'Only buyer or seller' }, { status: 403 })
+        if (!isBuyer && !isSeller) return apiError("Only buyer or seller", 403)
         newStatus = 'DISPUTED'
         break
          
       case 'refund':
-        if (!isSeller && !isBuyer) return NextResponse.json({ error: 'Only seller or buyer can refund' }, { status: 403 })
+        if (!isSeller && !isBuyer) return apiError("Only seller or buyer can refund", 403)
         
         // Refund buyer - in production would send crypto back
         newStatus = 'REFUNDED'
         break
          
 case 'confirm_delivery':
-        if (!isCourier) return NextResponse.json({ error: 'Only courier can confirm' }, { status: 403 })
+        if (!isCourier) return apiError("Only courier can confirm", 403)
         newDeliveryStatus = 'DELIVERED'
         break
 
       case 'courier_accept':
-        if (!isCourier) return NextResponse.json({ error: 'Only courier can accept' }, { status: 403 })
-        if (transaction.deliveryStatus !== 'PENDING') return NextResponse.json({ error: 'Order not pending' }, { status: 400 })
+        if (!isCourier) return apiError("Only courier can accept", 403)
+        if (transaction.deliveryStatus !== 'PENDING') return apiError("Order not pending", 400)
         newDeliveryStatus = 'ACCEPTED'
         break
 
       case 'courier_pickup':
-        if (!isCourier) return NextResponse.json({ error: 'Only courier can confirm pickup' }, { status: 403 })
-        if (transaction.deliveryStatus !== 'ACCEPTED' && transaction.deliveryStatus !== 'IN_TRANSIT') return NextResponse.json({ error: 'Must accept first' }, { status: 400 })
+        if (!isCourier) return apiError("Only courier can confirm pickup", 403)
+        if (transaction.deliveryStatus !== 'ACCEPTED' && transaction.deliveryStatus !== 'IN_TRANSIT') return apiError("Must accept first", 400)
         newDeliveryStatus = 'PICKED_UP'
         break
 
       case 'courier_decline':
-        if (!isCourier) return NextResponse.json({ error: 'Only courier can decline' }, { status: 403 })
-        if (transaction.deliveryStatus !== 'PENDING') return NextResponse.json({ error: 'Order not pending' }, { status: 400 })
+        if (!isCourier) return apiError("Only courier can decline", 403)
+        if (transaction.deliveryStatus !== 'PENDING') return apiError("Order not pending", 400)
         newDeliveryStatus = 'DECLINED'
         newStatus = 'CANCELLED'
         await prisma.escrowTransaction.update({
@@ -166,18 +166,18 @@ case 'confirm_delivery':
         break
          
       case 'update_delivery':
-        if (!isCourier) return NextResponse.json({ error: 'Only courier can update' }, { status: 403 })
+        if (!isCourier) return apiError("Only courier can update", 403)
         if (deliveryStatus) newDeliveryStatus = deliveryStatus
         if (trackingNumber) body.trackingNumber = trackingNumber
         break
 
       case 'update_notes':
-        if (!isBuyer && !isSeller) return NextResponse.json({ error: 'Only buyer or seller can add notes' }, { status: 403 })
+        if (!isBuyer && !isSeller) return apiError("Only buyer or seller can add notes", 403)
         const updated = await prisma.escrowTransaction.update({
           where: { id },
           data: { notes }
         })
-        return NextResponse.json(updated)
+        return apiSuccess(updated)
          
       default:
         if (status) newStatus = status
@@ -200,9 +200,9 @@ case 'confirm_delivery':
       }
     })
 
-    return NextResponse.json(updated)
+    return apiSuccess(updated)
   } catch (error) {
     console.error('Error updating escrow:', error)
-    return NextResponse.json({ error: 'Failed to update transaction' }, { status: 500 })
+    return apiError("Failed to update transaction", 500)
   }
 }

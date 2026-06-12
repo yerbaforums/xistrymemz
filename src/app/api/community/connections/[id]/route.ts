@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -11,7 +11,7 @@ export async function PUT(
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { status } = await request.json()
@@ -19,7 +19,7 @@ export async function PUT(
 
     const validStatuses = ['PENDING', 'ACCEPTED', 'REJECTED']
     if (!validStatuses.includes(status)) {
-      return NextResponse.json({ error: 'Invalid status. Must be PENDING, ACCEPTED, or REJECTED' }, { status: 400 })
+      return apiError("Invalid status. Must be PENDING, ACCEPTED, or REJECTED", 400)
     }
 
     const connection = await prisma.connection.findUnique({
@@ -27,11 +27,11 @@ export async function PUT(
     })
 
     if (!connection) {
-      return NextResponse.json({ error: 'Connection not found' }, { status: 404 })
+      return apiError("Connection not found", 404)
     }
 
     if (connection.receiverId !== session.user.id) {
-      return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
+      return apiError("Not authorized", 403)
     }
 
     const updated = await prisma.connection.update({
@@ -39,10 +39,10 @@ export async function PUT(
       data: { status }
     })
 
-    return NextResponse.json({ connection: updated })
+    return apiSuccess({ connection: updated })
   } catch (error) {
     console.error('Error updating connection:', error)
-    return NextResponse.json({ error: 'Failed to update connection' }, { status: 500 })
+    return apiError("Failed to update connection", 500)
   }
 }
 
@@ -54,7 +54,7 @@ export async function DELETE(
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { id } = await context.params
@@ -64,20 +64,20 @@ export async function DELETE(
     })
 
     if (!connection) {
-      return NextResponse.json({ error: 'Connection not found' }, { status: 404 })
+      return apiError("Connection not found", 404)
     }
 
     if (connection.requesterId !== session.user.id && connection.receiverId !== session.user.id) {
-      return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
+      return apiError("Not authorized", 403)
     }
 
     await prisma.connection.delete({
       where: { id }
     })
 
-    return NextResponse.json({ success: true })
+    return apiSuccess({ success: true })
   } catch (error) {
     console.error('Error deleting connection:', error)
-    return NextResponse.json({ error: 'Failed to delete connection' }, { status: 500 })
+    return apiError("Failed to delete connection", 500)
   }
 }

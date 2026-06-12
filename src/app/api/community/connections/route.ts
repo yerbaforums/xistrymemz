@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -8,11 +8,14 @@ export async function GET(request: Request) {
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { searchParams } = new URL(request.url)
     const filter = searchParams.get('filter') || 'pending'
+    const page = parseInt(searchParams.get("page") || "1")
+    const limit = parseInt(searchParams.get("limit") || "20")
+    const skip = (page - 1) * limit
 
     const where = {} as Record<string, unknown>
     
@@ -29,18 +32,20 @@ export async function GET(request: Request) {
       ]
     }
 
-    const connections = await prisma.connection.findMany({
+    const connections = await prisma.connection.findMany({ skip, take: limit,
       where,
       include: {
         requester: { select: { id: true, name: true, image: true, earthId: true, verificationLevel: true, username: true } },
         receiver: { select: { id: true, name: true, image: true, earthId: true, verificationLevel: true, username: true } }
       },
-      orderBy: { createdAt: 'desc' }
+      skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' }
     })
 
-    return NextResponse.json(connections)
+    return apiSuccess(connections)
   } catch (error) {
     console.error('Error fetching connections:', error)
-    return NextResponse.json({ error: 'Failed to fetch connections' }, { status: 500 })
+    return apiError("Failed to fetch connections", 500)
   }
 }

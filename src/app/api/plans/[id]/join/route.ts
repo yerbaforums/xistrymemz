@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -10,7 +10,7 @@ export async function POST(
   const session = await getServerSession(authOptions)
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const { id } = await params
@@ -18,7 +18,7 @@ export async function POST(
   const role = body.role || 'ATTENDEE'
 
   if (!['ATTENDEE', 'VOLUNTEER'].includes(role)) {
-    return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
+    return apiError("Invalid role", 400)
   }
 
   const plan = await prisma.plan.findUnique({
@@ -27,11 +27,11 @@ export async function POST(
   })
 
   if (!plan) {
-    return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
+    return apiError("Plan not found", 404)
   }
 
   if (plan.userId === session.user.id) {
-    return NextResponse.json({ error: 'Cannot join your own plan' }, { status: 400 })
+    return apiError("Cannot join your own plan", 400)
   }
 
   const existingJoiner = await prisma.planJoiner.findUnique({
@@ -44,7 +44,7 @@ export async function POST(
   })
 
   if (existingJoiner && existingJoiner.role === role) {
-    return NextResponse.json({ error: `Already joined as ${role.toLowerCase()}` }, { status: 400 })
+    return apiSuccess({ error: `Already joined as ${role.toLowerCase()}` }, { status: 400 })
   }
 
   if (existingJoiner) {
@@ -52,7 +52,7 @@ export async function POST(
       where: { id: existingJoiner.id },
       data: { role }
     })
-    return NextResponse.json(joiner)
+    return apiSuccess(joiner)
   }
 
   const joiner = await prisma.planJoiner.create({
@@ -63,7 +63,7 @@ export async function POST(
     }
   })
 
-  return NextResponse.json(joiner)
+  return apiSuccess(joiner)
 }
 
 export async function DELETE(
@@ -73,7 +73,7 @@ export async function DELETE(
   const session = await getServerSession(authOptions)
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const { id } = await params
@@ -90,16 +90,16 @@ export async function DELETE(
   })
 
   if (!joiner) {
-    return NextResponse.json({ error: 'Not joined this plan' }, { status: 404 })
+    return apiError("Not joined this plan", 404)
   }
 
   if (joiner.role !== role) {
-    return NextResponse.json({ error: `Not joined as ${role.toLowerCase()}` }, { status: 400 })
+    return apiSuccess({ error: `Not joined as ${role.toLowerCase()}` }, { status: 400 })
   }
 
   await prisma.planJoiner.delete({
     where: { id: joiner.id }
   })
 
-  return NextResponse.json({ success: true })
+  return apiSuccess({ success: true })
 }

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -15,7 +15,7 @@ export async function PUT(
     const { id } = await params
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const link = await prisma.userLink.findUnique({
@@ -23,7 +23,7 @@ export async function PUT(
     })
 
     if (!link || link.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+      return apiError("Not found", 404)
     }
 
     const body = await request.json()
@@ -44,10 +44,10 @@ export async function PUT(
       }
     })
 
-    return NextResponse.json({ link: updated })
+    return apiSuccess({ link: updated })
   } catch (error) {
     console.error('Error updating link:', error)
-    return NextResponse.json({ error: 'Failed to update link' }, { status: 500 })
+    return apiError("Failed to update link", 500)
   }
 }
 
@@ -60,7 +60,7 @@ export async function DELETE(
     const { id } = await params
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const link = await prisma.userLink.findUnique({
@@ -68,16 +68,16 @@ export async function DELETE(
     })
 
     if (!link || link.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+      return apiError("Not found", 404)
     }
 
     await prisma.userLink.delete({
       where: { id }
     })
 
-    return NextResponse.json({ success: true })
+    return apiSuccess({ success: true })
   } catch (error) {
     console.error('Error deleting link:', error)
-    return NextResponse.json({ error: 'Failed to delete link' }, { status: 500 })
+    return apiError("Failed to delete link", 500)
   }
 }

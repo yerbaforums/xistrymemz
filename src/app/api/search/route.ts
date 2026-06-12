@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: Request) {
@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   const offset = parseInt(searchParams.get('offset') || '0')
 
   if (!query || query.length < 2) {
-    return NextResponse.json({ results: {} })
+    return apiSuccess({ results: {} })
   }
 
   const hashtagQuery = query.startsWith('#') ? query.slice(1).toLowerCase() : ''

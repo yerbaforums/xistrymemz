@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -32,10 +32,10 @@ export async function GET(request: Request) {
       orderBy: { eventDate: 'asc' }
     })
 
-    return NextResponse.json(events)
+    return apiSuccess(events)
   } catch (error) {
     console.error('Error fetching events:', error)
-    return NextResponse.json({ error: 'Failed to fetch events' }, { status: 500 })
+    return apiError("Failed to fetch events", 500)
   }
 }
 
@@ -43,20 +43,20 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     let body;
     try {
       body = await req.json()
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+      return apiError("Invalid JSON body", 400)
     }
 
     const { title, description, eventCategory, eventDate, endDate, location, locationDetails, maxJoiners, isTicketed, ticketPrice, groupId, schoolId, shopId, planId } = body
 
     if (!title || !eventCategory) {
-      return NextResponse.json({ error: 'Title and category are required' }, { status: 400 })
+      return apiError("Title and category are required", 400)
     }
 
     const event = await prisma.event.create({
@@ -82,9 +82,9 @@ export async function POST(req: Request) {
       }
     })
 
-    return NextResponse.json(event)
+    return apiSuccess(event)
   } catch (error) {
     console.error('Error creating event:', error)
-    return NextResponse.json({ error: 'Failed to create event' }, { status: 500 })
+    return apiError("Failed to create event", 500)
   }
 }

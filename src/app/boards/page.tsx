@@ -14,12 +14,8 @@ import { EmptyState } from '@/components/EmptyState'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { MapContainer, TileLayer, Marker, Popup, Tooltip } from '@/components/LeafletComponents'
 
-const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
-const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
-const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false })
-const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false })
-const Tooltip = dynamic(() => import('react-leaflet').then(m => m.Tooltip), { ssr: false })
 const MapEvents = dynamic(() => import('./MapEvents').then(m => m.MapEvents), { ssr: false })
 const MapController = dynamic(() => import('./MapEvents').then(m => m.MapController), { ssr: false })
 const BoardMapClickHandler = dynamic(() => import('@/components/BoardMapClickHandler').then(m => m.BoardMapClickHandler), { ssr: false })

@@ -1,10 +1,7 @@
-import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
-import { geocodeLocation } from '@/lib/geocoding'
-import { productSchema, validateBody } from '@/lib/schemas'
-import { extractHashtags, linkHashtags, removeHashtags } from '@/services/hashtagService'
+import { getProductById, updateProduct, deleteProduct } from '@/services/productService'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 
 export async function GET(
   request: Request,

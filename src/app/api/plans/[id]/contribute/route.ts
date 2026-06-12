@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -11,7 +11,7 @@ export async function POST(
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { id } = await params
@@ -19,17 +19,17 @@ export async function POST(
     const amount = parseFloat(body.amount)
 
     if (!amount || amount <= 0) {
-      return NextResponse.json({ error: 'Valid amount required' }, { status: 400 })
+      return apiError("Valid amount required", 400)
     }
 
     const plan = await prisma.plan.findUnique({ where: { id } })
 
     if (!plan) {
-      return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
+      return apiError("Plan not found", 404)
     }
 
     if (!plan.acceptsDonations) {
-      return NextResponse.json({ error: 'This plan does not accept donations' }, { status: 400 })
+      return apiError("This plan does not accept donations", 400)
     }
 
     const [contribution] = await prisma.$transaction([
@@ -49,9 +49,9 @@ export async function POST(
       })
     ])
 
-    return NextResponse.json(contribution)
+    return apiSuccess(contribution)
   } catch (error) {
     console.error('POST /api/plans/[id]/contribute:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }

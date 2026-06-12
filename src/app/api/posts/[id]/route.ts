@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -25,7 +25,7 @@ export async function GET(
     })
 
     if (!post) {
-      return NextResponse.json({ error: 'Post not found' }, { status: 404 })
+      return apiError("Post not found", 404)
     }
 
     const likesCount = await prisma.postLike.count({
@@ -70,7 +70,7 @@ export async function GET(
     return NextResponse.json({ post, likes: likesCount, liked, replyCount, repostCount, reposted, replies })
   } catch (error) {
     console.error('Error fetching post:', error)
-    return NextResponse.json({ error: 'Failed to fetch post' }, { status: 500 })
+    return apiError("Failed to fetch post", 500)
   }
 }
 
@@ -82,7 +82,7 @@ export async function PUT(
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { id } = await params
@@ -94,11 +94,11 @@ export async function PUT(
     })
 
     if (!post) {
-      return NextResponse.json({ error: 'Post not found' }, { status: 404 })
+      return apiError("Post not found", 404)
     }
 
     if (post.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
+      return apiError("Not authorized", 403)
     }
 
     const updated = await prisma.post.update({
@@ -119,10 +119,10 @@ export async function PUT(
       }
     })
 
-    return NextResponse.json({ post: updated })
+    return apiSuccess({ post: updated })
   } catch (error) {
     console.error('Error updating post:', error)
-    return NextResponse.json({ error: 'Failed to update post' }, { status: 500 })
+    return apiError("Failed to update post", 500)
   }
 }
 
@@ -134,7 +134,7 @@ export async function DELETE(
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { id } = await params
@@ -144,23 +144,23 @@ export async function DELETE(
     })
 
     if (!post) {
-      return NextResponse.json({ error: 'Post not found' }, { status: 404 })
+      return apiError("Post not found", 404)
     }
 
     const isAuthor = post.userId === session.user.id
     const isWallOwner = post.targetUserId === session.user.id
 
     if (!isAuthor && !isWallOwner) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      return apiError("Forbidden", 403)
     }
 
     await prisma.post.delete({
       where: { id }
     })
 
-    return NextResponse.json({ message: 'Post deleted' })
+    return apiSuccess({ message: 'Post deleted' })
   } catch (error) {
     console.error('Error deleting post:', error)
-    return NextResponse.json({ error: 'Failed to delete post' }, { status: 500 })
+    return apiError("Failed to delete post", 500)
   }
 }

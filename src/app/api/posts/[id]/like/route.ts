@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -10,7 +10,7 @@ export async function POST(
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const userId = session.user.id
@@ -18,7 +18,7 @@ export async function POST(
 
     const post = await prisma.post.findUnique({ where: { id: postId } })
     if (!post) {
-      return NextResponse.json({ error: 'Post not found' }, { status: 404 })
+      return apiError("Post not found", 404)
     }
 
     const body = await request.json().catch(() => ({}))
@@ -48,6 +48,6 @@ export async function POST(
     return NextResponse.json({ liked, likes: newPost?.likes ?? 0 })
   } catch (error) {
     console.error('Error toggling like:', error)
-    return NextResponse.json({ error: 'Failed to toggle like' }, { status: 500 })
+    return apiError("Failed to toggle like", 500)
   }
 }

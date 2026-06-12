@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -12,7 +12,7 @@ export async function GET(
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { id } = await params
@@ -27,7 +27,7 @@ export async function GET(
     })
 
     if (!plan) {
-      return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
+      return apiError("Plan not found", 404)
     }
 
     const userRole = (session.user as { role?: string }).role
@@ -38,13 +38,13 @@ export async function GET(
     })
 
     if (!isOwner && !isEditor && !isAdmin) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      return apiError("Forbidden", 403)
     }
 
-    return NextResponse.json(plan)
+    return apiSuccess(plan)
   } catch (error) {
     console.error('GET /api/plans/[id]:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }
 
@@ -56,7 +56,7 @@ export async function PUT(
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { id } = await params
@@ -64,7 +64,7 @@ export async function PUT(
     try {
       parsedBody = await request.json()
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+      return apiError("Invalid JSON body", 400)
     }
     const body = parsedBody
 
@@ -73,7 +73,7 @@ export async function PUT(
     })
 
     if (!existingPlan) {
-      return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
+      return apiError("Plan not found", 404)
     }
 
     const userRole = (session.user as { role?: string }).role
@@ -84,7 +84,7 @@ export async function PUT(
     })
 
     if (!isOwner && !isEditor && !isAdmin) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      return apiError("Forbidden", 403)
     }
 
     const plan = await prisma.plan.update({
@@ -118,10 +118,10 @@ export async function PUT(
       await extractAndLinkHashtags(title + ' ' + (description || ''), 'PLAN', id)
     }
 
-    return NextResponse.json(plan)
+    return apiSuccess(plan)
   } catch (error) {
     console.error('PUT /api/plans/[id]:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }
 
@@ -133,7 +133,7 @@ export async function DELETE(
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { id } = await params
@@ -146,16 +146,16 @@ export async function DELETE(
     })
 
     if (!existingPlan) {
-      return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
+      return apiError("Plan not found", 404)
     }
 
     await prisma.plan.delete({
       where: { id }
     })
 
-    return NextResponse.json({ success: true })
+    return apiSuccess({ success: true })
   } catch (error) {
     console.error('DELETE /api/plans/[id]:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }

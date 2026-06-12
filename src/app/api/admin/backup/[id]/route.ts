@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { deleteBackup, getBackupFilePath } from '@/services/backupService'
@@ -20,18 +20,18 @@ export async function DELETE(
   const { id } = await params
   const session = await requireAdmin()
   if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   try {
     const deleted = await deleteBackup(id)
     if (!deleted) {
-      return NextResponse.json({ error: 'Backup not found' }, { status: 404 })
+      return apiError("Backup not found", 404)
     }
-    return NextResponse.json({ success: true })
+    return apiSuccess({ success: true })
   } catch (error) {
     console.error('Error deleting backup:', error)
-    return NextResponse.json({ error: 'Failed to delete backup' }, { status: 500 })
+    return apiError("Failed to delete backup", 500)
   }
 }
 
@@ -42,19 +42,19 @@ export async function GET(
   const { id } = await params
   const session = await requireAdmin()
   if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   try {
     const { prisma } = await import('@/lib/prisma')
     const backup = await prisma.backup.findUnique({ where: { id } })
     if (!backup) {
-      return NextResponse.json({ error: 'Backup not found' }, { status: 404 })
+      return apiError("Backup not found", 404)
     }
 
     const filePath = getBackupFilePath(backup.fileName)
     if (!filePath) {
-      return NextResponse.json({ error: 'Backup file not found on disk' }, { status: 404 })
+      return apiError("Backup file not found on disk", 404)
     }
 
     const fs = require('fs')
@@ -69,6 +69,6 @@ export async function GET(
     })
   } catch (error) {
     console.error('Error downloading backup:', error)
-    return NextResponse.json({ error: 'Failed to download backup' }, { status: 500 })
+    return apiError("Failed to download backup", 500)
   }
 }

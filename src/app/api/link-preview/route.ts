@@ -1,18 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 
 export async function GET(request: NextRequest) {
   const url = request.nextUrl.searchParams.get('url')
   if (!url) {
-    return NextResponse.json({ error: 'Missing url param' }, { status: 400 })
+    return apiError("Missing url param", 400)
   }
 
   try {
     let parsed: URL
     try { parsed = new URL(url) } catch {
-      return NextResponse.json({ error: 'Invalid URL' }, { status: 400 })
+      return apiError("Invalid URL", 400)
     }
     if (['http:', 'https:'].indexOf(parsed.protocol) === -1) {
-      return NextResponse.json({ error: 'Invalid protocol' }, { status: 400 })
+      return apiError("Invalid protocol", 400)
     }
     const res = await fetch(url, {
       headers: {

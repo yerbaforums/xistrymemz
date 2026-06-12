@@ -11,6 +11,8 @@ import { EmptyState } from '@/components/EmptyState'
 import HashtagInput from '@/components/HashtagInput'
 import Button from '@/components/ui/Button'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import LocationOption from '@/components/LocationOption'
+import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
 
 interface Group {
   id: string
@@ -21,6 +23,10 @@ interface Group {
   category: string | null
   user: { id: string; name: string | null; image: string | null }
   _count: { members: number; posts: number }
+  location: string | null
+  latitude: number | null
+  longitude: number | null
+  isLocationBased: boolean
   members?: { id: string; role: string; userId: string }[]
 }
 
@@ -223,8 +229,46 @@ export default function GroupsPage() {
         </select>
       </div>
 
+      <div className={styles.viewToggles} style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+        <button className={`viewToggle ${viewMode === 'grid' ? 'viewToggleActive' : ''}`} onClick={() => setViewMode('grid')}>📋 List</button>
+        <button className={`viewToggle ${viewMode === 'map' ? 'viewToggleActive' : ''}`} onClick={() => setViewMode('map')}>🗺️ Map</button>
+      </div>
       {loading ? (
         <SkeletonList count={3} />
+      ) : viewMode === 'map' ? (
+        <div>
+          <div style={{ height: 400, borderRadius: 12, overflow: 'hidden', border: '1px solid var(--border-color)', marginBottom: 16 }}>
+            <MapContainer center={[39.8283, -98.5795]} zoom={4} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              {filteredGroups.filter(g => g.latitude && g.longitude).map(g => (
+                <Marker key={g.id} position={[g.latitude!, g.longitude!]}>
+                  <Popup>
+                    <strong>{g.name}</strong>
+                    <br />
+                    {g.location && <span>📍 {g.location}</span>}
+                    <br />
+                    <Link href={`/groups/${g.id}`}>View Group →</Link>
+                  </Popup>
+                </Marker>
+              ))}
+            </MapContainer>
+          </div>
+          {filteredGroups.filter(g => !g.latitude || !g.longitude).length > 0 && (
+            <div>
+              <h3 style={{ fontSize: '0.9rem', marginBottom: 8, color: 'var(--text-secondary)' }}>Global / Not location specific</h3>
+              <div className={styles.groupList}>
+                {filteredGroups.filter(g => !g.latitude || !g.longitude).map(g => (
+                  <Link key={g.id} href={`/groups/${g.id}`} className={styles.groupCard}>
+                    <div className={styles.groupInfo}>
+                      <strong>{g.name}</strong>
+                      {g.description && <p>{g.description.slice(0, 80)}</p>}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       ) : filteredGroups.length === 0 ? (
         <EmptyState icon="👥" title="No groups found" description={filter === 'my' ? "You haven't joined any groups yet" : "Be the first to create a group!"} />
       ) : (
@@ -277,6 +321,12 @@ export default function GroupsPage() {
                     <option key={c.value} value={c.value}>{c.icon} {c.label}</option>
                   ))}
                 </select>
+              </div>
+              <div className="form-group">
+                <LocationOption
+                  value={{ mode: groupLocation.mode, text: groupLocation.text, latitude: groupLocation.latitude, longitude: groupLocation.longitude }}
+                  onChange={v => setGroupLocation({ mode: v.mode, text: v.text, latitude: v.latitude, longitude: v.longitude })}
+                />
               </div>
               <div className="form-group">
                 <label className={styles.checkboxLabel}>

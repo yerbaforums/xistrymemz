@@ -10,6 +10,7 @@ import Button from '@/components/ui/Button'
 import { EmptyState } from '@/components/EmptyState'
 import Loading from '@/components/Loading'
 import Skeleton from '@/components/Skeleton'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 interface SchoolInfo {
   schoolName: string | null
@@ -123,12 +124,15 @@ export default function TeachingPage() {
     finally { setSaving(false) }
   }
 
-  const handleDeleteContent = async (id: string, title: string) => {
-    if (!confirm(`Delete "${title}"?`)) return
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null)
+
+  const handleDeleteContent = async () => {
+    if (!deleteTarget) return
+    const { id } = deleteTarget
     try {
       if (!school?.schoolSlug) { error('No school slug'); return }
       const res = await fetch(`/api/school/${school.schoolSlug}/content/${id}`, { method: 'DELETE' })
-      if (res.ok) { success('Deleted'); fetchAll() }
+      if (res.ok) { success('Deleted'); setDeleteTarget(null); fetchAll() }
       else error('Failed')
     } catch { error('Failed') }
   }
@@ -211,7 +215,7 @@ export default function TeachingPage() {
                     setContentForm({ title: c.title, content: (c as any).content || '', contentType: c.contentType, price: c.price.toString(), isPaid: c.isPaid, images: (c as any).images || '', videoUrl: (c as any).videoUrl || '' })
                     setShowContentForm(true)
                   }} className={styles.smallBtn}>✏️</button>
-                  <button onClick={() => handleDeleteContent(c.id, c.title)} className={styles.smallBtnDanger}>🗑️</button>
+                  <button onClick={() => setDeleteTarget({ id: c.id, title: c.title })} className={styles.smallBtnDanger}>🗑️</button>
                 </div>
               </div>
             ))}
@@ -316,6 +320,16 @@ export default function TeachingPage() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteContent}
+        title="Delete Content"
+        message={`Permanently delete "${deleteTarget?.title || ''}"? This cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   )
 }

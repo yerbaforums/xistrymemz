@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -7,7 +7,7 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const userId = session.user.id
@@ -50,7 +50,7 @@ export async function GET() {
     })
   } catch (error) {
     console.error('Error fetching calendar events:', error)
-    return NextResponse.json({ error: 'Failed to fetch events' }, { status: 500 })
+    return apiError("Failed to fetch events", 500)
   }
 }
 
@@ -58,14 +58,14 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const body = await req.json()
     const { title, description, startDate, endDate, allDay, location, color, visibility } = body
 
     if (!title || !startDate) {
-      return NextResponse.json({ error: 'Title and start date are required' }, { status: 400 })
+      return apiError("Title and start date are required", 400)
     }
 
     const event = await prisma.userEvent.create({
@@ -82,9 +82,9 @@ export async function POST(req: Request) {
       }
     })
 
-    return NextResponse.json(event)
+    return apiSuccess(event)
   } catch (error) {
     console.error('Error creating calendar event:', error)
-    return NextResponse.json({ error: 'Failed to create event' }, { status: 500 })
+    return apiError("Failed to create event", 500)
   }
 }

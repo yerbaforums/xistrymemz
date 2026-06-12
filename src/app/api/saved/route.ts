@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -8,7 +8,7 @@ const VALID_TYPES = ['PLAN', 'PRODUCT', 'REQUEST', 'EVENT', 'FORUM_POST', 'POST'
 export async function GET() {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const saved = await prisma.savedItem.findMany({
@@ -85,13 +85,13 @@ export async function GET() {
     title: titles[item.itemType]?.[item.itemId] || null,
   }))
 
-  return NextResponse.json({ saved: enriched })
+  return apiSuccess({ saved: enriched })
 }
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   try {
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
     const { itemType, itemId } = body
 
     if (!itemType || !itemId) {
-      return NextResponse.json({ error: 'itemType and itemId are required' }, { status: 400 })
+      return apiError("itemType and itemId are required", 400)
     }
 
     if (!VALID_TYPES.includes(itemType)) {
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (existing) {
-      return NextResponse.json({ saved: existing })
+      return apiSuccess({ saved: existing })
     }
 
     const saved = await prisma.savedItem.create({
@@ -130,14 +130,14 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ saved }, { status: 201 })
   } catch {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+    return apiError("Invalid request body", 400)
   }
 }
 
 export async function DELETE(request: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   try {
@@ -145,7 +145,7 @@ export async function DELETE(request: NextRequest) {
     const { itemType, itemId } = body
 
     if (!itemType || !itemId) {
-      return NextResponse.json({ error: 'itemType and itemId are required' }, { status: 400 })
+      return apiError("itemType and itemId are required", 400)
     }
 
     const existing = await prisma.savedItem.findUnique({
@@ -159,7 +159,7 @@ export async function DELETE(request: NextRequest) {
     })
 
     if (!existing) {
-      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+      return apiError("Not found", 404)
     }
 
     await prisma.savedItem.delete({
@@ -172,8 +172,8 @@ export async function DELETE(request: NextRequest) {
       }
     })
 
-    return NextResponse.json({ success: true })
+    return apiSuccess({ success: true })
   } catch {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+    return apiError("Invalid request body", 400)
   }
 }

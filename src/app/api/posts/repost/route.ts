@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -6,13 +6,13 @@ import { prisma } from '@/lib/prisma'
 export async function DELETE(request: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   try {
     const { postId } = await request.json()
     if (!postId) {
-      return NextResponse.json({ error: 'postId is required' }, { status: 400 })
+      return apiError("postId is required", 400)
     }
 
     const repost = await prisma.postRepost.findFirst({
@@ -21,27 +21,27 @@ export async function DELETE(request: NextRequest) {
     })
 
     if (!repost) {
-      return NextResponse.json({ error: 'Repost not found' }, { status: 404 })
+      return apiError("Repost not found", 404)
     }
 
     await prisma.post.delete({ where: { id: repost.postId } })
 
-    return NextResponse.json({ success: true })
+    return apiSuccess({ success: true })
   } catch {
-    return NextResponse.json({ error: 'Failed to remove repost' }, { status: 500 })
+    return apiError("Failed to remove repost", 500)
   }
 }
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   try {
     const { postId } = await request.json()
     if (!postId) {
-      return NextResponse.json({ error: 'postId is required' }, { status: 400 })
+      return apiError("postId is required", 400)
     }
 
     const original = await prisma.post.findUnique({
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (!original) {
-      return NextResponse.json({ error: 'Original post not found' }, { status: 404 })
+      return apiError("Original post not found", 404)
     }
 
     const post = await prisma.post.create({
@@ -76,6 +76,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ post }, { status: 201 })
   } catch {
-    return NextResponse.json({ error: 'Failed to repost' }, { status: 500 })
+    return apiError("Failed to repost", 500)
   }
 }

@@ -14,6 +14,7 @@ import MentionInput from '@/components/MentionInput'
 import TranslateButton from '@/components/TranslateButton'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
 import { EmptyState } from '@/components/EmptyState'
+import ShareBar from '@/components/ShareBar'
 import EntityActions from '@/components/EntityActions'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
@@ -26,11 +27,8 @@ import dynamic from 'next/dynamic'
 import Button from '@/components/ui/Button'
 import PinToBoardButton from '@/components/PinToBoardButton'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
 
-const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
-const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
-const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false })
-const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false })
 
 interface UserLink {
   id: string

@@ -1,10 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { serviceOfferingSchema, validateBody } from '@/lib/schemas'
 import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import { extractHashtags, linkHashtags } from '@/services/hashtagService'
+import { geocodeLocation } from '@/lib/geocoding'
 
 export const dynamic = 'force-dynamic'
 
@@ -80,7 +81,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ services, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
   } catch (error) {
     console.error('Error fetching services:', error)
-    return NextResponse.json({ error: 'Failed to fetch services' }, { status: 500 })
+    return apiError("Failed to fetch services", 500)
   }
 }
 
@@ -88,18 +89,27 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     let body: unknown
     try {
       body = await request.json()
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+      return apiError("Invalid JSON body", 400)
     }
     const parsed = await validateBody(serviceOfferingSchema, body)
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error }, { status: 400 })
+    }
+
+    let latitude: number | null = null
+    let longitude: number | null = null
+    if (parsed.data.location && !parsed.data.meetingLink) {
+      try {
+        const geo = await geocodeLocation(parsed.data.location)
+        if (geo) { latitude = geo.latitude; longitude = geo.longitude }
+      } catch {}
     }
 
     const service = await prisma.serviceOffering.create({
@@ -110,6 +120,8 @@ export async function POST(request: NextRequest) {
         duration: parsed.data.duration,
         price: parsed.data.price || null,
         location: parsed.data.location || null,
+        latitude,
+        longitude,
         meetingLink: parsed.data.meetingLink || null,
         imageUrl: parsed.data.imageUrl || null,
         isActive: parsed.data.isActive ?? true,
@@ -142,6 +154,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ service }, { status: 201 })
   } catch (error) {
     console.error('Error creating service:', error)
-    return NextResponse.json({ error: 'Failed to create service' }, { status: 500 })
+    return apiError("Failed to create service", 500)
   }
 }

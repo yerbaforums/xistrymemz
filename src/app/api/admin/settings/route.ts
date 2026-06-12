@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -22,7 +22,7 @@ export async function GET() {
   const session = await getServerSession(authOptions)
 
   if (!session?.user?.id || (session.user as { role?: string }).role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   try {
@@ -48,7 +48,7 @@ export async function GET() {
     })
   } catch (error) {
     console.error('Error fetching settings:', error)
-    return NextResponse.json({ error: 'Failed to fetch settings' }, { status: 500 })
+    return apiError("Failed to fetch settings", 500)
   }
 }
 
@@ -56,7 +56,7 @@ export async function PUT(request: Request) {
   const session = await getServerSession(authOptions)
 
   if (!session?.user?.id || (session.user as { role?: string }).role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   try {
@@ -101,6 +101,6 @@ export async function PUT(request: Request) {
     })
   } catch (error) {
     console.error('Error updating settings:', error)
-    return NextResponse.json({ error: 'Failed to update settings' }, { status: 500 })
+    return apiError("Failed to update settings", 500)
   }
 }

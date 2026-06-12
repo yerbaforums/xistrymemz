@@ -13,6 +13,7 @@ import RoleBadge from '@/components/RoleBadge'
 import ActiveStatus from '@/components/ActiveStatus'
 import LookingForCollaboratorsBadge from '@/components/LookingForCollaboratorsBadge'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
 import Button from '@/components/ui/Button'
 
 interface Member {
@@ -22,6 +23,8 @@ interface Member {
   image: string | null
   bio: string | null
   location: string | null
+  latitude: number | null
+  longitude: number | null
   userClass: string | null
   role: string
   username: string | null
@@ -69,6 +72,8 @@ interface Request {
   status: string
   budget: number | null
   location: string | null
+  latitude: number | null
+  longitude: number | null
   createdAt: string
   user: { id: string; name: string | null; email: string }
 }
@@ -91,6 +96,7 @@ export default function CommunityPage() {
   const [showNewPost, setShowNewPost] = useState(false)
   const [tipAmount, setTipAmount] = useState('')
   const [tipCrypto, setTipCrypto] = useState('USDT')
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>('grid')
   const [tipTarget, setTipTarget] = useState<{type: 'post' | 'user', id: string, authorId: string} | null>(null)
   const [cryptoBalances, setCryptoBalances] = useState<{symbol: string, name: string, available: number, icon: string, color: string}[]>([])
   const [loading, setLoading] = useState(true)
@@ -353,7 +359,43 @@ export default function CommunityPage() {
             />
           </div>
           
-          <div className={styles.membersGrid}>
+          <div className={styles.viewToggles} style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+            <button className={`viewToggle ${viewMode === 'grid' ? 'viewToggleActive' : ''}`} onClick={() => setViewMode('grid')}>▦ Grid</button>
+            <button className={`viewToggle ${viewMode === 'list' ? 'viewToggleActive' : ''}`} onClick={() => setViewMode('list')}>☰ List</button>
+            <button className={`viewToggle ${viewMode === 'map' ? 'viewToggleActive' : ''}`} onClick={() => setViewMode('map')}>🗺️ Map</button>
+          </div>
+          {viewMode === 'map' ? (
+            <div>
+              <div style={{ height: 500, borderRadius: 12, overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+                <MapContainer center={[39.8283, -98.5795]} zoom={4} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
+                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                  {filteredMembers.filter(m => m.latitude && m.longitude).map(m => (
+                    <Marker key={m.id} position={[m.latitude!, m.longitude!]}>
+                      <Popup>
+                        <strong>{m.name || 'Anonymous'}</strong>
+                        <br />
+                        {m.location && <span>📍 {m.location}</span>}
+                      </Popup>
+                    </Marker>
+                  ))}
+                </MapContainer>
+              </div>
+              {filteredMembers.filter(m => !m.latitude || !m.longitude).length > 0 && (
+                <div style={{ marginTop: 16 }}>
+                  <h3 style={{ fontSize: '0.9rem', marginBottom: 8, color: 'var(--text-secondary)' }}>Global / Not location specific</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {filteredMembers.filter(m => !m.latitude || !m.longitude).map(m => (
+                      <Link key={m.id} href={getUserProfileUrl(m)} style={{ padding: '10px 14px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', textDecoration: 'none', color: 'inherit' }}>
+                        <strong>{m.name || 'Anonymous'}</strong>
+                        {m.location && <span style={{ marginLeft: 8, fontSize: '0.85rem', color: 'var(--text-muted)' }}>📍 {m.location}</span>}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+          <div className={viewMode === 'list' ? styles.membersList : styles.membersGrid}>
             {filteredMembers.map((member) => {
               const isConnected = connections.some(
                 (c: Connection) => (c.receiverId === member.id || c.requesterId === member.id)
@@ -426,7 +468,7 @@ export default function CommunityPage() {
               )
             })}
           </div>
-          
+          )}
           {filteredMembers.length === 0 && (
             <EmptyState icon="👥" title="No members found" description="No members found matching your search." />
           )}

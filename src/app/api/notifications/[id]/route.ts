@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(
@@ -12,7 +12,7 @@ export async function GET(
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const notification = await prisma.notification.findUnique({
@@ -20,17 +20,17 @@ export async function GET(
     })
 
     if (!notification) {
-      return NextResponse.json({ error: 'Notification not found' }, { status: 404 })
+      return apiError("Notification not found", 404)
     }
 
     if (notification.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
+      return apiError("Not authorized", 403)
     }
 
-    return NextResponse.json(notification)
+    return apiSuccess(notification)
   } catch (error) {
     console.error('Error fetching notification:', error)
-    return NextResponse.json({ error: 'Failed to fetch notification' }, { status: 500 })
+    return apiError("Failed to fetch notification", 500)
   }
 }
 
@@ -45,7 +45,7 @@ export async function PUT(
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const existing = await prisma.notification.findUnique({
@@ -53,11 +53,11 @@ export async function PUT(
     })
 
     if (!existing) {
-      return NextResponse.json({ error: 'Notification not found' }, { status: 404 })
+      return apiError("Notification not found", 404)
     }
 
     if (existing.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
+      return apiError("Not authorized", 403)
     }
 
     const updated = await prisma.notification.update({
@@ -65,10 +65,10 @@ export async function PUT(
       data: { read: true }
     })
 
-    return NextResponse.json(updated)
+    return apiSuccess(updated)
   } catch (error) {
     console.error('Error updating notification:', error)
-    return NextResponse.json({ error: 'Failed to update notification' }, { status: 500 })
+    return apiError("Failed to update notification", 500)
   }
 }
 
@@ -83,7 +83,7 @@ export async function DELETE(
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const existing = await prisma.notification.findUnique({
@@ -91,20 +91,20 @@ export async function DELETE(
     })
 
     if (!existing) {
-      return NextResponse.json({ error: 'Notification not found' }, { status: 404 })
+      return apiError("Notification not found", 404)
     }
 
     if (existing.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
+      return apiError("Not authorized", 403)
     }
 
     await prisma.notification.delete({
       where: { id }
     })
 
-    return NextResponse.json({ message: 'Notification deleted' })
+    return apiSuccess({ message: 'Notification deleted' })
   } catch (error) {
     console.error('Error deleting notification:', error)
-    return NextResponse.json({ error: 'Failed to delete notification' }, { status: 500 })
+    return apiError("Failed to delete notification", 500)
   }
 }

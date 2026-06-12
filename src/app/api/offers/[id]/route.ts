@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { barterOfferUpdateSchema, validateBody } from '@/lib/schemas'
 
@@ -13,7 +13,7 @@ export async function GET(
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const offer = await prisma.barterOffer.findUnique({
@@ -32,17 +32,17 @@ export async function GET(
     })
 
     if (!offer) {
-      return NextResponse.json({ error: 'Offer not found' }, { status: 404 })
+      return apiError("Offer not found", 404)
     }
 
     if (offer.makerId !== session.user.id && offer.receiverId !== session.user.id) {
-      return NextResponse.json({ error: 'Not authorized to view this offer' }, { status: 403 })
+      return apiError("Not authorized to view this offer", 403)
     }
 
-    return NextResponse.json(offer)
+    return apiSuccess(offer)
   } catch (error) {
     console.error('Error fetching offer:', error)
-    return NextResponse.json({ error: 'Failed to fetch offer' }, { status: 500 })
+    return apiError("Failed to fetch offer", 500)
   }
 }
 
@@ -57,7 +57,7 @@ export async function PUT(
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const body = await request.json()
@@ -73,26 +73,26 @@ export async function PUT(
     })
 
     if (!existingOffer) {
-      return NextResponse.json({ error: 'Offer not found' }, { status: 404 })
+      return apiError("Offer not found", 404)
     }
 
     const isMaker = existingOffer.makerId === session.user.id
     const isReceiver = existingOffer.receiverId === session.user.id
 
     if (!isMaker && !isReceiver) {
-      return NextResponse.json({ error: 'Not authorized to update this offer' }, { status: 403 })
+      return apiError("Not authorized to update this offer", 403)
     }
 
     if (existingOffer.status !== 'PENDING' && existingOffer.status !== 'COUNTERED') {
-      return NextResponse.json({ error: 'Cannot update offer with current status' }, { status: 400 })
+      return apiError("Cannot update offer with current status", 400)
     }
 
     if (status === 'WITHDRAWN' && !isMaker) {
-      return NextResponse.json({ error: 'Only the maker can withdraw the offer' }, { status: 400 })
+      return apiError("Only the maker can withdraw the offer", 400)
     }
 
     if ((status === 'ACCEPTED' || status === 'REJECTED') && !isReceiver) {
-      return NextResponse.json({ error: 'Only the receiver can accept or reject the offer' }, { status: 400 })
+      return apiError("Only the receiver can accept or reject the offer", 400)
     }
 
     const updateData: { status?: string; message?: string } = {}
@@ -130,10 +130,10 @@ export async function PUT(
       })
     }
 
-    return NextResponse.json(updatedOffer)
+    return apiSuccess(updatedOffer)
   } catch (error) {
     console.error('Error updating offer:', error)
-    return NextResponse.json({ error: 'Failed to update offer' }, { status: 500 })
+    return apiError("Failed to update offer", 500)
   }
 }
 
@@ -148,7 +148,7 @@ export async function DELETE(
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const existingOffer = await prisma.barterOffer.findUnique({
@@ -156,24 +156,24 @@ export async function DELETE(
     })
 
     if (!existingOffer) {
-      return NextResponse.json({ error: 'Offer not found' }, { status: 404 })
+      return apiError("Offer not found", 404)
     }
 
     if (existingOffer.makerId !== session.user.id) {
-      return NextResponse.json({ error: 'Not authorized to delete this offer' }, { status: 403 })
+      return apiError("Not authorized to delete this offer", 403)
     }
 
     if (existingOffer.status !== 'PENDING' && existingOffer.status !== 'COUNTERED') {
-      return NextResponse.json({ error: 'Cannot delete offer with current status' }, { status: 400 })
+      return apiError("Cannot delete offer with current status", 400)
     }
 
     await prisma.barterOffer.delete({
       where: { id }
     })
 
-    return NextResponse.json({ message: 'Offer deleted successfully' })
+    return apiSuccess({ message: 'Offer deleted successfully' })
   } catch (error) {
     console.error('Error deleting offer:', error)
-    return NextResponse.json({ error: 'Failed to delete offer' }, { status: 500 })
+    return apiError("Failed to delete offer", 500)
   }
 }

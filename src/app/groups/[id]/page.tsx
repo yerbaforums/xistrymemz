@@ -21,6 +21,7 @@ import Loading from '@/components/Loading'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import CollaborateButton from '@/components/CollaborateButton'
 import PinToBoardButton from '@/components/PinToBoardButton'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 interface Member {
   id: string
@@ -267,8 +268,10 @@ function GroupDetailContent() {
     } catch { /* best effort */ }
   }
 
-  const handleDeletePost = async (postId: string) => {
-    if (!confirm('Delete this post?')) return
+  const [deletePostTarget, setDeletePostTarget] = useState<string | null>(null)
+
+  const handleDeletePost = async () => {
+    if (!deletePostTarget) return
     try {
       const res = await fetch(`/api/groups/${params.id}/posts/${postId}`, { method: 'DELETE' })
       if (res.ok) {
@@ -379,8 +382,10 @@ function GroupDetailContent() {
     }
   }
 
-  const handleDeleteBuy = async (buyId: string) => {
-    if (!confirm('Delete this group buy?')) return
+  const [deleteBuyTarget, setDeleteBuyTarget] = useState<string | null>(null)
+
+  const handleDeleteBuy = async () => {
+    if (!deleteBuyTarget) return
     try {
       const res = await fetch(`/api/group-buys/${buyId}`, { method: 'DELETE' })
       if (res.ok) {
@@ -424,8 +429,10 @@ function GroupDetailContent() {
     }
   }
 
-  const handleDeleteRequest = async (reqId: string) => {
-    if (!confirm('Delete this request?')) return
+  const [deleteReqTarget, setDeleteReqTarget] = useState<string | null>(null)
+
+  const handleDeleteRequest = async () => {
+    if (!deleteReqTarget) return
     try {
       const res = await fetch(`/api/requests/${reqId}`, { method: 'DELETE' })
       if (res.ok) {
@@ -480,8 +487,10 @@ function GroupDetailContent() {
     }
   }
 
-  const handleUnlinkProduct = async (productId: string) => {
-    if (!confirm('Unlink this product?')) return
+  const [unlinkTarget, setUnlinkTarget] = useState<string | null>(null)
+
+  const handleUnlinkProduct = async () => {
+    if (!unlinkTarget) return
     try {
       const res = await fetch(`/api/groups/${params.id}/marketplace/${productId}`, { method: 'DELETE' })
       if (res.ok) {
@@ -493,8 +502,10 @@ function GroupDetailContent() {
     }
   }
 
+  const [deleteGroupOpen, setDeleteGroupOpen] = useState(false)
+
   const handleDeleteGroup = async () => {
-    if (!confirm('Delete this entire group? This cannot be undone.')) return
+    if (!deleteGroupOpen) return
     try {
       const res = await fetch(`/api/groups/${params.id}`, { method: 'DELETE' })
       if (res.ok) {
@@ -610,7 +621,7 @@ function GroupDetailContent() {
             {group.isAdmin && (
               <>
                 <Button onClick={() => setShowEditModal(true)} className={styles.editBtn}>Edit</Button>
-                <Button onClick={handleDeleteGroup} className={styles.deleteBtn}>Delete</Button>
+                <Button onClick={() => setDeleteGroupOpen(true)} className={styles.deleteBtn}>Delete</Button>
               </>
             )}
             {session?.user && (
@@ -707,7 +718,7 @@ function GroupDetailContent() {
                                 </Button>
                               )}
                               {isPostOwner(post) && (
-                                <Button onClick={() => handleDeletePost(post.id)} className={styles.deletePostBtn} title="Delete">×</Button>
+                                <Button onClick={() => setDeletePostTarget(post.id)} className={styles.deletePostBtn} title="Delete">×</Button>
                               )}
                             </div>
                           </div>
@@ -816,7 +827,7 @@ function GroupDetailContent() {
                             <div className={styles.buyCardHeader}>
                               <h3 onClick={() => setSelectedBuy(buy)} className={styles.buyTitle}>{buy.title}</h3>
                               {isBuyOwner(buy) && (
-                                <Button onClick={() => handleDeleteBuy(buy.id)} className={styles.deleteBuyBtn} title="Delete">×</Button>
+                                <Button onClick={() => setDeleteBuyTarget(buy.id)} className={styles.deleteBuyBtn} title="Delete">×</Button>
                               )}
                             </div>
                             {buy.description && <p className={styles.buyCardDesc}>{buy.description.slice(0, 100)}...</p>}
@@ -869,7 +880,7 @@ function GroupDetailContent() {
                               <span className={`badge badge-${req.status.toLowerCase()}`}>{req.status}</span>
                               <span className={`badge badge-${req.priority.toLowerCase()}`}>{req.priority}</span>
                               {isReqOwner(req) && (
-                                <Button onClick={() => handleDeleteRequest(req.id)} className={styles.deleteSmallBtn} title="Delete">×</Button>
+                                <Button onClick={() => setDeleteReqTarget(req.id)} className={styles.deleteSmallBtn} title="Delete">×</Button>
                               )}
                             </div>
                           </div>
@@ -918,7 +929,7 @@ function GroupDetailContent() {
                           </div>
                           <div className={styles.marketplaceActions}>
                             {group.isAdmin && (
-                              <Button onClick={(e) => { e.preventDefault(); handleUnlinkProduct(product.id); }} className={styles.unlinkBtn}>Unlink</Button>
+                              <Button onClick={(e) => { e.preventDefault(); setUnlinkTarget(product.id); }} className={styles.unlinkBtn}>Unlink</Button>
                             )}
                           </div>
                         </Link>
@@ -1211,6 +1222,52 @@ function GroupDetailContent() {
         </div>
       )}
     </div>
+    
+      <ConfirmDialog
+        isOpen={!!deletePostTarget}
+        onClose={() => setDeletePostTarget(null)}
+        onConfirm={handleDeletePost}
+        title="Delete Post"
+        message="Delete this post? This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+      />
+      <ConfirmDialog
+        isOpen={!!deleteBuyTarget}
+        onClose={() => setDeleteBuyTarget(null)}
+        onConfirm={handleDeleteBuy}
+        title="Delete Group Buy"
+        message="Delete this group buy?"
+        confirmLabel="Delete"
+        variant="danger"
+      />
+      <ConfirmDialog
+        isOpen={!!deleteReqTarget}
+        onClose={() => setDeleteReqTarget(null)}
+        onConfirm={handleDeleteRequest}
+        title="Delete Request"
+        message="Delete this request?"
+        confirmLabel="Delete"
+        variant="danger"
+      />
+      <ConfirmDialog
+        isOpen={!!unlinkTarget}
+        onClose={() => setUnlinkTarget(null)}
+        onConfirm={handleUnlinkProduct}
+        title="Unlink Product"
+        message="Unlink this product from the group?"
+        confirmLabel="Unlink"
+        variant="warning"
+      />
+      <ConfirmDialog
+        isOpen={deleteGroupOpen}
+        onClose={() => setDeleteGroupOpen(false)}
+        onConfirm={handleDeleteGroup}
+        title="Delete Group"
+        message="Delete this entire group? This cannot be undone. All posts, memberships, and data will be permanently removed."
+        confirmLabel="Delete Group"
+        variant="danger"
+      />
     </ErrorBoundary>
   )
 }

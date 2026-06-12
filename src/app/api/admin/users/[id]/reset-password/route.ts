@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -12,7 +12,7 @@ export async function POST(
   const session = await getServerSession(authOptions)
 
   if (!session?.user?.id || (session.user as { role?: string }).role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   try {
@@ -24,7 +24,7 @@ export async function POST(
     })
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      return apiError("User not found", 404)
     }
 
     await prisma.passwordResetToken.deleteMany({
@@ -47,6 +47,6 @@ export async function POST(
     return NextResponse.json({ success: true, message: 'Password reset email sent' })
   } catch (error) {
     console.error('Error resetting password:', error)
-    return NextResponse.json({ error: 'Failed to reset password' }, { status: 500 })
+    return apiError("Failed to reset password", 500)
   }
 }

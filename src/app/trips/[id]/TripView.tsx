@@ -4,12 +4,8 @@ import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import styles from '../../dashboard/planning/planning.module.css'
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from '@/components/LeafletComponents'
 
-const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
-const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
-const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false })
-const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false })
-const Polyline = dynamic(() => import('react-leaflet').then(mod => mod.Polyline), { ssr: false })
 
 interface TripStop {
   id: string; name: string; location: string | null
@@ -71,7 +67,7 @@ export default function TripView({ trip, sessionUserId }: { trip: Trip; sessionU
         <div style={{ flex: '1', minWidth: '300px' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>Itinerary</h2>
           {days.length === 0 ? (
-            <p style={{ color: 'var(--text-muted)' }}>No stops yet.</p>
+            <p className={styles.textMuted}>No stops yet.</p>
           ) : days.map(day => (
             <div key={day} style={{ marginBottom: '1.5rem' }}>
               <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--accent-primary)', marginBottom: '0.5rem', borderBottom: '1px dashed var(--border-color)', paddingBottom: '0.25rem' }}>
@@ -123,7 +119,7 @@ export default function TripView({ trip, sessionUserId }: { trip: Trip; sessionU
 
       {sessionUserId && sessionUserId !== trip.user?.id && (
         <div style={{ marginTop: '2rem', textAlign: 'center' }}>
-          <Link href={`/dashboard/planning`} className={`${styles.btn} ${styles.btnPrimary}`} style={{ textDecoration: 'none' }}>
+          <Link href={`/dashboard/planning`} className={`${styles.btn} ${styles.btnPrimary}`} className={styles.noUnderline}>
             View in Dashboard
           </Link>
         </div>

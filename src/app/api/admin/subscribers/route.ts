@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -7,25 +7,30 @@ export async function GET() {
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.id || (session.user as { role?: string }).role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+    return apiError("Unauthorized", 403)
   }
 
-  const subscribers = await prisma.emailSubscriber.findMany({
-    orderBy: { createdAt: 'desc' }
+  const subscribers = await prisma.emailSubscriber.findMany({ skip, take: limit,
+    skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' }
   })
 
-  return NextResponse.json(subscribers)
+  return apiSuccess(subscribers)
 }
 
 export async function DELETE(request: Request) {
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.id || (session.user as { role?: string }).role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+    return apiError("Unauthorized", 403)
   }
 
   const { searchParams } = new URL(request.url)
   const id = searchParams.get('id')
+  const page = parseInt(searchParams.get("page") || "1")
+  const limit = parseInt(searchParams.get("limit") || "20")
+  const skip = (page - 1) * limit
 
   if (id) {
     await prisma.emailSubscriber.delete({ where: { id } })
@@ -33,20 +38,20 @@ export async function DELETE(request: Request) {
     await prisma.emailSubscriber.deleteMany({ where: { subscribed: false } })
   }
 
-  return NextResponse.json({ success: true })
+  return apiSuccess({ success: true })
 }
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.id || (session.user as { role?: string }).role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+    return apiError("Unauthorized", 403)
   }
 
   const { email, name } = await request.json()
 
   if (!email) {
-    return NextResponse.json({ error: 'Email is required' }, { status: 400 })
+    return apiError("Email is required", 400)
   }
 
   const subscriber = await prisma.emailSubscriber.upsert({
@@ -55,5 +60,5 @@ export async function POST(request: Request) {
     create: { email, name, source: 'manual' }
   })
 
-  return NextResponse.json(subscriber)
+  return apiSuccess(subscriber)
 }

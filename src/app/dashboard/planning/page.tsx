@@ -7,6 +7,7 @@ import styles from './planning.module.css'
 import { geocodeLocation, reverseGeocodeLocation } from '@/lib/geocoding'
 
 import { EmptyState } from '@/components/EmptyState'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
@@ -230,6 +231,7 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
   const [inviteResults, setInviteResults] = useState<any[]>([])
   const [inviteSearching, setInviteSearching] = useState(false)
   const [addingCustomStop, setAddingCustomStop] = useState(false)
+  const [removeStopTarget, setRemoveStopTarget] = useState<string | null>(null)
   const [customStopName, setCustomStopName] = useState('')
   const [customStopLoc, setCustomStopLoc] = useState('')
   const [customStopNotes, setCustomStopNotes] = useState('')
@@ -375,10 +377,10 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
     }
   }
 
-  const handleRemoveStop = async (stopId: string) => {
-    if (!window.confirm('Remove this stop?')) return
-    const res = await fetch(`/api/trips/${trip.id}/stops/${stopId}`, { method: 'DELETE' })
-    if (res.ok) { setTrip(prev => ({ ...prev, stops: (prev.stops || []).filter(s => s.id !== stopId) })); onUpdate() }
+  const handleRemoveStop = async () => {
+    if (!removeStopTarget) return
+    const res = await fetch(`/api/trips/${trip.id}/stops/${removeStopTarget}`, { method: 'DELETE' })
+    if (res.ok) { setTrip(prev => ({ ...prev, stops: (prev.stops || []).filter(s => s.id !== removeStopTarget) })); setRemoveStopTarget(null); onUpdate() }
   }
 
   const handleMoveStop = async (stopId: string, day: number, order: number) => {
@@ -923,7 +925,7 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
                         {day < (days.length - 1 || 0) && (
                           <button className={styles.btnIcon} onClick={() => handleMoveStop(stop.id, day + 1, orderedStops(day + 1).length)} title="Move to next day">⬇️</button>
                         )}
-                        <button className={styles.btnIcon} onClick={() => handleRemoveStop(stop.id)} title="Remove">🗑️</button>
+                        <button className={styles.btnIcon} onClick={() => setRemoveStopTarget(stop.id)} title="Remove">🗑️</button>
                       </div>
                     )}
                   </div>
@@ -1078,6 +1080,16 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={!!removeStopTarget}
+        onClose={() => setRemoveStopTarget(null)}
+        onConfirm={handleRemoveStop}
+        title="Remove Stop"
+        message="Remove this stop from your trip?"
+        confirmLabel="Remove"
+        variant="danger"
+      />
     </>
   )
 }

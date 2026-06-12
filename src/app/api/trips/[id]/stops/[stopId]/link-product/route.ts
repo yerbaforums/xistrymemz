@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 export async function POST(request: Request, { params }: { params: Promise<{ id: string; stopId: string }> }) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const { id: tripId, stopId } = await params
@@ -19,14 +19,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   })
 
   if (!trip) {
-    return NextResponse.json({ error: 'Not found or no edit permission' }, { status: 404 })
+    return apiError("Not found or no edit permission", 404)
   }
 
   const body = await request.json()
   const { productId } = body
 
   if (!productId) {
-    return NextResponse.json({ error: 'productId is required' }, { status: 400 })
+    return apiError("productId is required", 400)
   }
 
   const product = await prisma.product.findUnique({
@@ -35,12 +35,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   })
 
   if (!product) {
-    return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+    return apiError("Product not found", 404)
   }
 
   const stop = await prisma.tripStop.findFirst({ where: { id: stopId, tripId } })
   if (!stop) {
-    return NextResponse.json({ error: 'Stop not found' }, { status: 404 })
+    return apiError("Stop not found", 404)
   }
 
   const linkedProducts = (stop.linkedProducts as any[]) || []
@@ -51,5 +51,5 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     data: { linkedProducts }
   })
 
-  return NextResponse.json(updated)
+  return apiSuccess(updated)
 }

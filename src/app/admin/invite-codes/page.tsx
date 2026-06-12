@@ -5,6 +5,7 @@ import styles from './page.module.css'
 import { EmptyState } from '@/components/EmptyState'
 import Skeleton from '@/components/Skeleton'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 interface InviteCode {
   id: string
@@ -80,7 +81,6 @@ export default function AdminInviteCodesPage() {
   }
 
   async function deleteCode(id: string) {
-    if (!confirm('Delete this invite code?')) return
     try {
       const res = await fetch(`/api/invite-codes?id=${id}`, { method: 'DELETE' })
       if (res.ok) {
@@ -226,6 +226,17 @@ export default function AdminInviteCodesPage() {
           ))}
         </div>
       )}
+
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        title="Delete Invite Code"
+        message="Delete this invite code?"
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   )
 }

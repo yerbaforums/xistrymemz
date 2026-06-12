@@ -11,6 +11,7 @@ import styles from './requests.module.css'
 import { REQUEST_CATEGORIES, REQUEST_PRIORITIES, PRIORITY_COLORS } from '@/lib/request-categories'
 
 import { EmptyState } from '@/components/EmptyState'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 interface DonationAddr {
   id: string
@@ -103,6 +104,7 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
     showDonationAddress: true
   })
   const [creating, setCreating] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
   const isAdmin = userRole === 'ADMIN'
 
@@ -217,12 +219,13 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
     }
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this request?')) return
+  const handleDelete = async () => {
+    if (!deleteTarget) return
     try {
-      const res = await fetch(`/api/requests/${id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/requests/${deleteTarget}`, { method: 'DELETE' })
       if (res.ok) {
-        setRequests(requests.filter(r => r.id !== id))
+        setRequests(requests.filter(r => r.id !== deleteTarget))
+        setDeleteTarget(null)
         success('Deleted')
       }
     } catch (error) {
@@ -495,7 +498,7 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
                   </div>
                   <div className={styles.cardActions}>
                     {isOwner && (
-                      <button onClick={() => handleDelete(req.id)} className={styles.deleteBtn}>Delete</button>
+                      <button onClick={() => setDeleteTarget(req.id)} className={styles.deleteBtn}>Delete</button>
                     )}
                   </div>
                 </div>
@@ -639,6 +642,16 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        title="Delete Request"
+        message="This will permanently delete this request. This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   )
 }

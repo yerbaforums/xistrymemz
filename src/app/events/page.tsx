@@ -14,11 +14,8 @@ import Button from '@/components/ui/Button'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
 import dynamic from 'next/dynamic'
+import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
 
-const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
-const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
-const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false })
-const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false })
 const QRCodeModal = dynamic(() => import('@/components/QRCodeModal').then(mod => mod.QRCodeModal), { ssr: false })
 
 let L: any

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -122,7 +122,7 @@ export async function GET(request: Request) {
     })
   } catch (error) {
     console.error('GET /api/products:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }
 
@@ -146,14 +146,14 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     let body;
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+      return apiError("Invalid JSON body", 400);
     }
 
     const validation = validateBody(productSchema, body)
@@ -174,6 +174,15 @@ export async function POST(request: Request) {
       acceptsAppointments, appointmentDuration, appointmentLeadTime, appointmentLocation, appointmentMeetingLink, appointmentFormFields
     } = validation.data
 
+    let latitude: number | null = null
+    let longitude: number | null = null
+    if (location && location !== 'GLOBAL' && !isGlobal) {
+      try {
+        const geo = await geocodeLocation(location)
+        if (geo) { latitude = geo.latitude; longitude = geo.longitude }
+      } catch {}
+    }
+
     const paymentMethodsString = paymentMethods ? 
       (Array.isArray(paymentMethods) ? paymentMethods.join(',') : String(paymentMethods)) 
       : ''
@@ -188,6 +197,8 @@ export async function POST(request: Request) {
         condition,
         location: location || 'GLOBAL',
         locationDetails,
+        latitude,
+        longitude,
         isGlobal: isGlobal ?? false,
         isRemote: isRemote ?? false,
         imageUrl,
@@ -260,7 +271,7 @@ export async function POST(request: Request) {
       })
     }
 
-    return NextResponse.json(product)
+    return apiSuccess(product)
   } catch (error) {
     console.error('POST /api/products:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'

@@ -257,3 +257,57 @@
   height: 1px;
   background: var(--border-color);
 }
+
+.fediSection {
+  margin-top: 16px;
+}
+
+.fediRow {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.fediInput {
+  flex: 1;
+  padding: 10px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  outline: none;
+  font-family: monospace;
+}
+
+.fediInput:focus {
+  border-color: var(--accent-primary);
+}
+
+.fediInput::placeholder {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.fediBtn {
+  padding: 10px 20px;
+  background: var(--accent-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.fediBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.fediError {
+  color: var(--accent-secondary);
+  font-size: 0.8rem;
+  margin-top: 8px;
+}

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { verifyEmailSchema } from '@/lib/validation'
 
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     const ip = request.headers.get('x-forwarded-for') || 'unknown'
     if (!checkRateLimit(`verify:${ip}`)) {
-      return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
+      return apiError("Too many requests. Please try again later.", 429)
     }
 
     const verificationToken = await prisma.verificationToken.findUnique({
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       if (verificationToken && verificationToken.expiresAt < new Date()) {
         await prisma.verificationToken.delete({ where: { id: verificationToken.id } })
       }
-      return NextResponse.json({ error: 'Invalid or expired token' }, { status: 400 })
+      return apiError("Invalid or expired token", 400)
     }
 
     // Use transaction to atomically verify user and delete token
@@ -65,6 +65,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, message: 'Email verified successfully' })
   } catch (error) {
     console.error('Email verification error:', error)
-    return NextResponse.json({ error: 'An error occurred' }, { status: 500 })
+    return apiError("An error occurred", 500)
   }
 }

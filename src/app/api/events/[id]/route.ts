@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -45,7 +45,7 @@ export async function GET(
     })
 
     if (!event) {
-      return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+      return apiError("Event not found", 404)
     }
 
     const isOrganizer = session?.user?.id === event.organizerId
@@ -98,7 +98,7 @@ export async function GET(
     })
   } catch (error) {
     console.error('GET /api/events/[id]:', error)
-    return NextResponse.json({ error: 'Failed to fetch event' }, { status: 500 })
+    return apiError("Failed to fetch event", 500)
   }
 }
 
@@ -111,23 +111,23 @@ export async function PUT(
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const event = await prisma.event.findUnique({ where: { id } })
     if (!event) {
-      return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+      return apiError("Event not found", 404)
     }
 
     if (event.organizerId !== session.user.id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      return apiError("Forbidden", 403)
     }
 
     let body
     try {
       body = await request.json()
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+      return apiError("Invalid JSON", 400)
     }
 
     const validation = validateBody(eventSchema.partial(), body)
@@ -215,10 +215,10 @@ export async function PUT(
       }
     }
 
-    return NextResponse.json(updated)
+    return apiSuccess(updated)
   } catch (error) {
     console.error('PUT /api/events/[id]:', error)
-    return NextResponse.json({ error: 'Failed to update event' }, { status: 500 })
+    return apiError("Failed to update event", 500)
   }
 }
 
@@ -231,23 +231,23 @@ export async function DELETE(
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const event = await prisma.event.findUnique({ where: { id } })
     if (!event) {
-      return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+      return apiError("Event not found", 404)
     }
 
     if (event.organizerId !== session.user.id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      return apiError("Forbidden", 403)
     }
 
     await prisma.event.delete({ where: { id } })
 
-    return NextResponse.json({ success: true })
+    return apiSuccess({ success: true })
   } catch (error) {
     console.error('DELETE /api/events/[id]:', error)
-    return NextResponse.json({ error: 'Failed to delete event' }, { status: 500 })
+    return apiError("Failed to delete event", 500)
   }
 }

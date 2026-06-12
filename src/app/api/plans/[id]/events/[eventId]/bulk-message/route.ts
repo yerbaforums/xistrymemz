@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -10,7 +10,7 @@ export async function POST(
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { id: planId, eventId } = await params
@@ -19,13 +19,13 @@ export async function POST(
     try {
       body = await request.json()
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+      return apiError("Invalid JSON body", 400)
     }
 
     const { message } = body
 
     if (!message || !message.trim()) {
-      return NextResponse.json({ error: 'Message is required' }, { status: 400 })
+      return apiError("Message is required", 400)
     }
 
     const plan = await prisma.plan.findUnique({
@@ -34,7 +34,7 @@ export async function POST(
     })
 
     if (!plan || plan.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
+      return apiError("Not authorized", 403)
     }
 
     const event = await prisma.event.findUnique({
@@ -49,7 +49,7 @@ export async function POST(
     })
 
     if (!event) {
-      return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+      return apiError("Event not found", 404)
     }
 
     const senderId = session.user.id
@@ -75,6 +75,6 @@ export async function POST(
     })
   } catch (error) {
     console.error('Bulk message error:', error)
-    return NextResponse.json({ error: 'Failed to send message' }, { status: 500 })
+    return apiError("Failed to send message", 500)
   }
 }

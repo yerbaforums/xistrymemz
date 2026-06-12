@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -7,7 +7,7 @@ export async function GET() {
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const locations = await prisma.userLocation.findMany({
@@ -19,21 +19,21 @@ export async function GET() {
     include: { category: true }
   })
 
-  return NextResponse.json(locations)
+  return apiSuccess(locations)
 }
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const body = await request.json()
   const { name, location, latitude, longitude, categoryId, tags, notes, imageUrl } = body
 
   if (!name) {
-    return NextResponse.json({ error: 'Name is required' }, { status: 400 })
+    return apiError("Name is required", 400)
   }
 
   // Check if this is the user's first location
@@ -72,5 +72,5 @@ export async function POST(request: Request) {
     })
   }
 
-  return NextResponse.json(userLocation)
+  return apiSuccess(userLocation)
 }

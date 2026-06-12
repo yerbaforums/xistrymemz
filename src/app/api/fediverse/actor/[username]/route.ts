@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { getBaseUrl } from '@/lib/federation'
 
@@ -9,7 +9,7 @@ export async function GET(
   const { username } = await params
   const user = await prisma.user.findUnique({ where: { username } })
   if (!user) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    return apiError("Not found", 404)
   }
 
   const baseUrl = getBaseUrl()

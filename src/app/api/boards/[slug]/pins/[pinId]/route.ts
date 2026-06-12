@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -9,7 +9,7 @@ export async function DELETE(
 ) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const { slug, pinId } = await params
@@ -17,18 +17,18 @@ export async function DELETE(
   try {
     const board = await prisma.bulletinBoard.findUnique({ where: { slug } })
     if (!board) {
-      return NextResponse.json({ error: 'Board not found' }, { status: 404 })
+      return apiError("Board not found", 404)
     }
 
     const pin = await prisma.bulletinPin.findUnique({ where: { id: pinId } })
     if (!pin) {
-      return NextResponse.json({ error: 'Pin not found' }, { status: 404 })
+      return apiError("Pin not found", 404)
     }
 
     const isOwner = pin.userId === session.user.id
     const isBoardOwner = board.ownerId === session.user.id
     if (!isOwner && !isBoardOwner) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      return apiError("Forbidden", 403)
     }
 
     await prisma.bulletinPin.delete({ where: { id: pinId } })
@@ -38,10 +38,10 @@ export async function DELETE(
       data: { pinCount: { decrement: 1 } },
     })
 
-    return NextResponse.json({ success: true })
+    return apiSuccess({ success: true })
   } catch (error) {
     console.error('DELETE /api/boards/[slug]/pins/[pinId]:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }
 
@@ -51,7 +51,7 @@ export async function PATCH(
 ) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const { slug, pinId } = await params
@@ -62,16 +62,16 @@ export async function PATCH(
       include: { board: { select: { slug: true, ownerId: true } } },
     })
     if (!pin) {
-      return NextResponse.json({ error: 'Pin not found' }, { status: 404 })
+      return apiError("Pin not found", 404)
     }
     if (pin.board.slug !== slug) {
-      return NextResponse.json({ error: 'Pin does not belong to this board' }, { status: 400 })
+      return apiError("Pin does not belong to this board", 400)
     }
 
     const isOwner = pin.userId === session.user.id
     const isBoardOwner = pin.board.ownerId === session.user.id
     if (!isOwner && !isBoardOwner) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      return apiError("Forbidden", 403)
     }
 
     const body = await request.json()
@@ -94,9 +94,9 @@ export async function PATCH(
       },
     })
 
-    return NextResponse.json(updated)
+    return apiSuccess(updated)
   } catch (error) {
     console.error('PATCH /api/boards/[slug]/pins/[pinId]:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }

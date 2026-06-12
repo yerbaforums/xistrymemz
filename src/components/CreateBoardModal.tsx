@@ -4,10 +4,8 @@ import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { EmptyState } from '@/components/EmptyState'
 import styles from './CreateBoardModal.module.css'
+import { MapContainer as BoardMapContainer, TileLayer as BoardTileLayer, Marker as BoardMarker } from '@/components/LeafletComponents'
 
-const BoardMapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
-const BoardTileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
-const BoardMarker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false })
 const BoardClickHandler = dynamic(() => import('./BoardMapClickHandler').then(m => m.BoardMapClickHandler), { ssr: false })
 
 interface CreateBoardModalProps {

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { getBaseUrl, escapeHtml } from '@/lib/federation'
 
@@ -16,7 +16,7 @@ export async function GET(
     select: { id: true, username: true, name: true, federatedUrl: true }
   })
   if (!user) {
-    return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    return apiError("User not found", 404)
   }
 
   const posts = await prisma.forumPost.findMany({

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: Request) {
@@ -6,7 +6,7 @@ export async function GET(request: Request) {
   const userId = searchParams.get('userId')
 
   if (!userId) {
-    return NextResponse.json({ error: 'userId required' }, { status: 400 })
+    return apiError("userId required", 400)
   }
 
   const user = await prisma.user.findUnique({
@@ -21,7 +21,7 @@ export async function GET(request: Request) {
   })
 
   if (!user?.shopSlug) {
-    return NextResponse.json({ hasShop: false })
+    return apiSuccess({ hasShop: false })
   }
 
   return NextResponse.json({

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
@@ -53,9 +53,9 @@ export async function GET() {
       ...services.filter(s => s.user?.latitude && s.user?.longitude).map(s => ({ id: s.id, type: 'service' as const, title: s.title, lat: s.user!.latitude!, lng: s.user!.longitude!, url: `/services/${s.id}`, image: s.imageUrl, meta: s.price ? `$${s.price}` : undefined })),
     ]
 
-    return NextResponse.json({ items })
+    return apiSuccess({ items })
   } catch (error) {
     console.error('Error fetching map data:', error)
-    return NextResponse.json({ items: [] })
+    return apiSuccess({ items: [] })
   }
 }

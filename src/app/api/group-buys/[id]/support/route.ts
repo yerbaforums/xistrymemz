@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -11,7 +11,7 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
       where: { id: params.id }
     })
     if (!groupBuy) {
-      return NextResponse.json({ error: 'Group buy not found' }, { status: 404 })
+      return apiError("Group buy not found", 404)
     }
 
     const supporters = await prisma.groupBuySupporter.findMany({
@@ -22,10 +22,10 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
       orderBy: { joinedAt: 'asc' }
     })
 
-    return NextResponse.json({ supporters })
+    return apiSuccess({ supporters })
   } catch (error) {
     console.error('GET /api/group-buys/[id]/support:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }
 
@@ -35,7 +35,7 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const groupBuy = await prisma.groupBuy.findUnique({
@@ -43,18 +43,18 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
       include: { group: true }
     })
     if (!groupBuy) {
-      return NextResponse.json({ error: 'Group buy not found' }, { status: 404 })
+      return apiError("Group buy not found", 404)
     }
 
     if (groupBuy.status !== 'ACTIVE') {
-      return NextResponse.json({ error: 'Group buy is no longer active' }, { status: 400 })
+      return apiError("Group buy is no longer active", 400)
     }
 
     const existing = await prisma.groupBuySupporter.findUnique({
       where: { groupBuyId_userId: { groupBuyId: params.id, userId: session.user.id } }
     })
     if (existing) {
-      return NextResponse.json({ error: 'Already supporting this group buy' }, { status: 400 })
+      return apiError("Already supporting this group buy", 400)
     }
 
     const body = await request.json()
@@ -92,7 +92,7 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
     return NextResponse.json(supporter, { status: 201 })
   } catch (error) {
     console.error('POST /api/group-buys/[id]/support:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }
 
@@ -102,14 +102,14 @@ export async function DELETE(request: Request, ctx: { params: Promise<{ id: stri
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const existing = await prisma.groupBuySupporter.findUnique({
       where: { groupBuyId_userId: { groupBuyId: params.id, userId: session.user.id } }
     })
     if (!existing) {
-      return NextResponse.json({ error: 'Not supporting this group buy' }, { status: 404 })
+      return apiError("Not supporting this group buy", 404)
     }
 
     await prisma.groupBuySupporter.delete({
@@ -132,9 +132,9 @@ export async function DELETE(request: Request, ctx: { params: Promise<{ id: stri
       }
     })
 
-    return NextResponse.json({ success: true })
+    return apiSuccess({ success: true })
   } catch (error) {
     console.error('DELETE /api/group-buys/[id]/support:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }

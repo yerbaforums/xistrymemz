@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -20,10 +20,10 @@ export async function GET(
   })
 
   if (!event) {
-    return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+    return apiError("Event not found", 404)
   }
 
-  return NextResponse.json(event)
+  return apiSuccess(event)
 }
 
 export async function PUT(
@@ -33,7 +33,7 @@ export async function PUT(
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const { eventId } = await params
@@ -42,7 +42,7 @@ export async function PUT(
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return apiError("Invalid JSON body", 400)
   }
 
   const existingEvent = await prisma.event.findUnique({
@@ -50,7 +50,7 @@ export async function PUT(
   })
 
   if (!existingEvent) {
-    return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+    return apiError("Event not found", 404)
   }
 
   const isOwner = existingEvent.organizerId === session.user.id
@@ -58,7 +58,7 @@ export async function PUT(
   const isAdmin = userRole === 'ADMIN'
 
   if (!isOwner && !isAdmin) {
-    return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
+    return apiError("Not authorized", 403)
   }
 
   let latitude = existingEvent.latitude
@@ -88,7 +88,7 @@ export async function PUT(
     }
   })
 
-  return NextResponse.json(event)
+  return apiSuccess(event)
 }
 
 export async function DELETE(
@@ -98,7 +98,7 @@ export async function DELETE(
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const { eventId } = await params
@@ -108,7 +108,7 @@ export async function DELETE(
   })
 
   if (!existingEvent) {
-    return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+    return apiError("Event not found", 404)
   }
 
   const isOwner = existingEvent.organizerId === session.user.id
@@ -116,12 +116,12 @@ export async function DELETE(
   const isAdmin = userRole === 'ADMIN'
 
   if (!isOwner && !isAdmin) {
-    return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
+    return apiError("Not authorized", 403)
   }
 
   await prisma.event.delete({
     where: { id: eventId }
   })
 
-  return NextResponse.json({ success: true })
+  return apiSuccess({ success: true })
 }

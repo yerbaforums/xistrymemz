@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -57,7 +57,7 @@ export async function GET(
     })
 
     if (!group) {
-      return NextResponse.json({ error: 'Group not found' }, { status: 404 })
+      return apiError("Group not found", 404)
     }
 
     const isMember = userId ? group.members.some(m => m.userId === userId) : false
@@ -73,7 +73,7 @@ export async function GET(
     return NextResponse.json({ ...rest, marketplaceProducts, isMember, isAdmin })
   } catch (error) {
     console.error('GET /api/groups/[id]:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }
 
@@ -85,7 +85,7 @@ export async function PUT(
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { id } = await params
@@ -93,7 +93,7 @@ export async function PUT(
     try {
       body = await request.json()
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+      return apiError("Invalid JSON body", 400)
     }
     const { name, description, imageUrl, coverImage, bannerColor, isPrivate, hashtags } = body as any
 
@@ -102,7 +102,7 @@ export async function PUT(
     })
 
     if (!member) {
-      return NextResponse.json({ error: 'Only admins can update the group' }, { status: 403 })
+      return apiError("Only admins can update the group", 403)
     }
 
     const data: Record<string, unknown> = {}
@@ -126,10 +126,10 @@ export async function PUT(
       await extractAndLinkHashtags(groupName + ' ' + groupDesc, 'GROUP', id)
     }
 
-    return NextResponse.json(group)
+    return apiSuccess(group)
   } catch (error) {
     console.error('PUT /api/groups/[id]:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }
 
@@ -141,7 +141,7 @@ export async function DELETE(
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { id } = await params
@@ -152,18 +152,18 @@ export async function DELETE(
     })
 
     if (!group) {
-      return NextResponse.json({ error: 'Group not found' }, { status: 404 })
+      return apiError("Group not found", 404)
     }
 
     if (group.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Only the creator can delete the group' }, { status: 403 })
+      return apiError("Only the creator can delete the group", 403)
     }
 
     await prisma.group.delete({ where: { id } })
 
-    return NextResponse.json({ success: true })
+    return apiSuccess({ success: true })
   } catch (error) {
     console.error('DELETE /api/groups/[id]:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -10,7 +10,7 @@ export async function PUT(
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { id } = await params
@@ -25,13 +25,13 @@ export async function PUT(
       }
     })
     if (!appointment) {
-      return NextResponse.json({ error: 'Appointment not found' }, { status: 404 })
+      return apiError("Appointment not found", 404)
     }
 
     const isBuyer = appointment.buyerId === userId
     const isSeller = appointment.sellerId === userId
     if (!isBuyer && !isSeller) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      return apiError("Forbidden", 403)
     }
 
     const { action, title, description, startTime, endTime, location, meetingLink, declineReason } = body
@@ -41,10 +41,10 @@ export async function PUT(
 
     if (action === 'accept') {
       if (!isSeller) {
-        return NextResponse.json({ error: 'Only the seller can accept appointments' }, { status: 403 })
+        return apiError("Only the seller can accept appointments", 403)
       }
       if (appointment.status !== 'PENDING') {
-        return NextResponse.json({ error: 'Only pending appointments can be accepted' }, { status: 400 })
+        return apiError("Only pending appointments can be accepted", 400)
       }
       updateData.status = 'CONFIRMED'
       notificationData = {
@@ -57,10 +57,10 @@ export async function PUT(
       }
     } else if (action === 'decline') {
       if (!isSeller) {
-        return NextResponse.json({ error: 'Only the seller can decline appointments' }, { status: 403 })
+        return apiError("Only the seller can decline appointments", 403)
       }
       if (appointment.status !== 'PENDING') {
-        return NextResponse.json({ error: 'Only pending appointments can be declined' }, { status: 400 })
+        return apiError("Only pending appointments can be declined", 400)
       }
       updateData.status = 'REJECTED'
       if (declineReason) updateData.declineReason = declineReason
@@ -74,20 +74,20 @@ export async function PUT(
       }
     } else if (action === 'cancel') {
       if (appointment.status === 'COMPLETED') {
-        return NextResponse.json({ error: 'Cannot cancel a completed appointment' }, { status: 400 })
+        return apiError("Cannot cancel a completed appointment", 400)
       }
       updateData.status = 'CANCELLED'
     } else if (action === 'complete') {
       if (!isSeller) {
-        return NextResponse.json({ error: 'Only the seller can mark appointments as complete' }, { status: 403 })
+        return apiError("Only the seller can mark appointments as complete", 403)
       }
       if (appointment.status !== 'CONFIRMED') {
-        return NextResponse.json({ error: 'Only confirmed appointments can be completed' }, { status: 400 })
+        return apiError("Only confirmed appointments can be completed", 400)
       }
       updateData.status = 'COMPLETED'
     } else if (action === 'reschedule') {
       if (!startTime || !endTime) {
-        return NextResponse.json({ error: 'New start and end times required for rescheduling' }, { status: 400 })
+        return apiError("New start and end times required for rescheduling", 400)
       }
       updateData.startTime = new Date(startTime)
       updateData.endTime = new Date(endTime)
@@ -125,10 +125,10 @@ export async function PUT(
       await prisma.notification.create({ data: notificationData }).catch(() => {})
     }
 
-    return NextResponse.json({ appointment: updated })
+    return apiSuccess({ appointment: updated })
   } catch (error) {
     console.error('Error updating appointment:', error)
-    return NextResponse.json({ error: 'Failed to update appointment' }, { status: 500 })
+    return apiError("Failed to update appointment", 500)
   }
 }
 
@@ -139,17 +139,17 @@ export async function DELETE(
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { id } = await params
     const appointment = await prisma.appointment.findUnique({ where: { id } })
     if (!appointment) {
-      return NextResponse.json({ error: 'Appointment not found' }, { status: 404 })
+      return apiError("Appointment not found", 404)
     }
 
     if (appointment.buyerId !== session.user.id && appointment.sellerId !== session.user.id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      return apiError("Forbidden", 403)
     }
 
     await prisma.appointment.update({
@@ -157,9 +157,9 @@ export async function DELETE(
       data: { status: 'CANCELLED' }
     })
 
-    return NextResponse.json({ message: 'Appointment cancelled' })
+    return apiSuccess({ message: 'Appointment cancelled' })
   } catch (error) {
     console.error('Error cancelling appointment:', error)
-    return NextResponse.json({ error: 'Failed to cancel appointment' }, { status: 500 })
+    return apiError("Failed to cancel appointment", 500)
   }
 }

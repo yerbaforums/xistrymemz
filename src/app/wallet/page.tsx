@@ -8,6 +8,7 @@ import { useTariWallet } from '@/context/TariWalletContext'
 import { useToast } from '@/context/ToastContext'
 import Skeleton from '@/components/Skeleton'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 interface UserWallet {
   id: string
@@ -93,13 +94,14 @@ export default function WalletPage() {
       error('Failed to generate address: ' + (err instanceof Error ? err.message : String(err)))
     } finally {
       setGenerating(false)
+      setGenCurrency(null)
     }
   }
 
+  const [genCurrency, setGenCurrency] = useState<string | null>(null)
+
   async function generateNewAddress(currency: string) {
-    if (!confirm('Generate a new address? Your old address will remain associated with your account.')) {
-      return
-    }
+
     setGenerating(true)
     try {
       const res = await fetch('/api/wallet', {
@@ -119,6 +121,7 @@ export default function WalletPage() {
       error('Failed to generate new address')
     } finally {
       setGenerating(false)
+      setGenCurrency(null)
     }
   }
 
@@ -378,6 +381,17 @@ export default function WalletPage() {
           </div>
         </div>
       </div>
+
+
+      <ConfirmDialog
+        isOpen={!!genCurrency}
+        onClose={() => setGenCurrency(null)}
+        onConfirm={generateNewAddress}
+        title="Generate Address"
+        message="Generate a new address? Your old address will remain associated with your account."
+        confirmLabel="Generate"
+        variant="primary"
+      />
     </div>
   )
 }

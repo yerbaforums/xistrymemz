@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: Request) {
@@ -7,6 +7,9 @@ export async function GET(request: Request) {
   const category = searchParams.get('category') || ''
   const contentType = searchParams.get('type') || ''
   const sort = searchParams.get('sort') || 'recent'
+  const page = parseInt(searchParams.get("page") || "1")
+  const limit = parseInt(searchParams.get("limit") || "20")
+  const skip = (page - 1) * limit
 
   const contentWhere: Record<string, unknown> = {
     user: { schoolSlug: { not: null } }
@@ -27,7 +30,7 @@ export async function GET(request: Request) {
     contentWhere.contentType = contentType
   }
 
-  const contents = await prisma.schoolContent.findMany({
+  const contents = await prisma.schoolContent.findMany({ skip, take: limit,
     where: contentWhere,
     include: {
       user: {
@@ -52,7 +55,7 @@ export async function GET(request: Request) {
     take: 50
   })
 
-  const schools = await prisma.user.findMany({
+  const schools = await prisma.user.findMany({ skip, take: limit,
     where: { schoolSlug: { not: null }, schoolName: { not: '' } },
     select: {
       id: true,

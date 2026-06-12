@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { getTrendingHashtags } from '@/services/hashtagService'
 
@@ -17,15 +17,15 @@ export async function GET(request: Request) {
         take: limit
       })
       const enriched = await enrichWithCounts(hashtags)
-      return NextResponse.json({ hashtags: enriched })
+      return apiSuccess({ hashtags: enriched })
     }
 
     if (mode === 'trending') {
       const enriched = await getTrendingHashtags(7, limit, entity as any || undefined)
       if (entity) {
-        return NextResponse.json({ hashtags: enriched.filter((h: any) => (h.entities as any)[entity] > 0) })
+        return apiSuccess({ hashtags: enriched.filter((h: any) => (h.entities as any)[entity] > 0) })
       }
-      return NextResponse.json({ hashtags: enriched })
+      return apiSuccess({ hashtags: enriched })
     }
 
     const hashtags = await prisma.hashtag.findMany({
@@ -33,10 +33,10 @@ export async function GET(request: Request) {
       take: limit
     })
     const enriched = await enrichWithCounts(hashtags)
-    return NextResponse.json({ hashtags: enriched })
+    return apiSuccess({ hashtags: enriched })
   } catch (error) {
     console.error('Error fetching hashtags:', error)
-    return NextResponse.json({ error: 'Failed to fetch hashtags' }, { status: 500 })
+    return apiError("Failed to fetch hashtags", 500)
   }
 }
 

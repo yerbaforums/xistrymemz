@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const { id } = await params
@@ -17,14 +17,14 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   })
 
   if (!saved) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    return apiError("Not found", 404)
   }
 
   if (saved.userId !== session.user.id) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    return apiError("Forbidden", 403)
   }
 
   await prisma.savedItem.delete({ where: { id } })
 
-  return NextResponse.json({ success: true })
+  return apiSuccess({ success: true })
 }

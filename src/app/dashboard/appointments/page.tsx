@@ -239,7 +239,7 @@ export default function DashboardAppointments() {
           <p className={styles.subtitle}>Appointments, personal events, and group activities</p>
         </div>
         <div className={styles.headerActions}>
-          <Link href="/profile/edit" className={styles.viewToggle} style={{ textDecoration: 'none' }}>
+          <Link href="/profile/edit" className={`${styles.viewToggle} ${styles.noUnderline}`}>
             ⏰ Availability
           </Link>
           <button onClick={() => setViewMode(viewMode === 'list' ? 'calendar' : 'list')} className={styles.viewToggle}>

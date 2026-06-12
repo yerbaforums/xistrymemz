@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -11,10 +11,10 @@ export async function GET() {
         _count: { select: { posts: true } }
       }
     })
-    return NextResponse.json(categories)
+    return apiSuccess(categories)
   } catch (error) {
     console.error('Error fetching forum categories:', error)
-    return NextResponse.json({ error: 'Failed to fetch categories' }, { status: 500 })
+    return apiError("Failed to fetch categories", 500)
   }
 }
 
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const body = await req.json()
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       where: { slug }
     })
     if (existing) {
-      return NextResponse.json({ error: 'Category slug already exists' }, { status: 400 })
+      return apiError("Category slug already exists", 400)
     }
 
     const category = await prisma.forumCategory.create({
@@ -45,9 +45,9 @@ export async function POST(req: Request) {
       }
     })
 
-    return NextResponse.json(category)
+    return apiSuccess(category)
   } catch (error) {
     console.error('Error creating forum category:', error)
-    return NextResponse.json({ error: 'Failed to create category' }, { status: 500 })
+    return apiError("Failed to create category", 500)
   }
 }

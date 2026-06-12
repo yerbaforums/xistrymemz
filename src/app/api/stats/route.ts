@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { apiSuccess, apiServerError } from '@/lib/api-helpers'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,9 +22,8 @@ export async function GET() {
       prisma.bulletinBoard.count({ where: { isPublic: true } }),
     ])
 
-    return NextResponse.json({ members, shops, schools, products, services, rentals, events, plans, requests, forumPosts, forumReplies, offers, appointments, boards })
+    return apiSuccess({ members, shops, schools, products, services, rentals, events, plans, requests, forumPosts, forumReplies, offers, appointments, boards })
   } catch (error) {
-    console.error('Error fetching stats:', error)
-    return NextResponse.json({ members: 0, shops: 0, schools: 0, products: 0, services: 0, rentals: 0, events: 0, plans: 0, requests: 0, forumPosts: 0, forumReplies: 0, boards: 0 })
+    return apiServerError(error)
   }
 }

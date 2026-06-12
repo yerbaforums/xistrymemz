@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -10,7 +10,7 @@ export async function POST(
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const { id } = await params
@@ -18,7 +18,7 @@ export async function POST(
   const { toStatus, reason } = body
 
   if (!toStatus) {
-    return NextResponse.json({ error: 'toStatus is required' }, { status: 400 })
+    return apiError("toStatus is required", 400)
   }
 
   const existingRequest = await prisma.request.findUnique({
@@ -32,7 +32,7 @@ export async function POST(
   })
 
   if (!existingRequest) {
-    return NextResponse.json({ error: 'Request not found' }, { status: 404 })
+    return apiError("Request not found", 404)
   }
 
   // Check permissions: owner, plan owner, or admin
@@ -42,7 +42,7 @@ export async function POST(
   const isAdmin = userRole === 'ADMIN'
 
   if (!isOwner && !isPlanOwner && !isAdmin) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    return apiError("Forbidden", 403)
   }
 
   const updatedRequest = await prisma.request.update({
@@ -73,5 +73,5 @@ export async function POST(
     }
   })
 
-  return NextResponse.json(updatedRequest)
+  return apiSuccess(updatedRequest)
 }

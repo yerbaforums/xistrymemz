@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -16,14 +16,14 @@ export async function GET(request: Request) {
     if (type === 'personal') {
       const session = await getServerSession(authOptions)
       if (!session?.user?.id) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        return apiError("Unauthorized", 401)
       }
 
       const events = await prisma.userEvent.findMany({
         where: { userId: session.user.id },
         orderBy: { startDate: 'asc' }
       })
-      return NextResponse.json(events)
+      return apiSuccess(events)
     }
 
     const session = await getServerSession(authOptions)
@@ -98,7 +98,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ items: formattedEvents, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
   } catch (error) {
     console.error('GET /api/events:', error)
-    return NextResponse.json({ error: 'Failed to fetch events' }, { status: 500 })
+    return apiError("Failed to fetch events", 500)
   }
 }
 
@@ -106,14 +106,14 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     let body;
     try {
       body = await request.json()
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+      return apiError("Invalid JSON body", 400)
     }
 
     const validation = validateBody(eventSchema, body)
@@ -161,13 +161,13 @@ export async function POST(request: NextRequest) {
           userId: session.user.id
         }
       })
-      return NextResponse.json(event)
+      return apiSuccess(event)
     }
 
-    let latitude: number | null = null
-    let longitude: number | null = null
+    let latitude: number | null = body.latitude ?? null
+    let longitude: number | null = body.longitude ?? null
 
-    if (location) {
+    if (!latitude && !longitude && location) {
       const geocodeResult = await geocodeLocation(location)
       if (geocodeResult) {
         latitude = geocodeResult.latitude
@@ -180,7 +180,7 @@ export async function POST(request: NextRequest) {
         where: { id: planId }
       })
       if (!plan) {
-        return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
+        return apiError("Plan not found", 404)
       }
     }
 
@@ -253,9 +253,9 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    return NextResponse.json(event)
+    return apiSuccess(event)
   } catch (error) {
     console.error('POST /api/events:', error)
-    return NextResponse.json({ error: 'Failed to create event' }, { status: 500 })
+    return apiError("Failed to create event", 500)
   }
 }

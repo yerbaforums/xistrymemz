@@ -7,6 +7,7 @@ import ImageUploader from '@/components/ImageUploader'
 import styles from './rentals.module.css'
 import Skeleton from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 interface ShopSettings {
   shopName: string | null
@@ -48,6 +49,8 @@ export default function RentalsPage() {
   const [search, setSearch] = useState('')
   const [shopSettings, setShopSettings] = useState<ShopSettings | null>(null)
   const [showShopModal, setShowShopModal] = useState(false)
+  const [confirmAction, setConfirmAction] = useState<'delete-item' | 'unpublish-shop' | 'delete-shop' | null>(null)
+  const [confirmTitle, setConfirmTitle] = useState('')
   const [shopForm, setShopForm] = useState({
     shopName: '', shopAbout: '', shopImage: '', shopImages: [] as string[],
     shopSlug: '', email: '', name: ''
@@ -167,10 +170,10 @@ export default function RentalsPage() {
     }
   }
 
-  const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Delete "${title}"?`)) return
+  const handleDelete = async () => {
     try {
-      const res = await fetch(`/api/products/${id}`, { method: 'DELETE' })
+      if (!confirmAction || confirmAction !== 'delete-item') return;
+      const res = await fetch(`/api/products/${confirmTitle}`, { method: 'DELETE' })
       if (res.ok) { success('Deleted'); fetchAll() }
       else error('Failed to delete')
     } catch { error('Failed to delete') }
@@ -201,7 +204,6 @@ export default function RentalsPage() {
   }
 
   const handleUnpublishShop = async () => {
-    if (!confirm('Unpublish your shop?')) return
     try {
       const res = await fetch('/api/shop?action=unpublish', { method: 'DELETE' })
       if (res.ok) { success('Shop unpublished'); setShowShopModal(false); fetchAll() }
@@ -210,8 +212,6 @@ export default function RentalsPage() {
   }
 
   const handleDeleteShop = async () => {
-    if (!confirm('Permanently delete your shop?')) return
-    if (!confirm('Are you sure? This cannot be undone.')) return
     try {
       const res = await fetch('/api/shop?action=delete', { method: 'DELETE' })
       if (res.ok) { success('Shop deleted'); setShowShopModal(false); fetchAll() }
@@ -430,14 +430,41 @@ export default function RentalsPage() {
                 <h3>Danger Zone</h3>
                 <p>These actions affect your entire shop.</p>
                 <div className={styles.dangerActions}>
-                  <button onClick={handleUnpublishShop} className={styles.unpublishBtn}>Unpublish Shop</button>
-                  <button onClick={handleDeleteShop} className={styles.deleteShopBtn}>Delete Shop</button>
+                  <button onClick={() => setConfirmAction('unpublish-shop')} className={styles.unpublishBtn}>Unpublish Shop</button>
+                  <button onClick={() => setConfirmAction('delete-shop')} className={styles.deleteShopBtn}>Delete Shop</button>
                 </div>
               </div>
             )}
           </div>
         </div>
       )}
+      <ConfirmDialog
+        isOpen={confirmAction === 'delete-item'}
+        onClose={() => { setConfirmAction(null); setConfirmTitle('') }}
+        onConfirm={handleDelete}
+        title="Delete Rental"
+        message={`Permanently delete this rental? This cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+      />
+      <ConfirmDialog
+        isOpen={confirmAction === 'unpublish-shop'}
+        onClose={() => setConfirmAction(null)}
+        onConfirm={handleUnpublishShop}
+        title="Unpublish Shop"
+        message="Your shop will no longer appear in the directory. All products are preserved."
+        confirmLabel="Unpublish"
+        variant="warning"
+      />
+      <ConfirmDialog
+        isOpen={confirmAction === 'delete-shop'}
+        onClose={() => setConfirmAction(null)}
+        onConfirm={handleDeleteShop}
+        title="Delete Shop"
+        message="This permanently removes your shop name, description, and image. Your products will remain but will no longer be linked to a shop. This cannot be undone."
+        confirmLabel="Delete Shop"
+        variant="danger"
+      />
     </div>
   )
 }

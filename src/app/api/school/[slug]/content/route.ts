@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -13,7 +13,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
   })
 
   if (!user) {
-    return NextResponse.json({ error: 'School not found' }, { status: 404 })
+    return apiError("School not found", 404)
   }
 
   const contents = await prisma.schoolContent.findMany({
@@ -26,14 +26,14 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
     orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }]
   })
 
-  return NextResponse.json(contents)
+  return apiSuccess(contents)
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ slug: string }> }) {
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const { slug } = await params
@@ -43,14 +43,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
   })
 
   if (!user || user.id !== session.user.id) {
-    return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
+    return apiError("Not authorized", 403)
   }
 
   const body = await request.json()
   const { title, content, contentType, images, videoUrl, price, isPaid, section, sortOrder, hashtags: explicitHashtags } = body
 
   if (!title || !content) {
-    return NextResponse.json({ error: 'Title and content required' }, { status: 400 })
+    return apiError("Title and content required", 400)
   }
 
   const schoolContent = await prisma.schoolContent.create({
@@ -75,5 +75,5 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
     await extractAndLinkHashtags(title + ' ' + content, 'SCHOOLCONTENT', schoolContent.id)
   }
 
-  return NextResponse.json(schoolContent)
+  return apiSuccess(schoolContent)
 }

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { geocodeLocation } from '@/lib/geocoding'
 import { getServerSession } from 'next-auth'
@@ -90,5 +90,5 @@ export async function GET() {
     }
   }))
 
-  return NextResponse.json(result.filter(Boolean))
+  return apiSuccess(result.filter(Boolean))
 }

@@ -71,6 +71,8 @@ export interface ServiceOffering {
   duration: number
   price: number | null
   location: string | null
+  latitude: number | null
+  longitude: number | null
   meetingLink: string | null
   imageUrl: string | null
   isActive: boolean

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string; collabId: string }> }) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const { id: tripId, collabId } = await params
@@ -18,7 +18,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   })
 
   if (!collaborator) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    return apiError("Not found", 404)
   }
 
   // Owner can update role; collaborator can update status
@@ -26,7 +26,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   const isSelf = collaborator.userId === session.user.id
 
   if (!isOwner && !isSelf) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    return apiError("Forbidden", 403)
   }
 
   const data: any = {}
@@ -44,13 +44,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     include: { user: { select: { id: true, name: true, image: true } } }
   })
 
-  return NextResponse.json(updated)
+  return apiSuccess(updated)
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string; collabId: string }> }) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const { id: tripId, collabId } = await params
@@ -61,16 +61,16 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   })
 
   if (!collaborator) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    return apiError("Not found", 404)
   }
 
   const isOwner = collaborator.trip.userId === session.user.id
   const isSelf = collaborator.userId === session.user.id
 
   if (!isOwner && !isSelf) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    return apiError("Forbidden", 403)
   }
 
   await prisma.tripCollaborator.delete({ where: { id: collabId } })
-  return NextResponse.json({ success: true })
+  return apiSuccess({ success: true })
 }

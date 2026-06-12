@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -142,12 +142,12 @@ export async function GET(request: Request) {
     const q = searchParams.get('q') || ''
 
     if (!type || !q || q.length < 2) {
-      return NextResponse.json({ items: [] })
+      return apiSuccess({ items: [] })
     }
 
     const config = SEARCH_CONFIG[type]
     if (!config) {
-      return NextResponse.json({ items: [] })
+      return apiSuccess({ items: [] })
     }
 
     const results = await (prisma as any)[config.model].findMany({
@@ -164,9 +164,9 @@ export async function GET(request: Request) {
       type,
     }))
 
-    return NextResponse.json({ items })
+    return apiSuccess({ items })
   } catch (error) {
     console.error('Error searching entities:', error)
-    return NextResponse.json({ items: [] })
+    return apiSuccess({ items: [] })
   }
 }

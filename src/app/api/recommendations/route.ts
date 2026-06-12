@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
@@ -49,7 +49,7 @@ export async function GET() {
     })
 
     if (!admin) {
-      return NextResponse.json({ error: 'Admin not found' }, { status: 404 })
+      return apiError("Admin not found", 404)
     }
 
     const recommendations = await prisma.recommendation.findMany({
@@ -57,7 +57,7 @@ export async function GET() {
       take: 50
     })
 
-    return NextResponse.json({ recommendations })
+    return apiSuccess({ recommendations })
   } catch (error) {
     console.error('Get recommendations error:', error)
     return NextResponse.json(

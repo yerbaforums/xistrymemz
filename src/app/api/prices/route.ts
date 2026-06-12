@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { getCryptoPrices } from '@/lib/prices'
 
 export async function GET() {
@@ -10,6 +10,6 @@ export async function GET() {
     })
   } catch (error) {
     console.error('Error fetching prices:', error)
-    return NextResponse.json({ error: 'Failed to fetch prices' }, { status: 500 })
+    return apiError("Failed to fetch prices", 500)
   }
 }

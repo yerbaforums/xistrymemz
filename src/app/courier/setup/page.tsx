@@ -9,6 +9,7 @@ import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import FormWizard, { useWizard, type WizardStep } from '@/components/FormWizard'
 import Skeleton from '@/components/Skeleton'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { businessTemplates, getTemplateById, type BusinessTemplate } from '@/lib/templates'
 import Button from '@/components/ui/Button'
 import Breadcrumbs from '@/components/Breadcrumbs'
@@ -46,6 +47,7 @@ export default function CourierSetupPage() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingService, setEditingService] = useState<CourierService | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   
   const [formData, setFormData] = useState({
@@ -161,11 +163,11 @@ export default function CourierSetupPage() {
     setShowForm(true)
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this courier service?')) return
+  const handleDelete = async () => {
+    if (!deleteTarget) return
     try {
-      const res = await fetch(`/api/courier/${id}`, { method: 'DELETE' })
-      if (res.ok) fetchServices()
+      const res = await fetch(`/api/courier/${deleteTarget}`, { method: 'DELETE' })
+      if (res.ok) { setDeleteTarget(null); fetchServices() }
     } catch (err) {
       console.error(err)
     }
@@ -197,7 +199,7 @@ export default function CourierSetupPage() {
   }
 
   return (
-    <div className={styles.container}>
+    <><div className={styles.container}>
       <Breadcrumbs items={[
         { label: 'Home', href: '/' },
         { label: 'Setup Courier' },
@@ -469,7 +471,7 @@ export default function CourierSetupPage() {
                 )}
                 <div className={styles.serviceActions}>
                   <Button onClick={() => handleEdit(service)} className={styles.editBtn}>Edit</Button>
-                  <Button onClick={() => handleDelete(service.id)} className={styles.deleteBtn}>Delete</Button>
+                  <Button onClick={() => setDeleteTarget(service.id)} className={styles.deleteBtn}>Delete</Button>
                 </div>
               </div>
             ))}
@@ -580,5 +582,16 @@ export default function CourierSetupPage() {
         </div>
       )}
     </div>
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        title="Delete Service"
+        message="Delete this courier service permanently?"
+        confirmLabel="Delete"
+        variant="danger"
+      />
+    </>
   )
 }

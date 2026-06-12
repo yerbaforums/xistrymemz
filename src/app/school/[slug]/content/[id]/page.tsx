@@ -120,6 +120,35 @@ export default function SchoolContentDetailPage() {
 
   const images: string[] = content.images ? JSON.parse(content.images) : []
   const isHtml = content.content.startsWith('<')
+  const [completed, setCompleted] = useState(false)
+  const [completing, setCompleting] = useState(false)
+
+  useEffect(() => {
+    if (!session?.user?.id || !slug || !content?.id) return
+    fetch(`/api/school/progress?schoolId=${content.user.id}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.progress) {
+          const found = data.progress.find((p: any) => p.contentId === content.id)
+          if (found) setCompleted(found.completed)
+        }
+      })
+      .catch(() => {})
+  }, [session, slug, content?.id, content?.user?.id])
+
+  const handleToggleComplete = async () => {
+    if (!content?.id || completing) return
+    setCompleting(true)
+    try {
+      const res = await fetch('/api/school/progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ schoolId: content.user.id, contentId: content.id, completed: !completed })
+      })
+      if (res.ok) setCompleted(!completed)
+    } catch {}
+    setCompleting(false)
+  }
   const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').trim()
 
   return (
@@ -221,6 +250,17 @@ export default function SchoolContentDetailPage() {
         </div>
       )}
 
+      {session?.user?.id && content && (
+        <div style={{ textAlign: 'center', margin: '20px 0' }}>
+          <button
+            onClick={handleToggleComplete}
+            disabled={completing}
+            style={{ padding: '10px 24px', background: completed ? 'var(--accent-success)' : 'var(--accent-primary)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 }}
+          >
+            {completing ? '...' : completed ? '✅ Completed' : '📝 Mark Complete'}
+          </button>
+        </div>
+      )}
       <LinkedItemsSection entityType="SCHOOLCONTENT" entityId={content.id} currentUserId={session?.user?.id} />
     </div>
   )

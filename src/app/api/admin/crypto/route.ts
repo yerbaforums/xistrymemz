@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -8,7 +8,7 @@ export async function GET(request: Request) {
     const session = await getServerSession(authOptions)
     
     if (!session || session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { searchParams } = new URL(request.url)
@@ -23,7 +23,7 @@ export async function GET(request: Request) {
         orderBy: { createdAt: 'desc' },
         take: 100
       })
-      return NextResponse.json(deposits)
+      return apiSuccess(deposits)
     }
 
     if (type === 'escrows') {
@@ -35,7 +35,7 @@ export async function GET(request: Request) {
         },
         orderBy: { createdAt: 'desc' }
       })
-      return NextResponse.json(escrows)
+      return apiSuccess(escrows)
     }
 
     // Default: get all user wallets
@@ -47,9 +47,9 @@ export async function GET(request: Request) {
       take: 100
     })
 
-    return NextResponse.json(wallets)
+    return apiSuccess(wallets)
   } catch (error) {
     console.error('Error fetching admin wallet data:', error)
-    return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 })
+    return apiError("Failed to fetch data", 500)
   }
 }

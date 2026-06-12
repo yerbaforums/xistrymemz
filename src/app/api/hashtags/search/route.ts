@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: Request) {
@@ -6,7 +6,7 @@ export async function GET(request: Request) {
   const query = searchParams.get('q') || ''
 
   if (!query || query.length < 1) {
-    return NextResponse.json({ hashtags: [] })
+    return apiSuccess({ hashtags: [] })
   }
 
   try {
@@ -17,8 +17,8 @@ export async function GET(request: Request) {
       select: { tag: true, postCount: true }
     })
 
-    return NextResponse.json({ hashtags })
+    return apiSuccess({ hashtags })
   } catch {
-    return NextResponse.json({ hashtags: [] })
+    return apiSuccess({ hashtags: [] })
   }
 }

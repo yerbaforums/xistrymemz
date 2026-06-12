@@ -1257,3 +1257,50 @@
   color: var(--accent-primary);
   text-align: center;
 }
+
+/* View toggles */
+.viewToggles {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.viewToggle {
+  padding: 6px 14px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.viewToggle:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.viewToggleActive {
+  background: var(--accent-primary);
+  color: #fff;
+  border-color: var(--accent-primary);
+}
+
+.membersList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mapPlaceholder {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+
+.membersList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -11,7 +11,7 @@ export async function GET(
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { id } = await params
@@ -22,7 +22,7 @@ export async function GET(
     })
 
     if (!plan) {
-      return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
+      return apiError("Plan not found", 404)
     }
 
     const isOwner = plan.userId === session.user.id
@@ -33,7 +33,7 @@ export async function GET(
     const isAdmin = userRole === 'ADMIN'
 
     if (!isOwner && !isEditor && !isAdmin) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      return apiError("Forbidden", 403)
     }
 
     const history = await prisma.planStatusHistory.findMany({
@@ -41,12 +41,12 @@ export async function GET(
       orderBy: { createdAt: 'desc' }
     })
 
-    return NextResponse.json(history.map((h: { createdAt: Date }) => ({
+    return apiSuccess(history.map((h: { createdAt: Date }) => ({
       ...h,
       createdAt: h.createdAt.toISOString()
     })))
   } catch (error) {
     console.error('Error fetching plan status history:', error)
-    return NextResponse.json({ error: 'Failed to fetch history' }, { status: 500 })
+    return apiError("Failed to fetch history", 500)
   }
 }

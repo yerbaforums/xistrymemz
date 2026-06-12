@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -11,7 +11,7 @@ export async function POST(
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const body = await request.json()
@@ -28,15 +28,15 @@ export async function POST(
     })
 
     if (!original) {
-      return NextResponse.json({ error: 'Offer not found' }, { status: 404 })
+      return apiError("Offer not found", 404)
     }
 
     if (original.receiverId !== session.user.id) {
-      return NextResponse.json({ error: 'Only the receiver can counter this offer' }, { status: 403 })
+      return apiError("Only the receiver can counter this offer", 403)
     }
 
     if (original.status !== 'PENDING' && original.status !== 'COUNTERED') {
-      return NextResponse.json({ error: 'Cannot counter an offer with this status' }, { status: 400 })
+      return apiError("Cannot counter an offer with this status", 400)
     }
 
     const counterOffer = await prisma.barterOffer.create({
@@ -83,6 +83,6 @@ export async function POST(
     return NextResponse.json(counterOffer, { status: 201 })
   } catch (error) {
     console.error('Error creating counter offer:', error)
-    return NextResponse.json({ error: 'Failed to create counter offer' }, { status: 500 })
+    return apiError("Failed to create counter offer", 500)
   }
 }

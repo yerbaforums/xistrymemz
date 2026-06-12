@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -7,14 +7,14 @@ export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const body = await request.json()
     const { inviteCode } = body
 
     if (!inviteCode) {
-      return NextResponse.json({ error: 'Invite code required' }, { status: 400 })
+      return apiError("Invite code required", 400)
     }
 
     const room = await prisma.videoRoom.findUnique({
@@ -27,11 +27,11 @@ export async function POST(request: Request) {
     })
 
     if (!room) {
-      return NextResponse.json({ error: 'Room not found' }, { status: 404 })
+      return apiError("Room not found", 404)
     }
 
     if (!room.isActive) {
-      return NextResponse.json({ error: 'Room is no longer active' }, { status: 400 })
+      return apiError("Room is no longer active", 400)
     }
 
     const existingParticipant = room.participants.find(p => p.userId === session.user.id && p.leftAt === null)
@@ -52,9 +52,9 @@ export async function POST(request: Request) {
       },
     })
 
-    return NextResponse.json({ room: updated })
+    return apiSuccess({ room: updated })
   } catch (error) {
     console.error('Error joining video room:', error)
-    return NextResponse.json({ error: 'Failed to join room' }, { status: 500 })
+    return apiError("Failed to join room", 500)
   }
 }

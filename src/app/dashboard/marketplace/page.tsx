@@ -16,6 +16,7 @@ import { SHOP_CATEGORIES } from '@/lib/shop-categories'
 import { PRODUCT_CONDITIONS, PRODUCT_TYPES } from '@/lib/product-categories'
 
 import { EmptyState } from '@/components/EmptyState'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 import styles from './marketplace.module.css'
 
 interface Product {
@@ -82,6 +83,8 @@ function MarketplaceContent() {
   const [search, setSearch] = useState('')
   const [showProductForm, setShowProductForm] = useState(false)
   const [showShopModal, setShowShopModal] = useState(false)
+  const [confirmAction, setConfirmAction] = useState<'delete-item' | 'unpublish-shop' | 'delete-shop' | null>(null)
+  const [confirmTitle, setConfirmTitle] = useState('')
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const userDonationAddrs = useDonationAddresses()
   const { settings } = useSiteSettings()
@@ -267,10 +270,10 @@ function MarketplaceContent() {
     }
   }
 
-  const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Delete "${title}"? This cannot be undone.`)) return
+  const handleDelete = async () => {
     try {
-      const res = await fetch(`/api/products/${id}`, { method: 'DELETE' })
+      if (!confirmAction || confirmAction !== 'delete-item') return;
+      const res = await fetch(`/api/products/${confirmTitle}`, { method: 'DELETE' })
       if (res.ok) {
         success('Deleted')
         fetchAll()
@@ -328,7 +331,6 @@ function MarketplaceContent() {
   }
 
   const handleUnpublishShop = async () => {
-    if (!confirm('Unpublish your shop? It will no longer appear in the directory. All products are preserved.')) return
     try {
       const res = await fetch('/api/shop?action=unpublish', { method: 'DELETE' })
       if (res.ok) {
@@ -344,8 +346,6 @@ function MarketplaceContent() {
   }
 
   const handleDeleteShop = async () => {
-    if (!confirm('Permanently delete your shop? This removes your shop name, description, and image. Your products will remain but will no longer be linked to a shop.')) return
-    if (!confirm('Are you sure? This cannot be undone.')) return
     try {
       const res = await fetch('/api/shop?action=delete', { method: 'DELETE' })
       if (res.ok) {
@@ -510,10 +510,10 @@ function MarketplaceContent() {
                 <h3>Danger Zone</h3>
                 <p>These actions affect your entire shop.</p>
                 <div className={styles.dangerActions}>
-                  <button onClick={handleUnpublishShop} className={styles.unpublishBtn}>
+                  <button onClick={() => setConfirmAction('unpublish-shop')} className={styles.unpublishBtn}>
                     Unpublish Shop
                   </button>
-                  <button onClick={handleDeleteShop} className={styles.deleteShopBtn}>
+                  <button onClick={() => setConfirmAction('delete-shop')} className={styles.deleteShopBtn}>
                     Delete Shop
                   </button>
                 </div>
@@ -635,6 +635,33 @@ function MarketplaceContent() {
           </div>
         </div>
       )}
+      <ConfirmDialog
+        isOpen={confirmAction === 'delete-item'}
+        onClose={() => { setConfirmAction(null); setConfirmTitle('') }}
+        onConfirm={handleDelete}
+        title="Delete Product"
+        message={`Permanently delete this product? This cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+      />
+      <ConfirmDialog
+        isOpen={confirmAction === 'unpublish-shop'}
+        onClose={() => setConfirmAction(null)}
+        onConfirm={handleUnpublishShop}
+        title="Unpublish Shop"
+        message="Your shop will no longer appear in the directory. All products are preserved."
+        confirmLabel="Unpublish"
+        variant="warning"
+      />
+      <ConfirmDialog
+        isOpen={confirmAction === 'delete-shop'}
+        onClose={() => setConfirmAction(null)}
+        onConfirm={handleDeleteShop}
+        title="Delete Shop"
+        message="This permanently removes your shop name, description, and image. Your products will remain but will no longer be linked to a shop. This cannot be undone."
+        confirmLabel="Delete Shop"
+        variant="danger"
+      />
     </div>
   )
 }

@@ -13,6 +13,7 @@ import CTASection from '@/components/home/CTASection'
 import PassportSection from '@/components/home/PassportSection'
 import FeedbackSection from '@/components/home/FeedbackSection'
 import HomeFooterSection from '@/components/home/HomeFooterSection'
+import HomeTourWrapper from '@/components/HomeTourWrapper'
 import type { PlatformStats, FeaturedShop, FeaturedProduct, PublicRequest, FeaturedEvent, PublicPlan, FeaturedBoard } from '@/components/home/types'
 
 const ZERO_STATS: PlatformStats = {
@@ -162,6 +163,7 @@ export default function Home() {
       <CTASection memberCount={animatedStats.members} />
       <FeedbackSection />
       <HomeFooterSection />
+      <HomeTourWrapper />
     </div>
   )
 }

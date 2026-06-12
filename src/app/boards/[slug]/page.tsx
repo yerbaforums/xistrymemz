@@ -174,12 +174,13 @@ export default function BoardDetailPage() {
     }
   }
 
-  const handleDelete = async (pinId: string) => {
-    if (!confirm('Delete this pin?')) return
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+
+  const handlePinDelete = async () => {
     try {
-      const res = await fetch(`/api/boards/${slug}/pins/${pinId}`, { method: 'DELETE' })
+      const res = await fetch(`/api/boards/${slug}/pins/${deleteTarget}`, { method: 'DELETE' })
       if (res.ok) {
-        setPins(prev => prev.filter(p => p.id !== pinId))
+        setPins(prev => prev.filter(p => p.id !== deleteTarget))
         setTotal(prev => prev - 1)
       }
     } catch (e) { console.error('Delete pin error:', e); toastError('Failed to delete pin') }
@@ -526,7 +527,7 @@ export default function BoardDetailPage() {
                 isOwner={pin.userId === userId}
                 isBoardOwner={isBoardOwner}
                 boardSlug={slug}
-                onDelete={handleDelete}
+                onDelete={(id) => setDeleteTarget(id)}
                 onFlyTo={handlePinFlyTo}
                 onView={(pinId) => {
                   const idx = pins.findIndex(p => p.id === pinId)
@@ -661,6 +662,16 @@ export default function BoardDetailPage() {
         title="Delete Board"
         message={`Are you sure you want to delete "${board?.name}"? All pins will be permanently removed.`}
         confirmLabel="Delete Board"
+      />
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handlePinDelete}
+        title="Delete Pin"
+        message="Remove this pin from the board?"
+        confirmLabel="Delete"
+        variant="danger"
         variant="danger"
       />
     </div>

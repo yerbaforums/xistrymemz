@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -11,14 +11,14 @@ export async function POST(request: Request) {
     
     const userId = session?.user?.id
     if (!userId || typeof userId !== 'string') {
-      return NextResponse.json({ error: 'Unauthorized - Please log in' }, { status: 401 })
+      return apiError("Unauthorized - Please log in", 401)
     }
 
     let body: unknown
     try {
       body = await request.json()
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+      return apiError("Invalid JSON body", 400)
     }
     const validation = validateBody(connectionSchema, body)
     if (!validation.success) {
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     const { receiverId, message } = validation.data
 
     if (receiverId === userId) {
-      return NextResponse.json({ error: 'Cannot connect with yourself' }, { status: 400 })
+      return apiError("Cannot connect with yourself", 400)
     }
 
     const receiverExists = await prisma.user.findUnique({
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     })
 
     if (!receiverExists) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      return apiError("User not found", 404)
     }
 
     const existing = await prisma.connection.findFirst({
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     })
 
     if (existing) {
-      return NextResponse.json({ error: 'Connection already exists' }, { status: 400 })
+      return apiError("Connection already exists", 400)
     }
 
     const requester = await prisma.user.findUnique({ where: { id: userId }, select: { name: true } })
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ connection, message: 'Connection request sent!' })
   } catch (error) {
     console.error('Error creating connection:', error)
-    return NextResponse.json({ error: 'Failed to create connection' }, { status: 500 })
+    return apiError("Failed to create connection", 500)
   }
 }
 
@@ -99,14 +99,14 @@ export async function DELETE(request: Request) {
     
     const userId = session?.user?.id
     if (!userId || typeof userId !== 'string') {
-      return NextResponse.json({ error: 'Unauthorized - Please log in' }, { status: 401 })
+      return apiError("Unauthorized - Please log in", 401)
     }
 
     const { searchParams } = new URL(request.url)
     const connectionId = searchParams.get('connectionId')
 
     if (!connectionId) {
-      return NextResponse.json({ error: 'Connection ID is required' }, { status: 400 })
+      return apiError("Connection ID is required", 400)
     }
 
     const connection = await prisma.connection.findUnique({
@@ -114,21 +114,21 @@ export async function DELETE(request: Request) {
     })
 
     if (!connection) {
-      return NextResponse.json({ error: 'Connection not found' }, { status: 404 })
+      return apiError("Connection not found", 404)
     }
 
     if (connection.requesterId !== userId && connection.receiverId !== userId) {
-      return NextResponse.json({ error: 'Not authorized to disconnect' }, { status: 403 })
+      return apiError("Not authorized to disconnect", 403)
     }
 
     await prisma.connection.delete({
       where: { id: connectionId }
     })
 
-    return NextResponse.json({ message: 'Disconnected successfully' })
+    return apiSuccess({ message: 'Disconnected successfully' })
   } catch (error) {
     console.error('Error disconnecting:', error)
-    return NextResponse.json({ error: 'Failed to disconnect' }, { status: 500 })
+    return apiError("Failed to disconnect", 500)
   }
 }
 
@@ -138,18 +138,18 @@ export async function PUT(request: Request) {
     
     const userId = session?.user?.id
     if (!userId || typeof userId !== 'string') {
-      return NextResponse.json({ error: 'Unauthorized - Please log in' }, { status: 401 })
+      return apiError("Unauthorized - Please log in", 401)
     }
 
     const body = await request.json()
     const { connectionId, action } = body
 
     if (!connectionId || !action) {
-      return NextResponse.json({ error: 'Connection ID and action are required' }, { status: 400 })
+      return apiError("Connection ID and action are required", 400)
     }
 
     if (!['ACCEPT', 'REJECT'].includes(action)) {
-      return NextResponse.json({ error: 'Action must be ACCEPT or REJECT' }, { status: 400 })
+      return apiError("Action must be ACCEPT or REJECT", 400)
     }
 
     const connection = await prisma.connection.findUnique({
@@ -157,18 +157,18 @@ export async function PUT(request: Request) {
     })
 
     if (!connection) {
-      return NextResponse.json({ error: 'Connection not found' }, { status: 404 })
+      return apiError("Connection not found", 404)
     }
 
     if (connection.receiverId !== userId) {
-      return NextResponse.json({ error: 'Only the receiver can accept or reject' }, { status: 403 })
+      return apiError("Only the receiver can accept or reject", 403)
     }
 
     if (action === 'REJECT') {
       await prisma.connection.delete({
         where: { id: connectionId }
       })
-      return NextResponse.json({ message: 'Connection request rejected' })
+      return apiSuccess({ message: 'Connection request rejected' })
     }
 
     const receiver = await prisma.user.findUnique({ where: { id: userId }, select: { name: true } })
@@ -199,6 +199,6 @@ export async function PUT(request: Request) {
     return NextResponse.json({ connection: updated, message: 'Connection accepted!' })
   } catch (error) {
     console.error('Error updating connection:', error)
-    return NextResponse.json({ error: 'Failed to update connection' }, { status: 500 })
+    return apiError("Failed to update connection", 500)
   }
 }

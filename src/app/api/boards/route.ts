@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -76,10 +76,10 @@ export async function GET(request: Request) {
       west,
     })
 
-    return NextResponse.json(result)
+    return apiSuccess(result)
   } catch (error) {
     console.error('GET /api/boards:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }
 
@@ -87,19 +87,19 @@ export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     let body: unknown
     try {
       body = await request.json()
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+      return apiError("Invalid JSON body", 400)
     }
     const { name, location, latitude, longitude, city, region, country, description } = body as any
 
     if (!name || !location) {
-      return NextResponse.json({ error: 'Name and location are required' }, { status: 400 })
+      return apiError("Name and location are required", 400)
     }
 
     let slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -125,10 +125,10 @@ export async function POST(request: Request) {
       },
     })
 
-    return NextResponse.json(board)
+    return apiSuccess(board)
   } catch (error) {
     console.error('POST /api/boards:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }
 
@@ -136,27 +136,27 @@ export async function PUT(request: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     let body: unknown
     try {
       body = await request.json()
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+      return apiError("Invalid JSON body", 400)
     }
     const { id, name, description, location, latitude, longitude, city, region, country } = body as any
 
     if (!id) {
-      return NextResponse.json({ error: 'Board ID is required' }, { status: 400 })
+      return apiError("Board ID is required", 400)
     }
 
     const existing = await prisma.bulletinBoard.findUnique({ where: { id } })
     if (!existing) {
-      return NextResponse.json({ error: 'Board not found' }, { status: 404 })
+      return apiError("Board not found", 404)
     }
     if (existing.ownerId !== session.user.id) {
-      return NextResponse.json({ error: 'Not authorized to edit this board' }, { status: 403 })
+      return apiError("Not authorized to edit this board", 403)
     }
 
     const board = await prisma.bulletinBoard.update({
@@ -173,10 +173,10 @@ export async function PUT(request: Request) {
       },
     })
 
-    return NextResponse.json(board)
+    return apiSuccess(board)
   } catch (error) {
     console.error('PUT /api/boards:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }
 
@@ -184,29 +184,29 @@ export async function DELETE(request: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 
     if (!id) {
-      return NextResponse.json({ error: 'Board ID is required' }, { status: 400 })
+      return apiError("Board ID is required", 400)
     }
 
     const existing = await prisma.bulletinBoard.findUnique({ where: { id } })
     if (!existing) {
-      return NextResponse.json({ error: 'Board not found' }, { status: 404 })
+      return apiError("Board not found", 404)
     }
     if (existing.ownerId !== session.user.id) {
-      return NextResponse.json({ error: 'Not authorized to delete this board' }, { status: 403 })
+      return apiError("Not authorized to delete this board", 403)
     }
 
     await prisma.bulletinPin.deleteMany({ where: { boardId: id } })
     await prisma.bulletinBoard.delete({ where: { id } })
 
-    return NextResponse.json({ success: true })
+    return apiSuccess({ success: true })
   } catch (error) {
     console.error('DELETE /api/boards:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }

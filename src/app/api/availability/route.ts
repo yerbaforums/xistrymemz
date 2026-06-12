@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -9,7 +9,7 @@ export async function GET(request: Request) {
     const userId = searchParams.get('userId')
 
     if (!userId) {
-      return NextResponse.json({ error: 'userId required' }, { status: 400 })
+      return apiError("userId required", 400)
     }
 
     const slots = await prisma.availability.findMany({
@@ -17,10 +17,10 @@ export async function GET(request: Request) {
       orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }]
     })
 
-    return NextResponse.json({ slots })
+    return apiSuccess({ slots })
   } catch (error) {
     console.error('Error fetching availability:', error)
-    return NextResponse.json({ error: 'Failed to fetch availability' }, { status: 500 })
+    return apiError("Failed to fetch availability", 500)
   }
 }
 
@@ -28,14 +28,14 @@ export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const body = await request.json()
     const { dayOfWeek, startTime, endTime, isActive } = body
 
     if (dayOfWeek === undefined || !startTime || !endTime) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+      return apiError("Missing required fields", 400)
     }
 
     const slot = await prisma.availability.upsert({
@@ -60,6 +60,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ slot }, { status: 201 })
   } catch (error) {
     console.error('Error saving availability:', error)
-    return NextResponse.json({ error: 'Failed to save availability' }, { status: 500 })
+    return apiError("Failed to save availability", 500)
   }
 }

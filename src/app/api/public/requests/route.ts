@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: Request) {
@@ -17,5 +17,5 @@ export async function GET(request: Request) {
     orderBy: { createdAt: 'desc' }
   })
 
-  return NextResponse.json(requests)
+  return apiSuccess(requests)
 }

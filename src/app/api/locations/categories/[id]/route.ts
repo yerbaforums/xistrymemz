@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const { id } = await params
@@ -17,7 +17,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     where: { id, userId: session.user.id }
   })
   if (!existing) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    return apiError("Not found", 404)
   }
 
   const category = await prisma.locationCategory.update({
@@ -29,13 +29,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     }
   })
 
-  return NextResponse.json(category)
+  return apiSuccess(category)
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const { id } = await params
@@ -44,9 +44,9 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     where: { id, userId: session.user.id }
   })
   if (!existing) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    return apiError("Not found", 404)
   }
 
   await prisma.locationCategory.delete({ where: { id } })
-  return NextResponse.json({ success: true })
+  return apiSuccess({ success: true })
 }

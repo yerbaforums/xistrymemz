@@ -12,6 +12,8 @@ import { DonationActions } from '@/components/DonationActions'
 import ImageUploader from '@/components/ImageUploader'
 import MentionInput from '@/components/MentionInput'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
+import ShareBar from '@/components/ShareBar'
+import StudentList from '@/components/StudentList'
 import EntityActions from '@/components/EntityActions'
 import HashtagInput from '@/components/HashtagInput'
 import RichEditor from '@/components/RichEditor'
@@ -162,7 +164,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
   const [school, setSchool] = useState<SchoolData | null>(null)
   const [loading, setLoading] = useState(true)
   const [isOwner, setIsOwner] = useState(false)
-  const [activeTab, setActiveTab] = useState<'content' | 'posts' | 'reviews' | 'about'>('content')
+  const [activeTab, setActiveTab] = useState<'content' | 'courses' | 'posts' | 'reviews' | 'about' | 'students'>('content')
   const [showEditModal, setShowEditModal] = useState(false)
   const [editForm, setEditForm] = useState({ schoolName: '', schoolAbout: '', schoolImage: '', schoolCoverImage: '', schoolCoverStyle: 'cover' })
   const [saving, setSaving] = useState(false)
@@ -171,12 +173,20 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
   const [posting, setPosting] = useState(false)
   const [showContentForm, setShowContentForm] = useState(false)
+  const [courses, setCourses] = useState<Array<{id: string; title: string; description: string | null; difficulty: string; contents: Array<{id: string; contentId: string; sortOrder: number; content: {id: string; title: string; contentType: string}}>; _count: {contents: number}}>>([])
+  const [showCourseForm, setShowCourseForm] = useState(false)
+  const [courseForm, setCourseForm] = useState({title: '', description: '', difficulty: 'beginner'})
+  const [editingCourseId, setEditingCourseId] = useState<string | null>(null)
   const [contentForm, setContentForm] = useState({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: [] as string[], videoUrl: '', section: '', sortOrder: 0 })
   const [contentHashtags, setContentHashtags] = useState<string[]>([])
   const [creatingContent, setCreatingContent] = useState(false)
   const [editingContentId, setEditingContentId] = useState<string | null>(null)
   const [contentFilter, setContentFilter] = useState<string>('all')
   const [deletingContent, setDeletingContent] = useState<string | null>(null)
+  const [enrolled, setEnrolled] = useState(false)
+  const [enrollmentCount, setEnrollmentCount] = useState(0)
+  const [enrolling, setEnrolling] = useState(false)
+  const [myProgress, setMyProgress] = useState<any>(null)
   const [resolvedSlug, setResolvedSlug] = useState<string | null>(null)
 
   useEffect(() => { params.then(p => setResolvedSlug(p.slug)) }, [params])
@@ -222,6 +232,29 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
     } finally {
       setSaving(false)
     }
+  }
+
+  const fetchCourses = async () => {
+    if (!resolvedSlug) return
+    try {
+      const res = await fetch(`/api/school/courses?schoolId=${userId}`)
+      if (res.ok) { const data = await res.json(); if (data?.courses) setCourses(data.courses) }
+    } catch {}
+  }
+
+  const handleEnroll = async () => {
+    if (enrolling) return
+    setEnrolling(true)
+    try {
+      if (enrolled) {
+        const res = await fetch('/api/school/enroll', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ schoolId: userId }) })
+        if (res.ok) setEnrolled(false)
+      } else {
+        const res = await fetch('/api/school/enroll', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ schoolId: userId }) })
+        if (res.ok) setEnrolled(true)
+      }
+    } catch {}
+    setEnrolling(false)
   }
 
   const handleCreateContent = async (e: React.FormEvent) => {
@@ -431,6 +464,11 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
           <div className={styles.actions}>
             <Link href={getUserProfileUrl(school.user)} className={styles.viewOwnerBtn}>View Instructor</Link>
             <button onClick={() => setShowAppointmentModal(true)} className={styles.viewOwnerBtn} style={{ fontSize: '0.8rem' }}>📅 Book</button>
+            {session?.user && session.user.id !== userId && (
+              <button onClick={handleEnroll} disabled={enrolling} className={styles.enrollBtn}>
+                {enrolling ? '...' : enrolled ? '✅ Enrolled' : '📝 Enroll'}
+              </button>
+            )}
             {isOwner && (
               <button onClick={() => { setShowEditModal(true); setActiveTab('about'); }} className={styles.editBtn}>Edit School</button>
             )}
@@ -458,6 +496,45 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
       </div>
 
       <div className={styles.content}>
+        {activeTab === 'courses' && (
+          <div className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <h2>🗂️ Courses</h2>
+              {isOwner && (
+                <button onClick={() => { setCourseForm({title: '', description: '', difficulty: 'beginner'}); setEditingCourseId(null); setShowCourseForm(true) }} className="btn-primary">+ New Course</button>
+              )}
+            </div>
+            {courses.length === 0 ? (
+              <p className={styles.empty}>No courses yet. {isOwner ? 'Create your first course to organize content.' : ''}</p>
+            ) : (
+              <div className={styles.courseGrid}>
+                {courses.map(course => (
+                  <div key={course.id} className={styles.courseCard}>
+                    <div className={styles.courseHeader}>
+                      <h3>{course.title}</h3>
+                      <span className={styles.difficulty}>{course.difficulty}</span>
+                    </div>
+                    {course.description && <p>{course.description}</p>}
+                    <div className={styles.courseMeta}>
+                      <span>{course._count.contents} lessons</span>
+                    </div>
+                    {course.contents.map(cc => (
+                      <div key={cc.id} className={styles.courseContentItem}>
+                        <span>{cc.content.title}</span>
+                        <span className={styles.contentType}>{cc.content.contentType}</span>
+                      </div>
+                    ))}
+                    {isOwner && (
+                      <div className={styles.courseActions}>
+                        <button onClick={() => { setCourseForm({title: course.title, description: course.description || '', difficulty: course.difficulty}); setEditingCourseId(course.id); setShowCourseForm(true) }} className={styles.editBtn}>✏️</button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
         {activeTab === 'content' && (
           <div className={styles.contentSection}>
             {isOwner && (
@@ -708,6 +785,9 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
           </div>
         )}
 
+        {activeTab === 'students' && isOwner && (
+          <StudentList resolvedSlug={resolvedSlug} userId={userId} />
+        )}
         {activeTab === 'about' && (
           <div className={styles.aboutSection}>
             {isOwner && showEditModal ? (
@@ -792,7 +872,49 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
         sellerName={school.user.name}
       />
 
-      <ConfirmDialog
+      {showCourseForm && (
+        <div className="modal-overlay" onClick={() => setShowCourseForm(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2>{editingCourseId ? 'Edit Course' : 'New Course'}</h2>
+            <form onSubmit={async (e) => {
+              e.preventDefault()
+              if (!courseForm.title.trim()) return
+              try {
+                const url = editingCourseId ? `/api/school/courses/${editingCourseId}` : '/api/school/courses'
+                const method = editingCourseId ? 'PUT' : 'POST'
+                const res = await fetch(url, {
+                  method,
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ ...courseForm, schoolId: userId })
+                })
+                if (res.ok) { setShowCourseForm(false); fetchCourses() }
+              } catch {}
+            }}>
+              <div className="form-group">
+                <label>Course Title</label>
+                <input type="text" value={courseForm.title} onChange={e => setCourseForm({...courseForm, title: e.target.value})} required />
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <textarea value={courseForm.description} onChange={e => setCourseForm({...courseForm, description: e.target.value})} rows={3} />
+              </div>
+              <div className="form-group">
+                <label>Difficulty</label>
+                <select value={courseForm.difficulty} onChange={e => setCourseForm({...courseForm, difficulty: e.target.value})}>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                </select>
+              </div>
+              <div className="form-actions">
+                <button type="button" onClick={() => setShowCourseForm(false)} className="btn-ghost">Cancel</button>
+                <button type="submit" className="btn-primary">{editingCourseId ? 'Save' : 'Create'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+            <ConfirmDialog
         isOpen={deletingContent !== null}
         onClose={() => setDeletingContent(null)}
         onConfirm={() => { if (deletingContent) handleDeleteContent(deletingContent) }}

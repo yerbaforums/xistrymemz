@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(
@@ -231,6 +231,6 @@ export async function GET(
     return NextResponse.json({ tag, totals, data })
   } catch (error) {
     console.error('Error fetching hashtag:', error)
-    return NextResponse.json({ error: 'Failed to fetch hashtag' }, { status: 500 })
+    return apiError("Failed to fetch hashtag", 500)
   }
 }

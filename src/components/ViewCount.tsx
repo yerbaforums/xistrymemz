@@ -1,5 +1,3 @@
-'use client'
-
 import styles from './ViewCount.module.css'
 
 interface ViewCountProps {

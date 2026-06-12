@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(
@@ -85,9 +85,9 @@ export async function GET(
       return NextResponse.json({ error: `${type} not found` }, { status: 404 })
     }
 
-    return NextResponse.json({ item })
+    return apiSuccess({ item })
   } catch (error) {
     console.error('Error fetching reference:', error)
-    return NextResponse.json({ error: 'Failed to fetch reference' }, { status: 500 })
+    return apiError("Failed to fetch reference", 500)
   }
 }

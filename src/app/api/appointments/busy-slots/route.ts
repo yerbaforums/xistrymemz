@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const date = searchParams.get('date')
 
     if (!userId || !date) {
-      return NextResponse.json({ error: 'userId and date required' }, { status: 400 })
+      return apiError("userId and date required", 400)
     }
 
     const dateStart = new Date(`${date}T00:00:00`)
@@ -86,9 +86,9 @@ export async function GET(request: NextRequest) {
       }))
     ]
 
-    return NextResponse.json({ slots: busySlots })
+    return apiSuccess({ slots: busySlots })
   } catch (error) {
     console.error('Error fetching busy slots:', error)
-    return NextResponse.json({ error: 'Failed to fetch busy slots' }, { status: 500 })
+    return apiError("Failed to fetch busy slots", 500)
   }
 }

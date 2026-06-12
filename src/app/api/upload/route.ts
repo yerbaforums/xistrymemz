@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { writeFile, mkdir } from 'fs/promises'
@@ -92,7 +92,7 @@ export async function POST(request: Request) {
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   try {
@@ -101,7 +101,7 @@ export async function POST(request: Request) {
     const file = formData.get('file') as File | null
 
     if (!file && files.length === 0) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+      return apiError("No file provided", 400)
     }
 
     const toUpload = files.length > 0 ? files : (file ? [file] : [])

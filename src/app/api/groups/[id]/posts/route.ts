@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -19,7 +19,7 @@ export async function GET(
     orderBy: { createdAt: 'desc' }
   })
 
-  return NextResponse.json(posts)
+  return apiSuccess(posts)
 }
 
 export async function POST(
@@ -29,14 +29,14 @@ export async function POST(
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const { id: groupId } = await params
   const { content, imageUrl } = await request.json()
 
   if (!content?.trim()) {
-    return NextResponse.json({ error: 'Content is required' }, { status: 400 })
+    return apiError("Content is required", 400)
   }
 
   const member = await prisma.groupMember.findUnique({
@@ -44,7 +44,7 @@ export async function POST(
   })
 
   if (!member) {
-    return NextResponse.json({ error: 'Must be a member to post' }, { status: 403 })
+    return apiError("Must be a member to post", 403)
   }
 
   const post = await prisma.groupPost.create({
@@ -92,5 +92,5 @@ export async function POST(
     })
   }
 
-  return NextResponse.json(post)
+  return apiSuccess(post)
 }

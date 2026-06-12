@@ -12,6 +12,8 @@ import Skeleton from '@/components/Skeleton'
 import type { ServiceOffering, ServiceCategory } from '@/types/service'
 import { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service'
 import { EmptyState } from '@/components/EmptyState'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
+import LocationOption from '@/components/LocationOption'
 import styles from './page.module.css'
 
 interface ShopSettings {
@@ -37,6 +39,9 @@ const EMPTY_FORM = {
   duration: 60,
   price: '',
   location: '',
+  latitude: null as number | null,
+  longitude: null as number | null,
+  locationMode: 'custom' as 'passport' | 'custom' | 'global',
   meetingLink: '',
   imageUrl: '',
   imageUrls: [] as string[],
@@ -62,6 +67,8 @@ export default function DashboardServices() {
   const [form, setForm] = useState(EMPTY_FORM)
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const [search, setSearch] = useState('')
+  const [confirmAction, setConfirmAction] = useState<'delete-service' | 'unpublish-shop' | 'delete-shop' | null>(null)
+  const [confirmService, setConfirmService] = useState<ServiceOffering | null>(null)
   const [shopSettings, setShopSettings] = useState<ShopSettings | null>(null)
   const [showShopModal, setShowShopModal] = useState(false)
   const [shopForm, setShopForm] = useState({
@@ -108,6 +115,9 @@ export default function DashboardServices() {
       duration: s.duration,
       price: s.price?.toString() || '',
       location: s.location || '',
+      latitude: (s as any).latitude || null,
+      longitude: (s as any).longitude || null,
+      locationMode: (s as any).latitude ? 'custom' : 'global',
       meetingLink: s.meetingLink || '',
       imageUrl: s.imageUrl || '',
       imageUrls: s.imageUrl ? [s.imageUrl] : [],
@@ -143,6 +153,8 @@ export default function DashboardServices() {
         duration: form.duration,
         price: form.price ? parseFloat(form.price) : null,
         location: form.location || null,
+        latitude: form.latitude,
+        longitude: form.longitude,
         meetingLink: form.meetingLink || null,
         imageUrl: form.imageUrls?.[0] || null,
         isActive: form.isActive,
@@ -194,17 +206,28 @@ export default function DashboardServices() {
     }
   }
 
-  const handleDelete = async (s: ServiceOffering) => {
-    if (!confirm(`Delete "${s.title}"? This cannot be undone.`)) return
-    try {
-      const res = await fetch(`/api/services/${s.id}`, { method: 'DELETE' })
-      if (res.ok) {
-        success('Service deleted')
-        fetchAll()
-      }
-    } catch {
-      toastError('Failed to delete')
+  const handleDeleteConfirm = async () => {
+    if (confirmAction === 'delete-service' && confirmService) {
+      try {
+        const res = await fetch(`/api/services/${confirmService.id}`, { method: 'DELETE' })
+        if (res.ok) { success('Service deleted'); fetchAll() }
+        else toastError('Failed to delete')
+      } catch { toastError('Failed to delete') }
+    } else if (confirmAction === 'unpublish-shop') {
+      try {
+        const res = await fetch('/api/shop?action=unpublish', { method: 'DELETE' })
+        if (res.ok) { success('Shop unpublished'); setShowShopModal(false); fetchAll() }
+        else toastError('Failed to unpublish')
+      } catch { toastError('Failed to unpublish') }
+    } else if (confirmAction === 'delete-shop') {
+      try {
+        const res = await fetch('/api/shop?action=delete', { method: 'DELETE' })
+        if (res.ok) { success('Shop deleted'); setShowShopModal(false); fetchAll() }
+        else toastError('Failed to delete shop')
+      } catch { toastError('Failed to delete shop') }
     }
+    setConfirmAction(null)
+    setConfirmService(null)
   }
 
   const handleShopSubmit = async (e: React.FormEvent) => {
@@ -228,24 +251,7 @@ export default function DashboardServices() {
     setSaving(false)
   }
 
-  const handleUnpublishShop = async () => {
-    if (!confirm('Unpublish your shop? It will no longer appear in the directory.')) return
-    try {
-      const res = await fetch('/api/shop?action=unpublish', { method: 'DELETE' })
-      if (res.ok) { success('Shop unpublished'); setShowShopModal(false); fetchAll() }
-      else toastError('Failed to unpublish')
-    } catch { toastError('Failed to unpublish') }
-  }
 
-  const handleDeleteShop = async () => {
-    if (!confirm('Permanently delete your shop?')) return
-    if (!confirm('Are you sure? This cannot be undone.')) return
-    try {
-      const res = await fetch('/api/shop?action=delete', { method: 'DELETE' })
-      if (res.ok) { success('Shop deleted'); setShowShopModal(false); fetchAll() }
-      else toastError('Failed to delete shop')
-    } catch { toastError('Failed to delete shop') }
-  }
 
   const filteredServices = services.filter(s => {
     if (filter === 'active') return s.isActive
@@ -327,7 +333,7 @@ export default function DashboardServices() {
                   <button onClick={() => handleToggleActive(s)} className={s.isActive ? styles.hideBtn : styles.publishBtn}>
                     {s.isActive ? '🕶️ Hide' : '✅ Publish'}
                   </button>
-                  <button onClick={() => handleDelete(s)} className={styles.deleteBtn}>🗑️</button>
+                  <button onClick={() => { setConfirmService(s); setConfirmAction('delete-service') }} className={styles.deleteBtn}>🗑️</button>
                 </div>
               </div>
             )
@@ -376,8 +382,10 @@ export default function DashboardServices() {
 
               <div className="form-row">
                 <div className="form-group" style={{ flex: 1 }}>
-                  <label>Location</label>
-                  <input type="text" value={form.location} onChange={e => setForm({...form, location: e.target.value})} placeholder="City, State or address" />
+                  <LocationOption
+                    value={{ mode: form.locationMode, text: form.location, latitude: form.latitude, longitude: form.longitude }}
+                    onChange={v => setForm({...form, locationMode: v.mode, location: v.text, latitude: v.latitude, longitude: v.longitude })}
+                  />
                 </div>
                 <div className="form-group" style={{ flex: 1 }}>
                   <label>Meeting Link</label>
@@ -491,14 +499,42 @@ export default function DashboardServices() {
                 <h3>Danger Zone</h3>
                 <p>These actions affect your entire shop.</p>
                 <div className={styles.dangerActions}>
-                  <button onClick={handleUnpublishShop} className={styles.unpublishBtn}>Unpublish Shop</button>
-                  <button onClick={handleDeleteShop} className={styles.deleteShopBtn}>Delete Shop</button>
+                  <button onClick={() => setConfirmAction('unpublish-shop')} className={styles.unpublishBtn}>Unpublish Shop</button>
+                  <button onClick={() => setConfirmAction('delete-shop')} className={styles.deleteShopBtn}>Delete Shop</button>
                 </div>
               </div>
             )}
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={confirmAction === 'delete-service'}
+        onClose={() => { setConfirmAction(null); setConfirmService(null) }}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Service"
+        message={`Permanently delete "${confirmService?.title || ''}"? This cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+      />
+      <ConfirmDialog
+        isOpen={confirmAction === 'unpublish-shop'}
+        onClose={() => setConfirmAction(null)}
+        onConfirm={handleDeleteConfirm}
+        title="Unpublish Shop"
+        message="Your shop will no longer appear in the directory."
+        confirmLabel="Unpublish"
+        variant="warning"
+      />
+      <ConfirmDialog
+        isOpen={confirmAction === 'delete-shop'}
+        onClose={() => setConfirmAction(null)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Shop"
+        message="This permanently removes your shop name, description, and image. Your services will remain but will no longer be linked to a shop. This cannot be undone."
+        confirmLabel="Delete Shop"
+        variant="danger"
+      />
     </div>
   )
 }

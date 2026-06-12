@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -7,7 +7,7 @@ export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const body = await request.json()
@@ -28,10 +28,10 @@ export async function POST(request: Request) {
       },
     })
 
-    return NextResponse.json({ room })
+    return apiSuccess({ room })
   } catch (error) {
     console.error('Error creating video room:', error)
-    return NextResponse.json({ error: 'Failed to create room' }, { status: 500 })
+    return apiError("Failed to create room", 500)
   }
 }
 
@@ -39,7 +39,7 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const rooms = await prisma.videoRoom.findMany({
@@ -57,9 +57,9 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     })
 
-    return NextResponse.json({ rooms })
+    return apiSuccess({ rooms })
   } catch (error) {
     console.error('Error fetching video rooms:', error)
-    return NextResponse.json({ error: 'Failed to fetch rooms' }, { status: 500 })
+    return apiError("Failed to fetch rooms", 500)
   }
 }

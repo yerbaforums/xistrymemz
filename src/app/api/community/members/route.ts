@@ -1,4 +1,4 @@
-import { NextResponse, NextRequest } from 'next/server'
+import { NextRequest, apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiSuccess({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const searchParams = request.nextUrl.searchParams
@@ -131,7 +131,7 @@ export async function GET(request: NextRequest) {
       })
     ])
 
-    return NextResponse.json({
+    return apiSuccess({
       members: {
         items: membersWithCount,
         total: totalMembers,
@@ -153,6 +153,6 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error fetching community data:', error)
-    return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 })
+    return apiSuccess({ error: 'Failed to fetch data' }, { status: 500 })
   }
 }

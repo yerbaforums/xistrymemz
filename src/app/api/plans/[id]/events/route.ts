@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -20,7 +20,7 @@ export async function GET(
     orderBy: { eventDate: 'asc' }
   })
 
-  return NextResponse.json(events)
+  return apiSuccess(events)
 }
 
 export async function POST(
@@ -30,7 +30,7 @@ export async function POST(
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const { id } = await params
@@ -39,7 +39,7 @@ export async function POST(
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return apiError("Invalid JSON body", 400)
   }
 
   const { title, description, eventCategory, eventDate, location, locationDetails, maxJoiners, isTicketed, ticketPrice, currency } = body
@@ -49,7 +49,7 @@ export async function POST(
   })
 
   if (!plan) {
-    return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
+    return apiError("Plan not found", 404)
   }
 
   const isOwner = plan.userId === session.user.id
@@ -60,7 +60,7 @@ export async function POST(
   const isAdmin = userRole === 'ADMIN'
 
   if (!isOwner && !isEditor && !isAdmin) {
-    return NextResponse.json({ error: 'Permission denied' }, { status: 403 })
+    return apiError("Permission denied", 403)
   }
 
   let latitude: number | null = null
@@ -93,5 +93,5 @@ export async function POST(
     }
   })
 
-  return NextResponse.json(event)
+  return apiSuccess(event)
 }

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -8,14 +8,14 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const body = await request.json()
     const { content } = body
 
     if (!content) {
-      return NextResponse.json({ error: 'Content required' }, { status: 400 })
+      return apiError("Content required", 400)
     }
 
     const devCategory = await prisma.forumCategory.findUnique({
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     })
 
     if (!devCategory) {
-      return NextResponse.json({ error: 'Development category not found' }, { status: 404 })
+      return apiError("Development category not found", 404)
     }
 
     const existingUpdate = await prisma.forumPost.findFirst({
@@ -55,6 +55,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, post })
   } catch (error) {
     console.error('Error posting site update:', error)
-    return NextResponse.json({ error: 'Failed to post update' }, { status: 500 })
+    return apiError("Failed to post update", 500)
   }
 }

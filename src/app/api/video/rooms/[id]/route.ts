@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -10,7 +10,7 @@ export async function GET(
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { id } = await params
@@ -27,18 +27,18 @@ export async function GET(
     })
 
     if (!room) {
-      return NextResponse.json({ error: 'Room not found' }, { status: 404 })
+      return apiError("Room not found", 404)
     }
 
     const isParticipant = room.participants.some(p => p.userId === session.user.id)
     if (!isParticipant && room.createdById !== session.user.id) {
-      return NextResponse.json({ error: 'Not a participant' }, { status: 403 })
+      return apiError("Not a participant", 403)
     }
 
-    return NextResponse.json({ room })
+    return apiSuccess({ room })
   } catch (error) {
     console.error('Error fetching room:', error)
-    return NextResponse.json({ error: 'Failed to fetch room' }, { status: 500 })
+    return apiError("Failed to fetch room", 500)
   }
 }
 
@@ -49,14 +49,14 @@ export async function DELETE(
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { id } = await params
 
     const room = await prisma.videoRoom.findUnique({ where: { id } })
     if (!room) {
-      return NextResponse.json({ error: 'Room not found' }, { status: 404 })
+      return apiError("Room not found", 404)
     }
 
     if (room.createdById !== session.user.id) {
@@ -82,6 +82,6 @@ export async function DELETE(
     return NextResponse.json({ success: true, ended: true })
   } catch (error) {
     console.error('Error ending room:', error)
-    return NextResponse.json({ error: 'Failed to end room' }, { status: 500 })
+    return apiError("Failed to end room", 500)
   }
 }

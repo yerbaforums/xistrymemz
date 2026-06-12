@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -21,21 +21,21 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
       }
     }
   })
-  if (!content) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  return NextResponse.json(content)
+  if (!content) return apiError("Not found", 404)
+  return apiSuccess(content)
 }
 
 export async function PUT(request: Request, { params }: { params: Promise<{ slug: string; id: string }> }) {
   const session = await getServerSession(authOptions)
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session?.user?.id) return apiError("Unauthorized", 401)
 
   const { slug, id } = await params
   const school = await prisma.user.findFirst({ where: { schoolSlug: slug } })
-  if (!school || school.id !== session.user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!school || school.id !== session.user.id) return apiError("Forbidden", 403)
 
   const body = await request.json()
   const existing = await prisma.schoolContent.findUnique({ where: { id } })
-  if (!existing || existing.userId !== session.user.id) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (!existing || existing.userId !== session.user.id) return apiError("Not found", 404)
 
   const data: Record<string, unknown> = {}
   if (body.title !== undefined) data.title = body.title.trim()
@@ -59,34 +59,34 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
     await extractAndLinkHashtags(String(title) + ' ' + String(content), 'SCHOOLCONTENT', id)
   }
 
-  return NextResponse.json(updated)
+  return apiSuccess(updated)
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ slug: string; id: string }> }) {
   const session = await getServerSession(authOptions)
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session?.user?.id) return apiError("Unauthorized", 401)
 
   const { slug, id } = await params
   const school = await prisma.user.findFirst({ where: { schoolSlug: slug } })
-  if (!school || school.id !== session.user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!school || school.id !== session.user.id) return apiError("Forbidden", 403)
 
   const existing = await prisma.schoolContent.findUnique({ where: { id } })
-  if (!existing || existing.userId !== session.user.id) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (!existing || existing.userId !== session.user.id) return apiError("Not found", 404)
 
   await prisma.schoolContent.delete({ where: { id } })
-  return NextResponse.json({ success: true })
+  return apiSuccess({ success: true })
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ slug: string; id: string }> }) {
   const session = await getServerSession(authOptions)
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session?.user?.id) return apiError("Unauthorized", 401)
 
   const { slug, id } = await params
   const targetSchool = await prisma.user.findFirst({ where: { schoolSlug: slug } })
-  if (!targetSchool || targetSchool.id !== session.user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!targetSchool || targetSchool.id !== session.user.id) return apiError("Forbidden", 403)
 
   const originalContent = await prisma.schoolContent.findUnique({ where: { id } })
-  if (!originalContent) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (!originalContent) return apiError("Not found", 404)
 
   const body = await request.json()
   const reposted = await prisma.schoolContent.create({
@@ -100,5 +100,5 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
     },
     include: { author: { select: { name: true } }, originalContent: { include: { author: { select: { name: true } }, user: { select: { schoolName: true, schoolSlug: true } } } } }
   })
-  return NextResponse.json(reposted)
+  return apiSuccess(reposted)
 }

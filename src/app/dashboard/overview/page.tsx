@@ -316,6 +316,20 @@ export default async function DashboardOverview({
 
       <DashboardWidgets />
 
+      {/* Onboarding resume prompt for users who skipped before finishing */}
+      {!user?.onboardingCompleted && !isNewUser && (
+        <div className={`${styles.firstVisitBanner} ${styles.resumeBanner}`}>
+          <div className={styles.firstVisitIcon}>🚀</div>
+          <div className={styles.firstVisitContent}>
+            <h3>Finish Your Setup</h3>
+            <p>You skipped the onboarding wizard. Pick up where you left off and complete your profile setup.</p>
+            <div className={styles.firstVisitLinks}>
+              <Link href="/onboarding" className={styles.firstVisitLink}>▶️ Resume Onboarding</Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* New user: simplified view with prioritized next step */}
       {isNewUser ? (
         <>
@@ -507,7 +521,7 @@ export default async function DashboardOverview({
               />
             </div>
 
-            <div className={styles.discoverSection} style={{ marginTop: 16 }}>
+            <div className={`$1 $2`}>
               <h3 style={{ marginBottom: 12, fontSize: '1rem' }}>🌍 Discover</h3>
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                 <Link href="/plans/public" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
@@ -532,7 +546,7 @@ export default async function DashboardOverview({
             </div>
 
             {connectionFeed.length > 0 && (
-              <div className={styles.activitySection} style={{ marginTop: 16 }}>
+              <div className={`$1 $2`}>
                 <div className={styles.sectionHeader}>
                   <h3>🤝 Activity from Connections</h3>
                   <Link href="/community" className={styles.viewAll}>View all →</Link>
@@ -558,7 +572,7 @@ export default async function DashboardOverview({
             <StreakCard postCount={allStats[6]} connectionCount={connectionCount} />
 
             {user && (user.walletAddress || user.paymentAddress || user.refundAddress || (user.acceptsDonations && user.donationAddress)) && (
-              <div className={styles.walletCompact} style={{ marginTop: 16 }}>
+              <div className={`$1 $2`}>
                 <h4>💳 {t('wallet')}</h4>
                 {user.walletAddress && <code title={user.walletAddress}>{user.walletAddress.slice(0, 10)}...{user.walletAddress.slice(-4)}</code>}
                 {user.paymentAddress && <code title={user.paymentAddress}>Pay: {user.paymentAddress.slice(0, 8)}...{user.paymentAddress.slice(-4)}</code>}

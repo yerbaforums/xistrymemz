@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -10,7 +10,7 @@ export async function POST(
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { id, fid } = await params
@@ -18,7 +18,7 @@ export async function POST(
     const { action } = body
 
     if (!['APPROVED', 'DECLINED'].includes(action)) {
-      return NextResponse.json({ error: 'Action must be APPROVED or DECLINED' }, { status: 400 })
+      return apiError("Action must be APPROVED or DECLINED", 400)
     }
 
     const fulfillment = await prisma.requestFulfillment.findFirst({
@@ -27,11 +27,11 @@ export async function POST(
     })
 
     if (!fulfillment) {
-      return NextResponse.json({ error: 'Fulfillment not found' }, { status: 404 })
+      return apiError("Fulfillment not found", 404)
     }
 
     if (fulfillment.status !== 'PENDING') {
-      return NextResponse.json({ error: 'Fulfillment already processed' }, { status: 400 })
+      return apiError("Fulfillment already processed", 400)
     }
 
     const req = fulfillment.request
@@ -56,7 +56,7 @@ export async function POST(
     }
 
     if (!isRequestOwner && !isPlanOwner && !isPlanEditor && !isAdmin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+      return apiError("Unauthorized", 403)
     }
 
     const updated = await prisma.requestFulfillment.update({
@@ -88,9 +88,9 @@ export async function POST(
       })
     }
 
-    return NextResponse.json(updated)
+    return apiSuccess(updated)
   } catch (error) {
     console.error('POST /api/requests/[id]/fulfillments/[fid]/respond:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }

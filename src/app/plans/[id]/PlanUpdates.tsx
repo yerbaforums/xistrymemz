@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { EmptyState } from '@/components/EmptyState'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 import styles from './sortable.module.css'
 
 interface UpdateUser { id: string; name: string | null; image: string | null }
@@ -54,9 +55,11 @@ export default function PlanUpdates({ planId, isOwner }: Props) {
     if (res.ok) { const data = await res.json(); setLikedIds(prev => { const n = new Set(prev); data.liked ? n.add(updateId) : n.delete(updateId); return n }); fetchUpdates() }
   }
 
-  const handleDelete = async (updateId: string) => {
-    if (!confirm('Delete this update?')) return
-    const res = await fetch(`/api/plans/${planId}/updates/${updateId}`, { method: 'DELETE' })
+  const handleDeleteConfirm = async () => {
+    
+    if (!deleteTarget) return;
+    const res = await fetch(`/api/plans/${planId}/updates/${deleteTarget}`, { method: 'DELETE' })
+    setDeleteTarget(null)
     if (res.ok) fetchUpdates()
   }
 
@@ -106,13 +109,13 @@ export default function PlanUpdates({ planId, isOwner }: Props) {
           return (
             <div key={update.id} style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '16px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div className={styles.flexRow}>
                   {update.user.image ? <img src={update.user.image} alt="" style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
                     : <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent-primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem' }}>{(update.user.name || 'U')[0]}</div>}
-                  <strong style={{ fontSize: '0.85rem' }}>{update.user.name || 'User'}</strong>
+                  <strong className={styles.small}>{update.user.name || 'User'}</strong>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{formatTime(update.createdAt)}</span>
                 </div>
-                {isOwner && <button onClick={() => handleDelete(update.id)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>✕</button>}
+                {isOwner && <button onClick={() => setDeleteTarget(update.id)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>✕</button>}
               </div>
 
               <div style={{ fontSize: '0.9rem', lineHeight: 1.5, whiteSpace: 'pre-wrap', marginBottom: images.length > 0 ? '12px' : 0 }}>{update.content}</div>

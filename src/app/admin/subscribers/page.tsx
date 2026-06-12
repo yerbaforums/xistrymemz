@@ -6,6 +6,7 @@ import { useToast } from '@/context/ToastContext'
 import Skeleton from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 interface Subscriber {
   id: string
@@ -47,8 +48,9 @@ export default function SubscribersPage() {
     }
   }
 
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this subscriber?')) return
     try {
       const res = await fetch(`/api/admin/subscribers?id=${id}`, { method: 'DELETE' })
       if (res.ok) {
@@ -259,6 +261,17 @@ export default function SubscribersPage() {
           </div>
         </div>
       )}
+
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        title="Delete Subscriber"
+        message="Remove this subscriber?"
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   )
 }

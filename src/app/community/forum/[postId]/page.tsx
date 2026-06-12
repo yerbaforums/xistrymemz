@@ -14,6 +14,7 @@ import Button from '@/components/ui/Button'
 import { EmptyState } from '@/components/EmptyState'
 import Skeleton from '@/components/Skeleton'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 interface Author {
   id: string
@@ -100,7 +101,7 @@ export default function ForumThreadPage() {
   const handleTogglePin = async () => {
     if (!post || !isAdmin) return
     try {
-      const res = await fetch(`/api/forum/post/${postId}`, {
+      const res = await fetch(`/api/forum/post/${deleteTarget}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pinned: !post.pinned })
@@ -116,7 +117,7 @@ export default function ForumThreadPage() {
   const handleToggleLock = async () => {
     if (!post || !isAdmin) return
     try {
-      const res = await fetch(`/api/forum/post/${postId}`, {
+      const res = await fetch(`/api/forum/post/${deleteTarget}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ locked: !post.locked })
@@ -140,7 +141,7 @@ export default function ForumThreadPage() {
     if (!editPostTitle.trim() || !editPostContent.trim()) return
     setSubmitting(true)
     try {
-      const res = await fetch(`/api/forum/post/${postId}`, {
+      const res = await fetch(`/api/forum/post/${deleteTarget}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: editPostTitle, content: editPostContent })
@@ -158,10 +159,9 @@ export default function ForumThreadPage() {
   }
 
   const handleDeletePost = async () => {
-    if (!confirm('Are you sure you want to delete this post? This cannot be undone.')) return
     setDeleting(true)
     try {
-      const res = await fetch(`/api/forum/post/${postId}`, { method: 'DELETE' })
+      const res = await fetch(`/api/forum/post/${deleteTarget}`, { method: 'DELETE' })
       if (res.ok) {
         window.location.href = '/community/forum'
       }
@@ -181,7 +181,7 @@ export default function ForumThreadPage() {
     if (!editReplyContent.trim()) return
     setSubmitting(true)
     try {
-      const res = await fetch(`/api/forum/reply/${replyId}`, {
+      const res = await fetch(`/api/forum/reply/${replyDeleteTarget}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: editReplyContent })
@@ -198,11 +198,12 @@ export default function ForumThreadPage() {
     }
   }
 
-  const handleDeleteReply = async (replyId: string) => {
-    if (!confirm('Delete this reply?')) return
+  const [replyDeleteTarget, setReplyDeleteTarget] = useState<string | null>(null)
+
+  const handleDeleteReply = async () => {
     setSubmitting(true)
     try {
-      const res = await fetch(`/api/forum/reply/${replyId}`, { method: 'DELETE' })
+      const res = await fetch(`/api/forum/reply/${replyDeleteTarget}`, { method: 'DELETE' })
       if (res.ok) {
         setReplies(replies.filter(r => r.id !== replyId))
         if (post) setPost({ ...post, replyCount: post.replyCount - 1 })
@@ -222,7 +223,7 @@ export default function ForumThreadPage() {
 
   const fetchPost = async () => {
     try {
-      const res = await fetch(`/api/forum/post/${postId}`)
+      const res = await fetch(`/api/forum/post/${deleteTarget}`)
       if (res.ok) {
         const data = await res.json()
         setPost(data)
@@ -244,7 +245,7 @@ export default function ForumThreadPage() {
 
   const fetchReplies = async () => {
     try {
-      const res = await fetch(`/api/forum/replies?postId=${postId}`)
+      const res = await fetch(`/api/forum/replies?postId=${deleteTarget}`)
       if (res.ok) {
         const data = await res.json()
         setReplies(data)
@@ -584,7 +585,7 @@ export default function ForumThreadPage() {
                       <Button variant="ghost" onClick={() => handleEditReply(reply)} className={styles.actionBtn}>
                         ✏️ Edit
                       </Button>
-                      <Button variant="ghost" onClick={() => handleDeleteReply(reply.id)} className={styles.actionBtn}>
+                      <Button variant="ghost" onClick={() => setReplyDeleteTarget(reply.id)} className={styles.actionBtn}>
                         🗑️
                       </Button>
                     </>
@@ -675,6 +676,26 @@ export default function ForumThreadPage() {
           </div>
         </div>
       )}
+
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeletePost}
+        title="Delete Post"
+        message="Delete this post? This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+      />
+      <ConfirmDialog
+        isOpen={!!replyDeleteTarget}
+        onClose={() => setReplyDeleteTarget(null)}
+        onConfirm={handleDeleteReply}
+        title="Delete Reply"
+        message="Delete this reply? This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   )
 }

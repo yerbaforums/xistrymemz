@@ -14,6 +14,7 @@ const OAUTH_PROVIDERS = [
   { id: 'discord', label: 'Discord', icon: '/social-logos/discord.svg' },
   { id: 'twitter', label: 'X (Twitter)', icon: '/social-logos/twitter.svg' },
   { id: 'facebook', label: 'Facebook', icon: '/social-logos/facebook.svg' },
+  { id: 'fediverse', label: 'Fediverse', icon: '/social-logos/mastodon.svg' },
 ] as const
 
 export default function LoginPage() {
@@ -24,6 +25,32 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [oauthLoading, setOauthLoading] = useState<string | null>(null)
+
+  const [fediHandle, setFediHandle] = useState('')
+  const [fediLoading, setFediLoading] = useState(false)
+  const [fediError, setFediError] = useState('')
+
+  const handleFediverseSignIn = async () => {
+    const match = fediHandle.trim().match(/^@?([a-zA-Z0-9_]+)@([a-zA-Z0-9.-]+)$/)
+    if (!match) { setFediError('Enter a valid fediverse handle (e.g., @user@mastodon.social)'); return }
+    setFediError('')
+    setFediLoading(true)
+    const [, username, domain] = match
+    try {
+      const res = await fetch('/api/auth/fediverse/init', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, domain })
+      })
+      const data = await res.json()
+      if (data?.data?.redirectUrl) {
+        window.location.href = data.data.redirectUrl
+      } else {
+        setFediError(data?.error || 'Failed to initiate fediverse sign in')
+      }
+    } catch { setFediError('Connection failed') }
+    setFediLoading(false)
+  }
 
   const handleOAuthSignIn = async (provider: string) => {
     setOauthLoading(provider)

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -95,7 +95,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ items: requests, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
   } catch (error) {
     console.error('GET /api/requests:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }
 
@@ -104,14 +104,14 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     let body;
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+      return apiError("Invalid JSON body", 400);
     }
 
     const validation = validateBody(requestSchema, body)
@@ -127,7 +127,7 @@ export async function POST(request: Request) {
         where: { id: planId }
       })
       if (!plan) {
-        return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
+        return apiError("Plan not found", 404)
       }
       const isOwner = plan.userId === session.user.id
       const isEditor = await prisma.planEditor.findFirst({
@@ -136,7 +136,7 @@ export async function POST(request: Request) {
       const userRole = (session.user as { role?: string }).role
       const isAdmin = userRole === 'ADMIN'
       if (!isOwner && !isEditor && !isAdmin) {
-        return NextResponse.json({ error: 'You do not have permission to add requests to this plan' }, { status: 403 })
+        return apiError("You do not have permission to add requests to this plan", 403)
       }
     }
 
@@ -145,7 +145,7 @@ export async function POST(request: Request) {
         where: { id: productId, acceptsRequests: true }
       })
       if (!product) {
-        return NextResponse.json({ error: 'Product not found or not available for requests' }, { status: 404 })
+        return apiError("Product not found or not available for requests", 404)
       }
     }
 
@@ -154,7 +154,7 @@ export async function POST(request: Request) {
         where: { id: groupId }
       })
       if (!group) {
-        return NextResponse.json({ error: 'Group not found' }, { status: 404 })
+        return apiError("Group not found", 404)
       }
     }
 
@@ -163,7 +163,7 @@ export async function POST(request: Request) {
         where: { id: schoolContentId }
       })
       if (!content) {
-        return NextResponse.json({ error: 'School content not found' }, { status: 404 })
+        return apiError("School content not found", 404)
       }
     }
 
@@ -172,7 +172,7 @@ export async function POST(request: Request) {
         where: { id: eventId }
       })
       if (!event) {
-        return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+        return apiError("Event not found", 404)
       }
     }
 
@@ -234,9 +234,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ ...req, groupId: group.id, _group: group })
     }
 
-    return NextResponse.json(req)
+    return apiSuccess(req)
   } catch (error) {
     console.error('POST /api/requests:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }

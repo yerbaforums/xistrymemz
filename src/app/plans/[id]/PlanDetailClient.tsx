@@ -12,16 +12,13 @@ import PlanSupport from './PlanSupport'
 import PlanUpdates from './PlanUpdates'
 import { parseGoals, parseMilestones, parseResources, stringifyGoals, stringifyMilestones, stringifyResources } from '@/lib/plan-utils'
 import { getUserProfileUrl } from '@/lib/utils'
+import ShareBar from '@/components/ShareBar'
 import EntityActions from '@/components/EntityActions'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import CollaborateButton from '@/components/CollaborateButton'
 import PinToBoardButton from '@/components/PinToBoardButton'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
 
-const PlanMapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
-const PlanTileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
-const PlanMarker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false })
-const PlanPopup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false })
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import EventFormFields, { getDefaultEventFormData } from '@/components/EventFormFields'
@@ -32,6 +29,8 @@ import TranslateButton from '@/components/TranslateButton'
 import ImageUploader from '@/components/ImageUploader'
 import HashtagInput from '@/components/HashtagInput'
 import { EmptyState } from '@/components/EmptyState'
+import { MapContainer as PlanMapContainer, TileLayer as PlanTileLayer, Marker as PlanMarker, Popup as PlanPopup } from '@/components/LeafletComponents'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 interface Request {
   id: string; title: string; description: string | null; status: string
@@ -343,16 +342,19 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
     }
   }
 
-  const handleDeleteEvent = async (eventId: string) => {
-    if (!confirm('Delete this event?')) return
+  const [deleteEventTarget, setDeleteEventTarget] = useState<string | null>(null)
+
+  const handleDeleteEvent = async () => {
+    if (!deleteEventTarget) return
     setLoading(true)
     try {
-      const res = await fetch(`/api/plans/${plan.id}/events/${eventId}`, { method: 'DELETE' })
-      if (res.ok) setPlan({ ...plan, events: plan.events.filter(ev => ev.id !== eventId) })
+      const res = await fetch(`/api/plans/${plan.id}/events/${deleteEventTarget}`, { method: 'DELETE' })
+      if (res.ok) setPlan({ ...plan, events: plan.events.filter(ev => ev.id !== deleteEventTarget) })
     } catch (err) {
       console.error(err)
     } finally {
       setLoading(false)
+      setDeleteEventTarget(null)
     }
   }
 
@@ -539,16 +541,16 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                   <input type="text" value={editedTitle} onChange={e => setEditedTitle(e.target.value)} className={styles.titleInput} />
                   <textarea value={editedDescription} onChange={e => setEditedDescription(e.target.value)} className={styles.descInput} rows={3} />
                   <div className={styles.formRow} style={{ gap: 12, marginTop: 12 }}>
-                    <div className={styles.field} style={{ flex: 1 }}>
+                    <div className={`$1 $2`}>
                       <label>Category</label>
                       <input type="text" value={editedCategory} onChange={e => setEditedCategory(e.target.value)} placeholder="e.g. Technology, Community..." className={styles.formInput} />
                     </div>
-                    <div className={styles.field} style={{ flex: 1 }}>
+                    <div className={`$1 $2`}>
                       <label>Location</label>
                       <input type="text" value={editedLocation} onChange={e => setEditedLocation(e.target.value)} placeholder="City, State" className={styles.formInput} />
                     </div>
                   </div>
-                  <div className={styles.field} style={{ marginTop: 8 }}>
+                  <div className={`$1 $2`}>
                     <label>Location Details</label>
                     <input type="text" value={editedLocationDetails} onChange={e => setEditedLocationDetails(e.target.value)} placeholder="e.g. Meetup point, address" className={styles.formInput} />
                   </div>
@@ -556,11 +558,11 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                     <input type="checkbox" checked={editedLookingForCollaborators} onChange={e => setEditedLookingForCollaborators(e.target.checked)} />
                     <span>Looking for collaborators</span>
                   </label>
-                  <div className={styles.field} style={{ marginTop: 12 }}>
+                  <div className={`$1 $2`}>
                     <label>Images</label>
                     <ImageUploader images={editedImages} onChange={setEditedImages} maxImages={5} />
                   </div>
-                  <div className={styles.field} style={{ marginTop: 12 }}>
+                  <div className={`$1 $2`}>
                     <label>Hashtags</label>
                     <HashtagInput value={planHashtags} onChange={setPlanHashtags} placeholder="Add hashtags..." />
                   </div>
@@ -586,19 +588,19 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                       {plan.description && <p className={styles.description}>{plan.description}</p>}
                       {plan.description && <TranslateButton text={plan.description} />}
                       {plan.hashtags && plan.hashtags.length > 0 && (
-                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 12 }}>
+                        <div className={styles.flexWrap}>
                           {plan.hashtags.map((h: any) => (
-                            <Link key={h.hashtag?.id || h.id} href={`/hashtag/${h.hashtag?.tag || h.tag}`} className="hashtag-link" style={{ fontSize: '0.85rem' }}>#{h.hashtag?.tag || h.tag}</Link>
+                            <Link key={h.hashtag?.id || h.id} href={`/hashtag/${h.hashtag?.tag || h.tag}`} className={`$2 $1`}>#{h.hashtag?.tag || h.tag}</Link>
                           ))}
                         </div>
                       )}
                       {userId && !isOwner && (
-                        <div style={{ margin: '12px 0' }}>
+                        <div className={styles.my12}>
                           <CollaborateButton entityType="PLAN" entityId={plan.id} label="🤝 Join as Collaborator" variant="secondary" />
                         </div>
                       )}
                       {userId && (
-                        <div style={{ margin: '12px 0' }}>
+                        <div className={styles.my12}>
                           <PinToBoardButton
                             entityType="PLAN"
                             entityId={plan.id}
@@ -649,12 +651,12 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                         <span>Overall Progress</span>
                         <span>{overallProgress}%</span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div className={styles.flexRow} style={{ gap: 16 }}>
                         <svg width="48" height="48" viewBox="0 0 36 36">
                           <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--bg-tertiary)" strokeWidth="3" />
                           <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--accent-success)" strokeWidth="3" strokeDasharray={`${overallProgress}, 100`} />
                         </svg>
-                        <div style={{ flex: 1 }}>
+                        <div className={styles.flex1}>
                           <div className={styles.progressTrack}>
                             <div className={styles.progressFill} style={{ width: `${overallProgress}%` }} />
                           </div>
@@ -720,7 +722,7 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                   )}
 
                   {/* Project Updates - Community Timeline */}
-                  <div style={{ marginTop: 32 }}>
+                  <div className={styles.mt32}>
                     <PlanUpdates planId={plan.id} isOwner={isOwner} />
                   </div>
                 </>
@@ -753,7 +755,7 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
           {activeTab === 'support' && (
             <div className={styles.tabPanel}>
               {isOwner && (
-                <div style={{ marginBottom: 16 }}>
+                <div className={styles.mb16}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                     <h3 style={{ margin: 0 }}>Donation Settings</h3>
                     <button
@@ -766,7 +768,7 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                         setEditDonations(!editDonations)
                       }}
                       className="btn-ghost"
-                      style={{ fontSize: '0.85rem' }}
+                      className={styles.small}
                     >
                       {editDonations ? 'Cancel' : 'Edit'}
                     </button>
@@ -784,7 +786,7 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                              selectedAddresses={editSelectedDonationAddrs}
                              onAddressesChange={(addrs) => setEditSelectedDonationAddrs(addrs)}
                            />
-                          <div className="form-group" style={{ marginTop: 8 }}>
+                          <div className={`$2 $1`}>
                             <label>Donation Description</label>
                             <textarea
                               value={editDonationDescription}
@@ -816,13 +818,13 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                         }}
                         className="btn-primary"
                         disabled={loading}
-                        style={{ marginTop: 8 }}
+                        className={styles.mt8}
                       >
                         {loading ? 'Saving...' : 'Save Donation Settings'}
                       </button>
                     </>
                   ) : (
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                    <p className={styles.mutedSmall}>
                       {plan.acceptsDonations ? 'This project accepts donations.' : 'Donations are not enabled for this project.'}
                       {plan.donationAddress && ` Address: ${plan.donationAddress.slice(0, 6)}...${plan.donationAddress.slice(-4)}`}
                     </p>
@@ -990,7 +992,7 @@ donationDescription={plan.donationDescription}
       {showStatusHistory && (
         <div className="modal-overlay" onClick={() => setShowStatusHistory(false)}>
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <div className={styles.flexBetween} style={{ marginBottom: '1rem' }}>
               <h2>Status History</h2>
               <button onClick={() => setShowStatusHistory(false)} className="btn-ghost">×</button>
             </div>
@@ -1007,7 +1009,7 @@ donationDescription={plan.donationDescription}
                     <div key={entry.id} style={{ padding: '0.75rem', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          {entry.fromStatus && <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>{entry.fromStatus} →</span>}
+                          {entry.fromStatus && <span className={styles.mutedSmall}>{entry.fromStatus} →</span>}
                           <span className={`badge badge-${entry.toStatus.toLowerCase()}`}>{entry.toStatus}</span>
                         </div>
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{new Date(entry.createdAt).toLocaleString()}</span>
@@ -1045,6 +1047,17 @@ donationDescription={plan.donationDescription}
         </div>
       )}
 
+
+
+      <ConfirmDialog
+        isOpen={!!deleteEventTarget}
+        onClose={() => setDeleteEventTarget(null)}
+        onConfirm={handleDeleteEvent}
+        title="Delete Event"
+        message="Delete this plan event?"
+        confirmLabel="Delete"
+        variant="danger"
+      />
       </div>
   )
 }

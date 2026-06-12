@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -9,7 +9,7 @@ export async function GET() {
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const user = await prisma.user.findUnique({
@@ -18,13 +18,13 @@ export async function GET() {
     })
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      return apiError("User not found", 404)
     }
 
-    return NextResponse.json({ onboardingCompleted: user.onboardingCompleted })
+    return apiSuccess({ onboardingCompleted: user.onboardingCompleted })
   } catch (error) {
     console.error('Error fetching onboarding status:', error)
-    return NextResponse.json({ error: 'Failed to fetch onboarding status' }, { status: 500 })
+    return apiError("Failed to fetch onboarding status", 500)
   }
 }
 
@@ -33,7 +33,7 @@ export async function PUT(request: Request) {
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const body = await request.json().catch(() => ({}))
@@ -64,9 +64,9 @@ export async function PUT(request: Request) {
       await createGettingStartedPlan(session.user.id)
     }
 
-    return NextResponse.json({ success: true })
+    return apiSuccess({ success: true })
   } catch (error) {
     console.error('Error marking onboarding complete:', error)
-    return NextResponse.json({ error: 'Failed to update onboarding status' }, { status: 500 })
+    return apiError("Failed to update onboarding status", 500)
   }
 }

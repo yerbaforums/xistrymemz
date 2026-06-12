@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -9,7 +9,7 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
 
     const req = await prisma.request.findUnique({ where: { id: params.id } })
     if (!req) {
-      return NextResponse.json({ error: 'Request not found' }, { status: 404 })
+      return apiError("Request not found", 404)
     }
 
     const supports = await prisma.requestSupport.findMany({
@@ -22,10 +22,10 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
       orderBy: { createdAt: 'desc' }
     })
 
-    return NextResponse.json({ supports })
+    return apiSuccess({ supports })
   } catch (error) {
     console.error('GET /api/requests/[id]/support:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }
 
@@ -35,12 +35,12 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const req = await prisma.request.findUnique({ where: { id: params.id } })
     if (!req) {
-      return NextResponse.json({ error: 'Request not found' }, { status: 404 })
+      return apiError("Request not found", 404)
     }
 
     const existing = await prisma.requestSupport.findUnique({
@@ -70,6 +70,6 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
     return NextResponse.json({ support, count }, { status: 201 })
   } catch (error) {
     console.error('POST /api/requests/[id]/support:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }

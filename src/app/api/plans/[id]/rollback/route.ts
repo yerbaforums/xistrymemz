@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -11,7 +11,7 @@ export async function POST(
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { id } = await params
@@ -19,7 +19,7 @@ export async function POST(
     const { toStatus, reason } = body
 
     if (!toStatus) {
-      return NextResponse.json({ error: 'toStatus is required' }, { status: 400 })
+      return apiError("toStatus is required", 400)
     }
 
     const plan = await prisma.plan.findUnique({
@@ -28,7 +28,7 @@ export async function POST(
     })
 
     if (!plan) {
-      return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
+      return apiError("Plan not found", 404)
     }
 
     const isOwner = plan.userId === session.user.id
@@ -39,7 +39,7 @@ export async function POST(
     const isAdmin = userRole === 'ADMIN'
 
     if (!isOwner && !isEditor && !isAdmin) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      return apiError("Forbidden", 403)
     }
 
     const updatedPlan = await prisma.plan.update({
@@ -63,6 +63,6 @@ export async function POST(
     })
   } catch (error) {
     console.error('Error rolling back plan status:', error)
-    return NextResponse.json({ error: 'Failed to rollback status' }, { status: 500 })
+    return apiError("Failed to rollback status", 500)
   }
 }

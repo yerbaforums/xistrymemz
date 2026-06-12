@@ -17,11 +17,8 @@ import { EmptyState } from '@/components/EmptyState'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import Button from '@/components/ui/Button'
 import { useQuickCreate } from '@/components/QuickCreateModal'
+import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
 
-const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
-const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
-const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false })
-const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false })
 
 let L: any
 if (typeof window !== 'undefined') {
@@ -250,13 +247,36 @@ export default function ServicesPage() {
           {loading ? (
             <Skeleton width="100%" height="2rem" />
           ) : viewMode === 'map' ? (
-            <div className={styles.mapWrap}>
-              <div className={styles.mapPlaceholder}>
-                <span className={styles.mapPlaceholderIcon}>🗺️</span>
-                <p>Map view coming soon for services!</p>
-                <p className={styles.mapPlaceholderSub}>We're adding location coordinates to services so you can find nearby providers on the map.</p>
-                <button className={styles.mapToggleBack} onClick={() => setViewMode('grid')}>← Back to Grid View</button>
+            <div>
+              <div style={{ height: '500px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+                <MapContainer center={[39.8283, -98.5795]} zoom={4} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
+                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                  {filteredServices.filter(s => s.latitude && s.longitude).map(s => (
+                    <Marker key={s.id} position={[s.latitude!, s.longitude!]}>
+                      <Popup>
+                        <strong>{s.title}</strong>
+                        <br />
+                        {s.location && <span>📍 {s.location}</span>}
+                        <br />
+                        <Link href={`/services/${s.id}`}>View Details →</Link>
+                      </Popup>
+                    </Marker>
+                  ))}
+                </MapContainer>
               </div>
+              {filteredServices.filter(s => !s.latitude || !s.longitude).length > 0 && (
+                <div style={{ marginTop: 16 }}>
+                  <h3 style={{ fontSize: '0.9rem', marginBottom: 8, color: 'var(--text-secondary)' }}>Global / Not location specific</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {filteredServices.filter(s => !s.latitude || !s.longitude).map(s => (
+                      <Link key={s.id} href={`/services/${s.id}`} style={{ padding: '10px 14px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', textDecoration: 'none', color: 'inherit' }}>
+                        <strong>{s.title}</strong>
+                        {s.location && <span style={{ marginLeft: 8, fontSize: '0.85rem', color: 'var(--text-muted)' }}>📍 {s.location}</span>}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ) : filteredServices.length === 0 ? (
             <EmptyState icon="🔧" title="No services found" description="Try adjusting your filters or check back later." action={{ label: 'Clear Filters', onClick: clearFilters }} />

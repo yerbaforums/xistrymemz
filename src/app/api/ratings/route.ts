@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -66,7 +66,7 @@ export async function GET(request: Request) {
     })
   } catch (error) {
     console.error('Error fetching ratings:', error)
-    return NextResponse.json({ error: 'Failed to fetch ratings' }, { status: 500 })
+    return apiError("Failed to fetch ratings", 500)
   }
 }
 
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const body = await request.json()
@@ -100,7 +100,7 @@ export async function POST(request: Request) {
         where: { id: existing.id },
         data: { rating, comment, type: type || 'SELLER' }
       })
-      return NextResponse.json(updated)
+      return apiSuccess(updated)
     }
 
     const newRating = await prisma.rating.create({
@@ -123,9 +123,9 @@ export async function POST(request: Request) {
       }
     })
 
-    return NextResponse.json(newRating)
+    return apiSuccess(newRating)
   } catch (error) {
     console.error('Error creating rating:', error)
-    return NextResponse.json({ error: 'Failed to create rating' }, { status: 500 })
+    return apiError("Failed to create rating", 500)
   }
 }

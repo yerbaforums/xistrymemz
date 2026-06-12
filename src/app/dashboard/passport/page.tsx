@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic'
 
 import Loading from '@/components/Loading'
 import Skeleton from '@/components/Skeleton'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 import styles from './passport.module.css'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
@@ -32,6 +33,8 @@ interface UserLocation {
   createdAt: string
   category: { id: string; name: string; icon: string; color: string } | null
 }
+
+type DeleteTarget = { type: 'location'; id: string } | { type: 'category'; id: string } | null
 
 export default function PassportPage() {
   const { data: session, status } = useSession()
@@ -74,6 +77,7 @@ export default function PassportPage() {
   const [addLat, setAddLat] = useState<string>('')
   const [addLng, setAddLng] = useState<string>('')
   const [stampPage, setStampPage] = useState(0)
+  const [deleteTarget, setDeleteTarget] = useState<DeleteTarget>(null)
   const stampsPerPage = 8
 
   const [L, setL] = useState<any>(null)
@@ -293,11 +297,11 @@ export default function PassportPage() {
     } catch { toastError('Failed to update') }
   }
 
-  const handleDeleteLocation = async (locId: string) => {
-    if (!confirm('Delete this location?')) return
+  const handleDeleteLocation = async () => {
+    if (!deleteTarget || deleteTarget.type !== 'location') return
     try {
-      const res = await fetch(`/api/users/locations/${locId}`, { method: 'DELETE' })
-      if (res.ok) { setSavedLocations(prev => prev.filter(l => l.id !== locId)); toastSuccess('Location deleted') }
+      const res = await fetch(`/api/users/locations/${deleteTarget.id}`, { method: 'DELETE' })
+      if (res.ok) { setSavedLocations(prev => prev.filter(l => l.id !== deleteTarget.id)); toastSuccess('Location deleted'); setDeleteTarget(null) }
       else { toastError('Failed to delete') }
     } catch { toastError('Failed to delete') }
   }
@@ -348,14 +352,14 @@ export default function PassportPage() {
     setShowCategoryForm(true)
   }
 
-  const handleDeleteCategory = async (catId: string) => {
-    if (!confirm('Delete this category? Locations will be uncategorized.')) return
+  const handleDeleteCategory = async () => {
+    if (!deleteTarget || deleteTarget.type !== 'category') return
     try {
-      const res = await fetch(`/api/locations/categories/${catId}`, { method: 'DELETE' })
+      const res = await fetch(`/api/locations/categories/${deleteTarget.id}`, { method: 'DELETE' })
       if (res.ok) {
-        setCategories(prev => prev.filter(c => c.id !== catId))
-        setSavedLocations(prev => prev.map(l => l.categoryId === catId ? { ...l, category: null, categoryId: null } : l))
-        toastSuccess('Category deleted')
+        setCategories(prev => prev.filter(c => c.id !== deleteTarget.id))
+        setSavedLocations(prev => prev.map(l => l.categoryId === deleteTarget.id ? { ...l, category: null, categoryId: null } : l))
+        toastSuccess('Category deleted'); setDeleteTarget(null)
       } else { toastError('Failed to delete category') }
     } catch { toastError('Failed to delete category') }
   }
@@ -591,7 +595,7 @@ export default function PassportPage() {
                     {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>)}
                   </select>
                 )}
-                <button onClick={() => handleDeleteLocation(loc.id)} className={`${styles.actionBtn} ${styles.actionBtnSecondary}`}>🗑️ Delete</button>
+                <button onClick={() => setDeleteTarget({ type: 'location', id: loc.id })} className={`${styles.actionBtn} ${styles.actionBtnSecondary}`}>🗑️ Delete</button>
               </div>
             </div>
           </div>
@@ -682,7 +686,7 @@ export default function PassportPage() {
             <span className={styles.categoryIcon}>{cat.icon}</span>
             <div className={styles.flex1}><div className={styles.categoryName}>{cat.name}</div></div>
             <button onClick={() => handleEditCategory(cat)} className={styles.editBtn}>Edit</button>
-            <button onClick={() => handleDeleteCategory(cat.id)} className={styles.deleteBtn}>Delete</button>
+            <button onClick={() => setDeleteTarget({ type: 'category', id: cat.id })} className={styles.deleteBtn}>Delete</button>
           </div>
         ))}
 
@@ -725,6 +729,25 @@ export default function PassportPage() {
           </form>
         )}
       </div>
+
+      <ConfirmDialog
+        isOpen={deleteTarget?.type === 'location'}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteLocation}
+        title="Delete Location"
+        message="Remove this location from your passport?"
+        confirmLabel="Delete"
+        variant="danger"
+      />
+      <ConfirmDialog
+        isOpen={deleteTarget?.type === 'category'}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteCategory}
+        title="Delete Category"
+        message="Locations in this category will become uncategorized."
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
     </>
   )

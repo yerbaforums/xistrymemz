@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { searchParams } = new URL(request.url)
@@ -45,10 +45,10 @@ export async function GET(request: Request) {
       orderBy: { createdAt: 'desc' }
     })
 
-    return NextResponse.json(transactions)
+    return apiSuccess(transactions)
   } catch (error) {
     console.error('Error fetching escrow transactions:', error)
-    return NextResponse.json({ error: 'Failed to fetch transactions' }, { status: 500 })
+    return apiError("Failed to fetch transactions", 500)
   }
 }
 
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
 const body = await request.json()
@@ -82,7 +82,7 @@ const body = await request.json()
   } = validation.data
 
   if (session.user.id === sellerId) {
-    return NextResponse.json({ error: 'Cannot create escrow with yourself' }, { status: 400 })
+    return apiError("Cannot create escrow with yourself", 400)
   }
 
   const cryptoType = cryptoCurrency || 'ETH'
@@ -122,9 +122,9 @@ const body = await request.json()
       }
     })
 
-    return NextResponse.json(transaction)
+    return apiSuccess(transaction)
   } catch (error) {
     console.error('Error creating escrow:', error)
-    return NextResponse.json({ error: 'Failed to create escrow' }, { status: 500 })
+    return apiError("Failed to create escrow", 500)
   }
 }

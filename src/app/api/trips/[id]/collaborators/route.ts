@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const { id: tripId } = await params
@@ -16,14 +16,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   })
 
   if (!trip) {
-    return NextResponse.json({ error: 'Not found or not owner' }, { status: 404 })
+    return apiError("Not found or not owner", 404)
   }
 
   const body = await request.json()
   const { userId, role } = body
 
   if (!userId) {
-    return NextResponse.json({ error: 'userId is required' }, { status: 400 })
+    return apiError("userId is required", 400)
   }
 
   const existing = await prisma.tripCollaborator.findUnique({
@@ -31,7 +31,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   })
 
   if (existing) {
-    return NextResponse.json({ error: 'Already a collaborator' }, { status: 409 })
+    return apiError("Already a collaborator", 409)
   }
 
   const collaborator = await prisma.tripCollaborator.create({
@@ -44,13 +44,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     include: { user: { select: { id: true, name: true, image: true } } }
   })
 
-  return NextResponse.json(collaborator)
+  return apiSuccess(collaborator)
 }
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const { id: tripId } = await params
@@ -66,7 +66,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   })
 
   if (!trip) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    return apiError("Not found", 404)
   }
 
   const collaborators = await prisma.tripCollaborator.findMany({
@@ -74,5 +74,5 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     include: { user: { select: { id: true, name: true, image: true } } }
   })
 
-  return NextResponse.json(collaborators)
+  return apiSuccess(collaborators)
 }

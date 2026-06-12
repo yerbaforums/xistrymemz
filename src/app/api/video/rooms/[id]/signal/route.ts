@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -19,7 +19,7 @@ export async function POST(
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { id } = await params
@@ -27,7 +27,7 @@ export async function POST(
     const { type, toUserId, data } = body
 
     if (!type || !toUserId || !data) {
-      return NextResponse.json({ error: 'Missing type, toUserId, or data' }, { status: 400 })
+      return apiError("Missing type, toUserId, or data", 400)
     }
 
     // Verify user is a participant in the room
@@ -35,7 +35,7 @@ export async function POST(
       where: { roomId_userId: { roomId: id, userId: session.user.id } },
     })
     if (!participant || participant.leftAt) {
-      return NextResponse.json({ error: 'Not a participant' }, { status: 403 })
+      return apiError("Not a participant", 403)
     }
 
     const signals = getSignals(id)
@@ -47,10 +47,10 @@ export async function POST(
       timestamp: Date.now(),
     })
 
-    return NextResponse.json({ success: true })
+    return apiSuccess({ success: true })
   } catch (error) {
     console.error('Error sending signal:', error)
-    return NextResponse.json({ error: 'Failed to send signal' }, { status: 500 })
+    return apiError("Failed to send signal", 500)
   }
 }
 
@@ -62,7 +62,7 @@ export async function GET(
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { id } = await params
@@ -73,7 +73,7 @@ export async function GET(
       where: { roomId_userId: { roomId: id, userId: session.user.id } },
     })
     if (!participant) {
-      return NextResponse.json({ error: 'Not a participant' }, { status: 403 })
+      return apiError("Not a participant", 403)
     }
 
     const allSignals = getSignals(id)
@@ -95,6 +95,6 @@ export async function GET(
     })
   } catch (error) {
     console.error('Error fetching signals:', error)
-    return NextResponse.json({ error: 'Failed to fetch signals' }, { status: 500 })
+    return apiError("Failed to fetch signals", 500)
   }
 }

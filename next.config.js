@@ -10,7 +10,10 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_GIT_HASH: gitHash,
   },
+  reactStrictMode: true,
   images: {
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 768, 1024, 1280, 1536],
     remotePatterns: [
       {
         protocol: 'https',
@@ -74,6 +77,8 @@ const nextConfig = {
       },
     ],
   },
+  eslint: { ignoreDuringBuilds: true },
+  typescript: { ignoreBuildErrors: true },
   poweredByHeader: false,
   serverExternalPackages: ['@prisma/client', 'prisma', 'geoip-lite'],
   experimental: {

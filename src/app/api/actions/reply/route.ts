@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -9,17 +9,17 @@ export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { entityType, entityId, content } = await request.json()
     if (!entityType || !entityId || !content?.trim()) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+      return apiError("Missing required fields", 400)
     }
 
     const type = entityType.toUpperCase()
     if (!VALID_TYPES.includes(type)) {
-      return NextResponse.json({ error: 'Invalid entity type' }, { status: 400 })
+      return apiError("Invalid entity type", 400)
     }
 
     const reply = await prisma.entityReply.create({
@@ -34,9 +34,9 @@ export async function POST(request: Request) {
       },
     })
 
-    return NextResponse.json({ reply })
+    return apiSuccess({ reply })
   } catch (error) {
     console.error('Reply error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }

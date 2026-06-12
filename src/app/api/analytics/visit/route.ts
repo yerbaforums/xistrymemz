@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -88,9 +88,9 @@ export async function POST(request: Request) {
       },
     })
 
-    return NextResponse.json({ recorded: true })
+    return apiSuccess({ recorded: true })
   } catch (error) {
     console.error('Error recording visit:', error)
-    return NextResponse.json({ error: 'Failed to record visit' }, { status: 500 })
+    return apiError("Failed to record visit", 500)
   }
 }

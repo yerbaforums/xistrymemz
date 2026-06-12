@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id || (session.user as { role?: string }).role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+      return apiError("Unauthorized", 403)
     }
 
     const body = await request.json()
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
 
     if (action === 'check_deposits') {
       if (!walletAddress) {
-        return NextResponse.json({ error: 'Wallet address required' }, { status: 400 })
+        return apiError("Wallet address required", 400)
       }
 
       // Check blockchain for new deposits
@@ -81,13 +81,13 @@ export async function POST(request: Request) {
         })
       }
 
-      return NextResponse.json(deposit)
+      return apiSuccess(deposit)
     }
 
-    return NextResponse.json({ error: 'Unknown action' }, { status: 400 })
+    return apiError("Unknown action", 400)
   } catch (error) {
     console.error('Error in blockchain sync:', error)
-    return NextResponse.json({ error: 'Failed to sync' }, { status: 500 })
+    return apiError("Failed to sync", 500)
   }
 }
 
@@ -95,7 +95,7 @@ export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id || (session.user as { role?: string }).role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+      return apiError("Unauthorized", 403)
     }
 
     const { searchParams } = new URL(request.url)
@@ -106,7 +106,7 @@ export async function GET(request: Request) {
     const settings = await prisma.platformSettings.findFirst()
     
     if (!settings) {
-      return NextResponse.json({ error: 'No platform settings' }, { status: 404 })
+      return apiError("No platform settings", 404)
     }
 
     const walletFields = [
@@ -132,6 +132,6 @@ export async function GET(request: Request) {
     })
   } catch (error) {
     console.error('Error fetching crypto config:', error)
-    return NextResponse.json({ error: 'Failed to fetch config' }, { status: 500 })
+    return apiError("Failed to fetch config", 500)
   }
 }

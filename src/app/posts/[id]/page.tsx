@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import HashtagText from '@/components/HashtagText'
+import ShareBar from '@/components/ShareBar'
 import EntityActions from '@/components/EntityActions'
 import ReplySection from '@/components/ReplySection'
 import SharedItemCard from '@/components/SharedItemCard'
@@ -84,6 +85,7 @@ export default function PostPage() {
   return (
     <div className={styles.page}>
       <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Post' }]} />
+      <ShareBar entityType="POST" title={post.title} description={post.content} image={post.images?.[0] || null} />
       <nav className={styles.nav}>
         <Link href="/dashboard/feed" className={styles.backLink}>← Back to Feed</Link>
       </nav>

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -6,18 +6,18 @@ import { prisma } from '@/lib/prisma'
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   try {
     const { entityType, entityId, message, intent } = await request.json()
     if (!entityType || !entityId) {
-      return NextResponse.json({ error: 'Missing entityType or entityId' }, { status: 400 })
+      return apiError("Missing entityType or entityId", 400)
     }
 
     const validTypes = ['PRODUCT', 'EVENT', 'GROUP', 'PLAN']
     if (!validTypes.includes(entityType)) {
-      return NextResponse.json({ error: 'Invalid entityType' }, { status: 400 })
+      return apiError("Invalid entityType", 400)
     }
 
     let receiverId: string | null = null
@@ -36,17 +36,17 @@ export async function POST(request: Request) {
     }
 
     if (!receiverId) {
-      return NextResponse.json({ error: 'Entity not found' }, { status: 404 })
+      return apiError("Entity not found", 404)
     }
     if (receiverId === session.user.id) {
-      return NextResponse.json({ error: 'Cannot send request to yourself' }, { status: 400 })
+      return apiError("Cannot send request to yourself", 400)
     }
 
     const existing = await prisma.collaborationRequest.findFirst({
       where: { senderId: session.user.id, receiverId, entityType, entityId, status: 'PENDING' },
     })
     if (existing) {
-      return NextResponse.json({ error: 'Request already sent' }, { status: 409 })
+      return apiError("Request already sent", 409)
     }
 
     const collab = await prisma.collaborationRequest.create({
@@ -63,14 +63,14 @@ export async function POST(request: Request) {
     return NextResponse.json(collab, { status: 201 })
   } catch (error) {
     console.error('POST /api/collab-requests:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }
 
 export async function GET() {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   try {
@@ -93,29 +93,29 @@ export async function GET() {
     return NextResponse.json({ sent, received })
   } catch (error) {
     console.error('GET /api/collab-requests:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }
 
 export async function PUT(request: Request) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   try {
     const { id, status } = await request.json()
     if (!id || !status) {
-      return NextResponse.json({ error: 'Missing id or status' }, { status: 400 })
+      return apiError("Missing id or status", 400)
     }
 
     if (!['ACCEPTED', 'DECLINED'].includes(status)) {
-      return NextResponse.json({ error: 'Status must be ACCEPTED or DECLINED' }, { status: 400 })
+      return apiError("Status must be ACCEPTED or DECLINED", 400)
     }
 
     const collab = await prisma.collaborationRequest.findUnique({ where: { id } })
     if (!collab || collab.receiverId !== session.user.id) {
-      return NextResponse.json({ error: 'Not found or unauthorized' }, { status: 404 })
+      return apiError("Not found or unauthorized", 404)
     }
 
     const updated = await prisma.collaborationRequest.update({
@@ -123,9 +123,9 @@ export async function PUT(request: Request) {
       data: { status },
     })
 
-    return NextResponse.json(updated)
+    return apiSuccess(updated)
   } catch (error) {
     console.error('PUT /api/collab-requests:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }

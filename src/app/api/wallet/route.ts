@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -18,7 +18,7 @@ export async function GET() {
     const session = await getServerSession(authOptions)
     
     if (!session || !session.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const user = await prisma.user.findUnique({
@@ -42,7 +42,7 @@ export async function GET() {
     })
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      return apiError("User not found", 404)
     }
 
     const cryptoOptions = CRYPTO_OPTIONS
@@ -57,7 +57,7 @@ export async function GET() {
     })
   } catch (error) {
     console.error('Error fetching wallet:', error)
-    return NextResponse.json({ error: 'Failed to fetch wallet' }, { status: 500 })
+    return apiError("Failed to fetch wallet", 500)
   }
 }
 
@@ -66,7 +66,7 @@ export async function PUT(req: Request) {
     const session = await getServerSession(authOptions)
     
     if (!session || !session.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const body = await req.json()
@@ -97,7 +97,7 @@ export async function PUT(req: Request) {
         wallet = generateWallet(cryptoType)
       } catch (walletError) {
         console.error('Wallet generation error:', walletError)
-        return NextResponse.json({ error: 'Failed to generate wallet: ' + (walletError instanceof Error ? walletError.message : 'Unknown error') }, { status: 500 })
+        return apiSuccess({ error: 'Failed to generate wallet: ' + (walletError instanceof Error ? walletError.message : 'Unknown error') }, { status: 500 })
       }
       
       let encryptedPrivateKey = null
@@ -106,7 +106,7 @@ export async function PUT(req: Request) {
           encryptedPrivateKey = encryptPrivateKey(wallet.privateKey)
         } catch (encryptError) {
           console.error('Encryption error:', encryptError)
-          return NextResponse.json({ error: 'Failed to encrypt private key' }, { status: 500 })
+          return apiError("Failed to encrypt private key", 500)
         }
       }
       
@@ -146,7 +146,7 @@ export async function PUT(req: Request) {
         wallet = generateWallet(cryptoType)
       } catch (walletError) {
         console.error('Wallet generation error:', walletError)
-        return NextResponse.json({ error: 'Failed to generate wallet: ' + (walletError instanceof Error ? walletError.message : 'Unknown error') }, { status: 500 })
+        return apiSuccess({ error: 'Failed to generate wallet: ' + (walletError instanceof Error ? walletError.message : 'Unknown error') }, { status: 500 })
       }
       
       let encryptedPrivateKey = null
@@ -155,7 +155,7 @@ export async function PUT(req: Request) {
           encryptedPrivateKey = encryptPrivateKey(wallet.privateKey)
         } catch (encryptError) {
           console.error('Encryption error:', encryptError)
-          return NextResponse.json({ error: 'Failed to encrypt private key' }, { status: 500 })
+          return apiError("Failed to encrypt private key", 500)
         }
       }
       
@@ -192,12 +192,12 @@ export async function PUT(req: Request) {
     }
 
     if (action === 'addCredit' && body.credit !== undefined) {
-      return NextResponse.json({
+      return apiSuccess({
         success: true
       })
     }
 
-    return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+    return apiError("Invalid action", 400)
   } catch (error) {
     console.error('Error updating wallet:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'

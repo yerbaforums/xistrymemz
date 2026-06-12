@@ -5,6 +5,7 @@ import styles from './page.module.css'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { getAllCryptos, getCryptoIcon, getCryptoName } from '@/lib/crypto-icons'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 interface SiteSettings {
   enableCheckout: boolean
@@ -179,7 +180,6 @@ export default function AdminSettingsPage() {
   }
 
   const handleDeleteDonation = async (id: string) => {
-    if (!confirm('Delete this donation address?')) return
 
     const updated = settings.donationAddresses.filter(da => da.id !== id)
     setSettings(prev => ({ ...prev, donationAddresses: updated }))
@@ -341,11 +341,11 @@ export default function AdminSettingsPage() {
       </div>
 
       {/* Site Donation Addresses */}
-      <div className={styles.section} style={{ marginTop: '24px' }}>
+      <div className={`${styles.section} ${styles.mt24}`}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <div>
-            <h2 style={{ marginBottom: '4px' }}>Site Donation Addresses</h2>
-            <p className={styles.description} style={{ marginBottom: 0 }}>
+            <h2 className={styles.mb4}>Site Donation Addresses</h2>
+            <p className={`${styles.description} ${styles.mb0}`}>
               Crypto addresses displayed on the home page, about page, and footer for site-wide donations.
             </p>
           </div>
@@ -415,7 +415,7 @@ export default function AdminSettingsPage() {
           <form onSubmit={handleSaveDonation} style={{ marginTop: '16px', padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
             <h3 style={{ marginTop: 0, fontSize: '1rem' }}>{editingDonation ? 'Edit Address' : 'Add Donation Address'}</h3>
 
-            <div style={{ marginBottom: '12px' }}>
+            <div className={styles.mb12}>
               <label style={{ display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Currency</label>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '6px' }}>
                 {allCryptos.map(crypto => (
@@ -443,7 +443,7 @@ export default function AdminSettingsPage() {
               </div>
             </div>
 
-            <div style={{ marginBottom: '12px' }}>
+            <div className={styles.mb12}>
               <label style={{ display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Address</label>
               <input
                 type="text"
@@ -455,7 +455,7 @@ export default function AdminSettingsPage() {
               />
             </div>
 
-            <div style={{ marginBottom: '12px' }}>
+            <div className={styles.mb12}>
               <label style={{ display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Label (optional)</label>
               <input
                 type="text"
@@ -489,6 +489,17 @@ export default function AdminSettingsPage() {
           address={qrAddress}
         />
       )}
+
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteDonation}
+        title="Delete Donation Address"
+        message="Delete this donation address?"
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   )
 }

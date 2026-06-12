@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import {
@@ -25,7 +25,7 @@ async function requireAdmin() {
 export async function GET(request: Request) {
   const session = await requireAdmin()
   if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   try {
@@ -34,21 +34,21 @@ export async function GET(request: Request) {
 
     if (mode === 'stats') {
       const stats = await getBackupStats()
-      return NextResponse.json(stats)
+      return apiSuccess(stats)
     }
 
     const backups = await getBackupsList()
-    return NextResponse.json({ backups })
+    return apiSuccess({ backups })
   } catch (error) {
     console.error('Error fetching backups:', error)
-    return NextResponse.json({ error: 'Failed to fetch backups' }, { status: 500 })
+    return apiError("Failed to fetch backups", 500)
   }
 }
 
 export async function POST() {
   const session = await requireAdmin()
   if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   try {

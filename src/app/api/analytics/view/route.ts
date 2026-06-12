@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -20,11 +20,11 @@ export async function POST(request: Request) {
     const { contentType, contentId } = body
 
     if (!contentType || !contentId) {
-      return NextResponse.json({ error: 'Missing contentType or contentId' }, { status: 400 })
+      return apiError("Missing contentType or contentId", 400)
     }
 
     if (!['post', 'product', 'service', 'request'].includes(contentType)) {
-      return NextResponse.json({ error: 'Invalid contentType' }, { status: 400 })
+      return apiError("Invalid contentType", 400)
     }
 
     const ipHash = await hashIP((await headers()).get('x-forwarded-for') || 'unknown')
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     }
 
     const entry = modelMap[contentType]
-    if (!entry) return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
+    if (!entry) return apiError("Invalid type", 400)
 
     // Check cooldown (authenticated users: 1 view per 5 min per item)
     if (session?.user?.id) {
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
         },
       })
       if (recent) {
-        return NextResponse.json({ counted: false })
+        return apiSuccess({ counted: false })
       }
     }
 
@@ -92,9 +92,9 @@ export async function POST(request: Request) {
       }),
     ])
 
-    return NextResponse.json({ counted: true })
+    return apiSuccess({ counted: true })
   } catch (error) {
     console.error('Error recording view:', error)
-    return NextResponse.json({ error: 'Failed to record view' }, { status: 500 })
+    return apiError("Failed to record view", 500)
   }
 }

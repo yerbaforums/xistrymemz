@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -46,6 +46,7 @@ export async function GET(
       donationCurrency: true,
       lookingForCollaborators: true,
       lastActiveAt: true,
+      federatedUrl: true,
       inviteCount: true,
       _count: {
         select: {
@@ -77,7 +78,7 @@ export async function GET(
     }
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      return apiError("User not found", 404)
     }
 
     const userId = user.id
@@ -277,6 +278,7 @@ export async function GET(
         acceptsDonations: user.acceptsDonations || false,
         lookingForCollaborators: user.lookingForCollaborators || false,
         lastActiveAt: user.lastActiveAt?.toISOString() || null,
+        federatedUrl: user.federatedUrl || null,
         donationAddresses,
         links,
         volunteerCount: eventVolunteerCount + planVolunteerCount,
@@ -313,7 +315,7 @@ export async function GET(
     })
   } catch (error) {
     console.error('Error fetching user:', error)
-    return NextResponse.json({ error: 'Failed to fetch user' }, { status: 500 })
+    return apiError("Failed to fetch user", 500)
   }
 }
 
@@ -326,7 +328,7 @@ export async function PUT(
     const { id } = await context.params
 
     if (!session?.user?.id || session.user.id !== id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { name, username, bio, location, website, image, coverImage, coverStyle, userClass } = await request.json()
@@ -396,9 +398,9 @@ export async function PUT(
       }
     })
 
-    return NextResponse.json({ user: updated })
+    return apiSuccess({ user: updated })
   } catch (error) {
     console.error('Error updating user:', error)
-    return NextResponse.json({ error: 'Failed to update user' }, { status: 500 })
+    return apiError("Failed to update user", 500)
   }
 }

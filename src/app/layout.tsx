@@ -14,6 +14,7 @@ import { QuickCreateProvider } from "@/components/QuickCreateModal";
 import BottomNav from "@/components/BottomNav";
 import LocaleProvider from "@/components/LocaleProvider";
 import { WebSiteLD, OrganizationLD } from "@/components/JSONLD";
+import { Analytics } from "@vercel/analytics/next";
 
 const OG_LOCALE_MAP: Record<string, string> = {
   en: "en_US",
@@ -92,6 +93,7 @@ export default async function RootLayout({
         <OrganizationLD />
       </head>
       <body>
+        <Analytics />
         <LocaleProvider initialLocale={locale} initialMessages={messages}>
           <a href="#main-content" className="sr-only focus:not-sr-only">
             {messages.layout?.skipToContent || "Skip to main content"}

@@ -1,0 +1,35 @@
+
+/* Inline style utilities */
+.flexRow { display: flex; align-items: center; }
+.flexColumn { display: flex; flex-direction: column; }
+.flex1 { flex: 1; }
+.gap8 { gap: 8px; }
+.gap12 { gap: 12px; }
+.mt8 { margin-top: 8px; }
+.mt12 { margin-top: 12px; }
+.mt16 { margin-top: 16px; }
+.mb8 { margin-bottom: 8px; }
+.mb12 { margin-bottom: 12px; }
+.mb16 { margin-bottom: 16px; }
+.clickable { cursor: pointer; }
+.small { font-size: 0.85rem; }
+.textSecondary { color: var(--text-secondary); }
+.textMuted { color: var(--text-muted); }
+.my8 { margin: 8px 0; }
+.my12 { margin: 12px 0; }
+.textCenter { text-align: center; }
+
+.mt10 { margin-top: 10px; }
+.mt24 { margin-top: 24px; }
+.mt32 { margin-top: 32px; }
+.mb20 { margin-bottom: 20px; }
+.mb24 { margin-bottom: 24px; }
+.noUnderline { text-decoration: none; }
+.inlineFlex { display: inline-flex; align-items: center; }
+.flexWrap { display: flex; flex-wrap: wrap; }
+
+/* Utility additions */
+.flexEnd { display: flex; align-items: center; justify-content: flex-end; }
+.mb0 { margin-bottom: 0; }
+.mb4 { margin-bottom: 4px; }
+.mt24 { margin-top: 24px; }

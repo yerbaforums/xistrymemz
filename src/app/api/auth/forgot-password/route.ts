@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { randomBytes } from 'crypto'
 import { forgotPasswordSchema } from '@/lib/validation'
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     const ip = request.headers.get('x-forwarded-for') || 'unknown'
     if (!checkRateLimit(`forgot:${ip}`)) {
-      return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
+      return apiError("Too many requests. Please try again later.", 429)
     }
 
     const user = await prisma.user.findUnique({ where: { email } })
@@ -65,6 +65,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, message: 'If an account exists, a reset link has been sent' })
   } catch (error) {
     console.error('Forgot password error:', error)
-    return NextResponse.json({ error: 'An error occurred' }, { status: 500 })
+    return apiError("An error occurred", 500)
   }
 }

@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { getUserProfileUrl } from '@/lib/utils'
 
 import { EmptyState } from '@/components/EmptyState'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 import styles from './page.module.css'
 
 interface ConnectionUser {
@@ -76,6 +77,7 @@ export default function CommunityManagement() {
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState<string | null>(null)
   const [deletingGroup, setDeletingGroup] = useState<string | null>(null)
+  const [deleteGroupTarget, setDeleteGroupTarget] = useState<string | null>(null)
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -136,18 +138,19 @@ export default function CommunityManagement() {
     }
   }
 
-  const handleDeleteGroup = async (groupId: string) => {
-    if (!confirm('Delete this group? This cannot be undone.')) return
-    setDeletingGroup(groupId)
+  const handleDeleteGroup = async () => {
+    if (!deleteGroupTarget) return
+    setDeletingGroup(deleteGroupTarget)
     try {
-      const res = await fetch(`/api/groups/${groupId}`, { method: 'DELETE' })
+      const res = await fetch(`/api/groups/${deleteGroupTarget}`, { method: 'DELETE' })
       if (res.ok) {
-        setGroups(prev => prev.filter(g => g.id !== groupId))
+        setGroups(prev => prev.filter(g => g.id !== deleteGroupTarget))
       }
     } catch {
       /* ignore */
     } finally {
       setDeletingGroup(null)
+      setDeleteGroupTarget(null)
     }
   }
 
@@ -368,7 +371,7 @@ export default function CommunityManagement() {
                   <div className={styles.actions}>
                     <Link href={`/groups/${g.id}`} className={styles.actionBtn}>View</Link>
                     <button
-                      onClick={() => handleDeleteGroup(g.id)}
+                      onClick={() => setDeleteGroupTarget(g.id)}
                       disabled={deletingGroup === g.id}
                       className={styles.deleteBtn}
                     >
@@ -440,6 +443,15 @@ export default function CommunityManagement() {
           )}
         </div>
       )}
+      <ConfirmDialog
+        isOpen={!!deleteGroupTarget}
+        onClose={() => setDeleteGroupTarget(null)}
+        onConfirm={handleDeleteGroup}
+        title="Delete Group"
+        message="This will permanently delete this group and all its posts, memberships, and data. This cannot be undone."
+        confirmLabel="Delete Group"
+        variant="danger"
+      />
     </div>
   )
 }

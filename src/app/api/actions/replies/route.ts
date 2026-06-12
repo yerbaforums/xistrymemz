@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: Request) {
@@ -8,7 +8,7 @@ export async function GET(request: Request) {
     const entityId = searchParams.get('entityId')
 
     if (!entityType || !entityId) {
-      return NextResponse.json({ replies: [] })
+      return apiSuccess({ replies: [] })
     }
 
     const replies = await prisma.entityReply.findMany({
@@ -22,9 +22,9 @@ export async function GET(request: Request) {
       orderBy: { createdAt: 'asc' },
     })
 
-    return NextResponse.json({ replies })
+    return apiSuccess({ replies })
   } catch (error) {
     console.error('Fetch replies error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }

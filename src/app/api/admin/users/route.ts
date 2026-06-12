@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   const session = await getServerSession(authOptions)
 
   if (!session?.user?.id || (session.user as { role?: string }).role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   const { searchParams } = new URL(request.url)
@@ -81,14 +81,14 @@ export async function PATCH(request: Request) {
   const session = await getServerSession(authOptions)
 
   if (!session?.user?.id || (session.user as { role?: string }).role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return apiError("Unauthorized", 401)
   }
 
   try {
     const { userId, role } = await request.json()
 
     if (!userId || !role || !['USER', 'ADMIN'].includes(role)) {
-      return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
+      return apiError("Invalid input", 400)
     }
 
     const updated = await prisma.user.update({
@@ -102,9 +102,9 @@ export async function PATCH(request: Request) {
       }
     })
 
-    return NextResponse.json(updated)
+    return apiSuccess(updated)
   } catch (error) {
     console.error('Error updating user role:', error)
-    return NextResponse.json({ error: 'Failed to update user role' }, { status: 500 })
+    return apiError("Failed to update user role", 500)
   }
 }

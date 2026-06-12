@@ -1,8 +1,9 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { serviceOfferingSchema, validateBody } from '@/lib/schemas'
+import { geocodeLocation } from '@/lib/geocoding'
 import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import { extractHashtags, linkHashtags, removeHashtags } from '@/services/hashtagService'
 
@@ -22,7 +23,7 @@ export async function GET(
     })
 
     if (!service) {
-      return NextResponse.json({ error: 'Service not found' }, { status: 404 })
+      return apiError("Service not found", 404)
     }
 
     const safe = {
@@ -54,10 +55,10 @@ export async function GET(
       updatedAt: service.updatedAt instanceof Date ? service.updatedAt.toISOString() : String(service.updatedAt),
     }
 
-    return NextResponse.json({ service: safe })
+    return apiSuccess({ service: safe })
   } catch (error) {
     console.error('Error fetching service:', error)
-    return NextResponse.json({ error: 'Failed to fetch service' }, { status: 500 })
+    return apiError("Failed to fetch service", 500)
   }
 }
 
@@ -68,23 +69,23 @@ export async function PUT(
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { id } = await params
     const existing = await prisma.serviceOffering.findUnique({ where: { id } })
     if (!existing) {
-      return NextResponse.json({ error: 'Service not found' }, { status: 404 })
+      return apiError("Service not found", 404)
     }
     if (existing.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      return apiError("Forbidden", 403)
     }
 
     let body: unknown
     try {
       body = await request.json()
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+      return apiError("Invalid JSON body", 400)
     }
     const parsed = await validateBody(serviceOfferingSchema.partial(), body)
     if (!parsed.success) {
@@ -98,7 +99,16 @@ export async function PUT(
     if (d.category !== undefined) updateData.category = d.category
     if (d.duration !== undefined) updateData.duration = d.duration
     if (d.price !== undefined) updateData.price = d.price || null
-    if (d.location !== undefined) updateData.location = d.location || null
+    if (d.location !== undefined) {
+      updateData.location = d.location || null
+      if (d.location && existing.location !== d.location) {
+        try {
+          const geo = await geocodeLocation(d.location)
+          if (geo) { updateData.latitude = geo.latitude; updateData.longitude = geo.longitude }
+        } catch {}
+      }
+      if (!d.location) { updateData.latitude = null; updateData.longitude = null }
+    }
     if (d.meetingLink !== undefined) updateData.meetingLink = d.meetingLink || null
     if (d.imageUrl !== undefined) updateData.imageUrl = d.imageUrl || null
     if (d.isActive !== undefined) updateData.isActive = d.isActive
@@ -143,10 +153,10 @@ export async function PUT(
       await removeHashtags('SERVICE', id)
     }
 
-    return NextResponse.json({ service })
+    return apiSuccess({ service })
   } catch (error) {
     console.error('Error updating service:', error)
-    return NextResponse.json({ error: 'Failed to update service' }, { status: 500 })
+    return apiError("Failed to update service", 500)
   }
 }
 
@@ -157,23 +167,23 @@ export async function DELETE(
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const { id } = await params
     const existing = await prisma.serviceOffering.findUnique({ where: { id } })
     if (!existing) {
-      return NextResponse.json({ error: 'Service not found' }, { status: 404 })
+      return apiError("Service not found", 404)
     }
     if (existing.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      return apiError("Forbidden", 403)
     }
 
     await prisma.serviceOffering.delete({ where: { id } })
 
-    return NextResponse.json({ message: 'Service deleted' })
+    return apiSuccess({ message: 'Service deleted' })
   } catch (error) {
     console.error('Error deleting service:', error)
-    return NextResponse.json({ error: 'Failed to delete service' }, { status: 500 })
+    return apiError("Failed to delete service", 500)
   }
 }

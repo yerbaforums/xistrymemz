@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server'
+import { geocodeLocation } from '@/lib/geocoding'
+import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -48,7 +49,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ items: groups, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
   } catch (error) {
     console.error('GET /api/groups:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }
 
@@ -57,14 +58,14 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     let body: unknown
     try {
       body = await request.json()
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+      return apiError("Invalid JSON body", 400)
     }
     const validation = validateBody(groupSchema, body)
     
@@ -72,7 +73,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { name, description, privacy, category, hashtags } = validation.data
+    const { name, description, privacy, category, location, latitude: formLat, longitude: formLng, isLocationBased, hashtags } = validation.data
+    let latitude = formLat || null
+    let longitude = formLng || null
+    if (!latitude && !longitude && location) {
+      try {
+        const geo = await geocodeLocation(location)
+        if (geo) { latitude = geo.latitude; longitude = geo.longitude }
+      } catch {} 
+    }
 
     const group = await prisma.group.create({
       data: {
@@ -80,6 +89,10 @@ export async function POST(request: Request) {
         description,
         category: category || 'GENERAL',
         isPrivate: privacy === 'PRIVATE',
+        location: location || null,
+        latitude: latitude || null,
+        longitude: longitude || null,
+        isLocationBased: isLocationBased || false,
         userId: session.user.id,
         members: {
           create: {
@@ -101,9 +114,9 @@ export async function POST(request: Request) {
       await extractAndLinkHashtags(text, 'GROUP', group.id)
     }
 
-    return NextResponse.json(group)
+    return apiSuccess(group)
   } catch (error) {
     console.error('POST /api/groups:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError("Internal server error", 500)
   }
 }

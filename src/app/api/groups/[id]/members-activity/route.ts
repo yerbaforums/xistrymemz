@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiNotFound, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(
@@ -16,7 +16,7 @@ export async function GET(
   })
 
   if (!group) {
-    return NextResponse.json({ error: 'Group not found' }, { status: 404 })
+    return apiError("Group not found", 404)
   }
 
   const memberIds = await prisma.groupMember.findMany({

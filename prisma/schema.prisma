@@ -86,6 +86,10 @@ model User {
   schoolContentsOwned    SchoolContent[]        @relation("SchoolOwner")
   schoolContentsAuthored SchoolContent[]        @relation("SchoolAuthor")
   schoolContentLikes     SchoolContentLike[]
+  schoolCourses          SchoolCourse[]
+  schoolStudents         SchoolEnrollment[]     @relation("SchoolStudent")
+  schoolEnrollments  SchoolEnrollment[]     @relation("SchoolOwner")
+  federatedIdentities    FederatedIdentity[]
   sentConnections        Connection[]           @relation("ConnectionRequester")
   receivedConnections    Connection[]           @relation("ConnectionReceiver")
   sentMessages           Message[]              @relation("MessageSender")
@@ -814,6 +818,7 @@ model SchoolContent {
   purchases         SchoolPurchase[]
   requests          Request[]
   likes             SchoolContentLike[]
+  courseContents    SchoolCourseContent[]
   hashtags          SchoolContentHashtag[]
   createdAt         DateTime               @default(now())
   updatedAt         DateTime               @updatedAt
@@ -1070,6 +1075,69 @@ model SchoolContentHashtag {
 
   @@unique([schoolContentId, hashtagId])
   @@index([hashtagId])
+}
+
+// School curriculum: courses group content into sequences
+model SchoolCourse {
+  id             String        @id @default(cuid())
+  schoolId       String
+  school         User          @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  title          String
+  description    String?
+  imageUrl       String?
+  difficulty     String        @default("beginner") // beginner | intermediate | advanced
+  isPublic       Boolean       @default(true)
+  sortOrder      Int           @default(0)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  contents       SchoolCourseContent[]
+
+  @@index([schoolId])
+}
+
+// Junction: which content belongs to which course, with ordering
+model SchoolCourseContent {
+  id          String        @id @default(cuid())
+  courseId    String
+  course      SchoolCourse  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  contentId   String
+  content     SchoolContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  sortOrder   Int           @default(0)
+  optional    Boolean       @default(false)
+
+  @@unique([courseId, contentId])
+  @@index([courseId])
+  @@index([contentId])
+}
+
+// Student enrollment in a school
+model SchoolEnrollment {
+  id             String            @id @default(cuid())
+  schoolId       String
+  school         User              @relation("SchoolOwner", fields: [schoolId], references: [id], onDelete: Cascade)
+  studentId      String
+  student        User              @relation("SchoolStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  enrolledAt     DateTime          @default(now())
+  completedAt    DateTime?
+  progress       ContentProgress[]
+
+  @@unique([schoolId, studentId])
+  @@index([schoolId])
+  @@index([studentId])
+}
+
+// Per-content progress tracking for enrolled students
+model ContentProgress {
+  id              String          @id @default(cuid())
+  enrollmentId    String
+  enrollment      SchoolEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  contentId       String
+  completed       Boolean         @default(false)
+  completedAt     DateTime?
+  createdAt       DateTime        @default(now())
+
+  @@unique([enrollmentId, contentId])
+  @@index([enrollmentId])
 }
 
 model PlanHashtag {
@@ -1806,6 +1874,26 @@ model Follow {
 }
 
 // Outbound ActivityPub activities queue
+// Federated identity for remote fediverse users who sign in
+model FederatedIdentity {
+  id                String   @id @default(cuid())
+  userId            String?
+  user              User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  handle            String   @unique // @user@domain
+  actorUrl          String   @unique // https://domain/users/user
+  inboxUrl          String
+  sharedInboxUrl    String?
+  publicKeyPem      String?  // Remote user's public key for signature verification
+  remoteInstanceUrl String   // https://domain
+  verifiedAt        DateTime?
+  lastSyncedAt      DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId])
+  @@index([handle])
+}
+
 model OutboxActivity {
   id           String    @id @default(cuid())
   userId       String
@@ -1899,6 +1987,8 @@ model ServiceOffering {
   duration    Int // minutes
   price       Float?
   location    String?
+  latitude    Float?
+  longitude   Float?
   meetingLink String?
   imageUrl    String?
   isActive    Boolean @default(true)
@@ -1933,6 +2023,7 @@ model ServiceOffering {
   @@index([price])
   @@index([location])
   @@index([duration])
+  @@index([latitude, longitude])
 }
 
 model ServiceOfferingHashtag {

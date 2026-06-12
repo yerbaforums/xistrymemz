@@ -7,6 +7,7 @@ import styles from './video.module.css'
 import { EmptyState } from '@/components/EmptyState'
 
 import Skeleton from '@/components/Skeleton'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 interface RoomSummary {
   id: string
@@ -28,6 +29,7 @@ export default function VideoChatPage() {
   const [joinInput, setJoinInput] = useState('')
   const [error, setError] = useState('')
   const [copiedRoom, setCopiedRoom] = useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<RoomSummary | null>(null)
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -89,10 +91,10 @@ export default function VideoChatPage() {
     setTimeout(() => setCopiedRoom(null), 2000)
   }
 
-  const handleDeleteRoom = async (room: RoomSummary) => {
-    if (!confirm(`End "${room.name}"? This will disconnect all participants.`)) return
+  const handleDeleteRoom = async () => {
+    if (!deleteTarget) return
     try {
-      const res = await fetch(`/api/video/rooms/${room.id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/video/rooms/${deleteTarget.id}`, { method: 'DELETE' })
       if (res.ok) {
         fetchRooms()
       }
@@ -171,7 +173,7 @@ export default function VideoChatPage() {
                     {copiedRoom === r.id ? '✓ Copied' : '🔗 Share'}
                   </button>
                   {r.createdBy.id === session?.user?.id && (
-                    <button onClick={() => handleDeleteRoom(r)} className={styles.deleteBtn} title="End room">
+                    <button onClick={() => setDeleteTarget(r)} className={styles.deleteBtn} title="End room">
                       🗑️ End
                     </button>
                   )}
@@ -181,6 +183,15 @@ export default function VideoChatPage() {
           </div>
         )}
       </div>
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteRoom}
+        title="End Video Room"
+        message={`This will permanently end "${deleteTarget?.name || ''}" and disconnect all participants.`}
+        confirmLabel="End Room"
+        variant="danger"
+      />
     </div>
   )
 }

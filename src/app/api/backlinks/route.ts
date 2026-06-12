@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: Request) {
@@ -8,7 +8,7 @@ export async function GET(request: Request) {
     const id = searchParams.get('id')
 
     if (!type || !id) {
-      return NextResponse.json({ backlinks: [] })
+      return apiSuccess({ backlinks: [] })
     }
 
     const [incoming, outgoing] = await Promise.all([
@@ -27,9 +27,9 @@ export async function GET(request: Request) {
       ...outgoing.map(b => ({ ...b, direction: 'outgoing' as const, createdAt: b.createdAt.toISOString() })),
     ]
 
-    return NextResponse.json({ backlinks })
+    return apiSuccess({ backlinks })
   } catch (error) {
     console.error('Error fetching backlinks:', error)
-    return NextResponse.json({ backlinks: [] })
+    return apiSuccess({ backlinks: [] })
   }
 }

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET() {
@@ -26,9 +26,9 @@ export async function GET() {
       orderBy: { createdAt: 'desc' }
     })
 
-    return NextResponse.json({ shops })
+    return apiSuccess({ shops })
   } catch (error) {
     console.error('Error fetching shops:', error)
-    return NextResponse.json({ error: 'Failed to fetch shops' }, { status: 500 })
+    return apiError("Failed to fetch shops", 500)
   }
 }

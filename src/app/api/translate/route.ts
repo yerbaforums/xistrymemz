@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import type { NextRequest } from 'next/server'
 
 const DEEPL_API_BASE = process.env.DEEPL_API_KEY?.startsWith('fake') || process.env.DEEPL_API_KEY?.startsWith('test')
@@ -36,20 +36,20 @@ function checkRateLimit(ip: string): boolean {
 export async function POST(request: NextRequest) {
   const ip = getClientIP(request)
   if (!checkRateLimit(ip)) {
-    return NextResponse.json({ error: 'Too Many Requests' }, { status: 429 })
+    return apiError("Too Many Requests", 429)
   }
 
   let body: { text?: string; targetLang?: string }
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+    return apiError("Invalid JSON", 400)
   }
 
   const { text, targetLang } = body
 
   if (!text || typeof text !== 'string') {
-    return NextResponse.json({ error: 'text is required' }, { status: 400 })
+    return apiError("text is required", 400)
   }
 
   if (text.length > MAX_TEXT_LENGTH) {
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
 
   const apiKey = process.env.DEEPL_API_KEY
   if (!apiKey) {
-    return NextResponse.json({ error: 'Translation service not configured' }, { status: 500 })
+    return apiError("Translation service not configured", 500)
   }
 
   try {
@@ -82,13 +82,13 @@ export async function POST(request: NextRequest) {
     if (!res.ok) {
       const err = await res.text()
       console.error('DeepL API error:', res.status, err)
-      return NextResponse.json({ error: 'Translation failed' }, { status: 502 })
+      return apiError("Translation failed", 502)
     }
 
     const data = await res.json()
-    return NextResponse.json({ translated: data.translations[0].text })
+    return apiSuccess({ translated: data.translations[0].text })
   } catch (err) {
     console.error('Translation request failed:', err)
-    return NextResponse.json({ error: 'Translation request failed' }, { status: 502 })
+    return apiError("Translation request failed", 502)
   }
 }

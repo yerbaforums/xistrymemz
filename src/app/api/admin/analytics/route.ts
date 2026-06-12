@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -22,7 +22,7 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions)
     if (!session || (session.user as { role?: string }).role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+      return apiError("Unauthorized", 403)
     }
 
     const today = startOfToday()
@@ -288,6 +288,6 @@ export async function GET() {
     })
   } catch (error) {
     console.error('Admin analytics error:', error)
-    return NextResponse.json({ error: 'Failed to fetch analytics' }, { status: 500 })
+    return apiError("Failed to fetch analytics", 500)
   }
 }

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: Request) {
@@ -6,7 +6,7 @@ export async function GET(request: Request) {
   const q = searchParams.get('q') || ''
 
   if (!q || q.length < 1) {
-    return NextResponse.json({ users: [] })
+    return apiSuccess({ users: [] })
   }
 
   const users = await prisma.user.findMany({
@@ -26,5 +26,5 @@ export async function GET(request: Request) {
     orderBy: { createdAt: 'desc' },
   })
 
-  return NextResponse.json({ users })
+  return apiSuccess({ users })
 }

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import type { NextRequest } from 'next/server'
 import fs from 'fs'
 import path from 'path'
@@ -10,13 +10,13 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+    return apiError("Invalid JSON", 400)
   }
 
   const { language, email, nativeName } = body
 
   if (!language || typeof language !== 'string' || language.trim().length === 0) {
-    return NextResponse.json({ error: 'Language is required' }, { status: 400 })
+    return apiError("Language is required", 400)
   }
 
   const normalized = language.trim().toLowerCase()
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (email && (typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
-    return NextResponse.json({ error: 'Invalid email address' }, { status: 400 })
+    return apiError("Invalid email address", 400)
   }
 
   const entry = {
@@ -80,6 +80,6 @@ New language request received:
 
     return NextResponse.json({ success: true, message: `Language request for "${entry.language}" submitted` })
   } catch {
-    return NextResponse.json({ error: 'Failed to save request' }, { status: 500 })
+    return apiError("Failed to save request", 500)
   }
 }
