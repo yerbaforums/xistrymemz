@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { fetchApi } from '@/lib/fetch-api'
 
 const STUN_SERVERS = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] }
 
@@ -226,15 +227,13 @@ export function useVideoChat(initialRoomId?: string, currentUserId?: string) {
 
   const createRoom = useCallback(async (name?: string) => {
     try {
-      const res = await fetch('/api/video/rooms', {
+      const { room } = await fetchApi<{ room: VideoRoom }>('/api/video/rooms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name }),
       })
-      if (!res.ok) throw new Error('Failed to create room')
-      const data = await res.json()
-      setRoom(data?.data?.room || data?.room)
-      return data?.data?.room || data?.room
+      setRoom(room)
+      return room
     } catch (err: any) {
       setError(err.message)
       return null
@@ -243,15 +242,13 @@ export function useVideoChat(initialRoomId?: string, currentUserId?: string) {
 
   const joinRoom = useCallback(async (inviteCode: string) => {
     try {
-      const res = await fetch('/api/video/rooms/join', {
+      const { room } = await fetchApi<{ room: VideoRoom }>('/api/video/rooms/join', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ inviteCode }),
       })
-      if (!res.ok) throw new Error('Failed to join room')
-      const data = await res.json()
-      setRoom(data?.data?.room || data?.room)
-      return data?.data?.room || data?.room
+      setRoom(room)
+      return room
     } catch (err: any) {
       setError(err.message)
       return null
@@ -260,11 +257,9 @@ export function useVideoChat(initialRoomId?: string, currentUserId?: string) {
 
   const fetchRoom = useCallback(async (roomId: string) => {
     try {
-      const res = await fetch(`/api/video/rooms/${roomId}`)
-      if (!res.ok) throw new Error('Failed to fetch room')
-      const data = await res.json()
-      setRoom(data?.data?.room || data?.room)
-      return data?.data?.room || data?.room
+      const { room } = await fetchApi<{ room: VideoRoom }>(`/api/video/rooms/${roomId}`)
+      setRoom(room)
+      return room
     } catch (err: any) {
       setError(err.message)
       return null

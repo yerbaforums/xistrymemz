@@ -31,7 +31,7 @@ export async function GET(request: Request) {
       prisma.product.count({ where }),
     ])
 
-    return NextResponse.json({ items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
+    return apiSuccess({ items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
   } catch (error) {
     console.error('GET /api/products/user:', error)
     return apiError("Internal server error", 500)

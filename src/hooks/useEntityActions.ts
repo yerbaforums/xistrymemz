@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { fetchApi } from '@/lib/fetch-api'
 
 export type ActionEntityType =
   | 'POST' | 'PRODUCT' | 'SERVICE' | 'EVENT' | 'PLAN'
@@ -125,26 +126,23 @@ export function useEntityActions({
   }, [saving, saved, entityType, entityId])
 
   const addReply = useCallback(async (content: string) => {
-    const res = await fetch('/api/actions/reply', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ entityType, entityId, content }),
-    })
-    if (res.ok) {
-      const data = await res.json()
-      setReplies(r => [...r, data?.data?.reply || data?.reply])
+    try {
+      const { reply } = await fetchApi<any>('/api/actions/reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entityType, entityId, content }),
+      })
+      setReplies(r => [...r, reply])
       setReplyCount(c => c + 1)
       return true
-    }
-    return false
+    } catch { return false }
   }, [entityType, entityId])
 
   const loadReplies = useCallback(async () => {
-    const res = await fetch(`/api/actions/replies?entityType=${entityType}&entityId=${entityId}`)
-    if (res.ok) {
-      const data = await res.json()
-      setReplies(data?.data?.replies || data?.replies || [])
-    }
+    try {
+      const { replies } = await fetchApi<any>(`/api/actions/replies?entityType=${entityType}&entityId=${entityId}`)
+      setReplies(replies || [])
+    } catch {}
   }, [entityType, entityId])
 
   const toggleReplies = useCallback(() => {

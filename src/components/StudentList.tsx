@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { fetchApi } from '@/lib/fetch-api'
 import styles from './StudentList.module.css'
 
 interface StudentListProps {
@@ -14,9 +15,8 @@ export default function StudentList({ resolvedSlug, userId }: StudentListProps) 
 
   useEffect(() => {
     if (!resolvedSlug) return
-    fetch(`/api/school/students?schoolId=${userId}`)
-      .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data?.data?.students || data?.students) setStudents(data?.data?.students || data?.students || []); setLoading(false) })
+    fetchApi<{ students: any[] }>(`/api/school/students?schoolId=${userId}`)
+      .then(({ students: s }) => { setStudents(s || []); setLoading(false) })
       .catch(() => setLoading(false))
   }, [resolvedSlug, userId])
 

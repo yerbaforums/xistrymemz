@@ -32,9 +32,8 @@ export default function Footer() {
   const [qrOpen, setQrOpen] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('/api/site/donations')
-      .then(res => res.ok ? res.json() : null)
-      .then(data => { if (data?.data?.addresses || data?.addresses) setDonations(data?.data?.addresses || data?.addresses || []) })
+    fetchApi<{ addresses: DonationAddr[] }>('/api/site/donations')
+      .then(({ addresses: addrs }) => setDonations(addrs || []))
       .catch(() => {})
   }, [])
 

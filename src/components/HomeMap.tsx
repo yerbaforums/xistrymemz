@@ -52,10 +52,10 @@ export default function HomeMap() {
   useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
-    fetch('/api/map-data')
-      .then(res => res.ok ? res.json() : null)
-      .then(data => { if (data?.data?.items || data?.items) setItems(data?.data?.items || data?.items || []); setLoading(false) })
+    fetchApi<{ items: MapItem[] }>('/api/map-data')
+      .then(({ items }) => setItems(items || []))
       .catch(() => setLoading(false))
+      .finally(() => setLoading(false))
   }, [])
 
   const center = calculateCenter(items)

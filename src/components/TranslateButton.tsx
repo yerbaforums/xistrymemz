@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { useLocale } from 'next-intl'
+import { fetchApi } from '@/lib/fetch-api'
 
 const LOCALE_TO_DEEPL: Record<string, string> = {
   en: 'EN',
@@ -65,19 +66,13 @@ export default function TranslateButton({ text, className }: Props) {
     setError(null)
 
     try {
-      const res = await fetch('/api/translate', {
+      const { translated } = await fetchApi<{ translated: string }>('/api/translate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text, targetLang }),
       })
 
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Translation failed')
-      }
-
-      const data = await res.json()
-      setTranslated(data?.data?.translated || data?.translated)
+      setTranslated(translated)
       setShowOriginal(false)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Translation failed')

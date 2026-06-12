@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { fetchApi } from '@/lib/fetch-api'
 import styles from './AssetPicker.module.css'
 
 export interface UserAsset {
@@ -44,15 +45,12 @@ export default function AssetPicker({ filterTypes, selectedAsset, onSelect, labe
     const fetchAssets = async () => {
       setLoading(true)
       try {
-        const res = await fetch('/api/user/assets')
-        if (res.ok) {
-          const data = await res.json()
-          let all = data?.data?.assets || data?.assets || []
-          if (filterTypes) {
-            all = all.filter((a: UserAsset) => filterTypes.includes(a.type))
-          }
-          setAssets(all)
+        const { assets: allAssets } = await fetchApi<{ assets: UserAsset[] }>('/api/user/assets')
+        let all = allAssets || []
+        if (filterTypes) {
+          all = all.filter((a: UserAsset) => filterTypes.includes(a.type))
         }
+        setAssets(all)
       } catch {}
       setLoading(false)
     }

@@ -55,7 +55,7 @@ export async function GET(
 
     const linkedTitle = event.plan?.title || event.group?.name || event.school?.schoolName || event.shop?.shopName || null
 
-    return NextResponse.json({
+    return apiSuccess({
       id: event.id,
       title: event.title,
       description: event.description,

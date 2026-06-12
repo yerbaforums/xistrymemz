@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { fetchApi } from '@/lib/fetch-api'
 import styles from './HashtagInput.module.css'
 
 interface HashtagSuggestion {
@@ -37,14 +38,11 @@ export default function HashtagInput({
       return
     }
     try {
-      const res = await fetch(`/api/hashtags?search=${encodeURIComponent(query)}&limit=8`)
-      if (res.ok) {
-        const data = await res.json()
-        const existing = new Set(value.map(t => t.toLowerCase()))
-        const filtered = (data?.data?.hashtags || data?.hashtags || []).filter((h: HashtagSuggestion) => !existing.has(h.tag))
-        setSuggestions(filtered)
-        setShowSuggestions(filtered.length > 0)
-      }
+      const { hashtags } = await fetchApi<{ hashtags: HashtagSuggestion[] }>(`/api/hashtags?search=${encodeURIComponent(query)}&limit=8`)
+      const existing = new Set(value.map(t => t.toLowerCase()))
+      const filtered = (hashtags || []).filter((h: HashtagSuggestion) => !existing.has(h.tag))
+      setSuggestions(filtered)
+      setShowSuggestions(filtered.length > 0)
     } catch {
       setSuggestions([])
     }

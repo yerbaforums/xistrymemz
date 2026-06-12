@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react'
 import { getSelectionAfterAt } from '@/lib/mentions'
 import { useToast } from '@/context/ToastContext'
+import { fetchApi } from '@/lib/fetch-api'
 
 interface UserResult {
   id: string
@@ -72,13 +73,9 @@ const MentionInput = forwardRef<MentionInputHandle, MentionInputProps>(function 
       return
     }
     try {
-      const res = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`)
-      if (res.ok) {
-        const data = await res.json()
-        setSuggestions(data?.data?.users || data?.users || [])
-        setShowSuggestions((data?.data?.users || data?.users || []).length > 0)
-        setActiveIndex(0)
-      }
+        const { users } = await fetchApi<{ users: any[] }>(`/api/users/search?q=${encodeURIComponent(query)}`)
+        setSuggestions(users || [])
+        setShowSuggestions((users || []).length > 0)
     } catch {
       setSuggestions([])
       setShowSuggestions(false)
@@ -93,13 +90,9 @@ const MentionInput = forwardRef<MentionInputHandle, MentionInputProps>(function 
       return
     }
     try {
-      const res = await fetch(`/api/hashtags/search?q=${encodeURIComponent(query)}`)
-      if (res.ok) {
-        const data = await res.json()
-        setSuggestions(data?.data?.hashtags || data?.hashtags || [])
-        setShowSuggestions((data?.data?.hashtags || data?.hashtags || []).length > 0)
-        setActiveIndex(0)
-      }
+        const { hashtags } = await fetchApi<{ hashtags: any[] }>(`/api/hashtags/search?q=${encodeURIComponent(query)}`)
+        setSuggestions(hashtags || [])
+        setShowSuggestions((hashtags || []).length > 0)
     } catch {
       setSuggestions([])
       setShowSuggestions(false)

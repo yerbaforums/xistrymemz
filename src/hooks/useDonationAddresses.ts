@@ -1,7 +1,6 @@
-'use client'
-
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
+import { fetchApi } from '@/lib/fetch-api'
 import type { DonationAddr } from '@/types/product'
 
 export function useDonationAddresses() {
@@ -10,9 +9,8 @@ export function useDonationAddresses() {
 
   useEffect(() => {
     if (session?.user) {
-      fetch('/api/users/donations')
-        .then(r => r.ok ? r.json() : null)
-        .then(data => { if (data?.data?.addresses || data?.addresses) setAddresses(data?.data?.addresses || data?.addresses || []) })
+      fetchApi<{ addresses: DonationAddr[] }>('/api/users/donations')
+        .then(({ addresses: addrs }) => setAddresses(addrs || []))
         .catch(() => {})
     }
   }, [session])

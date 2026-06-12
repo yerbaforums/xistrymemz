@@ -129,10 +129,9 @@ export default function ServiceDetailPage() {
 
   useEffect(() => {
     if (!params.id) return
-    fetch(`/api/services/${params.id}`)
-      .then(r => r.json())
-      .then(data => {
-        const svc = sanitizeService(data?.data?.service || data?.service) || null
+    fetchApi<{ service: ServiceOffering }>(`/api/services/${params.id}`)
+      .then(({ service }) => {
+        const svc = sanitizeService(service) || null
         setService(svc)
         setLoading(false)
         if (svc) {
@@ -140,11 +139,10 @@ export default function ServiceDetailPage() {
           const url = svc.category
             ? `/api/services?category=${encodeURIComponent(svc.category)}`
             : '/api/services'
-          fetch(url)
-            .then(r => r.json())
-            .then(related => {
-              const items = Array.isArray(related?.services)
-                ? related.services.filter((s: ServiceOffering) => s.id !== svc.id).slice(0, 3)
+          fetchApi<{ services: ServiceOffering[] }>(url)
+            .then(({ services }) => {
+              const items = services
+                ? services.filter((s: ServiceOffering) => s.id !== svc.id).slice(0, 3)
                 : []
               setRelatedServices(items)
               setRelatedLoading(false)

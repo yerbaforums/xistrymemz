@@ -78,7 +78,9 @@ export async function GET(request: NextRequest) {
       updatedAt: s.updatedAt instanceof Date ? s.updatedAt.toISOString() : String(s.updatedAt),
     }))
 
-    return NextResponse.json({ services, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
+    return apiSuccess({ services, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
+
+
   } catch (error) {
     console.error('Error fetching services:', error)
     return apiError("Failed to fetch services", 500)
