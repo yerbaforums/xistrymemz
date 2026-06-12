@@ -126,9 +126,9 @@ export default function CommunityPage() {
       
       if (membersRes.ok) {
         const membersData = await membersRes.json()
-        setMembers(membersData.members?.items || [])
-        setConnections(membersData.connections?.items || [])
-        setPendingRequests(membersData.pendingRequests?.items || [])
+        setMembers(membersData.data.members?.items || [])
+        setConnections(membersData.data.connections?.items || [])
+        setPendingRequests(membersData.data.pendingRequests?.items || [])
       }
       
       if (groupsRes.ok) {
@@ -143,12 +143,12 @@ export default function CommunityPage() {
 
       if (forumCatRes.ok) {
         const forumData = await forumCatRes.json()
-        setForumCategories(forumData || [])
+        setForumCategories(forumData?.data || [])
       }
 
       if (forumPostsRes.ok) {
         const postsData = await forumPostsRes.json()
-        setForumPosts(postsData || [])
+        setForumPosts(postsData?.data || [])
       }
 
       const tipRes = await fetch('/api/forum/tip-options')
@@ -169,7 +169,7 @@ export default function CommunityPage() {
       const res = await fetch(url)
       if (res.ok) {
         const data = await res.json()
-        setForumPosts(data || [])
+        setForumPosts(data?.data || [])
       }
     } catch (err) {
       console.error(err)

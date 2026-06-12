@@ -29,7 +29,7 @@ export default function AdminMessagesPage() {
       const res = await fetch('/api/contact')
       if (res.ok) {
         const data = await res.json()
-        setMessages(data.messages || [])
+        setMessages(data.data.messages || [])
       }
     } catch (error) {
       console.error('Failed to fetch messages:', error)

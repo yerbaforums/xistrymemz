@@ -74,7 +74,7 @@ export default function SearchResultsClient() {
     fetch(`/api/search?q=${encodeURIComponent(query)}&limit=50&offset=0`)
       .then(res => res.json())
       .then(data => {
-        setResults(data.results)
+        setResults(data.data?.results || data.results)
         setHasMore(countResults(data.results) >= 50)
         setLoading(false)
       })

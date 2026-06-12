@@ -175,7 +175,7 @@ export default function ProfileEditPage() {
       setEnableReplies(user.enableReplies ?? true)
       setEnableLikes(user.enableLikes ?? true)
       setShowViewCount(user.showViewCount ?? true)
-      setLinks(data.links || [])
+      setLinks(data.data.links || [])
 
       try { const r = await fetch('/api/users/donations'); if (r.ok) setDonationAddresses((await r.json()).addresses || []) } catch {}
     } catch (err) {

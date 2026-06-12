@@ -159,9 +159,9 @@ export default function BoardsPage() {
       if (!res.ok) { console.error('Boards fetch not ok:', res.status); return }
       const data = await res.json()
       if (data.error) { console.error('Boards API error:', data.error); return }
-      setBoards(data.boards || [])
+      setBoards(data.data.boards || [])
 
-      const locBoards = (data.boards || []).filter((b: Board) => b.latitude && b.longitude)
+      const locBoards = (data.data.boards || []).filter((b: Board) => b.latitude && b.longitude)
       if (locBoards.length > 0 && mapRef.current && !initialFitDone.current) {
         initialFitDone.current = true
         const bounds = locBoards.map((b: Board) => [b.latitude, b.longitude] as [number, number])

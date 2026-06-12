@@ -85,7 +85,7 @@ function DashboardMessagesContent() {
       const res = await fetch('/api/messages/conversations')
       if (res.ok) {
         const data = await res.json()
-        setConversations(data.conversations || [])
+        setConversations(data.data.conversations || [])
       }
     } catch (error) {
       console.error('Error fetching conversations:', error)
@@ -116,7 +116,7 @@ function DashboardMessagesContent() {
       const res = await fetch(`/api/messages?user=${userId}`)
       if (res.ok) {
         const data = await res.json()
-        setMessages(data.data?.messages || data.messages || [])
+        setMessages(data.data?.messages || data.data.messages || [])
       } else {
         setFetchError('Failed to load messages')
       }

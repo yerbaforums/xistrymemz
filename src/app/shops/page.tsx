@@ -36,7 +36,7 @@ export default function ShopsPage() {
       const res = await fetch('/api/shops')
       if (res.ok) {
         const data = await res.json()
-        setShops(data.shops || [])
+        setShops(data.data.shops || [])
       }
     } catch (error) {
       console.error('Failed to fetch shops:', error)

@@ -52,7 +52,7 @@ export default function NotificationsPage() {
       const res = await fetch(url)
       if (res.ok) {
         const data = await res.json()
-        setNotifications(data)
+        setNotifications(data.data)
       }
     } catch (error) {
       console.error('Error fetching notifications:', error)

@@ -238,7 +238,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
     if (!resolvedSlug) return
     try {
       const res = await fetch(`/api/school/courses?schoolId=${userId}`)
-      if (res.ok) { const data = await res.json(); if (data?.courses) setCourses(data.courses) }
+      if (res.ok) { const data = await res.json(); if (data?.data?.courses) setCourses(data.courses) }
     } catch {}
   }
 

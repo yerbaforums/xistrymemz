@@ -98,7 +98,7 @@ export default function Home() {
 
     fetch('/api/shops')
       .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.shops) setShops(d.shops.slice(0, 4)); setLoadingShops(false) })
+      .then(d => { if (d?.data?.shops) setShops(d.data.shops.slice(0, 4)); setLoadingShops(false) })
       .catch(() => setLoadingShops(false))
 
     fetchProducts('all')
@@ -114,25 +114,25 @@ export default function Home() {
 
     fetch('/api/hashtags?mode=trending&limit=20')
       .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.hashtags) setTrendingTags(d.hashtags) })
+      .then(d => { if (d?.data?.hashtags) setTrendingTags(d.data.hashtags) })
       .catch(() => {})
 
     fetch('/api/public/events')
       .then(r => r.ok ? r.json() : [])
-      .then(data => { setEvents(Array.isArray(data) ? data.slice(0, 4) : []); setLoadingEvents(false) })
+      .then(data => { setEvents(Array.isArray(data?.data) ? data.data.slice(0, 4) : []); setLoadingEvents(false) })
       .catch(() => setLoadingEvents(false))
 
     fetch('/api/plans?public=true')
       .then(r => r.ok ? r.json() : [])
       .then(data => {
-        const list = Array.isArray(data) ? data : (data?.plans || [])
+        const list = Array.isArray(data) ? data : (data?.data?.items || [])
         setPlans(list.slice(0, 4)); setLoadingPlans(false)
       })
       .catch(() => setLoadingPlans(false))
 
     fetch('/api/boards?limit=4')
       .then(r => r.ok ? r.json() : { boards: [] })
-      .then(data => { setBoards(data.boards || []); setLoadingBoards(false) })
+      .then(data => { setBoards(data.data.boards || []); setLoadingBoards(false) })
       .catch(() => setLoadingBoards(false))
   }, [fetchProducts])
 

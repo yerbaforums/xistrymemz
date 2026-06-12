@@ -58,7 +58,7 @@ function HashtagsPage() {
     fetch(`/api/hashtags?${params}`)
       .then(r => r.json())
       .then(data => {
-        setTags(data.hashtags || [])
+        setTags(data.data.hashtags || [])
       })
       .catch(() => setTags([]))
       .finally(() => setLoading(false))

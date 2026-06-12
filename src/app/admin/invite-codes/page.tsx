@@ -35,7 +35,7 @@ export default function AdminInviteCodesPage() {
       const res = await fetch('/api/invite-codes')
       if (res.ok) {
         const data = await res.json()
-        setCodes(data.codes || [])
+        setCodes(data.data.codes || [])
       }
     } catch (error) {
       console.error('Failed to fetch codes:', error)

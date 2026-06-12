@@ -111,7 +111,7 @@ export default function DashboardAppointments() {
       ])
       if (apptRes.ok) {
         const data = await apptRes.json()
-        setAppointments((data.appointments || []).map((a: any) => ({
+        setAppointments((data.data.appointments || []).map((a: any) => ({
           ...a,
           _type: 'appointment' as const,
           _role: a.buyerId === session?.user?.id ? ('buyer' as const) : ('seller' as const)

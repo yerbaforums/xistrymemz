@@ -47,7 +47,7 @@ export default function VideoChatPage() {
       const res = await fetch('/api/video/rooms')
       if (res.ok) {
         const data = await res.json()
-        setRooms(data.rooms || [])
+        setRooms(data.data.rooms || [])
       }
     } catch {} finally {
       setLoading(false)

@@ -47,7 +47,7 @@ export default function SavedPage() {
     fetch('/api/saved')
       .then(res => res.ok ? res.json() : null)
       .then(data => {
-        if (data?.saved) setSaved(data.saved)
+        if (data?.data?.saved) setSaved(data.saved)
       })
       .catch(() => {})
       .finally(() => setLoading(false))
