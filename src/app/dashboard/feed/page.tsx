@@ -38,23 +38,21 @@ interface TrendingTag {
   count: number
 }
 
-const SECTION_CONFIG: Record<string, { label: string; icon: string }> = {
-  WALL: { label: 'Wall Posts', icon: '📝' },
-  SHOP: { label: 'Shop Posts', icon: '🏪' },
-  SCHOOL: { label: 'School Posts', icon: '📚' },
-  PROFILE: { label: 'Posts', icon: '👤' },
-  REPOST: { label: 'Reposts', icon: '🔁' },
-  GROUPPOST: { label: 'Group Posts', icon: '👥' },
-  FORUMPOST: { label: 'Forum Posts', icon: '💬' },
+const CONTEXT_LABELS: Record<string, string> = {
+  WALL: '📝 Wall',
+  SHOP: '🏪 Shop',
+  SCHOOL: '📚 School',
+  PROFILE: '👤 Post',
+  REPOST: '🔁 Repost',
+  GROUPPOST: '👥 Group',
+  FORUMPOST: '💬 Forum',
 }
 
-function getSectionKey(post: FeedPost): string {
-  if (post.sourceType === 'GROUPPOST') return 'GROUPPOST'
-  if (post.sourceType === 'FORUMPOST') return 'FORUMPOST'
-  return post.context || 'PROFILE'
+function getContextLabel(post: FeedPost): string {
+  if (post.sourceType === 'GROUPPOST') return CONTEXT_LABELS.GROUPPOST
+  if (post.sourceType === 'FORUMPOST') return CONTEXT_LABELS.FORUMPOST
+  return CONTEXT_LABELS[post.context || 'PROFILE'] || CONTEXT_LABELS.PROFILE
 }
-
-const SECTION_ORDER = ['WALL', 'SHOP', 'SCHOOL', 'REPOST', 'PROFILE', 'GROUPPOST', 'FORUMPOST']
 
 export default function DashboardFeed() {
   const t = useTranslations('dashboard')
@@ -64,7 +62,6 @@ export default function DashboardFeed() {
   const [offset, setOffset] = useState(0)
   const [hasMore, setHasMore] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
-  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set())
   const [postContent, setPostContent] = useState('')
   const [postImages, setPostImages] = useState<string[]>([])
   const [posting, setPosting] = useState(false)
@@ -94,15 +91,6 @@ export default function DashboardFeed() {
     } catch {} finally {
       setPosting(false)
     }
-  }
-
-  const toggleSection = (key: string) => {
-    setCollapsedSections(prev => {
-      const next = new Set(prev)
-      if (next.has(key)) next.delete(key)
-      else next.add(key)
-      return next
-    })
   }
 
   const fetchFeed = useCallback(async (reset = false) => {
@@ -140,22 +128,6 @@ export default function DashboardFeed() {
     setLoadingMore(true)
     fetchFeed()
   }
-
-  const groupedFeed = useMemo(() => {
-    const groups: Record<string, FeedPost[]> = {}
-    for (const post of feed) {
-      const key = getSectionKey(post)
-      if (!groups[key]) groups[key] = []
-      groups[key].push(post)
-    }
-    const ordered: { key: string; posts: FeedPost[] }[] = []
-    for (const orderKey of SECTION_ORDER) {
-      if (groups[orderKey]?.length) {
-        ordered.push({ key: orderKey, posts: groups[orderKey] })
-      }
-    }
-    return ordered
-  }, [feed])
 
   if (loading) {
     return (
@@ -241,34 +213,13 @@ export default function DashboardFeed() {
 
       {feed.length > 0 ? (
         <>
-          <div className={`${styles.flexCol} ${styles.gap24}`}>
-            {groupedFeed.map(({ key, posts }) => {
-              const config = SECTION_CONFIG[key] || SECTION_CONFIG.PROFILE
-              const isCollapsed = collapsedSections.has(key)
-              return (
-                <section key={key}>
-                  <button
-                    onClick={() => toggleSection(key)}
-                    className={styles.sectionBtn}
-                  >
-                    <span>{config.icon} {config.label}</span>
-                    <span className={styles.metaText}>
-                      ({posts.length})
-                    </span>
-                    <span className={`${styles.fs075} ${styles.textSecondary}`}>
-                      {isCollapsed ? '▶' : '▼'}
-                    </span>
-                  </button>
-                  {!isCollapsed && (
-                    <div className={`${styles.flexCol} ${styles.gap16}`}>
-                      {posts.map((item, i) => (
-                        <FeedItem key={`${item.sourceType}-${item.id}-${i}`} post={item} />
-                      ))}
-                    </div>
-                  )}
-                </section>
-              )
-            })}
+          <div className={`${styles.flexCol} ${styles.gap16}`}>
+            {feed.map((item, i) => (
+              <div key={`${item.sourceType}-${item.id}-${i}`}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: 4, paddingLeft: 4 }}>{getContextLabel(item)}</div>
+                <FeedItem post={item} />
+              </div>
+            ))}
           </div>
           {hasMore && (
             <div className={`${styles.textCenter} ${styles.mt24}`}>

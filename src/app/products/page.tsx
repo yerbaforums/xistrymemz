@@ -62,6 +62,7 @@ export default function ProductsPage() {
   const [requestDesc, setRequestDesc] = useState('')
   const [requestGoal, setRequestGoal] = useState('')
   const [requestLoading, setRequestLoading] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
   const [myProducts, setMyProducts] = useState<Product[]>([])
   const [myProductsLoading, setMyProductsLoading] = useState(false)
@@ -321,7 +322,7 @@ export default function ProductsPage() {
 
   const toggleMyPublish = async (product: Product) => {
     try {
-      const res = await fetch(`/api/products/${deleteTarget}`, {
+      const res = await fetch(`/api/products/${product.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ published: !product.published }),
@@ -339,7 +340,7 @@ export default function ProductsPage() {
 
   const deleteMyListing = async (product: Product) => {
     try {
-      const res = await fetch(`/api/products/${deleteTarget}`, { method: 'DELETE' })
+      const res = await fetch(`/api/products/${product.id}`, { method: 'DELETE' })
       if (res.ok) {
         success('Listing deleted')
         fetchMyProducts()
@@ -349,6 +350,18 @@ export default function ProductsPage() {
     } catch {
       error('Failed to delete')
     }
+  }
+
+  const handleDeleteProduct = async () => {
+    if (!deleteTarget) return
+    try {
+      const res = await fetch(`/api/products/${deleteTarget}`, { method: 'DELETE' })
+      if (res.ok) {
+        success('Listing deleted')
+        fetchMyProducts()
+      }
+    } catch {}
+    setDeleteTarget(null)
   }
 
   const handleFund = (product: Product) => {

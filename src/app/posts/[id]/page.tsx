@@ -85,7 +85,7 @@ export default function PostPage() {
   return (
     <div className={styles.page}>
       <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Post' }]} />
-      <ShareBar entityType="POST" title={post.title} description={post.content} image={post.images?.[0] || null} />
+      <ShareBar entityType="POST" title={post.content?.slice(0, 100) || 'Post'} description={post.content} image={imageList[0] || null} />
       <nav className={styles.nav}>
         <Link href="/dashboard/feed" className={styles.backLink}>← Back to Feed</Link>
       </nav>
