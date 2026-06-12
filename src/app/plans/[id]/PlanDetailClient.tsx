@@ -119,6 +119,27 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
 
   const [showRequestModal, setShowRequestModal] = useState(false)
   const [showEventModal, setShowEventModal] = useState(false)
+  const [sharingToFeed, setSharingToFeed] = useState(false)
+
+  const handleShareToFeed = async () => {
+    setSharingToFeed(true)
+    try {
+      const res = await fetch('/api/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: `Working on: ${plan.title}`,
+          context: 'PROFILE',
+          referenceType: 'PLAN',
+          referenceId: plan.id,
+          referenceTitle: plan.title
+        })
+      })
+      if (res.ok) success('Shared to your feed!')
+      else error('Failed to share')
+    } catch { error('Failed to share') }
+    finally { setSharingToFeed(false) }
+  }
   const [showCalendar, setShowCalendar] = useState(false)
   const [editingEvent, setEditingEvent] = useState<PlanEvent | null>(null)
   const [requestTitle, setRequestTitle] = useState('')
@@ -577,6 +598,7 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
                       <div className={styles.titleRow}>
                         <h1>{plan.title}</h1>
                         <button onClick={() => navigator.clipboard.writeText(window.location.href)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', padding: '4px 8px', borderRadius: 6 }} title="Copy link">🔗</button>
+                        <button onClick={handleShareToFeed} disabled={sharingToFeed} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', padding: '4px 8px', borderRadius: 6 }} title="Share to Feed">{sharingToFeed ? '⏳' : '📣'}</button>
                         <div className={styles.badges}>
                           {plan.published ? <span className="badge badge-published">Published</span> : <span className={`badge badge-${plan.status.toLowerCase()}`}>{plan.status}</span>}
                           {plan.lookingForCollaborators && <span className="badge" style={{ background: 'rgba(99,102,241,0.1)', color: '#6366f1' }}>🤝 Looking for collaborators</span>}
