@@ -53,6 +53,7 @@ export default function GroupsPage() {
   const [isPrivate, setIsPrivate] = useState(false)
   const [groupHashtags, setGroupHashtags] = useState<string[]>([])
   const [creating, setCreating] = useState(false)
+  const [groupLocation, setGroupLocation] = useState<{ mode: 'passport' | 'custom' | 'global'; text: string; latitude: number | null; longitude: number | null }>({ mode: 'global', text: '', latitude: null, longitude: null })
 
   const filteredGroups = useMemo(() => {
     let result = groups.filter(g => {

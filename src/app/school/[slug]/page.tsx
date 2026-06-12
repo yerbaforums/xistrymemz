@@ -160,6 +160,7 @@ function CompactDonation({ donation }: { donation: DonationAddr }) {
 export default function SchoolDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const router = useRouter()
   const { data: session } = useSession()
+  const userId = session?.user?.id
   const { success, error } = useToast()
   const [school, setSchool] = useState<SchoolData | null>(null)
   const [loading, setLoading] = useState(true)

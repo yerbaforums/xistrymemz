@@ -84,6 +84,7 @@ export default function ForumThreadPage() {
   const [editingReply, setEditingReply] = useState<string | null>(null)
   const [editReplyContent, setEditReplyContent] = useState('')
   const [deleting, setDeleting] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const replyMentionRef = useRef<MentionInputHandle>(null)
   const [pollOptions, setPollOptions] = useState<PollOption[]>([])
   const [totalVotes, setTotalVotes] = useState(0)
@@ -102,7 +103,7 @@ export default function ForumThreadPage() {
   const handleTogglePin = async () => {
     if (!post || !isAdmin) return
     try {
-      const res = await fetch(`/api/forum/post/${deleteTarget}`, {
+      const res = await fetch(`/api/forum/post/${post?.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pinned: !post.pinned })
@@ -118,7 +119,7 @@ export default function ForumThreadPage() {
   const handleToggleLock = async () => {
     if (!post || !isAdmin) return
     try {
-      const res = await fetch(`/api/forum/post/${deleteTarget}`, {
+      const res = await fetch(`/api/forum/post/${post?.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ locked: !post.locked })
@@ -142,7 +143,7 @@ export default function ForumThreadPage() {
     if (!editPostTitle.trim() || !editPostContent.trim()) return
     setSubmitting(true)
     try {
-      const res = await fetch(`/api/forum/post/${deleteTarget}`, {
+      const res = await fetch(`/api/forum/post/${post?.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: editPostTitle, content: editPostContent })
@@ -206,7 +207,7 @@ export default function ForumThreadPage() {
     try {
       const res = await fetch(`/api/forum/reply/${replyDeleteTarget}`, { method: 'DELETE' })
       if (res.ok) {
-        setReplies(replies.filter(r => r.id !== replyId))
+        setReplies(replies.filter(r => r.id !== replyDeleteTarget))
         if (post) setPost({ ...post, replyCount: post.replyCount - 1 })
       }
     } catch (e) {
@@ -224,7 +225,7 @@ export default function ForumThreadPage() {
 
   const fetchPost = async () => {
     try {
-      const res = await fetch(`/api/forum/post/${deleteTarget}`)
+      const res = await fetch(`/api/forum/post/${postId}`)
       if (res.ok) {
         const data = await res.json()
         const p = data?.data || data
@@ -247,7 +248,7 @@ export default function ForumThreadPage() {
 
   const fetchReplies = async () => {
     try {
-      const res = await fetch(`/api/forum/replies?postId=${deleteTarget}`)
+      const res = await fetch(`/api/forum/replies?postId=${postId}`)
       if (res.ok) {
         const data = await res.json()
         setReplies(data?.data || data || [])
@@ -501,7 +502,7 @@ export default function ForumThreadPage() {
               <Button variant="ghost" onClick={handleEditPost} className={styles.actionBtn}>
                 ✏️ Edit
               </Button>
-              <Button variant="ghost" onClick={handleDeletePost} className={styles.actionBtn} disabled={deleting}>
+              <Button variant="ghost" onClick={() => setDeleteTarget(post?.id)} className={styles.actionBtn} disabled={deleting}>
                 🗑️ Delete
               </Button>
             </>

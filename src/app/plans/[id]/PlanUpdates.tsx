@@ -28,6 +28,7 @@ export default function PlanUpdates({ planId, isOwner }: Props) {
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set())
   const [commentText, setCommentText] = useState('')
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
   const fetchUpdates = useCallback(async () => {
     try {
