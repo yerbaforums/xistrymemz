@@ -244,7 +244,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             if (!r.ok) throw new Error('Failed to fetch shop')
             return r.json()
           })
-          .then(shop => setSellerShop(shop))
+          .then(shop => setSellerShop(shop?.data || shop))
         setLoading(false)
         if (data.category) {
           setRelatedLoading(true)

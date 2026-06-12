@@ -197,7 +197,7 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
       const errData = await res.json().catch(() => ({}))
       throw new Error(errData.error || 'Failed to save')
     }
-    return res.json()
+    return (await res.json())?.data
   }, [plan.id])
 
   const handleSaveOverview = async () => {
@@ -313,7 +313,7 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
 
       const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       if (res.ok) {
-        const updatedEvent = await res.json()
+        const updatedEvent = (await res.json())?.data
         if (editingEvent) {
           setPlan(prev => ({ ...prev, events: prev.events.map(ev => ev.id === editingEvent!.id ? { ...ev, ...updatedEvent, createdAt: ev.createdAt, updatedAt: ev.updatedAt } : ev) }))
         } else {
@@ -387,7 +387,7 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
   const fetchStatusHistory = async () => {
     try {
       const res = await fetch(`/api/plans/${plan.id}/status-history`)
-      if (res.ok) setStatusHistory(await res.json())
+      if (res.ok) { const d = await res.json(); setStatusHistory(d?.data || d || []) }
     } catch (err) {
       console.error(err)
     }
@@ -403,7 +403,7 @@ export default function PlanDetailClient({ plan: initialPlan, userId, isOwner: p
         body: JSON.stringify({ toStatus: rollbackStatus, reason: rollbackReason })
       })
       if (res.ok) {
-        const updated = await res.json()
+        const updated = (await res.json())?.data
         setPlan({ ...plan, status: updated.status, published: updated.published })
         setShowRollbackModal(false)
         setRollbackStatus('')

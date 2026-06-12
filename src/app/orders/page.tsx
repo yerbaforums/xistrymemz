@@ -72,7 +72,7 @@ export default function OrdersPage() {
       const res = await fetch(`/api/escrow?type=${filter}`)
       if (res.ok) {
         const data = await res.json()
-        setOrders(data)
+        setOrders(data?.data || data || [])
       }
     } catch (err) {
       console.error(err)

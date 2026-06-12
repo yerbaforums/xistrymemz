@@ -58,11 +58,11 @@ export default function ConnectionsPage() {
       
       if (receivedRes.ok) {
         const data = await receivedRes.json()
-        setPendingReceived(data)
+        setPendingReceived(data?.data || data || [])
       }
       if (sentRes.ok) {
         const data = await sentRes.json()
-        setPendingSent(data)
+        setPendingSent(data?.data || data || [])
       }
     } catch (error) {
       console.error('Failed to fetch connections:', error)

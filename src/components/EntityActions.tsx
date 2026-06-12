@@ -80,7 +80,7 @@ export default function EntityActions({
       setLoadingDonations(true)
       fetch(`/api/users/donations?userId=${authorId}`)
         .then(r => r.ok ? r.json() : null)
-        .then(data => setFetchedDonations(data?.addresses || []))
+        .then(data => setFetchedDonations(data?.data?.addresses || data?.addresses || []))
         .catch(() => setFetchedDonations([]))
         .finally(() => setLoadingDonations(false))
     }

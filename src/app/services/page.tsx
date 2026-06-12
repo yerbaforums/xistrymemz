@@ -61,7 +61,7 @@ export default function ServicesPage() {
   const fetchServices = async (pageNum: number, append: boolean) => {
     const res = await fetch(`/api/services?page=${pageNum}&pageSize=${PAGE_SIZE}`)
     const data = await res.json()
-    const raw = data.services || []
+    const raw = data?.data?.services || data?.services || []
     const cleaned = raw.map((s: any) => {
       if (!s || typeof s !== 'object') return null
       return {
@@ -86,7 +86,7 @@ export default function ServicesPage() {
       }
     }).filter(Boolean)
     setServices(prev => append ? [...prev, ...cleaned] : cleaned as ServiceOffering[])
-    setTotalServices(data.total || 0)
+    setTotalServices(data?.data?.total || data?.total || 0)
     setPage(pageNum)
     setLoading(false)
   }

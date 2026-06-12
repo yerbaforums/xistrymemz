@@ -148,7 +148,7 @@ export default function ForumThreadPage() {
         body: JSON.stringify({ title: editPostTitle, content: editPostContent })
       })
       if (res.ok) {
-        const updated = await res.json()
+        const updated = (await res.json())?.data
         setPost({ ...post, ...updated })
         setEditingPost(false)
       }
@@ -188,7 +188,7 @@ export default function ForumThreadPage() {
         body: JSON.stringify({ content: editReplyContent })
       })
       if (res.ok) {
-        const updated = await res.json()
+        const updated = (await res.json())?.data
         setReplies(replies.map(r => r.id === replyId ? { ...r, content: updated.content } : r))
         setEditingReply(null)
       }
@@ -227,11 +227,12 @@ export default function ForumThreadPage() {
       const res = await fetch(`/api/forum/post/${deleteTarget}`)
       if (res.ok) {
         const data = await res.json()
-        setPost(data)
-        if (data.isPoll && data.pollOptions) {
-          const total = data.pollOptions.reduce((sum: number, o: { voteCount: number }) => sum + o.voteCount, 0)
+        const p = data?.data || data
+        setPost(p)
+        if (p.isPoll && p.pollOptions) {
+          const total = p.pollOptions.reduce((sum: number, o: { voteCount: number }) => sum + o.voteCount, 0)
           setTotalVotes(total)
-          setPollOptions(data.pollOptions.map((o: { id: string; optionText: string; voteCount: number; sortOrder: number }) => ({
+          setPollOptions(p.pollOptions.map((o: { id: string; optionText: string; voteCount: number; sortOrder: number }) => ({
             ...o,
             percentage: total > 0 ? Math.round((o.voteCount / total) * 100) : 0
           })))
@@ -249,7 +250,7 @@ export default function ForumThreadPage() {
       const res = await fetch(`/api/forum/replies?postId=${deleteTarget}`)
       if (res.ok) {
         const data = await res.json()
-        setReplies(data)
+        setReplies(data?.data || data || [])
       }
     } catch (err) {
       console.error(err)

@@ -68,7 +68,7 @@ export default function LinkItemModal({
       const res = await fetch(`/api/search/entities?type=${type}&q=${encodeURIComponent(q)}`)
       if (res.ok) {
         const data = await res.json()
-        setResults(data.items || [])
+        setResults(data?.data?.items || data?.items || [])
       }
     } catch {
       setResults([])

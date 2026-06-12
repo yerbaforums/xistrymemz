@@ -145,16 +145,16 @@ export default function SetupShopPage() {
       if (!shopRes.ok) throw new Error('Failed to fetch shop')
       if (!productsRes.ok) throw new Error('Failed to fetch products')
       
-      const shop = await shopRes.json()
-      const prods = await productsRes.json()
+      const shopData = (await shopRes.json())?.data
+      const prods = (await productsRes.json())?.data
       
       setShopData({
-        shopName: shop.shopName || '',
-        shopAbout: shop.shopAbout || '',
-        shopImage: shop.shopImage || '',
-        shopSlug: shop.shopSlug || '',
-        email: shop.email || '',
-        name: shop.name || ''
+        shopName: shopData?.shopName || '',
+        shopAbout: shopData?.shopAbout || '',
+        shopImage: shopData?.shopImage || '',
+        shopSlug: shopData?.shopSlug || '',
+        email: shopData?.email || '',
+        name: shopData?.name || ''
       })
       setProducts(prods || [])
     } catch (err) {

@@ -115,8 +115,8 @@ export default function PassportPage() {
     } catch (err) {
       console.error('Error fetching passport:', err)
     }
-    try { const r = await fetch('/api/users/locations'); if (r.ok) setSavedLocations(await r.json()) } catch {}
-    try { const r = await fetch('/api/locations/categories'); if (r.ok) setCategories(await r.json()) } catch {}
+    try { const r = await fetch('/api/users/locations'); if (r.ok) { const d = await r.json(); setSavedLocations(d?.data || d || []) } } catch {}
+    try { const r = await fetch('/api/locations/categories'); if (r.ok) { const d = await r.json(); setCategories(d?.data || d || []) } } catch {}
     setLoading(false)
   }
 
@@ -241,7 +241,7 @@ export default function PassportPage() {
         })
       })
       if (res.ok) {
-        const saved = await res.json()
+        const saved = (await res.json())?.data
         if (isEdit) {
           setSavedLocations(prev => prev.map(l => l.id === editingLocationId ? { ...l, ...saved } : l))
           toastSuccess('Location updated')
@@ -316,7 +316,7 @@ export default function PassportPage() {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(categoryForm)
       })
       if (res.ok) {
-        const cat = await res.json()
+        const cat = (await res.json())?.data
         setCategories(prev => [...prev, cat].sort((a, b) => a.name.localeCompare(b.name)))
         setCategoryForm({ name: '', icon: '📍', color: '#3b82f6' })
         setShowCategoryForm(false)
@@ -335,7 +335,7 @@ export default function PassportPage() {
         method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(categoryForm)
       })
       if (res.ok) {
-        const updated = await res.json()
+        const updated = (await res.json())?.data
         setCategories(prev => prev.map(c => c.id === updated.id ? updated : c))
         setEditingCategory(null)
         setCategoryForm({ name: '', icon: '📍', color: '#3b82f6' })

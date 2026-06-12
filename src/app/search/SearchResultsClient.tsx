@@ -75,7 +75,7 @@ export default function SearchResultsClient() {
       .then(res => res.json())
       .then(data => {
         setResults(data.data?.results || data.results)
-        setHasMore(countResults(data.results) >= 50)
+        setHasMore(countResults(data?.data?.results || data?.results || {}) >= 50)
         setLoading(false)
       })
       .catch(() => setLoading(false))
@@ -90,7 +90,7 @@ export default function SearchResultsClient() {
       .then(res => res.json())
       .then(data => {
         setResults(prev => mergeResults(prev, data?.data?.results || data?.results || []))
-        setHasMore(countResults(data.results) >= 50)
+        setHasMore(countResults(data?.data?.results || data?.results || {}) >= 50)
         setLoadingMore(false)
       })
       .catch(() => setLoadingMore(false))

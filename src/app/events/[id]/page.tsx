@@ -212,9 +212,10 @@ function EventDetailContent() {
         return res.json()
       })
       .then(data => {
-        setEvent(data)
+        const ev = data?.data || data
+        setEvent(ev)
         setLoading(false)
-        if (data) {
+        if (ev) {
           setRelatedLoading(true)
           fetch('/api/events')
             .then(res => res.ok ? res.json() : [])
@@ -222,7 +223,7 @@ function EventDetailContent() {
               const itemsList = events?.data?.items || events?.items || []
               const items = Array.isArray(itemsList)
                 ? itemsList
-                    .filter((e: Event) => e.id !== data.id && (!data.eventCategory || e.eventCategory === data.eventCategory))
+                    .filter((e: Event) => e.id !== ev.id && (!ev.eventCategory || e.eventCategory === ev.eventCategory))
                     .slice(0, 3)
                 : []
               setRelatedEvents(items)

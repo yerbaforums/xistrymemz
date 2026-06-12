@@ -91,16 +91,17 @@ export default function Header() {
       ])
       if (connRes.ok) {
         const connData = await connRes.json()
-        setNotificationCount(connData.pendingRequests?.items?.length || 0)
+        setNotificationCount(connData?.data?.pendingRequests?.items?.length || connData?.pendingRequests?.items?.length || 0)
       }
       if (msgRes.ok) {
         const msgData = await msgRes.json()
-        const unreadCount = msgData.conversations?.reduce((sum: number, c: { unreadCount: number }) => sum + c.unreadCount, 0) || 0
+        const conversations = msgData?.data?.conversations || msgData?.conversations || []
+        const unreadCount = conversations.reduce((sum: number, c: { unreadCount: number }) => sum + c.unreadCount, 0) || 0
         setNotificationCount(prev => prev + unreadCount)
       }
       if (notifRes.ok) {
         const notifData = await notifRes.json()
-        setNotificationCount(prev => prev + (notifData.unreadCount || 0))
+        setNotificationCount(prev => prev + (notifData?.data?.unreadCount ?? notifData?.unreadCount ?? 0))
       }
     } catch (error) {
       console.error('Error fetching notifications:', error)
@@ -119,20 +120,21 @@ export default function Header() {
         ])
         if (connRes.ok) {
           const connData = await connRes.json()
-          setNotificationCount(connData.pendingRequests?.items?.length || 0)
+          setNotificationCount(connData?.data?.pendingRequests?.items?.length || connData?.pendingRequests?.items?.length || 0)
         }
         if (msgRes.ok) {
           const msgData = await msgRes.json()
-          const unreadCount = msgData.conversations?.reduce((sum: number, c: { unreadCount: number }) => sum + c.unreadCount, 0) || 0
+          const conversations = msgData?.data?.conversations || msgData?.conversations || []
+          const unreadCount = conversations.reduce((sum: number, c: { unreadCount: number }) => sum + c.unreadCount, 0) || 0
           setNotificationCount(prev => prev + unreadCount)
         }
         if (notifRes.ok) {
           const notifData = await notifRes.json()
-          setNotificationCount(prev => prev + (notifData.unreadCount || 0))
+          setNotificationCount(prev => prev + (notifData?.data?.unreadCount ?? notifData?.unreadCount ?? 0))
         }
         if (inboxRes.ok) {
           const inboxData = await inboxRes.json()
-          setMessagesUnread(inboxData.unreadCount || 0)
+          setMessagesUnread(inboxData?.data?.unreadCount ?? inboxData?.unreadCount ?? 0)
         }
       } catch (error) {
         console.error('Error fetching notifications:', error)

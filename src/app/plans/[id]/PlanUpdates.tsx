@@ -32,7 +32,7 @@ export default function PlanUpdates({ planId, isOwner }: Props) {
   const fetchUpdates = useCallback(async () => {
     try {
       const res = await fetch(`/api/plans/${planId}/updates`)
-      if (res.ok) setUpdates(await res.json())
+      if (res.ok) { const d = await res.json(); setUpdates(d?.data || d || []) }
     } catch {}
   }, [planId])
 
@@ -52,7 +52,7 @@ export default function PlanUpdates({ planId, isOwner }: Props) {
 
   const handleLike = async (updateId: string) => {
     const res = await fetch(`/api/plans/${planId}/updates/${updateId}/like`, { method: 'POST' })
-    if (res.ok) { const data = await res.json(); setLikedIds(prev => { const n = new Set(prev); data.liked ? n.add(updateId) : n.delete(updateId); return n }); fetchUpdates() }
+    if (res.ok) { const data = await res.json(); const liked = data?.data?.liked ?? data?.liked; setLikedIds(prev => { const n = new Set(prev); liked ? n.add(updateId) : n.delete(updateId); return n }); fetchUpdates() }
   }
 
   const handleDeleteConfirm = async () => {
