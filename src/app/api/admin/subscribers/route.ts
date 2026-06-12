@@ -3,17 +3,22 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
-export async function GET() {
+export async function GET(request: Request) {
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.id || (session.user as { role?: string }).role !== 'ADMIN') {
     return apiError("Unauthorized", 403)
   }
 
-  const subscribers = await prisma.emailSubscriber.findMany({ skip, take: limit,
+  const { searchParams } = new URL(request.url)
+  const page = parseInt(searchParams.get("page") || "1")
+  const limit = parseInt(searchParams.get("limit") || "20")
+  const skip = (page - 1) * limit
+
+  const subscribers = await prisma.emailSubscriber.findMany({
     skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' }
+    take: limit,
+    orderBy: { createdAt: 'desc' }
   })
 
   return apiSuccess(subscribers)

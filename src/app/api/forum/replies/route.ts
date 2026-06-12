@@ -68,7 +68,7 @@ export async function POST(req: Request) {
     // Process mentions
     const mentionedUsernames = parseMentions(content)
     if (mentionedUsernames.length > 0) {
-      const mentionedUsers = await prisma.user.findMany({ skip, take: limit,
+      const mentionedUsers = await prisma.user.findMany({
         where: { username: { in: mentionedUsernames } },
         select: { id: true, username: true }
       })

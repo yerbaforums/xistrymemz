@@ -44,6 +44,7 @@ export default function GroupsPage() {
   const [filter, setFilter] = useState<'all' | 'my'>('all')
   const [search, setSearch] = useState('')
   const [sortBy, setSortBy] = useState<'recent' | 'alpha'>('recent')
+  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid')
   const PAGE_SIZE = 20
   
   const [name, setName] = useState('')

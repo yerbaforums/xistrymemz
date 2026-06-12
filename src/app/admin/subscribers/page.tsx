@@ -266,7 +266,7 @@ export default function SubscribersPage() {
       <ConfirmDialog
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
-        onConfirm={handleDelete}
+        onConfirm={() => { if (deleteTarget) { handleDelete(deleteTarget); setDeleteTarget(null) } }}
         title="Delete Subscriber"
         message="Remove this subscriber?"
         confirmLabel="Delete"

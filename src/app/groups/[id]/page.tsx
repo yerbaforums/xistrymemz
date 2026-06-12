@@ -274,9 +274,9 @@ function GroupDetailContent() {
   const handleDeletePost = async () => {
     if (!deletePostTarget) return
     try {
-      const res = await fetch(`/api/groups/${params.id}/posts/${postId}`, { method: 'DELETE' })
+      const res = await fetch(`/api/groups/${params.id}/posts/${deletePostTarget}`, { method: 'DELETE' })
       if (res.ok) {
-        setGroup(g => g ? { ...g, posts: g.posts.filter(p => p.id !== postId), _count: { ...g._count, posts: Math.max(0, g._count.posts - 1) } } : g)
+        setGroup(g => g ? { ...g, posts: g.posts.filter(p => p.id !== deletePostTarget), _count: { ...g._count, posts: Math.max(0, g._count.posts - 1) } } : g)
         success('Post deleted')
       }
     } catch {
@@ -388,9 +388,9 @@ function GroupDetailContent() {
   const handleDeleteBuy = async () => {
     if (!deleteBuyTarget) return
     try {
-      const res = await fetch(`/api/group-buys/${buyId}`, { method: 'DELETE' })
+      const res = await fetch(`/api/group-buys/${deleteBuyTarget}`, { method: 'DELETE' })
       if (res.ok) {
-        setGroup(g => g ? { ...g, groupBuys: g.groupBuys.filter(b => b.id !== buyId) } : g)
+        setGroup(g => g ? { ...g, groupBuys: g.groupBuys.filter(b => b.id !== deleteBuyTarget) } : g)
         success('Group buy deleted')
       }
     } catch {
@@ -435,9 +435,9 @@ function GroupDetailContent() {
   const handleDeleteRequest = async () => {
     if (!deleteReqTarget) return
     try {
-      const res = await fetch(`/api/requests/${reqId}`, { method: 'DELETE' })
+      const res = await fetch(`/api/requests/${deleteReqTarget}`, { method: 'DELETE' })
       if (res.ok) {
-        setGroup(g => g ? { ...g, requests: (g.requests || []).filter(r => r.id !== reqId) } : g)
+        setGroup(g => g ? { ...g, requests: (g.requests || []).filter(r => r.id !== deleteReqTarget) } : g)
         success('Request deleted')
       }
     } catch {
@@ -493,9 +493,9 @@ function GroupDetailContent() {
   const handleUnlinkProduct = async () => {
     if (!unlinkTarget) return
     try {
-      const res = await fetch(`/api/groups/${params.id}/marketplace/${productId}`, { method: 'DELETE' })
+      const res = await fetch(`/api/groups/${params.id}/marketplace/${unlinkTarget}`, { method: 'DELETE' })
       if (res.ok) {
-        setGroup(g => g ? { ...g, marketplaceProducts: (g.marketplaceProducts || []).filter(p => p.id !== productId) } : g)
+        setGroup(g => g ? { ...g, marketplaceProducts: (g.marketplaceProducts || []).filter(p => p.id !== unlinkTarget) } : g)
         success('Product unlinked')
       }
     } catch {

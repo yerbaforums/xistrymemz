@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import dynamic from 'next/dynamic'
 import CreateBoardModal from '@/components/CreateBoardModal'
@@ -49,6 +50,7 @@ export default function BoardsPage() {
   const { data: session } = useSession()
   const { location: passportLocation } = usePassportLocation()
   const { success, error } = useToast()
+  const router = useRouter()
   const [boards, setBoards] = useState<Board[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')

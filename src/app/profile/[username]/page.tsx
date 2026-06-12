@@ -921,15 +921,15 @@ export default function ProfilePage() {
               </div>
               <div className={styles.stat}>
                 <span className={styles.statValue}>{user.inviteCount ?? 0}</span>
-              <div class="stat">
-                <span class="statValue">{user.followerCount}</span>
-                <span class="statLabel">Followers</span>
-              </div>
-              <div class="stat">
-                <span class="statValue">{user.followingCount}</span>
-                <span class="statLabel">Following</span>
-              </div>
                 <span className={styles.statLabel}>Invited</span>
+              </div>
+              <div className={styles.stat}>
+                <span className={styles.statValue}>{user.followerCount}</span>
+                <span className={styles.statLabel}>Followers</span>
+              </div>
+              <div className={styles.stat}>
+                <span className={styles.statValue}>{user.followingCount}</span>
+                <span className={styles.statLabel}>Following</span>
               </div>
               {user.volunteerCount !== undefined && user.volunteerCount > 0 && (
                 <div className={styles.stat}>
