@@ -114,6 +114,8 @@ export default function CommunityPage() {
     }
   }, [session])
 
+  const unwrap = (d: any) => d?.data ?? d
+
   const fetchData = async () => {
     try {
       const [membersRes, groupsRes, requestsRes, forumCatRes, forumPostsRes] = await Promise.all([
@@ -126,35 +128,36 @@ export default function CommunityPage() {
       
       if (membersRes.ok) {
         const membersData = await membersRes.json()
-        setMembers(membersData.data.members?.items || [])
-        setConnections(membersData.data.connections?.items || [])
-        setPendingRequests(membersData.data.pendingRequests?.items || [])
+        const m = unwrap(membersData)
+        setMembers(m.members?.items || [])
+        setConnections(m.connections?.items || [])
+        setPendingRequests(m.pendingRequests?.items || [])
       }
       
       if (groupsRes.ok) {
         const groupsData = await groupsRes.json()
-        setGroups(groupsData?.items || [])
+        setGroups(unwrap(groupsData).items || [])
       }
 
       if (requestsRes.ok) {
         const requestsData = await requestsRes.json()
-        setMarketRequests(requestsData?.items || [])
+        setMarketRequests(unwrap(requestsData).items || [])
       }
 
       if (forumCatRes.ok) {
         const forumData = await forumCatRes.json()
-        setForumCategories(forumData?.data || [])
+        setForumCategories(unwrap(forumData) || [])
       }
 
       if (forumPostsRes.ok) {
         const postsData = await forumPostsRes.json()
-        setForumPosts(postsData?.data || [])
+        setForumPosts(unwrap(postsData) || [])
       }
 
       const tipRes = await fetch('/api/forum/tip-options')
       if (tipRes.ok) {
         const tipData = await tipRes.json()
-        setCryptoBalances(tipData.cryptoBalances || [])
+        setCryptoBalances(unwrap(tipData).cryptoBalances || [])
       }
     } catch (err) {
       console.error(err)
@@ -169,7 +172,7 @@ export default function CommunityPage() {
       const res = await fetch(url)
       if (res.ok) {
         const data = await res.json()
-        setForumPosts(data?.data || [])
+        setForumPosts(unwrap(data) || [])
       }
     } catch (err) {
       console.error(err)

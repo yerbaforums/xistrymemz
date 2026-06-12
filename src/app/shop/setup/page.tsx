@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import FormWizard, { useWizard, type WizardStep } from '@/components/FormWizard'
@@ -53,6 +53,7 @@ const steps: WizardStep[] = [
 export default function SetupShopPage() {
   const { success, error } = useToast()
   const searchParams = useSearchParams()
+  const router = useRouter()
   const templateId = searchParams.get('template')
   
   const [loading, setLoading] = useState(true)
@@ -390,7 +391,7 @@ export default function SetupShopPage() {
     }
     success('Shop is ready!')
     setTimeout(() => {
-      window.location.href = `/shop/${shopData.shopSlug || 'new'}`
+      router.push(`/shop/${shopData.shopSlug || 'new'}`)
     }, 1000)
   }
 

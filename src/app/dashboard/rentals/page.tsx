@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
 import ImageUploader from '@/components/ImageUploader'
 import styles from './rentals.module.css'
@@ -40,6 +41,7 @@ interface RentalItem {
 
 export default function RentalsPage() {
   const { success, error } = useToast()
+  const router = useRouter()
   const [rentals, setRentals] = useState<RentalItem[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -269,7 +271,7 @@ export default function RentalsPage() {
       {loading ? (
         <Skeleton width="100%" height="2rem" />
       ) : filtered.length === 0 && !showForm ? (
-        <EmptyState icon="🏠" title="No rental listings yet" description="List items for rent." action={{ label: 'Add Rental', onClick: () => window.location.href = '/dashboard/rentals' }} />
+        <EmptyState icon="🏠" title="No rental listings yet" description="List items for rent." action={{ label: 'Add Rental', onClick: () => router.push('/dashboard/rentals') }} />
       ) : (
         <div className={styles.list}>
           {filtered.map(r => (

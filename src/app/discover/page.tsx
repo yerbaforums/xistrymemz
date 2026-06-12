@@ -143,11 +143,12 @@ export default function DiscoverPage() {
     try {
       const res = await fetch(`/api/discover?${params}`)
       const data = await res.json()
-      setResults(prev => append ? [...prev, ...(data.data.results || [])] : (data.data.results || []))
-      setTotal(data.data.total || 0)
+      const resData = data?.data || data
+      setResults(prev => append ? [...prev, ...(resData.results || [])] : (resData.results || []))
+      setTotal(resData.total || 0)
       setPage(p)
 
-      const locResults = data.data.results?.filter((r: DiscoverItem) => r.latitude && r.longitude) || []
+      const locResults = resData.results?.filter((r: DiscoverItem) => r.latitude && r.longitude) || []
       if (locResults.length > 0) {
         const avgLat = locResults.reduce((s: number, r: DiscoverItem) => s + r.latitude!, 0) / locResults.length
         const avgLng = locResults.reduce((s: number, r: DiscoverItem) => s + r.longitude!, 0) / locResults.length

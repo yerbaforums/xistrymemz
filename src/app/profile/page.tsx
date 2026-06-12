@@ -23,5 +23,5 @@ export default async function MyProfilePage() {
     redirect(`/profile/${username}`)
   }
   
-  redirect('/profile/me')
+  redirect('/profile/edit')
 }

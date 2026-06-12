@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
@@ -70,6 +70,7 @@ interface ShopSettings {
 function MarketplaceContent() {
   const t = useTranslations('dashboard')
   const searchParams = useSearchParams()
+  const router = useRouter()
   const { success, error } = useToast()
   const editId = searchParams.get('edit')
   const isNew = searchParams.get('new') === 'true'
@@ -429,7 +430,7 @@ function MarketplaceContent() {
       </div>
 
       {filteredProducts.length === 0 && !showProductForm ? (
-        <EmptyState icon="🛒" title="No products yet" description="List your first product to start selling." action={{ label: 'Add Product', onClick: () => window.location.href = '/products/new' }} />
+        <EmptyState icon="🛒" title="No products yet" description="List your first product to start selling." action={{ label: 'Add Product', onClick: () => router.push('/products/new') }} />
       ) : (
         <div className={styles.list}>
           {filteredProducts.map(product => (

@@ -119,7 +119,7 @@ export default function Home() {
 
     fetch('/api/public/events')
       .then(r => r.ok ? r.json() : [])
-      .then(data => { setEvents(Array.isArray(data?.data) ? data.data.slice(0, 4) : []); setLoadingEvents(false) })
+      .then(data => { setEvents(Array.isArray(data?.data) ? data.data.slice(0, 4) : Array.isArray(data) ? data.slice(0, 4) : []); setLoadingEvents(false) })
       .catch(() => setLoadingEvents(false))
 
     fetch('/api/plans?public=true')
@@ -132,7 +132,7 @@ export default function Home() {
 
     fetch('/api/boards?limit=4')
       .then(r => r.ok ? r.json() : { boards: [] })
-      .then(data => { setBoards(data.data.boards || []); setLoadingBoards(false) })
+      .then(data => { setBoards(data?.data?.boards || data?.boards || []); setLoadingBoards(false) })
       .catch(() => setLoadingBoards(false))
   }, [fetchProducts])
 

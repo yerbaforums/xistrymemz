@@ -161,7 +161,7 @@ export default function BoardsPage() {
       if (data.error) { console.error('Boards API error:', data.error); return }
       setBoards(data?.data?.boards || data?.boards || [])
 
-      const locBoards = (data.data.boards || []).filter((b: Board) => b.latitude && b.longitude)
+      const locBoards = (data?.data?.boards || data?.boards || []).filter((b: Board) => b.latitude && b.longitude)
       if (locBoards.length > 0 && mapRef.current && !initialFitDone.current) {
         initialFitDone.current = true
         const bounds = locBoards.map((b: Board) => [b.latitude, b.longitude] as [number, number])
@@ -570,7 +570,7 @@ export default function BoardsPage() {
         {loading ? (
           <Loading size="medium" message="Loading boards..." />
         ) : boards.length === 0 ? (
-          <EmptyState icon="📌" title="No boards found" description="No boards near your location. Create one or search for a city." action={session?.user ? { label: 'Create Board', onClick: () => setShowCreateModal(true) } : { label: 'Sign In', onClick: () => window.location.href = '/auth/login' }} />
+          <EmptyState icon="📌" title="No boards found" description="No boards near your location. Create one or search for a city." action={session?.user ? { label: 'Create Board', onClick: () => setShowCreateModal(true) } : { label: 'Sign In', onClick: () => router.push('/auth/login') }} />
         ) : (
           sortedBoards.map(board => (
             <div

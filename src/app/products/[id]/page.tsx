@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import styles from './page.module.css'
 import CollaborateButton from '@/components/CollaborateButton'
@@ -114,6 +116,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const { addItem } = useCart()
   const { settings } = useSiteSettings()
   const { success, error, warning, info } = useToast()
+  const router = useRouter()
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [isOwner, setIsOwner] = useState(false)
@@ -484,7 +487,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     try {
       const res = await fetch(`/api/products/${product.id}`, { method: 'DELETE' })
       if (res.ok) {
-        window.location.href = '/products'
+        router.push('/products')
       } else {
         error('Failed to delete')
       }
@@ -971,7 +974,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 <Button 
                   className={styles.addToPlanBtn}
                   variant="ghost"
-                  onClick={() => window.location.href = '/dashboard/projects'}
+                  onClick={() => router.push('/dashboard/projects')}
                 >
                   Create Project
                 </Button>

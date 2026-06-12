@@ -189,11 +189,16 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
   const [myProgress, setMyProgress] = useState<any>(null)
   const [resolvedSlug, setResolvedSlug] = useState<string | null>(null)
 
-  useEffect(() => { params.then(p => setResolvedSlug(p.slug)) }, [params])
+  useEffect(() => {
+    let cancelled = false
+    params.then(p => { if (!cancelled) setResolvedSlug(p.slug) })
+    return () => { cancelled = true }
+  }, [params])
 
   useEffect(() => {
     if (!resolvedSlug) return
-    fetch(`/api/school/${resolvedSlug}`)
+    const controller = new AbortController()
+    fetch(`/api/school/${resolvedSlug}`, { signal: controller.signal })
       .then(res => res.ok ? res.json() : Promise.reject())
       .then(data => {
         setSchool(data)
@@ -208,6 +213,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
       })
       .catch(() => error('Failed to load school'))
       .finally(() => setLoading(false))
+    return () => controller.abort()
   }, [resolvedSlug])
 
   const handleSaveSchool = async (e: React.FormEvent) => {
@@ -238,7 +244,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
     if (!resolvedSlug) return
     try {
       const res = await fetch(`/api/school/courses?schoolId=${userId}`)
-      if (res.ok) { const data = await res.json(); if (data?.data?.courses) setCourses(data.courses) }
+      if (res.ok) { const data = await res.json(); if (data?.data?.courses || data?.courses) setCourses(data?.data?.courses || data?.courses || []) }
     } catch {}
   }
 

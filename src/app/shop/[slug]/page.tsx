@@ -194,11 +194,16 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
   const [resolvedSlug, setResolvedSlug] = useState<string | null>(null)
   const [qrDonation, setQrDonation] = useState<DonationAddr | null>(null)
 
-  useEffect(() => { params.then(p => setResolvedSlug(p.slug)) }, [params])
+  useEffect(() => {
+    let cancelled = false
+    params.then(p => { if (!cancelled) setResolvedSlug(p.slug) })
+    return () => { cancelled = true }
+  }, [params])
 
   useEffect(() => {
     if (!resolvedSlug) return
-    fetch(`/api/shop/public/${resolvedSlug}`)
+    const controller = new AbortController()
+    fetch(`/api/shop/public/${resolvedSlug}`, { signal: controller.signal })
       .then(res => res.ok ? res.json() : Promise.reject())
       .then(data => {
         setShop(data)
@@ -213,6 +218,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
       })
       .catch(() => error('Failed to load shop'))
       .finally(() => setLoading(false))
+    return () => controller.abort()
   }, [resolvedSlug])
 
   const handleSaveShop = async (e: React.FormEvent) => {

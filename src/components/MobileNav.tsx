@@ -5,6 +5,7 @@ import { signOut } from 'next-auth/react'
 import type { Session } from 'next-auth'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import { NAV } from '@/lib/navigation'
 import { useTheme, type ThemeAccent } from '@/context/ThemeContext'
@@ -45,6 +46,7 @@ interface MobileNavProps {
 export default function MobileNav({ open, onClose, isAdmin, isAuthenticated, session, messagesUnread }: MobileNavProps) {
   const currentLocale = useLocale()
   const t = useTranslations('header')
+  const router = useRouter()
   const { mode, accent, setAccent, toggleMode } = useTheme()
   const { settings } = useSiteSettings()
   const quickCreate = useQuickCreate()
@@ -65,7 +67,7 @@ export default function MobileNav({ open, onClose, isAdmin, isAuthenticated, ses
             const q = (e.currentTarget.elements[0] as HTMLInputElement).value
             if (q.trim().length >= 2) {
               onClose()
-              window.location.href = `/search?q=${encodeURIComponent(q.trim())}`
+              router.push(`/search?q=${encodeURIComponent(q.trim())}`)
             }
           }}
         >

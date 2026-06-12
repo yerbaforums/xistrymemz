@@ -35,7 +35,7 @@ export async function GET(request: Request) {
         }),
         prisma.bulletinBoard.count({ where: { ownerId: session.user.id } }),
       ])
-      return NextResponse.json({
+      return apiSuccess({
         boards: boards.map(b => ({ ...b, pinCount: b._count.pins, memberCount: b._count.members })),
         total,
         page,

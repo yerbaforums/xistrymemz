@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import styles from './page.module.css'
 import { getCryptoIcon, getCryptoName, CRYPTO_ICONS } from '@/lib/crypto-icons'
 import { useTariWallet } from '@/context/TariWalletContext'
@@ -40,6 +41,7 @@ export default function WalletPage() {
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [copied, setCopied] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     fetchWallet()
@@ -50,7 +52,7 @@ export default function WalletPage() {
       const res = await fetch('/api/wallet')
       if (!res.ok) {
         if (res.status === 401) {
-          window.location.href = '/auth/login'
+          router.push('/auth/login')
           return
         }
         throw new Error('Failed to fetch wallet')

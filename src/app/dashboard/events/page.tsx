@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
 import EventFormFields, { getDefaultEventFormData } from '@/components/EventFormFields'
 import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
@@ -30,6 +31,7 @@ type SortOption = 'newest' | 'oldest' | 'soonest' | 'mostAttendees'
 
 export default function DashboardEvents() {
   const { success, error } = useToast()
+  const router = useRouter()
   const [events, setEvents] = useState<DashboardEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -311,7 +313,7 @@ export default function DashboardEvents() {
       </div>
 
       {filteredEvents.length === 0 ? (
-        <EmptyState icon="📅" title="No events found" description="Browse public events or create your own." action={{ label: 'Browse Events', onClick: () => window.location.href = '/events' }} />
+        <EmptyState icon="📅" title="No events found" description="Browse public events or create your own." action={{ label: 'Browse Events', onClick: () => router.push('/events') }} />
       ) : (
         <div className={styles.cardGrid}>
           {filteredEvents.map((event, index) => {

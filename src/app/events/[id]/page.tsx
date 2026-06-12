@@ -315,7 +315,7 @@ function EventDetailContent() {
     try {
       const res = await fetch(`/api/events/${event.id}/invite`)
       const data = await res.json()
-      setInvitations(data.data.invitations || [])
+      setInvitations(data?.data?.invitations || data?.invitations || [])
     } catch {}
   }
 
@@ -326,7 +326,7 @@ function EventDetailContent() {
     try {
       const res = await fetch(`/api/users/search?q=${encodeURIComponent(q)}&limit=10`)
       const data = await res.json()
-      setInviteResults(data.data.users || [])
+      setInviteResults(data?.data?.users || data?.users || [])
     } catch {} finally { setSearchingUsers(false) }
   }
 
@@ -397,7 +397,7 @@ function EventDetailContent() {
     try {
       const res = await fetch(`/api/events/${event.id}/tickets`)
       const data = await res.json()
-      setTickets(data.data.tickets || [])
+      setTickets(data?.data?.tickets || data?.tickets || [])
     } catch {}
   }
 

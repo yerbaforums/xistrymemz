@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
@@ -57,6 +58,7 @@ const EMPTY_FORM = {
 
 export default function DashboardServices() {
   const { success, error: toastError } = useToast()
+  const router = useRouter()
   const userDonationAddrs = useDonationAddresses()
 
   const [services, setServices] = useState<ServiceOffering[]>([])
@@ -299,7 +301,7 @@ export default function DashboardServices() {
       {loading ? (
         <Skeleton width="100%" height="2rem" />
       ) : filteredServices.length === 0 && !showForm ? (
-        <EmptyState icon="🔧" title="No services yet" description="Offer your skills and expertise." action={{ label: 'Add Service', onClick: () => window.location.href = '/dashboard/services' }} />
+        <EmptyState icon="🔧" title="No services yet" description="Offer your skills and expertise." action={{ label: 'Add Service', onClick: () => router.push('/dashboard/services') }} />
       ) : (
         <div className={styles.list}>
           {filteredServices.map(s => {

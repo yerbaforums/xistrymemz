@@ -43,8 +43,8 @@ export default function LoginPage() {
         body: JSON.stringify({ username, domain })
       })
       const data = await res.json()
-      if (data?.data?.redirectUrl) {
-        window.location.href = data.data.redirectUrl
+      if (data?.data?.redirectUrl || data?.redirectUrl) {
+        router.push(data?.data?.redirectUrl || data?.redirectUrl)
       } else {
         setFediError(data?.error || 'Failed to initiate fediverse sign in')
       }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import FormWizard, { useWizard, type WizardStep } from '@/components/FormWizard'
@@ -23,6 +23,7 @@ const steps: WizardStep[] = [
 function SchoolSetupContent() {
   const { success, error } = useToast()
   const searchParams = useSearchParams()
+  const router = useRouter()
   const templateId = searchParams.get('template')
   
   const [selectedTemplate, setSelectedTemplate] = useState<BusinessTemplate | null>(null)
@@ -113,7 +114,7 @@ function SchoolSetupContent() {
   const handleSubmit = async () => {
     success('School is ready!')
     setTimeout(() => {
-      window.location.href = `/school/${schoolSlug || 'new'}`
+      router.push(`/school/${schoolSlug || 'new'}`)
     }, 1000)
   }
 

@@ -3,10 +3,12 @@
 import { useRef, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import styles from './HeroSection.module.css'
 
 export default function HeroSection() {
   const t = useTranslations('home')
+  const router = useRouter()
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -128,7 +130,7 @@ export default function HeroSection() {
             placeholder={t('heroSearchPlaceholder')}
             onKeyDown={e => {
               if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
-                window.location.href = `/search?q=${encodeURIComponent((e.target as HTMLInputElement).value.trim())}`
+                router.push(`/search?q=${encodeURIComponent((e.target as HTMLInputElement).value.trim())}`)
               }
             }}
           />

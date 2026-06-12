@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import MentionInput, { type MentionInputHandle } from '@/components/MentionInput'
@@ -64,6 +64,7 @@ interface PollOption {
 export default function ForumThreadPage() {
   const params = useParams()
   const postId = params.postId as string
+  const router = useRouter()
   const { data: session } = useSession()
   const { success, error } = useToast()
   
@@ -163,7 +164,7 @@ export default function ForumThreadPage() {
     try {
       const res = await fetch(`/api/forum/post/${deleteTarget}`, { method: 'DELETE' })
       if (res.ok) {
-        window.location.href = '/community/forum'
+        router.push('/community/forum')
       }
     } catch (e) {
       console.error(e)

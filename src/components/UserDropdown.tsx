@@ -3,6 +3,7 @@
 import { signOut } from 'next-auth/react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { NAV } from '@/lib/navigation'
 import { useTheme, type ThemeAccent } from '@/context/ThemeContext'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
@@ -19,6 +20,7 @@ interface UserDropdownProps {
 export default function UserDropdown({ session, open, onClose, traveling }: UserDropdownProps) {
   const { mode, accent, setAccent, toggleMode } = useTheme()
   const { settings } = useSiteSettings()
+  const router = useRouter()
 
   if (!open) return null
 
@@ -61,7 +63,7 @@ export default function UserDropdown({ session, open, onClose, traveling }: User
           onClick={() => {
             localStorage.removeItem('tour_post-onboarding')
             localStorage.removeItem('tour_home-welcome')
-            window.location.href = '/dashboard/overview'
+            router.push('/dashboard/overview')
           }}
           style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', padding: '6px 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}
         >

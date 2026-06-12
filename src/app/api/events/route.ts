@@ -95,7 +95,7 @@ export async function GET(request: Request) {
       }
     })
 
-    return NextResponse.json({ items: formattedEvents, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
+    return apiSuccess({ items: formattedEvents, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
   } catch (error) {
     console.error('GET /api/events:', error)
     return apiError("Failed to fetch events", 500)

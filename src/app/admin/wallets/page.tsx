@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import styles from './page.module.css'
 import { getCryptoIcon, CRYPTO_ICONS } from '@/lib/crypto-icons'
 import { useToast } from '@/context/ToastContext'
@@ -57,6 +58,7 @@ type SortDir = 'asc' | 'desc'
 
 export default function AdminWalletsPage() {
   const { success, error } = useToast()
+  const router = useRouter()
   const [wallets, setWallets] = useState<AdminWallet[]>([])
   const [userWallets, setUserWallets] = useState<UserWallet[]>([])
   const [cryptoTypes, setCryptoTypes] = useState<CryptoType[]>([])
@@ -644,7 +646,7 @@ export default function AdminWalletsPage() {
                           <span className={styles.primaryBadge} title="Default Wallet">✓</span>
                         )}
                         <button
-                          onClick={() => window.location.href = `/admin/orders?wallet=${encodeURIComponent(wallet.address)}`}
+                          onClick={() => router.push(`/admin/orders?wallet=${encodeURIComponent(wallet.address)}`)}
                           className={styles.actionBtn}
                           title="View Transactions"
                         >
@@ -819,7 +821,7 @@ export default function AdminWalletsPage() {
                         🌱
                       </button>
                       <button
-                        onClick={() => window.location.href = `/admin/orders?wallet=${encodeURIComponent(wallet.address)}`}
+                        onClick={() => router.push(`/admin/orders?wallet=${encodeURIComponent(wallet.address)}`)}
                         className={styles.actionBtn}
                         title="View Transactions"
                       >

@@ -67,7 +67,7 @@ export default function AdminBackupsPage() {
 
       if (backupsRes.ok) {
         const data = await backupsRes.json()
-        setBackups(data.data.backups || [])
+        setBackups(data?.data?.backups || data?.backups || [])
       }
       if (statsRes.ok) {
         const data = await statsRes.json()

@@ -170,13 +170,15 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
   const canDelete = isOwner || isBoardOwner
 
   useEffect(() => {
-    fetch(`/api/boards/${boardSlug}/pins/${pin.id}/like`)
+    const controller = new AbortController()
+    fetch(`/api/boards/${boardSlug}/pins/${pin.id}/like`, { signal: controller.signal })
       .then(r => r.json())
       .then(data => {
         setLiked(data.liked)
         setLikes(data.count)
       })
       .catch(() => {})
+    return () => controller.abort()
   }, [boardSlug, pin.id])
 
   const handleLike = async () => {
@@ -233,7 +235,8 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
 
   useEffect(() => {
     if (!isEventPin) return
-    fetch(`/api/events/${pin.entityId}`)
+    const controller = new AbortController()
+    fetch(`/api/events/${pin.entityId}`, { signal: controller.signal })
       .then(r => r.json())
       .then(data => {
         const count = data._count?.eventJoiners || data.joiners?.length || 0
@@ -241,6 +244,7 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
         setEventJoined(data.joined || false)
       })
       .catch(() => {})
+    return () => controller.abort()
   }, [pin.entityId, isEventPin])
 
   const handleEventJoin = async () => {

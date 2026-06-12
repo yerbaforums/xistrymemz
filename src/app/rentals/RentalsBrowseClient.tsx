@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import styles from './rentals-browse.module.css'
 import { getUserProfileUrl } from '@/lib/utils'
 import { useSession } from 'next-auth/react'
@@ -47,6 +47,7 @@ interface Props {
 
 export default function RentalsBrowseClient({ initialRentals, categories, locations }: Props) {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const { data: session } = useSession()
   const [search, setSearch] = useState(searchParams.get('q') || '')
   const [categoryFilter, setCategoryFilter] = useState(searchParams.get('category') || 'ALL')
@@ -197,7 +198,7 @@ export default function RentalsBrowseClient({ initialRentals, categories, locati
       </div>
 
       {filtered.length === 0 ? (
-        <EmptyState icon="🏠" title="No rentals found" description="Try adjusting your filters or search terms." action={{ label: 'Browse All', onClick: () => window.location.href = '/rentals' }} />
+        <EmptyState icon="🏠" title="No rentals found" description="Try adjusting your filters or search terms." action={{ label: 'Browse All', onClick: () => router.push('/rentals') }} />
       ) : viewMode === 'map' ? (
         <div>
           <div style={{ height: '500px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>

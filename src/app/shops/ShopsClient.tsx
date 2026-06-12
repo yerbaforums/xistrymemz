@@ -3,7 +3,7 @@
 import { useState, useRef, useMemo, useCallback, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import styles from './page.module.css'
 import AlphabeticalIndex, { type IndexItem } from '@/components/AlphabeticalIndex'
 import { SHOP_CATEGORIES } from '@/lib/shop-categories'
@@ -35,6 +35,7 @@ const catMap = new Map(SHOP_CATEGORIES.map(c => [c.value, c]))
 
 export function ShopsClient({ initialShops }: ShopsClientProps) {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const [shops] = useState<Shop[]>(initialShops)
   const [mapExpanded, setMapExpanded] = useState(searchParams.get('map') === 'true')
   const [selectedShop, setSelectedShop] = useState<string | null>(null)
@@ -167,7 +168,7 @@ export function ShopsClient({ initialShops }: ShopsClientProps) {
 
       {filtered.length === 0 ? (
         shops.length === 0 ? (
-          <EmptyState icon="🏪" title="No shops yet" description="Be the first to create a shop!" action={{ label: 'Create Shop', onClick: () => window.location.href = '/shop/setup' }} />
+          <EmptyState icon="🏪" title="No shops yet" description="Be the first to create a shop!" action={{ label: 'Create Shop', onClick: () => router.push('/shop/setup') }} />
         ) : null
       ) : (
         <AlphabeticalIndex

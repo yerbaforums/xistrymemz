@@ -91,7 +91,7 @@ function MessagesContent() {
       const res = await fetch('/api/messages/conversations')
       if (res.ok) {
         const data = await res.json()
-        setConversations(data.data.conversations || [])
+        setConversations(data?.data?.conversations || data?.conversations || [])
       }
     } catch (error) {
       console.error('Error fetching conversations:', error)
@@ -122,7 +122,7 @@ function MessagesContent() {
       const res = await fetch(`/api/messages?user=${userId}`)
       if (res.ok) {
         const data = await res.json()
-        setMessages(data.data?.messages || data.data.messages || [])
+        setMessages(data?.data?.messages || data?.messages || [])
       } else {
         setFetchError('Failed to load messages')
       }

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { getUserProfileUrl } from '@/lib/utils'
 
@@ -68,6 +69,7 @@ const TABS: { key: TabKey; icon: string; label: string }[] = [
 
 export default function CommunityManagement() {
   const { data: session } = useSession()
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabKey>('overview')
   const [pendingReceived, setPendingReceived] = useState<Connection[]>([])
   const [pendingSent, setPendingSent] = useState<Connection[]>([])
@@ -321,7 +323,7 @@ export default function CommunityManagement() {
               <Link href="/community" className={styles.actionBtn}>Browse Members</Link>
             </div>
             {acceptedConnections.length === 0 && pendingReceived.length === 0 && pendingSent.length === 0 ? (
-              <EmptyState icon="🤝" title="No connections yet" description="Find members to connect with." action={{ label: 'Find Members', onClick: () => window.location.href = '/community' }} />
+              <EmptyState icon="🤝" title="No connections yet" description="Find members to connect with." action={{ label: 'Find Members', onClick: () => router.push('/community') }} />
             ) : (
               acceptedConnections.slice(0, 10).map(c => {
                 const user = otherUser(c)
@@ -355,7 +357,7 @@ export default function CommunityManagement() {
               <Link href="/groups/new" className={styles.actionBtn}>+ Create Group</Link>
             </div>
             {ownerGroups.length === 0 ? (
-              <EmptyState icon="👥" title="No groups owned" description="Create your first group to start a community." action={{ label: 'Create Group', onClick: () => window.location.href = '/groups/new' }} />
+              <EmptyState icon="👥" title="No groups owned" description="Create your first group to start a community." action={{ label: 'Create Group', onClick: () => router.push('/groups/new') }} />
             ) : (
               ownerGroups.map(g => (
                 <div key={g.id} className={styles.card}>
@@ -389,7 +391,7 @@ export default function CommunityManagement() {
               <Link href="/community/groups" className={styles.actionBtn}>Browse Groups</Link>
             </div>
             {memberGroups.length === 0 ? (
-              <EmptyState icon="👥" title="No groups joined" description="Discover groups to join." action={{ label: 'Discover Groups', onClick: () => window.location.href = '/community/groups' }} />
+              <EmptyState icon="👥" title="No groups joined" description="Discover groups to join." action={{ label: 'Discover Groups', onClick: () => router.push('/community/groups') }} />
             ) : (
               memberGroups.map(g => (
                 <Link key={g.id} href={`/groups/${g.id}`} className={styles.card}>
@@ -417,7 +419,7 @@ export default function CommunityManagement() {
             <Link href="/community/forum" className={styles.actionBtn}>Browse Forum</Link>
           </div>
           {forumPosts.length === 0 ? (
-            <EmptyState icon="💬" title="No forum posts yet" description="Create your first post to start a discussion." action={{ label: 'Browse Forum', onClick: () => window.location.href = '/community/forum' }} />
+            <EmptyState icon="💬" title="No forum posts yet" description="Create your first post to start a discussion." action={{ label: 'Browse Forum', onClick: () => router.push('/community/forum') }} />
           ) : (
             forumPosts.map(p => (
               <Link key={p.id} href={`/community/forum/${p.id}`} className={styles.card}>

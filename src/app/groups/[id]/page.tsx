@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense, useRef } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import MentionInput, { type MentionInputHandle } from '@/components/MentionInput'
 import HashtagText from '@/components/HashtagText'
@@ -132,6 +132,7 @@ interface Group {
 function GroupDetailContent() {
   const { data: session } = useSession()
   const params = useParams()
+  const router = useRouter()
   const { success, error, warning } = useToast()
   const [group, setGroup] = useState<Group | null>(null)
   const [loading, setLoading] = useState(true)
@@ -510,7 +511,7 @@ function GroupDetailContent() {
       const res = await fetch(`/api/groups/${params.id}`, { method: 'DELETE' })
       if (res.ok) {
         success('Group deleted')
-        window.location.href = '/groups'
+        router.push('/groups')
       } else {
         const err = await res.json()
         error(err.error || 'Failed to delete')

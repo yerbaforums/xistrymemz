@@ -221,8 +221,9 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
       fetch(`/api/requests/${request.id}/support`)
         .then(r => r.json())
         .then(data => {
-          if (data.data.supports) {
-            setIsSupporting(data.data.supports.some((s: Supporter) => s.user.id === userId))
+          const supports = data?.data?.supports || data?.supports
+          if (supports) {
+            setIsSupporting(supports.some((s: Supporter) => s.user.id === userId))
           }
         })
         .catch(() => {})
@@ -233,9 +234,10 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
     fetch(`/api/requests/${request.id}/support`)
       .then(r => r.json())
       .then(data => {
-        if (data.data.supports) {
-          setSupporters(data.data.supports)
-          setSupportCount(data.data.supports.length)
+        const supports = data?.data?.supports || data?.supports
+        if (supports) {
+          setSupporters(supports)
+          setSupportCount(supports.length)
         }
       })
       .catch(() => {})
