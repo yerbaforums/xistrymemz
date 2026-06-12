@@ -42,7 +42,7 @@ export async function POST(
     return apiError("Invalid JSON body", 400)
   }
 
-  const { title, description, eventCategory, eventDate, location, locationDetails, maxJoiners, isTicketed, ticketPrice, currency } = body
+  const { title, description, eventCategory, eventDate, endDate, location, locationDetails, maxJoiners, isTicketed, ticketPrice, currency } = body
 
   const plan = await prisma.plan.findFirst({
     where: { id }
@@ -80,6 +80,7 @@ export async function POST(
       description,
       eventCategory,
       eventDate: eventDate ? new Date(eventDate) : null,
+      endDate: endDate ? new Date(endDate) : null,
       location,
       locationDetails,
       latitude,

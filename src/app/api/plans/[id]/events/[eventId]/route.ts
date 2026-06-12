@@ -80,11 +80,15 @@ export async function PUT(
       description: body.description ?? existingEvent.description,
       eventCategory: body.eventCategory ?? existingEvent.eventCategory,
       eventDate: body.eventDate ? new Date(body.eventDate) : existingEvent.eventDate,
+      endDate: body.endDate ? new Date(body.endDate) : existingEvent.endDate,
       location: newLocation,
       locationDetails: body.locationDetails ?? existingEvent.locationDetails,
       latitude,
       longitude,
-      maxJoiners: body.maxJoiners ?? existingEvent.maxJoiners
+      maxJoiners: body.maxJoiners ?? existingEvent.maxJoiners,
+      isTicketed: body.isTicketed !== undefined ? body.isTicketed : existingEvent.isTicketed,
+      ticketPrice: body.ticketPrice !== undefined ? body.ticketPrice : existingEvent.ticketPrice,
+      currency: body.currency ?? existingEvent.currency
     }
   })
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import styles from './support.module.css'
 import type { PlanContribution, PlanJoiner } from '@/lib/plan-utils'
 import type { DonationAddr } from '@/types/product'
@@ -44,6 +45,7 @@ export default function PlanSupport({
   isOwner
 }: PlanSupportProps) {
   const { success: toastSuccess } = useToast()
+  const router = useRouter()
   const [contributeAmount, setContributeAmount] = useState(goalAmount ? Math.min(goalAmount - (currentFunding || 0), goalAmount * 0.1) : 10)
   const [contributeMessage, setContributeMessage] = useState('')
   const [showContributeForm, setShowContributeForm] = useState(false)
@@ -234,6 +236,7 @@ export default function PlanSupport({
                         })
                         toastSuccess('Goal updated!')
                         setEditGoal(false)
+                        router.refresh()
                       } catch {} finally { setSavingGoal(false) }
                     }} disabled={savingGoal} className="btn-primary" style={{ padding: '6px 14px', fontSize: '0.8rem' }}>
                       {savingGoal ? '...' : 'Save'}
@@ -419,6 +422,7 @@ export default function PlanSupport({
                           })
                           toastSuccess('Volunteer settings saved!')
                           setEditVolunteers(false)
+                          router.refresh()
                         } catch {} finally { setSavingVolunteers(false) }
                       }} disabled={savingVolunteers} className="btn-primary" style={{ padding: '6px 14px', fontSize: '0.8rem' }}>
                         {savingVolunteers ? '...' : 'Save'}

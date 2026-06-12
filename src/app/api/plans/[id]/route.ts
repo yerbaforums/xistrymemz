@@ -106,13 +106,23 @@ export async function PUT(
         donationAddress: body.donationAddress !== undefined ? (body.donationAddress || null) : existingPlan.donationAddress,
         donationCurrency: body.donationCurrency ?? existingPlan.donationCurrency,
         donationDescription: body.donationDescription !== undefined ? (body.donationDescription || null) : existingPlan.donationDescription,
-        donationAddresses: body.donationAddresses !== undefined ? (body.donationAddresses || null) : existingPlan.donationAddresses
+        donationAddresses: body.donationAddresses !== undefined ? (body.donationAddresses || null) : existingPlan.donationAddresses,
+        category: body.category !== undefined ? body.category : existingPlan.category,
+        location: body.location !== undefined ? body.location : existingPlan.location,
+        locationDetails: body.locationDetails !== undefined ? body.locationDetails : existingPlan.locationDetails,
+        images: body.images !== undefined ? body.images : existingPlan.images,
+        goalAmount: body.goalAmount !== undefined ? body.goalAmount : existingPlan.goalAmount,
+        needsVolunteers: body.needsVolunteers !== undefined ? body.needsVolunteers : existingPlan.needsVolunteers,
+        volunteerRoles: body.volunteerRoles !== undefined ? body.volunteerRoles : existingPlan.volunteerRoles,
+        volunteerDescription: body.volunteerDescription !== undefined ? body.volunteerDescription : existingPlan.volunteerDescription,
+        videoUrl: body.videoUrl !== undefined ? body.videoUrl : existingPlan.videoUrl,
+        pinned: body.pinned !== undefined ? body.pinned : existingPlan.pinned
       }
     })
 
     if (body.hashtags !== undefined && Array.isArray(body.hashtags)) {
       await linkHashtags('PLAN', id, body.hashtags)
-    } else {
+    } else if (body.title !== undefined || body.description !== undefined) {
       const title = body.title ?? existingPlan.title
       const description = body.description ?? existingPlan.description
       await extractAndLinkHashtags(title + ' ' + (description || ''), 'PLAN', id)

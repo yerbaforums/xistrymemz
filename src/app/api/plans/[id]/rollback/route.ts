@@ -56,7 +56,7 @@ export async function POST(
       }
     })
 
-    return NextResponse.json({
+    return apiSuccess({
       ...updatedPlan,
       createdAt: updatedPlan.createdAt.toISOString(),
       updatedAt: updatedPlan.updatedAt.toISOString()

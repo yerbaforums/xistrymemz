@@ -26,10 +26,22 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   if (!content?.trim()) return apiError("Content is required", 400)
 
-  const plan = await prisma.plan.findFirst({
-    where: { id: planId, userId: session.user.id }
+  const plan = await prisma.plan.findUnique({
+    where: { id: planId },
+    select: { userId: true }
   })
-  if (!plan) return apiError("Not found or not owner", 404)
+  if (!plan) return apiError("Plan not found", 404)
+
+  const isOwner = plan.userId === session.user.id
+  const isEditor = await prisma.planEditor.findFirst({
+    where: { planId, userId: session.user.id }
+  })
+  const userRole = (session.user as { role?: string }).role
+  const isAdmin = userRole === 'ADMIN'
+
+  if (!isOwner && !isEditor && !isAdmin) {
+    return apiError("Forbidden", 403)
+  }
 
   const update = await prisma.planUpdate.create({
     data: {

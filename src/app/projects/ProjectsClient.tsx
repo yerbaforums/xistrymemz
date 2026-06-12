@@ -221,7 +221,7 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
       plan.events.forEach(event => {
         if (event.latitude && event.longitude) {
           locations.push({
-            lat: event.latitude, lng: event.longitude, title: event.title, type: 'event', id: plan.id,
+            lat: event.latitude, lng: event.longitude, title: event.title, type: 'event', id: event.id,
             info: `${event.location || 'Event'} - ${event.eventDate ? new Date(event.eventDate).toLocaleDateString() : 'TBD'}`
           })
         }
@@ -488,7 +488,7 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
                           {loc.type === 'plan' ? '📍 Project' : '📅 Event'}
                         </span><br />
                         <span style={{ fontSize: '11px' }}>{loc.info}</span><br />
-                        <Link href={`/plans/${loc.id}`} style={{ color: '#00d9ff', fontSize: '12px' }}>View Project →</Link>
+                        <Link href={loc.type === 'event' ? `/events/${loc.id}` : `/plans/${loc.id}`} style={{ color: '#00d9ff', fontSize: '12px' }}>{loc.type === 'event' ? 'View Event' : 'View Project'} →</Link>
                       </div>
                     </Popup>
                   </Marker>
