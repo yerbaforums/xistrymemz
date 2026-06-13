@@ -431,13 +431,13 @@ export default async function DashboardOverview({
               {projects.length > 0 ? (
                 <div className={styles.activityList}>
                   {projects.map(project => (
-                    <Link key={plan.id} href={`/projects/${plan.id}`} className={styles.activityItem}>
+                    <Link key={project.id} href={`/projects/${project.id}`} className={styles.activityItem}>
                       <div className={styles.activityIcon}>🚀</div>
                       <div className={styles.activityInfo}>
                         <span className={styles.activityTitle}>{project.title}</span>
-                        <span className={styles.activityMeta}>{plan.status} · {new Date(plan.createdAt).toLocaleDateString()}</span>
+                        <span className={styles.activityMeta}>{project.status} · {new Date(project.createdAt).toLocaleDateString()}</span>
                       </div>
-                      <span className={`badge badge-${plan.status.toLowerCase()} ${overviewStyles.projectStatusBadge}`}>{plan.status}</span>
+                      <span className={`badge badge-${project.status.toLowerCase()} ${overviewStyles.projectStatusBadge}`}>{project.status}</span>
                     </Link>
                   ))}
                 </div>
@@ -469,13 +469,13 @@ export default async function DashboardOverview({
             <DashboardSection id="studio" title="Recent Studio Items" icon="🎨" action={<Link href="/dashboard/studio" className={styles.viewAll}>Open Studio →</Link>}>
             {(() => {
               const studioItems = [
-                ...plans.map(p => ({ type: '🚀', label: 'Project', title: p.title, date: p.createdAt, href: `/projects/${p.id}` })),
+                ..._projects.map(p => ({ type: '🚀', label: 'Project', title: p.title, date: p.createdAt, href: `/projects/${p.id}` })),
                 ...products.map(p => ({ type: '🛒', label: 'Product', title: p.title, date: p.createdAt, href: `/products/${p.id}` })),
                 ...recentSchoolContent.map((c: any) => ({ type: c.contentType === 'course' ? '🎓' : '📖', label: c.contentType || 'Content', title: c.title, date: c.createdAt, href: '#' })),
               ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5)
               if (studioItems.length === 0) {
                 return (
-                  <EmptyState icon="📝" title="No content yet" description="Create plans, products, or school content to get started." action={{ label: 'Create Something', href: '/dashboard/studio' }} />
+                  <EmptyState icon="📝" title="No content yet" description="Create projects, products, or school content to get started." action={{ label: 'Create Something', href: '/dashboard/studio' }} />
                 )
               }
               return (
