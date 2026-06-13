@@ -93,9 +93,9 @@ export default function CommunityManagement() {
           : Promise.resolve(null),
         fetch('/api/groups?my=true'),
       ])
-      if (receivedRes.ok) setPendingReceived(await receivedRes.json())
-      if (sentRes.ok) setPendingSent(await sentRes.json())
-      if (acceptedRes.ok) setAcceptedConnections(await acceptedRes.json())
+      if (receivedRes.ok) { const d = await receivedRes.json(); setPendingReceived(d?.data ?? d ?? []) }
+      if (sentRes.ok) { const d = await sentRes.json(); setPendingSent(d?.data ?? d ?? []) }
+      if (acceptedRes.ok) { const d = await acceptedRes.json(); setAcceptedConnections(d?.data ?? d ?? []) }
       if (forumRes?.ok) {
         const forumData = await forumRes.json()
         setForumPosts(forumData?.data ?? forumData?.items ?? forumData ?? [])
