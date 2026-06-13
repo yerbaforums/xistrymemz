@@ -443,10 +443,10 @@ export default function Header() {
                           <div className={styles.searchLoading}>Searching...</div>
                         ) : searchResults ? (
                           <>
-                            {searchResults.plans?.length > 0 && (
+                            {searchResults.projects?.length > 0 && (
                               <div className={styles.searchSection}>
                                 <div className={styles.searchSectionTitle}><span aria-hidden="true">🚀</span> Projects</div>
-                                {searchResults.plans.map(p => (
+                                {searchResults.projects.map(p => (
                                   <Link key={p.id} href={p.url} className={styles.searchResult} onClick={() => setSearchOpen(false)}>
                                     {p.title}
                                   </Link>
@@ -523,7 +523,7 @@ export default function Header() {
                                 ))}
                               </div>
                             )}
-                            {(!searchResults.plans?.length && !searchResults.products?.length && !searchResults.services?.length && !searchResults.users?.length && !searchResults.events?.length && !searchResults.requests?.length && !searchResults.groups?.length && !searchResults.hashtags?.length && !searchResults.schoolContent?.length) && (
+                            {(!searchResults.projects?.length && !searchResults.products?.length && !searchResults.services?.length && !searchResults.users?.length && !searchResults.events?.length && !searchResults.requests?.length && !searchResults.groups?.length && !searchResults.hashtags?.length && !searchResults.schoolContent?.length) && (
                               <EmptyState icon="🔍" title="No results found" description={`No results for "${searchQuery}"`} />
                             )}
                             <Link href={`/search?q=${encodeURIComponent(searchQuery)}`} className={styles.seeAllResults} onClick={() => setSearchOpen(false)}>

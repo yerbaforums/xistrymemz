@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
         break
       }
       
-      case 'plan': {
+      case 'project': {
         const project = await prisma.project.findUnique({ where: { id } })
         if (!project) return apiError("Project not found", 404)
         if (project.userId !== session.user.id) return apiError("Not authorized", 403)

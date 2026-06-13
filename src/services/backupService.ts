@@ -56,7 +56,7 @@ async function prismaDump(): Promise<string> {
     'User', 'Project', 'Request', 'Product', 'Event', 'ServiceOffering', 'Group',
     'BulletinBoard', 'BulletinPin', 'Post', 'ForumPost', 'ForumReply',
     'SchoolContent', 'Notification', 'Message', 'Connection', 'Comment',
-    'PlanUpdate', 'PlanUpdateComment', 'Payment', 'EscrowTransaction',
+    'ProjectUpdate', 'ProjectUpdateComment', 'Payment', 'EscrowTransaction',
     'BarterOffer', 'Appointment', 'Availability', 'Backlink', 'Hashtag',
     'VideoRoom', 'InviteCode', 'Backup',
   ]

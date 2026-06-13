@@ -55,7 +55,7 @@ export async function GET(request: Request) {
           })
           return rows.map(e => ({ id: e.id, title: e.title, image: null, url: `/events/${e.id}`, meta: e.eventDate ? new Date(e.eventDate).toLocaleDateString() : undefined, type: 'event', category: e.eventCategory || undefined, extra: e.location || undefined, owner: e.organizer.name || undefined, createdAt: e.eventDate ? new Date(e.eventDate).toISOString() : undefined }))
         }
-        case 'plan': {
+        case 'project': {
           const rows = await prisma.project.findMany({
             where: { published: true, ...(q ? { title: whereName } : {}) },
             select: { id: true, title: true, imageUrl: true, description: true, goals: true, createdAt: true, user: { select: { name: true } } },
@@ -82,7 +82,7 @@ export async function GET(request: Request) {
 
     const [shops, products, services, rentals, events, plans, requests] = await Promise.all([
       fetchByType('shop'), fetchByType('product'), fetchByType('service'),
-      fetchByType('rental'), fetchByType('event'), fetchByType('plan'), fetchByType('request')
+      fetchByType('rental'), fetchByType('event'), fetchByType('project'), fetchByType('request')
     ])
 
     const allItems = [...shops, ...products, ...services, ...rentals, ...events, ...plans, ...requests]
