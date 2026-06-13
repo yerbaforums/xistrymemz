@@ -51,7 +51,7 @@ interface Request {
   allowFulfillments: boolean
   showDonationAddress: boolean
   createdAt: string
-  plan: { id: string; title: string } | null
+  project: { id: string; title: string } | null
   group: { id: string; name: string } | null
   product: { id: string; title: string } | null
   schoolContent: { id: string; title: string } | null
@@ -191,7 +191,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
   }
 
   const getLinkInfo = (req: Request) => {
-    if (req.plan) return { type: 'Plan', label: req.plan.title, href: `/plans/${req.plan.id}`, color: '#00d9ff' }
+    if (req.project) return { type: 'Project',, label: req.project.title, href: `/projects/${req.project.id}`, color: '#00d9ff' }
     if (req.group) return { type: 'Group', label: req.group.name, href: `/groups/${req.group.id}`, color: '#a855f7' }
     if (req.product) return { type: 'Product', label: req.product.title, href: `/products/${req.product.id}`, color: '#22c55e' }
     if (req.schoolContent) return { type: 'School', label: req.schoolContent.title, href: `/schools`, color: '#f59e0b' }
@@ -521,6 +521,11 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
                     onClick={() => setViewMode('list')}
                     title="List view"
                   >☰</button>
+                  <button
+                    className={`${styles.viewBtn} ${viewMode === 'map' ? styles.viewBtnActive : ''}`}
+                    onClick={() => setViewMode('map')}
+                    title="Map view"
+                  >🗺</button>
                 </div>
               </div>
 
@@ -576,7 +581,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
                         <span className={styles.priorityDot} style={{ backgroundColor: PRIORITY_COLORS[req.priority] }} title={req.priority} />
                         <span className={styles.categoryTag}>{req.category}</span>
                         {link && (
-                          <Link href={link.href} className={styles.linkTag} style={{ backgroundColor: link.color + '18', color: link.color }}>{link.type}</Link>
+                          <Link href={link.href} className={styles.linkTag} style={{ backgroundColor: link.color + '18', color: link.color }}>{link.label}</Link>
                         )}
                       </div>
 

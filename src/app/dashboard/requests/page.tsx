@@ -19,7 +19,7 @@ export default async function DashboardRequests() {
   const requests = await prisma.request.findMany({
     where: userRole === 'ADMIN' ? undefined : { userId },
     include: {
-      plan: { select: { id: true, title: true } },
+      project: { select: { id: true, title: true } },
       group: { select: { id: true, name: true } },
       product: { select: { id: true, title: true } },
       schoolContent: { select: { id: true, title: true } },
@@ -59,7 +59,7 @@ export default async function DashboardRequests() {
     showDonationAddress: req.showDonationAddress,
     createdAt: req.createdAt.toISOString(),
     updatedAt: req.updatedAt.toISOString(),
-    plan: req.plan,
+    plan: req.project,
     group: req.group,
     product: req.product,
     schoolContent: req.schoolContent,

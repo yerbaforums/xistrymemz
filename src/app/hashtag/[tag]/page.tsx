@@ -34,7 +34,7 @@ const TABS: { key: TabType; label: string; icon: string }[] = [
   { key: 'events', label: 'Events', icon: '📅' },
   { key: 'services', label: 'Services', icon: '🔧' },
   { key: 'schoolContents', label: 'School', icon: '🎓' },
-  { key: 'plans', label: 'Plans', icon: '📋' },
+  { key: 'plans', label: 'Projects', icon: '📋' },
   { key: 'requests', label: 'Requests', icon: '🙋' },
   { key: 'groups', label: 'Groups', icon: '👥' },
 ]
@@ -283,7 +283,7 @@ function HashtagPage() {
               {activeTab === 'all' && <h2 className={styles.sectionTitle}>Plans</h2>}
               <div className={styles.planList}>
                 {plans.map((plan: any) => (
-                  <Link key={plan.id} href={`/plans/${plan.id}`} className={styles.planCard}>
+                  <Link key={plan.id} href={`/projects/${plan.id}`} className={styles.planCard}>
                     <h3 className={styles.planCardTitle}>{plan.title}</h3>
                     {plan.description && (
                       <p className={styles.planCardDesc}>{plan.description.slice(0, 120)}{plan.description.length > 120 ? '...' : ''}</p>

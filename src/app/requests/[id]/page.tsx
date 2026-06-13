@@ -21,12 +21,12 @@ export default async function RequestDetailPage({
       id,
       OR: [
         { userId: session?.user?.id },
-        { plan: { userId: session?.user?.id } },
+        { project: { userId: session?.user?.id } },
         { isPublic: true }
       ]
     },
     include: {
-      plan: {
+      project: {
         include: {
           user: {
             select: { id: true, name: true, username: true, email: true, shopSlug: true }
@@ -94,14 +94,14 @@ export default async function RequestDetailPage({
     completedAt: request.completedAt?.toISOString() || null,
     allowFulfillments: request.allowFulfillments,
     imageUrl: (request as any).imageUrl || null,
-    plan: request.plan ? {
-      id: request.plan.id,
-      title: request.plan.title,
+    plan: request.project ? {
+      id: request.project.id,
+      title: request.project.title,
       user: {
-        id: request.plan.user.id,
-        name: request.plan.user.name,
-        username: request.plan.user.username,
-        shopSlug: request.plan.user.shopSlug,
+        id: request.project.user.id,
+        name: request.project.user.name,
+        username: request.project.user.username,
+        shopSlug: request.project.user.shopSlug,
       },
     } : null,
     user: {

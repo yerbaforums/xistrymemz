@@ -117,8 +117,8 @@ function EventDetailContent() {
       acceptsDonations: event.acceptsDonations || false,
       selectedDonationAddrs: hydrateDonationAddresses(event.donationAddress, event.donationCurrency, event.donationAddresses),
       hashtags: event.hashtags || [],
-      planId: event.planId || null,
-      planTitle: event.planTitle || null,
+      projectId: event.projectId || null,
+      projectTitle: event.projectTitle || null,
       groupId: event.group?.id || null,
       groupTitle: event.group?.name || null,
       schoolId: null,
@@ -162,7 +162,7 @@ function EventDetailContent() {
           volunteerRoles,
           volunteerDescription: editFormData.volunteerDescription,
           hashtags: editFormData.hashtags,
-          planId: editFormData.planId,
+          projectId: editFormData.projectId,
           groupId: editFormData.groupId,
         })
       })
@@ -524,8 +524,8 @@ function EventDetailContent() {
                   </Link>
                   {event.organizer?.role && <RoleBadge role={event.organizer.role} />}
                 </p>
-                {event.planTitle && event.planId && (
-                  <p className={styles.planRef}>From: <Link href={`/plans/${event.planId}`} className={styles.planLink}>{event.planTitle}</Link></p>
+                {event.projectTitle && event.projectId && (
+                  <p className={styles.planRef}>From: <Link href={`/projects/${event.projectId}`} className={styles.planLink}>{event.projectTitle}</Link></p>
                 )}
                 
                 {event.imageUrl && (

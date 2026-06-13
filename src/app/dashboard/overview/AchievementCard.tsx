@@ -66,12 +66,12 @@ export default function AchievementCard({
       </h3>
       <div className={overviewStyles.checklistItems}>
         {earned.map(a => (
-          <div key={a.id} className={overviewStyles.checklistItem} style={{ cursor: 'default' }}>
+          <div key={a.id} className={`${overviewStyles.checklistItem} ${overviewStyles.overviewStatCard}`}>
             <span>{a.icon}</span>
             <span>
               <span>{a.label}</span>
               {newEarned.includes(a) && (
-                <span style={{ fontSize: '0.7rem', color: 'var(--accent-primary)', marginLeft: 8 }}>
+                <span className={overviewStyles.achievementSub}>
                   New!
                 </span>
               )}

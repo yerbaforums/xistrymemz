@@ -16,7 +16,7 @@ export async function GET() {
         select: { id: true, title: true, latitude: true, longitude: true, eventDate: true, organizerId: true },
         take: 100,
       }),
-      prisma.plan.findMany({
+      prisma.project.findMany({
         where: { published: true, latitude: { not: null }, longitude: { not: null } },
         select: { id: true, title: true, latitude: true, longitude: true, userId: true },
         take: 100,
@@ -46,7 +46,7 @@ export async function GET() {
     const items = [
       ...products.map(p => ({ id: p.id, type: 'product' as const, title: p.title, lat: p.latitude!, lng: p.longitude!, url: `/products/${p.id}`, image: p.imageUrl, meta: p.price ? `$${p.price}` : undefined })),
       ...events.map(e => ({ id: e.id, type: 'event' as const, title: e.title, lat: e.latitude!, lng: e.longitude!, url: `/events/${e.id}`, image: null, meta: e.eventDate ? new Date(e.eventDate).toLocaleDateString() : undefined })),
-      ...plans.map(p => ({ id: p.id, type: 'plan' as const, title: p.title, lat: p.latitude!, lng: p.longitude!, url: `/plans/${p.id}`, image: null, meta: 'Project' })),
+      ...plans.map(p => ({ id: p.id, type: 'plan' as const, title: p.title, lat: p.latitude!, lng: p.longitude!, url: `/projects/${p.id}`, image: null, meta: 'Project' })),
       ...requests.map(r => ({ id: r.id, type: 'request' as const, title: r.title, lat: r.latitude!, lng: r.longitude!, url: `/requests/${r.id}`, image: null, meta: r.goalAmount ? `$${r.currentFunding || 0} / $${r.goalAmount}` : undefined })),
       ...shops.map(s => ({ id: s.id, type: 'shop' as const, title: s.shopName || 'Shop', lat: s.latitude!, lng: s.longitude!, url: `/shop/${s.shopSlug}`, image: s.shopImage, meta: 'Shop' })),
       ...rentals.map(r => ({ id: r.id, type: 'rental' as const, title: r.title, lat: r.latitude!, lng: r.longitude!, url: `/products/${r.id}`, image: r.imageUrl, meta: r.rentalDaily ? `$${r.rentalDaily}/day` : undefined })),

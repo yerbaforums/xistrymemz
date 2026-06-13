@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { fetchApi } from '@/lib/fetch-api'
 
 export type ActionEntityType =
-  | 'POST' | 'PRODUCT' | 'SERVICE' | 'EVENT' | 'PLAN'
+  | 'POST' | 'PRODUCT' | 'SERVICE' | 'EVENT' | 'PROJECT'
   | 'REQUEST' | 'SCHOOLCONTENT' | 'GROUP' | 'SHOP' | 'SCHOOL'
   | 'FORUMPOST' | 'PROFILE'
 

@@ -7,7 +7,7 @@ export async function GET(
 ) {
   const { id } = await params
 
-  const plan = await prisma.plan.findUnique({
+  const project = await prisma.project.findUnique({
     where: { id, published: true },
     include: {
       user: { select: { name: true } },
@@ -26,7 +26,7 @@ export async function GET(
   const event = plan.events[0]
 
   return NextResponse.json({
-    ...plan,
+    ...project,
     eventDate: event?.eventDate ? event.eventDate.toISOString() : null,
     eventCategory: event?.eventCategory || null,
     location: event?.location || null,

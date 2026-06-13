@@ -28,7 +28,7 @@ const TYPE_CONFIG: Record<string, { icon: string; label: string }> = {
   post: { icon: '✏️', label: 'Post' },
   schoolContent: { icon: '📖', label: 'School Content' },
   product: { icon: '🛒', label: 'Product' },
-  plan: { icon: '🚀', label: 'Project' },
+  project: { icon: '🚀', label: 'Project' },
   event: { icon: '📅', label: 'Event' },
 }
 
@@ -65,7 +65,7 @@ export default function StudioPage() {
       const [postsRes, productsRes, plansRes, eventsRes, schoolContentRes] = await Promise.all([
         fetch(`/api/posts?userId=${userId}&limit=50`),
         fetch(`/api/products?userId=${userId}`),
-        fetch('/api/plans'),
+        fetch('/api/projects'),
         fetch(`/api/events?organizerId=${userId}`),
         schoolSlug ? fetch(`/api/school/${schoolSlug}/content`) : Promise.resolve(null),
       ])
@@ -116,7 +116,7 @@ export default function StudioPage() {
             title: p.title || 'Untitled',
             createdAt: p.createdAt,
             status: p.status || 'IDEA',
-            href: `/plans/${p.id}`,
+            href: `/projects/${p.id}`,
           })
         }
       } catch {}

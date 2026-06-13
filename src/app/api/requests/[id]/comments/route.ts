@@ -51,7 +51,7 @@ export async function POST(
       id,
       OR: [
         { userId: session.user.id },
-        { plan: { userId: session.user.id } }
+        { project: { userId: session.user.id } }
       ]
     }
   })

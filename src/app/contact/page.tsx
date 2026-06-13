@@ -172,7 +172,7 @@ export default function Contact() {
               <p>Learn about our reporting system</p>
             </Link>
             <Link href="/help" className={styles.faqItem}>
-              <h3>How do I create a plan?</h3>
+              <h3>How do I create a project?</h3>
               <p>Step-by-step guide to creating projects</p>
             </Link>
           </div>

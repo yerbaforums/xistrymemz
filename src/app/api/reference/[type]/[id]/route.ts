@@ -26,8 +26,8 @@ export async function GET(
         if (r) item = { id: r.id, title: r.title, image: null }
         break
       }
-      case 'PLAN': {
-        const p = await prisma.plan.findUnique({ where: { id } })
+      case 'PROJECT': {
+        const p = await prisma.project.findUnique({ where: { id } })
         if (p) item = { id: p.id, title: p.title, image: null }
         break
       }

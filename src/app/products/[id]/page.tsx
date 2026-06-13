@@ -87,13 +87,13 @@ interface Product {
   viewCount?: number
 }
 
-interface Plan {
+interface ProjectData {
   id: string
   title: string
   status: string
 }
 
-interface Plan {
+interface ProjectData {
   id: string
   title: string
 }
@@ -151,7 +151,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [saving, setSaving] = useState(false)
   const [resolvedParams, setResolvedParams] = useState<{ id: string } | null>(null)
   const [showPlanModal, setShowPlanModal] = useState(false)
-  const [plans, setPlans] = useState<Plan[]>([])
+  const [projects, setProjects] = useState<ProjectData[]>([])
   const [selectedPlan, setSelectedPlan] = useState('')
   const [addingToPlan, setAddingToPlan] = useState(false)
   const [showRequestModal, setShowRequestModal] = useState(false)
@@ -278,17 +278,17 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
   useEffect(() => {
     if (showPlanModal) {
-      fetch('/api/plans')
+      fetch('/api/projects')
         .then(res => {
           if (!res.ok) {
-            return res.json().catch(() => ({ error: 'Failed to fetch plans' })).then(data => {
+            return res.json().catch(() => ({ error: 'Failed to fetch projects' })).then(data => {
               throw new Error(data.error || 'Request failed')
             })
           }
           return res.json()
         })
         .then(data => {
-          const userPlans = Array.isArray(data) ? data.filter((p: Plan) => p.status === 'ACTIVE') : []
+          const userPlans = Array.isArray(data) ? data.filter((p: ProjectData) => p.status === 'ACTIVE') : []
           setPlans(userPlans)
         })
     }
@@ -341,18 +341,18 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         body: JSON.stringify({
           title: `Request: ${product.title}`,
           description: `Request for product: ${product.title}`,
-          planId: selectedPlan,
+          projectId: selectedPlan,
           productId: product.id
         })
       })
 
       if (res.ok) {
-        success('Added to plan!')
+        success('Added to project!')
         setShowPlanModal(false)
         setSelectedPlan('')
       } else {
         const err = await res.json()
-        error(err.error || 'Failed to add to plan')
+        error(err.error || 'Failed to add to project')
       }
     } catch (err) {
       console.error(err)
@@ -968,7 +968,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   variant="ghost"
                   onClick={() => setShowPlanModal(true)}
                 >
-                  Add to Plan
+                  Add to Project
                 </Button>
               )}
               {session?.user && (
@@ -1027,10 +1027,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       {showPlanModal && (
         <div className="modal-overlay" onClick={() => setShowPlanModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <h2>Add to Plan</h2>
+            <h2>Add to Project</h2>
             <p className={styles.planModalDesc}>Select a plan to add this request to:</p>
-            {plans.length === 0 ? (
-              <p className={styles.noPlans}>No active plans. Create a plan first.</p>
+            {projects.length === 0 ? (
+              <p className={styles.noPlans}>No active projects. Create a plan first.</p>
             ) : (
               <div className="form-group">
                 <select
@@ -1039,7 +1039,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   className={styles.planSelect}
                 >
                   <option value="">Select a plan...</option>
-                  {plans.map(plan => (
+                  {projects.map(plan => (
                     <option key={plan.id} value={plan.id}>{plan.title}</option>
                   ))}
                 </select>
@@ -1059,7 +1059,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 disabled={!selectedPlan || addingToPlan}
                 onClick={handleAddToPlan}
               >
-                {addingToPlan ? 'Adding...' : 'Add to Plan'}
+                {addingToPlan ? 'Adding...' : 'Add to Project'}
               </Button>
             </div>
           </div>

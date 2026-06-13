@@ -5,13 +5,13 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
-import styles from '../plans/page.module.css'
+import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
 import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
 
 
-interface PlanEvent {
+interface ProjectEvent {
   id: string
   title: string
   eventDate: string | null
@@ -22,14 +22,14 @@ interface PlanEvent {
   joiners: { userId: string }[]
 }
 
-interface PlanRequest {
+interface ProjectRequest {
   id: string
   title: string
   category: string
   budget: number | null
 }
 
-interface Plan {
+interface ProjectData {
   id: string
   title: string
   description: string | null
@@ -55,12 +55,12 @@ interface Plan {
   updatedAt: string
   user: { id: string; name: string | null; image: string | null; username: string | null }
   _count: { requests: number; joiners: number }
-  events: PlanEvent[]
-  requests: PlanRequest[]
+  events: ProjectEvent[]
+  requests: ProjectRequest[]
 }
 
-interface PublicPlansClientProps {
-  initialPlans: Plan[]
+interface PublicProjectsClientProps {
+  initialProjects: ProjectData[]
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -119,7 +119,7 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 }
 
-export default function PublicPlansClient({ initialPlans }: PublicPlansClientProps) {
+export default function PublicProjectsClient({ initialProjects }: PublicProjectsClientProps) {
   const router = useRouter()
   const { warning } = useToast()
   const [filter, setFilter] = useState<'ALL' | 'ACTIVE' | 'COMPLETED'>('ALL')
@@ -163,8 +163,8 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
     setNearbyMode(mode)
   }
 
-  const filteredPlans = useMemo(() => {
-    let result = [...initialPlans]
+  const filteredProjects = useMemo(() => {
+    let result = [...initialProjects]
 
     if (filter !== 'ALL') {
       result = result.filter(p => p.status === filter)
@@ -215,11 +215,11 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
     }
 
     return result
-  }, [initialPlans, filter, category, showPinned, showCollaborators, searchQuery, sortBy, nearbyMode, userLocation])
+  }, [initialProjects, filter, category, showPinned, showCollaborators, searchQuery, sortBy, nearbyMode, userLocation])
 
   const mapLocations = useMemo(() => {
     const locations: { lat: number; lng: number; title: string; type: string; id: string; info: string }[] = []
-    filteredPlans.forEach(plan => {
+    filteredProjects.forEach(plan => {
       if (plan.latitude && plan.longitude) {
         locations.push({ lat: plan.latitude, lng: plan.longitude, title: plan.title, type: 'plan', id: plan.id, info: plan.location || 'Project Location' })
       }
@@ -233,7 +233,7 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
       })
     })
     return locations.filter(l => l.lat !== 0 || l.lng !== 0)
-  }, [filteredPlans])
+  }, [filteredProjects])
 
   const defaultCenter: [number, number] = mapLocations.length > 0
     ? [mapLocations[0].lat, mapLocations[0].lng]
@@ -262,14 +262,14 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
     return trimmed.split('\n').filter(g => g.trim()).slice(0, 3)
   }
 
-  const nextEvent = (events: PlanEvent[]) => {
+  const nextEvent = (events: ProjectEvent[]) => {
     const upcoming = events
       .filter(e => e.eventDate && new Date(e.eventDate) > new Date())
       .sort((a, b) => new Date(a.eventDate!).getTime() - new Date(b.eventDate!).getTime())
     return upcoming[0] || null
   }
 
-  const getPlanDistance = (plan: Plan): number | null => {
+  const getProjectDistance = (plan: ProjectData): number | null => {
     if (!userLocation || !plan.latitude || !plan.longitude) return null
     return Math.round(haversineDistance(userLocation.lat, userLocation.lng, plan.latitude, plan.longitude))
   }
@@ -405,7 +405,7 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
     </div>
   )
 
-  const fundingProgress = (plan: Plan) => {
+  const fundingProgress = (plan: ProjectData) => {
     const goal = plan.goalAmount || 0
     const funded = plan.currentFunding || 0
     if (goal <= 0) return null
@@ -430,8 +430,8 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
           </p>
         </div>
         <div className={styles.publicHeaderMeta}>
-          <span className={styles.totalCount}>{initialPlans.length} projects</span>
-          <Link href="/dashboard/projects" className={styles.createPlanBtn}>+ New Project</Link>
+          <span className={styles.totalCount}>{initialProjects.length} projects</span>
+          <Link href="/dashboard/projects" className={styles.createProjectBtn}>+ New Project</Link>
         </div>
       </div>
 
@@ -472,7 +472,7 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
                 </svg>
               </button>
               <span className={styles.resultsCount}>
-                Showing <strong>{filteredPlans.length}</strong> {filteredPlans.length === 1 ? 'project' : 'projects'}
+                Showing <strong>{filteredProjects.length}</strong> {filteredProjects.length === 1 ? 'project' : 'projects'}
                 {searchQuery && <> matching &ldquo;{searchQuery}&rdquo;</>}
               </span>
             </div>
@@ -480,8 +480,8 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
               {nearbyMode === 'NEARBY' && userLocation && (
                 <span className={styles.nearbyBadge}>📍 Within {userLocation.radius}mi</span>
               )}
-              {viewMode === 'grid' && filteredPlans.length > 0 && (
-                <span className={styles.resultsActive}>{filteredPlans.filter(p => p.status === 'ACTIVE').length} active</span>
+              {viewMode === 'grid' && filteredProjects.length > 0 && (
+                <span className={styles.resultsActive}>{filteredProjects.filter(p => p.status === 'ACTIVE').length} active</span>
               )}
             </div>
           </div>
@@ -499,7 +499,7 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
                           {loc.type === 'plan' ? '📍 Project' : '📅 Event'}
                         </span><br />
                         <span style={{ fontSize: '11px' }}>{loc.info}</span><br />
-                        <Link href={loc.type === 'event' ? `/events/${loc.id}` : `/plans/${loc.id}`} style={{ color: '#00d9ff', fontSize: '12px' }}>{loc.type === 'event' ? 'View Event' : 'View Project'} →</Link>
+                        <Link href={loc.type === 'event' ? `/events/${loc.id}` : `/projects/${loc.id}`} style={{ color: '#00d9ff', fontSize: '12px' }}>{loc.type === 'event' ? 'View Event' : 'View Project'} →</Link>
                       </div>
                     </Popup>
                   </Marker>
@@ -509,7 +509,7 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
                 <div className={styles.mapEmpty}><p>No locations to display. Add location to your projects to see them on the map.</p></div>
               )}
             </div>
-          ) : filteredPlans.length === 0 ? (
+          ) : filteredProjects.length === 0 ? (
             <div className={styles.empty}>
               <div className={styles.emptyIllustration}>
                 <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3">
@@ -524,15 +524,15 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
             </div>
           ) : (
             <div className={styles.publicGrid}>
-              {filteredPlans.map((plan, index) => {
+              {filteredProjects.map((plan, index) => {
                 const next = nextEvent(plan.events)
                 const goalsList = parseGoalsList(plan.goals)
                 const catColor = CATEGORY_COLORS[plan.category || 'OTHER'] || '#888'
                 const catIcon = CATEGORY_ICONS[plan.category || 'OTHER'] || '📌'
-                const distance = getPlanDistance(plan)
+                const distance = getProjectDistance(plan)
 
                 return (
-                  <div key={plan.id} className={`${styles.publicCard} ${plan.pinned ? styles.pinnedCard : ''}`} style={{ animationDelay: `${index * 60}ms`, cursor: 'pointer' }} onClick={(e) => { const t = e.target as HTMLElement; if (t.closest('a, button')) return; router.push(`/plans/${plan.id}`) }}>
+                  <div key={plan.id} className={`${styles.publicCard} ${plan.pinned ? styles.pinnedCard : ''}`} style={{ animationDelay: `${index * 60}ms`, cursor: 'pointer' }} onClick={(e) => { const t = e.target as HTMLElement; if (t.closest('a, button')) return; router.push(`/projects/${plan.id}`) }}>
                     {plan.pinned && (
                       <div className={styles.pinnedBadge}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
@@ -588,7 +588,7 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
                     </div>
 
                     <h3 className={styles.publicCardTitle}>
-                      <Link href={`/plans/${plan.id}`} className={styles.cardTitleLink}>{plan.title}</Link>
+                      <Link href={`/projects/${plan.id}`} className={styles.cardTitleLink}>{plan.title}</Link>
                     </h3>
 
                     {plan.description && <p className={styles.publicCardDesc}>{plan.description}</p>}
@@ -653,7 +653,7 @@ export default function PublicPlansClient({ initialPlans }: PublicPlansClientPro
                       </div>
                     </div>
 
-                    <Link href={`/plans/${plan.id}`} className={styles.viewProjectBtn}>View Project →</Link>
+                    <Link href={`/projects/${plan.id}`} className={styles.viewProjectBtn}>View Project →</Link>
                   </div>
                 )
               })}

@@ -51,7 +51,7 @@ export interface FeaturedEvent {
   userName?: string | null
 }
 
-export interface PublicPlan {
+export interface PublicProject {
   id: string
   title: string
   description: string | null

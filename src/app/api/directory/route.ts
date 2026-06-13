@@ -56,12 +56,12 @@ export async function GET(request: Request) {
           return rows.map(e => ({ id: e.id, title: e.title, image: null, url: `/events/${e.id}`, meta: e.eventDate ? new Date(e.eventDate).toLocaleDateString() : undefined, type: 'event', category: e.eventCategory || undefined, extra: e.location || undefined, owner: e.organizer.name || undefined, createdAt: e.eventDate ? new Date(e.eventDate).toISOString() : undefined }))
         }
         case 'plan': {
-          const rows = await prisma.plan.findMany({
+          const rows = await prisma.project.findMany({
             where: { published: true, ...(q ? { title: whereName } : {}) },
             select: { id: true, title: true, imageUrl: true, description: true, goals: true, createdAt: true, user: { select: { name: true } } },
             take, orderBy: { createdAt: 'desc' }
           })
-          return rows.map(p => ({ id: p.id, title: p.title, image: p.imageUrl, url: `/plans/${p.id}`, meta: p.description?.slice(0, 80) || undefined, type: 'plan', category: undefined, owner: p.user.name || undefined, createdAt: p.createdAt.toISOString() }))
+          return rows.map(p => ({ id: p.id, title: p.title, image: p.imageUrl, url: `/projects/${p.id}`, meta: p.description?.slice(0, 80) || undefined, type: 'plan', category: undefined, owner: p.user.name || undefined, createdAt: p.createdAt.toISOString() }))
         }
         case 'request': {
           const rows = await prisma.request.findMany({

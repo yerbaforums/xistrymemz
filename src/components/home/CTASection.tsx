@@ -22,7 +22,7 @@ export default function CTASection({ memberCount }: Props) {
           <Link href="/auth/register" className={styles.btnPrimary}>
             {t('ctaSignUp')}
           </Link>
-          <Link href="/plans/public" className={styles.btnSecondary}>
+          <Link href="/projects" className={styles.btnSecondary}>
             {t('ctaBrowseProjects')}
           </Link>
         </div>

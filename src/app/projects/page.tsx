@@ -5,7 +5,7 @@ import Breadcrumbs from '@/components/Breadcrumbs'
 export const dynamic = 'force-dynamic'
 
 export default async function ProjectsPage() {
-  const plans = await prisma.plan.findMany({
+  const projects = await prisma.project.findMany({
     where: {
       OR: [
         { status: 'ACTIVE', published: true },
@@ -57,11 +57,11 @@ export default async function ProjectsPage() {
     ]
   })
 
-  const serializedPlans = plans.map(plan => ({
-    ...plan,
-    createdAt: plan.createdAt.toISOString(),
-    updatedAt: plan.updatedAt.toISOString(),
-    events: plan.events.map(e => ({
+  const serializedProjects = projects.map(project => ({
+    ...project,
+    createdAt: project.createdAt.toISOString(),
+    updatedAt: project.updatedAt.toISOString(),
+    events: project.events.map(e => ({
       ...e,
       eventDate: e.eventDate?.toISOString() || null,
       endDate: e.endDate?.toISOString() || null,
@@ -72,7 +72,7 @@ export default async function ProjectsPage() {
   return (
     <div>
       <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Projects' }]} />
-      <ProjectsClient initialPlans={serializedPlans} />
+      <ProjectsClient initialProjects={serializedProjects} />
     </div>
   )
 }

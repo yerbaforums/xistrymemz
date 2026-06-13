@@ -131,7 +131,7 @@ export async function sendWelcomeEmail(email: string, name: string): Promise<voi
     <h3 style="color:#ffffff;font-size:15px;margin:24px 0 12px">Quick start:</h3>
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px">
       <tr><td style="padding:8px 0;color:#c0c0c0;font-size:14px">✨ <a href="${BASE_URL}/onboarding" style="color:#00d9ff">Complete your profile</a></td></tr>
-      <tr><td style="padding:8px 0;color:#c0c0c0;font-size:14px">📋 <a href="${BASE_URL}/plans/public" style="color:#00d9ff">Browse public projects</a></td></tr>
+      <tr><td style="padding:8px 0;color:#c0c0c0;font-size:14px">📋 <a href="${BASE_URL}/projects" style="color:#00d9ff">Browse public projects</a></td></tr>
       <tr><td style="padding:8px 0;color:#c0c0c0;font-size:14px">👥 <a href="${BASE_URL}/community" style="color:#00d9ff">Explore the community</a></td></tr>
       <tr><td style="padding:8px 0;color:#c0c0c0;font-size:14px">🏪 <a href="${BASE_URL}/shops" style="color:#00d9ff">Visit the marketplace</a></td></tr>
     </table>

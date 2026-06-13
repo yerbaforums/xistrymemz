@@ -23,13 +23,13 @@ const TYPE_TABS = [
   { key: 'service', label: 'Services', icon: '🔧' },
   { key: 'rental', label: 'Rentals', icon: '🏠' },
   { key: 'event', label: 'Events', icon: '📅' },
-  { key: 'plan', label: 'Plans', icon: '🚀' },
+  { key: 'plan', label: 'Projects', icon: '🚀' },
   { key: 'request', label: 'Requests', icon: '📝' },
 ]
 
 const TYPE_ICONS: Record<string, string> = {
   shop: '🛍️', product: '📦', service: '🔧', rental: '🏠',
-  event: '📅', plan: '🚀', request: '📝'
+  event: '📅', project: '🚀', request: '📝'
 }
 
 const SORT_OPTIONS = [

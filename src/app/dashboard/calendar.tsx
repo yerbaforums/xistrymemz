@@ -25,7 +25,7 @@ interface EventJoinerResponse {
     id: string
     title: string
     eventDate: Date | null
-    planId: string | null
+    projectId: string | null
     groupId: string | null
     color: string
   }
@@ -64,7 +64,7 @@ export default function CalendarWidget() {
     try {
       const [calRes, planRes, tripsRes] = await Promise.all([
         fetch('/api/calendar/events'),
-        fetch('/api/plans/events/joined'),
+        fetch('/api/projects/events/joined'),
         fetch('/api/trips')
       ])
       
@@ -194,7 +194,7 @@ export default function CalendarWidget() {
         </label>
         <label className={styles.filterChip}>
           <input type="checkbox" checked={filters.planEvents} onChange={e => setFilters(f => ({ ...f, planEvents: e.target.checked }))} />
-          🟢 Plan Events
+          🟢 Project Events
         </label>
         <label className={styles.filterChip}>
           <input type="checkbox" checked={filters.connections} onChange={e => setFilters(f => ({ ...f, connections: e.target.checked }))} />
@@ -271,7 +271,7 @@ export default function CalendarWidget() {
 
       <div className={styles.legend}>
         <span className={styles.legendItem}>🟦 My Events</span>
-        <span className={styles.legendItem}>🟢 Plan Events</span>
+        <span className={styles.legendItem}>🟢 Project Events</span>
         <span className={styles.legendItem}>🟠 Connections</span>
         <span className={styles.legendItem}>🟡 Trips</span>
       </div>

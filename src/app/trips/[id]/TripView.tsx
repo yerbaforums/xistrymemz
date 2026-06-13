@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import styles from '../../dashboard/planning/planning.module.css'
+import styles from './TripView.module.css'
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from '@/components/LeafletComponents'
 
 
@@ -50,48 +50,40 @@ export default function TripView({ trip, sessionUserId }: { trip: Trip; sessionU
   const coords = trip.stops?.filter(s => s.latitude && s.longitude).map(s => [s.latitude!, s.longitude!] as [number, number]) || []
 
   return (
-    <div style={{ maxWidth: '960px', margin: '0 auto', padding: '2rem 1rem' }}>
-      <div style={{ marginBottom: '1rem' }}>
-        <Link href="/dashboard/planning" style={{ fontSize: '0.85rem', color: 'var(--accent-primary)' }}>← Back to Planning</Link>
+    <div className={styles.page}>
+      <div className={styles.backLink}>
+        <Link href="/dashboard/planning">← Back to Planning</Link>
       </div>
 
-      <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem' }}>{trip.title}</h1>
-      {trip.description && <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>{trip.description}</p>}
-      <div style={{ display: 'flex', gap: '1rem', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
+      <h1 className={styles.title}>{trip.title}</h1>
+      {trip.description && <p className={styles.description}>{trip.description}</p>}
+      <div className={styles.metaRow}>
         {trip.startDate && <span>📅 {new Date(trip.startDate).toLocaleDateString()}{trip.endDate ? ` - ${new Date(trip.endDate).toLocaleDateString()}` : ''}</span>}
         <span>📍 {trip.stops?.length || 0} stops</span>
         {trip.user && <span>👤 by {trip.user.name || 'Unknown'}</span>}
       </div>
 
-      <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-        <div style={{ flex: '1', minWidth: '300px' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>Itinerary</h2>
+      <div className={styles.content}>
+        <div className={styles.itinerary}>
+          <h2>Itinerary</h2>
           {days.length === 0 ? (
             <p className={styles.textMuted}>No stops yet.</p>
           ) : days.map(day => (
-            <div key={day} style={{ marginBottom: '1.5rem' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--accent-primary)', marginBottom: '0.5rem', borderBottom: '1px dashed var(--border-color)', paddingBottom: '0.25rem' }}>
+            <div key={day} className={styles.daySection}>
+              <h3 className={styles.dayHeading}>
                 Day {day + 1}
-                {trip.startDate && <span style={{ fontWeight: 400, marginLeft: '0.5rem', color: 'var(--text-muted)' }}>
+                {trip.startDate && <span className={styles.dayDate}>
                   {new Date(new Date(trip.startDate).getTime() + day * 86400000).toLocaleDateString()}
                 </span>}
               </h3>
               {orderedStops(day).map(stop => (
-                <div key={stop.id} style={{
-                  display: 'flex', gap: '0.75rem', padding: '0.75rem',
-                  borderLeft: '2px solid var(--accent-primary)', marginLeft: '0.5rem', marginBottom: '0.5rem'
-                }}>
-                  <div style={{
-                    width: '28px', height: '28px', borderRadius: '50%',
-                    background: 'var(--accent-primary)', color: '#fff',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '0.75rem', fontWeight: 700, flexShrink: 0
-                  }}>{stop.order + 1}</div>
+                <div key={stop.id} className={styles.stopCard}>
+                  <div className={styles.stopNumber}>{stop.order + 1}</div>
                   <div>
-                    <div style={{ fontWeight: 600 }}>{stop.name}</div>
-                    {stop.location && <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{stop.location}</div>}
-                    {stop.arrivalTime && <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>🕐 {stop.arrivalTime}{stop.departureTime ? ` - ${stop.departureTime}` : ''}</div>}
-                    {stop.notes && <div style={{ fontSize: '0.85rem', marginTop: '0.25rem' }}>{stop.notes}</div>}
+                    <div className={styles.stopName}>{stop.name}</div>
+                    {stop.location && <div className={styles.stopLocation}>{stop.location}</div>}
+                    {stop.arrivalTime && <div className={styles.stopTime}>🕐 {stop.arrivalTime}{stop.departureTime ? ` - ${stop.departureTime}` : ''}</div>}
+                    {stop.notes && <div className={styles.stopNotes}>{stop.notes}</div>}
                   </div>
                 </div>
               ))}
@@ -100,7 +92,7 @@ export default function TripView({ trip, sessionUserId }: { trip: Trip; sessionU
         </div>
 
         {mapReady && (
-          <div style={{ width: '400px', minWidth: '300px', height: '500px', borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+          <div className={styles.mapContainer}>
             <MapContainer center={coords.length > 0 ? [coords[0][0], coords[0][1]] : [20, 0]} zoom={coords.length > 0 ? 5 : 2} style={{ width: '100%', height: '100%' }}>
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
               {trip.stops?.filter(s => s.latitude && s.longitude).map(s => (
@@ -118,8 +110,8 @@ export default function TripView({ trip, sessionUserId }: { trip: Trip; sessionU
       </div>
 
       {sessionUserId && sessionUserId !== trip.user?.id && (
-        <div style={{ marginTop: '2rem', textAlign: 'center' }}>
-          <Link href={`/dashboard/planning`} className={`${styles.btn} ${styles.btnPrimary}`} className={styles.noUnderline}>
+        <div className={styles.footer}>
+          <Link href={`/dashboard/planning`} className={styles.noUnderline}>
             View in Dashboard
           </Link>
         </div>

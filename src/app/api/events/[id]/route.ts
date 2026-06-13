@@ -20,7 +20,7 @@ export async function GET(
         organizer: {
           select: { id: true, name: true, image: true, role: true, username: true }
         },
-        plan: { select: { id: true, title: true } },
+        project: { select: { id: true, title: true } },
         group: { select: { id: true, name: true } },
         school: { select: { id: true, schoolName: true, name: true } },
         shop: { select: { id: true, shopName: true, name: true } },
@@ -53,7 +53,7 @@ export async function GET(
       ? event.eventJoiners.some(j => j.userId === session.user.id)
       : false
 
-    const linkedTitle = event.plan?.title || event.group?.name || event.school?.schoolName || event.shop?.shopName || null
+    const linkedTitle = event.project?.title || event.group?.name || event.school?.schoolName || event.shop?.shopName || null
 
     return apiSuccess({
       id: event.id,
@@ -79,8 +79,8 @@ export async function GET(
       needsVolunteers: event.needsVolunteers,
       volunteerRoles: event.volunteerRoles ? (() => { try { const p = JSON.parse(event.volunteerRoles); return Array.isArray(p) ? p : [] } catch { return [] } })() : [],
       volunteerDescription: event.volunteerDescription,
-      planId: event.planId,
-      planTitle: linkedTitle,
+      projectId: event.projectId,
+      projectTitle: linkedTitle,
       userId: event.organizerId,
       userName: event.organizer.name,
       organizer: event.organizer,

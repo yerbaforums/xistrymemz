@@ -3,7 +3,7 @@ import { extractHashtags, linkHashtags } from '@/services/hashtagService'
 
 export async function findEvents(query: {
   type?: string
-  planId?: string
+  projectId?: string
   organizerId?: string
   category?: string
   location?: string
@@ -11,11 +11,11 @@ export async function findEvents(query: {
   page?: number
   limit?: number
 }) {
-  const { type = 'public', planId, organizerId, category, upcoming, page = 1, limit = 20 } = query
+  const { type = 'public', projectId, organizerId, category, upcoming, page = 1, limit = 20 } = query
   const skip = (page - 1) * limit
 
   const where: Record<string, unknown> = {}
-  if (planId) where.planId = planId
+  if (projectId) where.projectId = projectId
   if (organizerId) where.organizerId = organizerId
   if (category) where.eventCategory = category
   if (upcoming) where.eventDate = { gte: new Date() }
@@ -26,7 +26,7 @@ export async function findEvents(query: {
       where,
       include: {
         organizer: { select: { id: true, name: true, image: true } },
-        plan: { select: { id: true, title: true } },
+        project: { select: { id: true, title: true } },
         _count: { select: { joiners: true } },
       },
       orderBy: { eventDate: 'asc' },
@@ -44,7 +44,7 @@ export async function getEventById(id: string) {
     where: { id },
     include: {
       organizer: { select: { id: true, name: true, image: true, location: true } },
-      plan: { select: { id: true, title: true } },
+      project: { select: { id: true, title: true } },
       group: { select: { id: true, name: true } },
       joiners: { include: { user: { select: { id: true, name: true, image: true } } } },
       hashtags: { include: { hashtag: true } },
@@ -66,7 +66,7 @@ export async function createEvent(data: Record<string, unknown>, userId: string)
       isTicketed: data.isTicketed as boolean ?? false,
       ticketPrice: data.ticketPrice as number | null,
       organizerId: userId,
-      planId: data.planId as string | null,
+      projectId: data.projectId as string | null,
       groupId: data.groupId as string | null,
     },
   })

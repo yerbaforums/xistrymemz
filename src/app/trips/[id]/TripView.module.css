@@ -1,35 +1,148 @@
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
 
-/* Inline style utilities */
-.flexRow { display: flex; align-items: center; }
-.flexColumn { display: flex; flex-direction: column; }
-.flex1 { flex: 1; }
-.gap8 { gap: 8px; }
-.gap12 { gap: 12px; }
-.mt8 { margin-top: 8px; }
-.mt12 { margin-top: 12px; }
-.mt16 { margin-top: 16px; }
-.mb8 { margin-bottom: 8px; }
-.mb12 { margin-bottom: 12px; }
-.mb16 { margin-bottom: 16px; }
-.clickable { cursor: pointer; }
-.small { font-size: 0.85rem; }
-.textSecondary { color: var(--text-secondary); }
-.textMuted { color: var(--text-muted); }
-.my8 { margin: 8px 0; }
-.my12 { margin: 12px 0; }
-.textCenter { text-align: center; }
+.backLink {
+  margin-bottom: 1rem;
+}
 
-.mt10 { margin-top: 10px; }
-.mt24 { margin-top: 24px; }
-.mt32 { margin-top: 32px; }
-.mb20 { margin-bottom: 20px; }
-.mb24 { margin-bottom: 24px; }
-.noUnderline { text-decoration: none; }
-.inlineFlex { display: inline-flex; align-items: center; }
-.flexWrap { display: flex; flex-wrap: wrap; }
+.backLink a {
+  font-size: 0.85rem;
+  color: var(--accent-primary);
+}
 
-/* Utility additions */
-.flexEnd { display: flex; align-items: center; justify-content: flex-end; }
-.mb0 { margin-bottom: 0; }
-.mb4 { margin-bottom: 4px; }
-.mt24 { margin-top: 24px; }
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.description {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.metaRow {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.content {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.itinerary {
+  flex: 1;
+  min-width: 300px;
+}
+
+.itinerary h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.daySection {
+  margin-bottom: 1.5rem;
+}
+
+.dayHeading {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  margin-bottom: 0.5rem;
+  border-bottom: 1px dashed var(--border-color);
+  padding-bottom: 0.25rem;
+}
+
+.dayDate {
+  font-weight: 400;
+  margin-left: 0.5rem;
+  color: var(--text-muted);
+}
+
+.stopCard {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-left: 2px solid var(--accent-primary);
+  margin-left: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.stopNumber {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.stopName {
+  font-weight: 600;
+}
+
+.stopLocation {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.stopTime {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.stopNotes {
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.mapContainer {
+  width: 400px;
+  min-width: 300px;
+  height: 500px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.footer {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.footer a {
+  display: inline-block;
+  padding: 10px 24px;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.footer a:hover {
+  opacity: 0.9;
+}
+
+.textMuted {
+  color: var(--text-muted);
+}
+
+.noUnderline {
+  text-decoration: none;
+}

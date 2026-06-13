@@ -18,7 +18,7 @@ export interface UserPublic {
   lookingForCollaborators: boolean
   acceptsDonations: boolean
   _count?: {
-    plans: number
+    projects: number
     posts: number
     products: number
   }

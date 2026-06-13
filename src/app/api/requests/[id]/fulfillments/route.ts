@@ -19,7 +19,7 @@ export async function GET(
       where: { id },
       select: {
         userId: true,
-        planId: true,
+        projectId: true,
         allowFulfillments: true
       }
     })

@@ -87,8 +87,8 @@ export default function About() {
           <h2>Core Features</h2>
           <div className={styles.features}>
             <div className={styles.feature}>
-              <h3>🚀 Projects & Plans</h3>
-              <p>Create detailed project plans with goals, milestones, and resources. Invite collaborators and track progress together.</p>
+              <h3>🚀 Projects</h3>
+              <p>Create detailed projects with goals, milestones, and resources. Invite collaborators and track progress together.</p>
             </div>
             <div className={styles.feature}>
               <h3>🛒 Marketplace</h3>
@@ -135,7 +135,7 @@ export default function About() {
           <div className={styles.links}>
             <Link href="/auth/register">1. Create your account</Link>
             <Link href="/onboarding">2. Complete your profile</Link>
-            <Link href="/plans/public">3. Browse projects</Link>
+            <Link href="/projects">3. Browse projects</Link>
             <Link href="/services">4. Explore services</Link>
             <Link href="/community">5. Join the community</Link>
           </div>

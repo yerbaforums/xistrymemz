@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { type, amount, eventId, productId, planId, description, fromAddress, toAddress } = body
+    const { type, amount, eventId, productId, projectId, description, fromAddress, toAddress } = body
 
     if (!amount || amount <= 0) {
       return apiError("Invalid amount", 400)
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
         userId: session.user.id,
         eventId: eventId || null,
         productId: productId || null,
-        planId: planId || null,
+        projectId: projectId || null,
         description: description || null,
         fromAddress: fromAddress || null,
         toAddress: toAddress || null

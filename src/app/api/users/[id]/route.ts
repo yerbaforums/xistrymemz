@@ -88,7 +88,7 @@ export async function GET(
       eventVolunteerCount, planVolunteerCount, eventAttendeeCount, forumPostCount, forumReplyCount,
       badgeCount, barterOfferSentCount, barterOfferReceivedCount, escrowCount, requestCount
     ] = await Promise.all([
-      prisma.plan.findMany({
+      prisma.project.findMany({
         where: { userId },
         select: {
           id: true,
@@ -194,7 +194,7 @@ export async function GET(
         take: 10
       }),
       prisma.eventJoiner.count({ where: { userId, role: 'VOLUNTEER' } }),
-      prisma.planJoiner.count({ where: { userId, role: 'VOLUNTEER' } }),
+      prisma.projectJoiner.count({ where: { userId, role: 'VOLUNTEER' } }),
       prisma.eventJoiner.count({ where: { userId, role: 'ATTENDEE' } }),
       prisma.forumPost.count({ where: { authorId: userId } }),
       prisma.forumReply.count({ where: { authorId: userId } }),

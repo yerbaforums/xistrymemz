@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const planSchema = z.object({
+export const projectSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200),
   description: z.string().max(5000).optional(),
   imageUrl: z.string().optional().nullable(),

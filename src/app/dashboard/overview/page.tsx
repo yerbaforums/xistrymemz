@@ -78,7 +78,7 @@ export default async function DashboardOverview({
     sellerEarnings,
     recentSchoolContent
   ] = await Promise.all([
-    prisma.plan.findMany({ 
+    prisma.project.findMany({ 
       where: { userId }, 
       select: { id: true, title: true, status: true, published: true, createdAt: true },
       orderBy: { createdAt: 'desc' },
@@ -147,7 +147,7 @@ export default async function DashboardOverview({
   )
 
   const [recentPlans, recentProducts, recentFeedPosts, eventJoinerCounts] = await Promise.all([
-    prisma.plan.findMany({
+    prisma.project.findMany({
       where: { userId: { in: connectedUserIds }, published: true },
       select: { id: true, title: true, status: true, createdAt: true, user: { select: { name: true } } },
       orderBy: { createdAt: 'desc' },
@@ -210,7 +210,7 @@ export default async function DashboardOverview({
   const incompleteSteps = allSteps.filter(step => featureCounts[step.feature] === 0)
 
   const allStats = await Promise.all([
-    prisma.plan.count({ where: { userId } }),
+    prisma.project.count({ where: { userId } }),
     prisma.request.count({ where: { userId } }),
     prisma.product.count({ where: { userId } }),
     prisma.groupMember.count({ where: { userId } }),
@@ -240,7 +240,7 @@ export default async function DashboardOverview({
   ])
 
   const [trendingPlans, recentListings] = await Promise.all([
-    prisma.plan.findMany({
+    prisma.project.findMany({
       where: { published: true, status: { not: 'ARCHIVED' } },
       select: { id: true, title: true, user: { select: { name: true } }, createdAt: true },
       orderBy: { createdAt: 'desc' },
@@ -367,11 +367,10 @@ export default async function DashboardOverview({
               ))}
             </div>
             {quickActions.length > 6 && (
-              <div style={{ marginTop: 10, textAlign: 'center' }}>
+              <div className={overviewStyles.overviewSection}>
                 <Link
                   href={showAll ? '/dashboard/overview' : '/dashboard/overview?showAll=true'}
-                  className={styles.actionBtn}
-                  style={{ display: 'inline-flex', padding: '8px 20px', fontSize: '0.8rem' }}
+                  className={`${styles.actionBtn} ${overviewStyles.overviewBtn}`}
                 >
                   {showAll ? 'Show Less' : `Show All (${quickActions.length})`}
                 </Link>
@@ -396,7 +395,7 @@ export default async function DashboardOverview({
                   <span className={styles.overviewStatLabel}>{stat.label}</span>
                 </Link>
               ) : (
-                <div key={stat.label} className={styles.overviewStatCard} style={{ cursor: 'default' }}>
+                <div key={stat.label} className={`${styles.overviewStatCard} ${overviewStyles.overviewStatCard}`}>
                   <div className={styles.statGauge}>
                     <StatGauge value={stat.value} max={stat.max} color={stat.color} icon={stat.icon} size={80} />
                   </div>
@@ -416,11 +415,10 @@ export default async function DashboardOverview({
               ))}
             </div>
             {quickActions.length > 6 && (
-              <div style={{ marginTop: 10, textAlign: 'center' }}>
+              <div className={overviewStyles.overviewSection}>
                 <Link
                   href={showAll ? '/dashboard/overview' : '/dashboard/overview?showAll=true'}
-                  className={styles.actionBtn}
-                  style={{ display: 'inline-flex', padding: '8px 20px', fontSize: '0.8rem' }}
+                  className={`${styles.actionBtn} ${overviewStyles.overviewBtn}`}
                 >
                   {showAll ? 'Show Less' : `Show All (${quickActions.length})`}
                 </Link>
@@ -428,18 +426,18 @@ export default async function DashboardOverview({
             )}
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 20 }}>
+          <div className={overviewStyles.overviewList}>
             <DashboardSection id="projects" title={t('projects')} icon="📦" action={<Link href="/dashboard/projects" className={styles.viewAll}>View all →</Link>}>
               {plans.length > 0 ? (
                 <div className={styles.activityList}>
                   {plans.map(plan => (
-                    <Link key={plan.id} href={`/plans/${plan.id}`} className={styles.activityItem}>
+                    <Link key={plan.id} href={`/projects/${plan.id}`} className={styles.activityItem}>
                       <div className={styles.activityIcon}>🚀</div>
                       <div className={styles.activityInfo}>
-                        <span className={styles.activityTitle}>{plan.title}</span>
+                        <span className={styles.activityTitle}>{project.title}</span>
                         <span className={styles.activityMeta}>{plan.status} · {new Date(plan.createdAt).toLocaleDateString()}</span>
                       </div>
-                      <span className={`badge badge-${plan.status.toLowerCase()}`} style={{ fontSize: '0.65rem' }}>{plan.status}</span>
+                      <span className={`badge badge-${plan.status.toLowerCase()} ${overviewStyles.planStatusBadge}`}>{plan.status}</span>
                     </Link>
                   ))}
                 </div>
@@ -471,7 +469,7 @@ export default async function DashboardOverview({
             <DashboardSection id="studio" title="Recent Studio Items" icon="🎨" action={<Link href="/dashboard/studio" className={styles.viewAll}>Open Studio →</Link>}>
             {(() => {
               const studioItems = [
-                ...plans.map(p => ({ type: '🚀', label: 'Project', title: p.title, date: p.createdAt, href: `/plans/${p.id}` })),
+                ...plans.map(p => ({ type: '🚀', label: 'Project', title: p.title, date: p.createdAt, href: `/projects/${p.id}` })),
                 ...products.map(p => ({ type: '🛒', label: 'Product', title: p.title, date: p.createdAt, href: `/products/${p.id}` })),
                 ...recentSchoolContent.map((c: any) => ({ type: c.contentType === 'course' ? '🎓' : '📖', label: c.contentType || 'Content', title: c.title, date: c.createdAt, href: '#' })),
               ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5)
@@ -499,7 +497,7 @@ export default async function DashboardOverview({
 
           <details className={styles.collapsibleSection}>
             <summary className={styles.collapsibleSummary}>📊 More Stats &amp; Tools</summary>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 16 }}>
+            <div className={overviewStyles.overviewGrid}>
               <ChecklistCard
                 hasName={!!user?.name}
                 hasBio={!!user?.bio}
@@ -522,24 +520,24 @@ export default async function DashboardOverview({
             </div>
 
             <div className={styles.card}>
-              <h3 style={{ marginBottom: 12, fontSize: '1rem' }}>🌍 Discover</h3>
-              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                <Link href="/plans/public" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
+              <h3 className={overviewStyles.discoverHeading}>🌍 Discover</h3>
+              <div className={overviewStyles.overviewActions}>
+                <Link href="/projects" className={`${styles.actionBtn} ${overviewStyles.actionBtnLink}`}>
                   <span>🚀</span> Browse Projects
                 </Link>
-                <Link href="/products" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
+                <Link href="/products" className={`${styles.actionBtn} ${overviewStyles.actionBtnLink}`}>
                   <span>🛒</span> {t('marketplace')}
                 </Link>
-                <Link href="/services" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
+                <Link href="/services" className={`${styles.actionBtn} ${overviewStyles.actionBtnLink}`}>
                   <span>🔧</span> {t('services')}
                 </Link>
-                <Link href="/hashtags" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
+                <Link href="/hashtags" className={`${styles.actionBtn} ${overviewStyles.actionBtnLink}`}>
                   <span>#</span> Trending Tags
                 </Link>
-                <Link href="/community" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
+                <Link href="/community" className={`${styles.actionBtn} ${overviewStyles.actionBtnLink}`}>
                   <span>👥</span> Find Members
                 </Link>
-                <Link href="/community/groups" className={styles.actionBtn} style={{ flex: 1, minWidth: 140 }}>
+                <Link href="/community/groups" className={`${styles.actionBtn} ${overviewStyles.actionBtnLink}`}>
                   <span>🏠</span> Explore Groups
                 </Link>
               </div>
@@ -555,7 +553,7 @@ export default async function DashboardOverview({
                   {connectionFeed.map(item => (
                     <Link 
                       key={`${item.feedType}-${item.id}`} 
-                      href={item.feedType === 'plan' ? `/plans/${item.id}` : `/products/${item.id}`} 
+                      href={item.feedType === 'plan' ? `/projects/${item.id}` : `/products/${item.id}`} 
                       className={styles.activityItem}
                     >
                       <div className={styles.activityIcon}>{item.feedType === 'plan' ? '🚀' : '🛒'}</div>
@@ -577,7 +575,7 @@ export default async function DashboardOverview({
                 {user.walletAddress && <code title={user.walletAddress}>{user.walletAddress.slice(0, 10)}...{user.walletAddress.slice(-4)}</code>}
                 {user.paymentAddress && <code title={user.paymentAddress}>Pay: {user.paymentAddress.slice(0, 8)}...{user.paymentAddress.slice(-4)}</code>}
                 {user.acceptsDonations && user.donationAddress && <code title={user.donationAddress}>Donate: {user.donationAddress.slice(0, 8)}...{user.donationAddress.slice(-4)}</code>}
-                <Link href="/profile/edit" style={{ marginLeft: 'auto', fontSize: '0.75rem', color: 'var(--accent-primary)', textDecoration: 'none' }}>Manage</Link>
+                <Link href="/profile/edit" className={overviewStyles.manageLink}>Manage</Link>
               </div>
             )}
           </details>

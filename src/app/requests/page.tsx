@@ -18,21 +18,21 @@ export default async function RequestsPage() {
   if (userId) {
     where.OR = [
       { userId },
-      { plan: { userId } },
-      { plan: { editors: { some: { userId } } } },
+      { project: { userId } },
+      { project: { editors: { some: { userId } } } },
       { isPublic: true }
     ]
   } else {
     where.OR = [
       { isPublic: true },
-      { plan: { published: true } }
+      { project: { published: true } }
     ]
   }
 
   const requests = await prisma.request.findMany({
     where,
     include: {
-      plan: { select: { id: true, title: true } },
+      project: { select: { id: true, title: true } },
       group: { select: { id: true, name: true } },
       product: { select: { id: true, title: true } },
       schoolContent: { select: { id: true, title: true } },
@@ -75,7 +75,7 @@ export default async function RequestsPage() {
     showDonationAddress: req.showDonationAddress,
     createdAt: req.createdAt.toISOString(),
     updatedAt: req.updatedAt.toISOString(),
-    plan: req.plan,
+    plan: req.project,
     group: req.group,
     product: req.product,
     schoolContent: req.schoolContent,

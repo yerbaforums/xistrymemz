@@ -38,8 +38,8 @@ export interface EventFormData {
   acceptsDonations: boolean
   selectedDonationAddrs: DonationAddr[]
   hashtags: string[]
-  planId: string | null
-  planTitle: string | null
+  projectId: string | null
+  projectTitle: string | null
   groupId: string | null
   groupTitle: string | null
   schoolId: string | null
@@ -71,8 +71,8 @@ const DEFAULT_FORM_DATA: EventFormData = {
   acceptsDonations: false,
   selectedDonationAddrs: [],
   hashtags: [],
-  planId: null,
-  planTitle: null,
+  projectId: null,
+  projectTitle: null,
   groupId: null,
   groupTitle: null,
   schoolId: null,
@@ -84,8 +84,8 @@ interface EventFormFieldsProps {
   onChange: (data: Partial<EventFormData>) => void
   onSubmit: (e: React.FormEvent) => void
   mode: 'create' | 'edit'
-  fixedPlanId?: string
-  fixedPlanTitle?: string
+  fixedProjectId?: string
+  fixedProjectTitle?: string
   saving?: boolean
   onCancel?: () => void
   submitLabel?: string
@@ -103,8 +103,8 @@ export default function EventFormFields({
   onChange,
   onSubmit,
   mode,
-  fixedPlanId,
-  fixedPlanTitle,
+  fixedProjectId,
+  fixedProjectTitle,
   saving,
   onCancel,
   submitLabel,
@@ -125,13 +125,13 @@ export default function EventFormFields({
 
   const handleLinkedAsset = (asset: UserAsset | null) => {
     set({
-      planId: null,
-      planTitle: null,
+      projectId: null,
+      projectTitle: null,
       groupId: null,
       groupTitle: null,
       schoolId: null,
       shopId: null,
-      ...(asset?.type === 'PLAN' ? { planId: asset.id, planTitle: asset.title } : {}),
+      ...(asset?.type === 'PROJECT' ? { projectId: asset.id, projectTitle: asset.title } : {}),
       ...(asset?.type === 'GROUP' ? { groupId: asset.id, groupTitle: asset.title } : {}),
       ...(asset?.type === 'SCHOOL' ? { schoolId: asset.id } : {}),
       ...(asset?.type === 'SHOP' ? { shopId: asset.id } : {}),
@@ -139,8 +139,8 @@ export default function EventFormFields({
   }
 
   const selectedLinkedAsset: UserAsset | null = (() => {
-    if (fixedPlanId) return { id: fixedPlanId, type: 'PLAN', title: fixedPlanTitle || 'This Plan', image: null, location: null, latitude: null, longitude: null }
-    if (formData.planId) return { id: formData.planId, type: 'PLAN', title: formData.planTitle || 'Plan', image: null, location: null, latitude: null, longitude: null }
+    if (fixedProjectId) return { id: fixedProjectId, type: 'PROJECT', title: fixedProjectTitle || 'This Project', image: null, location: null, latitude: null, longitude: null }
+    if (formData.projectId) return { id: formData.projectId, type: 'PROJECT', title: formData.projectTitle || 'Project', image: null, location: null, latitude: null, longitude: null }
     if (formData.groupId) return { id: formData.groupId, type: 'GROUP', title: formData.groupTitle || 'Group', image: null, location: null, latitude: null, longitude: null }
     if (formData.schoolId) return { id: formData.schoolId, type: 'SCHOOL', title: 'My School', image: null, location: null, latitude: null, longitude: null }
     if (formData.shopId) return { id: formData.shopId, type: 'SHOP', title: 'My Shop', image: null, location: null, latitude: null, longitude: null }
@@ -307,16 +307,16 @@ export default function EventFormFields({
 
           <details className={styles.settingsDetails}>
             <summary className={styles.settingsSummary}>Entity Linking</summary>
-            {fixedPlanId ? (
+            {fixedProjectId ? (
               <div className={styles.fixedPlanNotice}>
-                This event will be linked to: <strong>{fixedPlanTitle || 'this plan'}</strong>
+                This event will be linked to: <strong>{fixedProjectTitle || 'this plan'}</strong>
               </div>
             ) : (
               <AssetPicker
-                filterTypes={['PLAN', 'GROUP', 'SHOP', 'SCHOOL']}
+                filterTypes={['PROJECT', 'GROUP', 'SHOP', 'SCHOOL']}
                 selectedAsset={selectedLinkedAsset}
                 onSelect={handleLinkedAsset}
-                label="Link to a plan, group, shop, or school"
+                label="Link to a project, group, shop, or school"
               />
             )}
           </details>

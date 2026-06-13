@@ -22,7 +22,7 @@ export async function POST(
     const existingRequest = await prisma.request.findFirst({
       where: isAdmin
         ? { id }
-        : { id, plan: { userId: session.user.id } }
+        : { id, project: { userId: session.user.id } }
     })
 
     if (!existingRequest) {

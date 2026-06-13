@@ -29,7 +29,7 @@ export async function GET(
   }
 
   // Fetch recent projects from members
-  const projects = await prisma.plan.findMany({
+  const projects = await prisma.project.findMany({
     where: {
       userId: { in: memberIds },
       published: true
@@ -66,7 +66,7 @@ export async function GET(
       budget: true,
       createdAt: true,
       user: { select: { id: true, name: true, image: true } },
-      plan: { select: { id: true, title: true } },
+      project: { select: { id: true, title: true } },
       product: { select: { id: true, title: true } }
     },
     orderBy: { createdAt: 'desc' },

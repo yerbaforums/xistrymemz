@@ -8,10 +8,10 @@ export async function GET(request: Request) {
   const requests = await prisma.request.findMany({
     where: { 
       status,
-      plan: { published: true }
+      project: { published: true }
     },
     include: {
-      plan: { select: { id: true, title: true } },
+      project: { select: { id: true, title: true } },
       user: { select: { name: true, username: true } }
     },
     orderBy: { createdAt: 'desc' }

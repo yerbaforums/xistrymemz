@@ -6,7 +6,7 @@ export async function GET() {
   const recentItems = await Promise.all([
     prisma.product.findMany({ take: 20, orderBy: { createdAt: 'desc' }, select: { id: true, title: true, description: true, createdAt: true, imageUrl: true, user: { select: { name: true } } } }),
     prisma.event.findMany({ take: 20, orderBy: { createdAt: 'desc' }, select: { id: true, title: true, description: true, createdAt: true, organizerId: true } }),
-    prisma.plan.findMany({ take: 20, orderBy: { createdAt: 'desc' }, where: { published: true }, select: { id: true, title: true, description: true, createdAt: true, user: { select: { name: true } } } }),
+    prisma.project.findMany({ take: 20, orderBy: { createdAt: 'desc' }, where: { published: true }, select: { id: true, title: true, description: true, createdAt: true, user: { select: { name: true } } } }),
     prisma.post.findMany({ take: 20, orderBy: { createdAt: 'desc' }, select: { id: true, content: true, createdAt: true, user: { select: { name: true } } } }),
   ])
 
@@ -14,7 +14,7 @@ export async function GET() {
 
   for (const p of recentItems[0]) allItems.push({ title: p.title, link: `${baseUrl}/products/${p.id}`, description: p.description || '', date: p.createdAt, author: p.user?.name || 'Anonymous' })
   for (const e of recentItems[1]) allItems.push({ title: e.title, link: `${baseUrl}/events/${e.id}`, description: e.description || '', date: e.createdAt, author: 'Event Organizer' })
-  for (const pl of recentItems[2]) allItems.push({ title: pl.title, link: `${baseUrl}/plans/${pl.id}`, description: pl.description || '', date: pl.createdAt, author: pl.user?.name || 'Anonymous' })
+  for (const pl of recentItems[2]) allItems.push({ title: pl.title, link: `${baseUrl}/projects/${pl.id}`, description: pl.description || '', date: pl.createdAt, author: pl.user?.name || 'Anonymous' })
   for (const po of recentItems[3]) allItems.push({ title: po.content?.slice(0, 100) || 'New post', link: `${baseUrl}/posts/${po.id}`, description: po.content?.slice(0, 200) || '', date: po.createdAt, author: po.user?.name || 'Anonymous' })
 
   allItems.sort((a, b) => b.date.getTime() - a.date.getTime())

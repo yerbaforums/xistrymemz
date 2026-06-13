@@ -17,7 +17,7 @@ type OnboardingStep = 'welcome' | 'profile' | 'class-setup' | 'tour' | 'communit
 const TOUR_OUTLETS = [
   { id: 'marketplace', icon: '🛒', name: 'Marketplace', description: 'Buy, sell, or barter products with the community. List items, accept donations, and make offers.', url: '/dashboard/marketplace' },
   { id: 'services', icon: '🔧', name: 'Services', description: 'Offer your skills — tutoring, design, consultations. Accept appointments with built-in scheduling.', url: '/dashboard/services' },
-  { id: 'projects', icon: '🚀', name: 'Projects', description: 'Organize goals with milestones, track progress, and collaborate with others on shared plans.', url: '/plans/new' },
+  { id: 'projects', icon: '🚀', name: 'Projects', description: 'Organize goals with milestones, track progress, and collaborate with others on shared plans.', url: '/projects/new' },
   { id: 'community', icon: '🌐', name: 'Community', description: 'Connect with members, join groups, discuss in forums, and build your network.', url: '/dashboard/community' },
   { id: 'requests', icon: '📝', name: 'Requests', description: 'Post tasks you need help with or browse open requests to contribute your skills.', url: '/dashboard/requests' },
   { id: 'events', icon: '📅', name: 'Events', description: 'Discover local events, join gatherings, or create your own events for others.', url: '/events/new' },

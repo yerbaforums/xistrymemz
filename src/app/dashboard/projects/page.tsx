@@ -15,7 +15,7 @@ export default async function DashboardProjects() {
 
   const userId = session.user.id
 
-  const plans = await prisma.plan.findMany({
+  const projects = await prisma.project.findMany({
     where: { userId },
     orderBy: { createdAt: 'desc' },
     include: {
@@ -29,29 +29,29 @@ export default async function DashboardProjects() {
     }
   })
 
-  const serializedPlans = plans.map(plan => ({
-    id: plan.id,
-    title: plan.title,
-    description: plan.description,
-    category: plan.category,
-    goals: plan.goals,
-    resources: plan.resources,
-    needsVolunteers: plan.needsVolunteers,
-    lookingForCollaborators: plan.lookingForCollaborators,
-    status: plan.status,
-    published: plan.published,
-    pinned: plan.pinned,
-    location: plan.location,
-    createdAt: plan.createdAt.toISOString(),
-    updatedAt: plan.updatedAt.toISOString(),
-    requestCount: plan._count.requests,
-    joinerCount: plan._count.joiners,
-    user: plan.user,
-    events: plan.events.map(e => ({
+  const serializedProjects = projects.map(project => ({
+    id: project.id,
+    title: project.title,
+    description: project.description,
+    category: project.category,
+    goals: project.goals,
+    resources: project.resources,
+    needsVolunteers: project.needsVolunteers,
+    lookingForCollaborators: project.lookingForCollaborators,
+    status: project.status,
+    published: project.published,
+    pinned: project.pinned,
+    location: project.location,
+    createdAt: project.createdAt.toISOString(),
+    updatedAt: project.updatedAt.toISOString(),
+    requestCount: project._count.requests,
+    joinerCount: project._count.joiners,
+    user: project.user,
+    events: project.events.map(e => ({
       id: e.id,
       eventDate: e.eventDate?.toISOString() || null
     }))
   }))
 
-  return <DashboardProjectsClient initialPlans={serializedPlans} />
+  return <DashboardProjectsClient initialProjects={serializedProjects} />
 }

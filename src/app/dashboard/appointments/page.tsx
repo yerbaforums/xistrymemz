@@ -38,8 +38,8 @@ interface EventItem {
   location: string | null
   joinerCount: number
   type: string
-  planTitle: string | null
-  planId: string | null
+  projectTitle: string | null
+  projectId: string | null
   groupTitle: string | null
   groupId: string | null
   createdAt: string
@@ -280,7 +280,7 @@ export default function DashboardAppointments() {
           <div className={styles.emptyIcon}>📅</div>
           <h3>Nothing planned yet</h3>
           <p>Book appointments, create events, or join group activities to fill your planner.</p>
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div className={styles.emptyActions}>
             <Link href="/profile/edit" className="btn-secondary">⏰ Set Availability</Link>
             <Link href="/events/new" className="btn-primary">+ New Event</Link>
             <Link href="/events" className="btn-secondary">Browse Events</Link>
@@ -328,7 +328,7 @@ export default function DashboardAppointments() {
                         {appt.meetingLink && <span className={styles.metaItem}>🔗 <a href={appt.meetingLink} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>Meeting link</a></span>}
                         <span className={styles.metaItem}>👤 {roleLabel}</span>
                         {appt.product && <span className={styles.metaItem}>🛒 <Link href={`/products/${appt.product.id}`} onClick={e => e.stopPropagation()}>{appt.product.title}</Link></span>}
-                      {appt.status === 'REJECTED' && appt.declineReason && <span className={styles.metaItem} style={{ color: '#ef4444' }}>🚫 {appt.declineReason}</span>}
+                      {appt.status === 'REJECTED' && appt.declineReason && <span className={`${styles.metaItem} ${styles.declineReason}`}>🚫 {appt.declineReason}</span>}
                       </div>
                       <div className={styles.cardFooter}>
                         <span className={styles.cardDate}>{formatRelativeDate(appt.createdAt)}</span>
@@ -387,7 +387,7 @@ export default function DashboardAppointments() {
                           {evt.eventDate && <span className={styles.metaItem}>📅 {formatDate(evt.eventDate)}</span>}
                           {evt.location && <span className={styles.metaItem}>📍 {evt.location}</span>}
                           {evt.joinerCount > 0 && <span className={styles.metaItem}>👥 {evt.joinerCount} attending</span>}
-                          {evt.planTitle && <span className={styles.metaItem}>🚀 {evt.planTitle}</span>}
+                          {evt.projectTitle && <span className={styles.metaItem}>🚀 {evt.projectTitle}</span>}
                           {evt.groupTitle && <span className={styles.metaItem}>👥 {evt.groupTitle}</span>}
                         </div>
                         <div className={styles.cardFooter}>
@@ -472,7 +472,7 @@ export default function DashboardAppointments() {
                       {a.formResponses && Object.keys(a.formResponses).length > 0 && (
                         <div className={styles.eventDetailRow}>
                           <span className={styles.eventLabel}>Form Responses</span>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          <div className={styles.formResponses}>
                             {Object.entries(a.formResponses).map(([label, value]) => (
                               <div key={label}><strong>{label}:</strong> {value}</div>
                             ))}
@@ -503,7 +503,7 @@ export default function DashboardAppointments() {
                         <Link href={`/dashboard/marketplace?editId=${a.product.id}`} className="btn-secondary">⚙️ Edit Listing Settings</Link>
                       )}
                       {a.status === 'REJECTED' && a.declineReason && (
-                        <div style={{ marginTop: 8, padding: 12, background: '#fef2f2', borderRadius: 8, color: '#991b1b', fontSize: 14 }}>
+                        <div className={styles.declineBlock}>
                           <strong>Reason for declining:</strong> {a.declineReason}
                         </div>
                       )}
@@ -526,7 +526,7 @@ export default function DashboardAppointments() {
                       {e.eventDate && <div className={styles.eventDetailRow}><span className={styles.eventLabel}>Date</span><span>{formatDate(e.eventDate)}</span></div>}
                       {e.location && <div className={styles.eventDetailRow}><span className={styles.eventLabel}>Location</span><span>{e.location}</span></div>}
                       {e.joinerCount > 0 && <div className={styles.eventDetailRow}><span className={styles.eventLabel}>Attendees</span><span>{e.joinerCount} attending</span></div>}
-                      {e.planTitle && <div className={styles.eventDetailRow}><span className={styles.eventLabel}>Project</span><Link href={`/plans/${e.planId}`}>{e.planTitle}</Link></div>}
+                      {e.projectTitle && <div className={styles.eventDetailRow}><span className={styles.eventLabel}>Project</span><Link href={`/projects/${e.projectId}`}>{e.projectTitle}</Link></div>}
                       {e.groupTitle && <div className={styles.eventDetailRow}><span className={styles.eventLabel}>Group</span><Link href={`/groups/${e.groupId}`}>{e.groupTitle}</Link></div>}
                       {e.description && <div className={styles.eventDetailRow}><span className={styles.eventLabel}>Description</span><p>{e.description.slice(0, 200)}</p></div>}
                     </div>
@@ -548,20 +548,20 @@ export default function DashboardAppointments() {
               <h2>Reschedule: {rescheduleAppt.title}</h2>
               <button onClick={() => setShowRescheduleModal(false)} className={styles.closeBtn}>✕</button>
             </div>
-            <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 14, fontWeight: 500 }}>
+            <div className={styles.modalBody}>
+              <label className={styles.modalLabel}>
                 Date
-                <input type="date" value={rescheduleDate} onChange={e => setRescheduleDate(e.target.value)} style={{ padding: 8, borderRadius: 8, border: '1px solid #ddd', fontSize: 14 }} />
+                <input type="date" value={rescheduleDate} onChange={e => setRescheduleDate(e.target.value)} className={styles.modalInput} />
               </label>
-              <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 14, fontWeight: 500 }}>
+              <label className={styles.modalLabel}>
                 Start Time
-                <input type="time" value={rescheduleStart} onChange={e => setRescheduleStart(e.target.value)} style={{ padding: 8, borderRadius: 8, border: '1px solid #ddd', fontSize: 14 }} />
+                <input type="time" value={rescheduleStart} onChange={e => setRescheduleStart(e.target.value)} className={styles.modalInput} />
               </label>
-              <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 14, fontWeight: 500 }}>
+              <label className={styles.modalLabel}>
                 End Time
-                <input type="time" value={rescheduleEnd} onChange={e => setRescheduleEnd(e.target.value)} style={{ padding: 8, borderRadius: 8, border: '1px solid #ddd', fontSize: 14 }} />
+                <input type="time" value={rescheduleEnd} onChange={e => setRescheduleEnd(e.target.value)} className={styles.modalInput} />
               </label>
-              <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+              <div className={styles.modalActions}>
                 <button onClick={() => setShowRescheduleModal(false)} className="btn-secondary">Cancel</button>
                 <button onClick={handleRescheduleSubmit} className="btn-primary">Submit Reschedule</button>
               </div>
@@ -577,12 +577,12 @@ export default function DashboardAppointments() {
               <h2>Decline: {declineAppt.title}</h2>
               <button onClick={() => setShowDeclineModal(false)} className={styles.closeBtn}>✕</button>
             </div>
-            <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 14, fontWeight: 500 }}>
+            <div className={styles.modalBody}>
+              <label className={styles.modalLabel}>
                 Reason (optional, shared with buyer)
-                <textarea value={declineReason} onChange={e => setDeclineReason(e.target.value)} rows={3} style={{ padding: 8, borderRadius: 8, border: '1px solid #ddd', fontSize: 14, resize: 'vertical' }} placeholder="e.g. No longer offering this service..." />
+                <textarea value={declineReason} onChange={e => setDeclineReason(e.target.value)} rows={3} className={styles.modalTextarea} placeholder="e.g. No longer offering this service..." />
               </label>
-              <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+              <div className={styles.modalActions}>
                 <button onClick={() => setShowDeclineModal(false)} className="btn-secondary">Keep Appointment</button>
                 <button onClick={handleDeclineSubmit} className={styles.deleteBtn}>🚫 Decline Booking</button>
               </div>

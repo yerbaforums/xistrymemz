@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import dynamic from 'next/dynamic'
 import styles from './planning.module.css'
 import { geocodeLocation, reverseGeocodeLocation } from '@/lib/geocoding'
+import { useToast } from '@/context/ToastContext'
 
 import { EmptyState } from '@/components/EmptyState'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
@@ -80,7 +81,7 @@ const POI_TYPES = [
   { key: 'shop', label: 'Shops', icon: '🛍️', color: '#f59e0b' },
   { key: 'product', label: 'Products', icon: '📦', color: '#3b82f6' },
   { key: 'event', label: 'Events', icon: '📅', color: '#ef4444' },
-  { key: 'plan', label: 'Plans', icon: '📋', color: '#8b5cf6' },
+  { key: 'plan', label: 'Projects', icon: '📋', color: '#8b5cf6' },
   { key: 'request', label: 'Requests', icon: '🙏', color: '#10b981' },
   { key: 'rental', label: 'Rentals', icon: '🏠', color: '#06b6d4' },
   { key: 'service', label: 'Services', icon: '🔧', color: '#84cc16' },
@@ -219,6 +220,7 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
   session: any; mapReady: boolean; onUpdate: () => void
   showAddStop: boolean; setShowAddStop: (v: boolean) => void
 }) {
+  const { success, error: toastError } = useToast()
   const [trip, setTrip] = useState(initialTrip)
   const [editing, setEditing] = useState(false)
   const [editTitle, setEditTitle] = useState(trip.title)
@@ -295,7 +297,8 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title: editTitle, description: editDesc, notes: editNotes, startDate: editStart, endDate: editEnd, isPublic: editPublic })
     })
-    if (res.ok) { setEditing(false); const updated = await res.json(); setTrip(updated); onUpdate() }
+    if (res.ok) { setEditing(false); const updated = await res.json(); setTrip(updated); onUpdate(); success('Trip saved') }
+    else { toastError('Failed to save trip') }
   }
 
   const handleAddStop = async (location: UserLocation) => {
@@ -310,7 +313,8 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
         savedLocationId: location.id, day, order
       })
     })
-    if (res.ok) { const updated = await res.json(); setTrip(prev => ({ ...prev, stops: [...(prev.stops || []), updated] })); onUpdate() }
+    if (res.ok) { const updated = await res.json(); setTrip(prev => ({ ...prev, stops: [...(prev.stops || []), updated] })); onUpdate(); success('Stop added') }
+    else { toastError('Failed to add stop') }
   }
 
   const handleAddCustomStop = async () => {
@@ -352,6 +356,9 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
       setCustomStopArrival(''); setCustomStopDeparture('')
       setCustomStopLat(null); setCustomStopLng(null); setCustomStopSearch('')
       setSaveToProfile(false)
+      success('Custom stop added')
+    } else {
+      toastError('Failed to add stop')
     }
   }
 
@@ -380,7 +387,8 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
   const handleRemoveStop = async () => {
     if (!removeStopTarget) return
     const res = await fetch(`/api/trips/${trip.id}/stops/${removeStopTarget}`, { method: 'DELETE' })
-    if (res.ok) { setTrip(prev => ({ ...prev, stops: (prev.stops || []).filter(s => s.id !== removeStopTarget) })); setRemoveStopTarget(null); onUpdate() }
+    if (res.ok) { setTrip(prev => ({ ...prev, stops: (prev.stops || []).filter(s => s.id !== removeStopTarget) })); setRemoveStopTarget(null); onUpdate(); success('Stop removed') }
+    else { toastError('Failed to remove stop') }
   }
 
   const handleMoveStop = async (stopId: string, day: number, order: number) => {
@@ -444,7 +452,8 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
         day, order, links: [{ url: item.url, label: `View ${item.type}` }]
       })
     })
-    if (res.ok) { const updated = await res.json(); setTrip(prev => ({ ...prev, stops: [...(prev.stops || []), updated] })); onUpdate() }
+    if (res.ok) { const updated = await res.json(); setTrip(prev => ({ ...prev, stops: [...(prev.stops || []), updated] })); onUpdate(); success('Stop added from map') }
+    else { toastError('Failed to add stop') }
   }
 
   const handleInviteSearch = async (q: string) => {
@@ -462,7 +471,8 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId, role: 'EDITOR' })
     })
-    if (res.ok) { setInviteUsername(''); setInviteResults([]); onUpdate(); const refreshed = await fetch(`/api/trips/${trip.id}`).then(r => r.json()); setTrip(refreshed) }
+    if (res.ok) { setInviteUsername(''); setInviteResults([]); onUpdate(); const refreshed = await fetch(`/api/trips/${trip.id}`).then(r => r.json()); setTrip(refreshed); success('Invitation sent') }
+    else { toastError('Failed to invite user') }
   }
 
   const handleCollabAction = async (collabId: string, action: string) => {
@@ -470,7 +480,8 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: action })
     })
-    if (res.ok) { onUpdate(); const refreshed = await fetch(`/api/trips/${trip.id}`).then(r => r.json()); setTrip(refreshed) }
+    if (res.ok) { onUpdate(); const refreshed = await fetch(`/api/trips/${trip.id}`).then(r => r.json()); setTrip(refreshed); success('Collaborator updated') }
+    else { toastError('Failed to update collaborator') }
   }
 
   const handleLinkSearch = async (query: string, type: string) => {
@@ -500,7 +511,8 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId: item.id })
       })
-      if (res.ok) { const updated = await res.json(); setTrip(prev => ({ ...prev, stops: (prev.stops || []).map(s => s.id === stopId ? updated : s) })) }
+      if (res.ok) { const updated = await res.json(); setTrip(prev => ({ ...prev, stops: (prev.stops || []).map(s => s.id === stopId ? updated : s) })); success('Product linked') }
+      else { toastError('Failed to link product') }
     } else if (type === 'request') {
       const linkedRequests = [...(stop.linkedRequests || []), item]
       await handleUpdateStopField(stopId, { linkedRequests })
@@ -541,6 +553,9 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
         await handleUpdateStopField(stopId, { linkedRequests })
       }
       setNewRequestTitle(''); setNewRequestDesc('')
+      success('Request created and linked')
+    } else {
+      toastError('Failed to create request')
     }
   }
 
@@ -558,12 +573,16 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
         await handleUpdateStopField(stopId, { linkedEvents })
       }
       setNewEventTitle(''); setNewEventDate('')
+      success('Event created and linked')
+    } else {
+      toastError('Failed to create event')
     }
   }
 
   const handleRemoveCollab = async (collabId: string) => {
     const res = await fetch(`/api/trips/${trip.id}/collaborators/${collabId}`, { method: 'DELETE' })
-    if (res.ok) { onUpdate(); const refreshed = await fetch(`/api/trips/${trip.id}`).then(r => r.json()); setTrip(refreshed) }
+    if (res.ok) { onUpdate(); const refreshed = await fetch(`/api/trips/${trip.id}`).then(r => r.json()); setTrip(refreshed); success('Collaborator removed') }
+    else { toastError('Failed to remove collaborator') }
   }
 
   const days = trip.stops?.length ? [...new Set(trip.stops.map(s => s.day))].sort((a, b) => a - b) : []
@@ -1159,6 +1178,7 @@ function TripCalendar({ trip }: { trip: Trip }) {
 }
 
 function NewTripModal({ onClose, onCreated }: { onClose: () => void; onCreated: (trip: Trip) => void }) {
+  const { success, error: toastError } = useToast()
   const [step, setStep] = useState(0)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -1180,8 +1200,11 @@ function NewTripModal({ onClose, onCreated }: { onClose: () => void; onCreated: 
       if (res.ok) {
         const trip = await res.json()
         onCreated(trip)
+        success('Trip created!')
+      } else {
+        toastError('Failed to create trip')
       }
-    } finally { setCreating(false) }
+    } catch { toastError('Failed to create trip') } finally { setCreating(false) }
   }
 
   return (

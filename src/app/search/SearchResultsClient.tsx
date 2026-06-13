@@ -17,7 +17,7 @@ interface SearchResult {
 }
 
 interface SearchResults {
-  plans: SearchResult[]
+  projects: SearchResult[]
   products: SearchResult[]
   services: SearchResult[]
   users: SearchResult[]
@@ -101,7 +101,7 @@ export default function SearchResultsClient() {
     if (!results) return []
     if (filter === 'all') {
       return [
-        ...results.plans.map(r => ({ ...r, section: '🚀 Projects' })),
+        ...results.projects.map(r => ({ ...r, section: '🚀 Projects' })),
         ...results.products.map(r => ({ ...r, section: '🛒 Products' })),
         ...results.services.map(r => ({ ...r, section: '🔧 Services' })),
         ...results.users.map(r => ({ ...r, section: '👤 Users', title: r.name || r.username || r.title || 'Unknown' })),
@@ -119,7 +119,7 @@ export default function SearchResultsClient() {
       }))
     }
     const sectionMap: Record<string, string> = {
-      plans: '🚀 Projects',
+      projects: '🚀 Projects',
       products: '🛒 Products',
       services: '🔧 Services',
       users: '👤 Users',
@@ -141,7 +141,7 @@ export default function SearchResultsClient() {
 
   const categories = [
     { key: 'all', label: 'All', count: totalCount },
-    { key: 'plans', label: 'Projects', count: results?.plans?.length || 0 },
+    { key: 'projects', label: 'Projects', count: results?.projects?.length || 0 },
     { key: 'products', label: 'Products', count: results?.products?.length || 0 },
     { key: 'services', label: 'Services', count: results?.services?.length || 0 },
     { key: 'users', label: 'Users', count: results?.users?.length || 0 },

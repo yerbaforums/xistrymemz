@@ -22,7 +22,7 @@ export default function StatsSection({ stats }: Props) {
     { key: 'forumPosts' as const, icon: '📣', label: t('statsForumPosts'), href: '/community/forum' },
     { key: 'forumReplies' as const, icon: '💬', label: t('statsForumReplies'), href: '/community/forum' },
     { key: 'events' as const, icon: '📅', label: t('statsEvents'), href: '/events' },
-    { key: 'plans' as const, icon: '🚀', label: t('statsProjects'), href: '/plans/public' },
+    { key: 'plans' as const, icon: '🚀', label: t('statsProjects'), href: '/projects' },
     { key: 'requests' as const, icon: '📝', label: t('statsRequests'), href: '/requests' },
     { key: 'offers' as const, icon: '🤝', label: t('statsOffers'), href: '/dashboard/offers' },
     { key: 'appointments' as const, icon: '🗓️', label: t('statsAppointments'), href: '/dashboard/appointments' },

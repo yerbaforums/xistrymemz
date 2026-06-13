@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 
 export interface UserAsset {
   id: string
-  type: 'PRODUCT' | 'SERVICE' | 'EVENT' | 'GROUP' | 'PLAN' | 'REQUEST' | 'SCHOOL_CONTENT' | 'POST' | 'SHOP' | 'USER'
+  type: 'PRODUCT' | 'SERVICE' | 'EVENT' | 'GROUP' | 'PROJECT' | 'REQUEST' | 'SCHOOL_CONTENT' | 'POST' | 'SHOP' | 'USER'
   title: string
   image: string | null
   location: string | null
@@ -34,7 +34,7 @@ export async function GET() {
 
   try {
     const [
-      products, events, groups, plans,
+      products, events, groups, projects,
       requests, services, schoolContents, posts, user,
     ] = await Promise.all([
       prisma.product.findMany({
@@ -55,7 +55,7 @@ export async function GET() {
         orderBy: { createdAt: 'desc' },
         take: 50,
       }),
-      prisma.plan.findMany({
+      prisma.project.findMany({
         where: { userId, published: true },
         select: { id: true, title: true, imageUrl: true, location: true, latitude: true, longitude: true },
         orderBy: { createdAt: 'desc' },
@@ -95,7 +95,7 @@ export async function GET() {
       ...products.map(p => ({ id: p.id, type: 'PRODUCT' as const, title: p.title, image: p.imageUrl, location: p.location, latitude: p.latitude, longitude: p.longitude })),
       ...events.map(e => ({ id: e.id, type: 'EVENT' as const, title: e.title, image: e.imageUrl, location: e.location, latitude: e.latitude, longitude: e.longitude })),
       ...groups.map(g => ({ id: g.id, type: 'GROUP' as const, title: g.name, image: g.imageUrl, location: g.location, latitude: g.latitude, longitude: g.longitude })),
-      ...plans.map(p => ({ id: p.id, type: 'PLAN' as const, title: p.title, image: p.imageUrl, location: p.location, latitude: p.latitude, longitude: p.longitude })),
+      ...projects.map(p => ({ id: p.id, type: 'PROJECT' as const, title: p.title, image: p.imageUrl, location: p.location, latitude: p.latitude, longitude: p.longitude })),
       ...requests.map(r => ({ id: r.id, type: 'REQUEST' as const, title: r.title, image: r.imageUrl, location: r.location, latitude: r.latitude, longitude: r.longitude })),
       ...services.map(s => ({ id: s.id, type: 'SERVICE' as const, title: s.title, image: s.imageUrl, location: s.location, latitude: null, longitude: null })),
       ...schoolContents.map(sc => ({ id: sc.id, type: 'SCHOOL_CONTENT' as const, title: sc.title, image: firstImage(sc.images, null), location: null, latitude: null, longitude: null })),

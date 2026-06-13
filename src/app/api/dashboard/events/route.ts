@@ -19,7 +19,7 @@ export async function GET() {
             title: true, 
             eventDate: true, 
             location: true, 
-            planId: true,
+            projectId: true,
             groupId: true
           } 
         } 

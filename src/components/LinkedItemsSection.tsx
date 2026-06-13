@@ -37,7 +37,7 @@ const TYPE_ICONS: Record<string, string> = {
 }
 
 const TYPE_LABELS: Record<string, string> = {
-  PLAN: 'Plan',
+  PLAN: 'Project',
   PRODUCT: 'Product',
   EVENT: 'Event',
   REQUEST: 'Request',
@@ -165,7 +165,7 @@ export default function LinkedItemsSection({
               <div key={bl.id} className={styles.card}>
                 <Link href={(() => {
                   const labels: Record<string, string> = {
-                    PLAN: '/plans/', PRODUCT: '/products/', EVENT: '/events/',
+                    PLAN: '/projects/', PRODUCT: '/products/', EVENT: '/events/',
                     REQUEST: '/requests/', SERVICE: '/services/', GROUP: '/groups/',
                     POST: '/posts/', SCHOOLCONTENT: '/school/content/',
                     SHOP: '/shop/', SCHOOL: '/school/',
@@ -206,7 +206,7 @@ export default function LinkedItemsSection({
               <div key={bl.id} className={styles.card}>
                 <Link href={(() => {
                   const labels: Record<string, string> = {
-                    PLAN: '/plans/', PRODUCT: '/products/', EVENT: '/events/',
+                    PLAN: '/projects/', PRODUCT: '/products/', EVENT: '/events/',
                     REQUEST: '/requests/', SERVICE: '/services/', GROUP: '/groups/',
                     POST: '/posts/', SCHOOLCONTENT: '/school/content/',
                     SHOP: '/shop/', SCHOOL: '/school/',

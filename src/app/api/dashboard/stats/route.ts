@@ -11,9 +11,9 @@ export async function GET() {
     }
 
     const [plans, requests, products, school, joinedEvents] = await Promise.all([
-      prisma.plan.findMany({ where: { userId: session.user.id }, select: { id: true } }),
+      prisma.project.findMany({ where: { userId: session.user.id }, select: { id: true } }),
       prisma.request.findMany({
-        where: { OR: [{ userId: session.user.id }, { plan: { userId: session.user.id } }] },
+        where: { OR: [{ userId: session.user.id }, { project: { userId: session.user.id } }] },
         select: { id: true, status: true }
       }),
       prisma.product.findMany({ where: { userId: session.user.id }, select: { id: true, published: true } }),
@@ -23,7 +23,7 @@ export async function GET() {
       }),
       prisma.eventJoiner.findMany({
         where: { userId: session.user.id },
-        include: { event: { select: { id: true, title: true, eventDate: true, location: true, planId: true } } }
+        include: { event: { select: { id: true, title: true, eventDate: true, location: true, projectId: true } } }
       })
     ])
 

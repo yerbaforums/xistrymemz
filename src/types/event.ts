@@ -29,8 +29,8 @@ export interface Event {
   isTicketed: boolean
   ticketPrice: number
   currency: string
-  planId: string | null
-  planTitle: string | null
+  projectId: string | null
+  projectTitle: string | null
   userId: string
   userName: string | null
   acceptsDonations?: boolean
@@ -77,8 +77,8 @@ export interface DashboardEvent {
   donationCurrency: string
   joinerCount: number
   type: string
-  planTitle: string | null
-  planId: string | null
+  projectTitle: string | null
+  projectId: string | null
   groupTitle?: string | null
   groupId?: string | null
   schoolId?: string | null

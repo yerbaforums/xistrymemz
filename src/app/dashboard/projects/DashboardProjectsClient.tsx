@@ -9,7 +9,7 @@ import styles from './projects.module.css'
 import { EmptyState } from '@/components/EmptyState'
 import Button from '@/components/ui/Button'
 
-interface Plan {
+interface ProjectData {
   id: string
   title: string
   description: string | null
@@ -31,7 +31,7 @@ interface Plan {
 }
 
 interface DashboardProjectsClientProps {
-  initialPlans: Plan[]
+  initialProjects: ProjectData[]
 }
 
 const STATUS_CONFIG: Record<string, { icon: string; label: string; color: string }> = {
@@ -72,7 +72,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 type SortOption = 'custom' | 'newest' | 'oldest' | 'mostActive' | 'mostPopular'
 type ViewMode = 'grid' | 'list'
 
-export default function DashboardProjectsClient({ initialPlans }: DashboardProjectsClientProps) {
+export default function DashboardProjectsClient({ initialProjects }: DashboardProjectsClientProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('ALL')
   const [categoryFilter, setCategoryFilter] = useState('ALL')
@@ -80,8 +80,8 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const dragItem = useRef<number | null>(null)
   const dragOverItem = useRef<number | null>(null)
-  const [plans, setPlans] = useState(initialPlans)
-  const [orderedIds, setOrderedIds] = useState<string[]>(() => plans.map(p => p.id))
+  const [projects, setProjects] = useState(initialProjects)
+  const [orderedIds, setOrderedIds] = useState<string[]>(() => projects.map(p => p.id))
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [newTitle, setNewTitle] = useState('')
   const [newDesc, setNewDesc] = useState('')
@@ -101,8 +101,8 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
     dragOverItem.current = null
   }
 
-  const filteredPlans = useMemo(() => {
-    let result = [...plans]
+  const filteredProjects = useMemo(() => {
+    let result = [...projects]
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase()
@@ -142,7 +142,7 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
     }
 
     return result
-  }, [plans, searchQuery, statusFilter, categoryFilter, sortBy, orderedIds])
+  }, [projects, searchQuery, statusFilter, categoryFilter, sortBy, orderedIds])
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -165,7 +165,7 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
     try {
       const goalItems = newGoals.split('\n').map(l => l.trim()).filter(Boolean).map((text, i) => ({ id: `cg_${i}`, text, order: i, status: 'active' as const }))
       const milestoneItems = newMileposts.split('\n').map(l => l.trim()).filter(Boolean).map((title, i) => ({ id: `cm_${i}`, title, order: i, completed: false }))
-      const res = await fetch('/api/plans', {
+      const res = await fetch('/a...projects', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: newTitle.trim(), description: newDesc || null, goals: JSON.stringify(goalItems), mileposts: JSON.stringify(milestoneItems) })
       })
@@ -182,11 +182,11 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
   }
 
   const statusCounts = {
-    ALL: plans.length,
-    DRAFT: initialPlans.filter(p => p.status === 'DRAFT').length,
-    ACTIVE: initialPlans.filter(p => p.status === 'ACTIVE').length,
-    COMPLETED: initialPlans.filter(p => p.status === 'COMPLETED').length,
-    ARCHIVED: initialPlans.filter(p => p.status === 'ARCHIVED').length
+    ALL: projects.length,
+    DRAFT: initialProjects.filter(p => p.status === 'DRAFT').length,
+    ACTIVE: initialProjects.filter(p => p.status === 'ACTIVE').length,
+    COMPLETED: initialProjects.filter(p => p.status === 'COMPLETED').length,
+    ARCHIVED: initialProjects.filter(p => p.status === 'ARCHIVED').length
   }
 
   return (
@@ -263,16 +263,16 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
       </div>
 
       <div className={styles.resultsInfo}>
-        Showing {filteredPlans.length} {filteredPlans.length === 1 ? 'project' : 'projects'}
+        Showing {filteredProjects.length} {filteredProjects.length === 1 ? 'project' : 'projects'}
         {searchQuery && ` matching "${searchQuery}"`}
         {statusFilter !== 'ALL' && ` (${statusFilter.toLowerCase()})`}
       </div>
 
-      {filteredPlans.length === 0 ? (
+      {filteredProjects.length === 0 ? (
         <EmptyState icon="📋" title="No projects found" description="Try adjusting your search or filters, or create a new project." action={{ label: 'Create Project', onClick: () => setShowCreateModal(true) }} />
       ) : viewMode === 'grid' ? (
         <div className={styles.cardGrid}>
-          {filteredPlans.map((plan, index) => {
+          {filteredProjects.map((plan, index) => {
             const status = STATUS_CONFIG[plan.status] || STATUS_CONFIG.DRAFT
             return (
               <div
@@ -323,7 +323,7 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
                   </div>
                 </div>
 
-                <Link href={`/plans/${plan.id}`} className={styles.cardTitle}>{plan.title}</Link>
+                <Link href={`/projects/${plan.id}`} className={styles.cardTitle}>{plan.title}</Link>
 
                 {plan.description && (
                   <p className={styles.cardDesc}>{plan.description}</p>
@@ -386,7 +386,7 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
                   <span className={styles.cardDate}>{formatDate(plan.createdAt)}</span>
                 </div>
 
-                <Link href={`/plans/${plan.id}`} className={styles.viewProjectBtn}>
+                <Link href={`/projects/${plan.id}`} className={styles.viewProjectBtn}>
                   Open Project →
                 </Link>
               </div>
@@ -395,10 +395,10 @@ export default function DashboardProjectsClient({ initialPlans }: DashboardProje
         </div>
       ) : (
         <div className={styles.listView}>
-          {filteredPlans.map(plan => {
+          {filteredProjects.map(plan => {
             const status = STATUS_CONFIG[plan.status] || STATUS_CONFIG.DRAFT
             return (
-              <Link key={plan.id} href={`/plans/${plan.id}`} className={styles.listItem}>
+              <Link key={plan.id} href={`/projects/${plan.id}`} className={styles.listItem}>
                 <span className={styles.statusBadge} style={{ backgroundColor: status.color + '20', color: status.color, borderColor: status.color + '40' }}>
                   {status.icon} {status.label}
                 </span>

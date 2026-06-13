@@ -953,7 +953,7 @@ function GroupDetailContent() {
                           <h3>🚀 Projects</h3>
                           <div className={styles.activityGrid}>
                             {activity.projects.map(p => (
-                              <Link key={p.id} href={`/plans/${p.id}`} className={styles.activityCard}>
+                              <Link key={p.id} href={`/projects/${p.id}`} className={styles.activityCard}>
                                 <span className={styles.activityTitle}>{p.title}</span>
                                 <span className={styles.activityMeta}>{p.category} · {p.status}</span>
                                 <span className={styles.activityAuthor}>by {p.user.name}</span>

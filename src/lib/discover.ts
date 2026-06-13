@@ -14,7 +14,7 @@ export interface DiscoverParams {
 
 export interface DiscoverResult {
   id: string
-  type: 'PRODUCT' | 'SERVICE' | 'GROUP' | 'EVENT' | 'PLAN' | 'MEMBER'
+  type: 'PRODUCT' | 'SERVICE' | 'GROUP' | 'EVENT' | 'PROJECT' | 'MEMBER'
   title: string
   description: string | null
   image: string | null
@@ -59,7 +59,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
   const limit = Math.min(50, Math.max(1, params.limit || 20))
   const offset = (page - 1) * limit
 
-  const types = type ? [type] : ['PRODUCT', 'SERVICE', 'GROUP', 'EVENT', 'PLAN', 'MEMBER']
+  const types = type ? [type] : ['PRODUCT', 'SERVICE', 'GROUP', 'EVENT', 'PROJECT', 'MEMBER']
 
   const queries: Promise<DiscoverResult[]>[] = []
 
@@ -269,7 +269,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
     )
   }
 
-  if (types.includes('PLAN')) {
+  if (types.includes('PROJECT')) {
     queries.push(
       (async () => {
         const where: Record<string, unknown> = { published: true }
@@ -288,7 +288,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
             where.hashtags = { some: { hashtagId: tag.id } }
           }
         }
-        const rows = await prisma.plan.findMany({
+        const rows = await prisma.project.findMany({
           where: where as any,
           select: {
             id: true, title: true, description: true, imageUrl: true,
@@ -302,7 +302,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
         })
         return rows.map(r => ({
           id: r.id,
-          type: 'PLAN' as const,
+          type: 'PROJECT' as const,
           title: r.title,
           description: r.description,
           image: r.imageUrl,

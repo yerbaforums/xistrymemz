@@ -75,13 +75,13 @@ model User {
   primaryLocationId String?
   userLocations     UserLocation[]
 
-  plans                  Plan[]
-  planEditors            PlanEditor[]
-  planContributions      PlanContribution[]
+  projects                  Project[]
+  projectEditors            ProjectEditor[]
+  projectContributions      ProjectContribution[]
   requests               Request[]
   fulfillments           RequestFulfillment[]
   comments               Comment[]
-  joiners                PlanJoiner[]
+  joiners                ProjectJoiner[]
   products               Product[]
   schoolContentsOwned    SchoolContent[]        @relation("SchoolOwner")
   schoolContentsAuthored SchoolContent[]        @relation("SchoolAuthor")
@@ -99,9 +99,9 @@ model User {
   postTips               PostTip[]
   postReposts            PostRepost[]
   wallPosts              Post[]                 @relation("WallPostTarget")
-  planUpdates            PlanUpdate[]
-  planUpdateLikes        PlanUpdateLike[]
-  planUpdateComments     PlanUpdateComment[]
+  projectUpdates            ProjectUpdate[]
+  projectUpdateLikes        ProjectUpdateLike[]
+  projectUpdateComments     ProjectUpdateComment[]
   statusHistory          RequestStatusHistory[]
   requestSupports        RequestSupport[]
   groupsCreated          Group[]
@@ -297,7 +297,7 @@ model TripCollaborator {
   @@index([userId])
 }
 
-model Plan {
+model Project {
   id                      String  @id @default(cuid())
   title                   String
   description             String?
@@ -336,14 +336,14 @@ model Plan {
 
   userId        String
   user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  editors       PlanEditor[]
+  editors       ProjectEditor[]
   requests      Request[]
-  joiners       PlanJoiner[]
-  contributions PlanContribution[]
+  joiners       ProjectJoiner[]
+  contributions ProjectContribution[]
   events        Event[]
-  updates       PlanUpdate[]
-  statusHistory PlanStatusHistory[]
-  hashtags      PlanHashtag[]
+  updates       ProjectUpdate[]
+  statusHistory ProjectStatusHistory[]
+  hashtags      ProjectHashtag[]
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
 
@@ -356,25 +356,25 @@ model Plan {
   @@index([pinned])
 }
 
-model PlanStatusHistory {
+model ProjectStatusHistory {
   id         String   @id @default(cuid())
-  planId     String
-  plan       Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  projectId     String
+  project Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
   fromStatus String?
   toStatus   String
   reason     String?
   createdAt  DateTime @default(now())
 }
 
-model PlanEditor {
+model ProjectEditor {
   id        String   @id @default(cuid())
-  planId    String
-  plan      Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  projectId    String
+  project Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 
-  @@unique([planId, userId])
+  @@unique([projectId, userId])
 }
 
 model Event {
@@ -410,8 +410,8 @@ model Event {
   volunteerRoles       String? // JSON array: ["Setup","Cleanup","Photography"]
   volunteerDescription String?
 
-  planId   String?
-  plan     Plan?   @relation(fields: [planId], references: [id], onDelete: Cascade)
+  projectId   String?
+  project Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
   groupId  String?
   group    Group?  @relation(fields: [groupId], references: [id], onDelete: Cascade)
   schoolId String?
@@ -431,7 +431,7 @@ model Event {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([planId])
+  @@index([projectId])
   @@index([groupId])
   @@index([eventDate])
   @@index([organizerId])
@@ -493,29 +493,29 @@ model EventInvitation {
   @@index([status])
 }
 
-model PlanJoiner {
+model ProjectJoiner {
   id       String   @id @default(cuid())
-  planId   String
-  plan     Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  projectId   String
+  project Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
   userId   String
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   role     String   @default("ATTENDEE") // ATTENDEE or VOLUNTEER
   joinedAt DateTime @default(now())
 
-  @@unique([planId, userId])
+  @@unique([projectId, userId])
 }
 
-model PlanContribution {
+model ProjectContribution {
   id        String   @id @default(cuid())
   amount    Float
   message   String?
-  planId    String
-  plan      Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  projectId    String
+  project Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 
-  @@index([planId])
+  @@index([projectId])
   @@index([userId])
 }
 
@@ -525,7 +525,7 @@ model CollaborationRequest {
   sender     User     @relation("CollabRequestSender", fields: [senderId], references: [id], onDelete: Cascade)
   receiverId String
   receiver   User     @relation("CollabRequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
-  entityType String   // PRODUCT | EVENT | GROUP | PLAN
+  entityType String   // PRODUCT | EVENT | GROUP | PROJECT
   entityId   String
   message    String?
   intent     String   // COLLABORATE | VOLUNTEER | PARTNER | MENTOR
@@ -574,7 +574,7 @@ model BulletinPin {
   title        String?
   content      String?
   images       String? // JSON array of image URLs
-  entityType   String? // USER | PRODUCT | SERVICE | SHOP | EVENT | GROUP | PLAN
+  entityType   String? // USER | PRODUCT | SERVICE | SHOP | EVENT | GROUP | PROJECT
   entityId     String?
   entityTitle  String?
   entityImage  String?
@@ -619,8 +619,8 @@ model Request {
   location            String?
   latitude            Float?
   longitude           Float?
-  planId              String?
-  plan                Plan?                  @relation(fields: [planId], references: [id], onDelete: Cascade)
+  projectId              String?
+  project Project?                  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   productId           String?
   product             Product?               @relation(fields: [productId], references: [id], onDelete: SetNull)
   groupId             String?
@@ -653,7 +653,7 @@ model Request {
   @@index([category])
   @@index([userId])
   @@index([isPublic])
-  @@index([planId])
+  @@index([projectId])
   @@index([groupId])
   @@index([productId])
   @@index([createdAt])
@@ -913,7 +913,7 @@ model EmailSubscriber {
   updatedAt  DateTime @updatedAt
 }
 
-model PlanUpdate {
+model ProjectUpdate {
   id            String              @id @default(cuid())
   content       String
   imageUrl      String?
@@ -921,32 +921,32 @@ model PlanUpdate {
   pinned        Boolean             @default(false)
   userId        String
   user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  planId        String
-  plan          Plan                @relation(fields: [planId], references: [id], onDelete: Cascade)
+  projectId        String
+  project Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
   likes         Int                 @default(0)
   reposts       Int                 @default(0)
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
-  likesRelation PlanUpdateLike[]
-  comments      PlanUpdateComment[]
+  likesRelation ProjectUpdateLike[]
+  comments      ProjectUpdateComment[]
 }
 
-model PlanUpdateLike {
+model ProjectUpdateLike {
   id           String     @id @default(cuid())
-  planUpdateId String
-  planUpdate   PlanUpdate @relation(fields: [planUpdateId], references: [id], onDelete: Cascade)
+  projectUpdateId String
+  projectUpdate   ProjectUpdate @relation(fields: [projectUpdateId], references: [id], onDelete: Cascade)
   userId       String
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt    DateTime   @default(now())
 
-  @@unique([planUpdateId, userId])
+  @@unique([projectUpdateId, userId])
 }
 
-model PlanUpdateComment {
+model ProjectUpdateComment {
   id           String     @id @default(cuid())
   content      String
-  planUpdateId String
-  planUpdate   PlanUpdate @relation(fields: [planUpdateId], references: [id], onDelete: Cascade)
+  projectUpdateId String
+  projectUpdate   ProjectUpdate @relation(fields: [projectUpdateId], references: [id], onDelete: Cascade)
   userId       String
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt    DateTime   @default(now())
@@ -967,7 +967,7 @@ model Post {
   parentId        String?
   parent          Post?         @relation("PostReplies", fields: [parentId], references: [id])
   replies         Post[]        @relation("PostReplies")
-  referenceType   String? // PRODUCT | SERVICE | EVENT | REQUEST | PLAN | POST
+  referenceType   String? // PRODUCT | SERVICE | EVENT | REQUEST | PROJECT | POST
   referenceId     String?
   referenceTitle  String?
   likes           Int           @default(0)
@@ -1043,7 +1043,7 @@ model Hashtag {
   events           EventHashtag[]
   serviceOfferings ServiceOfferingHashtag[]
   schoolContents   SchoolContentHashtag[]
-  plans            PlanHashtag[]
+  projects            ProjectHashtag[]
   requests         RequestHashtag[]
   groups           GroupHashtag[]
   followedBy       UserHashtagFollow[]
@@ -1140,15 +1140,15 @@ model ContentProgress {
   @@index([enrollmentId])
 }
 
-model PlanHashtag {
+model ProjectHashtag {
   id        String   @id @default(cuid())
-  planId    String
-  plan      Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  projectId    String
+  project Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
   hashtagId String
   hashtag   Hashtag  @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 
-  @@unique([planId, hashtagId])
+  @@unique([projectId, hashtagId])
   @@index([hashtagId])
 }
 
@@ -1356,7 +1356,7 @@ model Payment {
   netAmount   Float    @default(0)
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  planId      String?
+  projectId      String?
   eventId     String?
   productId   String?
   description String?

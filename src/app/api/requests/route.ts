@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     const session = await getServerSession(authOptions)
     const { searchParams } = new URL(request.url)
     const publicOnly = searchParams.get('public') === 'true'
-    const planId = searchParams.get('planId')
+    const projectId = searchParams.get('projectId')
     const groupId = searchParams.get('groupId')
     const productId = searchParams.get('productId')
     const schoolContentId = searchParams.get('schoolContentId')
@@ -26,23 +26,23 @@ export async function GET(request: Request) {
     if (publicOnly) {
       where.OR = [
         { isPublic: true },
-        { plan: { published: true } }
+        { project: { published: true } }
       ]
     } else if (session?.user?.id) {
       where.OR = [
         { userId: session.user.id },
-        { plan: { userId: session.user.id } },
-        { plan: { editors: { some: { userId: session.user.id } } } },
+        { project: { userId: session.user.id } },
+        { project: { editors: { some: { userId: session.user.id } } } },
         { isPublic: true }
       ]
     } else {
       where.OR = [
         { isPublic: true },
-        { plan: { published: true } }
+        { project: { published: true } }
       ]
     }
 
-    if (planId) where.planId = planId
+    if (projectId) where.projectId = projectId
     if (groupId) where.groupId = groupId
     if (productId) where.productId = productId
     if (schoolContentId) where.schoolContentId = schoolContentId
@@ -67,7 +67,7 @@ export async function GET(request: Request) {
       prisma.request.findMany({
         where,
         include: {
-          plan: { select: { id: true, title: true, imageUrl: true, status: true, published: true } },
+          project: { select: { id: true, title: true, imageUrl: true, status: true, published: true } },
           group: { select: { id: true, name: true } },
           product: { select: { id: true, title: true } },
           schoolContent: { select: { id: true, title: true } },
@@ -120,18 +120,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { title, description, imageUrl, planId, productId, groupId, schoolContentId, eventId, category, priority, budget, goalAmount, currentFunding, location, isPublic, createGroup, hashtags } = validation.data
+    const { title, description, imageUrl, projectId, productId, groupId, schoolContentId, eventId, category, priority, budget, goalAmount, currentFunding, location, isPublic, createGroup, hashtags } = validation.data
 
-    if (planId) {
-      const plan = await prisma.plan.findFirst({
-        where: { id: planId }
+    if (projectId) {
+      const project = await prisma.project.findFirst({
+        where: { id: projectId }
       })
       if (!plan) {
-        return apiError("Plan not found", 404)
+        return apiError("Project not found", 404)
       }
-      const isOwner = plan.userId === session.user.id
-      const isEditor = await prisma.planEditor.findFirst({
-        where: { planId, userId: session.user.id }
+      const isOwner = project.userId === session.user.id
+      const isEditor = await prisma.projectEditor.findFirst({
+        where: { projectId, userId: session.user.id }
       })
       const userRole = (session.user as { role?: string }).role
       const isAdmin = userRole === 'ADMIN'
@@ -181,7 +181,7 @@ export async function POST(request: Request) {
         title,
         description,
         imageUrl: imageUrl || null,
-        planId: planId || null,
+        projectId: projectId || null,
         productId: productId || null,
         groupId: groupId || null,
         schoolContentId: schoolContentId || null,

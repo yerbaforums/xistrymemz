@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { getUserProfileUrl } from '@/lib/utils'
+import { useToast } from '@/context/ToastContext'
 import { SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import Breadcrumbs from '@/components/Breadcrumbs'
@@ -35,6 +36,7 @@ export default function ConnectionsPage() {
   const [pendingReceived, setPendingReceived] = useState<Connection[]>([])
   const [pendingSent, setPendingSent] = useState<Connection[]>([])
   const [loading, setLoading] = useState(true)
+  const { success, error: toastError } = useToast()
   const [updating, setUpdating] = useState<string | null>(null)
 
   useEffect(() => {
@@ -82,9 +84,13 @@ export default function ConnectionsPage() {
       
       if (res.ok) {
         setPendingReceived(prev => prev.filter(c => c.id !== connectionId))
+        success(action === 'ACCEPTED' ? 'Connection accepted!' : 'Connection declined')
+      } else {
+        toastError('Failed to respond to request')
       }
-    } catch (error) {
-      console.error('Failed to respond:', error)
+    } catch (err) {
+      console.error('Failed to respond:', err)
+      toastError('Failed to respond to request')
     } finally {
       setUpdating(null)
     }
@@ -99,9 +105,13 @@ export default function ConnectionsPage() {
       
       if (res.ok) {
         setPendingSent(prev => prev.filter(c => c.id !== connectionId))
+        success('Connection request cancelled')
+      } else {
+        toastError('Failed to cancel request')
       }
-    } catch (error) {
-      console.error('Failed to cancel:', error)
+    } catch (err) {
+      console.error('Failed to cancel:', err)
+      toastError('Failed to cancel request')
     } finally {
       setUpdating(null)
     }

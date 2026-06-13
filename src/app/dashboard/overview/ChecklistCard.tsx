@@ -50,10 +50,10 @@ export default function ChecklistCard({
           🎉 All Set!
           <span className={overviewStyles.checklistProgress}>Complete</span>
         </h3>
-        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 12px' }}>
+        <p className={overviewStyles.checklistDesc}>
           Want to do more? Here are some next steps:
         </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div className={overviewStyles.checklistLinks}>
           {NEXT_STEPS.slice(0, 4).map((item, i) => (
             <Link key={i} href={item.href} className={overviewStyles.checklistItem}>
               <span>{item.icon}</span>
@@ -83,7 +83,7 @@ export default function ChecklistCard({
             <span>
               <span className={item.done ? overviewStyles.itemDone : ''}>{item.label}</span>
               {!item.done && (
-                <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 2 }}>
+                <span className={overviewStyles.sectionDesc}>
                   {item.desc}
                 </span>
               )}

@@ -14,11 +14,11 @@ import PassportSection from '@/components/home/PassportSection'
 import FeedbackSection from '@/components/home/FeedbackSection'
 import HomeFooterSection from '@/components/home/HomeFooterSection'
 import HomeTourWrapper from '@/components/HomeTourWrapper'
-import type { PlatformStats, FeaturedShop, FeaturedProduct, PublicRequest, FeaturedEvent, PublicPlan, FeaturedBoard } from '@/components/home/types'
+import type { PlatformStats, FeaturedShop, FeaturedProduct, PublicRequest, FeaturedEvent, PublicProject, FeaturedBoard } from '@/components/home/types'
 
 const ZERO_STATS: PlatformStats = {
   members: 0, shops: 0, schools: 0, products: 0, services: 0,
-  rentals: 0, events: 0, plans: 0, requests: 0, forumPosts: 0, forumReplies: 0,
+  rentals: 0, events: 0, projects: 0, requests: 0, forumPosts: 0, forumReplies: 0,
   offers: 0, appointments: 0, boards: 0
 }
 
@@ -67,7 +67,7 @@ export default function Home() {
   const [products, setProducts] = useState<FeaturedProduct[]>([])
   const [requests, setRequests] = useState<PublicRequest[]>([])
   const [events, setEvents] = useState<FeaturedEvent[]>([])
-  const [plans, setPlans] = useState<PublicPlan[]>([])
+  const [projects, setProjects] = useState<PublicProject[]>([])
   const [boards, setBoards] = useState<FeaturedBoard[]>([])
   const [loadingShops, setLoadingShops] = useState(true)
   const [loadingProducts, setLoadingProducts] = useState(true)
@@ -122,7 +122,7 @@ export default function Home() {
       .then(data => { setEvents(Array.isArray(data?.data) ? data.data.slice(0, 4) : Array.isArray(data) ? data.slice(0, 4) : []); setLoadingEvents(false) })
       .catch(() => setLoadingEvents(false))
 
-    fetch('/api/plans?public=true')
+    fetch('/api/projects?public=true')
       .then(r => r.ok ? r.json() : [])
       .then(data => {
         const list = Array.isArray(data) ? data : (data?.data?.items || [])
@@ -146,7 +146,7 @@ export default function Home() {
         products={products}
         requests={requests}
         events={events}
-        plans={plans}
+        projects={projects}
         boards={boards}
         loadingShops={loadingShops}
         loadingProducts={loadingProducts}

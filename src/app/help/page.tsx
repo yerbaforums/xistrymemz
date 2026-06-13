@@ -27,7 +27,7 @@ export default function Help() {
     },
     {
       question: 'How do I create a project plan?',
-      answer: 'Go to your Dashboard, then Projects, and click "New Plan". Add goals, milestones, resources, and funding targets. Share your plan publicly to attract collaborators and supporters.'
+      answer: 'Go to your Dashboard, then Projects, and click "New Project". Add goals, milestones, and resources. Share your project publicly to attract collaborators and supporters.'
     },
     {
       question: 'How do services work?',
@@ -105,7 +105,7 @@ export default function Help() {
 
   const guides = [
     { title: 'Getting Started', description: 'Set up your profile and explore the platform', link: '/onboarding' },
-    { title: 'Creating Projects', description: 'Plan, organize, and track projects', link: '/plans/new' },
+    { title: 'Creating Projects', description: 'Plan, organize, and track projects', link: '/projects/new' },
     { title: 'Offering Services', description: 'List your skills and accept appointments', link: '/dashboard/services' },
     { title: 'Using Video Chat', description: 'Set up and join video rooms', link: '/dashboard/video' },
     { title: 'Managing Appointments', description: 'Track bookings and availability', link: '/dashboard/appointments' },

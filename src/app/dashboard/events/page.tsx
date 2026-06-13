@@ -15,7 +15,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 const TYPE_CONFIG: Record<string, { icon: string; label: string; color: string }> = {
   ORGANIZED: { icon: '🎯', label: 'Organized', color: '#00d9ff' },
-  JOINED_PLAN: { icon: '📋', label: 'Plan Event', color: '#a855f7' },
+  JOINED_PLAN: { icon: '📋', label: 'Project Event', color: '#a855f7' },
   JOINED_GROUP: { icon: '👥', label: 'Group Event', color: '#22c55e' },
   PERSONAL: { icon: '🗓️', label: 'Personal', color: '#f59e0b' }
 }
@@ -69,8 +69,8 @@ export default function DashboardEvents() {
         acceptsDonations: editingEvent.acceptsDonations || false,
         selectedDonationAddrs: [],
         hashtags: editingEvent.hashtags || [],
-        planId: editingEvent.planId || null,
-        planTitle: editingEvent.planTitle || null,
+        projectId: editingEvent.projectId || null,
+        projectTitle: editingEvent.projectTitle || null,
         groupId: editingEvent.groupId || null,
         groupTitle: editingEvent.groupTitle || null,
         schoolId: null,
@@ -137,7 +137,7 @@ export default function DashboardEvents() {
           volunteerRoles,
           volunteerDescription: editFormData.volunteerDescription,
           hashtags: editFormData.hashtags,
-          planId: editFormData.planId,
+          projectId: editFormData.projectId,
           groupId: editFormData.groupId,
         })
       })
@@ -385,13 +385,13 @@ export default function DashboardEvents() {
                   )}
                 </div>
 
-                {event.planTitle && (
-                  <Link href={`/plans/${event.planId || ''}`} className={styles.planLink}>
+                {event.projectTitle && (
+                  <Link href={`/projects/${event.projectId || ''}`} className={styles.planLink}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                       <polyline points="14,2 14,8 20,8"/>
                     </svg>
-                    {event.planTitle}
+                    {event.projectTitle}
                   </Link>
                 )}
 

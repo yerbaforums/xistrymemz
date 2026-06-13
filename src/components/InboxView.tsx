@@ -56,7 +56,7 @@ function entityHref(type: string, id: string): string {
     case 'PRODUCT': return `/products/${id}`
     case 'EVENT': return `/events/${id}`
     case 'GROUP': return `/groups/${id}`
-    case 'PLAN': return `/plans/${id}`
+    case 'PROJECT': return `/projects/${id}`
     default: return '#'
   }
 }

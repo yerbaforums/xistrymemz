@@ -10,7 +10,7 @@ interface EventData {
     id: string
     title: string
     eventDate: string | null
-    planId: string
+    projectId: string
   }
 }
 
@@ -20,7 +20,7 @@ interface Props {
 
 export default function SimpleCalendar({ events }: Props) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
-  const [hoveredEvent, setHoveredEvent] = useState<{title: string, date: string, planId: string} | null>(null)
+  const [hoveredEvent, setHoveredEvent] = useState<{title: string, date: string, projectId: string} | null>(null)
 
   const year = currentMonth.getFullYear()
   const month = currentMonth.getMonth()
@@ -51,9 +51,9 @@ export default function SimpleCalendar({ events }: Props) {
           {dayEvents.slice(0, 2).map((e: EventData) => (
             <Link 
               key={e.id} 
-              href={`/plans/${e.event.planId}?event=${e.event.id}`}
+              href={`/projects/${e.event.projectId}?event=${e.event.id}`}
               className={styles.eventItem}
-              onMouseEnter={() => setHoveredEvent({ title: e.event.title, date: e.event.eventDate || '', planId: e.event.planId })}
+              onMouseEnter={() => setHoveredEvent({ title: e.event.title, date: e.event.eventDate || '', projectId: e.event.projectId })}
               onMouseLeave={() => setHoveredEvent(null)}
             >
               <span className={styles.eventDot}>📅</span>
@@ -83,7 +83,7 @@ export default function SimpleCalendar({ events }: Props) {
         <div className={styles.tooltip} onMouseEnter={() => {}} onMouseLeave={() => setHoveredEvent(null)}>
           <strong>{hoveredEvent.title}</strong>
           <p>📅 {hoveredEvent.date ? new Date(hoveredEvent.date).toLocaleDateString() : 'TBD'}</p>
-          <Link href={`/plans/${hoveredEvent.planId}`} className={styles.tooltipLink}>View Event →</Link>
+          <Link href={`/projects/${hoveredEvent.projectId}`} className={styles.tooltipLink}>View Event →</Link>
         </div>
       )}
     </div>

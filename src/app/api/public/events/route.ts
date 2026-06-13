@@ -17,7 +17,7 @@ export async function GET() {
     },
     include: {
       organizer: { select: { id: true, name: true } },
-      plan: { 
+      project: { 
         select: { 
           id: true, 
           title: true, 
@@ -42,7 +42,7 @@ export async function GET() {
   })
 
   const result = await Promise.all(events.map(async event => {
-    if (event.plan && !event.plan.published) return null
+    if (event.plan && !event.project.published) return null
 
     let latitude = event.latitude
     let longitude = event.longitude
@@ -73,10 +73,10 @@ export async function GET() {
       isTicketed: event.isTicketed,
       ticketPrice: event.ticketPrice,
       currency: event.currency,
-      planId: event.planId,
-      planTitle: event.plan?.title || null,
-      userName: event.plan?.user?.name || event.organizer?.name || null,
-      userId: event.plan?.userId || event.organizerId,
+      projectId: event.projectId,
+      projectTitle: event.project?.title || null,
+      userName: event.project?.user?.name || event.organizer?.name || null,
+      userId: event.project?.userId || event.organizerId,
       joiners: event.eventJoiners.map(j => ({
         id: j.id,
         userId: j.userId,

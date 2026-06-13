@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, type ReactNode } from 'react'
+import overviewStyles from './OverviewCards.module.css'
 
 interface DashboardSectionProps {
   id: string
@@ -30,13 +31,7 @@ export default function DashboardSection({
   }
 
   return (
-    <div className="dash-section" style={{
-      background: 'var(--bg-secondary)',
-      border: '1px solid var(--border-color)',
-      borderRadius: 'var(--radius-lg)',
-      overflow: 'hidden',
-      transition: 'var(--transition)',
-    }}>
+    <div className={overviewStyles.sectionOuter}>
       <div
         onClick={toggle}
         style={{
@@ -50,13 +45,11 @@ export default function DashboardSection({
           transition: 'var(--transition)',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {icon && <span style={{ fontSize: '1rem' }}>{icon}</span>}
-          <h3 style={{ margin: 0, fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-            {title}
-          </h3>
+        <div className={overviewStyles.sectionHeader}>
+          {icon && <span className={overviewStyles.sectionIcon}>{icon}</span>}
+          <h3 className={overviewStyles.sectionTitle}>{title}</h3>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className={overviewStyles.sectionControls}>
           {action}
           <button
             onClick={(e) => { e.stopPropagation(); toggle() }}
@@ -81,7 +74,7 @@ export default function DashboardSection({
         overflow: 'hidden',
         transition: 'max-height 0.3s ease',
       }}>
-        <div style={{ padding: minimized ? '0 16px' : '16px' }}>
+        <div className={minimized ? overviewStyles.sectionContent : overviewStyles.sectionExpanded}>
           {children}
         </div>
       </div>

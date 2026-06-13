@@ -27,7 +27,7 @@ export async function findRequests(query: RequestQuery) {
       where,
       include: {
         user: { select: { id: true, name: true, username: true, image: true } },
-        plan: { select: { id: true, title: true } },
+        project: { select: { id: true, title: true } },
         group: { select: { id: true, name: true } },
         product: { select: { id: true, title: true } },
         _count: { select: { comments: true, fulfillments: true, supports: true } },
@@ -47,7 +47,7 @@ export async function getRequestById(id: string) {
     where: { id },
     include: {
       user: { select: { id: true, name: true, username: true, image: true, location: true } },
-      plan: { select: { id: true, title: true } },
+      project: { select: { id: true, title: true } },
       group: { select: { id: true, name: true } },
       product: { select: { id: true, title: true } },
       event: { select: { id: true, title: true } },
@@ -72,7 +72,7 @@ export async function createRequest(data: Record<string, unknown>, userId: strin
       location: data.location as string | null,
       isPublic: data.isPublic as boolean ?? true,
       userId,
-      planId: data.planId as string | null,
+      projectId: data.projectId as string | null,
       groupId: data.groupId as string | null,
       productId: data.productId as string | null,
     },

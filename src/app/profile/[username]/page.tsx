@@ -154,7 +154,7 @@ interface Post {
   }
 }
 
-interface Plan {
+interface ProjectData {
   id: string
   title: string
   description: string | null
@@ -323,7 +323,7 @@ export default function ProfilePage() {
   const params = useParams()
   const [user, setUser] = useState<ProfileUser | null>(null)
   const [posts, setPosts] = useState<Post[]>([])
-  const [plans, setPlans] = useState<Plan[]>([])
+  const [projects, setProjects] = useState<ProjectData[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [connections, setConnections] = useState<Connection[]>([])
   const [groups, setGroups] = useState<UserGroup[]>([])
@@ -333,7 +333,7 @@ export default function ProfilePage() {
   const [postsOffset, setPostsOffset] = useState(0)
   const [totalPostCount, setTotalPostCount] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'posts' | 'plans' | 'connections' | 'groups' | 'forum' | 'events' | 'requests' | 'shop' | 'school' | 'reviews' | 'about'>('posts')
+  const [activeTab, setActiveTab] = useState<'posts' | 'projects' | 'connections' | 'groups' | 'forum' | 'events' | 'requests' | 'shop' | 'school' | 'reviews' | 'about'>('posts')
   const [activeClass, setActiveClass] = useState<string | null>(null)
   const [forumPosts, setForumPosts] = useState<ForumPostEntry[]>([])
   const [userEvents, setUserEvents] = useState<UserEventEntry[]>([])
@@ -402,7 +402,7 @@ export default function ProfilePage() {
       setUser(data.user)
       setIsOwnProfile(session?.user ? (data.user.id === session.user.id) : false)
       setPosts(data.posts || [])
-      setPlans(data.plans || [])
+      setPlans(data.projects || [])
       setProducts(data.products || [])
       setConnections(data.connections || [])
       setGroups(data.groups || [])
@@ -1043,10 +1043,10 @@ export default function ProfilePage() {
           Posts ({posts.length})
         </Button>
         <Button 
-          className={`${styles.tab} ${activeTab === 'plans' ? styles.active : ''}`}
-          onClick={() => setActiveTab('plans')}
+          className={`${styles.tab} ${activeTab === 'projects' ? styles.active : ''}`}
+          onClick={() => setActiveTab('projects')}
         >
-          Projects ({plans.length})
+          Projects ({projects.length})
         </Button>
         <Button 
           className={`${styles.tab} ${activeTab === 'connections' ? styles.active : ''}`}
@@ -1153,14 +1153,14 @@ export default function ProfilePage() {
                 </div>
               </div>
             )}
-            {plans.filter(p => matchesClass(p.title || '', activeClass)).length > 0 && (
+            {projects.filter(p => matchesClass(p.title || '', activeClass)).length > 0 && (
               <div className={styles.classEntitySection}>
                 <h4>Projects</h4>
                 <div className={styles.classEntityGrid}>
-                  {plans.filter(p => matchesClass(p.title || '', activeClass)).slice(0, 6).map(p => (
+                  {projects.filter(p => matchesClass(p.title || '', activeClass)).slice(0, 6).map(p => (
                     <div key={p.id} className={styles.classEntityCard}>
                       <div className={styles.classEntityBody}>
-                        <Link href={`/plans/${p.id}`} className={styles.classEntityLink}>{p.title}</Link>
+                        <Link href={`/projects/${p.id}`} className={styles.classEntityLink}>{p.title}</Link>
                         <span className={styles.classEntityBadge}>{p.status}</span>
                       </div>
                     </div>
@@ -1230,7 +1230,7 @@ export default function ProfilePage() {
               </div>
             )}
             {posts.filter(p => matchesClass(p.content || '', activeClass)).length === 0 &&
-             plans.filter(p => matchesClass(p.title || '', activeClass) || matchesClass(p.description || '', activeClass)).length === 0 &&
+             projects.filter(p => matchesClass(p.title || '', activeClass) || matchesClass(p.description || '', activeClass)).length === 0 &&
              products.filter(p => matchesClass(p.title || '', activeClass) || matchesClass(p.description || '', activeClass)).length === 0 &&
              userEvents.filter(e => matchesClass(e.title || '', activeClass) || matchesClass(e.description || '', activeClass)).length === 0 &&
              userRequests.filter(r => matchesClass(r.title || '', activeClass) || matchesClass(r.description || '', activeClass)).length === 0 &&
@@ -1353,36 +1353,36 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {activeClass === null && activeTab === 'plans' && (
+        {activeClass === null && activeTab === 'projects' && (
           <div className={styles.plansSection}>
-            {plans.length > 0 ? (
+            {projects.length > 0 ? (
               <div className={styles.plansGrid}>
-                {plans.map((plan) => (
-                  <div key={plan.id} className={`${styles.planCard} ${plan.pinned ? styles.pinnedCard : ''}`}>
+                {projects.map((plan) => (
+                  <div key={project.id} className={`${styles.projectCard} ${project.pinned ? styles.pinnedCard : ''}`}>
                     {isOwnProfile && (
                       <Button 
-                        onClick={() => handlePin('plan', plan.id, plan.pinned)} 
+                        onClick={() => handlePin('plan', project.id, project.pinned)} 
                         className={styles.cardPinBtn}
-                        title={plan.pinned ? 'Unpin' : 'Pin to top'}
+                        title={project.pinned ? 'Unpin' : 'Pin to top'}
                       >
-                        {plan.pinned ? '📌' : '📍'}
+                        {project.pinned ? '📌' : '📍'}
                       </Button>
                     )}
-                    <Link href={`/plans/${plan.id}`} className={styles.planCardLink}>
+                    <Link href={`/projects/${project.id}`} className={styles.projectCardLink}>
                       <h3>
-                        {plan.pinned && <span className={styles.pinnedBadge}>📌</span>}
-                        {plan.title}
+                        {project.pinned && <span className={styles.pinnedBadge}>📌</span>}
+                        {project.title}
                       </h3>
-                      <span className={`${styles.planStatus} ${styles[(plan.status || '').toLowerCase()]}`}>
-                        {plan.status}
+                      <span className={`${styles.projectStatus} ${styles[(project.status || '').toLowerCase()]}`}>
+                        {project.status}
                       </span>
-                      <p>Created {new Date(plan.createdAt).toLocaleDateString()}</p>
+                      <p>Created {new Date(project.createdAt).toLocaleDateString()}</p>
                     </Link>
                   </div>
                 ))}
               </div>
             ) : (
-              <EmptyState icon="🚀" title="No plans yet" description={isOwnProfile ? "Create a plan to start tracking your projects." : `${user.name || 'This user'} hasn't created any plans yet.`} />
+              <EmptyState icon="🚀" title="No projects yet" description={isOwnProfile ? "Create a plan to start tracking your projects." : `${user.name || 'This user'} hasn't created any projects yet.`} />
             )}
           </div>
         )}

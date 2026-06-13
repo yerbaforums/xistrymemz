@@ -72,7 +72,7 @@ export function EventForm() {
           currency: formData.currency,
           visibility: formData.visibility,
           eventType: formData.eventType,
-          planId: formData.planId,
+          projectId: formData.projectId,
           groupId: formData.groupId,
           acceptsDonations: formData.acceptsDonations,
           ...legacy,

@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
-const VALID_TYPES = ['PLAN', 'PRODUCT', 'REQUEST', 'EVENT', 'FORUM_POST', 'POST', 'SERVICE', 'SCHOOLCONTENT', 'GROUP']
+const VALID_TYPES = ['PROJECT', 'PRODUCT', 'REQUEST', 'EVENT', 'FORUM_POST', 'POST', 'SERVICE', 'SCHOOLCONTENT', 'GROUP']
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -32,8 +32,8 @@ export async function GET() {
   for (const [type, ids] of Object.entries(groups)) {
     titles[type] = {}
     switch (type) {
-      case 'PLAN': {
-        const items = await prisma.plan.findMany({ where: { id: { in: ids } }, select: { id: true, title: true } })
+      case 'PROJECT': {
+        const items = await prisma.project.findMany({ where: { id: { in: ids } }, select: { id: true, title: true } })
         items.forEach(i => { titles.PLAN[i.id] = i.title })
         break
       }

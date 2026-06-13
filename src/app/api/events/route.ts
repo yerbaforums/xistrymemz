@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type') || 'public'
-    const planId = searchParams.get('planId')
+    const projectId = searchParams.get('projectId')
     const organizerId = searchParams.get('organizerId')
 
     if (type === 'personal') {
@@ -31,8 +31,8 @@ export async function GET(request: Request) {
 
     const where: Record<string, unknown> = {}
     
-    if (planId) {
-      where.planId = planId
+    if (projectId) {
+      where.projectId = projectId
     }
 
     if (organizerId) {
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
         where,
         include: {
           organizer: { select: { id: true, name: true } },
-          plan: { select: { id: true, title: true, userId: true } },
+          project: { select: { id: true, title: true, userId: true } },
           group: { select: { id: true, name: true } },
           school: { select: { id: true, schoolName: true, name: true } },
           shop: { select: { id: true, shopName: true, name: true } },
@@ -66,7 +66,7 @@ export async function GET(request: Request) {
     ])
 
     const formattedEvents = events.map(event => {
-      const linkedTitle = event.plan?.title || event.group?.name || event.school?.schoolName || event.shop?.shopName || null
+      const linkedTitle = event.project?.title || event.group?.name || event.school?.schoolName || event.shop?.shopName || null
       
       return {
         id: event.id,
@@ -85,8 +85,8 @@ export async function GET(request: Request) {
         isTicketed: event.isTicketed,
         ticketPrice: event.ticketPrice,
         currency: event.currency,
-        planId: event.planId,
-        planTitle: linkedTitle,
+        projectId: event.projectId,
+        projectTitle: linkedTitle,
         userId: event.organizerId,
         userName: event.organizer?.name || null,
         joiners: event.eventJoiners.map(j => j.userId),
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
       currency,
       visibility,
       eventType,
-      planId,
+      projectId,
       groupId,
       acceptsDonations,
       donationAddress,
@@ -175,12 +175,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (planId) {
-      const plan = await prisma.plan.findFirst({
-        where: { id: planId }
+    if (projectId) {
+      const project = await prisma.project.findFirst({
+        where: { id: projectId }
       })
       if (!plan) {
-        return apiError("Plan not found", 404)
+        return apiError("Project not found", 404)
       }
     }
 
@@ -207,7 +207,7 @@ export async function POST(request: NextRequest) {
         needsVolunteers: needsVolunteers || false,
         volunteerRoles: volunteerRoles || null,
         volunteerDescription: volunteerDescription || null,
-        planId: planId || null,
+        projectId: projectId || null,
         groupId: groupId || null,
         shopId: eventCategory === 'SHOP' ? session.user.id : undefined,
         organizerId: session.user.id

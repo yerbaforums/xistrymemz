@@ -10,7 +10,7 @@ export type HashtagEntityType =
   | 'EVENT'
   | 'SERVICE'
   | 'SCHOOLCONTENT'
-  | 'PLAN'
+  | 'PROJECT'
   | 'REQUEST'
   | 'GROUP'
 
@@ -22,7 +22,7 @@ const ENTITY_RELATIONS: Record<HashtagEntityType, { model: string; idField: stri
   EVENT: { model: 'eventHashtag', idField: 'eventId', table: 'EventHashtag' },
   SERVICE: { model: 'serviceOfferingHashtag', idField: 'serviceOfferingId', table: 'ServiceOfferingHashtag' },
   SCHOOLCONTENT: { model: 'schoolContentHashtag', idField: 'schoolContentId', table: 'SchoolContentHashtag' },
-  PLAN: { model: 'planHashtag', idField: 'planId', table: 'PlanHashtag' },
+  PLAN: { model: 'projectHashtag', idField: 'projectId', table: 'ProjectHashtag' },
   REQUEST: { model: 'requestHashtag', idField: 'requestId', table: 'RequestHashtag' },
   GROUP: { model: 'groupHashtag', idField: 'groupId', table: 'GroupHashtag' },
 }
@@ -169,13 +169,13 @@ export async function getTrendingHashtags(
 
 async function enrichWithCounts(hashtags: { id: string; tag: string; postCount: number }[]) {
   return Promise.all(hashtags.map(async h => {
-    const [posts, products, events, services, schoolContents, plans, requests, groups] = await Promise.all([
+    const [posts, products, events, services, schoolContents, projects, requests, groups] = await Promise.all([
       prisma.postHashtag.count({ where: { hashtagId: h.id, sourceType: 'POST' } }),
       prisma.productHashtag.count({ where: { hashtagId: h.id } }),
       prisma.eventHashtag.count({ where: { hashtagId: h.id } }),
       prisma.serviceOfferingHashtag.count({ where: { hashtagId: h.id } }),
       prisma.schoolContentHashtag.count({ where: { hashtagId: h.id } }),
-      prisma.planHashtag.count({ where: { hashtagId: h.id } }),
+      prisma.projectHashtag.count({ where: { hashtagId: h.id } }),
       prisma.requestHashtag.count({ where: { hashtagId: h.id } }),
       prisma.groupHashtag.count({ where: { hashtagId: h.id } }),
     ])
@@ -186,7 +186,7 @@ async function enrichWithCounts(hashtags: { id: string; tag: string; postCount: 
       tag: h.tag,
       postCount: h.postCount,
       entities: {
-        posts, products, events, services, schoolContents, plans, requests, groups,
+        posts, products, events, services, schoolContents, projects, requests, groups,
         forumPosts, groupPosts,
       },
     }
@@ -198,19 +198,19 @@ export async function getHashtagTotals(tag: string) {
   if (!hashtag) {
     return {
       posts: 0, products: 0, events: 0, services: 0,
-      schoolContents: 0, plans: 0, requests: 0, groups: 0,
+      schoolContents: 0, projects: 0, requests: 0, groups: 0,
       forumPosts: 0, groupPosts: 0,
     }
   }
 
-  const [postCount, productCount, eventCount, serviceCount, schoolContentCount, planCount, requestCount, groupCount, forumPostCount, groupPostCount] =
+  const [postCount, productCount, eventCount, serviceCount, schoolContentCount, projectCount, requestCount, groupCount, forumPostCount, groupPostCount] =
     await Promise.all([
       prisma.postHashtag.count({ where: { hashtagId: hashtag.id, sourceType: 'POST' } }),
       prisma.productHashtag.count({ where: { hashtagId: hashtag.id } }),
       prisma.eventHashtag.count({ where: { hashtagId: hashtag.id } }),
       prisma.serviceOfferingHashtag.count({ where: { hashtagId: hashtag.id } }),
       prisma.schoolContentHashtag.count({ where: { hashtagId: hashtag.id } }),
-      prisma.planHashtag.count({ where: { hashtagId: hashtag.id } }),
+      prisma.projectHashtag.count({ where: { hashtagId: hashtag.id } }),
       prisma.requestHashtag.count({ where: { hashtagId: hashtag.id } }),
       prisma.groupHashtag.count({ where: { hashtagId: hashtag.id } }),
       prisma.postHashtag.count({ where: { hashtagId: hashtag.id, sourceType: 'FORUMPOST' } }),
@@ -219,7 +219,7 @@ export async function getHashtagTotals(tag: string) {
 
   return {
     posts: postCount, products: productCount, events: eventCount, services: serviceCount,
-    schoolContents: schoolContentCount, plans: planCount, requests: requestCount, groups: groupCount,
+    schoolContents: schoolContentCount, projects: projectCount, requests: requestCount, groups: groupCount,
     forumPosts: forumPostCount, groupPosts: groupPostCount,
   }
 }

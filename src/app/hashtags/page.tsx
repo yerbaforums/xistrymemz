@@ -35,7 +35,7 @@ const ENTITY_FILTERS: { key: EntityFilter; label: string; icon: string }[] = [
   { key: 'events', label: 'Events', icon: '📅' },
   { key: 'services', label: 'Services', icon: '🔧' },
   { key: 'schoolContents', label: 'School', icon: '🎓' },
-  { key: 'plans', label: 'Plans', icon: '📋' },
+  { key: 'plans', label: 'Projects', icon: '📋' },
   { key: 'requests', label: 'Requests', icon: '🙋' },
   { key: 'groups', label: 'Groups', icon: '👥' },
 ]

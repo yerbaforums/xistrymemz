@@ -118,8 +118,8 @@ export async function GET() {
       } else if (collab.entityType === 'GROUP') {
         const g = await prisma.group.findUnique({ where: { id: collab.entityId }, select: { name: true } })
         entityTitle = g?.name || ''
-      } else if (collab.entityType === 'PLAN') {
-        const p = await prisma.plan.findUnique({ where: { id: collab.entityId }, select: { title: true } })
+      } else if (collab.entityType === 'PROJECT') {
+        const p = await prisma.project.findUnique({ where: { id: collab.entityId }, select: { title: true } })
         entityTitle = p?.title || ''
       }
 

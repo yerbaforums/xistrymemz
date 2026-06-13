@@ -10,19 +10,19 @@ export async function GET(request: Request) {
     const groupId = searchParams.get('groupId')
     const schoolId = searchParams.get('schoolId')
     const shopId = searchParams.get('shopId')
-    const planId = searchParams.get('planId')
+    const projectId = searchParams.get('projectId')
 
     const where: Record<string, string> = {}
 
     if (groupId) where.groupId = groupId
     if (schoolId) where.schoolId = schoolId
     if (shopId) where.shopId = shopId
-    if (planId) where.planId = planId
+    if (projectId) where.projectId = projectId
 
     const events = await prisma.event.findMany({
       where,
       include: {
-        plan: { select: { id: true, title: true } },
+        project: { select: { id: true, title: true } },
         group: { select: { id: true, name: true, imageUrl: true } },
         school: { select: { id: true, schoolName: true, schoolImage: true } },
         shop: { select: { id: true, shopName: true, shopImage: true } },
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
       return apiError("Invalid JSON body", 400)
     }
 
-    const { title, description, eventCategory, eventDate, endDate, location, locationDetails, maxJoiners, isTicketed, ticketPrice, groupId, schoolId, shopId, planId } = body
+    const { title, description, eventCategory, eventDate, endDate, location, locationDetails, maxJoiners, isTicketed, ticketPrice, groupId, schoolId, shopId, projectId } = body
 
     if (!title || !eventCategory) {
       return apiError("Title and category are required", 400)
@@ -74,7 +74,7 @@ export async function POST(req: Request) {
         groupId: groupId || null,
         schoolId: schoolId || null,
         shopId: shopId || null,
-        planId: planId || null,
+        projectId: projectId || null,
         organizerId: session.user.id
       },
       include: {

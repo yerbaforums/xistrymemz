@@ -20,7 +20,7 @@ const ENTITY_TYPES = [
   { key: 'SERVICE', label: 'Services', icon: '🔧' },
   { key: 'GROUP', label: 'Groups', icon: '👥' },
   { key: 'EVENT', label: 'Events', icon: '📅' },
-  { key: 'PLAN', label: 'Projects', icon: '🚀' },
+  { key: 'PROJECT', label: 'Projects', icon: '🚀' },
   { key: 'MEMBER', label: 'Members', icon: '👤' },
 ]
 
@@ -73,7 +73,7 @@ function EntityCard({ item }: { item: DiscoverItem }) {
     item.type === 'SERVICE' ? `/services/${item.id}` :
     item.type === 'GROUP' ? `/groups/${item.id}` :
     item.type === 'EVENT' ? `/events/${item.id}` :
-    item.type === 'PLAN' ? `/plans/${item.id}` :
+    item.type === 'PROJECT' ? `/projects/${item.id}` :
     item.type === 'MEMBER' ? `/profile/${item.userId}` : '#'
 
   return (
@@ -243,7 +243,7 @@ export default function DiscoverPage() {
                 item.type === 'SERVICE' ? `/services/${item.id}` :
                 item.type === 'GROUP' ? `/groups/${item.id}` :
                 item.type === 'EVENT' ? `/events/${item.id}` :
-                item.type === 'PLAN' ? `/plans/${item.id}` :
+                item.type === 'PROJECT' ? `/projects/${item.id}` :
                 item.type === 'MEMBER' ? `/profile/${item.userId}` : '#'
               return (
                 <Link key={`${item.type}-${item.id}`} href={href} className={styles.calendarEventItem}>
@@ -365,7 +365,7 @@ export default function DiscoverPage() {
                       r.type === 'SERVICE' ? `/services/${r.id}` :
                       r.type === 'GROUP' ? `/groups/${r.id}` :
                       r.type === 'EVENT' ? `/events/${r.id}` :
-                      r.type === 'PLAN' ? `/plans/${r.id}` :
+                      r.type === 'PROJECT' ? `/projects/${r.id}` :
                       `/profile/${r.userId}`
                     } className={styles.popupLink}>View Details →</Link>
                   </div>

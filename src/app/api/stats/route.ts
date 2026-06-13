@@ -13,7 +13,7 @@ export async function GET() {
       prisma.serviceOffering.count({ where: { isActive: true } }),
       prisma.product.count({ where: { published: true, type: 'RENTAL' } }),
       prisma.event.count({ where: { eventDate: { gte: new Date() } } }),
-      prisma.plan.count({ where: { published: true } }),
+      prisma.project.count({ where: { published: true } }),
       prisma.request.count({ where: { isPublic: true } }),
       prisma.forumPost.count(),
       prisma.forumReply.count(),

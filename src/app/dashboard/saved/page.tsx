@@ -16,7 +16,7 @@ interface SavedItem {
 }
 
 const TYPE_CONFIG: Record<string, { icon: string; label: string; href: string }> = {
-  PLAN: { icon: '🚀', label: 'Project', href: '/plans' },
+  PLAN: { icon: '🚀', label: 'Project', href: '/projects' },
   PRODUCT: { icon: '🛒', label: 'Product', href: '/products' },
   SERVICE: { icon: '🔧', label: 'Service', href: '/services' },
   RENTAL: { icon: '🏠', label: 'Rental', href: '/rentals' },
@@ -83,7 +83,7 @@ export default function SavedPage() {
             <h2>Nothing saved yet</h2>
             <p>Save plans, products, requests, and more to find them quickly later.</p>
             <div className={styles.emptyLinks}>
-              <Link href="/plans/public" className={styles.btn}>Browse Projects</Link>
+              <Link href="/projects" className={styles.btn}>Browse Projects</Link>
               <Link href="/shops" className={styles.btn}>Browse Shops</Link>
               <Link href="/requests" className={styles.btn}>Browse Requests</Link>
             </div>

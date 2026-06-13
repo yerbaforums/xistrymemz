@@ -48,7 +48,7 @@ async function enrichWithCounts(hashtags: { id: string; tag: string; postCount: 
       prisma.eventHashtag.count({ where: { hashtagId: h.id } }),
       prisma.serviceOfferingHashtag.count({ where: { hashtagId: h.id } }),
       prisma.schoolContentHashtag.count({ where: { hashtagId: h.id } }),
-      prisma.planHashtag.count({ where: { hashtagId: h.id } }),
+      prisma.projectHashtag.count({ where: { hashtagId: h.id } }),
       prisma.requestHashtag.count({ where: { hashtagId: h.id } }),
       prisma.groupHashtag.count({ where: { hashtagId: h.id } }),
       prisma.postHashtag.count({ where: { hashtagId: h.id, sourceType: 'FORUMPOST' } }),

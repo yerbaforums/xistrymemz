@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 
 export type EntityType =
-  | 'PLAN' | 'PRODUCT' | 'POST' | 'EVENT' | 'SCHOOLCONTENT'
+  | 'PROJECT' | 'PRODUCT' | 'POST' | 'EVENT' | 'SCHOOLCONTENT'
   | 'REQUEST' | 'SERVICE' | 'GROUP' | 'SHOP' | 'SCHOOL'
 
 export type RelationType = 'REFERENCES' | 'CONTAINS' | 'RELATES_TO' | 'PROMOTES'
@@ -136,8 +136,8 @@ export async function getRelatedEntitiesData(
 
 async function resolveEntityTitle(type: EntityType, id: string): Promise<string | null> {
   switch (type) {
-    case 'PLAN': {
-      const p = await prisma.plan.findUnique({ where: { id }, select: { title: true } })
+    case 'PROJECT': {
+      const p = await prisma.project.findUnique({ where: { id }, select: { title: true } })
       return p?.title || null
     }
     case 'PRODUCT': {
@@ -175,7 +175,7 @@ async function resolveEntityTitle(type: EntityType, id: string): Promise<string 
 
 function resolveEntityUrl(type: EntityType, id: string): string {
   switch (type) {
-    case 'PLAN': return `/plans/${id}`
+    case 'PROJECT': return `/projects/${id}`
     case 'PRODUCT': return `/products/${id}`
     case 'EVENT': return `/events/${id}`
     case 'REQUEST': return `/requests/${id}`

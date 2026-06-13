@@ -387,3 +387,113 @@
 .mb0 { margin-bottom: 0; }
 .mb4 { margin-bottom: 4px; }
 .mt24 { margin-top: 24px; }
+
+.emptyState { color: var(--text-muted); text-align: center; padding: 24px; }
+
+.donationCard {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  background: var(--bg-tertiary); border-radius: 10px; margin-bottom: 8px;
+  border: 1px solid var(--border-color); cursor: grab;
+}
+
+.donationRow { flex: 1; min-width: 0; }
+
+.donationInfo {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 2px;
+}
+
+.donationLabel { font-weight: 600; font-size: 0.9rem; }
+.donationQrHidden { font-size: 0.7rem; color: var(--text-muted); }
+.donationAddr { font-size: 0.75rem; color: var(--text-secondary); }
+
+.donationActions {
+  display: flex; gap: 6px; flex-shrink: 0;
+}
+
+.editBtn {
+  padding: 6px 12px; background: transparent; border: 1px solid var(--border-color);
+  border-radius: 6px; color: var(--text-secondary); cursor: pointer; font-size: 0.8rem;
+}
+.editBtn:hover { background: var(--bg-secondary); }
+
+.deleteBtn {
+  padding: 6px 12px; background: transparent; border: 1px solid var(--accent-secondary);
+  border-radius: 6px; color: var(--accent-secondary); cursor: pointer; font-size: 0.8rem;
+}
+.deleteBtn:hover { background: rgba(229, 62, 62, 0.1); }
+
+.dragHandle {
+  width: 20px; display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted); font-size: 1.1rem; flex-shrink: 0;
+}
+
+.cryptoIcon { border-radius: 50%; flex-shrink: 0; }
+
+.cryptoFallback {
+  width: 20px; height: 20px; border-radius: 50%; background: #888;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.6rem; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+
+.donationForm {
+  margin-top: 16px; padding: 16px; background: var(--bg-tertiary);
+  border-radius: 10px; border: 1px solid var(--border-color);
+}
+
+.formTitle { margin-top: 0; font-size: 1rem; }
+
+.formLabel {
+  display: block; margin-bottom: 6px; color: var(--text-secondary); font-size: 0.875rem;
+}
+
+.cryptoGrid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 6px;
+}
+
+.cryptoBtnBase {
+  padding: 6px 10px; background: var(--bg-secondary); color: var(--text-primary);
+  border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer;
+  display: flex; align-items: center; gap: 4px; font-size: 0.8rem;
+}
+.cryptoBtnBase:hover { border-color: var(--accent-primary); }
+
+.cryptoBtnActive {
+  background: var(--accent-primary); color: var(--bg-primary);
+}
+
+.cryptoBtnIcon { border-radius: 50%; }
+
+.formInput {
+  width: 100%; padding: 10px; background: var(--bg-secondary);
+  border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);
+}
+.formInput:focus { border-color: var(--accent-primary); outline: none; }
+
+.checkboxRow {
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+}
+
+.formActions {
+  display: flex; gap: 8px; justify-content: flex-end;
+}
+
+.cancelBtn {
+  padding: 8px 16px; background: transparent; border: 1px solid var(--border-color);
+  border-radius: 6px; color: var(--text-secondary); cursor: pointer;
+}
+.cancelBtn:hover { background: var(--bg-secondary); }
+
+.submitBtn {
+  padding: 8px 16px; background: var(--accent-primary); color: var(--bg-primary);
+  border: none; border-radius: 6px; cursor: pointer; font-weight: 500;
+}
+.submitBtn:hover { opacity: 0.9; }
+.submitBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.formRow {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
+}
+
+.donationMetaRow {
+  display: flex; align-items: flex-start;
+}

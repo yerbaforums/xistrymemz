@@ -20,7 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/community`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.6 },
     { url: `${baseUrl}/community/forum`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.6 },
     { url: `${baseUrl}/community/groups`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.6 },
-    { url: `${baseUrl}/plans/public`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.7 },
+    { url: `${baseUrl}/projects`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.7 },
     { url: `${baseUrl}/requests`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.7 },
     { url: `${baseUrl}/directory`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.5 },
     { url: `${baseUrl}/hashtags`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.6 },
@@ -28,12 +28,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]
 
   try {
-    const [boards, products, events, services, plans, requests, groups, shops] = await Promise.all([
+    const [boards, products, events, services, projects, requests, groups, shops] = await Promise.all([
       prisma.bulletinBoard.findMany({ select: { slug: true, updatedAt: true }, where: { isPublic: true } }),
       prisma.product.findMany({ select: { id: true, updatedAt: true }, where: { published: true } }),
       prisma.event.findMany({ select: { id: true, updatedAt: true } }),
       prisma.serviceOffering.findMany({ select: { id: true, updatedAt: true } }),
-      prisma.plan.findMany({ select: { id: true, updatedAt: true }, where: { published: true } }),
+      prisma.project.findMany({ select: { id: true, updatedAt: true }, where: { published: true } }),
       prisma.request.findMany({ select: { id: true, updatedAt: true } }),
       prisma.group.findMany({ select: { id: true, updatedAt: true } }),
       prisma.user.findMany({ select: { shopSlug: true, updatedAt: true }, where: { shopSlug: { not: null } } }),
@@ -44,7 +44,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ...products.map(p => ({ url: `${baseUrl}/products/${p.id}`, lastModified: p.updatedAt, changeFrequency: 'weekly' as const, priority: 0.7 })),
       ...events.map(e => ({ url: `${baseUrl}/events/${e.id}`, lastModified: e.updatedAt, changeFrequency: 'daily' as const, priority: 0.7 })),
       ...services.map(s => ({ url: `${baseUrl}/services/${s.id}`, lastModified: s.updatedAt, changeFrequency: 'weekly' as const, priority: 0.6 })),
-      ...plans.map(p => ({ url: `${baseUrl}/plans/${p.id}`, lastModified: p.updatedAt, changeFrequency: 'weekly' as const, priority: 0.7 })),
+      ...projects.map(p => ({ url: `${baseUrl}/projects/${p.id}`, lastModified: p.updatedAt, changeFrequency: 'weekly' as const, priority: 0.7 })),
       ...requests.map(r => ({ url: `${baseUrl}/requests/${r.id}`, lastModified: r.updatedAt, changeFrequency: 'weekly' as const, priority: 0.6 })),
       ...groups.map(g => ({ url: `${baseUrl}/groups/${g.id}`, lastModified: g.updatedAt, changeFrequency: 'weekly' as const, priority: 0.6 })),
       ...shops.filter(s => s.shopSlug).map(s => ({ url: `${baseUrl}/shop/${s.shopSlug}`, lastModified: s.updatedAt, changeFrequency: 'daily' as const, priority: 0.7 })),

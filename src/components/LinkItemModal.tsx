@@ -20,7 +20,7 @@ interface LinkItemModalProps {
 }
 
 const ENTITY_TYPES = [
-  { value: 'PLAN', label: 'Plan', icon: '📋' },
+  { value: 'PROJECT', label: 'Project', icon: '📋' },
   { value: 'PRODUCT', label: 'Product', icon: '🛒' },
   { value: 'EVENT', label: 'Event', icon: '📅' },
   { value: 'REQUEST', label: 'Request', icon: '🙋' },

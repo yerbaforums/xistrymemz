@@ -182,7 +182,7 @@ function entityHref(type: string, id: string): string {
     case 'SHOP': return `/shop/${id}`
     case 'EVENT': return `/events/${id}`
     case 'GROUP': return `/groups/${id}`
-    case 'PLAN': return `/plans/${id}`
+    case 'PROJECT': return `/projects/${id}`
     case 'REQUEST': return `/requests/${id}`
     case 'POST': return `/posts/${id}`
     case 'SCHOOL_CONTENT': return `/school/content/${id}`

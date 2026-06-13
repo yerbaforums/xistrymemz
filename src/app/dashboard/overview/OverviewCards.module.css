@@ -161,3 +161,145 @@
   border-radius: 6px;
   line-height: 1;
 }
+
+.overviewBtn {
+  display: inline-flex;
+  padding: 8px 20px;
+  font-size: 0.8rem;
+}
+
+.overviewStatCard {
+  cursor: default;
+}
+
+.overviewGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.overviewActions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.actionBtnLink {
+  flex: 1;
+  min-width: 140px;
+}
+
+.overviewSection {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.overviewList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.planStatusBadge {
+  font-size: 0.65rem;
+}
+
+.discoverHeading {
+  margin-bottom: 12px;
+  font-size: 1rem;
+}
+
+.manageLink {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+
+.checklistDesc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0 0 12px;
+}
+
+.checklistLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.achievementSub {
+  font-size: 0.7rem;
+  color: var(--accent-primary);
+  margin-left: 8px;
+}
+
+.streakTip {
+  margin-top: 12px;
+}
+
+.streakIcon {
+  font-size: 1.2rem;
+}
+
+.streakContent {
+  flex: 1;
+}
+
+.streakLabel {
+  color: var(--text-primary);
+}
+
+.streakSub {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  display: block;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sectionIcon {
+  font-size: 1rem;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.sectionControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sectionContent {
+  padding: 0 16px;
+}
+
+.sectionExpanded {
+  padding: 16px;
+}
+
+.sectionDesc {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.sectionOuter {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: var(--transition);
+}

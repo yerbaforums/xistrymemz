@@ -18,17 +18,7 @@ import { EmptyState } from '@/components/EmptyState'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import PinToBoardButton from '@/components/PinToBoardButton'
 import CollaborateButton from '@/components/CollaborateButton'
-
-const CATEGORIES = [
-  { value: 'GENERAL', label: 'General', icon: '\u{1F4CB}' },
-  { value: 'HELP', label: 'Help Needed', icon: '\u{1F198}' },
-  { value: 'COLLABORATION', label: 'Collaboration', icon: '🤝' },
-  { value: 'SUPPORT', label: 'Support', icon: '\u{1F4AA}' },
-  { value: 'RESOURCES', label: 'Resources', icon: '\u{1F4E6}' },
-  { value: 'FEEDBACK', label: 'Feedback', icon: '💬' },
-  { value: 'IDEA', label: 'Idea', icon: '\u{1F4A1}' },
-  { value: 'BUG', label: 'Bug Report', icon: '\u{1F41B}' },
-]
+import { REQUEST_CATEGORIES } from '@/lib/request-categories'
 
 const PRIORITIES = [
   { value: 'LOW', label: 'Low', color: '#888' },
@@ -131,7 +121,7 @@ interface Request {
   allowFulfillments: boolean
   imageUrl: string | null
   viewCount?: number
-  plan: {
+  project: {
     id: string
     title: string
     user: {
@@ -202,7 +192,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
     showDonationAddress: initialRequest.showDonationAddress,
   })
 
-  const isPlanOwner = request.plan?.user.id === userId
+  const isPlanOwner = request.project?.user.id === userId
   const isOwnRequest = request.user.id === userId
   const isOwner = isOwnRequest || isPlanOwner
   const canHelpComplete = request.status === 'PENDING' && !isOwnRequest && !request.product
@@ -210,8 +200,8 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
   const canEdit = isOwnRequest && request.status === 'PENDING'
   const canRollback = (isOwnRequest || isPlanOwner || userRole === 'ADMIN') && request.status !== 'PENDING'
   const canViewHistory = (isPlanOwner || isOwnRequest) && request.statusHistory && request.statusHistory.length > 0
-  const canApprove = request.plan && request.status === 'PENDING'
-  const category = CATEGORIES.find(c => c.value === request.category) || CATEGORIES[0]
+  const canApprove = request.project && request.status === 'PENDING'
+  const category = REQUEST_CATEGORIES.find(c => c.value === request.category) || REQUEST_CATEGORIES[0]
   const priority = PRIORITIES.find(p => p.value === request.priority) || PRIORITIES[1]
   const resolvedDonationAddrs = showDonationAddress ? (request.user?.donationAddresses || []) : []
 
@@ -663,15 +653,15 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
             )}
 
             <div className={styles.meta}>
-              {request.plan && (
+              {request.project && (
                 <div className={styles.metaItem}>
                   <span className={styles.metaLabel}>Project</span>
-                  <Link href={`/plans/${request.plan.id}`} className={styles.metaValue}>
-                    {request.plan.title}
+                  <Link href={`/projects/${request.project.id}`} className={styles.metaValue}>
+                    {request.project.title}
                   </Link>
                 </div>
               )}
-              {!request.plan && (
+              {!request.project && (
                 <div className={styles.metaItem}>
                   <span className={styles.metaLabel}>Type</span>
                   <span className={styles.metaValue}>Standalone Request</span>
@@ -683,11 +673,11 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                   {request.user.name || 'User'}
                 </Link>
               </div>
-              {request.plan && (
+              {request.project && (
                 <div className={styles.metaItem}>
                   <span className={styles.metaLabel}>Project owner</span>
-                  <Link href={getUserProfileUrl(request.plan.user)} className={styles.metaValue}>
-                    {request.plan.user.name || 'User'}
+                  <Link href={getUserProfileUrl(request.project.user)} className={styles.metaValue}>
+                    {request.project.user.name || 'User'}
                   </Link>
                 </div>
               )}
@@ -1300,7 +1290,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                   value={editForm.category}
                   onChange={e => setEditForm({ ...editForm, category: e.target.value })}
                 >
-                  {CATEGORIES.map(cat => (
+                  {REQUEST_CATEGORIES.map(cat => (
                     <option key={cat.value} value={cat.value}>{cat.icon} {cat.label}</option>
                   ))}
                 </select>

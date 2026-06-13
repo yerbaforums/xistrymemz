@@ -405,7 +405,7 @@
   gap: 16px;
 }
 
-.planCard {
+.projectCard {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 12px;
@@ -415,25 +415,25 @@
   position: relative;
 }
 
-.planCard:hover {
+.projectCard:hover {
   border-color: var(--accent-primary);
   transform: translateY(-2px);
   box-shadow: 0 4px 24px color-mix(in srgb, var(--accent-primary) 10%, transparent);
 }
 
-.planCard h3 {
+.projectCard h3 {
   font-size: 1rem;
   color: var(--text-primary);
   margin-bottom: 8px;
 }
 
-.planCard p {
+.projectCard p {
   font-size: 0.85rem;
   color: var(--text-muted);
   margin-top: 8px;
 }
 
-.planStatus {
+.projectStatus {
   display: inline-block;
   padding: 4px 10px;
   border-radius: 20px;
@@ -442,17 +442,17 @@
   text-transform: uppercase;
 }
 
-.planStatus.draft {
+.projectStatus.draft {
   background: color-mix(in srgb, var(--text-tertiary) 20%, transparent);
   color: var(--text-secondary);
 }
 
-.planStatus.active {
+.projectStatus.active {
   background: color-mix(in srgb, var(--accent-primary) 20%, transparent);
   color: var(--accent-primary);
 }
 
-.planStatus.completed {
+.projectStatus.completed {
   background: color-mix(in srgb, var(--accent-success) 20%, transparent);
   color: var(--accent-success);
 }
@@ -1157,13 +1157,13 @@
   border-color: var(--accent-primary);
 }
 
-.planCardLink {
+.projectCardLink {
   text-decoration: none;
   color: inherit;
   display: block;
 }
 
-.planCardLink:hover {
+.projectCardLink:hover {
   text-decoration: none;
 }
 

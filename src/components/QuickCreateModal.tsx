@@ -708,7 +708,7 @@ function ProjectForm({ onDone }: { onDone: () => void }) {
     if (!title.trim()) return
     setCreating(true)
     try {
-      const res = await fetch('/api/plans', {
+      const res = await fetch('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

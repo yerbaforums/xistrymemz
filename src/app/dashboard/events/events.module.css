@@ -597,3 +597,41 @@
 .mb0 { margin-bottom: 0; }
 .mb4 { margin-bottom: 4px; }
 .mt24 { margin-top: 24px; }
+
+.emptyActions {
+  display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+}
+
+.declineReason {
+  color: #ef4444;
+}
+
+.declineBlock {
+  margin-top: 8px; padding: 12px; background: #fef2f2;
+  border-radius: 8px; color: #991b1b; font-size: 14px;
+}
+
+.formResponses {
+  display: flex; flex-direction: column; gap: 4px;
+}
+
+.modalBody {
+  padding: 24px; display: flex; flex-direction: column; gap: 16px;
+}
+
+.modalLabel {
+  display: flex; flex-direction: column; gap: 4px; font-size: 14px; font-weight: 500;
+}
+
+.modalInput {
+  padding: 8px; border-radius: 8px; border: 1px solid #ddd; font-size: 14px;
+}
+
+.modalTextarea {
+  padding: 8px; border-radius: 8px; border: 1px solid #ddd;
+  font-size: 14px; resize: vertical;
+}
+
+.modalActions {
+  display: flex; gap: 12px; justify-content: flex-end;
+}

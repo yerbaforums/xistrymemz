@@ -25,9 +25,9 @@ export async function POST(
     where: { id },
     select: { 
       userId: true, 
-      planId: true, 
+      projectId: true, 
       status: true,
-      plan: { select: { userId: true } }
+      project: { select: { userId: true } }
     }
   })
 
@@ -37,7 +37,7 @@ export async function POST(
 
   // Check permissions: owner, plan owner, or admin
   const isOwner = existingRequest.userId === session.user.id
-  const isPlanOwner = existingRequest.plan?.userId === session.user.id
+  const isPlanOwner = existingRequest.project?.userId === session.user.id
   const userRole = (session.user as { role?: string }).role
   const isAdmin = userRole === 'ADMIN'
 

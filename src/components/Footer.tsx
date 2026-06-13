@@ -70,7 +70,7 @@ export default function Footer() {
           <div className={styles.col}>
             <h4>{t('explore')}</h4>
             <Link href="/">{t('home')}</Link>
-            <Link href="/plans/public">{t('projects')}</Link>
+            <Link href="/projects">{t('projects')}</Link>
             <Link href="/products">{t('marketplace')}</Link>
             <Link href="/services">{t('services')}</Link>
             <Link href="/events">{t('events')}</Link>

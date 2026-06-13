@@ -53,7 +53,7 @@ function getTimestamp(): string {
 
 async function prismaDump(): Promise<string> {
   const modelNames = [
-    'User', 'Plan', 'Request', 'Product', 'Event', 'ServiceOffering', 'Group',
+    'User', 'Project', 'Request', 'Product', 'Event', 'ServiceOffering', 'Group',
     'BulletinBoard', 'BulletinPin', 'Post', 'ForumPost', 'ForumReply',
     'SchoolContent', 'Notification', 'Message', 'Connection', 'Comment',
     'PlanUpdate', 'PlanUpdateComment', 'Payment', 'EscrowTransaction',

@@ -56,11 +56,11 @@ export default function StreakCard({ postCount, connectionCount }: { postCount: 
   }, [])
 
   return (
-    <div className={overviewStyles.tipCard} style={{ marginTop: 12 }}>
-      <span style={{ fontSize: '1.2rem' }}>🔥</span>
-      <div style={{ flex: 1 }}>
-        <strong style={{ color: 'var(--text-primary)' }}>{streak > 0 ? `${streak}-day streak` : 'Start your streak'}</strong>
-        <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block' }}>
+    <div className={`${overviewStyles.tipCard} ${overviewStyles.streakTip}`}>
+      <span className={overviewStyles.streakIcon}>🔥</span>
+      <div className={overviewStyles.streakContent}>
+        <strong className={overviewStyles.streakLabel}>{streak > 0 ? `${streak}-day streak` : 'Start your streak'}</strong>
+        <span className={overviewStyles.streakSub}>
           {postCount > 0 ? `${postCount} posts` : 'No posts yet'} · {connectionCount > 0 ? `${connectionCount} connections` : 'No connections yet'}
         </span>
       </div>

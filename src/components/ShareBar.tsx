@@ -6,7 +6,7 @@ import { SOCIAL_PLATFORMS, buildShareUrl } from '@/lib/share-links'
 import styles from './ShareBar.module.css'
 
 export type ShareEntityType =
-  | 'POST' | 'PRODUCT' | 'SERVICE' | 'EVENT' | 'PLAN'
+  | 'POST' | 'PRODUCT' | 'SERVICE' | 'EVENT' | 'PROJECT'
   | 'REQUEST' | 'SCHOOLCONTENT' | 'GROUP' | 'SHOP' | 'SCHOOL'
   | 'FORUMPOST' | 'PROFILE'
 

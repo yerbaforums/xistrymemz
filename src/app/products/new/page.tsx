@@ -451,7 +451,7 @@ export default function NewProductPage() {
                 </label>
                 <label className={styles.checkLabel}>
                   <input type="checkbox" checked={form.acceptsRequests} onChange={e => update('acceptsRequests', e.target.checked)} />
-                  Allow adding to Plans
+                  Allow adding to Projects
                 </label>
                 <label className={styles.checkLabel}>
                   <input type="checkbox" checked={form.acceptsDonations} onChange={e => update('acceptsDonations', e.target.checked)} />

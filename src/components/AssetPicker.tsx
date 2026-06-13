@@ -69,7 +69,7 @@ export default function AssetPicker({ filterTypes, selectedAsset, onSelect, labe
 
   const typeLabel = (type: string) => {
     const map: Record<string, string> = {
-      PLAN: 'Plans',
+      PLAN: 'Projects',
       GROUP: 'Groups',
       SHOP: 'Shops',
       SCHOOL: 'Schools',

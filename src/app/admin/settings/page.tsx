@@ -343,7 +343,7 @@ export default function AdminSettingsPage() {
 
       {/* Site Donation Addresses */}
       <div className={`${styles.section} ${styles.mt24}`}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <div className={styles.formRow}>
           <div>
             <h2 className={styles.mb4}>Site Donation Addresses</h2>
             <p className={`${styles.description} ${styles.mb0}`}>
@@ -360,7 +360,7 @@ export default function AdminSettingsPage() {
         </div>
 
         {settings.donationAddresses.length === 0 && !showDonationForm && (
-          <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '24px' }}>
+          <p className={styles.emptyState}>
             No donation addresses configured. Add BTC, ETH, XMR, or other crypto addresses.
           </p>
         )}
@@ -382,62 +382,47 @@ export default function AdminSettingsPage() {
                 const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'))
                 handleReorderDonations(draggedIndex, idx)
               }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px',
-                background: 'var(--bg-tertiary)', borderRadius: '10px', marginBottom: '8px',
-                border: '1px solid var(--border-color)', cursor: 'grab'
-              }}
+              className={styles.donationCard}
               onClick={() => { setQrAddress(da.address); setQrDonationCurrency(da.currency) }}
             >
-              <div style={{ width: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '1.1rem', flexShrink: 0 }} title="Drag to reorder">
+              <div className={styles.dragHandle} title="Drag to reorder">
                 ⠿
               </div>
               {iconUrl ? (
-                <img src={iconUrl} alt={cryptoName} width={20} height={20} style={{ borderRadius: '50%', flexShrink: 0 }} />
+                <img src={iconUrl} alt={cryptoName} width={20} height={20} className={styles.cryptoIcon} />
               ) : (
-                <span style={{ width: 20, height: 20, borderRadius: '50%', background: '#888', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 700, color: '#fff', flexShrink: 0 }}>{da.currency.substring(0, 2).toUpperCase()}</span>
+                <span className={styles.cryptoFallback}>{da.currency.substring(0, 2).toUpperCase()}</span>
               )}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                  <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{da.label || cryptoName}</span>
-                  {!da.showQR && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>(QR hidden)</span>}
+              <div className={styles.donationRow}>
+                <div className={styles.donationInfo}>
+                  <span className={styles.donationLabel}>{da.label || cryptoName}</span>
+                  {!da.showQR && <span className={styles.donationQrHidden}>(QR hidden)</span>}
                 </div>
-                <code style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }} title={da.address}>{shortAddr}</code>
+                <code className={styles.donationAddr} title={da.address}>{shortAddr}</code>
               </div>
-              <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
-                <button onClick={() => { setEditingDonation(da); setDonationForm({ currency: da.currency, address: da.address, label: da.label || '', showQR: da.showQR }); setShowDonationForm(true) }} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.8rem' }}>Edit</button>
-                <button onClick={() => handleDeleteDonation(da.id)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--accent-secondary)', borderRadius: '6px', color: 'var(--accent-secondary)', cursor: 'pointer', fontSize: '0.8rem' }}>Delete</button>
+              <div className={styles.donationActions} onClick={e => e.stopPropagation()}>
+                <button onClick={() => { setEditingDonation(da); setDonationForm({ currency: da.currency, address: da.address, label: da.label || '', showQR: da.showQR }); setShowDonationForm(true) }} className={styles.editBtn}>Edit</button>
+                <button onClick={() => handleDeleteDonation(da.id)} className={styles.deleteBtn}>Delete</button>
               </div>
             </div>
           )
         })}
 
         {showDonationForm && (
-          <form onSubmit={handleSaveDonation} style={{ marginTop: '16px', padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-            <h3 style={{ marginTop: 0, fontSize: '1rem' }}>{editingDonation ? 'Edit Address' : 'Add Donation Address'}</h3>
+          <form onSubmit={handleSaveDonation} className={styles.donationForm}>
+            <h3 className={styles.formTitle}>{editingDonation ? 'Edit Address' : 'Add Donation Address'}</h3>
 
             <div className={styles.mb12}>
-              <label style={{ display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Currency</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '6px' }}>
+              <label className={styles.formLabel}>Currency</label>
+              <div className={styles.cryptoGrid}>
                 {allCryptos.map(crypto => (
                   <button
                     key={crypto.id}
                     type="button"
                     onClick={() => setDonationForm({ ...donationForm, currency: crypto.id })}
-                    style={{
-                      padding: '6px 10px',
-                      background: donationForm.currency === crypto.id ? 'var(--accent-primary)' : 'var(--bg-secondary)',
-                      color: donationForm.currency === crypto.id ? 'var(--bg-primary)' : 'var(--text-primary)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      fontSize: '0.8rem'
-                    }}
+                    className={`${styles.cryptoBtnBase} ${donationForm.currency === crypto.id ? styles.cryptoBtnActive : ''}`}
                   >
-                    {crypto.icon && <img src={crypto.icon} alt="" width={14} height={14} style={{ borderRadius: '50%' }} />}
+                    {crypto.icon && <img src={crypto.icon} alt="" width={14} height={14} className={styles.cryptoBtnIcon} />}
                     {crypto.symbol}
                   </button>
                 ))}
@@ -445,38 +430,38 @@ export default function AdminSettingsPage() {
             </div>
 
             <div className={styles.mb12}>
-              <label style={{ display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Address</label>
+              <label className={styles.formLabel}>Address</label>
               <input
                 type="text"
                 value={donationForm.address}
                 onChange={e => setDonationForm({ ...donationForm, address: e.target.value })}
                 placeholder={`Enter ${donationForm.currency} address...`}
                 required
-                style={{ width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }}
+                className={styles.formInput}
               />
             </div>
 
             <div className={styles.mb12}>
-              <label style={{ display: 'block', marginBottom: '6px', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Label (optional)</label>
+              <label className={styles.formLabel}>Label (optional)</label>
               <input
                 type="text"
                 value={donationForm.label}
                 onChange={e => setDonationForm({ ...donationForm, label: e.target.value })}
                 placeholder="e.g., Main Wallet, Community Fund..."
-                style={{ width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }}
+                className={styles.formInput}
               />
             </div>
 
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <div className={styles.mb12}>
+              <label className={styles.checkboxRow}>
                 <input type="checkbox" checked={donationForm.showQR} onChange={e => setDonationForm({ ...donationForm, showQR: e.target.checked })} />
                 <span>Show QR code</span>
               </label>
             </div>
 
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-              <button type="button" onClick={() => { setShowDonationForm(false); setEditingDonation(null) }} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer' }}>Cancel</button>
-              <button type="submit" disabled={saving} style={{ padding: '8px 16px', background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500 }}>{saving ? 'Saving...' : (editingDonation ? 'Update' : 'Add')}</button>
+            <div className={styles.formActions}>
+              <button type="button" onClick={() => { setShowDonationForm(false); setEditingDonation(null) }} className={styles.cancelBtn}>Cancel</button>
+              <button type="submit" disabled={saving} className={styles.submitBtn}>{saving ? 'Saving...' : (editingDonation ? 'Update' : 'Add')}</button>
             </div>
           </form>
         )}

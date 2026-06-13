@@ -10,7 +10,7 @@ export async function GET() {
       return apiError("Unauthorized", 401)
     }
 
-    const plans = await prisma.plan.findMany({
+    const plans = await prisma.project.findMany({
       where: { userId: session.user.id },
       select: { id: true, title: true, status: true, published: true, _count: { select: { requests: true } } },
       orderBy: { updatedAt: 'desc' },

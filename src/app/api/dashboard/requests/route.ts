@@ -14,7 +14,7 @@ export async function GET() {
       where: { userId: session.user.id },
       include: { 
         user: { select: { name: true, email: true } }, 
-        plan: { select: { id: true, title: true } },
+        project: { select: { id: true, title: true } },
         group: { select: { id: true, name: true } },
         product: { select: { id: true, title: true } },
         schoolContent: { select: { id: true, title: true } },

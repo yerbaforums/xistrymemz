@@ -141,7 +141,7 @@ export default function PulseSection({ shops, products, requests, events, plans,
           ) : plans.length > 0 ? (
             <div className={styles.list}>
               {plans.slice(0, 4).map(plan => (
-                <Link key={plan.id} href={`/plans/public?id=${plan.id}`} className={styles.item}>
+                <Link key={plan.id} href={`/projects?id=${plan.id}`} className={styles.item}>
                   <span className={styles.itemIcon}>🚀</span>
                   <div className={styles.itemCol}>
                     <span className={styles.itemTitle}>{plan.title}</span>
@@ -151,7 +151,7 @@ export default function PulseSection({ shops, products, requests, events, plans,
               ))}
             </div>
           ) : <p className={styles.empty}>{t('noProjectsYet')}</p>}
-          <Link href="/plans/public" className={styles.viewAll}>{t('exploreProjects')} →</Link>
+          <Link href="/projects" className={styles.viewAll}>{t('exploreProjects')} →</Link>
         </div>
         <div className={styles.card}>
           <div className={styles.header}>

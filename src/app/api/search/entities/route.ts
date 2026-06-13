@@ -21,7 +21,7 @@ const SEARCH_CONFIG: Record<string, {
       ],
       status: { not: 'ARCHIVED' },
     }),
-    url: (id) => `/plans/${id}`,
+    url: (id) => `/projects/${id}`,
   },
   PRODUCT: {
     model: 'product',

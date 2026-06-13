@@ -7,18 +7,18 @@ import { extractAndLinkHashtags, linkHashtags } from '@/services/hashtagService'
 async function canAccessRequest(userId: string, roleId: string, requestId: string) {
   const req = await prisma.request.findFirst({
     where: { id: requestId },
-    select: { userId: true, planId: true, isPublic: true }
+    select: { userId: true, projectId: true, isPublic: true }
   })
   if (!req) return null
   const isOwner = req.userId === userId
   const isAdmin = roleId === 'ADMIN'
   let isPlanOwner = false
   let isPlanEditor = false
-  if (req.planId) {
-    const plan = await prisma.plan.findFirst({ where: { id: req.planId }, select: { userId: true } })
+  if (req.projectId) {
+    const project = await prisma.project.findFirst({ where: { id: req.projectId }, select: { userId: true } })
     if (plan) {
-      isPlanOwner = plan.userId === userId
-      isPlanEditor = await prisma.planEditor.findFirst({ where: { planId: req.planId, userId } }).then(Boolean)
+      isPlanOwner = project.userId === userId
+      isPlanEditor = await prisma.projectEditor.findFirst({ where: { projectId: req.projectId, userId } }).then(Boolean)
     }
   }
   const hasAccess = isOwner || isPlanOwner || isPlanEditor || isAdmin || req.isPublic
@@ -44,7 +44,7 @@ export async function GET(
     const req = await prisma.request.findUnique({
       where: { id },
       include: {
-        plan: {
+        project: {
           include: {
             user: { select: { id: true, name: true, username: true, shopSlug: true } }
           }
