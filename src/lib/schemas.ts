@@ -29,7 +29,7 @@ export const projectSchema = z.object({
 })
 
 export const requestSchema = z.object({
-  planId: z.string().optional(),
+  projectId: z.string().optional(),
   productId: z.string().optional(),
   groupId: z.string().optional(),
   schoolContentId: z.string().optional(),
@@ -194,7 +194,7 @@ export const eventSchema = z.object({
   needsVolunteers: z.boolean().optional(),
   volunteerRoles: z.string().optional(),
   volunteerDescription: z.string().optional(),
-  planId: z.string().optional().nullable(),
+  projectId: z.string().optional().nullable(),
   groupId: z.string().optional().nullable(),
   schoolId: z.string().optional().nullable(),
   shopId: z.string().optional().nullable(),
