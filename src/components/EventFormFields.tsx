@@ -308,7 +308,7 @@ export default function EventFormFields({
           <details className={styles.settingsDetails}>
             <summary className={styles.settingsSummary}>Entity Linking</summary>
             {fixedProjectId ? (
-              <div className={styles.fixedPlanNotice}>
+              <div className={styles.fixedProjectNotice}>
                 This event will be linked to: <strong>{fixedProjectTitle || 'this project'}</strong>
               </div>
             ) : (

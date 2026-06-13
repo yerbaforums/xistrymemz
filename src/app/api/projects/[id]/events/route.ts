@@ -48,7 +48,7 @@ export async function POST(
     where: { id }
   })
 
-  if (!plan) {
+  if (!project) {
     return apiError("Project not found", 404)
   }
 

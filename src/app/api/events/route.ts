@@ -179,7 +179,7 @@ export async function POST(request: NextRequest) {
       const project = await prisma.project.findFirst({
         where: { id: projectId }
       })
-      if (!plan) {
+      if (!project) {
         return apiError("Project not found", 404)
       }
     }

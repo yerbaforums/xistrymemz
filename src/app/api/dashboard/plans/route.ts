@@ -10,7 +10,7 @@ export async function GET() {
       return apiError("Unauthorized", 401)
     }
 
-    const plans = await prisma.project.findMany({
+    const projects = await prisma.project.findMany({
       where: { userId: session.user.id },
       select: { id: true, title: true, status: true, published: true, _count: { select: { requests: true } } },
       orderBy: { updatedAt: 'desc' },
@@ -20,6 +20,6 @@ export async function GET() {
     return apiSuccess(plans)
   } catch (error) {
     console.error('Error fetching plans:', error)
-    return apiError("Failed to fetch plans", 500)
+    return apiError("Failed to fetch projects", 500)
   }
 }

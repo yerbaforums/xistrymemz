@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
 
     const membersWithCount = members.map(m => ({
       ...m,
-      planCount: m._count.plans,
+      projectCount: m._count.projects,
       requestCount: m._count.requests,
       productCount: m._count.products,
       connectionCount: 0,

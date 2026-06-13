@@ -19,7 +19,7 @@ export async function GET(
     }
   })
 
-  if (!plan) {
+  if (!project) {
     return apiError("Event not found", 404)
   }
 

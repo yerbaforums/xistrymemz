@@ -219,9 +219,9 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
 
   const mapLocations = useMemo(() => {
     const locations: { lat: number; lng: number; title: string; type: string; id: string; info: string }[] = []
-    filteredProjects.forEach(plan => {
-      if (plan.latitude && plan.longitude) {
-        locations.push({ lat: plan.latitude, lng: plan.longitude, title: plan.title, type: 'project', id: plan.id, info: plan.location || 'Project Location' })
+    filteredProjects.forEach(project => {
+      if (project.latitude && plan.longitude) {
+        locations.push({ lat: project.latitude, lng: plan.longitude, title: plan.title, type: 'project', id: plan.id, info: plan.location || 'Project Location' })
       }
       plan.events.forEach(event => {
         if (event.latitude && event.longitude) {
@@ -269,7 +269,7 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
     return upcoming[0] || null
   }
 
-  const getProjectDistance = (plan: ProjectData): number | null => {
+  const getProjectDistance = (project: ProjectData): number | null => {
     if (!userLocation || !plan.latitude || !plan.longitude) return null
     return Math.round(haversineDistance(userLocation.lat, userLocation.lng, plan.latitude, plan.longitude))
   }
@@ -405,7 +405,7 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
     </div>
   )
 
-  const fundingProgress = (plan: ProjectData) => {
+  const fundingProgress = (project: ProjectData) => {
     const goal = plan.goalAmount || 0
     const funded = plan.currentFunding || 0
     if (goal <= 0) return null
@@ -524,7 +524,7 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
             </div>
           ) : (
             <div className={styles.publicGrid}>
-              {filteredProjects.map((plan, index) => {
+              {filteredProjects.map((project, index) => {
                 const next = nextEvent(plan.events)
                 const goalsList = parseGoalsList(plan.goals)
                 const catColor = CATEGORY_COLORS[plan.category || 'OTHER'] || '#888'

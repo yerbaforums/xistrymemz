@@ -21,12 +21,12 @@ export async function POST(
     select: { userId: true }
   })
 
-  if (!plan) {
+  if (!project) {
     return apiError("Project not found", 404)
   }
 
   if (project.userId !== session.user.id) {
-    return apiError("Only the plan owner can add editors", 403)
+    return apiError("Only the project owner can add editors", 403)
   }
 
   const user = await prisma.user.findUnique({
@@ -66,12 +66,12 @@ export async function DELETE(
     select: { userId: true }
   })
 
-  if (!plan) {
+  if (!project) {
     return apiError("Project not found", 404)
   }
 
   if (project.userId !== session.user.id) {
-    return apiError("Only the plan owner can remove editors", 403)
+    return apiError("Only the project owner can remove editors", 403)
   }
 
   await prisma.projectEditor.delete({

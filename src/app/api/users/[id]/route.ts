@@ -268,7 +268,7 @@ export async function GET(
     return NextResponse.json({
       user: {
         ...user,
-        planCount: user._count.plans,
+        projectCount: user._count.projects,
         postCount: user._count.posts,
         productCount: user._count.products,
         connectionCount: connectedCount,

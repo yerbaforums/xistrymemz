@@ -852,6 +852,7 @@
 .mutedSmall { color: var(--text-muted); font-size: 0.85rem; }
 .flexRow { display: flex; align-items: center; }
 .flexBetween { display: flex; justify-content: space-between; align-items: center; }
+.projectDetail { padding: 2rem 0; }
 .flexWrap { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
 .gap8 { gap: 8px; }
 .gap12 { gap: 12px; }

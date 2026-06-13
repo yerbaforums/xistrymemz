@@ -67,7 +67,7 @@ export default async function DashboardOverview({
   const userId = session.user.id
 
   const [
-    _plans,
+    _projects,
     _requests,
     products,
     connectionCount,
@@ -254,14 +254,14 @@ export default async function DashboardOverview({
     }),
   ])
 
-  const plans = _plans
+  const projects = _projects
   const requests = _requests
   
   const pendingRequests = requests.filter((r: { status: string }) => r.status === 'PENDING').length
   const eventAttendeeCount = eventJoinerCounts.find(r => r.role === 'ATTENDEE')?._count ?? 0
   const eventVolunteerCount = eventJoinerCounts.find(r => r.role === 'VOLUNTEER')?._count ?? 0
   const totalEarnings = (sellerEarnings._sum.netAmount ?? 0) + (teachingEarnings._sum.amount ?? 0)
-  const isNewUser = allStats[6] === 0 && plans.length === 0 && allStats[2] === 0 && connectionCount === 0
+  const isNewUser = allStats[6] === 0 && projects.length === 0 && allStats[2] === 0 && connectionCount === 0
 
   const stats: StatDef[] = [
     { label: t('projects'), value: allStats[0], max: 20, color: '#8B5CF6', icon: '🚀', href: '/dashboard/projects' },
@@ -428,16 +428,16 @@ export default async function DashboardOverview({
 
           <div className={overviewStyles.overviewList}>
             <DashboardSection id="projects" title={t('projects')} icon="📦" action={<Link href="/dashboard/projects" className={styles.viewAll}>View all →</Link>}>
-              {plans.length > 0 ? (
+              {projects.length > 0 ? (
                 <div className={styles.activityList}>
-                  {plans.map(plan => (
+                  {projects.map(project => (
                     <Link key={plan.id} href={`/projects/${plan.id}`} className={styles.activityItem}>
                       <div className={styles.activityIcon}>🚀</div>
                       <div className={styles.activityInfo}>
                         <span className={styles.activityTitle}>{project.title}</span>
                         <span className={styles.activityMeta}>{plan.status} · {new Date(plan.createdAt).toLocaleDateString()}</span>
                       </div>
-                      <span className={`badge badge-${plan.status.toLowerCase()} ${overviewStyles.planStatusBadge}`}>{plan.status}</span>
+                      <span className={`badge badge-${plan.status.toLowerCase()} ${overviewStyles.projectStatusBadge}`}>{plan.status}</span>
                     </Link>
                   ))}
                 </div>

@@ -28,7 +28,7 @@ interface MapItem {
 const TYPE_ICONS: Record<string, string> = {
   product: '🛒',
   event: '📅',
-  plan: '🚀',
+  project: '🚀',
   request: '📝',
   shop: '🏪',
 }

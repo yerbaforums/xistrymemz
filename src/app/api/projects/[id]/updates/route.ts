@@ -30,7 +30,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     where: { id: projectId },
     select: { userId: true }
   })
-  if (!plan) return apiError("Project not found", 404)
+  if (!project) return apiError("Project not found", 404)
 
   const isOwner = project.userId === session.user.id
   const isEditor = await prisma.projectEditor.findFirst({

@@ -525,7 +525,7 @@ function EventDetailContent() {
                   {event.organizer?.role && <RoleBadge role={event.organizer.role} />}
                 </p>
                 {event.projectTitle && event.projectId && (
-                  <p className={styles.planRef}>From: <Link href={`/projects/${event.projectId}`} className={styles.planLink}>{event.projectTitle}</Link></p>
+                  <p className={styles.projectRef}>From: <Link href={`/projects/${event.projectId}`} className={styles.projectLink}>{event.projectTitle}</Link></p>
                 )}
                 
                 {event.imageUrl && (

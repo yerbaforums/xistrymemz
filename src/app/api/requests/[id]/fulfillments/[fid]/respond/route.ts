@@ -47,7 +47,7 @@ export async function POST(
         where: { id: req.projectId },
         select: { userId: true }
       })
-      if (plan) {
+      if (project) {
         isPlanOwner = project.userId === session.user.id
         isPlanEditor = await prisma.projectEditor.findFirst({
           where: { projectId: req.projectId, userId: session.user.id }

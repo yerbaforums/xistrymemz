@@ -21,7 +21,7 @@ export async function GET(
       select: { userId: true }
     })
 
-    if (!plan) {
+    if (!project) {
       return apiError("Project not found", 404)
     }
 
@@ -46,7 +46,7 @@ export async function GET(
       createdAt: h.createdAt.toISOString()
     })))
   } catch (error) {
-    console.error('Error fetching plan status history:', error)
+    console.error('Error fetching project status history:', error)
     return apiError("Failed to fetch history", 500)
   }
 }

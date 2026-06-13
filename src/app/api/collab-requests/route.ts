@@ -32,7 +32,7 @@ export async function POST(request: Request) {
       receiverId = group?.userId || null
     } else if (entityType === 'PROJECT') {
       const project = await prisma.project.findUnique({ where: { id: entityId }, select: { userId: true } })
-      receiverId = plan?.userId || null
+      receiverId = project?.userId || null
     }
 
     if (!receiverId) {

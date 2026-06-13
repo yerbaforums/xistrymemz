@@ -53,7 +53,7 @@ export default function Header() {
   const headerRef = useRef<HTMLElement>(null)
   const quickCreate = useQuickCreate()
   const [searchResults, setSearchResults] = useState<{
-    plans: { id: string; title: string; type: string; url: string }[]
+    projects: { id: string; title: string; type: string; url: string }[]
     products: { id: string; title: string; type: string; url: string }[]
     services: { id: string; title: string; type: string; url: string }[]
     users: { id: string; name: string | null; type: string; url: string }[]
@@ -116,6 +116,25 @@ export default function Header() {
     }
     load()
   }, [session])
+
+  const fetchNotificationCount = useCallback(async () => {
+    try {
+      const [notifRes, inboxRes] = await Promise.all([
+        fetch('/api/notifications/unread'),
+        fetch('/api/inbox')
+      ])
+      let total = 0
+      if (notifRes.ok) {
+        const data = await notifRes.json()
+        total += data?.data?.unreadCount ?? data?.unreadCount ?? 0
+      }
+      if (inboxRes.ok) {
+        const data = await inboxRes.json()
+        setMessagesUnread(data?.data?.unreadCount ?? data?.unreadCount ?? 0)
+      }
+      setNotificationCount(total)
+    } catch (e) { console.error('Error fetching notification count:', e) }
+  }, [])
 
   useNotificationSSE(useCallback((event) => {
     if (event.type === 'unread-count' && event.unreadCount !== undefined) {

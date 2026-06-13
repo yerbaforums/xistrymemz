@@ -11,7 +11,7 @@ const SEARCH_CONFIG: Record<string, {
   url: (id: string) => string
 }> = {
   PLAN: {
-    model: 'plan',
+    model: 'project',
     titleField: 'title',
     select: { id: true, title: true, userId: true },
     where: (q) => ({

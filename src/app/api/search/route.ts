@@ -127,7 +127,7 @@ export async function GET(request: Request) {
   ])
 
   const results = {
-    plans: plans.map(p => ({ ...p, type: 'plan', url: `/projects/${p.id}` })),
+    plans: plans.map(p => ({ ...p, type: 'project', url: `/projects/${p.id}` })),
     products: products.map(p => ({ ...p, type: 'product', url: `/products/${p.id}` })),
     services: services.map(s => ({ ...s, type: 'service', url: `/services/${s.id}` })),
     users: users.map(u => ({ ...u, type: 'user', url: `/profile/${u.username || u.id}` })),

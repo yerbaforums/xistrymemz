@@ -26,18 +26,18 @@ export async function POST(
     include: { joiners: true }
   })
 
-  if (!plan) {
+  if (!project) {
     return apiError("Project not found", 404)
   }
 
   if (project.userId === session.user.id) {
-    return apiError("Cannot join your own plan", 400)
+    return apiError("Cannot join your own project", 400)
   }
 
   const existingJoiner = await prisma.projectJoiner.findUnique({
     where: {
       planId_userId: {
-        projectId: plan.id,
+        projectId: project.id,
         userId: session.user.id
       }
     }
@@ -57,7 +57,7 @@ export async function POST(
 
   const joiner = await prisma.projectJoiner.create({
     data: {
-      projectId: plan.id,
+      projectId: project.id,
       userId: session.user.id,
       role
     }
@@ -90,7 +90,7 @@ export async function DELETE(
   })
 
   if (!joiner) {
-    return apiError("Not joined this plan", 404)
+    return apiError("Not joined this project", 404)
   }
 
   if (joiner.role !== role) {

@@ -26,7 +26,7 @@ export async function GET(
       }
     })
 
-    if (!plan) {
+    if (!project) {
       return apiError("Project not found", 404)
     }
 
@@ -41,7 +41,7 @@ export async function GET(
       return apiError("Forbidden", 403)
     }
 
-    return apiSuccess(plan)
+    return apiSuccess(project)
   } catch (error) {
     console.error('GET /api/projects/[id]:', error)
     return apiError("Internal server error", 500)
@@ -128,7 +128,7 @@ export async function PUT(
       await extractAndLinkHashtags(title + ' ' + (description || ''), 'PROJECT', id)
     }
 
-    return apiSuccess(plan)
+    return apiSuccess(project)
   } catch (error) {
     console.error('PUT /api/projects/[id]:', error)
     return apiError("Internal server error", 500)

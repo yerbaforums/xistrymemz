@@ -75,7 +75,7 @@ export default async function RequestsPage() {
     showDonationAddress: req.showDonationAddress,
     createdAt: req.createdAt.toISOString(),
     updatedAt: req.updatedAt.toISOString(),
-    plan: req.project,
+    project: req.project,
     group: req.group,
     product: req.product,
     schoolContent: req.schoolContent,

@@ -126,7 +126,7 @@ export async function POST(request: Request) {
       const project = await prisma.project.findFirst({
         where: { id: projectId }
       })
-      if (!plan) {
+      if (!project) {
         return apiError("Project not found", 404)
       }
       const isOwner = project.userId === session.user.id
@@ -136,7 +136,7 @@ export async function POST(request: Request) {
       const userRole = (session.user as { role?: string }).role
       const isAdmin = userRole === 'ADMIN'
       if (!isOwner && !isEditor && !isAdmin) {
-        return apiError("You do not have permission to add requests to this plan", 403)
+        return apiError("You do not have permission to add requests to this project", 403)
       }
     }
 

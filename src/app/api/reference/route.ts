@@ -23,7 +23,7 @@ const OWNER_FIELDS: Record<string, { field: string; relation: string }> = {
 }
 
 const ENTITY_MODELS: Record<string, string> = {
-  PLAN: 'plan',
+  PROJECT: 'project',
   PRODUCT: 'product',
   POST: 'post',
   EVENT: 'event',

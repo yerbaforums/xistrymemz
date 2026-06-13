@@ -24,12 +24,12 @@ export async function POST(
 
     const project = await prisma.project.findUnique({ where: { id } })
 
-    if (!plan) {
+    if (!project) {
       return apiError("Project not found", 404)
     }
 
     if (!plan.acceptsDonations) {
-      return apiError("This plan does not accept donations", 400)
+      return apiError("This project does not accept donations", 400)
     }
 
     const [contribution] = await prisma.$transaction([

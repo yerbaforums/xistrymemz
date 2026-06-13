@@ -259,3 +259,10 @@
     font-size: 0.8rem;
   }
 }
+
+.projectList { display: flex; flex-direction: column; gap: 8px; }
+.projectCard { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; }
+.projectCard:hover { border-color: var(--accent-primary); }
+.projectCardTitle { font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.projectCardDesc { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px; }
+.projectCardMeta { font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 12px; }

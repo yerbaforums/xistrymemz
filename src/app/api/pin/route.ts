@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       
       case 'plan': {
         const project = await prisma.project.findUnique({ where: { id } })
-        if (!plan) return apiError("Project not found", 404)
+        if (!project) return apiError("Project not found", 404)
         if (project.userId !== session.user.id) return apiError("Not authorized", 403)
         
         await prisma.project.update({

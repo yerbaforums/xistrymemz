@@ -131,7 +131,7 @@ export async function GET(
     }
 
     if (type === 'all' || type === 'plans') {
-      const planHashtags = await prisma.projectHashtag.findMany({
+      const projectHashtags = await prisma.projectHashtag.findMany({
         where: { hashtagId: hashtag.id },
         include: {
           project: {
@@ -145,7 +145,7 @@ export async function GET(
         take: type === 'all' ? 4 : limit,
         skip: type === 'all' ? 0 : skip,
       })
-      data.plans = planHashtags.map(ph => ph.project)
+      data.plans = projectHashtags.map(ph => ph.project)
     }
 
     if (type === 'all' || type === 'requests') {

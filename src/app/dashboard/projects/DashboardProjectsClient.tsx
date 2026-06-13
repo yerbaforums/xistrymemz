@@ -272,7 +272,7 @@ export default function DashboardProjectsClient({ initialProjects }: DashboardPr
         <EmptyState icon="📋" title="No projects found" description="Try adjusting your search or filters, or create a new project." action={{ label: 'Create Project', onClick: () => setShowCreateModal(true) }} />
       ) : viewMode === 'grid' ? (
         <div className={styles.cardGrid}>
-          {filteredProjects.map((plan, index) => {
+          {filteredProjects.map((project, index) => {
             const status = STATUS_CONFIG[plan.status] || STATUS_CONFIG.DRAFT
             return (
               <div
@@ -395,7 +395,7 @@ export default function DashboardProjectsClient({ initialProjects }: DashboardPr
         </div>
       ) : (
         <div className={styles.listView}>
-          {filteredProjects.map(plan => {
+          {filteredProjects.map(project => {
             const status = STATUS_CONFIG[plan.status] || STATUS_CONFIG.DRAFT
             return (
               <Link key={plan.id} href={`/projects/${plan.id}`} className={styles.listItem}>

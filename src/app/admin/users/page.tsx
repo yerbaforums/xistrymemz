@@ -256,7 +256,7 @@ export default function AdminUsersPage() {
                     </td>
                     <td>
                       <div className={styles.activity}>
-                        <span>{user._count.plans} plans</span>
+                        <span>{user._count.projects} projects</span>
                         <span>{user._count.requests} reqs</span>
                         <span>{user._count.sentConnections + user._count.receivedConnections} conn</span>
                       </div>
@@ -337,7 +337,7 @@ export default function AdminUsersPage() {
               Are you sure you want to permanently delete <strong>{confirmDelete.name || confirmDelete.email}</strong>?
             </p>
             <p className={styles.modalWarning}>
-              This will permanently delete all of their plans, requests, products, posts, messages, and all other associated data. This action cannot be undone.
+              This will permanently delete all of their projects, requests, products, posts, messages, and all other associated data. This action cannot be undone.
             </p>
             <div className={styles.modalActions}>
               <button

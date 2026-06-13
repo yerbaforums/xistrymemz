@@ -62,7 +62,7 @@ export default function StudioPage() {
       } catch {}
 
       // Parallel fetches
-      const [postsRes, productsRes, plansRes, eventsRes, schoolContentRes] = await Promise.all([
+      const [postsRes, productsRes, projectsRes, eventsRes, schoolContentRes] = await Promise.all([
         fetch(`/api/posts?userId=${userId}&limit=50`),
         fetch(`/api/products?userId=${userId}`),
         fetch('/api/projects'),
@@ -107,11 +107,11 @@ export default function StudioPage() {
 
       // Plans (automatic — returns current user's plans)
       try {
-        const plansData = await plansRes.json()
-        const plans = Array.isArray(plansData) ? plansData : plansData.plans || plansData.data || []
-        for (const p of plans) {
+        const projectsData = await projectsRes.json()
+        const projects = Array.isArray(projectsData) ? projectsData : projectsData.plans || projectsData.data || []
+        for (const p of projects) {
           all.push({
-            id: `plan-${p.id}`,
+            id: .project-${p.id}`,
             type: 'project', icon: '🚀', typeLabel: 'Project',
             title: p.title || 'Untitled',
             createdAt: p.createdAt,
@@ -273,7 +273,7 @@ export default function StudioPage() {
                   <span className={styles.metaType}>{item.typeLabel}</span>
                   <span className={styles.metaDot}>·</span>
                   <span>{new Date(item.createdAt).toLocaleDateString()}</span>
-                  {item.views !== undefined && item.type !== 'plan' && item.type !== 'event' && (
+                  {item.views !== undefined && item.type !== 'project' && item.type !== 'event' && (
                     <>
                       <span className={styles.metaDot}>·</span>
                       <span>👁️ {item.views}</span>

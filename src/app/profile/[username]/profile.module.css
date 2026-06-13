@@ -395,11 +395,11 @@
   color: var(--accent-primary);
 }
 
-.plansSection {
+.projectsSection {
   min-height: 200px;
 }
 
-.plansGrid {
+.projectsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;

@@ -890,13 +890,13 @@
   text-decoration: none;
 }
 
-.planList, .requestList {
+.projectList, .requestList {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.planItem, .requestItem {
+.projectItem, .requestItem {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -907,23 +907,23 @@
   text-decoration: none;
 }
 
-.planItem:hover, .requestItem:hover {
+.projectItem:hover, .requestItem:hover {
   background: var(--bg-primary);
   transform: translateX(4px);
 }
 
-.planInfo, .requestInfo {
+.projectInfo, .requestInfo {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.planTitle, .requestTitle {
+.projectTitle, .requestTitle {
   color: var(--text-primary);
   font-weight: 500;
 }
 
-.planMeta, .requestMeta {
+.projectMeta, .requestMeta {
   font-size: 0.8rem;
   color: var(--text-muted);
 }

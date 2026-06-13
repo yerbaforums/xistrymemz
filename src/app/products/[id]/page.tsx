@@ -955,7 +955,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                )}
               {session?.user && !isOwner && product.acceptsOffers !== false && (
                 <Button 
-                  className={styles.addToPlanBtn}
+                  className={styles.addToProjectBtn}
                   variant="ghost"
                   onClick={() => setShowOfferModal(true)}
                 >
@@ -964,7 +964,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               )}
               {product.acceptsRequests && (
                 <Button 
-                  className={styles.addToPlanBtn}
+                  className={styles.addToProjectBtn}
                   variant="ghost"
                   onClick={() => setShowPlanModal(true)}
                 >
@@ -973,7 +973,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               )}
               {session?.user && (
                 <Button 
-                  className={styles.addToPlanBtn}
+                  className={styles.addToProjectBtn}
                   variant="ghost"
                   onClick={() => router.push('/dashboard/projects')}
                 >
@@ -985,7 +985,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
           {product.acceptsAppointments && (
             <div className={styles.priceCard}>
-              <Button className={styles.addToPlanBtn} variant="ghost" onClick={() => setShowAppointmentModal(true)}>
+              <Button className={styles.addToProjectBtn} variant="ghost" onClick={() => setShowAppointmentModal(true)}>
                 📅 Book Appointment
               </Button>
             </div>
@@ -994,7 +994,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           <div className={styles.priceCard}>
             {session?.user && (
               <Button 
-                className={styles.addToPlanBtn}
+                className={styles.addToProjectBtn}
                 variant="ghost"
                 onClick={() => {
                   setRequestTitle(`Wanted: ${product.title}`)
@@ -1028,18 +1028,18 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         <div className="modal-overlay" onClick={() => setShowPlanModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <h2>Add to Project</h2>
-            <p className={styles.planModalDesc}>Select a project to add this request to:</p>
+            <p className={styles.projectModalDesc}>Select a project to add this request to:</p>
             {projects.length === 0 ? (
-              <p className={styles.noPlans}>No active projects. Create a plan first.</p>
+              <p className={styles.noProjects}>No active projects. Create a plan first.</p>
             ) : (
               <div className="form-group">
                 <select
                   value={selectedPlan}
                   onChange={e => setSelectedPlan(e.target.value)}
-                  className={styles.planSelect}
+                  className={styles.projectSelect}
                 >
                   <option value="">Select a project...</option>
-                  {projects.map(plan => (
+                  {projects.map(project => (
                     <option key={plan.id} value={plan.id}>{plan.title}</option>
                   ))}
                 </select>
@@ -1070,7 +1070,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         <div className="modal-overlay" onClick={() => setShowRequestModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <h2>💝 Request Community Funding</h2>
-            <p className={styles.planModalDesc}>
+            <p className={styles.projectModalDesc}>
               Ask the community to help fund this purchase. Share your request to get funded!
             </p>
             <div className="form-group">
@@ -1131,7 +1131,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         <div className="modal-overlay" onClick={() => setShowEscrowModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <h2>🔒 Secure Escrow Checkout</h2>
-            <p className={styles.planModalDesc}>
+            <p className={styles.projectModalDesc}>
               Your payment will be held securely until you confirm delivery.
               The seller will receive funds only after you approve.
             </p>
@@ -1161,7 +1161,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 <select
                   value={selectedCourier}
                   onChange={e => setSelectedCourier(e.target.value)}
-                  className={styles.planSelect}
+                  className={styles.projectSelect}
                 >
                   <option value="">No delivery needed</option>
                   {courierServices.map(courier => (
@@ -1210,7 +1210,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         <div className="modal-overlay" onClick={() => setShowFundingModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <h2>💝 Contribute to Request</h2>
-            <p className={styles.planModalDesc}>
+            <p className={styles.projectModalDesc}>
               Help fund this product request. When the goal is reached, the seller will be notified.
             </p>
             

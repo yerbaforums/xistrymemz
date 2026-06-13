@@ -91,7 +91,7 @@ interface ProfileUser {
   verifiedPhone: boolean
   verifiedIdentity: boolean
   verifiedAddress: boolean
-  planCount: number
+  projectCount: number
   postCount: number
   productCount: number
   connectionCount: number
@@ -909,7 +909,7 @@ export default function ProfilePage() {
                 <span className={styles.statLabel}>Posts</span>
               </div>
               <div className={styles.stat}>
-                <span className={styles.statValue}>{user.planCount}</span>
+                <span className={styles.statValue}>{user.projectCount}</span>
                 <span className={styles.statLabel}>Projects</span>
               </div>
               <div className={styles.stat}>
@@ -1354,9 +1354,9 @@ export default function ProfilePage() {
         )}
 
         {activeClass === null && activeTab === 'projects' && (
-          <div className={styles.plansSection}>
+          <div className={styles.projectsSection}>
             {projects.length > 0 ? (
-              <div className={styles.plansGrid}>
+              <div className={styles.projectsGrid}>
                 {projects.map((plan) => (
                   <div key={project.id} className={`${styles.projectCard} ${project.pinned ? styles.pinnedCard : ''}`}>
                     {isOwnProfile && (

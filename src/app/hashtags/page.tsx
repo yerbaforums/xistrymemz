@@ -26,7 +26,7 @@ interface HashtagItem {
 }
 
 type SortMode = 'trending' | 'alphabetical' | 'count'
-type EntityFilter = 'all' | 'products' | 'events' | 'services' | 'schoolContents' | 'plans' | 'requests' | 'groups' | 'posts'
+type EntityFilter = 'all' | 'products' | 'events' | 'services' | 'schoolContents' | 'projects' | 'requests' | 'groups' | 'posts'
 
 const ENTITY_FILTERS: { key: EntityFilter; label: string; icon: string }[] = [
   { key: 'all', label: 'All', icon: '🏷️' },
@@ -35,7 +35,7 @@ const ENTITY_FILTERS: { key: EntityFilter; label: string; icon: string }[] = [
   { key: 'events', label: 'Events', icon: '📅' },
   { key: 'services', label: 'Services', icon: '🔧' },
   { key: 'schoolContents', label: 'School', icon: '🎓' },
-  { key: 'plans', label: 'Projects', icon: '📋' },
+  { key: 'projects', label: 'Projects', icon: '📋' },
   { key: 'requests', label: 'Requests', icon: '🙋' },
   { key: 'groups', label: 'Groups', icon: '👥' },
 ]
@@ -76,7 +76,7 @@ function HashtagsPage() {
   const entityLabel = (key: string, count: number) => {
     const labels: Record<string, string> = {
       products: 'pr', events: 'ev', posts: 'po',
-      services: 'sv', schoolContents: 'sc', plans: 'pl',
+      services: 'sv', schoolContents: 'sc', projects: 'pr',
       requests: 'rq', groups: 'gr',
     }
     return labels[key] ? `${count}${labels[key]}` : ''

@@ -16,7 +16,7 @@ async function canAccessRequest(userId: string, roleId: string, requestId: strin
   let isPlanEditor = false
   if (req.projectId) {
     const project = await prisma.project.findFirst({ where: { id: req.projectId }, select: { userId: true } })
-    if (plan) {
+    if (project) {
       isPlanOwner = project.userId === userId
       isPlanEditor = await prisma.projectEditor.findFirst({ where: { projectId: req.projectId, userId } }).then(Boolean)
     }

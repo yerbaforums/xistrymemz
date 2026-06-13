@@ -131,7 +131,7 @@
   padding: 12px;
 }
 
-.fixedPlanNotice {
+.fixedProjectNotice {
   padding: 8px 12px;
   background: rgba(0, 217, 255, 0.08);
   border: 1px solid var(--accent-primary);
