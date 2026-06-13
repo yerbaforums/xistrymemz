@@ -96,8 +96,14 @@ export default function CommunityManagement() {
       if (receivedRes.ok) setPendingReceived(await receivedRes.json())
       if (sentRes.ok) setPendingSent(await sentRes.json())
       if (acceptedRes.ok) setAcceptedConnections(await acceptedRes.json())
-      if (forumRes?.ok) setForumPosts(await forumRes.json())
-      if (groupsRes.ok) setGroups(await groupsRes.json())
+      if (forumRes?.ok) {
+        const forumData = await forumRes.json()
+        setForumPosts(forumData?.data ?? forumData?.items ?? forumData ?? [])
+      }
+      if (groupsRes.ok) {
+        const groupsData = await groupsRes.json()
+        setGroups(groupsData?.items ?? groupsData?.data ?? groupsData ?? [])
+      }
     } catch {
       /* ignore */
     } finally {

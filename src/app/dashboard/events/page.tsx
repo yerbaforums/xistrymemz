@@ -160,7 +160,7 @@ export default function DashboardEvents() {
     fetch('/api/events/user')
       .then(res => res.json())
       .then(data => {
-        setEvents(data)
+        setEvents(data?.data ?? data ?? [])
         setLoading(false)
       })
       .catch(() => setLoading(false))
