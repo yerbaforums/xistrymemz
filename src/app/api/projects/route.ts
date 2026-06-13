@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { apiSuccess, apiError, withValidation } from '@/lib/api-helpers'
 import { projectSchema } from '@/lib/schemas'
 import { extractAndLinkHashtags, linkHashtags } from '@/services/hashtagService'
-import { getPublicPlans, getPlansByUser, createPlan } from '@/services/projectService'
+import { getPublicProjects, getProjectsByUser, createProject } from '@/services/projectService'
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions)
@@ -16,7 +16,7 @@ export async function GET(request: Request) {
   const skip = (page - 1) * pageSize
 
   if (isPublic) {
-    const { items, total } = await getPublicPlans(skip, pageSize)
+    const { items, total } = await getPublicProjects(skip, pageSize)
     return apiSuccess({ items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
   }
 
@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     return apiError('Unauthorized', 401)
   }
 
-  const { items, total } = await getPlansByUser(session.user.id, false, skip, pageSize)
+  const { items, total } = await getProjectsByUser(session.user.id, false, skip, pageSize)
   return apiSuccess({ items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
 }
 
@@ -32,7 +32,7 @@ export const POST = withValidation(projectSchema, async (req, session, data) => 
   try {
     const { title, description, imageUrl, status, published, goals, mileposts, lookingForCollaborators, acceptsDonations, donationAddress, donationCurrency, donationDescription, donationAddresses, hashtags } = data
 
-    const project = await createPlan({
+    const project = await createProject({
       title,
       description,
       imageUrl,

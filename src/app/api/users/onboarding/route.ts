@@ -2,7 +2,7 @@ import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } fr
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { createGettingStartedPlan } from '@/services/projectService'
+import { createGettingStartedProject } from '@/services/projectService'
 
 export async function GET() {
   try {
@@ -61,7 +61,7 @@ export async function PUT(request: Request) {
     }
 
     if (createPlan) {
-      await createGettingStartedPlan(session.user.id)
+      await createGettingStartedProject(session.user.id)
     }
 
     return apiSuccess({ success: true })

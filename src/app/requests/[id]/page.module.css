@@ -242,7 +242,7 @@
   flex-wrap: wrap;
 }
 
-.createPlanBtn {
+.createProjectBtn {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -257,7 +257,7 @@
   white-space: nowrap;
 }
 
-.createPlanBtn:hover {
+.createProjectBtn:hover {
   box-shadow: 0 0 12px rgba(0, 217, 255, 0.4);
 }
 
