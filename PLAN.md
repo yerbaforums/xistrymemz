@@ -1,146 +1,103 @@
-# XistryMemz — UX Completion & Flow Enhancement Plan
+# UI/UX Improvement Plan
 
-## Status: In Progress
-**Last Updated:** June 12, 2026
+## Completed Fixes (Session Jun 12)
 
----
+### Plan→Project Rename
+- Full stack rename: Prisma schema, API routes, services, frontend components
+- Database tables renamed via `prisma db push`
+- Fixed runtime crashes: `fetchNotificationCount`, Prisma query mismatches, API variable bugs
+- CSS/variable renames across 70+ files
 
-## Phase 1: Inline Styles → CSS Modules (6 files, ~120 styles)
+### Event/Fix Linking
+- Zod schemas: `planId` → `projectId` in `requestSchema` and `eventSchema`
+- Event POST handler: added `schoolId`/`shopId` destructuring
+- Event PUT handler: already handled `schoolId`/`shopId`
+- Event detail API response: added `schoolId`, `shopId`, `school`, `shop` fields
+- Frontend event detail page: mapped `schoolId`/`shopId` from API, added multi-type linked entity display
+- Dashboard events list: added multi-type linked entity display
+- Event edit form: added `schoolId`/`shopId` to PUT request body
+- New event form: added `schoolId`/`shopId` to POST request body
 
-### 1.1 PlanUpdates.tsx (24 inline styles)
-- **File:** `src/app/plans/[id]/PlanUpdates.tsx`
-- **Problem:** Imports `./sortable.module.css` but uses `.header`/`.flexRow` which don't exist there
-- **Solution:** Create `./plan-updates.module.css`, move all 24 styles
-- **Status:** PENDING
+### Stats Fix
+- Stats API response key: `plans` → `projects`
+- `PlatformStats` type: `plans: number` → `projects: number`
+- `StatsSection.tsx`: stat card key `'plans'` → `'projects'`
 
-### 1.2 admin/settings/page.tsx (29 inline styles)
-- **File:** `src/app/admin/settings/page.tsx`
-- **Context:** Donation addresses section (lines 346–481), CSS module has `.flexRow`, `.flex1`, `.gap8`, `.mb12`
-- **Solution:** Use existing CSS module utility classes
-- **Status:** PENDING
+### API Envelope Unwraps
+- Dashboard events page: unwrap `apiSuccess` envelope
+- Dashboard community page: unwrap forum, groups, and connections API responses
 
-### 1.3 TripView.tsx (21 inline styles)
-- **File:** `src/app/trips/[id]/TripView.tsx`
-- **Context:** Barely uses `planning.module.css` — inconsistent
-- **Solution:** Create `trip-view.module.css` or consolidate into existing modules
-- **Status:** PENDING
-
-### 1.4 dashboard/appointments/page.tsx (28 inline styles)
-- **File:** `src/app/dashboard/appointments/page.tsx`
-- **Context:** `events.module.css` has status color classes — partial coverage
-- **Solution:** Extend `events.module.css` with missing styles
-- **Status:** PENDING
-
-### 1.5 dashboard/overview/page.tsx (17 inline styles)
-- **File:** `src/app/dashboard/overview/page.tsx`
-- **Context:** `OverviewCards.module.css` has tipCard, checklistCard, progressBar
-- **Solution:** Extend `OverviewCards.module.css` or reuse component-level CSS
-- **Status:** PENDING
-
-### 1.6 posts/[id]/page.tsx (1 inline style)
-- **File:** `src/app/posts/[id]/page.tsx`
-- **Context:** Single inline style — trivial
-- **Solution:** Add to existing CSS module
-- **Status:** PENDING
+### Users Route Fix
+- `users/[id]/route.ts`: Prisma `_count.select.plans` → `projects`
+- Response key: `plans` → `projects`
+- Variable names: `plans` → `projects`, `planVolunteerCount` → `projectVolunteerCount`
 
 ---
 
-## Phase 2: Requests Flow Enhancement
+## Pending Work
 
-### 2.1 Shared type definitions
-- **File:** `src/types/request.ts` (NEW)
-- **Content:** `RequestBase`, `RequestFormData`, `RequestWithRelations` interfaces
-- **Purpose:** Eliminate interface duplication across 3+ client components
-- **Status:** PENDING
+### 1. Fix Map Overlapping Header (z-index issues)
 
-### 2.2 Shared RequestForm component
-- **File:** `src/components/RequestForm.tsx` (NEW)
-- **Features:**
-  - Reusable form for creating/editing requests
-  - Uses shared types from `src/types/request.ts`
-  - Handles file uploads (images)
-  - Category picker using `REQUEST_CATEGORIES` from lib
-- **Purpose:** Single source of truth for request creation
-- **Status:** PENDING
+**Discover page** (`src/app/discover/page.module.css`):
+- Add `z-index: 1` to `.mapContainer` to ensure proper stacking
+- Add "← Dashboard" link to breadcrumbs or as a floating back button
 
-### 2.3 /requests/new page
-- **File:** `src/app/requests/new/page.tsx` (NEW)
-- **Purpose:** Dedicated page for creating new requests
-- **Status:** PENDING
+**Boards page** (`src/app/boards/page.module.css`):
+- Reduce `.mapOverlay` from `z-index: 1000` to `z-index: 10`
+- Add dashboard link to breadcrumbs
 
-### 2.4 Fix map view toggle
-- **File:** `src/app/requests/RequestsClient.tsx`
-- **Problem:** Map view button exists in JSX but is commented/hidden
-- **Solution:** Unhide map toggle, ensure it works
-- **Status:** PENDING
+**Shops page** (`src/app/shops/page.module.css`, `ShopsClient.tsx`):
+- Reduce `.mapToggle` from `z-index: 1000` to `z-index: 10`
+- Add dashboard link
 
-### 2.5 Fix category list inconsistency
-- **File:** `src/app/requests/[id]/RequestDetailClient.tsx`
-- **Problem:** Local array of 8 categories (missing PRODUCT, SERVICE from `lib/request-categories.ts`)
-- **Solution:** Use `REQUEST_CATEGORIES` from lib
-- **Status:** PENDING
+**Connections page** (`src/app/connections/page.tsx`):
+- Change "← Back to Profile" to "← Back to Dashboard" (href: `/dashboard`)
+- Add dashboard breadcrumb
 
-### 2.6 Add loading/error states
-- **Files:** `src/app/requests/[id]/loading.tsx`, `error.tsx` (NEW)
-- **Purpose:** Proper UX during load and error states
-- **Status:** PENDING
+### 2. Add Map/Grid Selector to Shops Page
 
----
+**Files:** `src/app/shops/ShopsClient.tsx`, `src/app/shops/page.module.css`
 
-## Phase 3: Plans/Projects Flow Enhancement
-
-### 3.1 Add loading/error states for plan detail
-- **Files:** `src/app/plans/[id]/loading.tsx`, `error.tsx` (NEW)
-- **Purpose:** Proper UX during load and error states
-- **Status:** PENDING
-
-### 3.2 Add Delete Plan button
-- **File:** `src/app/plans/[id]/PlanDetailClient.tsx`
-- **Context:** API supports `DELETE /api/plans/[id]` but no UI button
-- **Solution:** Add delete button with confirmation dialog
-- **Status:** PENDING
-
-### 3.3 Fix PlanUpdates
-- **File:** `src/app/plans/[id]/PlanUpdates.tsx`
-- **Problems:**
-  1. 24 inline styles (covered in 1.1)
-  2. Only plan owner can post updates — should allow editors too
-  3. No image upload capability
-- **Solution:** Add editor permission check + image upload + CSS module styles
-- **Status:** PENDING
-
-### 3.4 Plans↔Requests Integration
-- **Key goal:** Allow linking requests to plans for progress tracking
-- **Ideas:**
-  - In PlanDetailClient, show linked requests in a tab
-  - In RequestDetailClient, show linked plan
-  - Link UI in both directions
-- **Status:** PENDING
-
-### 3.5 Clean up /plans route
-- **File:** `src/app/plans/page.module.css` (1634 lines orphaned CSS)
-- **Problem:** CSS exists but no `page.tsx` — route returns 404
-- **Option A:** Create proper `/plans` listing page
-- **Option B:** Remove orphaned CSS
-- **Status:** PENDING
-
----
-
-## Implementation Order
-
+Add a view mode toggle similar to ProductsClient:
+```tsx
+const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid')
 ```
-Phase 1.1 (PlanUpdates.tsx — broken import)  ───────┐
-Phase 1.2 (admin/settings — easy win)               │
-Phase 1.3–1.6 (remaining inline styles)              │
-Phase 2.1 (shared types)                             ├── Parallel batches
-Phase 2.2 (RequestForm component)                    │
-Phase 2.3 (/requests/new page)                       │
-Phase 2.4–2.6 (map, categories, loading)             │
-Phase 3.1 (plan loading/error states)               │
-Phase 3.2 (delete button)                           │
-Phase 3.3 (PlanUpdates fixes)                       │
-Phase 3.4 (Plans↔Requests integration)              │
-Phase 3.5 (orphaned CSS cleanup)                    │
-```
+- Grid view: current layout with AlphabeticalIndex
+- Map view: show full MapContainer, hide grid
+- Toggle buttons with icons (grid icon, map icon)
 
-Each batch is verified with `npm run build` before proceeding.
+### 3. Header UI Improvement
+
+**Files:** `src/app/globals.css`, `src/app/design-system.css`, `src/components/Header.tsx`, `src/components/Header.module.css`
+
+- Reduce `--header-height` from `64px` to `56px` (or `48px` on mobile)
+- Audit all pages using `padding-top: var(--header-height)` to verify layout
+- Simplify nav items — collapse secondary links under "More" dropdown
+- Reduce padding/margins on header elements
+- Considerations:
+  - AppShell at `src/components/AppShell.tsx` applies padding-top
+  - All dashboard pages use this pattern
+  - Need to test on mobile where BottomNav is also shown
+
+### 4. Upgrade Projects Creation Process
+
+**Current state:** Wizard with 3 steps (Basics, Goals, Review) at `src/app/projects/new/page.tsx`
+
+**Missing fields to add:**
+- Image upload (use existing `ImageUploader` component)
+- Location with map picker
+- Collaborator settings (looking for collaborators toggle)
+- Hashtags (use existing `HashtagInput` component)
+- Budget/goal amount
+- Category selector with icons
+
+**Approach options:**
+- **A:** Expand wizard to 4-5 steps (adds fields gradually)
+- **B:** Replace wizard with single comprehensive form with sections
+- **C:** Keep wizard + add "quick template" and "full form" paths
+
+**Files to modify:**
+- `src/app/projects/new/page.tsx` — main wizard/form
+- `src/app/projects/new/page.module.css` — additional styles
+- `src/app/api/projects/route.ts` — POST handler may need additional fields
+- Consider reusing `ProjectDetailClient.tsx` edit form patterns
