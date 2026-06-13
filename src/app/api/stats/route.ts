@@ -22,7 +22,7 @@ export async function GET() {
       prisma.bulletinBoard.count({ where: { isPublic: true } }),
     ])
 
-    return apiSuccess({ members, shops, schools, products, services, rentals, events, plans, requests, forumPosts, forumReplies, offers, appointments, boards })
+    return apiSuccess({ members, shops, schools, products, services, rentals, events, projects: plans, requests, forumPosts, forumReplies, offers, appointments, boards })
   } catch (error) {
     return apiServerError(error)
   }

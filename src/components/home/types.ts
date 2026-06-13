@@ -6,7 +6,7 @@ export interface PlatformStats {
   services: number
   rentals: number
   events: number
-  plans: number
+  projects: number
   requests: number
   forumPosts: number
   forumReplies: number
