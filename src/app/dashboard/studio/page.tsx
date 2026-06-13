@@ -111,7 +111,7 @@ export default function StudioPage() {
         const projects = Array.isArray(projectsData) ? projectsData : projectsData.plans || projectsData.data || []
         for (const p of projects) {
           all.push({
-            id: .project-${p.id}`,
+            id: `project-${p.id}`,
             type: 'project', icon: '🚀', typeLabel: 'Project',
             title: p.title || 'Untitled',
             createdAt: p.createdAt,

@@ -42,7 +42,7 @@ export async function GET() {
   })
 
   const result = await Promise.all(events.map(async event => {
-    if (event.project if (event.project && !event.project.published)if (event.project && !event.project.published) !event.project.published) return null
+    if (event.project && !event.project.published) return null
 
     let latitude = event.latitude
     let longitude = event.longitude
