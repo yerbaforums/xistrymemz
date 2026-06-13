@@ -50,7 +50,7 @@ export async function GET(
       inviteCount: true,
       _count: {
         select: {
-          plans: true,
+          projects: true,
           posts: true,
           products: true
         }
@@ -84,8 +84,8 @@ export async function GET(
     const userId = user.id
 
     const postsTake = 20
-    const [plans, posts, products, connections, groupMemberships, totalPostCount, userLocations,
-      eventVolunteerCount, planVolunteerCount, eventAttendeeCount, forumPostCount, forumReplyCount,
+    const [projects, posts, products, connections, groupMemberships, totalPostCount, userLocations,
+      eventVolunteerCount, projectVolunteerCount, eventAttendeeCount, forumPostCount, forumReplyCount,
       badgeCount, barterOfferSentCount, barterOfferReceivedCount, escrowCount, requestCount
     ] = await Promise.all([
       prisma.project.findMany({
@@ -281,7 +281,7 @@ export async function GET(
         federatedUrl: user.federatedUrl || null,
         donationAddresses,
         links,
-        volunteerCount: eventVolunteerCount + planVolunteerCount,
+        volunteerCount: eventVolunteerCount + projectVolunteerCount,
         eventCount: eventAttendeeCount + eventVolunteerCount,
         forumPostCount,
         forumReplyCount,
@@ -299,7 +299,7 @@ export async function GET(
           isPrimary: loc.isPrimary
         }))
       },
-      plans,
+      projects,
       posts,
       products,
       connections: userConnections,
