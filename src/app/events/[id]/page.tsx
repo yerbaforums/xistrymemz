@@ -164,6 +164,8 @@ function EventDetailContent() {
           hashtags: editFormData.hashtags,
           projectId: editFormData.projectId,
           groupId: editFormData.groupId,
+          schoolId: editFormData.schoolId,
+          shopId: editFormData.shopId,
         })
       })
 

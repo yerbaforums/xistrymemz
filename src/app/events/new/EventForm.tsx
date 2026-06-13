@@ -74,6 +74,8 @@ export function EventForm() {
           eventType: formData.eventType,
           projectId: formData.projectId,
           groupId: formData.groupId,
+          schoolId: formData.schoolId,
+          shopId: formData.shopId,
           acceptsDonations: formData.acceptsDonations,
           ...legacy,
           donationAddresses: formData.acceptsDonations ? serializeDonationAddresses(formData.selectedDonationAddrs) : null,
