@@ -37,7 +37,7 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json().catch(() => ({}))
-    const { createPlan, interestTags } = body
+    const { createProject, interestTags } = body
 
     await prisma.user.update({
       where: { id: session.user.id },
@@ -60,7 +60,7 @@ export async function PUT(request: Request) {
       }
     }
 
-    if (createPlan) {
+    if (createProject) {
       await createGettingStartedProject(session.user.id)
     }
 

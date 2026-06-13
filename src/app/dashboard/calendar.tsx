@@ -72,7 +72,7 @@ export default function CalendarWidget() {
       const data = await calRes.json()
       setEvents([...(data.myEvents || []), ...(data.publicEvents || []), ...(data.connectionEvents || [])])
       
-      if (!planRes.ok) throw new Error('Failed to fetch plan events')
+      if (!planRes.ok) throw new Error('Failed to fetch project events')
       const planData = await planRes.json()
       const planEvents: CalendarEvent[] = (planData || []).map((joiner: EventJoinerResponse) => ({
         id: joiner.event.id,

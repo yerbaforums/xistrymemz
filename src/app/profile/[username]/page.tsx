@@ -402,7 +402,7 @@ export default function ProfilePage() {
       setUser(data.user)
       setIsOwnProfile(session?.user ? (data.user.id === session.user.id) : false)
       setPosts(data.posts || [])
-      setPlans(data.projects || [])
+      setProjects(data.projects || [])
       setProducts(data.products || [])
       setConnections(data.connections || [])
       setGroups(data.groups || [])
@@ -1361,7 +1361,7 @@ export default function ProfilePage() {
                   <div key={project.id} className={`${styles.projectCard} ${project.pinned ? styles.pinnedCard : ''}`}>
                     {isOwnProfile && (
                       <Button 
-                        onClick={() => handlePin('plan', project.id, project.pinned)} 
+                        onClick={() => handlePin('project', project.id, project.pinned)} 
                         className={styles.cardPinBtn}
                         title={project.pinned ? 'Unpin' : 'Pin to top'}
                       >
@@ -1382,7 +1382,7 @@ export default function ProfilePage() {
                 ))}
               </div>
             ) : (
-              <EmptyState icon="🚀" title="No projects yet" description={isOwnProfile ? "Create a plan to start tracking your projects." : `${user.name || 'This user'} hasn't created any projects yet.`} />
+              <EmptyState icon="🚀" title="No projects yet" description={isOwnProfile ? "Create a project to start tracking your goals." : `${user.name || 'This user'} hasn't created any projects yet.`} />
             )}
           </div>
         )}

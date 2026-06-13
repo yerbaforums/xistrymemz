@@ -289,7 +289,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         })
         .then(data => {
           const userPlans = Array.isArray(data) ? data.filter((p: ProjectData) => p.status === 'ACTIVE') : []
-          setPlans(userPlans)
+          setProjects(userPlans)
         })
     }
   }, [showPlanModal])
@@ -688,7 +688,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   </label>
                   <label className={styles.checkboxLabel}>
                     <input type="checkbox" checked={editData.acceptsRequests} onChange={e => setEditData({...editData, acceptsRequests: e.target.checked})} />
-                    Allow adding to Plans
+                    Allow adding to Projects
                   </label>
                   <label className={styles.checkboxLabel}>
                     <input type="checkbox" checked={editData.acceptsDonations} onChange={e => setEditData({...editData, acceptsDonations: e.target.checked})} />
@@ -1028,7 +1028,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         <div className="modal-overlay" onClick={() => setShowPlanModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <h2>Add to Project</h2>
-            <p className={styles.planModalDesc}>Select a plan to add this request to:</p>
+            <p className={styles.planModalDesc}>Select a project to add this request to:</p>
             {projects.length === 0 ? (
               <p className={styles.noPlans}>No active projects. Create a plan first.</p>
             ) : (
@@ -1038,7 +1038,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   onChange={e => setSelectedPlan(e.target.value)}
                   className={styles.planSelect}
                 >
-                  <option value="">Select a plan...</option>
+                  <option value="">Select a project...</option>
                   {projects.map(plan => (
                     <option key={plan.id} value={plan.id}>{plan.title}</option>
                   ))}

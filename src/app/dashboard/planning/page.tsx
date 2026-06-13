@@ -81,7 +81,7 @@ const POI_TYPES = [
   { key: 'shop', label: 'Shops', icon: '🛍️', color: '#f59e0b' },
   { key: 'product', label: 'Products', icon: '📦', color: '#3b82f6' },
   { key: 'event', label: 'Events', icon: '📅', color: '#ef4444' },
-  { key: 'plan', label: 'Projects', icon: '📋', color: '#8b5cf6' },
+  { key: 'project', label: 'Projects', icon: '📋', color: '#8b5cf6' },
   { key: 'request', label: 'Requests', icon: '🙏', color: '#10b981' },
   { key: 'rental', label: 'Rentals', icon: '🏠', color: '#06b6d4' },
   { key: 'service', label: 'Services', icon: '🔧', color: '#84cc16' },

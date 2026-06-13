@@ -307,7 +307,7 @@ export default function ProjectSupport({
             )}
 
             {isOwner && (
-              <p className={styles.ownerNote}>You are the owner of this plan. Others can contribute.</p>
+              <p className={styles.ownerNote}>You are the owner of this project. Others can contribute.</p>
             )}
 
             {/* Contributions List */}

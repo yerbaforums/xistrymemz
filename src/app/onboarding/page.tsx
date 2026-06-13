@@ -319,7 +319,7 @@ export default function OnboardingPage() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          createPlan: true,
+          createProject: true,
           interestTags: interestTags.length > 0 ? interestTags : undefined,
         }),
       })

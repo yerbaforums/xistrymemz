@@ -99,7 +99,7 @@ export async function createGettingStartedProject(userId: string) {
   return prisma.project.create({
     data: {
       title: 'Getting Started on XistrYmemZ',
-      description: 'A simple plan to help you explore the platform and connect with the community. Check off each milestone as you go!',
+      description: 'A simple project to help you explore the platform and connect with the community. Check off each milestone as you go!',
       goals: JSON.stringify([
         'Complete your profile',
         'Explore the marketplace',

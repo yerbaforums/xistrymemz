@@ -27,7 +27,7 @@ export async function POST(
       select: { userId: true, status: true }
     })
 
-    if (!plan) {
+    if (!project) {
       return apiError("Project not found", 404)
     }
 
@@ -42,7 +42,7 @@ export async function POST(
       return apiError("Forbidden", 403)
     }
 
-    const updatedPlan = await prisma.project.update({
+    const updatedProject = await prisma.project.update({
       where: { id },
       data: { status: toStatus }
     })
@@ -50,19 +50,19 @@ export async function POST(
     await prisma.projectStatusHistory.create({
       data: {
         projectId: id,
-        fromStatus: plan.status,
+        fromStatus: project.status,
         toStatus,
         reason: reason || null
       }
     })
 
     return apiSuccess({
-      ...updatedPlan,
-      createdAt: updatedPlan.createdAt.toISOString(),
-      updatedAt: updatedPlan.updatedAt.toISOString()
+      ...updatedProject,
+      createdAt: updatedProject.createdAt.toISOString(),
+      updatedAt: updatedProject.updatedAt.toISOString()
     })
   } catch (error) {
-    console.error('Error rolling back plan status:', error)
+    console.error('Error rolling back project status:', error)
     return apiError("Failed to rollback status", 500)
   }
 }

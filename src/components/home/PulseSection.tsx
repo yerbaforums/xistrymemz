@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Skeleton from '@/components/Skeleton'
 import { useScrollReveal } from '@/hooks/useScrollReveal'
-import type { FeaturedShop, FeaturedProduct, PublicRequest, FeaturedEvent, PublicPlan, FeaturedBoard } from './types'
+import type { FeaturedShop, FeaturedProduct, PublicRequest, FeaturedEvent, PublicProject, FeaturedBoard } from './types'
 import { useTranslations } from 'next-intl'
 import styles from './PulseSection.module.css'
 
@@ -12,7 +12,7 @@ interface Props {
   products: FeaturedProduct[]
   requests: PublicRequest[]
   events: FeaturedEvent[]
-  plans: PublicPlan[]
+  projects: PublicProject[]
   boards: FeaturedBoard[]
   loadingShops: boolean
   loadingProducts: boolean
@@ -23,7 +23,7 @@ interface Props {
   trendingTags?: { tag: string; entities?: { products: number; events: number; posts: number; forumPosts: number; groupPosts: number } }[]
 }
 
-export default function PulseSection({ shops, products, requests, events, plans, boards, loadingShops, loadingProducts, loadingRequests, loadingEvents, loadingPlans, loadingBoards, trendingTags }: Props) {
+export default function PulseSection({ shops, products, requests, events, projects, boards, loadingShops, loadingProducts, loadingRequests, loadingEvents, loadingPlans, loadingBoards, trendingTags }: Props) {
   const { ref, visible } = useScrollReveal()
   const t = useTranslations('home')
 
@@ -138,14 +138,14 @@ export default function PulseSection({ shops, products, requests, events, plans,
           </div>
           {loadingPlans ? (
             <div className={styles.list}>{[1,2,3].map(i => <Skeleton key={i} width="100%" height="2.5rem" />)}</div>
-          ) : plans.length > 0 ? (
+          ) : projects.length > 0 ? (
             <div className={styles.list}>
-              {plans.slice(0, 4).map(plan => (
-                <Link key={plan.id} href={`/projects?id=${plan.id}`} className={styles.item}>
+              {projects.slice(0, 4).map(project => (
+                <Link key={project.id} href={`/projects?id=${project.id}`} className={styles.item}>
                   <span className={styles.itemIcon}>🚀</span>
                   <div className={styles.itemCol}>
-                    <span className={styles.itemTitle}>{plan.title}</span>
-                    <span className={styles.itemMeta}>{t('byLabel')} {plan.user?.name || 'Unknown'}</span>
+                    <span className={styles.itemTitle}>{project.title}</span>
+                    <span className={styles.itemMeta}>{t('byLabel')} {project.user?.name || 'Unknown'}</span>
                   </div>
                 </Link>
               ))}

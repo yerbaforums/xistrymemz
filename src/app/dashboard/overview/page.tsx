@@ -175,7 +175,7 @@ export default async function DashboardOverview({
   ])
 
   const connectionFeed = [
-    ...recentPlans.map(p => ({ feedType: 'plan' as const, id: p.id, title: p.title, status: p.status, createdAt: p.createdAt, userName: p.user.name })),
+    ...recentPlans.map(p => ({ feedType: 'project' as const, id: p.id, title: p.title, status: p.status, createdAt: p.createdAt, userName: p.user.name })),
     ...recentProducts.map(p => ({ feedType: 'product' as const, id: p.id, title: p.title, type: p.type, createdAt: p.createdAt, userName: p.user.name }))
   ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5)
 
@@ -553,10 +553,10 @@ export default async function DashboardOverview({
                   {connectionFeed.map(item => (
                     <Link 
                       key={`${item.feedType}-${item.id}`} 
-                      href={item.feedType === 'plan' ? `/projects/${item.id}` : `/products/${item.id}`} 
+                      href={item.feedType === 'project' ? `/projects/${item.id}` : `/products/${item.id}`} 
                       className={styles.activityItem}
                     >
-                      <div className={styles.activityIcon}>{item.feedType === 'plan' ? '🚀' : '🛒'}</div>
+                      <div className={styles.activityIcon}>{item.feedType === 'project' ? '🚀' : '🛒'}</div>
                       <div className={styles.activityInfo}>
                         <span className={styles.activityTitle}>{item.title}</span>
                         <span className={styles.activityMeta}>by {item.userName || 'Unknown'} · {new Date(item.createdAt).toLocaleDateString()}</span>

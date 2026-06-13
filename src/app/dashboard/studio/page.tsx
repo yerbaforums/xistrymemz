@@ -11,7 +11,7 @@ import styles from './studio.module.css'
 
 interface UnifiedItem {
   id: string
-  type: 'post' | 'schoolContent' | 'product' | 'plan' | 'event'
+  type: 'post' | 'schoolContent' | 'product' | 'project' | 'event'
   icon: string
   typeLabel: string
   title: string
@@ -112,7 +112,7 @@ export default function StudioPage() {
         for (const p of plans) {
           all.push({
             id: `plan-${p.id}`,
-            type: 'plan', icon: '🚀', typeLabel: 'Project',
+            type: 'project', icon: '🚀', typeLabel: 'Project',
             title: p.title || 'Untitled',
             createdAt: p.createdAt,
             status: p.status || 'IDEA',

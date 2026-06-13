@@ -309,7 +309,7 @@ export default function EventFormFields({
             <summary className={styles.settingsSummary}>Entity Linking</summary>
             {fixedProjectId ? (
               <div className={styles.fixedPlanNotice}>
-                This event will be linked to: <strong>{fixedProjectTitle || 'this plan'}</strong>
+                This event will be linked to: <strong>{fixedProjectTitle || 'this project'}</strong>
               </div>
             ) : (
               <AssetPicker

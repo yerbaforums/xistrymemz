@@ -126,7 +126,7 @@ export default function Home() {
       .then(r => r.ok ? r.json() : [])
       .then(data => {
         const list = Array.isArray(data) ? data : (data?.data?.items || [])
-        setPlans(list.slice(0, 4)); setLoadingPlans(false)
+        setProjects(list.slice(0, 4)); setLoadingPlans(false)
       })
       .catch(() => setLoadingPlans(false))
 

@@ -271,7 +271,7 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
   }
 
   const getLinkInfo = (req: Request) => {
-    if (req.project) return { type: 'Project',, label: req.project.title, href: `/projects/${req.project.id}`, color: '#00d9ff' }
+    if (req.project) return { type: 'Project', label: req.project.title, href: `/projects/${req.project.id}`, color: '#00d9ff' }
     if (req.group) return { type: 'Group', label: req.group.name, href: `/groups/${req.group.id}`, color: '#a855f7' }
     if (req.product) return { type: 'Product', label: req.product.title, href: `/products/${req.product.id}`, color: '#22c55e' }
     if (req.schoolContent) return { type: 'School', label: req.schoolContent.title, href: `/schools`, color: '#f59e0b' }

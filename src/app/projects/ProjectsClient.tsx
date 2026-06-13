@@ -221,7 +221,7 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
     const locations: { lat: number; lng: number; title: string; type: string; id: string; info: string }[] = []
     filteredProjects.forEach(plan => {
       if (plan.latitude && plan.longitude) {
-        locations.push({ lat: plan.latitude, lng: plan.longitude, title: plan.title, type: 'plan', id: plan.id, info: plan.location || 'Project Location' })
+        locations.push({ lat: plan.latitude, lng: plan.longitude, title: plan.title, type: 'project', id: plan.id, info: plan.location || 'Project Location' })
       }
       plan.events.forEach(event => {
         if (event.latitude && event.longitude) {

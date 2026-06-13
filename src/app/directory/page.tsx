@@ -23,7 +23,7 @@ const TYPE_TABS = [
   { key: 'service', label: 'Services', icon: '🔧' },
   { key: 'rental', label: 'Rentals', icon: '🏠' },
   { key: 'event', label: 'Events', icon: '📅' },
-  { key: 'plan', label: 'Projects', icon: '🚀' },
+  { key: 'project', label: 'Projects', icon: '🚀' },
   { key: 'request', label: 'Requests', icon: '📝' },
 ]
 

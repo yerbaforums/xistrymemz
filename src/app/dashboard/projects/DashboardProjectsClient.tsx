@@ -170,9 +170,9 @@ export default function DashboardProjectsClient({ initialProjects }: DashboardPr
         body: JSON.stringify({ title: newTitle.trim(), description: newDesc || null, goals: JSON.stringify(goalItems), mileposts: JSON.stringify(milestoneItems) })
       })
       if (res.ok) {
-        const plan = await res.json()
-        const newPlan: Plan = { id: plan.id, title: plan.title, description: plan.description, category: null, goals: plan.goals, resources: null, needsVolunteers: false, lookingForCollaborators: false, status: plan.status, published: false, pinned: false, location: null, createdAt: plan.createdAt, updatedAt: plan.updatedAt, requestCount: 0, joinerCount: 0, user: { id: '', name: 'You', image: null }, events: [] }
-        setPlans(prev => [newPlan, ...prev])
+        const created = await res.json()
+        const newProject: ProjectData = { id: created.id, title: created.title, description: created.description, category: null, goals: created.goals, resources: null, needsVolunteers: false, lookingForCollaborators: false, status: created.status, published: false, pinned: false, location: null, createdAt: created.createdAt, updatedAt: created.updatedAt, requestCount: 0, joinerCount: 0, user: { id: '', name: 'You', image: null }, events: [] }
+        setProjects(prev => [newProject, ...prev])
         setShowCreateModal(false)
         setNewTitle(''); setNewDesc(''); setNewGoals(''); setNewMileposts('')
         toastSuccess('Project created!')
