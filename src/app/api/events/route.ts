@@ -138,6 +138,8 @@ export async function POST(request: NextRequest) {
       eventType,
       projectId,
       groupId,
+      schoolId,
+      shopId,
       acceptsDonations,
       donationAddress,
       donationCurrency,
@@ -209,7 +211,8 @@ export async function POST(request: NextRequest) {
         volunteerDescription: volunteerDescription || null,
         projectId: projectId || null,
         groupId: groupId || null,
-        shopId: eventCategory === 'SHOP' ? session.user.id : undefined,
+        schoolId: schoolId || undefined,
+        shopId: shopId || undefined,
         organizerId: session.user.id
       }
     })

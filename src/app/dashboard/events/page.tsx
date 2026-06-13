@@ -385,15 +385,22 @@ export default function DashboardEvents() {
                   )}
                 </div>
 
-                {event.projectTitle && (
-                  <Link href={`/projects/${event.projectId || ''}`} className={styles.projectLink}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                      <polyline points="14,2 14,8 20,8"/>
-                    </svg>
-                    {event.projectTitle}
-                  </Link>
-                )}
+                {event.projectTitle && (() => {
+                  let href = ''
+                  if (event.projectId) href = `/projects/${event.projectId}`
+                  else if (event.groupId) href = `/groups/${event.groupId}`
+                  else if (event.schoolId) href = `/schools`
+                  else if (event.shopId) href = `/shops`
+                  return href ? (
+                    <Link href={href} className={styles.projectLink}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14,2 14,8 20,8"/>
+                      </svg>
+                      {event.projectTitle}
+                    </Link>
+                  ) : null
+                })()}
 
                 <div className={styles.cardFooter}>
                   <span className={styles.cardDate}>{formatRelativeDate(event.createdAt)}</span>

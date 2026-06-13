@@ -121,8 +121,8 @@ function EventDetailContent() {
       projectTitle: event.projectTitle || null,
       groupId: event.group?.id || null,
       groupTitle: event.group?.name || null,
-      schoolId: null,
-      shopId: null,
+      schoolId: event.schoolId || null,
+      shopId: event.shopId || null,
     })
     setIsEditing(true)
   }
@@ -524,9 +524,17 @@ function EventDetailContent() {
                   </Link>
                   {event.organizer?.role && <RoleBadge role={event.organizer.role} />}
                 </p>
-                {event.projectTitle && event.projectId && (
-                  <p className={styles.projectRef}>From: <Link href={`/projects/${event.projectId}`} className={styles.projectLink}>{event.projectTitle}</Link></p>
-                )}
+                {event.projectTitle && (() => {
+                  let href = ''
+                  let icon = ''
+                  if (event.projectId) { href = `/projects/${event.projectId}`; icon = '🚀' }
+                  else if (event.groupId) { href = `/groups/${event.groupId}`; icon = '👥' }
+                  else if (event.schoolId) { href = `/schools`; icon = '🏫' }
+                  else if (event.shopId) { href = `/shops`; icon = '🏪' }
+                  return href ? (
+                    <p className={styles.projectRef}>{icon} From: <Link href={href} className={styles.projectLink}>{event.projectTitle}</Link></p>
+                  ) : null
+                })()}
                 
                 {event.imageUrl && (
                   <div className={styles.detailImageWrapper}>
