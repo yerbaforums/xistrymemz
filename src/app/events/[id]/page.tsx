@@ -25,6 +25,7 @@ import CollaborateButton from '@/components/CollaborateButton'
 import TicketPaymentModal from '@/components/TicketPaymentModal'
 import TicketQRModal from '@/components/TicketQRModal'
 import TicketScanModal from '@/components/TicketScanModal'
+import AddToCalendar from '@/components/AddToCalendar'
 import PinToBoardButton from '@/components/PinToBoardButton'
 import Skeleton from '@/components/Skeleton'
 import Loading from '@/components/Loading'
@@ -637,7 +638,7 @@ function EventDetailContent() {
                         <Button onClick={handlePurchaseTickets} variant="primary" className={styles.joinBtn}>
                           Request {ticketQuantity} Ticket{ticketQuantity > 1 ? 's' : ''} — ${(event.ticketPrice * ticketQuantity).toFixed(2)}
                         </Button>
-                        {event.needsVolunteers && (
+                        {event.needsVolunteers && !event.isTicketed && (
                           <Button onClick={() => handleJoin('VOLUNTEER')} disabled={joining} variant="secondary" className={styles.volunteerBtn}>
                             🙋 Volunteer
                           </Button>
@@ -681,7 +682,7 @@ function EventDetailContent() {
                       {joining ? 'Processing...' : 'Leave Event'}
                     </Button>
                   </div>
-                  {event.isVirtual && event.meetingLink && myTicket?.paymentStatus === 'PAID' && (
+                  {event.isVirtual && event.meetingLink && (myTicket?.paymentStatus === 'PAID' || !event.isTicketed) && (
                     <div style={{ padding: '10px 14px', background: '#e8f5e9', borderRadius: 8, border: '1px solid #c8e6c9' }}>
                       <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#2e7d32', marginBottom: 4 }}>
                         🔗 Meeting Link
@@ -698,9 +699,21 @@ function EventDetailContent() {
                           Copy
                         </button>
                       </div>
+                      {event.eventDate && (
+                        <div style={{ marginTop: 6 }}>
+                          <AddToCalendar params={{
+                            title: event.title,
+                            description: event.description || undefined,
+                            location: event.location || undefined,
+                            meetingLink: event.meetingLink || undefined,
+                            startTime: event.eventDate!,
+                            endTime: event.endDate || event.eventDate!,
+                          }} />
+                        </div>
+                      )}
                     </div>
                   )}
-                  {event.isVirtual && myTicket && myTicket.paymentStatus !== 'PAID' && (
+                  {event.isVirtual && event.isTicketed && myTicket && myTicket.paymentStatus !== 'PAID' && (
                     <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
                       Meeting link will be available once your payment is confirmed.
                     </div>

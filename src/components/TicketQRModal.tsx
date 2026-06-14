@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import QRCode from 'qrcode'
 import { useToast } from '@/context/ToastContext'
+import AddToCalendar from '@/components/AddToCalendar'
 import styles from './TicketQRModal.module.css'
 
 interface TicketData {
@@ -171,6 +172,17 @@ export default function TicketQRModal({ ticketCode, onClose }: TicketQRModalProp
                   <code className={styles.meetingLink}>{meetingLink}</code>
                   <button className={styles.copyLinkBtn} onClick={() => { navigator.clipboard.writeText(meetingLink) }}>Copy</button>
                 </div>
+                {ticket.event.eventDate && (
+                  <div style={{ marginTop: 8 }}>
+                    <AddToCalendar params={{
+                      title: ticket.event.title,
+                      location: undefined,
+                      meetingLink: meetingLink || undefined,
+                      startTime: ticket.event.eventDate!,
+                      endTime: ticket.event.eventDate!,
+                    }} variant="link" />
+                  </div>
+                )}
               </div>
             )}
 

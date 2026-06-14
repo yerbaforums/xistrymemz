@@ -29,6 +29,7 @@ export async function POST(
         maxJoiners: true,
         eventDate: true,
         needsVolunteers: true,
+        isTicketed: true,
         _count: { select: { eventJoiners: true } }
       }
     })
@@ -43,6 +44,15 @@ export async function POST(
 
     if (event.maxJoiners > 0 && event._count.eventJoiners >= event.maxJoiners) {
       return apiError("Event is full", 400)
+    }
+
+    if (event.isTicketed) {
+      const ticket = await prisma.eventTicket.findUnique({
+        where: { eventId_userId: { eventId: id, userId: session.user.id } }
+      })
+      if (!ticket || !['PAID', 'APPROVED'].includes(ticket.paymentStatus)) {
+        return apiError("You need a confirmed ticket to join this event", 403)
+      }
     }
 
     const existing = await prisma.eventJoiner.findUnique({

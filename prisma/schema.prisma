@@ -1961,7 +1961,7 @@ model Appointment {
   id            String   @id @default(cuid())
   title         String
   description   String?
-  status        String   @default("PENDING") // PENDING | CONFIRMED | CANCELLED | COMPLETED | REJECTED
+  status        String   @default("PENDING") // PENDING | CONFIRMED | PAID | CANCELLED | COMPLETED | REJECTED
   declineReason String?
   startTime     DateTime
   endTime       DateTime
@@ -1970,6 +1970,13 @@ model Appointment {
   meetingLink   String?
   formResponses Json? // [{ label: string, value: string }]
   category      String? // Service category copied from ServiceOffering at booking time
+
+  paymentStatus    String?  // PENDING | PAID
+  paidAt           DateTime?
+  txHash           String?
+  paymentNote      String?
+  selectedCurrency String?
+  selectedAddress  String?
 
   buyerId           String
   buyer             User             @relation("BuyerAppointments", fields: [buyerId], references: [id], onDelete: Cascade)

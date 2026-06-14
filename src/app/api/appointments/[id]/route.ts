@@ -34,7 +34,7 @@ export async function PUT(
       return apiError("Forbidden", 403)
     }
 
-    const { action, title, description, startTime, endTime, location, meetingLink, declineReason } = body
+    const { action, title, description, startTime, endTime, location, meetingLink, declineReason, txHash, paymentNote, selectedCurrency, selectedAddress } = body
 
     const updateData: Record<string, unknown> = {}
     let notificationData: { type: string; title: string; message: string; link: string; userId: string; relatedId: string } | null = null
@@ -81,10 +81,49 @@ export async function PUT(
       if (!isSeller) {
         return apiError("Only the seller can mark appointments as complete", 403)
       }
-      if (appointment.status !== 'CONFIRMED') {
-        return apiError("Only confirmed appointments can be completed", 400)
+      if (appointment.status !== 'CONFIRMED' && appointment.status !== 'PAID') {
+        return apiError("Only confirmed or paid appointments can be completed", 400)
       }
       updateData.status = 'COMPLETED'
+    } else if (action === 'pay') {
+      if (!isBuyer) {
+        return apiError("Only the buyer can submit payment", 403)
+      }
+      if (appointment.status !== 'CONFIRMED') {
+        return apiError("Appointment must be confirmed before submitting payment", 400)
+      }
+      if (txHash) updateData.txHash = txHash
+      if (paymentNote) updateData.paymentNote = paymentNote
+      if (selectedCurrency) updateData.selectedCurrency = selectedCurrency
+      if (selectedAddress) updateData.selectedAddress = selectedAddress
+      updateData.paymentStatus = 'PENDING'
+      notificationData = {
+        type: 'APPOINTMENT_PAID',
+        title: 'Payment Submitted',
+        message: `${appointment.buyer.name || 'Buyer'} submitted payment for "${appointment.title}"${txHash ? ` — TX: ${txHash.slice(0, 10)}...` : ''}`,
+        link: `/dashboard/appointments`,
+        userId: appointment.sellerId,
+        relatedId: id
+      }
+    } else if (action === 'mark-paid') {
+      if (!isSeller) {
+        return apiError("Only the seller can mark as paid", 403)
+      }
+      if (appointment.status !== 'CONFIRMED' && appointment.status !== 'PAID') {
+        return apiError("Appointment must be confirmed before marking as paid", 400)
+      }
+      updateData.status = 'PAID'
+      updateData.paymentStatus = 'PAID'
+      updateData.paidAt = new Date()
+      const meetingMsg = appointment.meetingLink ? `\nMeeting link: ${appointment.meetingLink}` : ''
+      notificationData = {
+        type: 'APPOINTMENT_PAID',
+        title: 'Booking Paid',
+        message: `Your appointment "${appointment.title}" has been confirmed and paid${meetingMsg}`,
+        link: `/dashboard/appointments`,
+        userId: appointment.buyerId,
+        relatedId: id
+      }
     } else if (action === 'reschedule') {
       if (!startTime || !endTime) {
         return apiError("New start and end times required for rescheduling", 400)
