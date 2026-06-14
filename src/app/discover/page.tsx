@@ -280,6 +280,20 @@ export default function DiscoverPage() {
         <p className={styles.subtitle}>Find people, products, groups, events, and projects near you</p>
       </div>
 
+      {session?.user && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'var(--bg-tertiary)', borderRadius: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+            📍 {passportLoc?.location || 'Location not set'}
+          </span>
+          {homeCoords && (
+            <button onClick={() => { if (mapRef.current) mapRef.current.flyTo(homeCoords, 10, { duration: 1 }) }}
+              style={{ fontSize: '0.78rem', padding: '2px 8px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 4, cursor: 'pointer' }}>
+              ✈️ Fly Home
+            </button>
+          )}
+        </div>
+      )}
+
       <div className={styles.searchRow}>
         <input
           type="text"

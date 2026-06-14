@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { getUserProfileUrl } from '@/lib/utils'
 import LinkedEntityDetail from '@/components/LinkedEntityDetail'
 import LinkPreview from '@/components/LinkPreview'
+import ShareBar from '@/components/ShareBar'
 import { useToast } from '@/context/ToastContext'
 import styles from './BoardPinCard.module.css'
 
@@ -354,16 +355,12 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
         <button className={styles.socialBtn} onClick={toggleComments} aria-label="Comment">
           💬 <span>{commentCount}</span>
         </button>
-        <button className={styles.socialBtn} onClick={() => {
-          const url = `${window.location.origin}/boards/${boardSlug}?pin=${pin.id}`
-          if (navigator.share) {
-            navigator.share({ title: pin.title || '', text: pin.content || '', url })
-          } else {
-            navigator.clipboard.writeText(url).then(() => toastSuccess('Link copied!'))
-          }
-        }} aria-label="Share">
-          🔗
-        </button>
+        <ShareBar
+          url={typeof window !== 'undefined' ? `${window.location.origin}/boards/${boardSlug}?pin=${pin.id}` : ''}
+          title={pin.title || undefined}
+          description={pin.content || undefined}
+          variant="compact"
+        />
       </div>
 
       {showCommentForm && (
