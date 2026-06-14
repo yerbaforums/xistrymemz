@@ -60,6 +60,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
   const offset = (page - 1) * limit
 
   const types = type ? [type] : ['PRODUCT', 'SERVICE', 'GROUP', 'EVENT', 'PROJECT', 'MEMBER', 'BOARD', 'RENTAL', 'REQUEST', 'SHOP']
+  const perTypeLimit = types.length === 1 ? limit : Math.max(2, Math.floor(limit / types.length))
 
   const queries: Promise<DiscoverResult[]>[] = []
 
@@ -91,7 +92,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
             user: { select: { name: true, image: true } },
             hashtags: { select: { hashtag: { select: { tag: true } } } },
           },
-          take: limit,
+          take: perTypeLimit,
           orderBy: { createdAt: 'desc' },
         })
         return rows.map(r => ({
@@ -141,7 +142,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
             user: { select: { name: true, image: true } },
             hashtags: { select: { hashtag: { select: { tag: true } } } },
           },
-          take: limit,
+          take: perTypeLimit,
           orderBy: { createdAt: 'desc' },
         })
         return rows.map(r => ({
@@ -192,7 +193,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
             user: { select: { name: true, image: true } },
             hashtags: { select: { hashtag: { select: { tag: true } } } },
           },
-          take: limit,
+          take: perTypeLimit,
           orderBy: { createdAt: 'desc' },
         })
         return rows.map(r => ({
@@ -243,7 +244,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
             organizer: { select: { name: true, image: true } },
             eventHashtags: { select: { hashtag: { select: { tag: true } } } },
           },
-          take: limit,
+          take: perTypeLimit,
           orderBy: { eventDate: 'asc' },
         })
         return rows.map(r => ({
@@ -297,7 +298,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
             user: { select: { name: true, image: true } },
             hashtags: { select: { hashtag: { select: { tag: true } } } },
           },
-          take: limit,
+          take: perTypeLimit,
           orderBy: { createdAt: 'desc' },
         })
         return rows.map(r => ({
@@ -343,7 +344,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
             location: true, latitude: true, longitude: true,
             userClass: true, lookingForCollaborators: true, createdAt: true,
           },
-          take: limit,
+          take: perTypeLimit,
           orderBy: { createdAt: 'desc' },
         })
         return rows.map(r => ({
@@ -388,7 +389,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
             ownerId: true, createdAt: true,
             _count: { select: { pins: { where: { expiresAt: { gte: new Date() } } } } },
           },
-          take: limit,
+          take: perTypeLimit,
           orderBy: { createdAt: 'desc' },
         })
         return rows.map(r => ({
@@ -432,7 +433,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
             category: true, userId: true, createdAt: true,
             user: { select: { name: true, image: true } },
           },
-          take: limit,
+          take: perTypeLimit,
           orderBy: { createdAt: 'desc' },
         })
         return rows.map(r => ({
@@ -477,7 +478,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
             userId: true, createdAt: true,
             user: { select: { name: true, image: true } },
           },
-          take: limit,
+          take: perTypeLimit,
           orderBy: { createdAt: 'desc' },
         })
         return rows.map(r => ({
@@ -520,7 +521,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
             shopImage: true, location: true, latitude: true, longitude: true,
             createdAt: true, name: true, image: true,
           },
-          take: limit,
+          take: perTypeLimit,
           orderBy: { createdAt: 'desc' },
         })
         return rows.map(r => ({

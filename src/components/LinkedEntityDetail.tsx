@@ -56,7 +56,7 @@ export default function LinkedEntityDetail({ entityType, entityId, initialTitle,
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (!data) { setDetail(null); return }
-        const d = data.event || data.product || data.service || data.project || data.group || data.request || data
+        const d = data.event || data.product || data.service || data.project || data.group || data.request || data.data || data
         setDetail({
           title: d.title || d.shopName || d.name,
           price: d.price ?? d.rate ?? null,

@@ -28,7 +28,7 @@ export async function GET(request: Request) {
       const [boards, total] = await Promise.all([
         prisma.bulletinBoard.findMany({
           where: { ownerId: session.user.id },
-          include: { _count: { select: { pins: { where: { expiresAt: { gte: new Date() } } }, members: true } } },
+          include: { _count: { select: { pins: { where: { OR: [{ expiresAt: null }, { expiresAt: { gte: new Date() } }] } }, members: true } } },
           orderBy: { updatedAt: 'desc' },
           skip,
           take: limit,

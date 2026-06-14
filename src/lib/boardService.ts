@@ -57,7 +57,7 @@ export async function findNearbyBoards(params: {
   if (lat !== undefined && lng !== undefined) {
     const rows = await prisma.bulletinBoard.findMany({
       where: where as any,
-      include: { _count: { select: { pins: { where: { expiresAt: { gte: new Date() } } }, members: true } } },
+      include: { _count: { select: { pins: { where: { OR: [{ expiresAt: null }, { expiresAt: { gte: new Date() } }] } }, members: true } } },
       orderBy: { createdAt: 'desc' },
     })
 
@@ -87,7 +87,7 @@ export async function findNearbyBoards(params: {
   const [rows, total] = await Promise.all([
     prisma.bulletinBoard.findMany({
       where: where as any,
-      include: { _count: { select: { pins: { where: { expiresAt: { gte: new Date() } } }, members: true } } },
+      include: { _count: { select: { pins: { where: { OR: [{ expiresAt: null }, { expiresAt: { gte: new Date() } }] } }, members: true } } },
       orderBy: { createdAt: 'desc' },
       skip: offset,
       take: limit,
