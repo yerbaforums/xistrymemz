@@ -547,7 +547,8 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
     )
   }
 
-  const results = (await Promise.all(queries)).flat()
+  const settled = await Promise.allSettled(queries)
+  const results = settled.flatMap(r => r.status === 'fulfilled' ? r.value : [])
 
   if (lat !== undefined && lng !== undefined) {
     const refLat = Number(lat)

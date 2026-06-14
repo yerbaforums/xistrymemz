@@ -144,6 +144,7 @@ export default function DiscoverPage() {
 
     try {
       const res = await fetch(`/api/discover?${params}`)
+      if (!res.ok) { console.error('Discover API error:', res.status); setLoading(false); return }
       const data = await res.json()
       const resData = data?.data || data
       setResults(prev => append ? [...prev, ...(resData.results || [])] : (resData.results || []))
