@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect, useMemo } from 'react'
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSession } from 'next-auth/react'
@@ -10,7 +10,7 @@ import Breadcrumbs from '@/components/Breadcrumbs'
 import Button from '@/components/ui/Button'
 import Loading from '@/components/Loading'
 import { EmptyState } from '@/components/EmptyState'
-import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
+import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
 import EntityMarker from '@/components/EntityMarker'
 import { getEntityIcon, getEntityColor } from '@/lib/entity-icons'
 import { usePassportLocation } from '@/hooks/usePassportLocation'
@@ -121,7 +121,9 @@ export default function DiscoverPage() {
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [mapCenter, setMapCenter] = useState<[number, number]>([40.7128, -74.006])
+  const [homeCoords, setHomeCoords] = useState<[number, number] | null>(null)
   const [L, setL] = useState<any>(null)
+  const mapRef = useRef<any>(null)
 
   const fetchResults = useCallback(async (p = 1, append = false) => {
     setLoading(true)
@@ -132,6 +134,13 @@ export default function DiscoverPage() {
     if (hashtagFilter) params.set('hashtag', hashtagFilter)
     params.set('page', String(p))
     params.set('limit', '50')
+
+    const loc = passportLoc?.latitude ? { lat: passportLoc.latitude, lng: passportLoc.longitude, r: passportLoc.searchRadius || 250 } : null
+    if (loc) {
+      params.set('lat', String(loc.lat))
+      params.set('lng', String(loc.lng))
+      params.set('radius', String(loc.r))
+    }
 
     try {
       const res = await fetch(`/api/discover?${params}`)
@@ -150,7 +159,7 @@ export default function DiscoverPage() {
       }
     } catch { /* ignore */ }
     setLoading(false)
-  }, [query, typeFilter, intentFilter, hashtagFilter])
+  }, [query, typeFilter, intentFilter, hashtagFilter, passportLoc])
 
   useEffect(() => {
     fetchResults(1, false)
@@ -171,14 +180,17 @@ export default function DiscoverPage() {
   }, [L])
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && 'geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => setMapCenter([pos.coords.latitude, pos.coords.longitude]),
-        () => {},
-        { timeout: 3000 }
-      )
+    if (passportLoc?.latitude && passportLoc?.longitude) {
+      setHomeCoords([passportLoc.latitude, passportLoc.longitude])
+      setMapCenter([passportLoc.latitude, passportLoc.longitude])
     }
-  }, [])
+  }, [passportLoc])
+
+  useEffect(() => {
+    if (homeCoords && mapRef.current) {
+      mapRef.current.flyTo(homeCoords, 10, { duration: 1.5 })
+    }
+  }, [homeCoords])
 
   const sortedResults = useMemo(() => {
     const sorted = [...results]
@@ -341,11 +353,22 @@ export default function DiscoverPage() {
 
       {!loading && viewMode === 'map' && (
         <div className={styles.mapContainer}>
-          <MapContainer center={mapCenter} zoom={4} className={styles.map} scrollWheelZoom={true}>
+          <MapContainer ref={mapRef} center={mapCenter} zoom={4} className={styles.map} scrollWheelZoom={true}>
             <TileLayer
               attribution='&copy; <a href="https://openstreetmap.org">OSM</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
+            {homeCoords && (
+              <Marker position={homeCoords}>
+                <Popup>
+                  <div style={{ textAlign: 'center', minWidth: 120 }}>
+                    <strong>🏠 Your Location</strong>
+                    <br />
+                    <span style={{ fontSize: '0.8rem', color: '#666' }}>{passportLoc?.location || `${homeCoords[0].toFixed(4)}, ${homeCoords[1].toFixed(4)}`}</span>
+                  </div>
+                </Popup>
+              </Marker>
+            )}
             {sortedResults.filter(r => r.latitude && r.longitude).map(r => (
               <EntityMarker key={`${r.type}-${r.id}`} type={r.type} position={[r.latitude!, r.longitude!]}>
                 <Popup>
