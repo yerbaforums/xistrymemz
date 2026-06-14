@@ -29,6 +29,7 @@ export interface DiscoverResult {
   userName: string | null
   userImage: string | null
   hashtags: string[]
+  eventDate: string | null
   createdAt: Date
 }
 
@@ -240,7 +241,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           select: {
             id: true, title: true, description: true, imageUrl: true,
             location: true, latitude: true, longitude: true,
-            eventCategory: true, organizerId: true, createdAt: true,
+            eventDate: true, eventCategory: true, organizerId: true, createdAt: true,
             organizer: { select: { name: true, image: true } },
             eventHashtags: { select: { hashtag: { select: { tag: true } } } },
           },
@@ -259,6 +260,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           distance: null,
           price: null,
           category: r.eventCategory,
+          eventDate: r.eventDate?.toISOString() || null,
           lookingForCollaborators: false,
           userId: r.organizerId,
           userName: r.organizer.name,
@@ -507,7 +509,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
   if (types.includes('SHOP')) {
     queries.push(
       (async () => {
-        const where: Record<string, unknown> = { shopSlug: { not: null }, latitude: { not: null }, longitude: { not: null } }
+        const where: Record<string, unknown> = { shopSlug: { not: null } }
         if (q) {
           where.OR = [
             { shopName: { contains: q, mode: 'insensitive' } },
@@ -548,7 +550,10 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
   }
 
   const settled = await Promise.allSettled(queries)
-  const results = settled.flatMap(r => r.status === 'fulfilled' ? r.value : [])
+  const results = settled.flatMap(r => {
+    if (r.status === 'rejected') { console.error('Discover query failed:', r.reason); return [] }
+    return r.value
+  })
 
   if (lat !== undefined && lng !== undefined) {
     const refLat = Number(lat)

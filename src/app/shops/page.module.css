@@ -2,6 +2,8 @@
   min-height: 100vh;
   padding: 80px 24px 80px;
   background: var(--bg-primary);
+  position: relative;
+  z-index: 1;
 }
 
 .header {
