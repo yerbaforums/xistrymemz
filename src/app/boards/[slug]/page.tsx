@@ -359,6 +359,7 @@ export default function BoardDetailPage() {
           </div>
         </div>
         <div className={styles.boardActions}>
+          {isBoardOwner && <span className={styles.memberCount} style={{ color: 'var(--accent-primary)' }}>👑 Owner</span>}
           {session?.user && board.ownerId !== userId && (
             <Button
               variant={joined ? 'secondary' : 'primary'}

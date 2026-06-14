@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
@@ -9,6 +9,7 @@ import dynamic from 'next/dynamic'
 import Loading from '@/components/Loading'
 import Skeleton from '@/components/Skeleton'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
+import { geocodeLocation, reverseGeocodeLocation } from '@/lib/geocoding'
 import styles from './passport.module.css'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
@@ -54,6 +55,7 @@ export default function PassportPage() {
   const [traveling, setTraveling] = useState(false)
   const [lookingForCollaborators, setLookingForCollaborators] = useState(false)
   const [geoLoading, setGeoLoading] = useState(false)
+  const [geoSearchLoading, setGeoSearchLoading] = useState(false)
 
   // Saved Locations
   const [savedLocations, setSavedLocations] = useState<UserLocation[]>([])
@@ -124,9 +126,29 @@ export default function PassportPage() {
     if (!navigator.geolocation) { toastError('Geolocation not supported'); return }
     setGeoLoading(true)
     navigator.geolocation.getCurrentPosition(
-      (pos) => { setLatitude(pos.coords.latitude); setLongitude(pos.coords.longitude); setGeoLoading(false) },
+      (pos) => {
+        setLatitude(pos.coords.latitude)
+        setLongitude(pos.coords.longitude)
+        reverseGeocodeLocation(pos.coords.latitude, pos.coords.longitude).then(addr => {
+          if (addr) setLocation(addr)
+        })
+        setGeoLoading(false)
+      },
       () => { toastError('Failed to get location'); setGeoLoading(false) }
     )
+  }
+
+  const handleGeoCodePassport = async () => {
+    if (!location.trim()) return
+    setGeoSearchLoading(true)
+    try {
+      const result = await geocodeLocation(location)
+      if (result) {
+        setLatitude(result.latitude)
+        setLongitude(result.longitude)
+      } else { toastError('Could not geocode this location') }
+    } catch { toastError('Geocoding failed') }
+    finally { setGeoSearchLoading(false) }
   }
 
   const handleClearLocation = () => { setLatitude(null); setLongitude(null) }
@@ -398,16 +420,24 @@ export default function PassportPage() {
               className={styles.geoBtn} style={{ cursor: geoLoading ? 'not-allowed' : 'pointer' }}>
               {geoLoading ? '...' : '📍 Auto-Detect'}
             </button>
+            <button onClick={handleGeoCodePassport} disabled={geoSearchLoading}
+              className={styles.geoBtn} style={{ cursor: geoSearchLoading ? 'not-allowed' : 'pointer' }}>
+              {geoSearchLoading ? '...' : '🔍 Geocode'}
+            </button>
             {latitude && longitude && (
               <button onClick={handleClearLocation}
                 className={styles.clearBtn}>Clear</button>
             )}
           </div>
           {latitude && longitude && (
-            <div className={styles.coordsBox}>
-              <div><span className={styles.coordLabel}>Lat </span><span className={styles.coordValue}>{latitude.toFixed(4)}</span></div>
-              <div><span className={styles.coordLabel}>Lng </span><span className={styles.coordValue}>{longitude.toFixed(4)}</span></div>
-            </div>
+            <><div className={styles.coordsBox}>
+      <div><span className={styles.coordLabel}>Lat </span><span className={styles.coordValue}>{latitude.toFixed(4)}</span></div>
+      <div><span className={styles.coordLabel}>Lng </span><span className={styles.coordValue}>{longitude.toFixed(4)}</span></div>
+    </div>
+    <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+      <input type="number" step="any" value={latitude ?? ''} onChange={e => setLatitude(e.target.value ? parseFloat(e.target.value) : null)} placeholder="Latitude" className={styles.input} style={{ flex: 1 }} />
+      <input type="number" step="any" value={longitude ?? ''} onChange={e => setLongitude(e.target.value ? parseFloat(e.target.value) : null)} placeholder="Longitude" className={styles.input} style={{ flex: 1 }} />
+    </div></>
           )}
         </div>
 

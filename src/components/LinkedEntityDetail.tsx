@@ -89,7 +89,23 @@ export default function LinkedEntityDetail({ entityType, entityId, initialTitle,
     )
   }
   if (loading) return <div className={styles.loading}><Skeleton width="100%" height="3rem" /></div>
-  if (!detail) return null
+  if (!detail) {
+    if (initialTitle) {
+      return (
+        <Link href={entityType === 'USER' ? `/profile/${entityId}` : `${ENTITY_LIST_ROUTES[entityType] || ''}/${entityId}`} className={styles.card} target="_blank" rel="noopener noreferrer">
+          {initialImage && <img src={initialImage} alt="" className={styles.image} />}
+          <div className={styles.info}>
+            <div className={styles.title}>{initialTitle}</div>
+            <div className={styles.meta}>
+              <span className={styles.tag}>{entityType.replace('_', ' ')}</span>
+            </div>
+          </div>
+          <span className={styles.arrow}>→</span>
+        </Link>
+      )
+    }
+    return null
+  }
 
   const listRoute = ENTITY_LIST_ROUTES[entityType]
   const href = entityType === 'USER'

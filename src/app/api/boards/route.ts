@@ -28,7 +28,7 @@ export async function GET(request: Request) {
       const [boards, total] = await Promise.all([
         prisma.bulletinBoard.findMany({
           where: { ownerId: session.user.id },
-          include: { _count: { select: { pins: true, members: true } } },
+          include: { _count: { select: { pins: { where: { expiresAt: { gte: new Date() } } }, members: true } } },
           orderBy: { updatedAt: 'desc' },
           skip,
           take: limit,
@@ -123,6 +123,12 @@ export async function POST(request: Request) {
         isSystem: isSystem || false,
         ownerId: session.user.id,
       },
+    })
+
+    await prisma.boardMember.upsert({
+      where: { boardId_userId: { boardId: board.id, userId: session.user.id } },
+      update: { role: 'MODERATOR' },
+      create: { boardId: board.id, userId: session.user.id, role: 'MODERATOR' },
     })
 
     return apiSuccess(board)

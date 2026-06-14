@@ -15,7 +15,7 @@ export async function POST(request: Request) {
       return apiError("Missing entityType or entityId", 400)
     }
 
-    const validTypes = ['PRODUCT', 'EVENT', 'GROUP', 'PROJECT']
+    const validTypes = ['PRODUCT', 'EVENT', 'GROUP', 'PROJECT', 'SERVICE', 'REQUEST']
     if (!validTypes.includes(entityType)) {
       return apiError("Invalid entityType", 400)
     }
@@ -33,6 +33,12 @@ export async function POST(request: Request) {
     } else if (entityType === 'PROJECT') {
       const project = await prisma.project.findUnique({ where: { id: entityId }, select: { userId: true } })
       receiverId = project?.userId || null
+    } else if (entityType === 'SERVICE') {
+      const service = await prisma.serviceOffering.findUnique({ where: { id: entityId }, select: { userId: true } })
+      receiverId = service?.userId || null
+    } else if (entityType === 'REQUEST') {
+      const request = await prisma.request.findUnique({ where: { id: entityId }, select: { userId: true } })
+      receiverId = request?.userId || null
     }
 
     if (!receiverId) {
