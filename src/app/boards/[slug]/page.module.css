@@ -402,3 +402,53 @@
   .calendarPinItem { font-size: 0.65rem; padding: 2px 4px; }
   .calendarPinTitle { max-width: 40px; }
 }
+
+.popupEntity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 8px;
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+}
+
+.popupEntityImg {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.popupEntityIcon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+}
+
+.popupEntityInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.popupEntityType {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+
+.popupEntityTitle {
+  font-size: 0.78rem;
+  color: var(--accent-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

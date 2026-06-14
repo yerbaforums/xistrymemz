@@ -221,10 +221,10 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
   const mapLocations = useMemo(() => {
     const locations: { lat: number; lng: number; title: string; type: string; id: string; info: string }[] = []
     filteredProjects.forEach(project => {
-      if (project.latitude && plan.longitude) {
-        locations.push({ lat: project.latitude, lng: plan.longitude, title: plan.title, type: 'project', id: plan.id, info: plan.location || 'Project Location' })
+      if (project.latitude && project.longitude) {
+        locations.push({ lat: project.latitude, lng: project.longitude, title: project.title, type: 'project', id: project.id, info: project.location || 'Project Location' })
       }
-      plan.events.forEach(event => {
+      project.events.forEach(event => {
         if (event.latitude && event.longitude) {
           locations.push({
             lat: event.latitude, lng: event.longitude, title: event.title, type: 'event', id: event.id,
@@ -271,8 +271,8 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
   }
 
   const getProjectDistance = (project: ProjectData): number | null => {
-    if (!userLocation || !plan.latitude || !plan.longitude) return null
-    return Math.round(haversineDistance(userLocation.lat, userLocation.lng, plan.latitude, plan.longitude))
+    if (!userLocation || !project.latitude || !project.longitude) return null
+    return Math.round(haversineDistance(userLocation.lat, userLocation.lng, project.latitude, project.longitude))
   }
 
   const sidebarContent = (
@@ -407,8 +407,8 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
   )
 
   const fundingProgress = (project: ProjectData) => {
-    const goal = plan.goalAmount || 0
-    const funded = plan.currentFunding || 0
+    const goal = project.goalAmount || 0
+    const funded = project.currentFunding || 0
     if (goal <= 0) return null
     const pct = Math.min(Math.round((funded / goal) * 100), 100)
     return (
@@ -492,12 +492,12 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
               <MapContainer center={defaultCenter} zoom={4} style={{ height: '100%', width: '100%' }}>
                 <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                 {mapLocations.map((loc, i) => (
-                  <EntityMarker key={`${loc.id}-${i}`} type={loc.type === 'plan' ? 'PROJECT' : 'EVENT'} position={[loc.lat, loc.lng]}>
+                  <EntityMarker key={`${loc.id}-${i}`} type={loc.type === 'project' ? 'PROJECT' : 'EVENT'} position={[loc.lat, loc.lng]}>
                     <Popup>
                       <div style={{ minWidth: 150 }}>
                         <strong>{loc.title}</strong><br />
                         <span style={{ fontSize: '12px', color: '#666' }}>
-                          {loc.type === 'plan' ? '📍 Project' : '📅 Event'}
+                          {loc.type === 'project' ? '🚀 Project' : '📅 Event'}
                         </span><br />
                         <span style={{ fontSize: '11px' }}>{loc.info}</span><br />
                         <Link href={loc.type === 'event' ? `/events/${loc.id}` : `/projects/${loc.id}`} style={{ color: '#00d9ff', fontSize: '12px' }}>{loc.type === 'event' ? 'View Event' : 'View Project'} →</Link>
@@ -526,15 +526,15 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
           ) : (
             <div className={styles.publicGrid}>
               {filteredProjects.map((project, index) => {
-                const next = nextEvent(plan.events)
-                const goalsList = parseGoalsList(plan.goals)
-                const catColor = CATEGORY_COLORS[plan.category || 'OTHER'] || '#888'
-                const catIcon = CATEGORY_ICONS[plan.category || 'OTHER'] || '📌'
-                const distance = getProjectDistance(plan)
+                const next = nextEvent(project.events)
+                const goalsList = parseGoalsList(project.goals)
+                const catColor = CATEGORY_COLORS[project.category || 'OTHER'] || '#888'
+                const catIcon = CATEGORY_ICONS[project.category || 'OTHER'] || '📌'
+                const distance = getProjectDistance(project)
 
                 return (
-                  <div key={plan.id} className={`${styles.publicCard} ${plan.pinned ? styles.pinnedCard : ''}`} style={{ animationDelay: `${index * 60}ms`, cursor: 'pointer' }} onClick={(e) => { const t = e.target as HTMLElement; if (t.closest('a, button')) return; router.push(`/projects/${plan.id}`) }}>
-                    {plan.pinned && (
+                  <div key={project.id} className={`${styles.publicCard} ${project.pinned ? styles.pinnedCard : ''}`} style={{ animationDelay: `${index * 60}ms`, cursor: 'pointer' }} onClick={(e) => { const t = e.target as HTMLElement; if (t.closest('a, button')) return; router.push(`/projects/${project.id}`) }}>
+                    {project.pinned && (
                       <div className={styles.pinnedBadge}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                           <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/>
@@ -551,16 +551,16 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
 
                     <div className={styles.publicCardHeader}>
                       <div className={styles.headerLeft}>
-                        <span className={`${styles.statusBadge} ${styles[plan.status.toLowerCase()]}`}>
-                          {STATUS_ICONS[plan.status]} {STATUS_LABELS[plan.status]}
+                        <span className={`${styles.statusBadge} ${styles[project.status.toLowerCase()]}`}>
+                          {STATUS_ICONS[project.status]} {STATUS_LABELS[project.status]}
                         </span>
-                        {plan.category && (
+                        {project.category && (
                           <span className={styles.cardCategory} style={{ color: catColor }}>
-                            {catIcon} {plan.category.charAt(0) + plan.category.slice(1).toLowerCase()}
+                            {catIcon} {project.category.charAt(0) + project.category.slice(1).toLowerCase()}
                           </span>
                         )}
-                        {plan.needsVolunteers && <span className={styles.volunteerBadge}>🤝 Volunteers</span>}
-                        {plan.lookingForCollaborators && <span className={styles.collabBadge}>👥 Collaborators</span>}
+                        {project.needsVolunteers && <span className={styles.volunteerBadge}>🤝 Volunteers</span>}
+                        {project.lookingForCollaborators && <span className={styles.collabBadge}>👥 Collaborators</span>}
                       </div>
                       <div className={styles.publicStats}>
                         <span title="Members">
@@ -568,33 +568,33 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
                             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
                             <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                           </svg>
-                          {plan._count.joiners}
+                          {project._count.joiners}
                         </span>
                         <span title="Requests">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                             <polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
                           </svg>
-                          {plan._count.requests}
+                          {project._count.requests}
                         </span>
-                        {plan.goalAmount && plan.goalAmount > 0 && (
+                        {project.goalAmount && project.goalAmount > 0 && (
                           <span title="Funding">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
                             </svg>
-                            {plan.currentFunding || 0}/{plan.goalAmount}
+                            {project.currentFunding || 0}/{project.goalAmount}
                           </span>
                         )}
                       </div>
                     </div>
 
                     <h3 className={styles.publicCardTitle}>
-                      <Link href={`/projects/${plan.id}`} className={styles.cardTitleLink}>{plan.title}</Link>
+                      <Link href={`/projects/${project.id}`} className={styles.cardTitleLink}>{project.title}</Link>
                     </h3>
 
-                    {plan.description && <p className={styles.publicCardDesc}>{plan.description}</p>}
+                    {project.description && <p className={styles.publicCardDesc}>{project.description}</p>}
 
-                    {fundingProgress(plan)}
+                    {fundingProgress(project)}
 
                     {goalsList.length > 0 && (
                       <div className={styles.publicGoals}>
@@ -619,42 +619,42 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
                       </div>
                     )}
 
-                    {plan.events.length > 0 && !next && (
-                      <div className={styles.eventCount}>📅 {plan.events.length} event{plan.events.length !== 1 ? 's' : ''}</div>
+                    {project.events.length > 0 && !next && (
+                      <div className={styles.eventCount}>📅 {project.events.length} event{project.events.length !== 1 ? 's' : ''}</div>
                     )}
 
-                    {plan.location && !distance && (
+                    {project.location && !distance && (
                       <div className={styles.cardLocation}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
                         </svg>
-                        {plan.location}
+                        {project.location}
                       </div>
                     )}
 
                     <div className={styles.publicCardFooter}>
                       <div className={styles.publicAuthor}>
                         <div className={styles.authorAvatar}>
-                          {plan.user.image ? (
-                            <Image src={plan.user.image} alt={plan.user.name || 'User'} fill sizes="32px" />
+                          {project.user.image ? (
+                            <Image src={project.user.image} alt={project.user.name || 'User'} fill sizes="32px" />
                           ) : (
-                            <span>{(plan.user.name?.[0] || 'U').toUpperCase()}</span>
+                            <span>{(project.user.name?.[0] || 'U').toUpperCase()}</span>
                           )}
                         </div>
                         <div className={styles.authorInfo}>
-                          <Link href={getUserProfileUrl(plan.user)} className={styles.authorName}>
-                            {plan.user.name || 'Anonymous'}
+                          <Link href={getUserProfileUrl(project.user)} className={styles.authorName}>
+                            {project.user.name || 'Anonymous'}
                           </Link>
-                          <span className={styles.authorDate}>{formatDate(plan.createdAt)}</span>
+                          <span className={styles.authorDate}>{formatDate(project.createdAt)}</span>
                         </div>
                       </div>
                       <div className={styles.activityIndicator}>
                         <span className={styles.activityDot} />
-                        <span className={styles.activityTime}>{formatDate(plan.updatedAt)}</span>
+                        <span className={styles.activityTime}>{formatDate(project.updatedAt)}</span>
                       </div>
                     </div>
 
-                    <Link href={`/projects/${plan.id}`} className={styles.viewProjectBtn}>View Project →</Link>
+                    <Link href={`/projects/${project.id}`} className={styles.viewProjectBtn}>View Project →</Link>
                   </div>
                 )
               })}

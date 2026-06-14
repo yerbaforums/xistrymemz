@@ -299,7 +299,7 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
           {pin.content && <LinkPreview text={pin.content} />}
           {parsedImages.length > 0 && <ImageCarousel images={parsedImages} />}
           {pin.entityType && pin.entityId && (
-            <LinkedEntityDetail entityType={pin.entityType} entityId={pin.entityId} />
+            <LinkedEntityDetail entityType={pin.entityType} entityId={pin.entityId} initialTitle={pin.entityTitle} initialImage={pin.entityImage} />
           )}
           {isEventPin && (
             <div className={styles.eventActions}>

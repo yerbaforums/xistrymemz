@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 
 export type EntityType =
   | 'PROJECT' | 'PRODUCT' | 'POST' | 'EVENT' | 'SCHOOLCONTENT'
-  | 'REQUEST' | 'SERVICE' | 'GROUP' | 'SHOP' | 'SCHOOL'
+  | 'REQUEST' | 'SERVICE' | 'GROUP' | 'SHOP' | 'SCHOOL' | 'BOARD'
 
 export type RelationType = 'REFERENCES' | 'CONTAINS' | 'RELATES_TO' | 'PROMOTES'
 
@@ -168,6 +168,18 @@ async function resolveEntityTitle(type: EntityType, id: string): Promise<string 
       const p = await prisma.post.findUnique({ where: { id }, select: { content: true } })
       return p ? p.content.slice(0, 80) : null
     }
+    case 'SHOP': {
+      const u = await prisma.user.findUnique({ where: { id }, select: { shopName: true } })
+      return u?.shopName || null
+    }
+    case 'SCHOOL': {
+      const u = await prisma.user.findUnique({ where: { id }, select: { schoolName: true } })
+      return u?.schoolName || null
+    }
+    case 'BOARD': {
+      const b = await prisma.bulletinBoard.findUnique({ where: { id }, select: { name: true } })
+      return b?.name || null
+    }
     default:
       return null
   }
@@ -182,6 +194,10 @@ function resolveEntityUrl(type: EntityType, id: string): string {
     case 'SERVICE': return `/services/${id}`
     case 'GROUP': return `/groups/${id}`
     case 'POST': return `/posts/${id}`
+    case 'SCHOOLCONTENT': return `/school/content/${id}`
+    case 'SHOP': return `/shop/${id}`
+    case 'SCHOOL': return `/schools`
+    case 'BOARD': return `/boards/${id}`
     default: return '#'
   }
 }

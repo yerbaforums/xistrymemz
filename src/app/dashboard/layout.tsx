@@ -79,6 +79,7 @@ function DashboardNav({ user }: { user: { id?: string | null; name?: string | nu
           <span>{item.icon}</span>
           <span>{item.label}</span>
           {i < 9 && <span className={sidebarStyles.shortcut}>Alt+{i + 1}</span>}
+          {i === 9 && <span className={sidebarStyles.shortcut}>Alt+0</span>}
         </Link>
       ))}
       <button onClick={() => setMoreOpen(!moreOpen)} className={sidebarStyles.moreToggle}>

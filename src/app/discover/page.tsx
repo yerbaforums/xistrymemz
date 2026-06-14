@@ -23,6 +23,9 @@ const ENTITY_TYPES = [
   { key: 'EVENT', label: 'Events', icon: '📅' },
   { key: 'PROJECT', label: 'Projects', icon: '🚀' },
   { key: 'BOARD', label: 'Boards', icon: '🪵' },
+  { key: 'REQUEST', label: 'Requests', icon: '📝' },
+  { key: 'SHOP', label: 'Shops', icon: '🏪' },
+  { key: 'RENTAL', label: 'Rentals', icon: '🏠' },
   { key: 'MEMBER', label: 'Members', icon: '👤' },
 ]
 
@@ -58,6 +61,10 @@ function EntityCard({ item }: { item: DiscoverItem }) {
     item.type === 'GROUP' ? `/groups/${item.id}` :
     item.type === 'EVENT' ? `/events/${item.id}` :
     item.type === 'PROJECT' ? `/projects/${item.id}` :
+    item.type === 'BOARD' ? `/boards/${item.id}` :
+    item.type === 'RENTAL' ? `/products/${item.id}` :
+    item.type === 'REQUEST' ? `/requests/${item.id}` :
+    item.type === 'SHOP' ? `/shop/${item.id}` :
     item.type === 'MEMBER' ? `/profile/${item.userId}` : '#'
 
   return (
@@ -66,10 +73,10 @@ function EntityCard({ item }: { item: DiscoverItem }) {
         {item.image ? (
           <Image src={item.image} alt={item.title} width={160} height={120} style={{ objectFit: 'cover' }} />
         ) : (
-          <span className={styles.cardIcon}>{getEntityIcon[item.type] || '📄'}</span>
+          <span className={styles.cardIcon}>{getEntityIcon(item.type)}</span>
         )}
-        <span className={styles.typeBadge} style={{ background: getEntityColor[item.type] }}>
-          {getEntityIcon[item.type]} {item.type}
+        <span className={styles.typeBadge} style={{ background: getEntityColor(item.type) }}>
+          {getEntityIcon(item.type)} {item.type}
         </span>
       </div>
       <div className={styles.cardBody}>
@@ -228,10 +235,14 @@ export default function DiscoverPage() {
                 item.type === 'GROUP' ? `/groups/${item.id}` :
                 item.type === 'EVENT' ? `/events/${item.id}` :
                 item.type === 'PROJECT' ? `/projects/${item.id}` :
+                item.type === 'BOARD' ? `/boards/${item.id}` :
+                item.type === 'RENTAL' ? `/products/${item.id}` :
+                item.type === 'REQUEST' ? `/requests/${item.id}` :
+                item.type === 'SHOP' ? `/shop/${item.id}` :
                 item.type === 'MEMBER' ? `/profile/${item.userId}` : '#'
               return (
                 <Link key={`${item.type}-${item.id}`} href={href} className={styles.calendarEventItem}>
-                  <span className={styles.calendarEventIcon}>{getEntityIcon[item.type] || '📄'}</span>
+                  <span className={styles.calendarEventIcon}>{getEntityIcon(item.type)}</span>
                   <span className={styles.calendarEventTitle}>{item.title}</span>
                 </Link>
               )
@@ -340,8 +351,8 @@ export default function DiscoverPage() {
                 <Popup>
                   <div className={styles.popup}>
                     <strong>{r.title}</strong>
-                    <span style={{ color: getEntityColor[r.type], fontSize: '0.8rem' }}>
-                      {getEntityIcon[r.type]} {r.type}
+                    <span style={{ color: getEntityColor(r.type), fontSize: '0.8rem' }}>
+                      {getEntityIcon(r.type)} {r.type}
                     </span>
                     {r.distance != null && <span>📍 {r.distance} mi</span>}
                     <Link href={
@@ -350,7 +361,11 @@ export default function DiscoverPage() {
                       r.type === 'GROUP' ? `/groups/${r.id}` :
                       r.type === 'EVENT' ? `/events/${r.id}` :
                       r.type === 'PROJECT' ? `/projects/${r.id}` :
-                      `/profile/${r.userId}`
+                      r.type === 'BOARD' ? `/boards/${r.id}` :
+                      r.type === 'RENTAL' ? `/products/${r.id}` :
+                      r.type === 'REQUEST' ? `/requests/${r.id}` :
+                      r.type === 'SHOP' ? `/shop/${r.id}` :
+                      r.type === 'MEMBER' ? `/profile/${r.userId}` : '#'
                     } className={styles.popupLink}>View Details →</Link>
                   </div>
                 </Popup>

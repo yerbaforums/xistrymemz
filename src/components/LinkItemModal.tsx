@@ -30,6 +30,7 @@ const ENTITY_TYPES = [
   { value: 'SCHOOLCONTENT', label: 'School Content', icon: '📚' },
   { value: 'SHOP', label: 'Shop', icon: '🏪' },
   { value: 'SCHOOL', label: 'School', icon: '🏫' },
+  { value: 'BOARD', label: 'Board', icon: '🪵' },
 ]
 
 const RELATION_TYPES = [

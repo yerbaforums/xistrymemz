@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import dynamic from 'next/dynamic'
 import styles from './HomeMap.module.css'
@@ -87,6 +88,9 @@ export default function HomeMap() {
         )}
       </div>
       <p className={styles.footer}>{t('footer', { count: items.length })}</p>
+      <Link href="/discover" style={{ display: 'inline-block', marginTop: 8, fontSize: '0.85rem', color: 'var(--accent-primary)', textDecoration: 'none' }}>
+        🌐 Explore everything on Discover →
+      </Link>
     </section>
   )
 }

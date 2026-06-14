@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Skeleton from '@/components/Skeleton'
+import { getEntityIcon } from '@/lib/entity-icons'
 import styles from './LinkedEntityDetail.module.css'
 
 interface EntityDetail {
@@ -41,7 +42,7 @@ const ENTITY_LIST_ROUTES: Record<string, string> = {
   SCHOOL_CONTENT: '/school/content',
 }
 
-export default function LinkedEntityDetail({ entityType, entityId }: { entityType: string; entityId: string }) {
+export default function LinkedEntityDetail({ entityType, entityId, initialTitle, initialImage }: { entityType: string; entityId: string; initialTitle?: string | null; initialImage?: string | null }) {
   const [detail, setDetail] = useState<EntityDetail | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -72,6 +73,21 @@ export default function LinkedEntityDetail({ entityType, entityId }: { entityTyp
       .finally(() => setLoading(false))
   }, [entityType, entityId])
 
+  if (loading && initialTitle) {
+    const icon = getEntityIcon?.(entityType) || '📎'
+    return (
+      <div className={styles.card} style={{ pointerEvents: 'none', opacity: 0.7 }}>
+        {initialImage && <img src={initialImage} alt="" className={styles.image} />}
+        <div className={styles.info}>
+          <div className={styles.title}>{initialTitle || `${entityType.replace('_', ' ')}`}</div>
+          <div className={styles.meta}>
+            <span className={styles.tag}>{entityType.replace('_', ' ')}</span>
+          </div>
+        </div>
+        <span className={styles.arrow}>→</span>
+      </div>
+    )
+  }
   if (loading) return <div className={styles.loading}><Skeleton width="100%" height="3rem" /></div>
   if (!detail) return null
 

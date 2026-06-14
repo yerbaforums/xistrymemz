@@ -14,7 +14,7 @@ export interface DiscoverParams {
 
 export interface DiscoverResult {
   id: string
-  type: 'PRODUCT' | 'SERVICE' | 'GROUP' | 'EVENT' | 'PROJECT' | 'MEMBER'
+  type: 'PRODUCT' | 'SERVICE' | 'GROUP' | 'EVENT' | 'PROJECT' | 'MEMBER' | 'BOARD' | 'RENTAL' | 'REQUEST' | 'SHOP'
   title: string
   description: string | null
   image: string | null
@@ -59,7 +59,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
   const limit = Math.min(50, Math.max(1, params.limit || 20))
   const offset = (page - 1) * limit
 
-  const types = type ? [type] : ['PRODUCT', 'SERVICE', 'GROUP', 'EVENT', 'PROJECT', 'MEMBER']
+  const types = type ? [type] : ['PRODUCT', 'SERVICE', 'GROUP', 'EVENT', 'PROJECT', 'MEMBER', 'BOARD', 'RENTAL', 'REQUEST', 'SHOP']
 
   const queries: Promise<DiscoverResult[]>[] = []
 
@@ -359,6 +359,183 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           price: null,
           category: r.userClass,
           lookingForCollaborators: r.lookingForCollaborators,
+          userId: r.id,
+          userName: r.name,
+          userImage: r.image,
+          hashtags: [],
+          createdAt: r.createdAt,
+        }))
+      })()
+    )
+  }
+
+  if (types.includes('BOARD')) {
+    queries.push(
+      (async () => {
+        const where: Record<string, unknown> = { isPublic: true }
+        if (q) {
+          where.OR = [
+            { name: { contains: q, mode: 'insensitive' } },
+            { description: { contains: q, mode: 'insensitive' } },
+            { location: { contains: q, mode: 'insensitive' } },
+          ]
+        }
+        const rows = await prisma.bulletinBoard.findMany({
+          where: where as any,
+          select: {
+            id: true, name: true, slug: true, description: true,
+            location: true, latitude: true, longitude: true,
+            ownerId: true, createdAt: true,
+            _count: { select: { pins: { where: { expiresAt: { gte: new Date() } } } } },
+          },
+          take: limit,
+          orderBy: { createdAt: 'desc' },
+        })
+        return rows.map(r => ({
+          id: r.slug,
+          type: 'BOARD' as const,
+          title: r.name,
+          description: r.description || `${r._count.pins} pins`,
+          image: null,
+          location: r.location,
+          latitude: r.latitude,
+          longitude: r.longitude,
+          distance: null,
+          price: null,
+          category: 'Board',
+          lookingForCollaborators: false,
+          userId: r.ownerId || '',
+          userName: null,
+          userImage: null,
+          hashtags: [],
+          createdAt: r.createdAt,
+        }))
+      })()
+    )
+  }
+
+  if (types.includes('RENTAL')) {
+    queries.push(
+      (async () => {
+        const where: Record<string, unknown> = { published: true, type: 'RENTAL' }
+        if (q) {
+          where.OR = [
+            { title: { contains: q, mode: 'insensitive' } },
+            { description: { contains: q, mode: 'insensitive' } },
+          ]
+        }
+        const rows = await prisma.product.findMany({
+          where: where as any,
+          select: {
+            id: true, title: true, description: true, imageUrl: true,
+            location: true, latitude: true, longitude: true, price: true,
+            category: true, userId: true, createdAt: true,
+            user: { select: { name: true, image: true } },
+          },
+          take: limit,
+          orderBy: { createdAt: 'desc' },
+        })
+        return rows.map(r => ({
+          id: r.id,
+          type: 'RENTAL' as const,
+          title: r.title,
+          description: r.description,
+          image: r.imageUrl,
+          location: r.location,
+          latitude: r.latitude,
+          longitude: r.longitude,
+          distance: null,
+          price: r.price,
+          category: r.category,
+          lookingForCollaborators: false,
+          userId: r.userId,
+          userName: r.user.name,
+          userImage: r.user.image,
+          hashtags: [],
+          createdAt: r.createdAt,
+        }))
+      })()
+    )
+  }
+
+  if (types.includes('REQUEST')) {
+    queries.push(
+      (async () => {
+        const where: Record<string, unknown> = { isPublic: true }
+        if (q) {
+          where.OR = [
+            { title: { contains: q, mode: 'insensitive' } },
+            { description: { contains: q, mode: 'insensitive' } },
+          ]
+        }
+        const rows = await prisma.request.findMany({
+          where: where as any,
+          select: {
+            id: true, title: true, description: true,
+            location: true, latitude: true, longitude: true,
+            category: true, goalAmount: true, currentFunding: true,
+            userId: true, createdAt: true,
+            user: { select: { name: true, image: true } },
+          },
+          take: limit,
+          orderBy: { createdAt: 'desc' },
+        })
+        return rows.map(r => ({
+          id: r.id,
+          type: 'REQUEST' as const,
+          title: r.title,
+          description: r.description,
+          image: null,
+          location: r.location,
+          latitude: r.latitude,
+          longitude: r.longitude,
+          distance: null,
+          price: r.goalAmount,
+          category: r.category,
+          lookingForCollaborators: false,
+          userId: r.userId,
+          userName: r.user.name,
+          userImage: r.user.image,
+          hashtags: [],
+          createdAt: r.createdAt,
+        }))
+      })()
+    )
+  }
+
+  if (types.includes('SHOP')) {
+    queries.push(
+      (async () => {
+        const where: Record<string, unknown> = { shopSlug: { not: null }, latitude: { not: null }, longitude: { not: null } }
+        if (q) {
+          where.OR = [
+            { shopName: { contains: q, mode: 'insensitive' } },
+            { shopDescription: { contains: q, mode: 'insensitive' } },
+          ]
+        }
+        const rows = await prisma.user.findMany({
+          where: where as any,
+          select: {
+            id: true, shopName: true, shopSlug: true, shopDescription: true,
+            shopImage: true, location: true, latitude: true, longitude: true,
+            createdAt: true, name: true, image: true,
+          },
+          take: limit,
+          orderBy: { createdAt: 'desc' },
+        })
+        return rows.map(r => ({
+          id: r.shopSlug!,
+          type: 'SHOP' as const,
+          title: r.shopName || 'Shop',
+          description: r.shopDescription,
+          image: r.shopImage,
+          location: r.location,
+          latitude: r.latitude,
+          longitude: r.longitude,
+          distance: null,
+          price: null,
+          category: 'Shop',
+          lookingForCollaborators: false,
           userId: r.id,
           userName: r.name,
           userImage: r.image,

@@ -516,14 +516,25 @@ export default function BoardsPage() {
               >
                 <Tooltip>{b.name} — {b.pinCount} pins{b.memberCount != null ? ` · 👥 ${b.memberCount}` : ''}</Tooltip>
                 <Popup>
-                  <div style={{ minWidth: 180 }}>
-                    <Link href={`/boards/${b.slug}`} style={{ fontWeight: 600, textDecoration: 'none', color: 'var(--accent-primary)' }}>
-                      {b.name}
+                  <div style={{ minWidth: 200 }}>
+                    <Link href={`/boards/${b.slug}`} style={{ fontWeight: 600, textDecoration: 'none', color: 'var(--accent-primary)', fontSize: '0.95rem' }}>
+                      🪵 {b.name}
                     </Link>
                     <br />
-                    <span style={{ fontSize: '0.8rem', color: '#666' }}>{b.location} · {b.pinCount} pins</span>
-                    {b.distance != null && <br />}
-                    {b.distance != null && <span style={{ fontSize: '0.8rem' }}>📍 {b.distance} mi</span>}
+                    <span style={{ fontSize: '0.8rem', color: '#666' }}>📌 {b.pinCount} pins{b.memberCount != null ? ` · 👥 ${b.memberCount}` : ''}</span>
+                    {b.description && (
+                      <>
+                        <br />
+                        <span style={{ fontSize: '0.75rem', color: '#888', lineHeight: 1.3 }}>
+                          {b.description!.slice(0, 100)}{b.description!.length > 100 ? '...' : ''}
+                        </span>
+                      </>
+                    )}
+                    <br />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
+                      <span style={{ fontSize: '0.75rem', color: '#999' }}>📍 {b.location || b.city || 'Unknown'}</span>
+                      {b.distance != null && <span style={{ fontSize: '0.75rem', color: 'var(--accent-primary)' }}>{b.distance} mi</span>}
+                    </div>
                   </div>
                 </Popup>
               </Marker>

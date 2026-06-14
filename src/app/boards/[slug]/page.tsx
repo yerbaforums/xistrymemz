@@ -17,6 +17,7 @@ import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import Loading from '@/components/Loading'
 import { getBoardMarkerIcon } from '@/lib/map-markers'
+import { getEntityIcon } from '@/lib/entity-icons'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
@@ -444,8 +445,18 @@ export default function BoardDetailPage() {
                     </div>
                     <div className={styles.popupTitle}>{pin.title || pin.content?.slice(0, 60)}</div>
                     {pin.content && <div className={styles.popupDesc}>{pin.content.slice(0, 80)}</div>}
-                    {pin.entityType && pin.entityTitle && (
-                      <div className={styles.popupMeta}>📎 {pin.entityTitle}</div>
+                    {pin.entityType && pin.entityId && (
+                      <div className={styles.popupEntity}>
+                        {pin.entityImage ? (
+                          <img src={pin.entityImage} alt="" className={styles.popupEntityImg} />
+                        ) : (
+                          <span className={styles.popupEntityIcon}>{getEntityIcon(pin.entityType)}</span>
+                        )}
+                        <div className={styles.popupEntityInfo}>
+                          <span className={styles.popupEntityType}>{pin.entityType.replace('_', ' ')}</span>
+                          <span className={styles.popupEntityTitle}>{pin.entityTitle || 'View →'}</span>
+                        </div>
+                      </div>
                     )}
                     {(pin.likeCount != null || pin.commentCount != null) && (
                       <div className={styles.popupStats}>

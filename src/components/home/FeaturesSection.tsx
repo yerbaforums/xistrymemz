@@ -17,6 +17,8 @@ export default function FeaturesSection() {
         { icon: '🛒', title: 'Products', desc: 'Sell physical goods, digital items, or offer services with flexible pricing.', href: '/products' },
         { icon: '🔧', title: 'Services', desc: 'Offer your skills — tutoring, design, consultations. Accept appointments with built-in scheduling.', href: '/services' },
         { icon: '🏠', title: 'Rentals', desc: 'List items for rent with daily, weekly, monthly pricing and deposits.', href: '/rentals' },
+        { icon: '🎫', title: 'Event Tickets', desc: 'Sell tickets with crypto payments, donation addresses, and QR check-in.', href: '/events' },
+        { icon: '💎', title: 'Donations & Tips', desc: 'Receive crypto donations and tips for projects, requests, and content.', href: '/wallet' },
         { icon: '🤝', title: 'Offers & Barter', desc: 'Exchange items or services directly through barter. Make offers, negotiate, and close arrangements.', href: '/dashboard/offers' },
       ]
     },
