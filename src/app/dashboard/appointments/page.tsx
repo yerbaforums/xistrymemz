@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { useToast } from '@/context/ToastContext'
-
+import AddToCalendar from '@/components/AddToCalendar'
 import styles from '../events/events.module.css'
 
 interface AppointmentItem {
@@ -354,6 +354,18 @@ export default function DashboardAppointments() {
                           )}
                         </div>
                       </div>
+                      {appt.meetingLink && (appt.status === 'CONFIRMED' || appt.status === 'PAID') && (
+                        <div style={{ marginTop: 8, padding: '6px 0' }}>
+                          <AddToCalendar params={{
+                            title: appt.title,
+                            description: appt.description || undefined,
+                            location: appt.location || undefined,
+                            meetingLink: appt.meetingLink || undefined,
+                            startTime: appt.startTime,
+                            endTime: appt.endTime,
+                          }} variant="link" />
+                        </div>
+                      )}
                     </div>
                   )
                 } else {
@@ -386,6 +398,11 @@ export default function DashboardAppointments() {
                         <div className={styles.cardMeta}>
                           {evt.eventDate && <span className={styles.metaItem}>📅 {formatDate(evt.eventDate)}</span>}
                           {evt.location && <span className={styles.metaItem}>📍 {evt.location}</span>}
+                          {evt.isTicketed && (evt as any).myTicket && (
+                            <span className={styles.metaItem} style={{ color: (evt as any).myTicket.paymentStatus === 'PAID' ? '#22c55e' : '#f59e0b', fontWeight: 600 }}>
+                              🎫 {(evt as any).myTicket.paymentStatus}
+                            </span>
+                          )}
                           {evt.joinerCount > 0 && <span className={styles.metaItem}>👥 {evt.joinerCount} attending</span>}
                           {evt.projectTitle && <span className={styles.metaItem}>🚀 {evt.projectTitle}</span>}
                           {evt.groupTitle && <span className={styles.metaItem}>👥 {evt.groupTitle}</span>}
@@ -393,6 +410,16 @@ export default function DashboardAppointments() {
                         <div className={styles.cardFooter}>
                           <span className={styles.cardDate}>{formatRelativeDate(evt.createdAt)}</span>
                           <div className={styles.cardActions}>
+                            {(evt as any).meetingLink && evt.eventDate && (
+                              <AddToCalendar params={{
+                                title: evt.title,
+                                description: evt.description || undefined,
+                                location: evt.location || undefined,
+                                meetingLink: (evt as any).meetingLink || undefined,
+                                startTime: evt.eventDate,
+                                endTime: evt.endDate || evt.eventDate,
+                              }} variant="link" />
+                            )}
                             <span className={styles.viewDetailsBtn}>View →</span>
                           </div>
                         </div>

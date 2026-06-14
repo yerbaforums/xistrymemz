@@ -89,6 +89,9 @@ export interface DashboardEvent {
   isTicketed: boolean
   ticketPrice: number | null
   currency: string
+  isVirtual?: boolean
+  meetingLink?: string | null
+  myTicket?: { paymentStatus: string; ticketCode: string } | null
   acceptsDonations: boolean
   donationAddress: string | null
   donationCurrency: string

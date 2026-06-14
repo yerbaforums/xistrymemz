@@ -61,7 +61,15 @@ export async function GET(request: Request) {
             select: { id: true, title: true, imageUrl: true, description: true, goals: true, createdAt: true, user: { select: { name: true } } },
             take, orderBy: { createdAt: 'desc' }
           })
-          return rows.map(p => ({ id: p.id, title: p.title, image: p.imageUrl, url: `/projects/${p.id}`, meta: p.description?.slice(0, 80) || undefined, type: 'plan', category: undefined, owner: p.user.name || undefined, createdAt: p.createdAt.toISOString() }))
+          return rows.map(p => ({ id: p.id, title: p.title, image: p.imageUrl, url: `/projects/${p.id}`, meta: p.description?.slice(0, 80) || undefined, type: 'project', category: undefined, owner: p.user.name || undefined, createdAt: p.createdAt.toISOString() }))
+        }
+        case 'member': {
+          const rows = await prisma.user.findMany({
+            where: { ...(q ? { OR: [{ name: { contains: q, mode: 'insensitive' as const } }, { bio: { contains: q, mode: 'insensitive' as const } }] } : {}), name: { not: '' } },
+            select: { id: true, name: true, image: true, username: true, location: true, bio: true, userClass: true, createdAt: true },
+            take, orderBy: { createdAt: 'desc' }
+          })
+          return rows.map(u => ({ id: u.id, title: u.name || 'Unknown', image: u.image, url: u.username ? `/profile/${u.username}` : `/profile/${u.id}`, meta: u.location || undefined, type: 'member', category: u.userClass || undefined, extra: u.bio?.slice(0, 80) || undefined, createdAt: u.createdAt.toISOString() }))
         }
         case 'request': {
           const rows = await prisma.request.findMany({
@@ -80,12 +88,12 @@ export async function GET(request: Request) {
       return NextResponse.json({ items, total: items.length })
     }
 
-    const [shops, products, services, rentals, events, plans, requests] = await Promise.all([
+    const [shops, products, services, rentals, events, projects, requests, members] = await Promise.all([
       fetchByType('shop'), fetchByType('product'), fetchByType('service'),
-      fetchByType('rental'), fetchByType('event'), fetchByType('project'), fetchByType('request')
+      fetchByType('rental'), fetchByType('event'), fetchByType('project'), fetchByType('request'), fetchByType('member')
     ])
 
-    const allItems = [...shops, ...products, ...services, ...rentals, ...events, ...plans, ...requests]
+    const allItems = [...shops, ...products, ...services, ...rentals, ...events, ...projects, ...requests, ...members]
 
     const categories: Record<string, string[]> = {}
     for (const item of allItems) {
@@ -98,7 +106,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       items: allItems,
       categories,
-      counts: { shops: shops.length, products: products.length, services: services.length, rentals: rentals.length, events: events.length, plans: plans.length, requests: requests.length }
+      counts: { shops: shops.length, products: products.length, services: services.length, rentals: rentals.length, events: events.length, projects: projects.length, requests: requests.length, members: members.length }
     })
   } catch (error) {
     console.error('Directory error:', error)

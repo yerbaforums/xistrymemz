@@ -72,6 +72,8 @@ export async function GET() {
             needsVolunteers: true,
             volunteerRoles: true,
             volunteerDescription: true,
+            isVirtual: true,
+            meetingLink: true,
             schoolId: true,
             shopId: true,
             createdAt: true,
@@ -99,6 +101,13 @@ export async function GET() {
     })
   ])
 
+  const joinedEventIds = joinedEvents.map(j => j.event.id)
+  const tickets = joinedEventIds.length > 0 ? await prisma.eventTicket.findMany({
+    where: { userId, eventId: { in: joinedEventIds } },
+    select: { eventId: true, paymentStatus: true, ticketCode: true }
+  }) : []
+  const ticketMap = new Map(tickets.map(t => [t.eventId, t]))
+
   const events = [
     ...organizedEvents.map(e => ({
       id: e.id,
@@ -121,6 +130,8 @@ export async function GET() {
       needsVolunteers: e.needsVolunteers || false,
       volunteerRoles: e.volunteerRoles || null,
       volunteerDescription: e.volunteerDescription || null,
+      isVirtual: e.isVirtual || false,
+      meetingLink: e.meetingLink || null,
       schoolId: e.schoolId || null,
       shopId: e.shopId || null,
       joinerCount: e._count.eventJoiners,
@@ -153,10 +164,13 @@ export async function GET() {
       needsVolunteers: j.event.needsVolunteers || false,
       volunteerRoles: j.event.volunteerRoles || null,
       volunteerDescription: j.event.volunteerDescription || null,
+      isVirtual: j.event.isVirtual || false,
+      meetingLink: j.event.meetingLink || null,
       schoolId: j.event.schoolId || null,
       shopId: j.event.shopId || null,
       joinerCount: j.event._count.eventJoiners,
       type: 'JOINED',
+      myTicket: ticketMap.get(j.event.id) ? { paymentStatus: ticketMap.get(j.event.id)!.paymentStatus, ticketCode: ticketMap.get(j.event.id)!.ticketCode } : null,
       projectTitle: j.event.project?.title || null,
       projectId: j.event.project?.id || null,
       groupTitle: j.event.group?.name || null,

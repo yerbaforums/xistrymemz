@@ -18,6 +18,7 @@ interface DirItem {
 
 const TYPE_TABS = [
   { key: 'all', label: 'All', icon: '📋' },
+  { key: 'member', label: 'Members', icon: '👤' },
   { key: 'shop', label: 'Shops', icon: '🛍️' },
   { key: 'product', label: 'Products', icon: '📦' },
   { key: 'service', label: 'Services', icon: '🔧' },
@@ -28,7 +29,7 @@ const TYPE_TABS = [
 ]
 
 const TYPE_ICONS: Record<string, string> = {
-  shop: '🛍️', product: '📦', service: '🔧', rental: '🏠',
+  member: '👤', shop: '🛍️', product: '📦', service: '🔧', rental: '🏠',
   event: '📅', project: '🚀', request: '📝'
 }
 

@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { getMapMarkerIcon } from '@/lib/map-markers'
 
@@ -11,21 +10,13 @@ interface EntityMarkerProps {
   position: [number, number]
   size?: number
   highlighted?: boolean
+  leaflet?: any
   eventHandlers?: any
   children?: React.ReactNode
 }
 
-export default function EntityMarker({ type, position, size, highlighted, eventHandlers, children }: EntityMarkerProps) {
-  const [icon, setIcon] = useState<any>(undefined)
-  const initRef = useRef(false)
-
-  useEffect(() => {
-    if (initRef.current) return
-    initRef.current = true
-    import('leaflet').then(L => {
-      setIcon(getMapMarkerIcon(L, type, { size, highlighted }))
-    }).catch(() => {})
-  }, [type, size, highlighted])
+export default function EntityMarker({ type, position, size, highlighted, leaflet: L, eventHandlers, children }: EntityMarkerProps) {
+  const icon = L ? getMapMarkerIcon(L, type, { size, highlighted }) : undefined
 
   return (
     <DynamicMarker position={position} icon={icon} eventHandlers={eventHandlers}>
