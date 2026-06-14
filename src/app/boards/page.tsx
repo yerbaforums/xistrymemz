@@ -16,6 +16,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog'
 import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import { MapContainer, TileLayer, Marker, Popup, Tooltip } from '@/components/LeafletComponents'
+import { getBoardMarkerIcon } from '@/lib/map-markers'
 
 const MapEvents = dynamic(() => import('./MapEvents').then(m => m.MapEvents), { ssr: false })
 const MapController = dynamic(() => import('./MapEvents').then(m => m.MapController), { ssr: false })
@@ -96,16 +97,7 @@ export default function BoardsPage() {
   const mapCenter: [number, number] = homeCoords || [40.7128, -74.006]
 
   const getBoardIcon = useCallback((highlighted: boolean, isOwner?: boolean) => {
-    if (!L) return undefined
-    const bg = isOwner ? '#00d9ff' : '#8B6914'
-    const border = isOwner ? '#00d9ff' : '#654321'
-    const glow = highlighted ? '0 0 0 3px rgba(0,217,255,0.4),' : ''
-    return L.divIcon({
-      className: '',
-      html: `<div style="width:28px;height:20px;background:${bg};border:2px solid ${border};border-radius:3px;box-shadow:${glow}0 1px 4px rgba(0,0,0,0.3);"></div>`,
-      iconSize: [32, 24],
-      iconAnchor: [16, 22],
-    })
+    return getBoardMarkerIcon(L, isOwner, highlighted)
   }, [L])
 
   const getClusterIcon = useCallback((count: number) => {

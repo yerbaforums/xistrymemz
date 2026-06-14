@@ -33,7 +33,8 @@ import Button from '@/components/ui/Button'
 import { EmptyState } from '@/components/EmptyState'
 import Skeleton from '@/components/Skeleton'
 import Breadcrumbs from '@/components/Breadcrumbs'
-import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
+import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
+import EntityMarker from '@/components/EntityMarker'
 
 
 interface UserLink {
@@ -1782,13 +1783,13 @@ export default function ProfilePage() {
                             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                           />
-                          <Marker position={[user.latitude, user.longitude]}>
+                          <EntityMarker type="MEMBER" position={[user.latitude, user.longitude]}>
                             <Popup>
                               <strong>{user.name || 'User'}</strong>
                               <br />
                               {user.location || 'Earth'}
                             </Popup>
-                          </Marker>
+                          </EntityMarker>
                         </MapContainer>
                       </div>
                     )}

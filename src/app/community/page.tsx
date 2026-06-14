@@ -13,7 +13,8 @@ import RoleBadge from '@/components/RoleBadge'
 import ActiveStatus from '@/components/ActiveStatus'
 import LookingForCollaboratorsBadge from '@/components/LookingForCollaboratorsBadge'
 import Breadcrumbs from '@/components/Breadcrumbs'
-import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
+import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
+import EntityMarker from '@/components/EntityMarker'
 import Button from '@/components/ui/Button'
 
 interface Member {
@@ -373,13 +374,13 @@ export default function CommunityPage() {
                 <MapContainer center={[39.8283, -98.5795]} zoom={4} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
                   <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                   {filteredMembers.filter(m => m.latitude && m.longitude).map(m => (
-                    <Marker key={m.id} position={[m.latitude!, m.longitude!]}>
+                    <EntityMarker key={m.id} type="MEMBER" position={[m.latitude!, m.longitude!]}>
                       <Popup>
                         <strong>{m.name || 'Anonymous'}</strong>
                         <br />
                         {m.location && <span>📍 {m.location}</span>}
                       </Popup>
-                    </Marker>
+                    </EntityMarker>
                   ))}
                 </MapContainer>
               </div>

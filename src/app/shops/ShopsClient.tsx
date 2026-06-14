@@ -8,7 +8,8 @@ import styles from './page.module.css'
 import AlphabeticalIndex, { type IndexItem } from '@/components/AlphabeticalIndex'
 import { SHOP_CATEGORIES } from '@/lib/shop-categories'
 import { EmptyState } from '@/components/EmptyState'
-import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
+import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
+import EntityMarker from '@/components/EntityMarker'
 
 
 interface Shop {
@@ -128,8 +129,9 @@ export function ShopsClient({ initialShops }: ShopsClientProps) {
           <MapContainer center={getMapCenter()} zoom={4} ref={mapRef} className={styles.map}>
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
             {shopsWithCoords.map(shop => (
-              <Marker
+              <EntityMarker
                 key={shop.id}
+                type="SHOP"
                 position={[shop.latitude!, shop.longitude!]}
                 eventHandlers={{ click: () => setSelectedShop(shop.id) }}
               >
@@ -140,7 +142,7 @@ export function ShopsClient({ initialShops }: ShopsClientProps) {
                     <Link href={`/shop/${shop.shopSlug}`}>Visit Shop</Link>
                   </div>
                 </Popup>
-              </Marker>
+              </EntityMarker>
             ))}
           </MapContainer>
         </div>

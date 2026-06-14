@@ -26,11 +26,19 @@ export interface Event {
   longitude: number | null
   maxJoiners: number
   pinned: boolean
+  isPrivate?: boolean
   isTicketed: boolean
   ticketPrice: number
   currency: string
+  isVirtual?: boolean
+  meetingLink?: string | null
   projectId: string | null
   projectTitle: string | null
+  groupId?: string | null
+  schoolId?: string | null
+  shopId?: string | null
+  school?: { id: string; schoolName?: string | null; name?: string | null } | null
+  shop?: { id: string; shopName?: string | null; name?: string | null } | null
   userId: string
   userName: string | null
   acceptsDonations?: boolean
@@ -54,6 +62,15 @@ export interface Event {
   }
   group?: { id: string; name: string }
   hashtags?: string[]
+  myTicket?: {
+    id: string
+    quantity: number
+    paymentStatus: string
+    ticketCode: string
+    txHash: string | null
+    selectedCurrency: string | null
+    selectedAddress: string | null
+  } | null
 }
 
 export interface DashboardEvent {

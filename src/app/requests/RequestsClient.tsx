@@ -16,7 +16,8 @@ import HashtagInput from '@/components/HashtagInput'
 import { REQUEST_CATEGORIES, REQUEST_PRIORITIES, PRIORITY_COLORS } from '@/lib/request-categories'
 import { EmptyState } from '@/components/EmptyState'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
-import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
+import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
+import EntityMarker from '@/components/EntityMarker'
 
 interface DonationAddr {
   id: string
@@ -534,8 +535,8 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
                   <div style={{ height: '500px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
                     <MapContainer center={userLocation ? [userLocation.lat, userLocation.lon] : [39.8283, -98.5795]} zoom={userLocation ? 10 : 4} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
                       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                      {filtered.filter(r => r.latitude && r.longitude).map(req => (
-                        <Marker key={req.id} position={[req.latitude!, req.longitude!]}>
+              {filtered.filter(r => r.latitude && r.longitude).map(req => (
+                <EntityMarker key={req.id} type="REQUEST" position={[req.latitude!, req.longitude!]}>
                           <Popup>
                             <strong>{req.title}</strong>
                             <br />
@@ -543,7 +544,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
                             <br />
                             <Link href={`/requests/${req.id}`}>View Details →</Link>
                           </Popup>
-                        </Marker>
+                        </EntityMarker>
                       ))}
                     </MapContainer>
                   </div>

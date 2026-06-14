@@ -67,7 +67,7 @@ export default function CollaborateButton({
         className={`${styles.trigger} ${variant === 'secondary' ? styles.triggerSecondary : ''}`}
         onClick={() => session ? setOpen(true) : router.push('/auth/login')}
       >
-        🤝 {label || 'Collaborate'}
+        {label || '🤝 Collaborate'}
       </button>
 
       {open && (

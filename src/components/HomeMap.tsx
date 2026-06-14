@@ -5,7 +5,9 @@ import { useTranslations } from 'next-intl'
 import dynamic from 'next/dynamic'
 import styles from './HomeMap.module.css'
 import { useTheme } from '@/context/ThemeContext'
-import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
+import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
+import EntityMarker from '@/components/EntityMarker'
+import { getEntityIcon } from '@/lib/entity-icons'
 import { fetchApi } from '@/lib/fetch-api'
 
 
@@ -23,14 +25,6 @@ interface MapItem {
   url: string
   image: string | null
   meta: string | undefined
-}
-
-const TYPE_ICONS: Record<string, string> = {
-  product: '🛒',
-  event: '📅',
-  project: '🚀',
-  request: '📝',
-  shop: '🏪',
 }
 
 function calculateCenter(items: MapItem[]): [number, number] {
@@ -79,15 +73,15 @@ export default function HomeMap() {
               url={mode === 'dark' ? DARK_TILE_URL : LIGHT_TILE_URL}
             />
             {items.map(item => (
-              <Marker key={`${item.type}-${item.id}`} position={[item.lat, item.lng]}>
+              <EntityMarker key={`${item.type}-${item.id}`} type={item.type} position={[item.lat, item.lng]}>
                 <Popup>
                   <div className={styles.popup}>
-                    <span className={styles.popupIcon}>{TYPE_ICONS[item.type] || '📍'}</span>
+                    <span className={styles.popupIcon}>{getEntityIcon(item.type)}</span>
                     <a href={item.url} className={styles.popupTitle}>{item.title}</a>
                     {item.meta && <span className={styles.popupMeta}>{item.meta}</span>}
                   </div>
                 </Popup>
-              </Marker>
+              </EntityMarker>
             ))}
           </MapContainer>
         )}

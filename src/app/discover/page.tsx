@@ -10,9 +10,10 @@ import Breadcrumbs from '@/components/Breadcrumbs'
 import Button from '@/components/ui/Button'
 import Loading from '@/components/Loading'
 import { EmptyState } from '@/components/EmptyState'
-import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
+import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
+import EntityMarker from '@/components/EntityMarker'
+import { getEntityIcon, getEntityColor } from '@/lib/entity-icons'
 import { usePassportLocation } from '@/hooks/usePassportLocation'
-
 
 const ENTITY_TYPES = [
   { key: '', label: 'All', icon: '🌐' },
@@ -21,6 +22,7 @@ const ENTITY_TYPES = [
   { key: 'GROUP', label: 'Groups', icon: '👥' },
   { key: 'EVENT', label: 'Events', icon: '📅' },
   { key: 'PROJECT', label: 'Projects', icon: '🚀' },
+  { key: 'BOARD', label: 'Boards', icon: '🪵' },
   { key: 'MEMBER', label: 'Members', icon: '👤' },
 ]
 
@@ -49,24 +51,6 @@ interface DiscoverItem {
   createdAt: string
 }
 
-const TYPE_ICONS: Record<string, string> = {
-  PRODUCT: '🛒',
-  SERVICE: '🔧',
-  GROUP: '👥',
-  EVENT: '📅',
-  PLAN: '🚀',
-  MEMBER: '👤',
-}
-
-const TYPE_COLORS: Record<string, string> = {
-  PRODUCT: '#3b82f6',
-  SERVICE: '#8b5cf6',
-  GROUP: '#10b981',
-  EVENT: '#f59e0b',
-  PLAN: '#ec4899',
-  MEMBER: '#6366f1',
-}
-
 function EntityCard({ item }: { item: DiscoverItem }) {
   const href =
     item.type === 'PRODUCT' ? `/products/${item.id}` :
@@ -82,10 +66,10 @@ function EntityCard({ item }: { item: DiscoverItem }) {
         {item.image ? (
           <Image src={item.image} alt={item.title} width={160} height={120} style={{ objectFit: 'cover' }} />
         ) : (
-          <span className={styles.cardIcon}>{TYPE_ICONS[item.type] || '📄'}</span>
+          <span className={styles.cardIcon}>{getEntityIcon[item.type] || '📄'}</span>
         )}
-        <span className={styles.typeBadge} style={{ background: TYPE_COLORS[item.type] }}>
-          {TYPE_ICONS[item.type]} {item.type}
+        <span className={styles.typeBadge} style={{ background: getEntityColor[item.type] }}>
+          {getEntityIcon[item.type]} {item.type}
         </span>
       </div>
       <div className={styles.cardBody}>
@@ -247,7 +231,7 @@ export default function DiscoverPage() {
                 item.type === 'MEMBER' ? `/profile/${item.userId}` : '#'
               return (
                 <Link key={`${item.type}-${item.id}`} href={href} className={styles.calendarEventItem}>
-                  <span className={styles.calendarEventIcon}>{TYPE_ICONS[item.type] || '📄'}</span>
+                  <span className={styles.calendarEventIcon}>{getEntityIcon[item.type] || '📄'}</span>
                   <span className={styles.calendarEventTitle}>{item.title}</span>
                 </Link>
               )
@@ -352,12 +336,12 @@ export default function DiscoverPage() {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             {sortedResults.filter(r => r.latitude && r.longitude).map(r => (
-              <Marker key={`${r.type}-${r.id}`} position={[r.latitude!, r.longitude!]}>
+              <EntityMarker key={`${r.type}-${r.id}`} type={r.type} position={[r.latitude!, r.longitude!]}>
                 <Popup>
                   <div className={styles.popup}>
                     <strong>{r.title}</strong>
-                    <span style={{ color: TYPE_COLORS[r.type], fontSize: '0.8rem' }}>
-                      {TYPE_ICONS[r.type]} {r.type}
+                    <span style={{ color: getEntityColor[r.type], fontSize: '0.8rem' }}>
+                      {getEntityIcon[r.type]} {r.type}
                     </span>
                     {r.distance != null && <span>📍 {r.distance} mi</span>}
                     <Link href={
@@ -370,7 +354,7 @@ export default function DiscoverPage() {
                     } className={styles.popupLink}>View Details →</Link>
                   </div>
                 </Popup>
-              </Marker>
+              </EntityMarker>
             ))}
           </MapContainer>
         </div>

@@ -27,7 +27,6 @@ import dynamic from 'next/dynamic'
 import Button from '@/components/ui/Button'
 import PinToBoardButton from '@/components/PinToBoardButton'
 import Breadcrumbs from '@/components/Breadcrumbs'
-import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
 
 
 interface UserLink {

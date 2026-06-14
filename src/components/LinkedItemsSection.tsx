@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import LinkItemModal from './LinkItemModal'
+import { getEntityIcon, getEntityLabel } from '@/lib/entity-icons'
 import styles from './LinkedItemsSection.module.css'
 
 interface LinkedItem {
@@ -21,32 +22,6 @@ interface BacklinkRecord {
   relationType: string
   createdAt: string
   direction?: 'incoming' | 'outgoing'
-}
-
-const TYPE_ICONS: Record<string, string> = {
-  PLAN: '📋',
-  PRODUCT: '🛒',
-  EVENT: '📅',
-  REQUEST: '🙋',
-  SERVICE: '🔧',
-  GROUP: '👥',
-  POST: '📝',
-  SCHOOLCONTENT: '📚',
-  SHOP: '🏪',
-  SCHOOL: '🏫',
-}
-
-const TYPE_LABELS: Record<string, string> = {
-  PLAN: 'Project',
-  PRODUCT: 'Product',
-  EVENT: 'Event',
-  REQUEST: 'Request',
-  SERVICE: 'Service',
-  GROUP: 'Group',
-  POST: 'Post',
-  SCHOOLCONTENT: 'School Content',
-  SHOP: 'Shop',
-  SCHOOL: 'School',
 }
 
 const RELATION_LABELS: Record<string, string> = {
@@ -172,13 +147,13 @@ export default function LinkedItemsSection({
                   }
                   return (labels[bl.targetType] || '/') + bl.targetId
                 })()} className={styles.cardLink}>
-                  <span className={styles.icon}>{TYPE_ICONS[bl.targetType] || '🔗'}</span>
+                  <span className={styles.icon}>{getEntityIcon(bl.targetType)}</span>
                   <div className={styles.info}>
                     <span className={styles.itemTitle}>
                       {items.find(i => i.type === bl.targetType && i.id === bl.targetId)?.title || bl.targetId}
                     </span>
                     <span className={styles.meta}>
-                      {TYPE_LABELS[bl.targetType] || bl.targetType}
+                      {getEntityLabel(bl.targetType)}
                       {' · '}
                       <span className={styles.relation}>{RELATION_LABELS[bl.relationType] || bl.relationType}</span>
                     </span>
@@ -213,13 +188,13 @@ export default function LinkedItemsSection({
                   }
                   return (labels[bl.sourceType] || '/') + bl.sourceId
                 })()} className={styles.cardLink}>
-                  <span className={styles.icon}>{TYPE_ICONS[bl.sourceType] || '🔗'}</span>
+                  <span className={styles.icon}>{getEntityIcon(bl.sourceType)}</span>
                   <div className={styles.info}>
                     <span className={styles.itemTitle}>
                       {items.find(i => i.type === bl.sourceType && i.id === bl.sourceId)?.title || bl.sourceId}
                     </span>
                     <span className={styles.meta}>
-                      {TYPE_LABELS[bl.sourceType] || bl.sourceType}
+                      {getEntityLabel(bl.sourceType)}
                       {' · '}
                       <span className={styles.relation}>{RELATION_LABELS[bl.relationType] || bl.relationType}</span>
                     </span>

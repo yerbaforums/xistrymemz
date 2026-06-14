@@ -14,7 +14,8 @@ import Button from '@/components/ui/Button'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
 import dynamic from 'next/dynamic'
-import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
+import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
+import EntityMarker from '@/components/EntityMarker'
 
 const QRCodeModal = dynamic(() => import('@/components/QRCodeModal').then(mod => mod.QRCodeModal), { ssr: false })
 
@@ -486,7 +487,7 @@ export default function EventsPage() {
                 <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%' }} ref={mapRef}>
                   <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                   {eventsWithCoords.map(event => (
-                    <Marker key={event.id} position={[event.latitude!, event.longitude!]} eventHandlers={{ click: () => setSelectedEvent(event) }}>
+                    <EntityMarker key={event.id} type="EVENT" position={[event.latitude!, event.longitude!]}>
                       <Popup>
                         <div className={styles.mapPopupContent}>
                           <h4>{event.title}</h4>
@@ -505,7 +506,7 @@ export default function EventsPage() {
                           </div>
                         </div>
                       </Popup>
-                    </Marker>
+                    </EntityMarker>
                   ))}
                 </MapContainer>
               </div>

@@ -147,6 +147,8 @@ export async function POST(request: NextRequest) {
       needsVolunteers,
       volunteerRoles,
       volunteerDescription,
+      isVirtual,
+      meetingLink,
       createGroup,
       hashtags
     } = validation.data
@@ -209,6 +211,8 @@ export async function POST(request: NextRequest) {
         needsVolunteers: needsVolunteers || false,
         volunteerRoles: volunteerRoles || null,
         volunteerDescription: volunteerDescription || null,
+        isVirtual: isVirtual || false,
+        meetingLink: meetingLink || null,
         projectId: projectId || null,
         groupId: groupId || null,
         schoolId: schoolId || undefined,

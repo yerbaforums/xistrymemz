@@ -8,7 +8,8 @@ import dynamic from 'next/dynamic'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
-import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
+import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
+import EntityMarker from '@/components/EntityMarker'
 
 
 interface ProjectEvent {
@@ -491,7 +492,7 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
               <MapContainer center={defaultCenter} zoom={4} style={{ height: '100%', width: '100%' }}>
                 <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                 {mapLocations.map((loc, i) => (
-                  <Marker key={`${loc.id}-${i}`} position={[loc.lat, loc.lng]}>
+                  <EntityMarker key={`${loc.id}-${i}`} type={loc.type === 'plan' ? 'PROJECT' : 'EVENT'} position={[loc.lat, loc.lng]}>
                     <Popup>
                       <div style={{ minWidth: 150 }}>
                         <strong>{loc.title}</strong><br />
@@ -502,7 +503,7 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
                         <Link href={loc.type === 'event' ? `/events/${loc.id}` : `/projects/${loc.id}`} style={{ color: '#00d9ff', fontSize: '12px' }}>{loc.type === 'event' ? 'View Event' : 'View Project'} →</Link>
                       </div>
                     </Popup>
-                  </Marker>
+                  </EntityMarker>
                 ))}
               </MapContainer>
               {mapLocations.length === 0 && (

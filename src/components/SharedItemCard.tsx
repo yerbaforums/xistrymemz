@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import Skeleton from '@/components/Skeleton'
 import HashtagText from '@/components/HashtagText'
+import { getEntityIcon } from '@/lib/entity-icons'
 import styles from './SharedItemCard.module.css'
 
 interface SharedItemCardProps {
@@ -32,11 +33,6 @@ function getImages(images: string | null): string[] {
   } catch {
     return []
   }
-}
-
-const TYPE_ICONS: Record<string, string> = {
-  PRODUCT: '🛒', SERVICE: '🔧', EVENT: '📅', REQUEST: '📋', PLAN: '📐', POST: '🔁',
-  SCHOOLCONTENT: '📖', FORUMPOST: '💬', GROUP: '👥',
 }
 
 const SharedItemCard = memo(function SharedItemCard({ referenceType, referenceId, referenceTitle: cachedTitle }: SharedItemCardProps) {
@@ -126,11 +122,11 @@ const SharedItemCard = memo(function SharedItemCard({ referenceType, referenceId
             <img src={item.image} alt="" style={{ width: 40, height: 40, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
           ) : (
             <div className={styles.cardIcon}>
-              {TYPE_ICONS[referenceType] || '📎'}
+              {getEntityIcon(referenceType) || '📎'}
             </div>
           )}
           <div className={styles.cardInfo}>
-            <div className={styles.cardType}>{TYPE_ICONS[referenceType]} {referenceType}</div>
+            <div className={styles.cardType}>{getEntityIcon(referenceType)} {referenceType}</div>
             <div className={styles.cardTitle}>
               {loading ? <Skeleton width="60%" height="1rem" /> : (item?.title || referenceType)}
             </div>

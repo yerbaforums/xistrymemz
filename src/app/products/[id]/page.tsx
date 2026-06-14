@@ -36,7 +36,8 @@ import TranslateButton from '@/components/TranslateButton'
 import Skeleton from '@/components/Skeleton'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
-import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
+import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
+import EntityMarker from '@/components/EntityMarker'
 
 interface Product {
   id: string
@@ -895,13 +896,13 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
-                  <Marker position={[product.latitude, product.longitude]}>
+                    <EntityMarker type="PRODUCT" position={[product.latitude, product.longitude]}>
                     <Popup>
                       <strong>{product.title}</strong>
                       <br />
                       {product.location}
                     </Popup>
-                  </Marker>
+                  </EntityMarker>
                 </MapContainer>
               </div>
             </div>

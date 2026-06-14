@@ -44,6 +44,9 @@ export default function DashboardEvents() {
   const [saving, setSaving] = useState(false)
   const [editFormData, setEditFormData] = useState<EventFormData>(() => getDefaultEventFormData())
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; type: string } | null>(null)
+  const [ticketData, setTicketData] = useState<Record<string, any>>({})
+  const [ticketLoading, setTicketLoading] = useState(false)
+  const [selectedTicketAction, setSelectedTicketAction] = useState<string | null>(null)
 
   useEffect(() => {
     if (editingEvent) {
@@ -57,6 +60,9 @@ export default function DashboardEvents() {
         endDate: '',
         location: editingEvent.location || '',
         locationDetails: editingEvent.locationDetails || '',
+        latitude: editingEvent.latitude,
+        longitude: editingEvent.longitude,
+        locationMode: editingEvent.latitude != null ? 'custom' as const : 'global' as const,
         maxJoiners: editingEvent.maxJoiners,
         isTicketed: editingEvent.isTicketed,
         ticketPrice: editingEvent.ticketPrice || 0,
@@ -68,6 +74,9 @@ export default function DashboardEvents() {
         volunteerDescription: '',
         acceptsDonations: editingEvent.acceptsDonations || false,
         selectedDonationAddrs: [],
+        isVirtual: false,
+        meetingLink: '',
+        videoRoomId: null,
         hashtags: editingEvent.hashtags || [],
         projectId: editingEvent.projectId || null,
         projectTitle: editingEvent.projectTitle || null,
@@ -99,6 +108,39 @@ export default function DashboardEvents() {
     } catch (err) {
       error('Failed to delete')
       setDeleteTarget(null)
+    }
+  }
+
+  const handleDashboardTicketAction = async (eventId: string, ticketId: string, action: string) => {
+    setSelectedTicketAction(ticketId)
+    try {
+      const res = await fetch(`/api/events/${eventId}/tickets/${ticketId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      })
+      if (res.ok) {
+        const newStatus = action === 'mark-paid' ? 'PAID' : action === 'approve' ? 'APPROVED' : 'CANCELLED'
+        setTicketData((prev: Record<string, any>) => {
+          const updated = { ...prev }
+          if (updated[eventId]) {
+            updated[eventId] = {
+              ...updated[eventId],
+              tickets: updated[eventId].tickets.map((t: any) =>
+                t.id === ticketId ? { ...t, paymentStatus: newStatus } : t
+              ),
+            }
+          }
+          return updated
+        })
+        success(action === 'mark-paid' ? 'Marked as paid' : 'Approved')
+      } else {
+        error('Failed to update ticket')
+      }
+    } catch {
+      error('Failed to update ticket')
+    } finally {
+      setSelectedTicketAction(null)
     }
   }
 
@@ -166,8 +208,28 @@ export default function DashboardEvents() {
       .catch(() => setLoading(false))
   }
 
+  const loadDashboardTickets = () => {
+    setTicketLoading(true)
+    fetch('/api/dashboard/tickets')
+      .then(res => res.json())
+      .then(data => {
+        const grouped = data?.data?.grouped || data?.grouped || {}
+        setTicketData(grouped)
+      })
+      .catch(() => {})
+      .finally(() => setTicketLoading(false))
+  }
+
   useEffect(() => {
-    fetchAll()
+    fetch('/api/events/user')
+      .then(res => res.json())
+      .then(data => { setEvents(data?.data ?? data ?? []); setLoading(false) })
+      .catch(() => setLoading(false))
+    fetch('/api/dashboard/tickets')
+      .then(res => res.json())
+      .then(data => { setTicketData(data?.data?.grouped || data?.grouped || {}) })
+      .catch(() => {})
+      .finally(() => setTicketLoading(false))
   }, [])
 
   const filteredEvents = useMemo(() => {
@@ -383,6 +445,11 @@ export default function DashboardEvents() {
                       ${event.ticketPrice}
                     </span>
                   )}
+                  {event.isTicketed && event.type === 'ORGANIZED' && ticketData[event.id] && (
+                    <span className={styles.metaItem} style={{ color: 'var(--accent-primary)', fontWeight: 600 }}>
+                      🎫 {ticketData[event.id].tickets.filter((t: any) => t.paymentStatus === 'PENDING').length} pending
+                    </span>
+                  )}
                 </div>
 
                 {event.projectTitle && (() => {
@@ -527,6 +594,37 @@ export default function DashboardEvents() {
                     </div>
                   )}
                 </div>
+                {selectedEvent.isTicketed && selectedEvent.type === 'ORGANIZED' && ticketData[selectedEvent.id] && (
+                  <div className={styles.eventDetailRow} style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8 }}>
+                    <span className={styles.eventLabel}>🎫 Ticket Requests</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      {ticketData[selectedEvent.id].tickets.map((t: any) => {
+                        const statusColors: Record<string, string> = {
+                          PENDING: '#f59e0b', PAID: '#22c55e', APPROVED: '#ef4444',
+                          CANCELLED: '#ef4444',
+                        }
+                        return (
+                          <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: 'var(--bg-tertiary)', borderRadius: 6, fontSize: '0.8rem' }}>
+                            <div>
+                              <strong>{t.user.name || 'Unknown'}</strong>
+                              <span style={{ marginLeft: 8, color: statusColors[t.paymentStatus] || '#666' }}>{t.paymentStatus}</span>
+                              <span style={{ marginLeft: 8, color: 'var(--text-muted)' }}>×{t.quantity}</span>
+                              {t.txHash && <code style={{ marginLeft: 8, fontSize: '0.65rem', color: 'var(--text-muted)' }}>TX: {t.txHash.slice(0, 8)}...</code>}
+                            </div>
+                            <div style={{ display: 'flex', gap: 4 }}>
+                              {t.paymentStatus === 'PENDING' && (
+                                <button onClick={() => handleDashboardTicketAction(selectedEvent.id, t.id, 'mark-paid')} disabled={selectedTicketAction === t.id} className={styles.ticketActionBtn}>Mark Paid</button>
+                              )}
+                              {t.paymentStatus === 'PAID' && (
+                                <button onClick={() => handleDashboardTicketAction(selectedEvent.id, t.id, 'approve')} disabled={selectedTicketAction === t.id} className={styles.ticketActionBtn}>Approve</button>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
                 <div className={styles.eventModalActions}>
                   {(selectedEvent.type === 'ORGANIZED' || selectedEvent.type === 'PERSONAL') && (
                     <button onClick={() => setEditingEvent(selectedEvent)} className="btn-secondary">

@@ -410,6 +410,11 @@ model Event {
   volunteerRoles       String? // JSON array: ["Setup","Cleanup","Photography"]
   volunteerDescription String?
 
+  // Virtual Event
+  isVirtual    Boolean @default(false)
+  meetingLink  String?
+  videoRoomId  String?
+
   projectId   String?
   project Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
   groupId  String?
@@ -457,17 +462,24 @@ model EventJoiner {
 }
 
 model EventTicket {
-  id            String   @id @default(cuid())
-  eventId       String
-  event         Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  quantity      Int      @default(1)
-  totalPaid     Float    @default(0)
-  paymentStatus String   @default("PENDING") // PENDING | PAID | APPROVED | VERIFIED | CANCELLED
-  ticketCode    String   @unique @default(cuid())
-  verifiedAt    DateTime?
-  purchasedAt   DateTime @default(now())
+  id               String   @id @default(cuid())
+  eventId          String
+  event            Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quantity         Int      @default(1)
+  totalPaid        Float    @default(0)
+  paymentStatus    String   @default("PENDING") // PENDING | PAID | APPROVED | CANCELLED
+  ticketCode       String   @unique @default(cuid())
+  paidAt           DateTime?
+  purchasedAt      DateTime @default(now())
+  txHash           String?
+  paymentNote      String?
+  selectedCurrency String?
+  selectedAddress  String?
+  scannedAt        DateTime?
+  scannedBy        String?
+  usedAt           DateTime?
 
   @@unique([eventId, userId])
   @@index([eventId])

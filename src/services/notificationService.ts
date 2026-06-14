@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 type NotificationType = 'CONNECTION_REQUEST' | 'CONNECTION_ACCEPTED' | 'NEW_MESSAGE'
   | 'PLAN_UPDATE' | 'EVENT_REMINDER' | 'REQUEST_FULFILLED' | 'NEW_FOLLOWER'
   | 'MENTION' | 'LIKE' | 'COMMENT' | 'SYSTEM'
+  | 'TICKET_PAID'
 
 export async function createNotification(params: {
   type: NotificationType

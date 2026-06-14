@@ -25,6 +25,8 @@ const ENTITY_ROUTES: Record<string, string> = {
   GROUP: '/api/groups',
   REQUEST: '/api/requests',
   SHOP: '/api/shops',
+  POST: '/api/posts',
+  SCHOOL_CONTENT: '/api/school-contents',
 }
 
 const ENTITY_LIST_ROUTES: Record<string, string> = {
@@ -35,6 +37,8 @@ const ENTITY_LIST_ROUTES: Record<string, string> = {
   GROUP: '/groups',
   REQUEST: '/requests',
   SHOP: '/shops',
+  POST: '/posts',
+  SCHOOL_CONTENT: '/school/content',
 }
 
 export default function LinkedEntityDetail({ entityType, entityId }: { entityType: string; entityId: string }) {
@@ -72,9 +76,11 @@ export default function LinkedEntityDetail({ entityType, entityId }: { entityTyp
   if (!detail) return null
 
   const listRoute = ENTITY_LIST_ROUTES[entityType]
-  const href = detail.slug
-    ? entityType === 'SHOP' ? `/shop/${detail.slug}` : entityType === 'GROUP' ? `/groups/${entityId}` : `${listRoute}/${detail.slug}`
-    : `${listRoute}/${entityId}`
+  const href = entityType === 'USER'
+    ? `/profile/${entityId}`
+    : detail.slug
+      ? entityType === 'SHOP' ? `/shop/${detail.slug}` : entityType === 'GROUP' ? `/groups/${entityId}` : `${listRoute}/${detail.slug}`
+      : `${listRoute}/${entityId}`
 
   return (
     <Link href={href} className={styles.card} target="_blank" rel="noopener noreferrer">
@@ -82,7 +88,7 @@ export default function LinkedEntityDetail({ entityType, entityId }: { entityTyp
         <img src={detail.imageUrl} alt="" className={styles.image} />
       )}
       <div className={styles.info}>
-        <div className={styles.title}>{detail.title || entityId}</div>
+        <div className={styles.title}>{detail.title || `${entityType.replace('_', ' ')}`}</div>
         <div className={styles.meta}>
           {detail.price != null && <span className={styles.price}>${Number(detail.price).toFixed(2)}</span>}
           {detail.eventDate && <span>📅 {new Date(detail.eventDate).toLocaleDateString()}</span>}

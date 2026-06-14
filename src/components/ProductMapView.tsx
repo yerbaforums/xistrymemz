@@ -7,7 +7,8 @@ import type { Product } from '@/types/product'
 import styles from './ProductMapView.module.css'
 import { EmptyState } from '@/components/EmptyState'
 import { useTheme } from '@/context/ThemeContext'
-import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
+import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
+import EntityMarker from '@/components/EntityMarker'
 
 const DARK_TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
 const LIGHT_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -87,8 +88,9 @@ export default function ProductMapView({ products, userLocation }: ProductMapVie
           url={mode === 'dark' ? DARK_TILE_URL : LIGHT_TILE_URL}
         />
         {productsWithCoords.map(product => (
-          <Marker
+          <EntityMarker
             key={product.id}
+            type="PRODUCT"
             position={product.isGlobal ? [39.8283, -98.5795] : [product.latitude!, product.longitude!]}
           >
             <Popup>
@@ -100,7 +102,7 @@ export default function ProductMapView({ products, userLocation }: ProductMapVie
                 <Link href={`/products/${product.id}`} className={styles.popupLink}>View Details →</Link>
               </div>
             </Popup>
-          </Marker>
+          </EntityMarker>
         ))}
       </MapContainer>
     </div>

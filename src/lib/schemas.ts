@@ -194,6 +194,8 @@ export const eventSchema = z.object({
   needsVolunteers: z.boolean().optional(),
   volunteerRoles: z.string().optional(),
   volunteerDescription: z.string().optional(),
+  isVirtual: z.boolean().optional(),
+  meetingLink: z.string().optional().nullable(),
   projectId: z.string().optional().nullable(),
   groupId: z.string().optional().nullable(),
   schoolId: z.string().optional().nullable(),

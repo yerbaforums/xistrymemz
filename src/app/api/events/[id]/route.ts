@@ -55,6 +55,22 @@ export async function GET(
 
     const linkedTitle = event.project?.title || event.group?.name || event.school?.schoolName || event.shop?.shopName || null
 
+    let myTicket = null
+    if (session?.user?.id) {
+      myTicket = await prisma.eventTicket.findUnique({
+        where: { eventId_userId: { eventId: id, userId: session.user.id } },
+        select: {
+          id: true,
+          quantity: true,
+          paymentStatus: true,
+          ticketCode: true,
+          txHash: true,
+          selectedCurrency: true,
+          selectedAddress: true,
+        },
+      })
+    }
+
     return apiSuccess({
       id: event.id,
       title: event.title,
@@ -69,6 +85,9 @@ export async function GET(
       longitude: event.longitude,
       maxJoiners: event.maxJoiners,
       pinned: event.pinned,
+      isPrivate: event.isPrivate,
+      isVirtual: event.isVirtual,
+      meetingLink: event.meetingLink,
       isTicketed: event.isTicketed,
       ticketPrice: event.ticketPrice,
       currency: event.currency,
@@ -97,6 +116,7 @@ export async function GET(
       })),
       joined,
       isOrganizer,
+      myTicket,
       hashtags: event.eventHashtags.map(eh => eh.hashtag.tag),
       _count: event._count
     })
@@ -159,6 +179,8 @@ export async function PUT(
       needsVolunteers,
       volunteerRoles,
       volunteerDescription,
+      isVirtual,
+      meetingLink,
       schoolId,
       shopId,
       hashtags
@@ -195,10 +217,12 @@ export async function PUT(
         acceptsDonations: acceptsDonations ?? event.acceptsDonations,
         donationAddress: donationAddress ?? event.donationAddress,
         donationCurrency: donationCurrency ?? event.donationCurrency,
-        donationAddresses: donationAddresses !== undefined ? (donationAddresses || null) : event.donationAddresses,
+        donationAddresses: donationAddresses ?? event.donationAddresses,
         needsVolunteers: needsVolunteers ?? event.needsVolunteers,
         volunteerRoles: volunteerRoles ?? event.volunteerRoles,
         volunteerDescription: volunteerDescription ?? event.volunteerDescription,
+        isVirtual: isVirtual ?? event.isVirtual,
+        meetingLink: meetingLink ?? event.meetingLink,
         schoolId: schoolId !== undefined ? schoolId : event.schoolId,
         shopId: shopId !== undefined ? shopId : event.shopId
       }

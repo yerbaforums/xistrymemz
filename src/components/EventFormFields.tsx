@@ -37,6 +37,9 @@ export interface EventFormData {
   volunteerDescription: string
   acceptsDonations: boolean
   selectedDonationAddrs: DonationAddr[]
+  isVirtual: boolean
+  meetingLink: string
+  videoRoomId: string | null
   hashtags: string[]
   projectId: string | null
   projectTitle: string | null
@@ -70,6 +73,9 @@ const DEFAULT_FORM_DATA: EventFormData = {
   volunteerDescription: '',
   acceptsDonations: false,
   selectedDonationAddrs: [],
+  isVirtual: false,
+  meetingLink: '',
+  videoRoomId: null,
   hashtags: [],
   projectId: null,
   projectTitle: null,
@@ -113,6 +119,32 @@ export default function EventFormFields({
   const userDonationAddrs = useDonationAddresses()
 
   const set = (patch: Partial<EventFormData>) => onChange(patch)
+  const [meetingLinkType, setMeetingLinkType] = useState<'platform' | 'custom' | 'none'>(
+    formData.meetingLink?.includes('/dashboard/video?invite=') ? 'platform' : formData.meetingLink ? 'custom' : 'none'
+  )
+  const [creatingRoom, setCreatingRoom] = useState(false)
+
+  const handleCreatePlatformRoom = async () => {
+    setCreatingRoom(true)
+    try {
+      const res = await fetch('/api/video/rooms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: `${formData.title || 'Event'} Video Room` }),
+      })
+      if (!res.ok) throw new Error('Failed to create room')
+      const data = await res.json()
+      const room = data?.data?.room || data?.room
+      if (room) {
+        const link = `${window.location.origin}/dashboard/video?invite=${room.inviteCode}`
+        set({ meetingLink: link, videoRoomId: room.id })
+      }
+    } catch {
+      // silently fail, user can try again or use custom link
+    } finally {
+      setCreatingRoom(false)
+    }
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
@@ -229,17 +261,79 @@ export default function EventFormFields({
         </div>
       </div>
 
-      <div className={styles.field}>
-        <LocationOption
-          value={{ mode: formData.locationMode, text: formData.location, latitude: formData.latitude, longitude: formData.longitude }}
-          onChange={v => set({ location: v.text, latitude: v.latitude, longitude: v.longitude, locationMode: v.mode })}
-        />
+      <div className={styles.checkboxField}>
+        <input type="checkbox" id="ef-virtual" name="isVirtual" checked={formData.isVirtual} onChange={handleChange} />
+        <label htmlFor="ef-virtual">Virtual Event</label>
       </div>
 
-      <div className={styles.field}>
-        <label htmlFor="ef-locationDetails">Location Details</label>
-        <input type="text" id="ef-locationDetails" name="locationDetails" value={formData.locationDetails} onChange={handleChange} placeholder="Room, floor, link, etc." />
-      </div>
+      {formData.isVirtual ? (
+        <div className={styles.virtualSection}>
+          <label className={styles.virtualSectionLabel}>Meeting Link</label>
+          <div className={styles.meetingOptions}>
+            <label className={`${styles.meetingOption} ${meetingLinkType === 'platform' ? styles.meetingOptionSelected : ''}`}>
+              <input type="radio" name="meetingLinkType" checked={meetingLinkType === 'platform'} onChange={() => setMeetingLinkType('platform')} />
+              <div>
+                <div className={styles.meetingOptionTitle}>Platform Video Room</div>
+                <div className={styles.meetingOptionDesc}>
+                  Create a video room on this platform. A link will be generated automatically.
+                </div>
+                {meetingLinkType === 'platform' && formData.meetingLink && (
+                  <code className={styles.meetingLinkPreview}>{formData.meetingLink}</code>
+                )}
+                {meetingLinkType === 'platform' && !formData.meetingLink && (
+                  <button type="button" onClick={handleCreatePlatformRoom} disabled={creatingRoom} className={styles.createRoomBtn}>
+                    {creatingRoom ? 'Creating...' : 'Create Video Room'}
+                  </button>
+                )}
+              </div>
+            </label>
+
+            <label className={`${styles.meetingOption} ${meetingLinkType === 'custom' ? styles.meetingOptionSelected : ''}`}>
+              <input type="radio" name="meetingLinkType" checked={meetingLinkType === 'custom'} onChange={() => setMeetingLinkType('custom')} />
+              <div>
+                <div className={styles.meetingOptionTitle}>Custom meeting link</div>
+                <div className={styles.meetingOptionDesc}>
+                  Use Zoom, Google Meet, or any other video service.
+                </div>
+                {meetingLinkType === 'custom' && (
+                  <input
+                    type="url"
+                    name="meetingLink"
+                    value={formData.meetingLink}
+                    onChange={(e) => set({ meetingLink: e.target.value })}
+                    placeholder="https://zoom.us/j/..."
+                    className={styles.meetingLinkInput}
+                  />
+                )}
+              </div>
+            </label>
+
+            <label className={`${styles.meetingOption} ${meetingLinkType === 'none' ? styles.meetingOptionSelected : ''}`}>
+              <input type="radio" name="meetingLinkType" checked={meetingLinkType === 'none'}               onChange={() => { setMeetingLinkType('none'); set({ meetingLink: '', videoRoomId: null }) }} />
+              <div>
+                <div className={styles.meetingOptionTitle}>No meeting link</div>
+                <div className={styles.meetingOptionDesc}>
+                  Virtual event without a video call.
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className={styles.field}>
+            <LocationOption
+              value={{ mode: formData.locationMode, text: formData.location, latitude: formData.latitude, longitude: formData.longitude }}
+              onChange={v => set({ location: v.text, latitude: v.latitude, longitude: v.longitude, locationMode: v.mode })}
+            />
+          </div>
+
+          <div className={styles.field}>
+            <label htmlFor="ef-locationDetails">Location Details</label>
+            <input type="text" id="ef-locationDetails" name="locationDetails" value={formData.locationDetails} onChange={handleChange} placeholder="Room, floor, link, etc." />
+          </div>
+        </>
+      )}
 
       <div className={styles.checkboxField}>
         <input type="checkbox" id="ef-ticketed" name="isTicketed" checked={formData.isTicketed} onChange={handleChange} />

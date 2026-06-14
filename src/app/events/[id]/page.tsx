@@ -22,12 +22,16 @@ import type { DonationAddr } from '@/types/product'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import TranslateButton from '@/components/TranslateButton'
 import CollaborateButton from '@/components/CollaborateButton'
+import TicketPaymentModal from '@/components/TicketPaymentModal'
+import TicketQRModal from '@/components/TicketQRModal'
+import TicketScanModal from '@/components/TicketScanModal'
 import PinToBoardButton from '@/components/PinToBoardButton'
 import Skeleton from '@/components/Skeleton'
 import Loading from '@/components/Loading'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import Breadcrumbs from '@/components/Breadcrumbs'
-import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
+import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
+import EntityMarker from '@/components/EntityMarker'
 
 const QRCodeModal = dynamic(() => import('@/components/QRCodeModal').then(mod => mod.QRCodeModal), { ssr: false })
 
@@ -48,15 +52,29 @@ function EventDetailContent() {
   const [qrOpen, setQrOpen] = useState<string | null>(null)
   const [ticketQuantity, setTicketQuantity] = useState(1)
   const [purchasing, setPurchasing] = useState(false)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [showTicketQR, setShowTicketQR] = useState(false)
+  const [showTicketScan, setShowTicketScan] = useState(false)
+  const [myTicket, setMyTicket] = useState<any>(null)
   const [showInviteModal, setShowInviteModal] = useState(false)
   const [inviteSearch, setInviteSearch] = useState('')
   const [inviteResults, setInviteResults] = useState<Array<{ id: string; name: string | null; image: string | null }>>([])
   const [selectedUsers, setSelectedUsers] = useState<Array<{ id: string; name: string | null }>>([])
   const [searchingUsers, setSearchingUsers] = useState(false)
   const [invitations, setInvitations] = useState<Array<{ id: string; user: { id: string; name: string | null; image: string | null }; status: string }>>([])
-  const [tickets, setTickets] = useState<Array<{ id: string; user: { id: string; name: string | null; image: string | null }; quantity: number; paymentStatus: string; ticketCode: string }>>([])
+  const [tickets, setTickets] = useState<Array<{
+    id: string
+    user: { id: string; name: string | null; image: string | null }
+    quantity: number
+    paymentStatus: string
+    ticketCode: string
+    txHash: string | null
+    paymentNote: string | null
+    selectedCurrency: string | null
+    selectedAddress: string | null
+  }>>([])
   const [showTicketModal, setShowTicketModal] = useState(false)
-  const [verifyingTicket, setVerifyingTicket] = useState<string | null>(null)
+  const [updatingTicket, setUpdatingTicket] = useState<string | null>(null)
   const userDonationAddrs = useDonationAddresses()
   const [isEditing, setIsEditing] = useState(false)
   const [editFormData, setEditFormData] = useState<EventFormData>(() => getDefaultEventFormData())
@@ -105,6 +123,9 @@ function EventDetailContent() {
       endDate: event.endDate ? event.endDate.slice(0, 16) : '',
       location: event.location || '',
       locationDetails: event.locationDetails || '',
+      latitude: event.latitude,
+      longitude: event.longitude,
+      locationMode: event.latitude != null ? 'custom' as const : 'global' as const,
       maxJoiners: event.maxJoiners,
       isTicketed: event.isTicketed,
       ticketPrice: event.ticketPrice,
@@ -116,6 +137,9 @@ function EventDetailContent() {
       volunteerDescription: event.volunteerDescription || '',
       acceptsDonations: event.acceptsDonations || false,
       selectedDonationAddrs: hydrateDonationAddresses(event.donationAddress, event.donationCurrency, event.donationAddresses),
+      isVirtual: event.isVirtual || false,
+      meetingLink: event.meetingLink || '',
+      videoRoomId: null,
       hashtags: event.hashtags || [],
       projectId: event.projectId || null,
       projectTitle: event.projectTitle || null,
@@ -216,6 +240,7 @@ function EventDetailContent() {
       .then(data => {
         const ev = data?.data || data
         setEvent(ev)
+        setMyTicket(ev.myTicket || null)
         setLoading(false)
         if (ev) {
           setRelatedLoading(true)
@@ -236,6 +261,12 @@ function EventDetailContent() {
       })
       .catch(() => setLoading(false))
   }, [params.id])
+
+  useEffect(() => {
+    if (event?.isTicketed && userId === event.organizer?.id) {
+      loadTickets()
+    }
+  }, [event, userId])
 
   const handleJoin = async (role?: 'ATTENDEE' | 'VOLUNTEER') => {
     if (!userId || !event) {
@@ -292,27 +323,21 @@ function EventDetailContent() {
     }
   }
 
-  const handlePurchaseTickets = async () => {
-    if (!userId || !event) return
-    setPurchasing(true)
-    try {
-      const res = await fetch(`/api/events/${event.id}/tickets`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quantity: ticketQuantity })
+  const handlePurchaseTickets = () => {
+    if (!userId || !event) { info('Please sign in to request tickets'); return }
+    setShowPaymentModal(true)
+  }
+
+  const handleTicketPurchased = () => {
+    setShowPaymentModal(false)
+    fetch(`/api/events/${params.id}`)
+      .then(r => r.json())
+      .then(data => {
+        const ev = data?.data || data
+        setEvent(ev)
+        setMyTicket(ev.myTicket || null)
       })
-      if (res.ok) {
-        success('Tickets purchased!')
-        setEvent(prev => prev ? { ...prev, joined: true } : prev)
-      } else {
-        const data = await res.json()
-        error(data.error || 'Failed to purchase tickets')
-      }
-    } catch {
-      error('Failed to purchase tickets')
-    } finally {
-      setPurchasing(false)
-    }
+      .catch(() => {})
   }
 
   const loadInvitations = async () => {
@@ -374,9 +399,9 @@ function EventDetailContent() {
     } catch {}
   }
 
-  const handleVerifyTicket = async (ticketId: string, action: string) => {
+  const handleTicketAction = async (ticketId: string, action: string) => {
     if (!event) return
-    setVerifyingTicket(ticketId)
+    setUpdatingTicket(ticketId)
     try {
       const res = await fetch(`/api/events/${event.id}/tickets/${ticketId}`, {
         method: 'PUT',
@@ -384,8 +409,14 @@ function EventDetailContent() {
         body: JSON.stringify({ action })
       })
       if (res.ok) {
-        success(action === 'verify' ? 'Ticket verified!' : action === 'approve' ? 'Ticket approved!' : 'Ticket updated!')
-        setEvent(prev => prev ? { ...prev } : prev)
+        const statusLabels: Record<string, string> = {
+          'mark-paid': 'Marked as paid',
+          'approve': 'Approved',
+          'cancel': 'Cancelled',
+        }
+        const newStatus = action === 'mark-paid' ? 'PAID' : action === 'approve' ? 'APPROVED' : 'CANCELLED'
+        setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, paymentStatus: newStatus } : t))
+        success(statusLabels[action] || 'Ticket updated!')
       } else {
         const data = await res.json()
         error(data.error || 'Failed to update ticket')
@@ -393,7 +424,7 @@ function EventDetailContent() {
     } catch {
       error('Failed to update ticket')
     } finally {
-      setVerifyingTicket(null)
+      setUpdatingTicket(null)
     }
   }
 
@@ -413,20 +444,20 @@ function EventDetailContent() {
     setBulkSuccess('')
     
     try {
-      const res = await fetch(`/api/events/${event.id}/join`, {
+      const res = await fetch(`/api/events/${event.id}/broadcast`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: bulkMessage })
+        body: JSON.stringify({ message: bulkMessage.trim() })
       })
       
+      const data = await res.json()
       if (res.ok) {
-        setBulkSuccess(`Message sent to ${event.joiners.length} attendee(s)!`)
+        setBulkSuccess(`Message sent to ${data?.data?.sent || data?.sent || 0} attendee(s)!`)
         setBulkMessage('')
       } else {
-        error('Failed to send message')
+        error(data.error || 'Failed to send message')
       }
     } catch (err) {
-      console.error(err)
       error('Failed to send message')
     } finally {
       setSendingBulk(false)
@@ -580,13 +611,13 @@ function EventDetailContent() {
                       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
-                    <Marker position={[event.latitude, event.longitude]}>
+                    <EntityMarker type="EVENT" position={[event.latitude, event.longitude]}>
                       <Popup>
                         <strong>{event.title}</strong>
                         <br />
                         {event.location}
                       </Popup>
-                    </Marker>
+                    </EntityMarker>
                   </MapContainer>
                 </div>
               </div>
@@ -603,8 +634,8 @@ function EventDetailContent() {
                           <span style={{ minWidth: 24, textAlign: 'center', fontWeight: 600 }}>{ticketQuantity}</span>
                           <button onClick={() => setTicketQuantity(Math.min(10, ticketQuantity + 1))} className={styles.qtyBtn}>+</button>
                         </div>
-                        <Button onClick={handlePurchaseTickets} disabled={purchasing} variant="primary" className={styles.joinBtn}>
-                          {purchasing ? 'Processing...' : `Purchase ${ticketQuantity} Ticket${ticketQuantity > 1 ? 's' : ''} $${(event.ticketPrice * ticketQuantity).toFixed(2)}`}
+                        <Button onClick={handlePurchaseTickets} variant="primary" className={styles.joinBtn}>
+                          Request {ticketQuantity} Ticket{ticketQuantity > 1 ? 's' : ''} — ${(event.ticketPrice * ticketQuantity).toFixed(2)}
                         </Button>
                         {event.needsVolunteers && (
                           <Button onClick={() => handleJoin('VOLUNTEER')} disabled={joining} variant="secondary" className={styles.volunteerBtn}>
@@ -630,9 +661,51 @@ function EventDetailContent() {
                 </>
               )}
               {!isOwner && event.joined && (
-                <Button onClick={handleLeave} disabled={joining} className={styles.leaveBtn} variant="secondary">
-                  {joining ? 'Processing...' : 'Leave Event'}
-                </Button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    {myTicket && (
+                      <>
+                        <span style={{
+                          fontSize: '0.78rem', fontWeight: 600, padding: '4px 10px', borderRadius: 10,
+                          background: myTicket.paymentStatus === 'PAID' ? '#22c55e20' : myTicket.paymentStatus === 'APPROVED' ? '#ef444420' : '#f59e0b20',
+                          color: myTicket.paymentStatus === 'PAID' ? '#22c55e' : myTicket.paymentStatus === 'APPROVED' ? '#ef4444' : '#f59e0b',
+                        }}>
+                          {myTicket.paymentStatus === 'PAID' ? 'Confirmed' : myTicket.paymentStatus === 'APPROVED' ? 'Used' : 'Payment Pending'}
+                        </span>
+                        <Button onClick={() => setShowTicketQR(true)} variant="primary" className={styles.joinBtn}>
+                          🎫 View My Ticket
+                        </Button>
+                      </>
+                    )}
+                    <Button onClick={handleLeave} disabled={joining} variant="secondary" className={styles.leaveBtn}>
+                      {joining ? 'Processing...' : 'Leave Event'}
+                    </Button>
+                  </div>
+                  {event.isVirtual && event.meetingLink && myTicket?.paymentStatus === 'PAID' && (
+                    <div style={{ padding: '10px 14px', background: '#e8f5e9', borderRadius: 8, border: '1px solid #c8e6c9' }}>
+                      <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#2e7d32', marginBottom: 4 }}>
+                        🔗 Meeting Link
+                      </div>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <code style={{ flex: 1, fontSize: '0.75rem', padding: '4px 8px', background: 'white', borderRadius: 4, wordBreak: 'break-all', fontFamily: 'monospace', color: '#333' }}>
+                          {event.meetingLink}
+                        </code>
+                        <button onClick={() => { navigator.clipboard.writeText(event.meetingLink!) }}
+                          style={{
+                            padding: '4px 10px', background: '#2e7d32', color: 'white',
+                            border: 'none', borderRadius: 4, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap',
+                          }}>
+                          Copy
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {event.isVirtual && myTicket && myTicket.paymentStatus !== 'PAID' && (
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                      Meeting link will be available once your payment is confirmed.
+                    </div>
+                  )}
+                </div>
               )}
               {!isOwner && (
                 <CollaborateButton entityType="EVENT" entityId={event.id} label="🤝 Propose Collab" variant="secondary" />
@@ -655,9 +728,16 @@ function EventDetailContent() {
                     👥 Invite People
                   </Button>
                   {event.isTicketed && (
-                    <Button onClick={() => { loadTickets(); setShowTicketModal(true) }} variant="secondary">
-                      🎟️ Manage Tickets ({tickets.length})
-                    </Button>
+                    <>
+                      <Button onClick={() => { loadTickets(); setShowTicketModal(true) }} variant="secondary">
+                        🎟️ Manage Tickets ({tickets.length})
+                      </Button>
+                      {!event.isVirtual && (
+                        <Button onClick={() => setShowTicketScan(true)} variant="secondary">
+                          📷 Scan Tickets
+                        </Button>
+                      )}
+                    </>
                   )}
                 </div>
               )}
@@ -714,6 +794,20 @@ function EventDetailContent() {
               </div>
             )}
 
+            {/* Ticket Payment Modal (Buyer) */}
+            {showPaymentModal && event && (
+              <TicketPaymentModal
+                eventId={event.id}
+                eventTitle={event.title}
+                organizerId={event.organizer?.id || event.userId}
+                ticketPrice={event.ticketPrice}
+                currency={event.currency}
+                quantity={ticketQuantity}
+                onClose={() => setShowPaymentModal(false)}
+                onPurchased={handleTicketPurchased}
+              />
+            )}
+
             {/* Ticket Management Modal (Organizer) */}
             {showTicketModal && (
               <div className={styles.modalOverlay} onClick={() => setShowTicketModal(false)}>
@@ -727,30 +821,52 @@ function EventDetailContent() {
                       <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>No tickets purchased yet.</p>
                     ) : (
                       <div className={styles.ticketList}>
-                        {tickets.map(t => (
+                        {tickets.map(t => {
+                          const statusColors: Record<string, string> = {
+                            PENDING: '#f59e0b',
+                            PAID: '#22c55e',
+                            APPROVED: '#ef4444',
+                            CANCELLED: '#ef4444',
+                          }
+                          return (
                           <div key={t.id} className={styles.ticketCard}>
                             <div className={styles.ticketInfo}>
                               <strong>{t.user.name || 'Unknown'}</strong>
-                              <span className={styles.ticketMeta}>Qty: {t.quantity} · {t.paymentStatus}</span>
+                              <span className={styles.ticketMeta}>
+                                Qty: {t.quantity} ·{' '}
+                                <span style={{ color: statusColors[t.paymentStatus] || '#666', fontWeight: 600 }}>
+                                  {t.paymentStatus}
+                                </span>
+                                {t.selectedCurrency && <span> · {t.selectedCurrency}</span>}
+                              </span>
                               <code className={styles.ticketCode}>Code: {t.ticketCode.slice(0, 8)}...</code>
+                              {t.selectedAddress && (
+                                <code className={styles.ticketCode}>To: {t.selectedAddress.slice(0, 10)}...{t.selectedAddress.slice(-6)}</code>
+                              )}
+                              {t.txHash && (
+                                <code className={styles.ticketCode}>TX: {t.txHash.slice(0, 10)}...{t.txHash.slice(-6)}</code>
+                              )}
+                              {t.paymentNote && (
+                                <span className={styles.ticketMeta}>Note: {t.paymentNote}</span>
+                              )}
                             </div>
                             <div className={styles.ticketActions}>
                               {t.paymentStatus === 'PENDING' && (
-                                <button onClick={() => handleVerifyTicket(t.id, 'mark-paid')} disabled={verifyingTicket === t.id} className={styles.ticketActionBtn}>Mark Paid</button>
+                                <button onClick={() => handleTicketAction(t.id, 'mark-paid')} disabled={updatingTicket === t.id} className={styles.ticketActionBtn}>Mark Paid</button>
                               )}
-                              {t.paymentStatus === 'PAID' && (
-                                <button onClick={() => handleVerifyTicket(t.id, 'approve')} disabled={verifyingTicket === t.id} className={styles.ticketActionBtn}>Approve</button>
+                              {t.paymentStatus === 'PAID' && !event.isVirtual && (
+                                <button onClick={() => handleTicketAction(t.id, 'approve')} disabled={updatingTicket === t.id} className={styles.ticketActionBtn}>Approve</button>
                               )}
                               {t.paymentStatus === 'APPROVED' && (
-                                <button onClick={() => handleVerifyTicket(t.id, 'verify')} disabled={verifyingTicket === t.id} className={styles.ticketActionBtn}>Verify ✓</button>
+                                <span className={styles.verifiedBadge}>✅ Approved</span>
                               )}
-                              {!['VERIFIED', 'CANCELLED'].includes(t.paymentStatus) && (
-                                <button onClick={() => handleVerifyTicket(t.id, 'cancel')} disabled={verifyingTicket === t.id} className={styles.ticketActionBtnDanger}>Cancel</button>
+                              {!['APPROVED', 'CANCELLED'].includes(t.paymentStatus) && (
+                                <button onClick={() => handleTicketAction(t.id, 'cancel')} disabled={updatingTicket === t.id} className={styles.ticketActionBtnDanger}>Cancel</button>
                               )}
-                              {t.paymentStatus === 'VERIFIED' && <span className={styles.verifiedBadge}>✅ Verified</span>}
                             </div>
                           </div>
-                        ))}
+                          )
+                        })}
                       </div>
                     )}
                   </div>
@@ -972,6 +1088,20 @@ function EventDetailContent() {
         confirmLabel="Delete"
         variant="danger"
       />
+
+      {showTicketQR && myTicket && (
+        <TicketQRModal
+          ticketCode={myTicket.ticketCode}
+          onClose={() => setShowTicketQR(false)}
+        />
+      )}
+
+      {showTicketScan && event && (
+        <TicketScanModal
+          eventId={event.id}
+          onClose={() => setShowTicketScan(false)}
+        />
+      )}
 
       <LinkedItemsSection
         entityType="EVENT"

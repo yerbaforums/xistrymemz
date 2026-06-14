@@ -16,6 +16,7 @@ import { EmptyState } from '@/components/EmptyState'
 import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import Loading from '@/components/Loading'
+import { getBoardMarkerIcon } from '@/lib/map-markers'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
@@ -312,14 +313,7 @@ export default function BoardDetailPage() {
   }
 
   const getBoardIcon = () => {
-    if (!L) return undefined
-    return L.divIcon({
-      className: '',
-      html: `<div style="width:32px;height:32px;background:#00d9ff;border:3px solid white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.3);">📌</div>`,
-      iconSize: [32, 32],
-      iconAnchor: [16, 32],
-      popupAnchor: [0, -32],
-    })
+    return getBoardMarkerIcon(L)
   }
 
   const getPinIcon = (category: string | null) => {
@@ -430,7 +424,7 @@ export default function BoardDetailPage() {
                     {board.description && <div className={styles.popupDesc}>{board.description.slice(0, 100)}</div>}
                     <div className={styles.popupStats}>
                       <span>📍 {board.location || 'Unknown location'}</span>
-                      <span>📌 {board.pinCount || pins.length} pins</span>
+                      <span>📌 {total} pins</span>
                       <span>👥 {memberCount} members</span>
                     </div>
                     <Link href={`/boards/${board.slug}`} className={styles.popupLink}>View Board →</Link>
@@ -671,7 +665,6 @@ export default function BoardDetailPage() {
         title="Delete Pin"
         message="Remove this pin from the board?"
         confirmLabel="Delete"
-        variant="danger"
         variant="danger"
       />
     </div>

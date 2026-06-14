@@ -17,7 +17,8 @@ import { EmptyState } from '@/components/EmptyState'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import Button from '@/components/ui/Button'
 import { useQuickCreate } from '@/components/QuickCreateModal'
-import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
+import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
+import EntityMarker from '@/components/EntityMarker'
 
 
 let L: any
@@ -252,7 +253,7 @@ export default function ServicesPage() {
                 <MapContainer center={[39.8283, -98.5795]} zoom={4} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
                   <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                   {filteredServices.filter(s => s.latitude && s.longitude).map(s => (
-                    <Marker key={s.id} position={[s.latitude!, s.longitude!]}>
+                    <EntityMarker key={s.id} type="SERVICE" position={[s.latitude!, s.longitude!]}>
                       <Popup>
                         <strong>{s.title}</strong>
                         <br />
@@ -260,7 +261,7 @@ export default function ServicesPage() {
                         <br />
                         <Link href={`/services/${s.id}`}>View Details →</Link>
                       </Popup>
-                    </Marker>
+                    </EntityMarker>
                   ))}
                 </MapContainer>
               </div>

@@ -1,0 +1,203 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal {
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg, 12px);
+  max-width: 460px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-muted);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.header h3 { margin: 0; font-size: 1.1rem; }
+
+.closeBtn {
+  background: none; border: none; font-size: 1.2rem;
+  cursor: pointer; color: var(--text-muted); padding: 4px 8px; border-radius: 4px;
+}
+.closeBtn:hover { background: var(--bg-secondary); }
+
+.body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ticketCard {
+  background: linear-gradient(135deg, #fafafa, #f0f0f0);
+  border: 2px dashed #ccc;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+}
+
+.eventInfo {
+  margin-bottom: 12px;
+}
+
+.eventTitle {
+  margin: 0 0 4px;
+  font-size: 1.15rem;
+  color: #1a1a2e;
+}
+
+.eventDate {
+  font-size: 0.82rem;
+  color: #666;
+}
+
+.attendee {
+  font-size: 0.82rem;
+  color: #888;
+  margin-top: 2px;
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 14px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid;
+  margin-bottom: 12px;
+}
+
+.meetingSection {
+  background: #e8f5e9;
+  border: 1px solid #c8e6c9;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+.meetingLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #2e7d32;
+  margin-bottom: 4px;
+}
+
+.meetingLinkRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.meetingLink {
+  flex: 1;
+  font-size: 0.72rem;
+  color: #1a1a2e;
+  font-family: monospace;
+  word-break: break-all;
+  background: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.copyLinkBtn {
+  padding: 4px 10px;
+  background: #2e7d32;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pendingNote {
+  font-size: 0.78rem;
+  color: #888;
+  font-style: italic;
+  margin-bottom: 12px;
+}
+
+.qrSection {
+  padding: 16px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.qrImage {
+  border-radius: 8px;
+}
+
+.ticketCodeRow {
+  margin-bottom: 8px;
+}
+
+.ticketCodeLabel {
+  display: block;
+  font-size: 0.7rem;
+  color: #999;
+  margin-bottom: 2px;
+}
+
+.ticketCode {
+  font-size: 0.85rem;
+  color: #333;
+  font-family: monospace;
+  background: white;
+  padding: 4px 12px;
+  border-radius: 6px;
+}
+
+.paymentInfo {
+  font-size: 0.72rem;
+  color: #999;
+  font-family: monospace;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.printBtn {
+  flex: 1;
+  padding: 10px;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.doneBtn {
+  flex: 1;
+  padding: 10px;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}

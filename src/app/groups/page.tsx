@@ -12,7 +12,8 @@ import HashtagInput from '@/components/HashtagInput'
 import Button from '@/components/ui/Button'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import LocationOption from '@/components/LocationOption'
-import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
+import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
+import EntityMarker from '@/components/EntityMarker'
 
 interface Group {
   id: string
@@ -243,7 +244,7 @@ export default function GroupsPage() {
             <MapContainer center={[39.8283, -98.5795]} zoom={4} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
               {filteredGroups.filter(g => g.latitude && g.longitude).map(g => (
-                <Marker key={g.id} position={[g.latitude!, g.longitude!]}>
+                <EntityMarker key={g.id} type="GROUP" position={[g.latitude!, g.longitude!]}>
                   <Popup>
                     <strong>{g.name}</strong>
                     <br />
@@ -251,7 +252,7 @@ export default function GroupsPage() {
                     <br />
                     <Link href={`/groups/${g.id}`}>View Group →</Link>
                   </Popup>
-                </Marker>
+                </EntityMarker>
               ))}
             </MapContainer>
           </div>

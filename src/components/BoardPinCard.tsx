@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getUserProfileUrl } from '@/lib/utils'
 import LinkedEntityDetail from '@/components/LinkedEntityDetail'
+import LinkPreview from '@/components/LinkPreview'
 import { useToast } from '@/context/ToastContext'
 import styles from './BoardPinCard.module.css'
 
@@ -295,6 +296,7 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
       {!minimized && (
         <>
           {pin.content && <p className={styles.content}>{pin.content}</p>}
+          {pin.content && <LinkPreview text={pin.content} />}
           {parsedImages.length > 0 && <ImageCarousel images={parsedImages} />}
           {pin.entityType && pin.entityId && (
             <LinkedEntityDetail entityType={pin.entityType} entityId={pin.entityId} />

@@ -2,6 +2,7 @@ import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError, Nex
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { createNotification } from '@/services/notificationService'
 
 export async function GET(
   _request: Request,
@@ -44,7 +45,17 @@ export async function POST(
   }
 
   try {
-    const event = await prisma.event.findUnique({ where: { id } })
+    const event = await prisma.event.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        title: true,
+        isTicketed: true,
+        ticketPrice: true,
+        maxJoiners: true,
+        organizerId: true,
+      },
+    })
     if (!event) return apiError("Event not found", 404)
     if (!event.isTicketed) return apiError("This event is not ticketed", 400)
 
@@ -57,7 +68,13 @@ export async function POST(
 
     let body: any
     try { body = await request.json() } catch { return apiError("Invalid JSON body", 400) }
-    const { quantity = 1 } = body
+    const {
+      quantity = 1,
+      txHash = null,
+      paymentNote = null,
+      selectedCurrency = null,
+      selectedAddress = null,
+    } = body
 
     const totalPaid = event.ticketPrice * quantity
 
@@ -75,6 +92,10 @@ export async function POST(
         quantity,
         totalPaid,
         paymentStatus: 'PENDING',
+        txHash: txHash || null,
+        paymentNote: paymentNote || null,
+        selectedCurrency: selectedCurrency || null,
+        selectedAddress: selectedAddress || null,
       },
     })
 
@@ -83,6 +104,17 @@ export async function POST(
       update: { role: 'ATTENDEE' },
       create: { eventId: id, userId: session.user.id, role: 'ATTENDEE' },
     })
+
+    try {
+      await createNotification({
+        type: 'TICKET_PAID',
+        userId: event.organizerId,
+        message: `${session.user.name || 'Someone'} requested ${quantity} ticket(s) for "${event.title}"`,
+        link: `/events/${event.id}`,
+      } as any)
+    } catch (e) {
+      console.error('Failed to send ticket notification:', e)
+    }
 
     return NextResponse.json({ ticket }, { status: 201 })
   } catch (error) {

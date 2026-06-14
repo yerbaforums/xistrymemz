@@ -155,7 +155,7 @@ export default function PinCarouselModal({ pins, initialIndex, onClose }: PinCar
                 href={entityHref(pin.entityType, pin.entityId)}
                 className={styles.entityLink}
               >
-                📎 {pin.entityTitle || 'View'} →
+                📎 {pin.entityTitle || `${pin.entityType.replace('_', ' ')}`} →
               </Link>
             )}
 

@@ -8,7 +8,8 @@ import styles from './rentals-browse.module.css'
 import { getUserProfileUrl } from '@/lib/utils'
 import { useSession } from 'next-auth/react'
 import { EmptyState } from '@/components/EmptyState'
-import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
+import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
+import EntityMarker from '@/components/EntityMarker'
 
 interface RentalItem {
   id: string
@@ -205,7 +206,7 @@ export default function RentalsBrowseClient({ initialRentals, categories, locati
             <MapContainer center={[39.8283, -98.5795]} zoom={4} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
               {filtered.filter(r => r.latitude && r.longitude).map(item => (
-                <Marker key={item.id} position={[item.latitude!, item.longitude!]}>
+                <EntityMarker key={item.id} type="RENTAL" position={[item.latitude!, item.longitude!]}>
                   <Popup>
                     <strong>{item.title}</strong>
                     <br />
@@ -213,7 +214,7 @@ export default function RentalsBrowseClient({ initialRentals, categories, locati
                     <br />
                     <Link href={`/products/${item.id}`}>View Details →</Link>
                   </Popup>
-                </Marker>
+                </EntityMarker>
               ))}
             </MapContainer>
           </div>
