@@ -644,6 +644,17 @@ export default function PassportPage() {
             </div>
 
             <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Coordinates</label>
+              <div className={styles.searchRow}>
+                <input type="text" value={addLat} onChange={e => setAddLat(e.target.value)} placeholder="Latitude" className={styles.inputWFull} />
+                <input type="text" value={addLng} onChange={e => setAddLng(e.target.value)} placeholder="Longitude" className={styles.inputWFull} />
+              </div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: 4 }}>
+                {addLat && addLng ? `📍 ${parseFloat(addLat).toFixed(4)}, ${parseFloat(addLng).toFixed(4)}` : 'Auto-filled from search or pin-drop. Edit manually if needed.'}
+              </div>
+            </div>
+
+            <div className={styles.formGroup}>
               <label className={styles.formLabel}>Category</label>
               <select value={locationForm.categoryId} onChange={e => setLocationForm({ ...locationForm, categoryId: e.target.value })}
                 className={styles.inputSelect}>

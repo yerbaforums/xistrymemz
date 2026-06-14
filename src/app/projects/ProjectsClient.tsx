@@ -425,7 +425,7 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
     <div className={styles.page}>
       <div className={styles.publicHeader}>
         <div className={styles.publicHeaderContent}>
-          <h1>Explore Projects</h1>
+          <h1>Projects</h1>
           <p className={styles.publicSubtitle}>
             Discover amazing projects from our community. Get inspired, join forces, or contribute to ongoing work.
           </p>

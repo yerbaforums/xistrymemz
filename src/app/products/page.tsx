@@ -414,7 +414,7 @@ export default function ProductsPage() {
 
       <div className={styles.header}>
         <div>
-          <h1>Marketplace</h1>
+          <h1>Products</h1>
           <p className={styles.subtitle}>Discover products and services near you</p>
         </div>
         <div className={styles.headerActions}>

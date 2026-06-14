@@ -347,7 +347,7 @@ export default function DiscoverPage() {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             {sortedResults.filter(r => r.latitude && r.longitude).map(r => (
-              <EntityMarker key={`${r.type}-${r.id}`} type={r.type} leaflet={L} position={[r.latitude!, r.longitude!]}>
+              <EntityMarker key={`${r.type}-${r.id}`} type={r.type} position={[r.latitude!, r.longitude!]}>
                 <Popup>
                   <div className={styles.popup}>
                     <strong>{r.title}</strong>
