@@ -37,6 +37,7 @@ export default function RegisterPage() {
     try {
       await signIn(provider, { callbackUrl: '/onboarding' })
     } catch {
+      setError(`Failed to sign up with ${provider}. Please try again.`)
       setOauthLoading(null)
     }
   }
@@ -120,6 +121,7 @@ export default function RegisterPage() {
       if (result?.error) {
         setError('Account created but login failed. Please try logging in manually.')
         setLoading(false)
+        router.push('/auth/login')
         return
       }
 

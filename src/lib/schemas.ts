@@ -53,6 +53,19 @@ export const requestSchema = z.object({
   payoutCurrency: z.string().optional().nullable(),
   allowFulfillments: z.boolean().optional(),
   showDonationAddress: z.boolean().optional(),
+  acceptsDonations: z.boolean().optional(),
+  donationAddress: z.string().optional().nullable(),
+  donationCurrency: z.string().optional(),
+  donationAddresses: z.string().optional().nullable(),
+  selectedDonationAddrs: z.array(z.object({
+    id: z.string(),
+    currency: z.string(),
+    address: z.string(),
+    label: z.string().nullable().optional(),
+    qrCodeUrl: z.string().nullable().optional(),
+    showQR: z.boolean().optional(),
+    sortOrder: z.number().optional(),
+  })).optional(),
   isPublic: z.boolean().optional(),
   createGroup: z.boolean().optional(),
   hashtags: z.array(z.string()).optional()
@@ -156,6 +169,19 @@ export const groupSchema = z.object({
   latitude: z.number().optional().nullable(),
   longitude: z.number().optional().nullable(),
   isLocationBased: z.boolean().optional(),
+  acceptsDonations: z.boolean().optional(),
+  donationAddress: z.string().optional().nullable(),
+  donationCurrency: z.string().optional(),
+  donationAddresses: z.string().optional().nullable(),
+  selectedDonationAddrs: z.array(z.object({
+    id: z.string(),
+    currency: z.string(),
+    address: z.string(),
+    label: z.string().nullable().optional(),
+    qrCodeUrl: z.string().nullable().optional(),
+    showQR: z.boolean().optional(),
+    sortOrder: z.number().optional(),
+  })).optional(),
   hashtags: z.array(z.string()).optional()
 })
 

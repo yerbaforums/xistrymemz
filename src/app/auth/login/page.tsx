@@ -57,6 +57,7 @@ export default function LoginPage() {
     try {
       await signIn(provider, { callbackUrl: '/dashboard' })
     } catch {
+      setError(`Failed to sign in with ${provider}. Please try again.`)
       setOauthLoading(null)
     }
   }

@@ -241,3 +241,78 @@
   border-color: var(--accent-primary);
   color: var(--accent-primary);
 }
+
+/* Meeting link options */
+.meetingOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.meetingOption {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.82rem;
+}
+
+.meetingOption:hover {
+  border-color: var(--accent-primary);
+}
+
+.meetingOptions .selected {
+  border-color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 5%, transparent);
+}
+
+.meetingOption input[type="radio"] {
+  margin-top: 2px;
+  accent-color: var(--accent-primary);
+}
+
+.meetingOptionLabel {
+  font-weight: 500;
+  color: var(--text-primary);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.meetingLinkPreview {
+  font-size: 0.75rem;
+  color: var(--accent-primary);
+  word-break: break-all;
+  display: block;
+  margin-top: 4px;
+}
+
+.meetingLinkInput {
+  width: 100%;
+  padding: 6px 8px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+.createRoomBtn {
+  padding: 6px 12px;
+  background: var(--accent-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.78rem;
+  margin-top: 4px;
+}
+
+.createRoomBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

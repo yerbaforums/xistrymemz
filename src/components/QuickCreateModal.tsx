@@ -509,12 +509,15 @@ function EventForm({ onDone }: { onDone: () => void }) {
 function GroupForm({ onDone }: { onDone: () => void }) {
   const { success, error } = useToast()
   const router = useRouter()
+  const userDonationAddrs = useDonationAddresses()
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [isPrivate, setIsPrivate] = useState(false)
   const [category, setCategory] = useState('GENERAL')
   const [image, setImage] = useState<string[]>([])
   const [location, setLocation] = useState<{ text: string; latitude: number | null; longitude: number | null }>({ text: '', latitude: null, longitude: null })
+  const [acceptsDonations, setAcceptsDonations] = useState(false)
+  const [selectedDonationAddrs, setSelectedDonationAddrs] = useState<DonationAddr[]>([])
   const [hashtags, setHashtags] = useState<string[]>([])
   const [creating, setCreating] = useState(false)
 
@@ -535,6 +538,8 @@ function GroupForm({ onDone }: { onDone: () => void }) {
           location: location.text || undefined,
           latitude: location.latitude ?? undefined,
           longitude: location.longitude ?? undefined,
+          acceptsDonations,
+          selectedDonationAddrs: acceptsDonations ? selectedDonationAddrs : [],
           hashtags: hashtags.length > 0 ? hashtags : undefined,
         }),
       })
@@ -602,6 +607,23 @@ function GroupForm({ onDone }: { onDone: () => void }) {
         </div>
       </details>
 
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>💰 Donations</summary>
+        <div className={styles.sectionContent}>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={acceptsDonations} onChange={e => setAcceptsDonations(e.target.checked)} />
+            Accept crypto donations
+          </label>
+          {acceptsDonations && (
+            <DonationAddressPicker
+              savedAddresses={userDonationAddrs}
+              selectedAddresses={selectedDonationAddrs}
+              onAddressesChange={setSelectedDonationAddrs}
+            />
+          )}
+        </div>
+      </details>
+
       <div className={styles.formGroup}>
         <label className={styles.label}>Hashtags</label>
         <HashtagInput value={hashtags} onChange={setHashtags} placeholder="Add hashtags..." />
@@ -619,6 +641,7 @@ function GroupForm({ onDone }: { onDone: () => void }) {
 function RequestForm({ onDone }: { onDone: () => void }) {
   const { success, error } = useToast()
   const router = useRouter()
+  const userDonationAddrs = useDonationAddresses()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState('GENERAL')
@@ -631,6 +654,8 @@ function RequestForm({ onDone }: { onDone: () => void }) {
   const [isPublic, setIsPublic] = useState(true)
   const [allowFulfillments, setAllowFulfillments] = useState(true)
   const [showDonationAddress, setShowDonationAddress] = useState(true)
+  const [acceptsDonations, setAcceptsDonations] = useState(false)
+  const [selectedDonationAddrs, setSelectedDonationAddrs] = useState<DonationAddr[]>([])
   const [hashtags, setHashtags] = useState<string[]>([])
   const [creating, setCreating] = useState(false)
 
@@ -657,6 +682,8 @@ function RequestForm({ onDone }: { onDone: () => void }) {
           isPublic,
           allowFulfillments,
           showDonationAddress,
+          acceptsDonations,
+          selectedDonationAddrs: acceptsDonations ? selectedDonationAddrs : [],
           hashtags: hashtags.length > 0 ? hashtags : undefined,
         }),
       })
@@ -748,9 +775,26 @@ function RequestForm({ onDone }: { onDone: () => void }) {
             <input type="checkbox" checked={allowFulfillments} onChange={e => setAllowFulfillments(e.target.checked)} />
             Allow others to offer to fulfill this request
           </label>
+        </div>
+      </details>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>💰 Donations</summary>
+        <div className={styles.sectionContent}>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={acceptsDonations} onChange={e => setAcceptsDonations(e.target.checked)} />
+            Accept crypto donations
+          </label>
+          {acceptsDonations && (
+            <DonationAddressPicker
+              savedAddresses={userDonationAddrs}
+              selectedAddresses={selectedDonationAddrs}
+              onAddressesChange={setSelectedDonationAddrs}
+            />
+          )}
           <label className={styles.checkLabel}>
             <input type="checkbox" checked={showDonationAddress} onChange={e => setShowDonationAddress(e.target.checked)} />
-            Show my donation addresses on this request
+            Show my profile donation addresses on this request
           </label>
         </div>
       </details>
@@ -781,7 +825,6 @@ function ServiceForm({ onDone }: { onDone: () => void }) {
   const [description, setDescription] = useState('')
   const [coverImage, setCoverImage] = useState<string[]>([])
   const [location, setLocation] = useState<{ text: string; latitude: number | null; longitude: number | null }>({ text: '', latitude: null, longitude: null })
-  const [meetingLink, setMeetingLink] = useState('')
 
   const [acceptsDonations, setAcceptsDonations] = useState(false)
   const [selectedDonationAddrs, setSelectedDonationAddrs] = useState<DonationAddr[]>([])
@@ -790,7 +833,29 @@ function ServiceForm({ onDone }: { onDone: () => void }) {
   const [bookingDuration, setBookingDuration] = useState('60')
   const [bookingLeadTime, setBookingLeadTime] = useState('24')
   const [bookingLocation, setBookingLocation] = useState('')
-  const [bookingMeetingLink, setBookingMeetingLink] = useState('')
+  const [meetingLink, setMeetingLink] = useState('')
+  const [meetingLinkType, setMeetingLinkType] = useState<'platform' | 'custom' | 'none'>('none')
+  const [creatingRoom, setCreatingRoom] = useState(false)
+
+  const handleCreatePlatformRoom = async () => {
+    setCreatingRoom(true)
+    try {
+      const res = await fetch('/api/video/rooms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: `${title || 'Service'} Video Room` }),
+      })
+      if (!res.ok) throw new Error()
+      const data = await res.json()
+      const room = data?.data?.room || data?.room
+      if (room) {
+        const link = `${window.location.origin}/dashboard/video?invite=${room.inviteCode}`
+        setMeetingLink(link)
+        setMeetingLinkType('platform')
+      }
+    } catch {}
+    setCreatingRoom(false)
+  }
 
   const [hashtags, setHashtags] = useState<string[]>([])
   const [creating, setCreating] = useState(false)
@@ -820,7 +885,7 @@ function ServiceForm({ onDone }: { onDone: () => void }) {
           appointmentDuration: acceptsBooking ? (parseInt(bookingDuration) || 60) : undefined,
           appointmentLeadTime: acceptsBooking ? (parseInt(bookingLeadTime) || 24) : undefined,
           appointmentLocation: acceptsBooking ? (bookingLocation || undefined) : undefined,
-          appointmentMeetingLink: acceptsBooking ? (bookingMeetingLink || undefined) : undefined,
+          appointmentMeetingLink: meetingLink || undefined,
           hashtags,
         }),
       })
@@ -875,15 +940,9 @@ function ServiceForm({ onDone }: { onDone: () => void }) {
       </div>
 
       <details className={styles.sectionDetails}>
-        <summary className={styles.sectionSummary}>🔧 Service Details</summary>
+        <summary className={styles.sectionSummary}>📍 Location</summary>
         <div className={styles.sectionContent}>
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Meeting Link (for virtual services)</label>
-            <input type="url" value={meetingLink} onChange={e => setMeetingLink(e.target.value)} className={styles.input} placeholder="https://zoom.us/j/..." />
-          </div>
-          <div className={styles.formGroup}>
-            <LocationPicker value={location} onChange={setLocation} label="Service Location" />
-          </div>
+          <LocationPicker value={location} onChange={setLocation} label="Service Location" />
         </div>
       </details>
 
@@ -906,8 +965,38 @@ function ServiceForm({ onDone }: { onDone: () => void }) {
                   <input type="number" value={bookingLeadTime} onChange={e => setBookingLeadTime(e.target.value)} className={styles.input} placeholder="24" min="0" />
                 </div>
               </div>
-              <input type="text" value={bookingLocation} onChange={e => setBookingLocation(e.target.value)} className={styles.input} placeholder="Meeting location (optional)" />
-              <input type="url" value={bookingMeetingLink} onChange={e => setBookingMeetingLink(e.target.value)} className={styles.input} placeholder="Meeting link (optional)" />
+              <input type="text" value={bookingLocation} onChange={e => setBookingLocation(e.target.value)} className={styles.input} placeholder="Booking location (optional)" />
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Meeting Link</label>
+                <div className={styles.meetingOptions}>
+                  <label className={`${styles.meetingOption} ${meetingLinkType === 'platform' ? styles.selected : ''}`}>
+                    <input type="radio" name="srv-meeting" checked={meetingLinkType === 'platform'} onChange={() => {
+                      if (!meetingLink) handleCreatePlatformRoom()
+                      else setMeetingLinkType('platform')
+                    }} />
+                    <span className={styles.meetingOptionLabel}>Platform Video Room</span>
+                    {meetingLinkType === 'platform' && meetingLink && (
+                      <code className={styles.meetingLinkPreview}>{meetingLink}</code>
+                    )}
+                    {meetingLinkType === 'platform' && !meetingLink && (
+                      <button type="button" onClick={handleCreatePlatformRoom} disabled={creatingRoom} className={styles.createRoomBtn}>
+                        {creatingRoom ? 'Creating...' : 'Create Video Room'}
+                      </button>
+                    )}
+                  </label>
+                  <label className={`${styles.meetingOption} ${meetingLinkType === 'custom' ? styles.selected : ''}`}>
+                    <input type="radio" name="srv-meeting" checked={meetingLinkType === 'custom'} onChange={() => setMeetingLinkType('custom')} />
+                    <span className={styles.meetingOptionLabel}>Custom Link</span>
+                    {meetingLinkType === 'custom' && (
+                      <input type="url" value={meetingLink} onChange={e => setMeetingLink(e.target.value)} placeholder="https://zoom.us/j/..." className={styles.meetingLinkInput} />
+                    )}
+                  </label>
+                  <label className={`${styles.meetingOption} ${meetingLinkType === 'none' ? styles.selected : ''}`}>
+                    <input type="radio" name="srv-meeting" checked={meetingLinkType === 'none'} onChange={() => { setMeetingLinkType('none'); setMeetingLink('') }} />
+                    <span className={styles.meetingOptionLabel}>No meeting link</span>
+                  </label>
+                </div>
+              </div>
             </div>
           )}
         </div>

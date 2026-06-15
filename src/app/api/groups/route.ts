@@ -5,6 +5,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { groupSchema, validateBody } from '@/lib/schemas'
 import { extractAndLinkHashtags, linkHashtags } from '@/services/hashtagService'
+import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 
 export async function GET(request: Request) {
   try {
@@ -73,7 +74,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { name, description, privacy, category, location, latitude: formLat, longitude: formLng, isLocationBased, hashtags } = validation.data
+    const { name, description, privacy, category, location, latitude: formLat, longitude: formLng, isLocationBased, acceptsDonations, selectedDonationAddrs, hashtags } = validation.data
     let latitude = formLat || null
     let longitude = formLng || null
     if (!latitude && !longitude && location) {
@@ -93,6 +94,9 @@ export async function POST(request: Request) {
         latitude: latitude || null,
         longitude: longitude || null,
         isLocationBased: isLocationBased || false,
+        acceptsDonations: acceptsDonations ?? false,
+        ...donationAddressesToLegacy((acceptsDonations ? (selectedDonationAddrs || []) : []) as any),
+        donationAddresses: serializeDonationAddresses((acceptsDonations ? selectedDonationAddrs || [] : []) as any) as any,
         userId: session.user.id,
         members: {
           create: {

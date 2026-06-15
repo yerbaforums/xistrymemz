@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { requestSchema, validateBody } from '@/lib/schemas'
 import { extractAndLinkHashtags, linkHashtags } from '@/services/hashtagService'
+import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 
 export async function GET(request: Request) {
   try {
@@ -120,7 +121,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { title, description, imageUrl, projectId, productId, groupId, schoolContentId, eventId, category, priority, budget, goalAmount, currentFunding, location, isPublic, createGroup, hashtags } = validation.data
+    const { title, description, imageUrl, projectId, productId, groupId, schoolContentId, eventId, category, priority, budget, goalAmount, currentFunding, location, isPublic, createGroup, acceptsDonations, selectedDonationAddrs, hashtags } = validation.data
 
     if (projectId) {
       const project = await prisma.project.findFirst({
@@ -196,6 +197,9 @@ export async function POST(request: Request) {
         isPublic: isPublic || false,
         allowFulfillments: body.allowFulfillments !== undefined ? body.allowFulfillments : true,
         showDonationAddress: body.showDonationAddress !== undefined ? body.showDonationAddress : true,
+        acceptsDonations: acceptsDonations ?? false,
+        ...donationAddressesToLegacy((acceptsDonations ? (selectedDonationAddrs || []) : []) as any),
+        donationAddresses: serializeDonationAddresses((acceptsDonations ? selectedDonationAddrs || [] : []) as any) as any,
         status: 'PENDING'
       },
       include: {

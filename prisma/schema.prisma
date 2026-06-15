@@ -653,6 +653,13 @@ model Request {
   isPublic            Boolean                @default(false)
   allowFulfillments   Boolean                @default(true)
   showDonationAddress Boolean                @default(true)
+
+  // Donations
+  acceptsDonations   Boolean  @default(false)
+  donationAddress    String?
+  donationCurrency   String   @default("ETH")
+  donationAddresses  String?  // JSON: [{currency, address, label}]
+
   viewCount           Int                    @default(0)
   contentViews        ContentView[]          @relation("RequestViews")
   createdAt           DateTime               @default(now())
@@ -1240,6 +1247,13 @@ model Group {
   latitude        Float?
   longitude       Float?
   isLocationBased Boolean        @default(false)
+
+  // Donations
+  acceptsDonations   Boolean  @default(false)
+  donationAddress    String?
+  donationCurrency   String   @default("ETH")
+  donationAddresses  String?  // JSON: [{currency, address, label}]
+
   userId          String
   user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   members         GroupMember[]
