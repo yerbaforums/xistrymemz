@@ -253,11 +253,11 @@ export default function DashboardProjectsClient({ initialProjects }: DashboardPr
       ) : viewMode === 'grid' ? (
         <div className={styles.cardGrid}>
           {filteredProjects.map((project, index) => {
-            const status = STATUS_CONFIG[plan.status] || STATUS_CONFIG.DRAFT
+            const status = STATUS_CONFIG[project.status] || STATUS_CONFIG.DRAFT
             return (
               <div
-                key={plan.id}
-                className={`${styles.card} ${plan.pinned ? styles.pinnedCard : ''}`}
+                key={project.id}
+                className={`${styles.card} ${project.pinned ? styles.pinnedCard : ''}`}
                 draggable={sortBy === 'custom'}
                 onDragStart={() => dragStart(index)}
                 onDragEnter={() => dragEnter(index)}
@@ -265,7 +265,7 @@ export default function DashboardProjectsClient({ initialProjects }: DashboardPr
                 onDragOver={(e) => e.preventDefault()}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                {plan.pinned && (
+                {project.pinned && (
                   <div className={styles.pinnedBanner}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/>
@@ -279,9 +279,9 @@ export default function DashboardProjectsClient({ initialProjects }: DashboardPr
                     <span className={styles.statusBadge} style={{ backgroundColor: status.color + '20', color: status.color, borderColor: status.color + '40' }}>
                       {status.icon} {status.label}
                     </span>
-                    {plan.category && <span className={styles.categoryBadge} style={{ borderColor: getCategoryColor(plan.category) + '40', color: getCategoryColor(plan.category), background: getCategoryColor(plan.category) + '20' }}>{getCategoryIcon(plan.category)} {getCategoryLabel(plan.category)}</span>}
-                    {plan.needsVolunteers && <span className={styles.dashVolunteerBadge}>🤝</span>}
-                    {plan.lookingForCollaborators && <span className={styles.dashCollabBadge}>👥</span>}
+                    {project.category && <span className={styles.categoryBadge} style={{ borderColor: getCategoryColor(project.category) + '40', color: getCategoryColor(project.category), background: getCategoryColor(project.category) + '20' }}>{getCategoryIcon(project.category)} {getCategoryLabel(project.category)}</span>}
+                    {project.needsVolunteers && <span className={styles.dashVolunteerBadge}>🤝</span>}
+                    {project.lookingForCollaborators && <span className={styles.dashCollabBadge}>👥</span>}
                   </div>
                   <div className={styles.stats}>
                     <span className={styles.statItem} title="Requests">
@@ -289,7 +289,7 @@ export default function DashboardProjectsClient({ initialProjects }: DashboardPr
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                         <polyline points="14,2 14,8 20,8"/>
                       </svg>
-                      {plan.requestCount}
+                      {project.requestCount}
                     </span>
                     <span className={styles.statItem} title="Members">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -298,31 +298,31 @@ export default function DashboardProjectsClient({ initialProjects }: DashboardPr
                         <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
                         <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                       </svg>
-                      {plan.joinerCount}
+                      {project.joinerCount}
                     </span>
                   </div>
                 </div>
 
-                <Link href={`/projects/${plan.id}`} className={styles.cardTitle}>{plan.title}</Link>
+                <Link href={`/projects/${project.id}`} className={styles.cardTitle}>{project.title}</Link>
 
-                {plan.description && (
-                  <p className={styles.cardDesc}>{plan.description}</p>
+                {project.description && (
+                  <p className={styles.cardDesc}>{project.description}</p>
                 )}
 
-                {plan.goals && (
+                {project.goals && (
                   <div className={styles.goals}>
                     <strong>Goals</strong>
                     <ul>
-                      {plan.goals.split('\n').filter(g => g.trim()).slice(0, 3).map((goal, i) => (
+                      {project.goals.split('\n').filter(g => g.trim()).slice(0, 3).map((goal, i) => (
                         <li key={i}>{goal.replace(/^[-•]\s*/, '')}</li>
                       ))}
                     </ul>
                   </div>
                 )}
 
-                {plan.resources && (() => {
+                {project.resources && (() => {
                   try {
-                    const resources = JSON.parse(plan.resources)
+                    const resources = JSON.parse(project.resources)
                     if (!Array.isArray(resources) || resources.length === 0) return null
                     return (
                       <div className={styles.resources}>
@@ -341,32 +341,32 @@ export default function DashboardProjectsClient({ initialProjects }: DashboardPr
                 })()}
 
                 <div className={styles.cardMeta}>
-                  {plan.location && (
+                  {project.location && (
                     <span className={styles.metaItem}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
                       </svg>
-                      {plan.location}
+                      {project.location}
                     </span>
                   )}
-                  {!plan.published && <span className={styles.draftBadge}>Draft</span>}
+                  {!project.published && <span className={styles.draftBadge}>Draft</span>}
                 </div>
 
                 <div className={styles.cardFooter}>
                   <div className={styles.authorInfo}>
                     <div className={styles.authorAvatar}>
-                      {plan.user.image ? (
-                        <Image src={plan.user.image} alt={plan.user.name || 'User'} fill sizes="28px" />
+                      {project.user.image ? (
+                        <Image src={project.user.image} alt={project.user.name || 'User'} fill sizes="28px" />
                       ) : (
-                        <span>{(plan.user.name?.[0] || 'U').toUpperCase()}</span>
+                        <span>{(project.user.name?.[0] || 'U').toUpperCase()}</span>
                     )}
                     </div>
-                    <span className={styles.authorName}>{plan.user.name || 'You'}</span>
+                    <span className={styles.authorName}>{project.user.name || 'You'}</span>
                   </div>
-                  <span className={styles.cardDate}>{formatDate(plan.createdAt)}</span>
+                  <span className={styles.cardDate}>{formatDate(project.createdAt)}</span>
                 </div>
 
-                <Link href={`/projects/${plan.id}`} className={styles.viewProjectBtn}>
+                <Link href={`/projects/${project.id}`} className={styles.viewProjectBtn}>
                   Open Project →
                 </Link>
               </div>
@@ -376,20 +376,20 @@ export default function DashboardProjectsClient({ initialProjects }: DashboardPr
       ) : (
         <div className={styles.listView}>
           {filteredProjects.map(project => {
-            const status = STATUS_CONFIG[plan.status] || STATUS_CONFIG.DRAFT
+            const status = STATUS_CONFIG[project.status] || STATUS_CONFIG.DRAFT
             return (
-              <Link key={plan.id} href={`/projects/${plan.id}`} className={styles.listItem}>
+              <Link key={project.id} href={`/projects/${project.id}`} className={styles.listItem}>
                 <span className={styles.statusBadge} style={{ backgroundColor: status.color + '20', color: status.color, borderColor: status.color + '40' }}>
                   {status.icon} {status.label}
                 </span>
                 <div className={styles.listItemInfo}>
-                  <strong>{plan.title}</strong>
+                  <strong>{project.title}</strong>
                   <span className={styles.listItemMeta}>
-                    {plan.requestCount} requests · {plan.joinerCount} members
-                    {plan.location && ` · ${plan.location}`}
+                    {project.requestCount} requests · {project.joinerCount} members
+                    {project.location && ` · ${project.location}`}
                   </span>
                 </div>
-                <span className={styles.listItemDate}>{formatDate(plan.createdAt)}</span>
+                <span className={styles.listItemDate}>{formatDate(project.createdAt)}</span>
               </Link>
             )
           })}
