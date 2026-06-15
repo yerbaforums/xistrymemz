@@ -89,6 +89,28 @@
   margin: 0;
 }
 
+.socialRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.socialLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  transition: var(--transition);
+}
+
+.socialLink:hover {
+  color: var(--accent-primary);
+  background: var(--bg-tertiary);
+}
+
 .bottomCenter {
   display: flex;
   justify-content: center;

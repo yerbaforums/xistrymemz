@@ -523,4 +523,13 @@
   .mapContainer {
     height: 400px;
   }
+  .cardDesc {
+    font-size: 0.85rem;
+  }
+  .cardMeta {
+    font-size: 0.75rem;
+  }
+  .cardFooter {
+    font-size: 0.7rem;
+  }
 }

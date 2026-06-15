@@ -57,7 +57,7 @@ html {
 
   --sidebar-width: 240px;
   --sidebar-collapsed-width: 64px;
-  --header-height: 64px;
+  --header-height: 56px;
 
   --space-1: 4px;
   --space-2: 8px;
@@ -511,6 +511,7 @@ a:focus-visible {
 @media (max-width: 768px) {
   h1 { font-size: 1.75rem; }
   h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.1rem; }
 
   button, .btn-primary, .btn-secondary, .btn-ghost {
     min-height: 44px;

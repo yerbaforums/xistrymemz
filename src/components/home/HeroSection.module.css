@@ -262,7 +262,20 @@
     font-size: 2rem;
   }
 
+  .subtitle {
+    font-size: 0.9rem;
+  }
+
+  .badge {
+    font-size: 0.8rem;
+    padding: 4px 14px;
+  }
+
   .heroStats {
     gap: 24px;
+  }
+
+  .statValue {
+    font-size: 1.2rem;
   }
 }

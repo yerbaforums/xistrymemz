@@ -22,6 +22,29 @@
   color: var(--accent-primary);
 }
 
+.socials {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.socialLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  transition: var(--transition);
+}
+
+.socialLink:hover {
+  color: var(--accent-primary);
+  background: var(--bg-tertiary);
+}
+
 .copyright {
   color: var(--text-muted);
   font-size: 0.8rem;
