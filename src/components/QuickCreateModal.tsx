@@ -613,12 +613,27 @@ function RequestForm({ onDone }: { onDone: () => void }) {
 function ServiceForm({ onDone }: { onDone: () => void }) {
   const { success, error } = useToast()
   const router = useRouter()
+  const userDonationAddrs = useDonationAddresses()
+
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState('OTHER')
   const [duration, setDuration] = useState('60')
   const [price, setPrice] = useState('')
-  const [location, setLocation] = useState('')
   const [description, setDescription] = useState('')
+  const [coverImage, setCoverImage] = useState<string[]>([])
+  const [location, setLocation] = useState<{ text: string; latitude: number | null; longitude: number | null }>({ text: '', latitude: null, longitude: null })
+  const [meetingLink, setMeetingLink] = useState('')
+
+  const [acceptsDonations, setAcceptsDonations] = useState(false)
+  const [selectedDonationAddrs, setSelectedDonationAddrs] = useState<DonationAddr[]>([])
+
+  const [acceptsBooking, setAcceptsBooking] = useState(false)
+  const [bookingDuration, setBookingDuration] = useState('60')
+  const [bookingLeadTime, setBookingLeadTime] = useState('24')
+  const [bookingLocation, setBookingLocation] = useState('')
+  const [bookingMeetingLink, setBookingMeetingLink] = useState('')
+
+  const [hashtags, setHashtags] = useState<string[]>([])
   const [creating, setCreating] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -635,7 +650,19 @@ function ServiceForm({ onDone }: { onDone: () => void }) {
           category,
           duration: parseInt(duration) || 60,
           price: price ? parseFloat(price) : null,
-          location: location.trim() || undefined,
+          location: location.text || undefined,
+          latitude: location.latitude ?? undefined,
+          longitude: location.longitude ?? undefined,
+          meetingLink: meetingLink || undefined,
+          imageUrl: coverImage[0] || null,
+          acceptsDonations,
+          selectedDonationAddrs: acceptsDonations ? selectedDonationAddrs : [],
+          acceptsAppointments: acceptsBooking,
+          appointmentDuration: acceptsBooking ? (parseInt(bookingDuration) || 60) : undefined,
+          appointmentLeadTime: acceptsBooking ? (parseInt(bookingLeadTime) || 24) : undefined,
+          appointmentLocation: acceptsBooking ? (bookingLocation || undefined) : undefined,
+          appointmentMeetingLink: acceptsBooking ? (bookingMeetingLink || undefined) : undefined,
+          hashtags,
         }),
       })
       if (res.ok) {
@@ -659,6 +686,10 @@ function ServiceForm({ onDone }: { onDone: () => void }) {
         <label className={styles.label}>Title</label>
         <input type="text" value={title} onChange={e => setTitle(e.target.value)} className={styles.input} placeholder="Service title" required autoFocus />
       </div>
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Description</label>
+        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="Describe your service..." />
+      </div>
       <div className={styles.formRow}>
         <div className={styles.formGroup}>
           <label className={styles.label}>Category</label>
@@ -679,14 +710,74 @@ function ServiceForm({ onDone }: { onDone: () => void }) {
           <input type="number" value={price} onChange={e => setPrice(e.target.value)} className={styles.input} placeholder="0.00" step="0.01" />
         </div>
         <div className={styles.formGroup}>
-          <label className={styles.label}>Location</label>
-          <input type="text" value={location} onChange={e => setLocation(e.target.value)} className={styles.input} placeholder="City, State" />
+          <label className={styles.label}>Cover Image</label>
+          <ImageUploader images={coverImage} onChange={setCoverImage} maxImages={1} />
         </div>
       </div>
-      <div className={styles.formGroup}>
-        <label className={styles.label}>Description</label>
-        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="Describe your service..." />
-      </div>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>🔧 Service Details</summary>
+        <div className={styles.sectionContent}>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Meeting Link (for virtual services)</label>
+            <input type="url" value={meetingLink} onChange={e => setMeetingLink(e.target.value)} className={styles.input} placeholder="https://zoom.us/j/..." />
+          </div>
+          <div className={styles.formGroup}>
+            <LocationPicker value={location} onChange={setLocation} label="Service Location" />
+          </div>
+        </div>
+      </details>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>📅 Booking</summary>
+        <div className={styles.sectionContent}>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={acceptsBooking} onChange={e => setAcceptsBooking(e.target.checked)} />
+            Accept bookings for this service
+          </label>
+          {acceptsBooking && (
+            <div className={styles.nestedFields}>
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Duration (min)</label>
+                  <input type="number" value={bookingDuration} onChange={e => setBookingDuration(e.target.value)} className={styles.input} placeholder="60" min="5" />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Lead Time (hours)</label>
+                  <input type="number" value={bookingLeadTime} onChange={e => setBookingLeadTime(e.target.value)} className={styles.input} placeholder="24" min="0" />
+                </div>
+              </div>
+              <input type="text" value={bookingLocation} onChange={e => setBookingLocation(e.target.value)} className={styles.input} placeholder="Meeting location (optional)" />
+              <input type="url" value={bookingMeetingLink} onChange={e => setBookingMeetingLink(e.target.value)} className={styles.input} placeholder="Meeting link (optional)" />
+            </div>
+          )}
+        </div>
+      </details>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>💰 Donations</summary>
+        <div className={styles.sectionContent}>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={acceptsDonations} onChange={e => setAcceptsDonations(e.target.checked)} />
+            Accept crypto donations
+          </label>
+          {acceptsDonations && (
+            <DonationAddressPicker
+              savedAddresses={userDonationAddrs}
+              selectedAddresses={selectedDonationAddrs}
+              onAddressesChange={setSelectedDonationAddrs}
+            />
+          )}
+        </div>
+      </details>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>🏷️ Hashtags</summary>
+        <div className={styles.sectionContent}>
+          <HashtagInput value={hashtags} onChange={setHashtags} placeholder="Add hashtags..." />
+        </div>
+      </details>
+
       <div className={styles.formActions}>
         <button type="button" onClick={onDone} className="btn-ghost">Cancel</button>
         <button type="submit" disabled={creating || !title.trim()} className="btn-primary">
