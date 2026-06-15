@@ -3,6 +3,37 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ slug: string; pinId: string }> }
+) {
+  const { slug, pinId } = await params
+
+  try {
+    const board = await prisma.bulletinBoard.findUnique({ where: { slug }, select: { id: true, name: true, slug: true } })
+    if (!board) return apiError("Board not found", 404)
+
+    const pin = await prisma.bulletinPin.findUnique({
+      where: { id: pinId },
+      include: {
+        user: { select: { id: true, name: true, image: true } },
+        _count: { select: { likes: true, comments: true } },
+      },
+    })
+    if (!pin || pin.boardId !== board.id) return apiError("Pin not found", 404)
+
+    return apiSuccess({
+      ...pin,
+      likeCount: pin._count.likes,
+      commentCount: pin._count.comments,
+      board: { id: board.id, name: board.name, slug: board.slug },
+    })
+  } catch (error) {
+    console.error('GET /api/boards/[slug]/pins/[pinId]:', error)
+    return apiError("Internal server error", 500)
+  }
+}
+
 export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ slug: string; pinId: string }> }

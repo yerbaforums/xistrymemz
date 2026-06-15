@@ -53,25 +53,30 @@ export async function POST(request: NextRequest) {
       return apiError("Original post not found", 404)
     }
 
-    const post = await prisma.post.create({
-      data: {
-        content: '',
-        userId: session.user.id,
-        context: 'REPOST',
-        referenceType: 'POST',
-        referenceId: postId,
-      },
-      include: {
-        user: { select: { id: true, name: true, image: true } },
-      },
+    const existing = await prisma.postRepost.findUnique({
+      where: { userId_originalPostId: { userId: session.user.id, originalPostId: postId } },
     })
+    if (existing) return apiError("Already reposted", 409)
 
-    await prisma.postRepost.create({
-      data: {
-        userId: session.user.id,
-        postId: post.id,
-        originalPostId: postId,
-      },
+    const post = await prisma.$transaction(async (tx) => {
+      const p = await tx.post.create({
+        data: {
+          content: '',
+          userId: session.user.id,
+          context: 'REPOST',
+          referenceType: 'POST',
+          referenceId: postId,
+        },
+        include: { user: { select: { id: true, name: true, image: true } } },
+      })
+      await tx.postRepost.create({
+        data: {
+          userId: session.user.id,
+          postId: p.id,
+          originalPostId: postId,
+        },
+      })
+      return p
     })
 
     return NextResponse.json({ post }, { status: 201 })

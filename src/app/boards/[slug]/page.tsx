@@ -478,14 +478,8 @@ export default function BoardDetailPage() {
                       {new Date(pin.createdAt).toLocaleDateString()}
                     </div>
                     <Link
-                      href="#"
-                      className={styles.popupLink}
-                      onClick={(e) => {
-                        e.preventDefault()
-                        const idx = pins.findIndex(p => p.id === pin.id)
-                        if (idx >= 0) setCarouselIndex(idx)
-                      }}
-                    >
+                      href={`/boards/${slug}/pins/${pin.id}`}
+                      className={styles.popupLink}>
                       View Details →
                     </Link>
                   </div>

@@ -289,7 +289,7 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
         initialLikes={pin.likeCount || 0}
         replyCount={pin.commentCount || 0}
         variant="compact"
-        shareUrl={pin.entityType && pin.entityId ? `${window.location.origin}${getEntityHref(pin.entityType, pin.entityId)}` : undefined}
+        shareUrl={typeof window !== 'undefined' ? `${window.location.origin}/boards/${boardSlug}/pins/${pin.id}` : undefined}
       />
     </div>
   )
