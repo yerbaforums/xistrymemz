@@ -280,15 +280,16 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
       </div>
 
       <EntityActions
-        entityType="POST"
-        entityId={pin.id}
-        title={pin.title || 'Pin'}
+        entityType={pin.entityType && ['PRODUCT','EVENT','SERVICE','PROJECT','GROUP','REQUEST','SHOP'].includes(pin.entityType) ? pin.entityType as any : 'PRODUCT'}
+        entityId={pin.entityId || pin.id}
+        title={pin.entityTitle || pin.title || 'Pin'}
         authorId={pin.userId}
         description={pin.content || undefined}
         image={parsedImages[0] || undefined}
         initialLikes={pin.likeCount || 0}
         replyCount={pin.commentCount || 0}
         variant="compact"
+        shareUrl={pin.entityType && pin.entityId ? `${window.location.origin}${getEntityHref(pin.entityType, pin.entityId)}` : undefined}
       />
     </div>
   )
