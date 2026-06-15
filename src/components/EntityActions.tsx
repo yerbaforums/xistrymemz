@@ -375,14 +375,6 @@ export default function EntityActions({
 
         <div className={styles.spacer} />
 
-        <button onClick={copyLink} className={`${styles.btn} ${styles.btnIcon}`} title="Copy link">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-        </button>
-
-        <button onClick={() => setShowShareModal(true)} className={`${styles.btn} ${styles.btnIcon}`} title="Share">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-        </button>
-
         <div className={styles.moreWrap}>
           <button onClick={() => setShowMore(!showMore)} className={`${styles.btn} ${styles.btnIcon}`} title="More">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
@@ -392,12 +384,12 @@ export default function EntityActions({
               <div className={styles.moreOverlay} onClick={() => setShowMore(false)} />
               {isOwner && onEdit && (
                 <button onClick={() => { onEdit(); setShowMore(false) }} className={styles.menuItem}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
                   Edit
                 </button>
               )}
-              <button onClick={() => { copyLink(); setShowMore(false) }} className={styles.menuItem}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <button onClick={() => { copyLink(); setShowMore(false) }} className={styles.menuItem}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><rect x="2" y="2" width="13" height="13" rx="2" ry="2" fill="transparent"/></svg>
                 Copy Link
               </button>
               <button onClick={() => { setShowShareModal(true); setShowMore(false) }} className={styles.menuItem}>
