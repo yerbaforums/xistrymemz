@@ -97,6 +97,7 @@ export default function HeroSection() {
           <img src="/logo.png" alt="XistrYmemZ" />
           <span>XistrYmemZ</span>
         </div>
+        <div className={styles.badge}>{t('heroBadge')}</div>
         <h1 className={styles.title}>
           {t('heroTitlePre')}<span className={styles.accent}>{t('heroTitleAccent')}</span>{t('heroTitlePost')}
         </h1>
@@ -109,15 +110,6 @@ export default function HeroSection() {
           </Link>
           <Link href="/discover" className={styles.btnSecondary}>
             🌐 {t('heroExploreMap')}
-          </Link>
-          <Link href="/directory" className={styles.btnSecondary}>
-            📖 {t('heroBrowseDirectory')}
-          </Link>
-          <Link href="/dashboard/passport" className={styles.btnSecondary}>
-            🌍 Passport
-          </Link>
-          <Link href="/hashtags" className={styles.btnSecondary}>
-            🏷️ Hashtags
           </Link>
           <Link href="/about" className={styles.btnSecondary}>
             📖 {t('heroLearnMore')}

@@ -65,6 +65,20 @@
   filter: drop-shadow(0 0 20px color-mix(in srgb, var(--accent-primary) 30%, transparent));
 }
 
+.badge {
+  display: inline-block;
+  background: linear-gradient(135deg, rgba(0, 217, 255, 0.15), rgba(168, 85, 247, 0.15));
+  border: 1px solid rgba(0, 217, 255, 0.3);
+  color: var(--accent-primary);
+  padding: 6px 20px;
+  border-radius: 100px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+  letter-spacing: 0.02em;
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
 .title {
   font-size: 3.5rem;
   font-weight: 700;

@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 export async function GET(request: Request, { params }: { params: Promise<{ id: string; updateId: string }> }) {
   const { updateId } = await params
   const comments = await prisma.projectUpdateComment.findMany({
-    where: { planUpdateId: updateId },
+    where: { projectUpdateId: updateId },
     orderBy: { createdAt: 'asc' },
     include: { user: { select: { id: true, name: true, image: true } } }
   })
@@ -22,7 +22,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (!body.content?.trim()) return apiError("Content is required", 400)
 
   const comment = await prisma.projectUpdateComment.create({
-    data: { content: body.content.trim(), planUpdateId: updateId, userId: session.user.id },
+    data: { content: body.content.trim(), projectUpdateId: updateId, userId: session.user.id },
     include: { user: { select: { id: true, name: true, image: true } } }
   })
   return apiSuccess(comment)

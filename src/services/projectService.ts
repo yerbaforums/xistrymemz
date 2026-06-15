@@ -40,7 +40,7 @@ export async function getProjectsByUser(userId: string, publishedOnly = false, s
 }
 
 export async function getPublicProjects(skip = 0, take = 10) {
-  const where = { published: true, status: { in: ['ACTIVE', 'COMPLETED'] } }
+  const where = { published: true, status: { in: ['IDEA', 'ACTIVE', 'IN_PROGRESS', 'COMPLETED'] } }
   const [items, total] = await Promise.all([
     prisma.project.findMany({
       where,

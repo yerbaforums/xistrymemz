@@ -36,7 +36,7 @@ export async function POST(
 
   const existingJoiner = await prisma.projectJoiner.findUnique({
     where: {
-      planId_userId: {
+      projectId_userId: {
         projectId: project.id,
         userId: session.user.id
       }
@@ -44,7 +44,7 @@ export async function POST(
   })
 
   if (existingJoiner && existingJoiner.role === role) {
-    return apiSuccess({ error: `Already joined as ${role.toLowerCase()}` }, { status: 400 })
+    return apiSuccess({ error: `Already joined as ${role.toLowerCase()}` }, 400)
   }
 
   if (existingJoiner) {
@@ -82,7 +82,7 @@ export async function DELETE(
 
   const joiner = await prisma.projectJoiner.findUnique({
     where: {
-      planId_userId: {
+      projectId_userId: {
         projectId: id,
         userId: session.user.id
       }
@@ -94,7 +94,7 @@ export async function DELETE(
   }
 
   if (joiner.role !== role) {
-    return apiSuccess({ error: `Not joined as ${role.toLowerCase()}` }, { status: 400 })
+    return apiSuccess({ error: `Not joined as ${role.toLowerCase()}` }, 400)
   }
 
   await prisma.projectJoiner.delete({

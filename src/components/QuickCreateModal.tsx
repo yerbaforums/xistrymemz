@@ -968,8 +968,15 @@ function ProjectForm({ onDone }: { onDone: () => void }) {
   const [goals, setGoals] = useState('')
   const [mileposts, setMileposts] = useState('')
   const [hashtags, setHashtags] = useState<string[]>([])
+  const [phases, setPhases] = useState<string[]>([])
   const [linkedAsset, setLinkedAsset] = useState<UserAsset | null>(null)
   const [creating, setCreating] = useState(false)
+
+  const addPhase = () => setPhases([...phases, ''])
+  const removePhase = (i: number) => setPhases(phases.filter((_, idx) => idx !== i))
+  const updatePhase = (i: number, val: string) => {
+    const next = [...phases]; next[i] = val; setPhases(next)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -999,6 +1006,7 @@ function ProjectForm({ onDone }: { onDone: () => void }) {
           longitude: location.longitude ?? undefined,
           goals,
           mileposts,
+          phases: phases.length > 0 ? JSON.stringify(phases) : null,
           published: false,
           hashtags: hashtags.length > 0 ? hashtags : undefined,
         }),
@@ -1094,6 +1102,21 @@ function ProjectForm({ onDone }: { onDone: () => void }) {
         <summary className={styles.sectionSummary}>📍 Location</summary>
         <div className={styles.sectionContent}>
           <LocationPicker value={location} onChange={setLocation} />
+        </div>
+      </details>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>📋 Planning Stages</summary>
+        <div className={styles.sectionContent}>
+          <p className={styles.sectionHint}>Define the phases of your project. Each phase: name — description</p>
+          {phases.map((p, i) => (
+            <div key={i} className={styles.phaseRow}>
+              <input type="text" value={p} onChange={e => updatePhase(i, e.target.value)}
+                placeholder={`Phase ${i + 1}: Name — Description`} className={styles.input} />
+              <button type="button" onClick={() => removePhase(i)} className={styles.removeBtn}>✕</button>
+            </div>
+          ))}
+          <button type="button" onClick={addPhase} className={styles.addBtn}>+ Add Phase</button>
         </div>
       </details>
 

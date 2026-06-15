@@ -33,7 +33,7 @@ export async function POST(
       select: { userId: true }
     })
 
-    if (!plan || project.userId !== session.user.id) {
+    if (!project || project.userId !== session.user.id) {
       return apiError("Not authorized", 403)
     }
 

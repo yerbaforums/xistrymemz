@@ -28,7 +28,7 @@ export async function POST(
       return apiError("Project not found", 404)
     }
 
-    if (!plan.acceptsDonations) {
+    if (!project.acceptsDonations) {
       return apiError("This project does not accept donations", 400)
     }
 
@@ -44,7 +44,7 @@ export async function POST(
       prisma.project.update({
         where: { id },
         data: {
-          currentFunding: (plan.currentFunding || 0) + amount
+          currentFunding: (project.currentFunding || 0) + amount
         }
       })
     ])

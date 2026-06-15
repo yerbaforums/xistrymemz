@@ -195,3 +195,49 @@
   border-radius: var(--radius-sm);
   border-left: 2px solid var(--accent-primary);
 }
+
+.sectionHint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.phaseRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.removeBtn {
+  padding: 6px 10px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.removeBtn:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.addBtn {
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-family: inherit;
+  transition: var(--transition);
+  text-align: center;
+}
+
+.addBtn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}

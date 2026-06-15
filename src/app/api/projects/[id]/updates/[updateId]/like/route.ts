@@ -10,7 +10,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const { updateId } = await params
 
   const existing = await prisma.projectUpdateLike.findUnique({
-    where: { planUpdateId_userId: { planUpdateId: updateId, userId: session.user.id } }
+    where: { projectUpdateId_userId: { projectUpdateId: updateId, userId: session.user.id } }
   })
 
   if (existing) {
@@ -19,7 +19,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return apiSuccess({ liked: false })
   }
 
-  await prisma.projectUpdateLike.create({ data: { planUpdateId: updateId, userId: session.user.id } })
+  await prisma.projectUpdateLike.create({ data: { projectUpdateId: updateId, userId: session.user.id } })
   await prisma.projectUpdate.update({ where: { id: updateId }, data: { likes: { increment: 1 } } })
   return apiSuccess({ liked: true })
 }
