@@ -4,10 +4,17 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import dynamic from 'next/dynamic'
 import { getEntityIcon } from '@/lib/entity-icons'
 import EntityActions from '@/components/EntityActions'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import Skeleton from '@/components/Skeleton'
+import AddToCalendar from '@/components/AddToCalendar'
+
+const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
+const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
+const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false })
+const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false })
 
 interface PinDetail {
   id: string
@@ -22,6 +29,8 @@ interface PinDetail {
   contactName: string | null
   contactEmail: string | null
   contactPhone: string | null
+  latitude?: number | null
+  longitude?: number | null
   likeCount: number
   commentCount: number
   user: { id: string; name: string | null; image: string | null }
@@ -46,14 +55,29 @@ export default function PinDetailPage() {
   const [pin, setPin] = useState<PinDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [imgIdx, setImgIdx] = useState(0)
+  const [fullImg, setFullImg] = useState<string | null>(null)
+  const [eventData, setEventData] = useState<any>(null)
+  const [L, setL] = useState<any>(null)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') import('leaflet').then(mod => setL(mod))
+  }, [])
 
   useEffect(() => {
     if (!slug || !pinId) return
     fetch(`/api/boards/${slug}/pins/${pinId}`)
       .then(r => r.ok ? r.json() : null)
-      .then(data => { setPin(data?.data || data); setLoading(false) })
+      .then(data => { const d = data?.data || data; setPin(d); setLoading(false) })
       .catch(() => setLoading(false))
   }, [slug, pinId])
+
+  useEffect(() => {
+    if (!pin || pin.entityType !== 'EVENT' || !pin.entityId) return
+    fetch(`/api/events/${pin.entityId}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { const d = data?.data || data; setEventData(d) })
+      .catch(() => {})
+  }, [pin])
 
   if (loading) return <div className="landing" style={{ padding: 32 }}><Skeleton width="100%" height="200px" /></div>
   if (!pin) return <div className="landing" style={{ padding: 32, textAlign: 'center' }}><h2>Pin not found</h2><Link href={`/boards/${slug}`}>← Back to Board</Link></div>
@@ -63,9 +87,16 @@ export default function PinDetailPage() {
     LOST_FOUND: '#ef4444', PROMOTION: '#3b82f6', EVENT: '#8b5cf6',
     SERVICE: '#22c55e', HOUSING: '#ec4899', JOBS: '#14b8a6', FREE: '#22c55e', GENERAL: '#6b7280',
   }
+  const isEvent = pin.entityType === 'EVENT' && pin.entityId && eventData
 
   return (
     <div className="landing" style={{ maxWidth: 800, margin: '0 auto', padding: '24px 16px 60px' }}>
+      {fullImg && (
+        <div onClick={() => setFullImg(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <img src={fullImg} alt="" style={{ maxWidth: '95vw', maxHeight: '95vh', objectFit: 'contain', borderRadius: 8 }} />
+        </div>
+      )}
+
       <Breadcrumbs items={[
         { label: 'Home', href: '/' },
         { label: 'Boards', href: '/boards' },
@@ -92,12 +123,17 @@ export default function PinDetailPage() {
         {pin.content && <p style={{ margin: 0, lineHeight: 1.6, color: 'var(--text-secondary)' }}>{pin.content}</p>}
 
         {images.length > 0 && (
-          <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', background: 'var(--bg-secondary)' }}>
-            <Image src={images[imgIdx]} alt="" width={800} height={400} style={{ width: '100%', height: 300, objectFit: 'cover' }} />
+          <div style={{ borderRadius: 12, overflow: 'hidden', background: 'var(--bg-secondary)', cursor: 'pointer' }}>
+            <img
+              src={images[imgIdx]}
+              alt=""
+              onClick={() => setFullImg(images[imgIdx])}
+              style={{ width: '100%', maxHeight: 500, objectFit: 'contain', background: '#111', display: 'block' }}
+            />
             {images.length > 1 && (
-              <div style={{ display: 'flex', gap: 6, padding: 8, overflowX: 'auto' }}>
+              <div style={{ display: 'flex', gap: 6, padding: 8, overflowX: 'auto', background: 'var(--bg-primary)' }}>
                 {images.map((img, i) => (
-                  <img key={i} src={img} alt="" onClick={() => setImgIdx(i)} style={{ width: 60, height: 40, objectFit: 'cover', borderRadius: 4, cursor: 'pointer', opacity: i === imgIdx ? 1 : 0.5, border: i === imgIdx ? '2px solid var(--accent-primary)' : 'none' }} />
+                  <img key={i} src={img} alt="" onClick={(e) => { e.stopPropagation(); setImgIdx(i) }} style={{ width: 60, height: 40, objectFit: 'cover', borderRadius: 4, cursor: 'pointer', opacity: i === imgIdx ? 1 : 0.5, border: i === imgIdx ? '2px solid var(--accent-primary)' : 'none' }} />
                 ))}
               </div>
             )}
@@ -112,6 +148,37 @@ export default function PinDetailPage() {
               <div style={{ fontSize: '0.85rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pin.entityTitle || 'View →'}</div>
             </div>
           </Link>
+        )}
+
+        {isEvent && eventData && (
+          <div style={{ padding: 12, background: 'var(--bg-tertiary)', borderRadius: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ fontWeight: 600 }}>📅 {eventData.title}</div>
+            {eventData.eventDate && <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{new Date(eventData.eventDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}</div>}
+            {eventData.location && <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>📍 {eventData.location}</div>}
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>👥 {eventData._count?.eventJoiners || eventData.joiners?.length || 0} attending</span>
+              {eventData.eventDate && (
+                <AddToCalendar params={{
+                  title: eventData.title,
+                  description: eventData.description || undefined,
+                  location: eventData.location || undefined,
+                  startTime: eventData.eventDate,
+                  endTime: eventData.endDate || eventData.eventDate,
+                }} variant="link" />
+              )}
+            </div>
+          </div>
+        )}
+
+        {(pin.latitude && pin.longitude && L) && (
+          <div style={{ borderRadius: 12, overflow: 'hidden', height: 250 }}>
+            <MapContainer center={[pin.latitude, pin.longitude]} zoom={14} style={{ height: 250, width: '100%' }} scrollWheelZoom={false}>
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              <Marker position={[pin.latitude, pin.longitude]}>
+                <Popup>{pin.title || 'Pin location'}</Popup>
+              </Marker>
+            </MapContainer>
+          </div>
         )}
 
         {(pin.contactName || pin.contactEmail || pin.contactPhone) && (
@@ -136,8 +203,8 @@ export default function PinDetailPage() {
           variant="full"
         />
 
-        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-          Pinned {new Date(pin.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} on <Link href={`/boards/${pin.board.slug}`} style={{ color: 'var(--accent-primary)' }}>{pin.board.name}</Link>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+          <span>Pinned {new Date(pin.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} on <Link href={`/boards/${pin.board.slug}`} style={{ color: 'var(--accent-primary)' }}>{pin.board.name}</Link></span>
         </div>
       </div>
     </div>

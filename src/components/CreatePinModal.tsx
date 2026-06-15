@@ -54,6 +54,8 @@ export default function CreatePinModal({ boardSlug, boardName, onClose, onCreate
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [selectedAsset, setSelectedAsset] = useState<UserAsset | null>(null)
+  const [pinLat, setPinLat] = useState('')
+  const [pinLng, setPinLng] = useState('')
 
   const expiryPresets = useMemo(() => {
     const now = new Date()
@@ -93,8 +95,8 @@ export default function CreatePinModal({ boardSlug, boardName, onClose, onCreate
           entityId: selectedAsset?.id || undefined,
           entityTitle: selectedAsset?.title || undefined,
           entityImage: selectedAsset?.image || undefined,
-          latitude: selectedAsset?.latitude || undefined,
-          longitude: selectedAsset?.longitude || undefined,
+          latitude: pinLat ? parseFloat(pinLat) : (selectedAsset?.latitude || undefined),
+          longitude: pinLng ? parseFloat(pinLng) : (selectedAsset?.longitude || undefined),
           contactName: contactName.trim() || undefined,
           contactEmail: contactEmail.trim() || undefined,
           contactPhone: contactPhone.trim() || undefined,
@@ -171,6 +173,14 @@ export default function CreatePinModal({ boardSlug, boardName, onClose, onCreate
               if (asset && !title) setTitle(asset.title)
             }}
           />
+
+          <label className={styles.label}>
+            Coordinates (optional)
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input type="number" step="any" value={pinLat} onChange={e => setPinLat(e.target.value)} placeholder="Latitude" className={styles.input} style={{ flex: 1 }} />
+              <input type="number" step="any" value={pinLng} onChange={e => setPinLng(e.target.value)} placeholder="Longitude" className={styles.input} style={{ flex: 1 }} />
+            </div>
+          </label>
 
           <label className={styles.label}>
             Contact Name (optional)
