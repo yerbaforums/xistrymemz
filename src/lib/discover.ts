@@ -113,6 +113,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           userName: r.user.name,
           userImage: r.user.image,
           hashtags: r.hashtags.map(h => h.hashtag.tag),
+          eventDate: null,
           createdAt: r.createdAt,
         }))
       })()
@@ -163,6 +164,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           userName: r.user.name,
           userImage: r.user.image,
           hashtags: r.hashtags.map(h => h.hashtag.tag),
+          eventDate: null,
           createdAt: r.createdAt,
         }))
       })()
@@ -214,6 +216,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           userName: r.user.name,
           userImage: r.user.image,
           hashtags: r.hashtags.map(h => h.hashtag.tag),
+          eventDate: null,
           createdAt: r.createdAt,
         }))
       })()
@@ -320,6 +323,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           userName: r.user.name,
           userImage: r.user.image,
           hashtags: r.hashtags.map(h => h.hashtag.tag),
+          eventDate: null,
           createdAt: r.createdAt,
         }))
       })()
@@ -366,6 +370,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           userName: r.name,
           userImage: r.image,
           hashtags: [],
+          eventDate: null,
           createdAt: r.createdAt,
         }))
       })()
@@ -411,6 +416,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           userName: null,
           userImage: null,
           hashtags: [],
+          eventDate: null,
           createdAt: r.createdAt,
         }))
       })()
@@ -455,6 +461,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           userName: r.user.name,
           userImage: r.user.image,
           hashtags: [],
+          eventDate: null,
           createdAt: r.createdAt,
         }))
       })()
@@ -500,6 +507,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           userName: r.user.name,
           userImage: r.user.image,
           hashtags: [],
+          eventDate: null,
           createdAt: r.createdAt,
         }))
       })()
@@ -543,6 +551,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           userName: r.name,
           userImage: r.image,
           hashtags: [],
+          eventDate: null,
           createdAt: r.createdAt,
         }))
       })()

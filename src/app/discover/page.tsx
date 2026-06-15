@@ -14,6 +14,7 @@ import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComp
 import EntityMarker from '@/components/EntityMarker'
 import { getEntityIcon, getEntityColor } from '@/lib/entity-icons'
 import { usePassportLocation } from '@/hooks/usePassportLocation'
+import LocationCard from '@/components/LocationCard'
 
 const ENTITY_TYPES = [
   { key: '', label: 'All', icon: '🌐' },
@@ -51,6 +52,7 @@ interface DiscoverItem {
   userName: string | null
   userImage: string | null
   hashtags: string[]
+  eventDate: string | null
   createdAt: string
 }
 
@@ -113,16 +115,15 @@ export default function DiscoverPage() {
   const [typeFilter, setTypeFilter] = useState('')
   const [intentFilter, setIntentFilter] = useState('')
   const [hashtagFilter, setHashtagFilter] = useState('')
-  const [viewMode, setViewMode] = useState<'map' | 'grid' | 'calendar'>('map')
-  const [currentMonth, setCurrentMonth] = useState(new Date())
   const [sortBy, setSortBy] = useState('newest')
+  const [calVisible, setCalVisible] = useState(false)
+  const [currentMonth, setCurrentMonth] = useState(new Date())
   const [results, setResults] = useState<DiscoverItem[]>([])
   const [loading, setLoading] = useState(false)
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [mapCenter, setMapCenter] = useState<[number, number]>([40.7128, -74.006])
   const [homeCoords, setHomeCoords] = useState<[number, number] | null>(null)
-  const [mapVisible, setMapVisible] = useState(true)
   const [mapVisible, setMapVisible] = useState(true)
   const [L, setL] = useState<any>(null)
   const mapRef = useRef<any>(null)
@@ -283,17 +284,15 @@ export default function DiscoverPage() {
       </div>
 
       {session?.user && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'var(--bg-tertiary)', borderRadius: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            📍 {passportLoc?.location || 'Location not set'}
-          </span>
-          {homeCoords && (
-            <button onClick={() => { if (mapRef.current) mapRef.current.flyTo(homeCoords, 10, { duration: 1 }) }}
-              style={{ fontSize: '0.78rem', padding: '2px 8px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 4, cursor: 'pointer' }}>
-              ✈️ Fly Home
-            </button>
-          )}
-        </div>
+        <LocationCard
+          homeCoords={homeCoords}
+          homeName={passportLoc?.location || ''}
+          passportLocName={passportLoc?.location}
+          settingLocation={false}
+          onSetLocation={() => {}}
+          onDetect={() => {}}
+          onFlyHome={() => { if (mapRef.current && homeCoords) mapRef.current.flyTo(homeCoords, 10, { duration: 1 }) }}
+        />
       )}
 
       <div className={styles.searchRow}>
@@ -348,30 +347,18 @@ export default function DiscoverPage() {
           <option value="nearest">📍 Nearest</option>
         </select>
         <div className={styles.viewToggle}>
-          <Button
-            variant="ghost"
-            className={`${styles.viewBtn} ${viewMode === 'map' ? styles.viewBtnActive : ''}`}
-            onClick={() => setViewMode('map')}
-          >🗺️ Map</Button>
-          <Button
-            variant="ghost"
-            className={`${styles.viewBtn} ${viewMode === 'grid' ? styles.viewBtnActive : ''}`}
-            onClick={() => setViewMode('grid')}
-          >📋 Grid</Button>
-          <Button
-            variant="ghost"
-            className={`${styles.viewBtn} ${viewMode === 'calendar' ? styles.viewBtnActive : ''}`}
-            onClick={() => setViewMode('calendar')}
-          >📅 Calendar</Button>
-          <Button variant="ghost" className={styles.viewBtn} onClick={() => setMapVisible(v => !v)}>
+          <Button variant="ghost" className={`${styles.viewBtn} ${mapVisible ? styles.viewBtnActive : ''}`} onClick={() => setMapVisible(v => !v)}>
             {mapVisible ? '🙈' : '🗺️'} {mapVisible ? 'Hide Map' : 'Show Map'}
+          </Button>
+          <Button variant="ghost" className={`${styles.viewBtn} ${calVisible ? styles.viewBtnActive : ''}`} onClick={() => setCalVisible(v => !v)}>
+            {calVisible ? '📅' : '📅'} {calVisible ? 'Hide Calendar' : 'Show Calendar'}
           </Button>
         </div>
       </div>
 
       {loading && <Loading size="medium" message="Searching..." />}
 
-      {!loading && viewMode === 'map' && mapVisible && (
+      {!loading && mapVisible && (
         <div className={styles.mapContainer}>
           <MapContainer ref={mapRef} center={mapCenter} zoom={4} className={styles.map} scrollWheelZoom={true}>
             <TileLayer
@@ -418,7 +405,7 @@ export default function DiscoverPage() {
         </div>
       )}
 
-      {!loading && viewMode === 'grid' && (
+      {!loading && (
         <>
           <div className={styles.resultInfo}>{total} result{total !== 1 ? 's' : ''} found</div>
           <div className={styles.grid}>
@@ -435,7 +422,7 @@ export default function DiscoverPage() {
         </>
       )}
 
-      {!loading && viewMode === 'calendar' && (
+      {!loading && calVisible && (
         <div className={styles.calendarWrap}>
           <div className={styles.calendarHeader}>
             <Button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))} className={styles.calendarNavBtn} variant="ghost">←</Button>

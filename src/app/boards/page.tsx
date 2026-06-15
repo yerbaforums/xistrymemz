@@ -17,6 +17,7 @@ import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import { MapContainer, TileLayer, Marker, Popup, Tooltip } from '@/components/LeafletComponents'
 import { getBoardMarkerIcon } from '@/lib/map-markers'
+import LocationCard from '@/components/LocationCard'
 
 const MapEvents = dynamic(() => import('./MapEvents').then(m => m.MapEvents), { ssr: false })
 const MapController = dynamic(() => import('./MapEvents').then(m => m.MapController), { ssr: false })
@@ -56,7 +57,6 @@ export default function BoardsPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<'recent' | 'alpha'>('recent')
-  const [view, setView] = useState<'all' | 'map' | 'list'>('all')
   const [myBoards, setMyBoards] = useState(false)
 
   const sortedBoards = useMemo(() => {
@@ -255,8 +255,7 @@ export default function BoardsPage() {
   const handleFlyToBoard = (e: React.MouseEvent, board: Board) => {
     e.stopPropagation()
     e.preventDefault()
-    if (board.latitude && board.longitude && mapRef.current) {
-      setView('map')
+      if (board.latitude && board.longitude && mapRef.current) {
       setMapVisible(true)
       setSelectedBoardId(board.id)
       setTimeout(() => mapRef.current?.flyTo([board.latitude, board.longitude], 14, { duration: 0.8 }), 100)
@@ -414,10 +413,8 @@ export default function BoardsPage() {
         <h1>📌 Community Bulletin Boards</h1>
         <p>Pin your cards, announcements, and listings to local boards</p>
         <div className={styles.viewToggleBar}>
-          <button className={`${styles.viewToggleBtn} ${view === 'map' ? styles.viewToggleActive : ''}`} onClick={() => setView('map')}>🗺️ Map</button>
-          <button className={`${styles.viewToggleBtn} ${view === 'list' ? styles.viewToggleActive : ''}`} onClick={() => setView('list')}>📋 Grid</button>
-          <button className={`${styles.viewToggleBtn} ${calVisible ? styles.viewToggleActive : ''}`} onClick={() => setCalVisible(v => !v)}>📅 {calVisible ? 'Hide Cal' : 'Calendar'}</button>
-          <button className={styles.viewToggleBtn} onClick={() => setMapVisible(v => !v)}>{mapVisible ? '🙈' : '🗺️'} {mapVisible ? 'Hide Map' : 'Show Map'}</button>
+          <button className={`${styles.viewToggleBtn} ${mapVisible ? styles.viewToggleActive : ''}`} onClick={() => setMapVisible(v => !v)}>{mapVisible ? '🗺️' : '🙈'} {mapVisible ? 'Hide Map' : 'Show Map'}</button>
+          <button className={`${styles.viewToggleBtn} ${calVisible ? styles.viewToggleActive : ''}`} onClick={() => setCalVisible(v => !v)}>{calVisible ? '📅' : '📅'} {calVisible ? 'Hide Calendar' : 'Show Calendar'}</button>
         </div>
         {session?.user && (
           <Button variant="primary" className={styles.createBtn} onClick={() => setShowCreateModal(true)}>
@@ -427,35 +424,15 @@ export default function BoardsPage() {
       </div>
 
       {session?.user && (
-        <div className={styles.locationCard}>
-          <div className={styles.locationInfo}>
-            <span className={styles.locationIcon}>🏠</span>
-            <div>
-              <div className={styles.locationLabel}>Your Location</div>
-              <div className={styles.locationName}>
-                {homeName || 'Not set — click the map to set your home base'}
-              </div>
-            </div>
-          </div>
-          <div className={styles.locationActions}>
-            <Button
-              variant="secondary"
-              className={`${styles.locBtn} ${settingLocation ? styles.locBtnActive : ''}`}
-              onClick={() => setSettingLocation(s => !s)}
-            >
-              {settingLocation ? '✕ Cancel' : '📍 Set on Map'}
-            </Button>
-            <Button variant="secondary" className={styles.locBtn} onClick={handleDetectLocation}>
-              📡 Detect
-            </Button>
-            {homeCoords && (
-              <Button variant="secondary" className={styles.locBtn} onClick={handleFlyHome}>
-                ✈️ Fly Home
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
+        <LocationCard
+          homeCoords={homeCoords}
+          homeName={homeName}
+          passportLocName={passportLocation?.location}
+          settingLocation={settingLocation}
+          onSetLocation={() => setSettingLocation(s => !s)}
+          onDetect={handleDetectLocation}
+          onFlyHome={handleFlyHome}
+        />)}
 
       <div className={styles.searchBar}>
         <form onSubmit={handleSearch} className={styles.search}>
@@ -488,7 +465,7 @@ export default function BoardsPage() {
         </div>
       </div>
 
-      {(view === 'map' || view === 'list') && mapVisible && (
+      {mapVisible && (
       <div className={styles.mapWrap}>
         {settingLocation && <div className={styles.mapOverlay}>Click anywhere on the map to set your home location</div>}
         <MapContainer center={mapCenter} zoom={12} className={styles.map} scrollWheelZoom={true}>
@@ -583,7 +560,6 @@ export default function BoardsPage() {
       </div>
       )}
 
-      {(view === 'list') && (
       <div className={styles.grid}>
         {loading ? (
           <Loading size="medium" message="Loading boards..." />
@@ -626,7 +602,6 @@ export default function BoardsPage() {
           ))
         )}
       </div>
-      )}
 
       {calVisible && (
         <div className={styles.calendarGrid}>
@@ -651,7 +626,7 @@ export default function BoardsPage() {
                   <div key={day} className={`${styles.calendarDay} ${dayBoards.length > 0 ? styles.hasEvents : ''}`}>
                     <span className={styles.dayNumber}>{day}</span>
                     {dayBoards.slice(0, 2).map(b => (
-                      <div key={b.id} className={styles.eventDot} style={{ background: '#8B6914' }} onClick={() => { setView('list'); setMapVisible(true) }}>
+                      <div key={b.id} className={styles.eventDot} style={{ background: '#8B6914' }} onClick={() => setMapVisible(true)}>
                         {b.name.slice(0, 10)}
                       </div>
                     ))}

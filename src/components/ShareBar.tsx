@@ -16,11 +16,12 @@ interface ShareBarProps {
   description?: string | null
   image?: string | null
   variant?: 'inline' | 'compact'
+  url?: string
 }
 
-export default function ShareBar({ entityType, title, description, image, variant = 'inline' }: ShareBarProps) {
+export default function ShareBar({ entityType, title, description, image, variant = 'inline', url: customUrl }: ShareBarProps) {
   const { success, error } = useToast()
-  const [url] = useState(() => typeof window !== 'undefined' ? window.location.href : '')
+  const [url] = useState(() => customUrl || (typeof window !== 'undefined' ? window.location.href : ''))
   const [showFull, setShowFull] = useState(false)
 
   const copyLink = async () => {

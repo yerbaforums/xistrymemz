@@ -357,9 +357,9 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
         </button>
         <ShareBar
           url={typeof window !== 'undefined' ? `${window.location.origin}/boards/${boardSlug}?pin=${pin.id}` : ''}
-          title={pin.title || undefined}
+          title={pin.title || ''}
           description={pin.content || undefined}
-          variant="compact"
+          entityType={['PRODUCT','EVENT','SERVICE','PROJECT','GROUP','REQUEST','SHOP'].includes(pin.entityType || '') ? (pin.entityType as any) : 'POST'}
         />
       </div>
 
