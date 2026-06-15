@@ -61,6 +61,7 @@ export interface RequestFormData {
   budget: string
   goalAmount: string
   location: string
+  deadline: string
   isPublic: boolean
   allowFulfillments: boolean
   showDonationAddress: boolean
@@ -78,6 +79,7 @@ export function getDefaultRequestFormData(): RequestFormData {
     budget: '',
     goalAmount: '',
     location: '',
+    deadline: '',
     isPublic: true,
     allowFulfillments: true,
     showDonationAddress: true,

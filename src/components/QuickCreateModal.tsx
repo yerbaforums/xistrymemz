@@ -524,6 +524,13 @@ function RequestForm({ onDone }: { onDone: () => void }) {
   const [category, setCategory] = useState('GENERAL')
   const [priority, setPriority] = useState('MEDIUM')
   const [budget, setBudget] = useState('')
+  const [goalAmount, setGoalAmount] = useState('')
+  const [deadline, setDeadline] = useState('')
+  const [image, setImage] = useState<string[]>([])
+  const [location, setLocation] = useState<{ text: string; latitude: number | null; longitude: number | null }>({ text: '', latitude: null, longitude: null })
+  const [isPublic, setIsPublic] = useState(true)
+  const [allowFulfillments, setAllowFulfillments] = useState(true)
+  const [showDonationAddress, setShowDonationAddress] = useState(true)
   const [hashtags, setHashtags] = useState<string[]>([])
   const [creating, setCreating] = useState(false)
 
@@ -541,7 +548,15 @@ function RequestForm({ onDone }: { onDone: () => void }) {
           category,
           priority,
           budget: budget ? parseFloat(budget) : null,
-          isPublic: true,
+          goalAmount: goalAmount ? parseFloat(goalAmount) : null,
+          deadline: deadline || null,
+          imageUrl: image[0] || null,
+          location: location.text || undefined,
+          latitude: location.latitude ?? undefined,
+          longitude: location.longitude ?? undefined,
+          isPublic,
+          allowFulfillments,
+          showDonationAddress,
           hashtags: hashtags.length > 0 ? hashtags : undefined,
         }),
       })
@@ -560,11 +575,6 @@ function RequestForm({ onDone }: { onDone: () => void }) {
     }
   }
 
-  const REQUEST_CATEGORIES = [
-    'GENERAL', 'FUNDING', 'SERVICES', 'GOODS', 'HOUSING',
-    'TRANSPORTATION', 'FOOD', 'HEALTH', 'EDUCATION', 'OTHER'
-  ]
-
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
       <div className={styles.formGroup}>
@@ -575,7 +585,16 @@ function RequestForm({ onDone }: { onDone: () => void }) {
         <div className={styles.formGroup}>
           <label className={styles.label}>Category</label>
           <select value={category} onChange={e => setCategory(e.target.value)} className={styles.select}>
-            {REQUEST_CATEGORIES.map(c => (<option key={c} value={c}>{c.charAt(0) + c.slice(1).toLowerCase()}</option>))}
+            <option value="GENERAL">General</option>
+            <option value="FUNDING">Funding</option>
+            <option value="SERVICES">Services</option>
+            <option value="GOODS">Goods</option>
+            <option value="HOUSING">Housing</option>
+            <option value="TRANSPORTATION">Transportation</option>
+            <option value="FOOD">Food</option>
+            <option value="HEALTH">Health</option>
+            <option value="EDUCATION">Education</option>
+            <option value="OTHER">Other</option>
           </select>
         </div>
         <div className={styles.formGroup}>
@@ -589,13 +608,53 @@ function RequestForm({ onDone }: { onDone: () => void }) {
         </div>
       </div>
       <div className={styles.formGroup}>
-        <label className={styles.label}>Budget ($)</label>
-        <input type="number" value={budget} onChange={e => setBudget(e.target.value)} className={styles.input} placeholder="0.00" step="0.01" />
-      </div>
-      <div className={styles.formGroup}>
         <label className={styles.label}>Description</label>
         <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="Describe what you need..." />
       </div>
+      <div className={styles.formRow}>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Budget ($)</label>
+          <input type="number" value={budget} onChange={e => setBudget(e.target.value)} className={styles.input} placeholder="0.00" step="0.01" />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Goal Amount ($)</label>
+          <input type="number" value={goalAmount} onChange={e => setGoalAmount(e.target.value)} className={styles.input} placeholder="0.00" step="0.01" />
+        </div>
+      </div>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>📸 Image & Location</summary>
+        <div className={styles.sectionContent}>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Image</label>
+            <ImageUploader images={image} onChange={setImage} maxImages={1} />
+          </div>
+          <LocationPicker value={location} onChange={setLocation} label="Location" />
+        </div>
+      </details>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>📅 Deadline & Visibility</summary>
+        <div className={styles.sectionContent}>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Deadline</label>
+            <input type="date" value={deadline} onChange={e => setDeadline(e.target.value)} className={styles.input} />
+          </div>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={isPublic} onChange={e => setIsPublic(e.target.checked)} />
+            Make public (visible to everyone)
+          </label>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={allowFulfillments} onChange={e => setAllowFulfillments(e.target.checked)} />
+            Allow others to offer to fulfill this request
+          </label>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={showDonationAddress} onChange={e => setShowDonationAddress(e.target.checked)} />
+            Show my donation addresses on this request
+          </label>
+        </div>
+      </details>
+
       <div className={styles.formGroup}>
         <label className={styles.label}>Hashtags</label>
         <HashtagInput value={hashtags} onChange={setHashtags} placeholder="Add hashtags..." />

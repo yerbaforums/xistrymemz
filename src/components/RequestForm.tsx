@@ -100,13 +100,22 @@ export default function RequestForm({
           className="input-field"
         />
       </div>
-      <input
-        type="text"
-        placeholder="Location (optional)"
-        value={form.location}
-        onChange={e => setForm({ ...form, location: e.target.value })}
-        className="input-field"
-      />
+      <div className="form-row">
+        <input
+          type="text"
+          placeholder="Location (optional)"
+          value={form.location}
+          onChange={e => setForm({ ...form, location: e.target.value })}
+          className="input-field"
+        />
+        <input
+          type="date"
+          placeholder="Deadline"
+          value={form.deadline}
+          onChange={e => setForm({ ...form, deadline: e.target.value })}
+          className="input-field"
+        />
+      </div>
       <label className="checkbox-field">
         <input
           type="checkbox"
