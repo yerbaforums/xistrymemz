@@ -122,6 +122,8 @@ export default function DiscoverPage() {
   const [page, setPage] = useState(1)
   const [mapCenter, setMapCenter] = useState<[number, number]>([40.7128, -74.006])
   const [homeCoords, setHomeCoords] = useState<[number, number] | null>(null)
+  const [mapVisible, setMapVisible] = useState(true)
+  const [mapVisible, setMapVisible] = useState(true)
   const [L, setL] = useState<any>(null)
   const mapRef = useRef<any>(null)
 
@@ -361,12 +363,15 @@ export default function DiscoverPage() {
             className={`${styles.viewBtn} ${viewMode === 'calendar' ? styles.viewBtnActive : ''}`}
             onClick={() => setViewMode('calendar')}
           >📅 Calendar</Button>
+          <Button variant="ghost" className={styles.viewBtn} onClick={() => setMapVisible(v => !v)}>
+            {mapVisible ? '🙈' : '🗺️'} {mapVisible ? 'Hide Map' : 'Show Map'}
+          </Button>
         </div>
       </div>
 
       {loading && <Loading size="medium" message="Searching..." />}
 
-      {!loading && viewMode === 'map' && (
+      {!loading && viewMode === 'map' && mapVisible && (
         <div className={styles.mapContainer}>
           <MapContainer ref={mapRef} center={mapCenter} zoom={4} className={styles.map} scrollWheelZoom={true}>
             <TileLayer

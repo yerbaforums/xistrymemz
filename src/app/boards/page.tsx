@@ -75,6 +75,9 @@ export default function BoardsPage() {
   const [mapReady, setMapReady] = useState(false)
   const [L, setL] = useState<any>(null)
   const mapRef = useRef<any>(null)
+  const [mapVisible, setMapVisible] = useState(true)
+  const [calVisible, setCalVisible] = useState(false)
+  const [currentMonth, setCurrentMonth] = useState(new Date())
 
   useEffect(() => {
     import('leaflet/dist/leaflet.css')
@@ -253,8 +256,10 @@ export default function BoardsPage() {
     e.stopPropagation()
     e.preventDefault()
     if (board.latitude && board.longitude && mapRef.current) {
+      setView('map')
+      setMapVisible(true)
       setSelectedBoardId(board.id)
-      mapRef.current.flyTo([board.latitude, board.longitude], 14, { duration: 0.8 })
+      setTimeout(() => mapRef.current?.flyTo([board.latitude, board.longitude], 14, { duration: 0.8 }), 100)
     }
   }
 
@@ -409,9 +414,10 @@ export default function BoardsPage() {
         <h1>📌 Community Bulletin Boards</h1>
         <p>Pin your cards, announcements, and listings to local boards</p>
         <div className={styles.viewToggleBar}>
-          <button className={`${styles.viewToggleBtn} ${view === 'all' ? styles.viewToggleActive : ''}`} onClick={() => setView('all')}>🗺️ Map + List</button>
           <button className={`${styles.viewToggleBtn} ${view === 'map' ? styles.viewToggleActive : ''}`} onClick={() => setView('map')}>🗺️ Map</button>
-          <button className={`${styles.viewToggleBtn} ${view === 'list' ? styles.viewToggleActive : ''}`} onClick={() => setView('list')}>📋 List</button>
+          <button className={`${styles.viewToggleBtn} ${view === 'list' ? styles.viewToggleActive : ''}`} onClick={() => setView('list')}>📋 Grid</button>
+          <button className={`${styles.viewToggleBtn} ${calVisible ? styles.viewToggleActive : ''}`} onClick={() => setCalVisible(v => !v)}>📅 {calVisible ? 'Hide Cal' : 'Calendar'}</button>
+          <button className={styles.viewToggleBtn} onClick={() => setMapVisible(v => !v)}>{mapVisible ? '🙈' : '🗺️'} {mapVisible ? 'Hide Map' : 'Show Map'}</button>
         </div>
         {session?.user && (
           <Button variant="primary" className={styles.createBtn} onClick={() => setShowCreateModal(true)}>
@@ -482,7 +488,7 @@ export default function BoardsPage() {
         </div>
       </div>
 
-      {(view === 'all' || view === 'map') && (
+      {(view === 'map' || view === 'list') && mapVisible && (
       <div className={styles.mapWrap}>
         {settingLocation && <div className={styles.mapOverlay}>Click anywhere on the map to set your home location</div>}
         <MapContainer center={mapCenter} zoom={12} className={styles.map} scrollWheelZoom={true}>
@@ -577,7 +583,7 @@ export default function BoardsPage() {
       </div>
       )}
 
-      {(view === 'all' || view === 'list') && (
+      {(view === 'list') && (
       <div className={styles.grid}>
         {loading ? (
           <Loading size="medium" message="Loading boards..." />
@@ -620,6 +626,43 @@ export default function BoardsPage() {
           ))
         )}
       </div>
+      )}
+
+      {calVisible && (
+        <div className={styles.calendarGrid}>
+          <div className={styles.calendarHeader}>
+            <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))} className={styles.calendarNavBtn}>←</button>
+            <h3>{currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h3>
+            <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))} className={styles.calendarNavBtn}>→</button>
+          </div>
+          <div className={styles.calendarGrid}>
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => <div key={d} className={styles.calendarDayHeader}>{d}</div>)}
+            {(() => {
+              const year = currentMonth.getFullYear()
+              const month = currentMonth.getMonth()
+              const firstDay = new Date(year, month, 1)
+              const lastDay = new Date(year, month + 1, 0)
+              const days: React.ReactNode[] = []
+              for (let i = 0; i < firstDay.getDay(); i++) days.push(<div key={`e-${i}`} className={styles.calendarEmpty} />)
+              for (let day = 1; day <= lastDay.getDate(); day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+                const dayBoards = boards.filter(b => b.createdAt?.startsWith(dateStr))
+                days.push(
+                  <div key={day} className={`${styles.calendarDay} ${dayBoards.length > 0 ? styles.hasEvents : ''}`}>
+                    <span className={styles.dayNumber}>{day}</span>
+                    {dayBoards.slice(0, 2).map(b => (
+                      <div key={b.id} className={styles.eventDot} style={{ background: '#8B6914' }} onClick={() => { setView('list'); setMapVisible(true) }}>
+                        {b.name.slice(0, 10)}
+                      </div>
+                    ))}
+                    {dayBoards.length > 2 && <div className={styles.moreEvents}>+{dayBoards.length - 2}</div>}
+                  </div>
+                )
+              }
+              return days
+            })()}
+          </div>
+        </div>
       )}
 
       {showCreateModal && (
