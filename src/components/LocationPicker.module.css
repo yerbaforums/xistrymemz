@@ -1,0 +1,236 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  padding: 4px;
+}
+
+.tab {
+  flex: 1;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: var(--text-primary);
+}
+
+.tabActive {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.panel {
+  min-height: 100px;
+}
+
+.hint {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  padding: 16px 0;
+  margin: 0;
+}
+
+/* Saved tab */
+.savedPanel {
+  padding: 4px 0;
+}
+
+.chipGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+  width: 100%;
+}
+
+.chip:hover {
+  border-color: var(--accent-primary);
+}
+
+.chipActive {
+  border-color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 5%, transparent);
+}
+
+.chipIcon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.chipName {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.chipLoc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-left: auto;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Map tab */
+.mapPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.detectBtn, .mapToggleBtn {
+  padding: 8px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+}
+
+.detectBtn:hover, .mapToggleBtn:hover {
+  border-color: var(--accent-primary);
+}
+
+.detectBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mapHint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.mapWrap {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  height: 200px;
+}
+
+.map {
+  height: 200px;
+  width: 100%;
+}
+
+.coords {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin: 0;
+  padding: 4px 0;
+}
+
+/* Custom tab */
+.customPanel {
+  padding: 4px 0;
+}
+
+.customRow {
+  display: flex;
+  gap: 8px;
+}
+
+.customInput {
+  flex: 1;
+  padding: 10px 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+}
+
+.customInput:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.geocodeBtn {
+  padding: 10px 16px;
+  background: var(--accent-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.geocodeBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Selected display */
+.selected {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  background: color-mix(in srgb, var(--accent-primary) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 20%, transparent);
+  border-radius: var(--radius-sm);
+  margin-top: 4px;
+}
+
+.selectedLabel {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.selectedText {
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.selectedCoords {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}

@@ -261,7 +261,7 @@ export default function TeachingPage() {
               <div className="form-group">
                 <label>URL Slug</label>
                 <input type="text" value={schoolForm.schoolSlug} onChange={e => setSchoolForm({...schoolForm, schoolSlug: e.target.value})} />
-                <small style={{color: 'var(--text-secondary)'}}>xistrymemz.com/school/{schoolForm.schoolSlug || 'your-slug'}</small>
+                <small style={{color: 'var(--text-secondary)'}}>xistrymemz.xyz/school/{schoolForm.schoolSlug || 'your-slug'}</small>
               </div>
               <div className={styles.formActions}>
                 <Button type="button" onClick={() => setShowSchoolForm(false)} variant="ghost">Cancel</Button>

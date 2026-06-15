@@ -6,12 +6,19 @@ import Modal from '@/components/ui/Modal'
 import ImageUploader from '@/components/ImageUploader'
 import HashtagInput from '@/components/HashtagInput'
 import EventFormFields, { getDefaultEventFormData } from '@/components/EventFormFields'
+import LocationPicker from '@/components/LocationPicker'
+import DonationAddressPicker from '@/components/DonationAddressPicker'
+import AssetPicker from '@/components/AssetPicker'
 import { useToast } from '@/context/ToastContext'
 import { CONTENT_TEMPLATES, CONTENT_TYPE_MAP } from '@/lib/content-templates'
 import { PRODUCT_CATEGORIES, PRODUCT_CONDITIONS, PRODUCT_TYPES } from '@/lib/product-categories'
 import { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS } from '@/types/service'
+import { PROJECT_CATEGORIES } from '@/lib/project-categories'
+import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import styles from './QuickCreateModal.module.css'
 import type { EventFormData } from '@/components/EventFormFields'
+import type { UserAsset } from '@/components/AssetPicker'
+import type { DonationAddr } from '@/types/product'
 
 interface QuickCreateContextType {
   open: (tab?: string) => void
@@ -693,14 +700,25 @@ function ServiceForm({ onDone }: { onDone: () => void }) {
 function ProjectForm({ onDone }: { onDone: () => void }) {
   const { success, error } = useToast()
   const router = useRouter()
+  const userDonationAddrs = useDonationAddresses()
+
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [status, setStatus] = useState('IDEA')
   const [category, setCategory] = useState('')
+  const [coverImage, setCoverImage] = useState<string[]>([])
+  const [lookingForCollaborators, setLookingForCollaborators] = useState(false)
+  const [needsVolunteers, setNeedsVolunteers] = useState(false)
+  const [volunteerRoles, setVolunteerRoles] = useState('')
+  const [volunteerDescription, setVolunteerDescription] = useState('')
+  const [goalAmount, setGoalAmount] = useState('')
+  const [acceptsDonations, setAcceptsDonations] = useState(false)
+  const [selectedDonationAddrs, setSelectedDonationAddrs] = useState<DonationAddr[]>([])
+  const [location, setLocation] = useState<{ text: string; latitude: number | null; longitude: number | null }>({ text: '', latitude: null, longitude: null })
   const [goals, setGoals] = useState('')
   const [mileposts, setMileposts] = useState('')
-  const [lookingForCollaborators, setLookingForCollaborators] = useState(false)
   const [hashtags, setHashtags] = useState<string[]>([])
+  const [linkedAsset, setLinkedAsset] = useState<UserAsset | null>(null)
   const [creating, setCreating] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -716,9 +734,21 @@ function ProjectForm({ onDone }: { onDone: () => void }) {
           description,
           status,
           category: category || undefined,
+          imageUrl: coverImage[0] || null,
+          lookingForCollaborators,
+          needsVolunteers,
+          volunteerRoles: volunteerRoles || null,
+          volunteerDescription: volunteerDescription || null,
+          goalAmount: goalAmount ? parseFloat(goalAmount) : null,
+          acceptsDonations,
+          donationAddress: selectedDonationAddrs[0]?.address || null,
+          donationCurrency: selectedDonationAddrs[0]?.currency || 'ETH',
+          donationAddresses: selectedDonationAddrs.length > 0 ? JSON.stringify(selectedDonationAddrs) : null,
+          location: location.text || undefined,
+          latitude: location.latitude ?? undefined,
+          longitude: location.longitude ?? undefined,
           goals,
           mileposts,
-          lookingForCollaborators,
           published: false,
           hashtags: hashtags.length > 0 ? hashtags : undefined,
         }),
@@ -754,33 +784,90 @@ function ProjectForm({ onDone }: { onDone: () => void }) {
           </select>
         </div>
         <div className={styles.formGroup}>
-          <label className={styles.label}>Looking for Collaborators</label>
-          <label className={styles.checkLabel}>
-            <input type="checkbox" checked={lookingForCollaborators} onChange={e => setLookingForCollaborators(e.target.checked)} />
-            Yes
-          </label>
+          <label className={styles.label}>Category</label>
+          <select value={category} onChange={e => setCategory(e.target.value)} className={styles.select}>
+            <option value="">Select...</option>
+            {PROJECT_CATEGORIES.map(c => (
+              <option key={c.value} value={c.value}>{c.icon} {c.label}</option>
+            ))}
+          </select>
         </div>
-      </div>
-      <div className={styles.formGroup}>
-        <label className={styles.label}>Category</label>
-        <input type="text" value={category} onChange={e => setCategory(e.target.value)} className={styles.input} placeholder="e.g. Technology, Community, Art..." />
       </div>
       <div className={styles.formGroup}>
         <label className={styles.label}>Description</label>
         <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="Describe your project..." />
       </div>
       <div className={styles.formGroup}>
-        <label className={styles.label}>Goals (one per line)</label>
-        <textarea value={goals} onChange={e => setGoals(e.target.value)} rows={3} className={styles.textarea} placeholder="What do you want to achieve?" />
+        <label className={styles.label}>Cover Image</label>
+        <ImageUploader images={coverImage} onChange={setCoverImage} maxImages={1} />
       </div>
-      <div className={styles.formGroup}>
-        <label className={styles.label}>Milestones (one per line)</label>
-        <textarea value={mileposts} onChange={e => setMileposts(e.target.value)} rows={3} className={styles.textarea} placeholder="Key milestones..." />
-      </div>
-      <div className={styles.formGroup}>
-        <label className={styles.label}>Hashtags</label>
-        <HashtagInput value={hashtags} onChange={setHashtags} placeholder="Add hashtags..." />
-      </div>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>🤝 Collaborate</summary>
+        <div className={styles.sectionContent}>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={lookingForCollaborators} onChange={e => setLookingForCollaborators(e.target.checked)} />
+            Looking for collaborators
+          </label>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={needsVolunteers} onChange={e => setNeedsVolunteers(e.target.checked)} />
+            Needs volunteers
+          </label>
+          {needsVolunteers && (
+            <div className={styles.nestedFields}>
+              <input type="text" value={volunteerRoles} onChange={e => setVolunteerRoles(e.target.value)} className={styles.input} placeholder="Volunteer roles (comma separated)" />
+              <textarea value={volunteerDescription} onChange={e => setVolunteerDescription(e.target.value)} rows={2} className={styles.textarea} placeholder="Describe what volunteers will do..." />
+            </div>
+          )}
+        </div>
+      </details>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>💰 Funding</summary>
+        <div className={styles.sectionContent}>
+          <input type="number" value={goalAmount} onChange={e => setGoalAmount(e.target.value)} className={styles.input} placeholder="Funding goal ($)" step="0.01" />
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={acceptsDonations} onChange={e => setAcceptsDonations(e.target.checked)} />
+            Accept crypto donations
+          </label>
+          {acceptsDonations && (
+            <DonationAddressPicker
+              savedAddresses={userDonationAddrs}
+              selectedAddresses={selectedDonationAddrs}
+              onAddressesChange={setSelectedDonationAddrs}
+            />
+          )}
+        </div>
+      </details>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>📍 Location</summary>
+        <div className={styles.sectionContent}>
+          <LocationPicker value={location} onChange={setLocation} />
+        </div>
+      </details>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>🎯 Goals & Milestones</summary>
+        <div className={styles.sectionContent}>
+          <textarea value={goals} onChange={e => setGoals(e.target.value)} rows={3} className={styles.textarea} placeholder="Goals (one per line)" />
+          <textarea value={mileposts} onChange={e => setMileposts(e.target.value)} rows={3} className={styles.textarea} placeholder="Milestones (one per line)" />
+        </div>
+      </details>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>🔗 Tags & Links</summary>
+        <div className={styles.sectionContent}>
+          <HashtagInput value={hashtags} onChange={setHashtags} placeholder="Add hashtags..." />
+          <AssetPicker
+            filterTypes={['SCHOOL', 'SHOP']}
+            selectedAsset={linkedAsset}
+            onSelect={setLinkedAsset}
+            label="Link to a school or shop"
+          />
+        </div>
+      </details>
+
       <div className={styles.formActions}>
         <button type="button" onClick={onDone} className="btn-ghost">Cancel</button>
         <button type="submit" disabled={creating || !title.trim()} className="btn-primary">

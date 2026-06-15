@@ -177,6 +177,40 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
   const [deletingProject, setDeletingProject] = useState(false)
   const [saveError, setSaveError] = useState('')
 
+  const [isFollowing, setIsFollowing] = useState(false)
+  const [followerCount, setFollowerCount] = useState(0)
+  const [loadingFollow, setLoadingFollow] = useState(false)
+
+  useEffect(() => {
+    if (!userId || !project?.id) return
+    fetch(`/api/projects/${project.id}/follow`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data) {
+          setIsFollowing(data.isFollowing)
+          setFollowerCount(data.count)
+        }
+      })
+      .catch(() => {})
+  }, [userId, project?.id])
+
+  const handleToggleFollow = async () => {
+    if (!userId) return
+    setLoadingFollow(true)
+    try {
+      if (isFollowing) {
+        await fetch(`/api/projects/${project.id}/follow`, { method: 'DELETE' })
+        setIsFollowing(false)
+        setFollowerCount(c => Math.max(0, c - 1))
+      } else {
+        await fetch(`/api/projects/${project.id}/follow`, { method: 'POST' })
+        setIsFollowing(true)
+        setFollowerCount(c => c + 1)
+      }
+    } catch {}
+    setLoadingFollow(false)
+  }
+
   const openEventModal = (event?: ProjectEvent) => {
     if (event) {
       setEditingEvent(event)
@@ -638,6 +672,21 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
                       {userId && !isOwner && (
                         <div className={styles.my12}>
                           <CollaborateButton entityType="PROJECT" entityId={project.id} label="🤝 Join as Collaborator" variant="secondary" />
+                        </div>
+                      )}
+                      {userId && (
+                        <div className={styles.followRow}>
+                          <button
+                            type="button"
+                            onClick={handleToggleFollow}
+                            disabled={loadingFollow}
+                            className={isFollowing ? styles.followBtnActive : styles.followBtn}
+                          >
+                            {isFollowing ? '🔔 Following' : '🔔 Follow'}
+                          </button>
+                          {followerCount > 0 && (
+                            <span className={styles.followerCount}>{followerCount} {followerCount === 1 ? 'follower' : 'followers'}</span>
+                          )}
                         </div>
                       )}
                       {userId && (

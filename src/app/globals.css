@@ -56,6 +56,7 @@ html {
   --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
   --sidebar-width: 240px;
+  --sidebar-collapsed-width: 64px;
   --header-height: 64px;
 
   --space-1: 4px;

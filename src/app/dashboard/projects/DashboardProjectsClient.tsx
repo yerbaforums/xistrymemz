@@ -8,6 +8,12 @@ import styles from './projects.module.css'
 
 import { EmptyState } from '@/components/EmptyState'
 import Button from '@/components/ui/Button'
+import {
+  PROJECT_CATEGORIES,
+  getCategoryColor,
+  getCategoryIcon,
+  getCategoryLabel,
+} from '@/lib/project-categories'
 
 interface ProjectData {
   id: string
@@ -41,33 +47,7 @@ const STATUS_CONFIG: Record<string, { icon: string; label: string; color: string
   ARCHIVED: { icon: '📦', label: 'Archived', color: '#6b7280' }
 }
 
-const CATEGORIES = [
-  'TECHNOLOGY', 'CREATIVE', 'EDUCATION', 'ENVIRONMENT', 'NATURE',
-  'GARDENING', 'COMMUNITY', 'SCIENCE', 'MUSIC', 'FOOD', 'TRAVEL',
-  'FASHION', 'PHOTOGRAPHY', 'WRITING', 'GAMING', 'PETS', 'DIY',
-  'HEALTH', 'SOCIAL', 'BUSINESS', 'SPORTS', 'ENTERTAINMENT', 'OTHER'
-]
-
-const CATEGORY_COLORS: Record<string, string> = {
-  TECHNOLOGY: '#00d9ff', CREATIVE: '#ff3366', EDUCATION: '#00ff88',
-  ENVIRONMENT: '#22c55e', NATURE: '#16a34a', GARDENING: '#65a30d',
-  COMMUNITY: '#f59e0b', SCIENCE: '#8b5cf6', MUSIC: '#ec4899',
-  FOOD: '#f97316', TRAVEL: '#14b8a6', FASHION: '#e879f9',
-  PHOTOGRAPHY: '#a855f7', WRITING: '#3b82f6', GAMING: '#7c3aed',
-  PETS: '#d97706', DIY: '#eab308', HEALTH: '#ef4444',
-  SOCIAL: '#f59e0b', BUSINESS: '#8b5cf6', SPORTS: '#f97316',
-  ENTERTAINMENT: '#ec4899', OTHER: '#888888'
-}
-
-const CATEGORY_ICONS: Record<string, string> = {
-  TECHNOLOGY: '💻', CREATIVE: '🎨', EDUCATION: '📚', ENVIRONMENT: '🌿',
-  NATURE: '🌲', GARDENING: '🌱', COMMUNITY: '🏘️', SCIENCE: '🔬',
-  MUSIC: '🎵', FOOD: '🍽️', TRAVEL: '✈️', FASHION: '👗',
-  PHOTOGRAPHY: '📷', WRITING: '✍️', GAMING: '🎮', PETS: '🐾',
-  DIY: '🛠️', HEALTH: '❤️',
-  SOCIAL: '🤝', BUSINESS: '💼', SPORTS: '⚽',
-  ENTERTAINMENT: '🎭', OTHER: '📌'
-}
+const CATEGORIES = PROJECT_CATEGORIES.map(c => c.value)
 
 type SortOption = 'custom' | 'newest' | 'oldest' | 'mostActive' | 'mostPopular'
 type ViewMode = 'grid' | 'list'
@@ -235,7 +215,7 @@ export default function DashboardProjectsClient({ initialProjects }: DashboardPr
           <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className={styles.filterSelect}>
             <option value="ALL">🌟 All Categories</option>
             {CATEGORIES.map(cat => (
-              <option key={cat} value={cat}>{CATEGORY_ICONS[cat] || '📌'} {cat.charAt(0) + cat.slice(1).toLowerCase()}</option>
+              <option key={cat} value={cat}>{getCategoryIcon(cat)} {getCategoryLabel(cat)}</option>
             ))}
           </select>
           <select value={sortBy} onChange={e => setSortBy(e.target.value as SortOption)} className={styles.filterSelect}>
@@ -299,7 +279,7 @@ export default function DashboardProjectsClient({ initialProjects }: DashboardPr
                     <span className={styles.statusBadge} style={{ backgroundColor: status.color + '20', color: status.color, borderColor: status.color + '40' }}>
                       {status.icon} {status.label}
                     </span>
-                    {plan.category && <span className={styles.categoryBadge} style={{ borderColor: (CATEGORY_COLORS[plan.category] || '#888') + '40', color: CATEGORY_COLORS[plan.category] || '#888', background: (CATEGORY_COLORS[plan.category] || '#888') + '20' }}>{CATEGORY_ICONS[plan.category] || '📌'} {plan.category.charAt(0) + plan.category.slice(1).toLowerCase()}</span>}
+                    {plan.category && <span className={styles.categoryBadge} style={{ borderColor: getCategoryColor(plan.category) + '40', color: getCategoryColor(plan.category), background: getCategoryColor(plan.category) + '20' }}>{getCategoryIcon(plan.category)} {getCategoryLabel(plan.category)}</span>}
                     {plan.needsVolunteers && <span className={styles.dashVolunteerBadge}>🤝</span>}
                     {plan.lookingForCollaborators && <span className={styles.dashCollabBadge}>👥</span>}
                   </div>

@@ -1,18 +1,4 @@
-.layout {
-  min-height: 100vh;
-  background: var(--bg-primary);
-  overflow-x: clip;
-}
-
-.container {
-  display: flex;
-  gap: 24px;
-  padding-left: 24px;
-  padding-right: 24px;
-}
-
 .main {
-  flex: 1;
   padding: 32px;
   max-width: 1200px;
   margin: 0 auto;
@@ -21,10 +7,6 @@
 }
 
 @media (max-width: 768px) {
-  .container {
-    flex-direction: column;
-  }
-
   .main {
     padding: 16px;
   }

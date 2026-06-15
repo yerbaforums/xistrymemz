@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 
 export async function GET() {
-  const baseUrl = 'https://xistrymemz.com'
+  const baseUrl = 'https://xistrymemz.xyz'
 
   const recentItems = await Promise.all([
     prisma.product.findMany({ take: 20, orderBy: { createdAt: 'desc' }, select: { id: true, title: true, description: true, createdAt: true, imageUrl: true, user: { select: { name: true } } } }),

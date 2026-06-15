@@ -25,6 +25,9 @@ export const projectSchema = z.object({
   donationCurrency: z.string().max(10).optional(),
   donationDescription: z.string().max(1000).optional().nullable(),
   donationAddresses: z.string().optional().nullable(),
+  phases: z.string().optional().nullable(),
+  postUpdate: z.string().optional().nullable(),
+  shareToFeed: z.boolean().optional(),
   hashtags: z.array(z.string()).optional()
 })
 

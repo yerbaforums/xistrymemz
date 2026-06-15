@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { fetchApi } from '@/lib/fetch-api'
+import { getEntityIcon } from '@/lib/entity-icons'
 import styles from './AssetPicker.module.css'
 
 export interface UserAsset {
@@ -13,20 +14,6 @@ export interface UserAsset {
   location: string | null
   latitude: number | null
   longitude: number | null
-}
-
-const ASSET_ICONS: Record<string, string> = {
-  PRODUCT: '🛒',
-  SERVICE: '🔧',
-  EVENT: '📅',
-  GROUP: '👥',
-  PLAN: '🚀',
-  REQUEST: '📝',
-  SCHOOL_CONTENT: '📚',
-  POST: '✏️',
-  SHOP: '🏪',
-  SCHOOL: '🏫',
-  USER: '👤',
 }
 
 interface AssetPickerProps {
@@ -98,7 +85,7 @@ export default function AssetPicker({ filterTypes, selectedAsset, onSelect, labe
 
       {selectedAsset && (
         <div className={styles.selectedAsset}>
-          <span>{ASSET_ICONS[selectedAsset.type] || '📌'}</span>
+          <span>{getEntityIcon(selectedAsset.type)}</span>
           <span className={styles.selectedAssetTitle}>{selectedAsset.title}</span>
           <span className={styles.selectedAssetType}>{selectedAsset.type}</span>
           <button type="button" className={styles.clearAsset} onClick={() => { onSelect(null); setShowPicker(false) }}>✕</button>
@@ -117,7 +104,7 @@ export default function AssetPicker({ filterTypes, selectedAsset, onSelect, labe
             Object.entries(groupedAssets).map(([type, items]) => (
               <div key={type} className={styles.assetGroup}>
                 <div className={styles.assetGroupTitle}>
-                  {ASSET_ICONS[type] || '📌'} {typeLabel(type)} ({items.length})
+                  {getEntityIcon(type)} {typeLabel(type)} ({items.length})
                 </div>
                 <div className={styles.assetGrid}>
                   {items.map(asset => {
@@ -134,7 +121,7 @@ export default function AssetPicker({ filterTypes, selectedAsset, onSelect, labe
                             <Image src={asset.image} alt={asset.title} width={48} height={48} style={{ objectFit: 'cover' }} />
                           </div>
                         ) : (
-                          <div className={styles.assetCardIcon}>{ASSET_ICONS[asset.type] || '📌'}</div>
+                          <div className={styles.assetCardIcon}>{getEntityIcon(asset.type)}</div>
                         )}
                         <div className={styles.assetCardInfo}>
                           <span className={styles.assetCardTitle}>{asset.title}</span>

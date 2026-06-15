@@ -30,29 +30,40 @@ export async function GET(request: Request) {
 
 export const POST = withValidation(projectSchema, async (data, req, session) => {
   try {
-    const { title, description, imageUrl, status, published, goals, mileposts, lookingForCollaborators, acceptsDonations, donationAddress, donationCurrency, donationDescription, donationAddresses, hashtags } = data
+    const {
+      title, description, imageUrl, status, published,
+      goals, mileposts, category,
+      location, latitude, longitude,
+      lookingForCollaborators, needsVolunteers, volunteerRoles, volunteerDescription,
+      goalAmount, acceptsDonations, donationAddress, donationCurrency, donationDescription, donationAddresses,
+      images, videoUrl, hashtags,
+    } = data
 
     const project = await createProject({
       title,
       description,
       imageUrl,
+      images: images || null,
+      videoUrl: videoUrl || null,
       status,
       published,
+      category: category || null,
       goals,
       mileposts,
+      location: location || null,
+      latitude: latitude ?? null,
+      longitude: longitude ?? null,
+      lookingForCollaborators: lookingForCollaborators ?? false,
+      needsVolunteers: needsVolunteers ?? false,
+      volunteerRoles: volunteerRoles || null,
+      volunteerDescription: volunteerDescription || null,
+      goalAmount: goalAmount ?? null,
+      acceptsDonations: acceptsDonations ?? false,
+      donationAddress: donationAddress || null,
+      donationCurrency: donationCurrency || 'ETH',
+      donationDescription: donationDescription || null,
+      donationAddresses: donationAddresses || null,
       userId: session.user.id,
-    })
-
-    await prisma.project.update({
-      where: { id: project.id },
-      data: {
-        lookingForCollaborators: lookingForCollaborators ?? false,
-        acceptsDonations: acceptsDonations ?? false,
-        donationAddress: donationAddress || null,
-        donationCurrency: donationCurrency || 'ETH',
-        donationDescription: donationDescription || null,
-        donationAddresses: donationAddresses || null,
-      },
     })
 
     if (Array.isArray(hashtags) && hashtags.length > 0) {

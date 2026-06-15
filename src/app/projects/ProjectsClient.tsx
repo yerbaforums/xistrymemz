@@ -10,6 +10,12 @@ import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
 import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
 import EntityMarker from '@/components/EntityMarker'
+import {
+  PROJECT_CATEGORIES,
+  getCategoryColor,
+  getCategoryIcon,
+  getCategoryLabel,
+} from '@/lib/project-categories'
 
 
 interface ProjectEvent {
@@ -78,33 +84,7 @@ const STATUS_ICONS: Record<string, string> = {
   ARCHIVED: '📦'
 }
 
-const CATEGORIES = [
-  'TECHNOLOGY', 'CREATIVE', 'EDUCATION', 'ENVIRONMENT', 'NATURE',
-  'GARDENING', 'COMMUNITY', 'SCIENCE', 'MUSIC', 'FOOD', 'TRAVEL',
-  'FASHION', 'PHOTOGRAPHY', 'WRITING', 'GAMING', 'PETS', 'DIY',
-  'HEALTH', 'SOCIAL', 'BUSINESS', 'SPORTS', 'ENTERTAINMENT', 'OTHER'
-]
-
-const CATEGORY_COLORS: Record<string, string> = {
-  TECHNOLOGY: '#00d9ff', CREATIVE: '#ff3366', EDUCATION: '#00ff88',
-  ENVIRONMENT: '#22c55e', NATURE: '#16a34a', GARDENING: '#65a30d',
-  COMMUNITY: '#f59e0b', SCIENCE: '#8b5cf6', MUSIC: '#ec4899',
-  FOOD: '#f97316', TRAVEL: '#14b8a6', FASHION: '#e879f9',
-  PHOTOGRAPHY: '#a855f7', WRITING: '#3b82f6', GAMING: '#7c3aed',
-  PETS: '#d97706', DIY: '#eab308', HEALTH: '#ef4444',
-  SOCIAL: '#f59e0b', BUSINESS: '#8b5cf6', SPORTS: '#f97316',
-  ENTERTAINMENT: '#ec4899', OTHER: '#888888'
-}
-
-const CATEGORY_ICONS: Record<string, string> = {
-  TECHNOLOGY: '💻', CREATIVE: '🎨', EDUCATION: '📚', ENVIRONMENT: '🌿',
-  NATURE: '🌲', GARDENING: '🌱', COMMUNITY: '🏘️', SCIENCE: '🔬',
-  MUSIC: '🎵', FOOD: '🍽️', TRAVEL: '✈️', FASHION: '👗',
-  PHOTOGRAPHY: '📷', WRITING: '✍️', GAMING: '🎮', PETS: '🐾',
-  DIY: '🛠️', HEALTH: '❤️',
-  SOCIAL: '🤝', BUSINESS: '💼', SPORTS: '⚽',
-  ENTERTAINMENT: '🎭', OTHER: '📌'
-}
+const CATEGORIES = PROJECT_CATEGORIES.map(c => c.value)
 
 type SortOption = 'newest' | 'oldest' | 'mostActive' | 'mostPopular'
 type ViewMode = 'grid' | 'map'
@@ -307,7 +287,7 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
         <select className={styles.filterSelect} value={category} onChange={e => setCategory(e.target.value)}>
           <option value="ALL">🌟 All Categories</option>
           {CATEGORIES.map(cat => (
-            <option key={cat} value={cat}>{CATEGORY_ICONS[cat] || '📌'} {cat.charAt(0) + cat.slice(1).toLowerCase()}</option>
+            <option key={cat} value={cat}>{getCategoryIcon(cat)} {getCategoryLabel(cat)}</option>
           ))}
         </select>
       </div>
@@ -528,8 +508,8 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
               {filteredProjects.map((project, index) => {
                 const next = nextEvent(project.events)
                 const goalsList = parseGoalsList(project.goals)
-                const catColor = CATEGORY_COLORS[project.category || 'OTHER'] || '#888'
-                const catIcon = CATEGORY_ICONS[project.category || 'OTHER'] || '📌'
+                const catColor = getCategoryColor(project.category || 'OTHER')
+                const catIcon = getCategoryIcon(project.category || 'OTHER')
                 const distance = getProjectDistance(project)
 
                 return (

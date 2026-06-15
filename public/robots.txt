@@ -6,4 +6,4 @@ Disallow: /admin/
 Disallow: /auth/
 Disallow: /_next/
 
-Sitemap: https://xistrymemz.com/sitemap.xml
+Sitemap: https://xistrymemz.xyz/sitemap.xml

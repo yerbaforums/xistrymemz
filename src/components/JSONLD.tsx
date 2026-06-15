@@ -14,11 +14,11 @@ export function WebSiteLD() {
         '@context': 'https://schema.org',
         '@type': 'WebSite',
         name: 'XistrYmemZ',
-        url: 'https://xistrymemz.com',
+        url: 'https://xistrymemz.xyz',
         description: 'The cooperative platform for building, sharing, and growing together.',
         potentialAction: {
           '@type': 'SearchAction',
-          target: { '@type': 'EntryPoint', urlTemplate: 'https://xistrymemz.com/search?q={search_term_string}' },
+          target: { '@type': 'EntryPoint', urlTemplate: 'https://xistrymemz.xyz/search?q={search_term_string}' },
           'query-input': 'required name=search_term_string',
         },
       }}
@@ -33,8 +33,8 @@ export function OrganizationLD() {
         '@context': 'https://schema.org',
         '@type': 'Organization',
         name: 'XistrYmemZ',
-        url: 'https://xistrymemz.com',
-        logo: 'https://xistrymemz.com/logo.png',
+        url: 'https://xistrymemz.xyz',
+        logo: 'https://xistrymemz.xyz/logo.png',
         sameAs: [
           'https://github.com/yerbaforums/xistrymemz',
         ],

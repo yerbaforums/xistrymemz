@@ -485,7 +485,7 @@ export default function DashboardServices() {
               <div className="form-group">
                 <label>Shop URL Slug</label>
                 <input type="text" value={shopForm.shopSlug} onChange={e => setShopForm({...shopForm, shopSlug: e.target.value})} placeholder="my-shop" />
-                <small style={{color: 'var(--text-secondary)'}}>xistrymemz.com/shop/{shopForm.shopSlug || 'your-slug'}</small>
+                <small style={{color: 'var(--text-secondary)'}}>xistrymemz.xyz/shop/{shopForm.shopSlug || 'your-slug'}</small>
               </div>
               <div className="form-group">
                 <label>Contact Email</label>

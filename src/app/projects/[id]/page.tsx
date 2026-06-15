@@ -2,10 +2,28 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
+import type { Metadata } from 'next'
 import ProjectDetailClient from './ProjectDetailClient'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
 export const dynamic = 'force-dynamic'
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params
+  const project = await prisma.project.findUnique({
+    where: { id },
+    select: { title: true, description: true, imageUrl: true },
+  })
+  if (!project) return {}
+  const title = `${project.title} — Projects — XistrYmemZ`
+  const description = project.description?.slice(0, 160) || 'A cooperative project on XistrYmemZ'
+  return {
+    title,
+    description,
+    openGraph: { title, description, images: project.imageUrl ? [project.imageUrl] : [] },
+    twitter: { card: 'summary_large_image', title, description },
+  }
+}
 
 export default async function ProjectDetailPage({ 
   params 

@@ -66,10 +66,27 @@ export async function createProject(data: {
   title: string
   description?: string | null
   imageUrl?: string | null
+  images?: string | null
+  videoUrl?: string | null
   status?: string | null
   published?: boolean | null
+  category?: string | null
   goals?: string | null
   mileposts?: string | null
+  location?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  lookingForCollaborators?: boolean | null
+  needsVolunteers?: boolean | null
+  volunteerRoles?: string | null
+  volunteerDescription?: string | null
+  goalAmount?: number | null
+  acceptsDonations?: boolean | null
+  donationAddress?: string | null
+  donationCurrency?: string | null
+  donationDescription?: string | null
+  donationAddresses?: string | null
+  phases?: string | null
   userId: string
 }) {
   return prisma.project.create({
@@ -77,9 +94,25 @@ export async function createProject(data: {
       title: data.title,
       description: data.description || null,
       imageUrl: data.imageUrl || null,
+      images: data.images || null,
+      videoUrl: data.videoUrl || null,
+      category: data.category || null,
       goals: data.goals || null,
       mileposts: data.mileposts || null,
       milepostStatus: '[]',
+      location: data.location || null,
+      latitude: data.latitude ?? null,
+      longitude: data.longitude ?? null,
+      lookingForCollaborators: data.lookingForCollaborators ?? false,
+      needsVolunteers: data.needsVolunteers ?? false,
+      volunteerRoles: data.volunteerRoles || null,
+      volunteerDescription: data.volunteerDescription || null,
+      goalAmount: data.goalAmount ?? null,
+      acceptsDonations: data.acceptsDonations ?? false,
+      donationAddress: data.donationAddress || null,
+      donationCurrency: data.donationCurrency || 'ETH',
+      donationDescription: data.donationDescription || null,
+      donationAddresses: data.donationAddresses || null,
       userId: data.userId,
       status: data.status || 'ACTIVE',
       published: data.published ?? true,
@@ -93,6 +126,34 @@ export async function updateProject(id: string, data: Record<string, unknown>) {
 
 export async function deleteProject(id: string) {
   return prisma.project.delete({ where: { id } })
+}
+
+export async function followProject(projectId: string, userId: string) {
+  return prisma.projectJoiner.upsert({
+    where: { projectId_userId: { projectId, userId } },
+    update: { role: 'FOLLOWER' },
+    create: { projectId, userId, role: 'FOLLOWER' },
+  })
+}
+
+export async function unfollowProject(projectId: string, userId: string) {
+  return prisma.projectJoiner.deleteMany({
+    where: { projectId, userId, role: 'FOLLOWER' },
+  })
+}
+
+export async function isFollowing(projectId: string, userId: string): Promise<boolean> {
+  const entry = await prisma.projectJoiner.findUnique({
+    where: { projectId_userId: { projectId, userId } },
+    select: { id: true },
+  })
+  return !!entry
+}
+
+export async function getFollowerCount(projectId: string): Promise<number> {
+  return prisma.projectJoiner.count({
+    where: { projectId, role: 'FOLLOWER' },
+  })
 }
 
 export async function createGettingStartedProject(userId: string) {

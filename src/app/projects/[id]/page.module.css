@@ -883,3 +883,47 @@
 .historyReason { font-size: 0.85rem; color: var(--text-secondary); margin: 0.25rem 0 0; }
 .historyRollbackBtn { margin-top: 0.5rem; font-size: 0.8rem; }
 .confirmText { margin-bottom: 1rem; color: var(--text-secondary); }
+
+/* Follow button */
+.followRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.followBtn, .followBtnActive {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.followBtn:hover {
+  border-color: var(--accent-primary);
+}
+
+.followBtnActive {
+  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.followBtn:disabled, .followBtnActive:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.followerCount {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}

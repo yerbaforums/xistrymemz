@@ -80,9 +80,9 @@ export default function MobileNav({ open, onClose, isAdmin, isAuthenticated, ses
         </form>
       </div>
 
+      {/* Browse section — all users */}
       <div className={styles.mobileSection}>
-        <div className={styles.mobileSectionTitle}>Explore</div>
-        <Link href="/" className={styles.mobileLink} onClick={onClose}><span aria-hidden="true">🏠</span> Home</Link>
+        <div className={styles.mobileSectionTitle}>Browse</div>
         {NAV.explore.map(item => (
           <Link key={item.href} href={item.href} className={styles.mobileLink} onClick={onClose}>
             <span aria-hidden="true">{item.icon}</span> {item.label}
@@ -93,30 +93,85 @@ export default function MobileNav({ open, onClose, isAdmin, isAuthenticated, ses
             <span aria-hidden="true">{item.icon}</span> {item.label}
           </Link>
         ))}
+        {!isAuthenticated && (
+          <>
+            <Link href="/about" className={styles.mobileLink} onClick={onClose}>
+              <span aria-hidden="true">📄</span> About
+            </Link>
+            <Link href="/help" className={styles.mobileLink} onClick={onClose}>
+              <span aria-hidden="true">❓</span> Help
+            </Link>
+          </>
+        )}
       </div>
 
+      {/* Studio section — auth only */}
+      {isAuthenticated ? (
         <div className={styles.mobileSection}>
-          <div className={styles.mobileSectionTitle}>Language</div>
-          <div className={styles.mobileLangRow}>
-            {LOCALES.map(l => (
-              <Link
-                key={l.code}
-                href={l.code === 'en' ? '/' : `/${l.code}`}
-                className={`${styles.mobileLangLink} ${l.code === currentLocale ? styles.mobileLangActive : ''}`}
-                onClick={onClose}
-              >
-                {l.label}
-              </Link>
-            ))}
-          </div>
-          <button
-            className={styles.mobileLangRequest}
-            onClick={() => { onClose(); setLangReqOpen(true) }}
-          >
-            🌐 Request Language
+          <div className={styles.mobileSectionTitle}>Studio</div>
+          <button onClick={() => { onClose(); quickCreate.open() }} className={styles.mobileLink} style={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10, background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', cursor: 'pointer', fontSize: '0.9rem', padding: '10px 14px', borderRadius: 'var(--radius-md)', fontWeight: 600 }}>
+            ✨ Quick Create
           </button>
+          {NAV.dashboard.filter(item => !('walletRequired' in item) || !item.walletRequired || settings.enableWallet).map(item => (
+            <Link key={item.href} href={item.href} className={styles.mobileLink} onClick={onClose}>
+              <span aria-hidden="true">{item.icon}</span> {item.label}
+              {item.label === 'Messages' && messagesUnread && messagesUnread > 0 && (
+                <span style={{ marginLeft: 8, background: 'var(--accent-primary)', color: 'var(--bg-primary)', fontSize: '0.65rem', padding: '1px 6px', borderRadius: 10, fontWeight: 600 }}>
+                  {messagesUnread > 99 ? '99+' : messagesUnread}
+                </span>
+              )}
+            </Link>
+          ))}
+          <Link href={session?.user ? getUserProfileUrl({ id: session.user.id, username: session.user?.username }) : '/auth/login'} className={styles.mobileLink} onClick={onClose}>
+            <span aria-hidden="true">👤</span> Profile
+          </Link>
+          <Link href="/profile/settings" className={styles.mobileLink} onClick={onClose}>
+            <span aria-hidden="true">⚙️</span> Settings
+          </Link>
+          <Link href="/onboarding" className={styles.mobileLink} onClick={onClose}>🚀 Getting Started</Link>
+          {/* Switch to Browse */}
+          <Link href="/" className={styles.mobileLink} onClick={onClose}>
+            <span aria-hidden="true">🌐</span> Browse
+          </Link>
         </div>
+      ) : null}
 
+      {/* Admin section */}
+      {isAdmin && (
+        <div className={styles.mobileSection}>
+          <div className={`${styles.mobileSectionTitle} ${styles.adminSection}`}>Admin</div>
+          {NAV.admin.map(item => (
+            <Link key={item.href} href={item.href} className={`${styles.mobileLink} ${styles.adminLink}`} onClick={onClose}>
+              {item.icon} {item.label}
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {/* Language */}
+      <div className={styles.mobileSection}>
+        <div className={styles.mobileSectionTitle}>Language</div>
+        <div className={styles.mobileLangRow}>
+          {LOCALES.map(l => (
+            <Link
+              key={l.code}
+              href={l.code === 'en' ? '/' : `/${l.code}`}
+              className={`${styles.mobileLangLink} ${l.code === currentLocale ? styles.mobileLangActive : ''}`}
+              onClick={onClose}
+            >
+              {l.label}
+            </Link>
+          ))}
+        </div>
+        <button
+          className={styles.mobileLangRequest}
+          onClick={() => { onClose(); setLangReqOpen(true) }}
+        >
+          🌐 Request Language
+        </button>
+      </div>
+
+      {/* Theme */}
       <div className={styles.mobileSection}>
         <div className={styles.mobileSectionTitle}>Theme</div>
         <div className={styles.mobileThemeRow}>
@@ -137,49 +192,13 @@ export default function MobileNav({ open, onClose, isAdmin, isAuthenticated, ses
         </div>
       </div>
 
+      {/* Auth footer */}
       {isAuthenticated ? (
-        <>
-          <div className={styles.mobileSection}>
-            <div className={styles.mobileSectionTitle}>Dashboard</div>
-            <button onClick={() => { onClose(); quickCreate.open() }} className={styles.mobileLink} style={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10, background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', cursor: 'pointer', fontSize: '0.9rem', padding: '10px 14px', borderRadius: 'var(--radius-md)', fontWeight: 600 }}>
-              ✨ Quick Create
-            </button>
-            {NAV.dashboard.filter(item => !('walletRequired' in item) || !item.walletRequired || settings.enableWallet).map(item => (
-              <Link key={item.href} href={item.href} className={styles.mobileLink} onClick={onClose}>
-                <span aria-hidden="true">{item.icon}</span> {item.label}
-                {item.label === 'Messages' && messagesUnread && messagesUnread > 0 && (
-                  <span style={{ marginLeft: 8, background: 'var(--accent-primary)', color: 'var(--bg-primary)', fontSize: '0.65rem', padding: '1px 6px', borderRadius: 10, fontWeight: 600 }}>
-                    {messagesUnread > 99 ? '99+' : messagesUnread}
-                  </span>
-                )}
-              </Link>
-            ))}
-            <Link href={session?.user ? getUserProfileUrl({ id: session.user.id, username: session.user?.username }) : '/auth/login'} className={styles.mobileLink} onClick={onClose}>
-              <span aria-hidden="true">👤</span> Profile
-            </Link>
-            <Link href="/profile/settings" className={styles.mobileLink} onClick={onClose}>
-              <span aria-hidden="true">⚙️</span> Settings
-            </Link>
-            <Link href="/onboarding" className={styles.mobileLink} onClick={onClose}>🚀 Getting Started</Link>
-          </div>
-
-          {isAdmin && (
-            <div className={styles.mobileSection}>
-              <div className={`${styles.mobileSectionTitle} ${styles.adminSection}`}>Admin</div>
-              {NAV.admin.map(item => (
-                <Link key={item.href} href={item.href} className={`${styles.mobileLink} ${styles.adminLink}`} onClick={onClose}>
-                  {item.icon} {item.label}
-                </Link>
-              ))}
-            </div>
-          )}
-
-          <div className={styles.mobileSection}>
-            <button className={styles.mobileSignOut} onClick={() => { onClose(); signOut() }}>
-              Sign Out
-            </button>
-          </div>
-        </>
+        <div className={styles.mobileSection}>
+          <button className={styles.mobileSignOut} onClick={() => { onClose(); signOut() }}>
+            Sign Out
+          </button>
+        </div>
       ) : (
         <div className={styles.mobileSection}>
           <div className={styles.mobileAuthButtons}>

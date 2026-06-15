@@ -143,7 +143,7 @@ export default function ShopDashboard() {
             <div className="form-group">
               <label>Shop URL Slug</label>
               <input type="text" value={form.shopSlug} onChange={e => setForm({...form, shopSlug: e.target.value})} placeholder="my-shop" />
-              <small style={{color: 'var(--text-secondary)'}}>xistrymemz.com/shop/{form.shopSlug || 'your-slug'}</small>
+              <small style={{color: 'var(--text-secondary)'}}>xistrymemz.xyz/shop/{form.shopSlug || 'your-slug'}</small>
             </div>
             <div className="form-group">
               <label>Contact Email</label>
