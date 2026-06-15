@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { getUserProfileUrl } from '@/lib/utils'
 import LinkedEntityDetail from '@/components/LinkedEntityDetail'
 import LinkPreview from '@/components/LinkPreview'
-import ShareBar from '@/components/ShareBar'
+import EntityActions from '@/components/EntityActions'
 import { useToast } from '@/context/ToastContext'
 import styles from './BoardPinCard.module.css'
 
@@ -158,78 +158,9 @@ function ImageCarousel({ images }: { images: string[] }) {
 const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, boardSlug, onDelete, onFlyTo, onView, onEdit }: BoardPinCardProps) {
   const { success: toastSuccess } = useToast()
   const [minimized, setMinimized] = useState(false)
-  const [likes, setLikes] = useState(pin.likeCount || 0)
-  const [liked, setLiked] = useState(false)
-  const [liking, setLiking] = useState(false)
-  const [showCommentForm, setShowCommentForm] = useState(false)
-  const [commentText, setCommentText] = useState('')
-  const [commentList, setCommentList] = useState<{ id: string; content: string; user: { name: string | null; image: string | null } }[]>([])
-  const [commentCount, setCommentCount] = useState(pin.commentCount || 0)
-  const [commentsLoading, setCommentsLoading] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
   const parsedImages = pin.images ? JSON.parse(pin.images) as string[] : []
   const expirationText = timeUntilExpires(pin.expiresAt)
   const canDelete = isOwner || isBoardOwner
-
-  useEffect(() => {
-    const controller = new AbortController()
-    fetch(`/api/boards/${boardSlug}/pins/${pin.id}/like`, { signal: controller.signal })
-      .then(r => r.json())
-      .then(data => {
-        setLiked(data.liked)
-        setLikes(data.count)
-      })
-      .catch(() => {})
-    return () => controller.abort()
-  }, [boardSlug, pin.id])
-
-  const handleLike = async () => {
-    if (liking) return
-    setLiking(true)
-    try {
-      const res = await fetch(`/api/boards/${boardSlug}/pins/${pin.id}/like`, { method: 'POST' })
-      const data = await res.json()
-      setLiked(data.liked)
-      setLikes(data.count)
-    } catch {}
-    setLiking(false)
-  }
-
-  const handleComment = async () => {
-    if (!commentText.trim() || submitting) return
-    setSubmitting(true)
-    try {
-      const res = await fetch(`/api/boards/${boardSlug}/pins/${pin.id}/comments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: commentText.trim() }),
-      })
-      if (res.ok) {
-        const commentRes = await res.json()
-        const newComment = commentRes?.data || commentRes
-        setCommentList(prev => [newComment, ...prev])
-        setCommentCount(c => c + 1)
-        setCommentText('')
-      }
-    } catch {}
-    setSubmitting(false)
-  }
-
-  const loadComments = async () => {
-    if (commentsLoading || commentList.length > 0) return
-    setCommentsLoading(true)
-    try {
-      const res = await fetch(`/api/boards/${boardSlug}/pins/${pin.id}/comments`)
-      const data = await res.json()
-      setCommentList(data?.data?.comments || data?.comments || [])
-    } catch {}
-    setCommentsLoading(false)
-  }
-
-  const toggleComments = () => {
-    if (!showCommentForm && commentList.length === 0) loadComments()
-    setShowCommentForm(!showCommentForm)
-  }
 
   const isEventPin = pin.entityType === 'EVENT' && pin.entityId
   const [eventJoiners, setEventJoiners] = useState(0)
@@ -348,42 +279,17 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
         </div>
       </div>
 
-      <div className={styles.socialActions}>
-        <button className={`${styles.socialBtn} ${liked ? styles.socialBtnActive : ''}`} onClick={handleLike} disabled={liking} aria-label="Like">
-          {liked ? '❤️' : '🤍'} <span>{likes}</span>
-        </button>
-        <button className={styles.socialBtn} onClick={toggleComments} aria-label="Comment">
-          💬 <span>{commentCount}</span>
-        </button>
-        <ShareBar
-          url={typeof window !== 'undefined' ? `${window.location.origin}/boards/${boardSlug}?pin=${pin.id}` : ''}
-          title={pin.title || ''}
-          description={pin.content || undefined}
-          entityType={['PRODUCT','EVENT','SERVICE','PROJECT','GROUP','REQUEST','SHOP'].includes(pin.entityType || '') ? (pin.entityType as any) : 'POST'}
-        />
-      </div>
-
-      {showCommentForm && (
-        <div className={styles.commentSection}>
-          <div className={styles.commentForm}>
-            <input type="text" value={commentText} onChange={e => setCommentText(e.target.value)} placeholder="Write a comment..." className={styles.commentInput}
-              onKeyDown={e => { if (e.key === 'Enter' && commentText.trim() && !submitting) handleComment() }} />
-            <button className={styles.commentBtn} disabled={!commentText.trim() || submitting} onClick={handleComment}>
-              {submitting ? '...' : 'Post'}
-            </button>
-          </div>
-          {commentsLoading && <div className={styles.commentsLoading}>Loading comments...</div>}
-          {!commentsLoading && commentList.length > 0 && (
-            <div className={styles.commentsList}>
-              {commentList.map(c => (
-                <div key={c.id} className={styles.commentItem}>
-                  <span className={styles.commentAuthor}>{c.user.name || 'User'}:</span> {c.content}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+      <EntityActions
+        entityType="POST"
+        entityId={pin.id}
+        title={pin.title || 'Pin'}
+        authorId={pin.userId}
+        description={pin.content || undefined}
+        image={parsedImages[0] || undefined}
+        initialLikes={pin.likeCount || 0}
+        replyCount={pin.commentCount || 0}
+        variant="compact"
+      />
     </div>
   )
 })

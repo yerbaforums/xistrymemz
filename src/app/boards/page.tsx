@@ -440,29 +440,27 @@ export default function BoardsPage() {
             type="text"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search boards by name, city, or description..."
+            placeholder="Search boards..."
             className={styles.searchInput}
+            style={{ padding: '6px 10px', fontSize: '0.85rem', flex: 1, minWidth: 0 }}
           />
-          <Button type="submit" variant="primary" className={styles.searchBtn}>Search</Button>
+          <button type="submit" className={styles.myBtn} style={{ padding: '6px 12px', fontSize: '0.8rem' }}>Search</button>
           {searchQuery && (
-            <Button type="button" variant="ghost" className={styles.clearBtn} onClick={() => { setSearchQuery(''); fetchBoards() }}>
-              Clear
-            </Button>
+            <button type="button" className={styles.myBtn} style={{ padding: '6px 8px', fontSize: '0.8rem' }} onClick={() => { setSearchQuery(''); fetchBoards() }}>✕</button>
           )}
-        </form>
-        <div className={styles.searchControls}>
-          <button className={`${styles.myBtn} ${myBoards ? styles.myBtnActive : ''}`} onClick={() => { setMyBoards(!myBoards); fetchBoards(undefined, undefined) }}>
-            {myBoards ? '📌 All Boards' : '📌 My Boards'}
+          <button className={`${styles.myBtn} ${myBoards ? styles.myBtnActive : ''}`} style={{ padding: '6px 12px', fontSize: '0.8rem' }} onClick={() => { setMyBoards(!myBoards); fetchBoards(undefined, undefined) }}>
+            {myBoards ? '📌 Mine' : '📌 All'}
           </button>
           <select
             value={sortBy}
             onChange={e => setSortBy(e.target.value as 'recent' | 'alpha')}
             className={styles.sortSelect}
+            style={{ padding: '6px 8px', fontSize: '0.8rem', width: 'auto' }}
           >
-            <option value="recent">Most Recent</option>
-            <option value="alpha">Alphabetical A-Z</option>
+            <option value="recent">Newest</option>
+            <option value="alpha">A-Z</option>
           </select>
-        </div>
+        </form>
       </div>
 
       {mapVisible && (
@@ -560,6 +558,43 @@ export default function BoardsPage() {
       </div>
       )}
 
+      {calVisible && (
+        <div className={styles.calendarGrid}>
+          <div className={styles.calendarHeader}>
+            <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))} className={styles.calendarNavBtn}>←</button>
+            <h3>{currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h3>
+            <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))} className={styles.calendarNavBtn}>→</button>
+          </div>
+          <div className={styles.calendarGrid}>
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => <div key={d} className={styles.calendarDayHeader}>{d}</div>)}
+            {(() => {
+              const year = currentMonth.getFullYear()
+              const month = currentMonth.getMonth()
+              const firstDay = new Date(year, month, 1)
+              const lastDay = new Date(year, month + 1, 0)
+              const days: React.ReactNode[] = []
+              for (let i = 0; i < firstDay.getDay(); i++) days.push(<div key={`e-${i}`} className={styles.calendarEmpty} />)
+              for (let day = 1; day <= lastDay.getDate(); day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+                const dayBoards = boards.filter(b => b.createdAt?.startsWith(dateStr))
+                days.push(
+                  <div key={day} className={`${styles.calendarDay} ${dayBoards.length > 0 ? styles.hasEvents : ''}`}>
+                    <span className={styles.dayNumber}>{day}</span>
+                    {dayBoards.slice(0, 2).map(b => (
+                      <div key={b.id} className={styles.eventDot} style={{ background: '#8B6914' }} onClick={() => setMapVisible(true)}>
+                        {b.name.slice(0, 10)}
+                      </div>
+                    ))}
+                    {dayBoards.length > 2 && <div className={styles.moreEvents}>+{dayBoards.length - 2}</div>}
+                  </div>
+                )
+              }
+              return days
+            })()}
+          </div>
+        </div>
+      )}
+
       <div className={styles.grid}>
         {loading ? (
           <Loading size="medium" message="Loading boards..." />
@@ -602,43 +637,6 @@ export default function BoardsPage() {
           ))
         )}
       </div>
-
-      {calVisible && (
-        <div className={styles.calendarGrid}>
-          <div className={styles.calendarHeader}>
-            <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))} className={styles.calendarNavBtn}>←</button>
-            <h3>{currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h3>
-            <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))} className={styles.calendarNavBtn}>→</button>
-          </div>
-          <div className={styles.calendarGrid}>
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => <div key={d} className={styles.calendarDayHeader}>{d}</div>)}
-            {(() => {
-              const year = currentMonth.getFullYear()
-              const month = currentMonth.getMonth()
-              const firstDay = new Date(year, month, 1)
-              const lastDay = new Date(year, month + 1, 0)
-              const days: React.ReactNode[] = []
-              for (let i = 0; i < firstDay.getDay(); i++) days.push(<div key={`e-${i}`} className={styles.calendarEmpty} />)
-              for (let day = 1; day <= lastDay.getDate(); day++) {
-                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-                const dayBoards = boards.filter(b => b.createdAt?.startsWith(dateStr))
-                days.push(
-                  <div key={day} className={`${styles.calendarDay} ${dayBoards.length > 0 ? styles.hasEvents : ''}`}>
-                    <span className={styles.dayNumber}>{day}</span>
-                    {dayBoards.slice(0, 2).map(b => (
-                      <div key={b.id} className={styles.eventDot} style={{ background: '#8B6914' }} onClick={() => setMapVisible(true)}>
-                        {b.name.slice(0, 10)}
-                      </div>
-                    ))}
-                    {dayBoards.length > 2 && <div className={styles.moreEvents}>+{dayBoards.length - 2}</div>}
-                  </div>
-                )
-              }
-              return days
-            })()}
-          </div>
-        </div>
-      )}
 
       {showCreateModal && (
         <CreateBoardModal

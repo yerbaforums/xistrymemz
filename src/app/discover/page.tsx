@@ -295,7 +295,7 @@ export default function DiscoverPage() {
         />
       )}
 
-      <div className={styles.searchRow}>
+      <div className={styles.searchRow} style={{ gap: 6, marginBottom: 8 }}>
         <input
           type="text"
           className={styles.searchInput}
@@ -303,8 +303,9 @@ export default function DiscoverPage() {
           value={query}
           onChange={e => setQuery(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && fetchResults(1, false)}
+          style={{ padding: '6px 10px', fontSize: '0.85rem', flex: 1, minWidth: 0 }}
         />
-        <Button variant="primary" className={styles.searchBtn} onClick={() => fetchResults(1, false)}>Search</Button>
+        <button className={styles.searchBtn} onClick={() => fetchResults(1, false)} style={{ padding: '6px 12px', fontSize: '0.8rem', cursor: 'pointer', borderRadius: 6, background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', fontWeight: 600 }}>Search</button>
       </div>
 
       <div className={styles.filterRow}>

@@ -521,14 +521,14 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
         if (q) {
           where.OR = [
             { shopName: { contains: q, mode: 'insensitive' } },
-            { shopDescription: { contains: q, mode: 'insensitive' } },
+            { location: { contains: q, mode: 'insensitive' } },
           ]
         }
         const rows = await prisma.user.findMany({
           where: where as any,
           select: {
-            id: true, shopName: true, shopSlug: true, shopDescription: true,
-            shopImage: true, location: true, latitude: true, longitude: true,
+            id: true, shopName: true, shopSlug: true, shopImage: true,
+            location: true, latitude: true, longitude: true,
             createdAt: true, name: true, image: true,
           },
           take: perTypeLimit,
@@ -538,7 +538,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           id: r.shopSlug!,
           type: 'SHOP' as const,
           title: r.shopName || 'Shop',
-          description: r.shopDescription,
+          description: null,
           image: r.shopImage,
           location: r.location,
           latitude: r.latitude,
