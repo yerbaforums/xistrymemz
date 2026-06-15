@@ -28,6 +28,7 @@ export interface DiscoverResult {
   userId: string
   userName: string | null
   userImage: string | null
+  username: string | null
   hashtags: string[]
   eventDate: string | null
   createdAt: Date
@@ -346,7 +347,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
         const rows = await prisma.user.findMany({
           where: where as any,
           select: {
-            id: true, name: true, bio: true, image: true,
+            id: true, name: true, bio: true, image: true, username: true,
             location: true, latitude: true, longitude: true,
             userClass: true, lookingForCollaborators: true, createdAt: true,
           },
@@ -369,6 +370,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           userId: r.id,
           userName: r.name,
           userImage: r.image,
+          username: r.username || null,
           hashtags: [],
           eventDate: null,
           createdAt: r.createdAt,

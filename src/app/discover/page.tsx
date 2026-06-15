@@ -51,6 +51,7 @@ interface DiscoverItem {
   userId: string
   userName: string | null
   userImage: string | null
+  username: string | null
   hashtags: string[]
   eventDate: string | null
   createdAt: string
@@ -67,7 +68,7 @@ function EntityCard({ item }: { item: DiscoverItem }) {
     item.type === 'RENTAL' ? `/products/${item.id}` :
     item.type === 'REQUEST' ? `/requests/${item.id}` :
     item.type === 'SHOP' ? `/shop/${item.id}` :
-    item.type === 'MEMBER' ? `/profile/${item.userId}` : '#'
+    item.type === 'MEMBER' ? `/profile/${item.username || item.userId}` : '#'
 
   return (
     <Link href={href} className={styles.card}>
@@ -88,6 +89,9 @@ function EntityCard({ item }: { item: DiscoverItem }) {
           {item.price != null && <span className={styles.price}>${item.price}</span>}
           {item.distance != null && <span className={styles.distance}>📍 {item.distance} mi</span>}
           {item.location && <span className={styles.location}>{item.location}</span>}
+          {item.latitude && item.longitude && (
+            <button className={styles.flyBtn} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMapVisible(true); setTimeout(() => mapRef.current?.flyTo([item.latitude!, item.longitude!], 10, { duration: 0.8 }), 100) }} title="Show on map">📍</button>
+          )}
         </div>
         <div className={styles.cardFooter}>
           {item.userName && (
@@ -125,6 +129,8 @@ export default function DiscoverPage() {
   const [mapCenter, setMapCenter] = useState<[number, number]>([40.7128, -74.006])
   const [homeCoords, setHomeCoords] = useState<[number, number] | null>(null)
   const [mapVisible, setMapVisible] = useState(true)
+  const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [L, setL] = useState<any>(null)
   const mapRef = useRef<any>(null)
 
@@ -255,7 +261,7 @@ export default function DiscoverPage() {
                 item.type === 'RENTAL' ? `/products/${item.id}` :
                 item.type === 'REQUEST' ? `/requests/${item.id}` :
                 item.type === 'SHOP' ? `/shop/${item.id}` :
-                item.type === 'MEMBER' ? `/profile/${item.userId}` : '#'
+                item.type === 'MEMBER' ? `/profile/${item.username || item.userId}` : '#'
               return (
                 <Link key={`${item.type}-${item.id}`} href={href} className={styles.calendarEventItem}>
                   <span className={styles.calendarEventIcon}>{getEntityIcon(item.type)}</span>
@@ -378,7 +384,7 @@ export default function DiscoverPage() {
               </Marker>
             )}
             {sortedResults.filter(r => r.latitude && r.longitude).map(r => (
-              <EntityMarker key={`${r.type}-${r.id}`} type={r.type} position={[r.latitude!, r.longitude!]}>
+              <EntityMarker key={`${r.type}-${r.id}`} type={r.type} position={[r.latitude!, r.longitude!]} highlighted={r.id === hoveredId || r.id === selectedId}>
                 <Popup>
                   <div className={styles.popup}>
                     <strong>{r.title}</strong>
@@ -406,6 +412,22 @@ export default function DiscoverPage() {
         </div>
       )}
 
+      {!loading && calVisible && (
+        <div className={styles.calendarWrap}>
+          <div className={styles.calendarHeader}>
+            <Button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))} className={styles.calendarNavBtn} variant="ghost">←</Button>
+            <h2>{currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h2>
+            <Button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))} className={styles.calendarNavBtn} variant="ghost">→</Button>
+          </div>
+          <div className={styles.calendarGrid}>
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+              <div key={day} className={styles.calendarDayHeader}>{day}</div>
+            ))}
+            {getCalendarDays()}
+          </div>
+        </div>
+      )}
+
       {!loading && (
         <>
           <div className={styles.resultInfo}>{total} result{total !== 1 ? 's' : ''} found</div>
@@ -421,22 +443,6 @@ export default function DiscoverPage() {
             </Button>
           )}
         </>
-      )}
-
-      {!loading && calVisible && (
-        <div className={styles.calendarWrap}>
-          <div className={styles.calendarHeader}>
-            <Button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))} className={styles.calendarNavBtn} variant="ghost">←</Button>
-            <h2>{currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h2>
-            <Button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))} className={styles.calendarNavBtn} variant="ghost">→</Button>
-          </div>
-          <div className={styles.calendarGrid}>
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-              <div key={day} className={styles.calendarDayHeader}>{day}</div>
-            ))}
-            {getCalendarDays()}
-          </div>
-        </div>
       )}
     </div>
   )

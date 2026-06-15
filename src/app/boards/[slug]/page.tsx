@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSession } from 'next-auth/react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import BoardPinCard from '@/components/BoardPinCard'
@@ -158,6 +158,15 @@ export default function BoardDetailPage() {
       })
       .catch(() => {})
   }, [slug, session])
+
+  const searchParams = useSearchParams()
+  useEffect(() => {
+    const pinId = searchParams?.get('pin')
+    if (pinId && pins.length > 0) {
+      const idx = pins.findIndex(p => p.id === pinId)
+      if (idx >= 0) setCarouselIndex(idx)
+    }
+  }, [searchParams, pins])
 
   const handleJoin = async () => {
     if (joining) return
