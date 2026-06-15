@@ -165,6 +165,8 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
   const isEventPin = pin.entityType === 'EVENT' && pin.entityId
   const [eventJoiners, setEventJoiners] = useState(0)
   const [eventJoined, setEventJoined] = useState(false)
+  const [eventTicketed, setEventTicketed] = useState(false)
+  const [eventTicketPrice, setEventTicketPrice] = useState(0)
   const [eventJoining, setEventJoining] = useState(false)
 
   useEffect(() => {
@@ -176,6 +178,8 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
         const count = data._count?.eventJoiners || data.joiners?.length || 0
         setEventJoiners(count)
         setEventJoined(data.joined || false)
+        setEventTicketed(data.isTicketed || false)
+        setEventTicketPrice(data.ticketPrice || 0)
       })
       .catch(() => {})
     return () => controller.abort()
@@ -236,6 +240,11 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
           {isEventPin && (
             <div className={styles.eventActions}>
               <span className={styles.eventAttendees}>👥 {eventJoiners} attending</span>
+              {eventTicketed ? (
+                <Link href={`/events/${pin.entityId}`} className={styles.eventTicketBtn}>
+                  🎟️ ${eventTicketPrice} — Get Ticket
+                </Link>
+              ) : (
               <button
                 className={`${styles.eventJoinBtn} ${eventJoined ? styles.eventJoined : ''}`}
                 onClick={handleEventJoin}
@@ -243,6 +252,7 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
               >
                 {eventJoining ? '...' : eventJoined ? '✓ Attending' : 'Join Event'}
               </button>
+              )}
             </div>
           )}
           {(pin.contactName || pin.contactEmail || pin.contactPhone) && (

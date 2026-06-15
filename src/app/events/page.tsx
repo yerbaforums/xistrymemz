@@ -498,9 +498,15 @@ export default function EventsPage() {
                           <p className={styles.popupDetail}>👥 {(event.joiners || []).length}{event.maxJoiners > 0 ? `/${event.maxJoiners}` : ''} joined</p>
                           <div className={styles.popupActions}>
                             {event.maxJoiners === 0 || (event.joiners || []).length < event.maxJoiners ? (
+                              event.isTicketed ? (
+                                <Link href={`/events/${event.id}`} className={styles.ticketBtn}>
+                                  🎟️ ${event.ticketPrice} — Get Ticket
+                                </Link>
+                              ) : (
                               <Button onClick={(e) => { e.stopPropagation(); if (event.joined) { handleLeave(event.id) } else { handleJoin(event.id) } }} disabled={joining === event.id} variant={event.joined ? "secondary" : "primary"}>
                                 {joining === event.id ? '...' : event.joined ? 'Leave' : 'Join Event'}
                               </Button>
+                              )
                             ) : (<Badge variant="warning">Event Full</Badge>)}
                             <Link href={`/events/${event.id}`} className={styles.popupLink}>View Details →</Link>
                           </div>
@@ -572,9 +578,15 @@ export default function EventsPage() {
                       </div>
                       <div className={styles.eventCardActions}>
                         {event.maxJoiners === 0 || (event.joiners || []).length < event.maxJoiners ? (
+                          event.isTicketed ? (
+                            <Link href={`/events/${event.id}`} className={styles.ticketBtn} onClick={e => e.stopPropagation()}>
+                              🎟️ ${event.ticketPrice} — Get Ticket
+                            </Link>
+                          ) : (
                           <Button onClick={(e) => { e.stopPropagation(); if (event.joined) { handleLeave(event.id) } else { handleJoin(event.id) } }} disabled={joining === event.id} variant={event.joined ? "secondary" : "primary"}>
                             {joining === event.id ? '...' : event.joined ? 'Leave' : 'Join Event'}
                           </Button>
+                          )
                         ) : (<Badge variant="warning">Event Full</Badge>)}
                         <Link href={`/events/${event.id}`} className={styles.viewBtn} onClick={e => e.stopPropagation()}>View Details</Link>
                       </div>

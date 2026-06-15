@@ -19,6 +19,7 @@ import styles from './QuickCreateModal.module.css'
 import type { EventFormData } from '@/components/EventFormFields'
 import type { UserAsset } from '@/components/AssetPicker'
 import type { DonationAddr } from '@/types/product'
+import { REQUEST_CATEGORIES } from '@/lib/request-categories'
 
 interface QuickCreateContextType {
   open: (tab?: string) => void
@@ -712,16 +713,10 @@ function RequestForm({ onDone }: { onDone: () => void }) {
         <div className={styles.formGroup}>
           <label className={styles.label}>Category</label>
           <select value={category} onChange={e => setCategory(e.target.value)} className={styles.select}>
-            <option value="GENERAL">General</option>
-            <option value="FUNDING">Funding</option>
-            <option value="SERVICES">Services</option>
-            <option value="GOODS">Goods</option>
-            <option value="HOUSING">Housing</option>
-            <option value="TRANSPORTATION">Transportation</option>
-            <option value="FOOD">Food</option>
-            <option value="HEALTH">Health</option>
-            <option value="EDUCATION">Education</option>
-            <option value="OTHER">Other</option>
+            <option value="">Select category...</option>
+            {REQUEST_CATEGORIES.map(c => (
+              <option key={c.value} value={c.value}>{c.icon} {c.label}</option>
+            ))}
           </select>
         </div>
         <div className={styles.formGroup}>

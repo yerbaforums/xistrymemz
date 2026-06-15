@@ -503,6 +503,27 @@
   box-shadow: var(--shadow-glow);
 }
 
+.ticketBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.ticketBtn:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-glow);
+}
+
 .loading,
 .empty {
   text-align: center;

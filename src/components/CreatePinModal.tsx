@@ -5,6 +5,7 @@ import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import ImageUploader from '@/components/ImageUploader'
 import AssetPicker from '@/components/AssetPicker'
+import { PIN_CATEGORIES } from '@/lib/pin-categories'
 import type { UserAsset } from '@/components/AssetPicker'
 import { geocodeLocation, reverseGeocodeLocation } from '@/lib/geocoding'
 import styles from './CreatePinModal.module.css'
@@ -13,17 +14,6 @@ const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContai
 const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
 const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false })
 const MapClickHandler = dynamic(() => import('@/components/MapClickHandler').then(m => m.default), { ssr: false })
-
-const PIN_CATEGORIES = [
-  { value: 'GENERAL', label: 'General' },
-  { value: 'LOST_FOUND', label: 'Lost & Found' },
-  { value: 'PROMOTION', label: 'Promotion' },
-  { value: 'EVENT', label: 'Event' },
-  { value: 'SERVICE', label: 'Service' },
-  { value: 'HOUSING', label: 'Housing' },
-  { value: 'JOBS', label: 'Jobs' },
-  { value: 'FREE', label: 'Free' },
-]
 
 const ASSET_ICONS: Record<string, string> = {
   PRODUCT: '🛒', SERVICE: '🔧', EVENT: '📅', GROUP: '👥',

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Loading from '@/components/Loading'
 import { EmptyState } from '@/components/EmptyState'
+import { PIN_CATEGORIES } from '@/lib/pin-categories'
 import styles from './QuickPinModal.module.css'
 
 interface NearbyBoard {
@@ -24,17 +25,6 @@ interface QuickPinModalProps {
   onClose: () => void
   onPinned: () => void
 }
-
-const PIN_CATEGORIES = [
-  { value: 'GENERAL', label: 'General' },
-  { value: 'PROMOTION', label: 'Promotion' },
-  { value: 'EVENT', label: 'Event' },
-  { value: 'SERVICE', label: 'Service' },
-  { value: 'LOST_FOUND', label: 'Lost & Found' },
-  { value: 'HOUSING', label: 'Housing' },
-  { value: 'JOBS', label: 'Jobs' },
-  { value: 'FREE', label: 'Free' },
-]
 
 const ASSET_ICONS: Record<string, string> = {
   PRODUCT: '🛒', SERVICE: '🔧', EVENT: '📅', GROUP: '👥',

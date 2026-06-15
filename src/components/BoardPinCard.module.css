@@ -468,3 +468,24 @@
   border-color: var(--accent-secondary);
   box-shadow: none;
 }
+
+.eventTicketBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 14px;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.eventTicketBtn:hover {
+  box-shadow: 0 0 8px rgba(0, 217, 255, 0.4);
+}
