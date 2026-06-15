@@ -57,7 +57,7 @@ interface DiscoverItem {
   createdAt: string
 }
 
-function EntityCard({ item }: { item: DiscoverItem }) {
+function EntityCard({ item, mapRef, setMapVisible, onHover, onLeave, selected }: { item: DiscoverItem; mapRef: any; setMapVisible: (v: boolean) => void; onHover?: (id: string | null) => void; onLeave?: () => void; selected?: boolean }) {
   const href =
     item.type === 'PRODUCT' ? `/products/${item.id}` :
     item.type === 'SERVICE' ? `/services/${item.id}` :
@@ -71,7 +71,7 @@ function EntityCard({ item }: { item: DiscoverItem }) {
     item.type === 'MEMBER' ? `/profile/${item.username || item.userId}` : '#'
 
   return (
-    <Link href={href} className={styles.card}>
+    <Link href={href} className={styles.card} onMouseEnter={() => onHover?.(item.id)} onMouseLeave={() => onLeave?.()}>
       <div className={styles.cardImage}>
         {item.image ? (
           <Image src={item.image} alt={item.title} width={160} height={120} style={{ objectFit: 'cover' }} />
@@ -90,7 +90,7 @@ function EntityCard({ item }: { item: DiscoverItem }) {
           {item.distance != null && <span className={styles.distance}>📍 {item.distance} mi</span>}
           {item.location && <span className={styles.location}>{item.location}</span>}
           {item.latitude && item.longitude && (
-            <button className={styles.flyBtn} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMapVisible(true); setTimeout(() => mapRef.current?.flyTo([item.latitude!, item.longitude!], 10, { duration: 0.8 }), 100) }} title="Show on map">📍</button>
+            <button className={styles.flyBtn} onClick={(e) => { e.preventDefault(); e.stopPropagation(); onHover?.(null); setMapVisible(true); setTimeout(() => mapRef.current?.flyTo([item.latitude!, item.longitude!], 10, { duration: 0.8 }), 100) }} title="Show on map">📍</button>
           )}
         </div>
         <div className={styles.cardFooter}>
@@ -311,7 +311,7 @@ export default function DiscoverPage() {
           onKeyDown={e => e.key === 'Enter' && fetchResults(1, false)}
           style={{ padding: '6px 10px', fontSize: '0.85rem', flex: 1, minWidth: 0 }}
         />
-        <button className={styles.searchBtn} onClick={() => fetchResults(1, false)} style={{ padding: '6px 12px', fontSize: '0.8rem', cursor: 'pointer', borderRadius: 6, background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', fontWeight: 600 }}>Search</button>
+        <button className={styles.searchBtn} onClick={() => fetchResults(1, false)} style={{ padding: '8px 12px', fontSize: '0.85rem', cursor: 'pointer', borderRadius: 6, background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', fontWeight: 600 }} aria-label="Search">🔍</button>
       </div>
 
       <div className={styles.filterRow}>
@@ -432,7 +432,7 @@ export default function DiscoverPage() {
         <>
           <div className={styles.resultInfo}>{total} result{total !== 1 ? 's' : ''} found</div>
           <div className={styles.grid}>
-            {sortedResults.map(r => <EntityCard key={`${r.type}-${r.id}`} item={r} />)}
+            {sortedResults.map(r => <EntityCard key={`${r.type}-${r.id}`} item={r} mapRef={mapRef} setMapVisible={setMapVisible} onHover={setHoveredId} onLeave={() => setHoveredId(null)} selected={r.id === selectedId} />)}
           </div>
           {results.length === 0 && (
             <EmptyState icon="🔍" title="No results found" description="Try adjusting your filters." />

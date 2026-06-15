@@ -444,7 +444,7 @@ export default function BoardsPage() {
             className={styles.searchInput}
             style={{ padding: '6px 10px', fontSize: '0.85rem', flex: 1, minWidth: 0 }}
           />
-          <button type="submit" className={styles.myBtn} style={{ padding: '6px 12px', fontSize: '0.8rem' }}>Search</button>
+          <button type="submit" className={styles.myBtn} style={{ padding: '6px 10px', fontSize: '0.85rem' }} aria-label="Search">🔍</button>
           {searchQuery && (
             <button type="button" className={styles.myBtn} style={{ padding: '6px 8px', fontSize: '0.8rem' }} onClick={() => { setSearchQuery(''); fetchBoards() }}>✕</button>
           )}
@@ -559,7 +559,7 @@ export default function BoardsPage() {
       )}
 
       {calVisible && (
-        <div className={styles.calendarGrid}>
+        <div style={{ marginBottom: 16 }}>
           <div className={styles.calendarHeader}>
             <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))} className={styles.calendarNavBtn}>←</button>
             <h3>{currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h3>
