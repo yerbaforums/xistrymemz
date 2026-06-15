@@ -83,7 +83,7 @@ export default function PinDetailPage() {
             <span style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem' }}>{pin.user.name?.[0] || 'U'}</span>
           )}
           <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{pin.user.name || 'Unknown'}</span>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', padding: '3px 10px', borderRadius: 10, background: `${catColors[pin.category || 'GENERAL']}20`, color: catColors[pin.category || 'GENERAL'], fontWeight: 600 }}>
+          <span style={{ fontSize: '0.75rem', padding: '3px 10px', borderRadius: 10, background: `${catColors[pin.category || 'GENERAL']}20`, color: catColors[pin.category || 'GENERAL'], fontWeight: 600 }}>
             {(pin.category || 'GENERAL').replace('_', ' ')}
           </span>
         </div>
@@ -124,8 +124,8 @@ export default function PinDetailPage() {
         )}
 
         <EntityActions
-          entityType="POST"
-          entityId={pin.id}
+          entityType={pin.entityType && ['PRODUCT','EVENT','SERVICE','PROJECT','GROUP','REQUEST','SHOP'].includes(pin.entityType) ? pin.entityType as any : 'PRODUCT'}
+          entityId={pin.entityId || pin.id}
           title={pin.title || 'Pin'}
           authorId={pin.user.id}
           description={pin.content || undefined}

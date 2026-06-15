@@ -223,7 +223,7 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
         </span>
       </div>
 
-      {pin.title && <h4 className={styles.title}>{pin.title}</h4>}
+      {pin.title && <Link href={`/boards/${boardSlug}/pins/${pin.id}`} style={{ textDecoration: 'none', color: 'inherit' }}><h4 className={styles.title}>{pin.title}</h4></Link>}
 
       {!minimized && (
         <>

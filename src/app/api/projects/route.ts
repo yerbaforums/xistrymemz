@@ -28,7 +28,7 @@ export async function GET(request: Request) {
   return apiSuccess({ items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
 }
 
-export const POST = withValidation(projectSchema, async (req, session, data) => {
+export const POST = withValidation(projectSchema, async (data, req, session) => {
   try {
     const { title, description, imageUrl, status, published, goals, mileposts, lookingForCollaborators, acceptsDonations, donationAddress, donationCurrency, donationDescription, donationAddresses, hashtags } = data
 
@@ -44,7 +44,7 @@ export const POST = withValidation(projectSchema, async (req, session, data) => 
     })
 
     await prisma.project.update({
-      where: { id: plan.id },
+      where: { id: project.id },
       data: {
         lookingForCollaborators: lookingForCollaborators ?? false,
         acceptsDonations: acceptsDonations ?? false,
@@ -56,13 +56,13 @@ export const POST = withValidation(projectSchema, async (req, session, data) => 
     })
 
     if (Array.isArray(hashtags) && hashtags.length > 0) {
-      await linkHashtags('PROJECT', plan.id, hashtags)
+      await linkHashtags('PROJECT', project.id, hashtags)
     } else {
       const text = [title, description || ''].join(' ')
-      await extractAndLinkHashtags(text, 'PROJECT', plan.id)
+      await extractAndLinkHashtags(text, 'PROJECT', project.id)
     }
 
-    return apiSuccess(plan, 201)
+    return apiSuccess(project, 201)
   } catch (err) {
     console.error('Failed to create project:', err)
     const message = err instanceof Error ? err.message : 'Failed to create project'

@@ -163,7 +163,9 @@ export default function FeedItem({ post }: { post: FeedPost }) {
             </div>
           </div>
         ) : (
-          <HashtagText text={displayContent} mentionLinks />
+          <Link href={`/posts/${post.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+            <HashtagText text={displayContent} mentionLinks />
+          </Link>
         )}
         {!editing && <TranslateButton text={displayContent} />}
       </div>

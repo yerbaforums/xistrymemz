@@ -48,7 +48,8 @@ const SharedItemCard = memo(function SharedItemCard({ referenceType, referenceId
     fetch(`/api/reference/${referenceType}/${referenceId}`)
       .then(r => r.json())
       .then(data => {
-        if (data.item) setItem(data.item)
+        const result = data?.data?.item || data?.item
+        if (result) setItem(result)
       })
       .catch(() => {})
       .finally(() => setLoading(false))
