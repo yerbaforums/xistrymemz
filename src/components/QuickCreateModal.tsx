@@ -175,6 +175,9 @@ function ContentForm({ onDone }: { onDone: () => void }) {
   const [content, setContent] = useState('')
   const [price, setPrice] = useState('')
   const [isPaid, setIsPaid] = useState(false)
+  const [videoUrl, setVideoUrl] = useState('')
+  const [isSubscription, setIsSubscription] = useState(false)
+  const [subscriptionPrice, setSubscriptionPrice] = useState('')
   const [images, setImages] = useState<string[]>([])
   const [hashtags, setHashtags] = useState<string[]>([])
   const [creating, setCreating] = useState(false)
@@ -207,6 +210,9 @@ function ContentForm({ onDone }: { onDone: () => void }) {
           contentType,
           price: price ? parseFloat(price) : 0,
           isPaid,
+          videoUrl: videoUrl || undefined,
+          isSubscription,
+          subscriptionPrice: subscriptionPrice ? parseFloat(subscriptionPrice) : 0,
           images: images.length > 0 ? JSON.stringify(images) : null,
           hashtags: hashtags.length > 0 ? hashtags : undefined,
         }),
@@ -250,6 +256,21 @@ function ContentForm({ onDone }: { onDone: () => void }) {
           </label>
         </div>
       </div>
+      <div className={styles.formRow}>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Video URL</label>
+          <input type="url" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} className={styles.input} placeholder="https://youtube.com/watch?v=..." />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.checkLabel} style={{ marginTop: 22 }}>
+            <input type="checkbox" checked={isSubscription} onChange={e => setIsSubscription(e.target.checked)} />
+            Subscription
+          </label>
+          {isSubscription && (
+            <input type="number" value={subscriptionPrice} onChange={e => setSubscriptionPrice(e.target.value)} className={styles.input} placeholder="Monthly price" step="0.01" />
+          )}
+        </div>
+      </div>
       {filteredTemplates.length > 0 && !content && (
         <div className={styles.templateGrid}>
           <label className={styles.label}>Starter Template</label>
@@ -287,14 +308,20 @@ function ContentForm({ onDone }: { onDone: () => void }) {
 function ProductForm({ onDone }: { onDone: () => void }) {
   const { success, error } = useToast()
   const router = useRouter()
+  const userDonationAddrs = useDonationAddresses()
+
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState('')
   const [type, setType] = useState('PRODUCT')
   const [category, setCategory] = useState('OTHER')
   const [condition, setCondition] = useState<string>(PRODUCT_CONDITIONS[0])
-  const [location, setLocation] = useState('')
+  const [isRemote, setIsRemote] = useState(false)
   const [images, setImages] = useState<string[]>([])
+  const [acceptsDonations, setAcceptsDonations] = useState(false)
+  const [selectedDonationAddrs, setSelectedDonationAddrs] = useState<DonationAddr[]>([])
+  const [acceptsOffers, setAcceptsOffers] = useState(true)
+  const [acceptsRequests, setAcceptsRequests] = useState(true)
   const [creating, setCreating] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -312,13 +339,13 @@ function ProductForm({ onDone }: { onDone: () => void }) {
           type,
           category,
           condition,
-          location: location || undefined,
           images: images.length > 0 ? JSON.stringify(images) : null,
+          isRemote,
           published: false,
-          paymentMethods: 'Venmo,PayPal,Cash',
-          paymentType: 'BOTH',
-          acceptsRequests: false,
-          acceptsOffers: false,
+          acceptsOffers,
+          acceptsRequests,
+          acceptsDonations,
+          selectedDonationAddrs: acceptsDonations ? selectedDonationAddrs : [],
         }),
       })
       if (res.ok) {
@@ -373,13 +400,45 @@ function ProductForm({ onDone }: { onDone: () => void }) {
         <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="Describe your product..." />
       </div>
       <div className={styles.formGroup}>
-        <label className={styles.label}>Location</label>
-        <input type="text" value={location} onChange={e => setLocation(e.target.value)} className={styles.input} placeholder="City, State" />
-      </div>
-      <div className={styles.formGroup}>
         <label className={styles.label}>Images</label>
         <ImageUploader images={images} onChange={setImages} maxImages={5} />
       </div>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>🚚 Delivery & Offers</summary>
+        <div className={styles.sectionContent}>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={isRemote} onChange={e => setIsRemote(e.target.checked)} />
+            Remote / Ships (no specific location)
+          </label>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={acceptsOffers} onChange={e => setAcceptsOffers(e.target.checked)} />
+            Accept offers
+          </label>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={acceptsRequests} onChange={e => setAcceptsRequests(e.target.checked)} />
+            Accept requests / barters
+          </label>
+        </div>
+      </details>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>💰 Donations</summary>
+        <div className={styles.sectionContent}>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={acceptsDonations} onChange={e => setAcceptsDonations(e.target.checked)} />
+            Accept crypto donations
+          </label>
+          {acceptsDonations && (
+            <DonationAddressPicker
+              savedAddresses={userDonationAddrs}
+              selectedAddresses={selectedDonationAddrs}
+              onAddressesChange={setSelectedDonationAddrs}
+            />
+          )}
+        </div>
+      </details>
+
       <div className={styles.formActions}>
         <button type="button" onClick={onDone} className="btn-ghost">Cancel</button>
         <button type="submit" disabled={creating || !title.trim()} className="btn-primary">
@@ -453,6 +512,9 @@ function GroupForm({ onDone }: { onDone: () => void }) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [isPrivate, setIsPrivate] = useState(false)
+  const [category, setCategory] = useState('GENERAL')
+  const [image, setImage] = useState<string[]>([])
+  const [location, setLocation] = useState<{ text: string; latitude: number | null; longitude: number | null }>({ text: '', latitude: null, longitude: null })
   const [hashtags, setHashtags] = useState<string[]>([])
   const [creating, setCreating] = useState(false)
 
@@ -468,6 +530,11 @@ function GroupForm({ onDone }: { onDone: () => void }) {
           name: name.trim(),
           description: description.trim() || undefined,
           privacy: isPrivate ? 'PRIVATE' : 'PUBLIC',
+          category: category === 'GENERAL' ? undefined : category,
+          imageUrl: image[0] || null,
+          location: location.text || undefined,
+          latitude: location.latitude ?? undefined,
+          longitude: location.longitude ?? undefined,
           hashtags: hashtags.length > 0 ? hashtags : undefined,
         }),
       })
@@ -496,12 +563,45 @@ function GroupForm({ onDone }: { onDone: () => void }) {
         <label className={styles.label}>Description</label>
         <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="What is this group about?" />
       </div>
-      <div className={styles.formGroup}>
-        <label className={styles.checkLabel}>
-          <input type="checkbox" checked={isPrivate} onChange={e => setIsPrivate(e.target.checked)} />
-          Private group
-        </label>
+      <div className={styles.formRow}>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Category</label>
+          <select value={category} onChange={e => setCategory(e.target.value)} className={styles.select}>
+            <option value="GENERAL">General</option>
+            <option value="TECHNOLOGY">💻 Technology</option>
+            <option value="ARTS">🎨 Arts</option>
+            <option value="MUSIC">🎵 Music</option>
+            <option value="SPORTS">⚽ Sports</option>
+            <option value="EDUCATION">📚 Education</option>
+            <option value="SOCIAL">🤝 Social</option>
+            <option value="BUSINESS">💼 Business</option>
+            <option value="HEALTH">❤️ Health</option>
+            <option value="TRAVEL">✈️ Travel</option>
+            <option value="GAMING">🎮 Gaming</option>
+            <option value="NATURE">🌲 Nature</option>
+            <option value="LOCAL">🏘️ Local</option>
+            <option value="OTHER">📌 Other</option>
+          </select>
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.checkLabel} style={{ marginTop: 22 }}>
+            <input type="checkbox" checked={isPrivate} onChange={e => setIsPrivate(e.target.checked)} />
+            Private group
+          </label>
+        </div>
       </div>
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Cover Image</label>
+        <ImageUploader images={image} onChange={setImage} maxImages={1} />
+      </div>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>📍 Location</summary>
+        <div className={styles.sectionContent}>
+          <LocationPicker value={location} onChange={setLocation} />
+        </div>
+      </details>
+
       <div className={styles.formGroup}>
         <label className={styles.label}>Hashtags</label>
         <HashtagInput value={hashtags} onChange={setHashtags} placeholder="Add hashtags..." />

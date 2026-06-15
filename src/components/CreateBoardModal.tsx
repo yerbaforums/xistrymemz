@@ -39,6 +39,8 @@ export default function CreateBoardModal({ onClose, onCreated, initialCity, init
   const [location, setLocation] = useState(initialCity || '')
   const [latitude, setLatitude] = useState(initialLat?.toString() || '')
   const [longitude, setLongitude] = useState(initialLng?.toString() || '')
+  const [radius, setRadius] = useState('25')
+  const [isPublic, setIsPublic] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [savedLocations, setSavedLocations] = useState<SavedLocation[]>([])
@@ -155,6 +157,8 @@ export default function CreateBoardModal({ onClose, onCreated, initialCity, init
           location: location.trim(),
           latitude: latitude ? parseFloat(latitude) : undefined,
           longitude: longitude ? parseFloat(longitude) : undefined,
+          radius: radius ? parseFloat(radius) : 25,
+          isPublic,
         }),
       })
 
@@ -288,6 +292,17 @@ export default function CreateBoardModal({ onClose, onCreated, initialCity, init
                 className={styles.input}
                 placeholder="-74.006"
               />
+            </label>
+          </div>
+
+          <div className={styles.row}>
+            <label className={styles.label}>
+              Radius (miles)
+              <input type="number" value={radius} onChange={e => setRadius(e.target.value)} className={styles.input} placeholder="25" min="1" />
+            </label>
+            <label className={styles.checkLabel}>
+              <input type="checkbox" checked={isPublic} onChange={e => setIsPublic(e.target.checked)} />
+              Public board
             </label>
           </div>
 

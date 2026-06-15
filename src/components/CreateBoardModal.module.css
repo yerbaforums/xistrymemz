@@ -327,3 +327,18 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+.checkLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.checkLabel input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-primary);
+}

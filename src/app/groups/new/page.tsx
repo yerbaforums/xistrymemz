@@ -7,6 +7,7 @@ import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import Loading from '@/components/Loading'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import ImageUploader from '@/components/ImageUploader'
 
 export default function NewGroupPage() {
   const router = useRouter()
@@ -14,6 +15,8 @@ export default function NewGroupPage() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [isPrivate, setIsPrivate] = useState(false)
+  const [category, setCategory] = useState('GENERAL')
+  const [image, setImage] = useState<string[]>([])
   const [creating, setCreating] = useState(false)
   const [slugPreview, setSlugPreview] = useState('')
   const [authenticated, setAuthenticated] = useState(false)
@@ -37,7 +40,7 @@ export default function NewGroupPage() {
       const res = await fetch('/api/groups', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, description, privacy: isPrivate ? 'PRIVATE' : 'PUBLIC' })
+        body: JSON.stringify({ name, description, category: category === 'GENERAL' ? undefined : category, privacy: isPrivate ? 'PRIVATE' : 'PUBLIC', imageUrl: image[0] || null })
       })
 
       if (res.ok) {
@@ -125,6 +128,29 @@ export default function NewGroupPage() {
               className={styles.textarea}
             />
             <div className={styles.charCount}>{description.length}/1000</div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="category">Category</label>
+            <select id="category" value={category} onChange={e => setCategory(e.target.value)} className={styles.input}>
+              <option value="GENERAL">General</option>
+              <option value="TECHNOLOGY">💻 Technology</option>
+              <option value="ARTS">🎨 Arts</option>
+              <option value="MUSIC">🎵 Music</option>
+              <option value="SPORTS">⚽ Sports</option>
+              <option value="EDUCATION">📚 Education</option>
+              <option value="SOCIAL">🤝 Social</option>
+              <option value="BUSINESS">💼 Business</option>
+              <option value="HEALTH">❤️ Health</option>
+              <option value="TRAVEL">✈️ Travel</option>
+              <option value="LOCAL">🏘️ Local</option>
+              <option value="OTHER">📌 Other</option>
+            </select>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label>Cover Image</label>
+            <ImageUploader images={image} onChange={setImage} maxImages={1} />
           </div>
 
           <div className={styles.toggleRow}>
