@@ -5,7 +5,7 @@ import ImageUploader from '@/components/ImageUploader'
 import HashtagInput from '@/components/HashtagInput'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
 import AssetPicker from '@/components/AssetPicker'
-import LocationOption from '@/components/LocationOption'
+import LocationPicker from '@/components/LocationPicker'
 import { EVENT_CATEGORIES } from '@/lib/event-categories'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import styles from './EventFormFields.module.css'
@@ -24,7 +24,6 @@ export interface EventFormData {
   locationDetails: string
   latitude: number | null
   longitude: number | null
-  locationMode: 'passport' | 'custom' | 'global'
   maxJoiners: number
   isTicketed: boolean
   ticketPrice: number
@@ -61,7 +60,6 @@ const DEFAULT_FORM_DATA: EventFormData = {
   locationDetails: '',
   latitude: null,
   longitude: null,
-  locationMode: 'custom' as const,
   maxJoiners: 0,
   isTicketed: false,
   ticketPrice: 0,
@@ -261,146 +259,136 @@ export default function EventFormFields({
         </div>
       </div>
 
-      <div className={styles.checkboxField}>
-        <input type="checkbox" id="ef-virtual" name="isVirtual" checked={formData.isVirtual} onChange={handleChange} />
-        <label htmlFor="ef-virtual">Virtual Event</label>
-      </div>
-
-      {formData.isVirtual ? (
-        <div className={styles.virtualSection}>
-          <label className={styles.virtualSectionLabel}>Meeting Link</label>
-          <div className={styles.meetingOptions}>
-            <label className={`${styles.meetingOption} ${meetingLinkType === 'platform' ? styles.meetingOptionSelected : ''}`}>
-              <input type="radio" name="meetingLinkType" checked={meetingLinkType === 'platform'} onChange={() => setMeetingLinkType('platform')} />
-              <div>
-                <div className={styles.meetingOptionTitle}>Platform Video Room</div>
-                <div className={styles.meetingOptionDesc}>
-                  Create a video room on this platform. A link will be generated automatically.
-                </div>
-                {meetingLinkType === 'platform' && formData.meetingLink && (
-                  <code className={styles.meetingLinkPreview}>{formData.meetingLink}</code>
-                )}
-                {meetingLinkType === 'platform' && !formData.meetingLink && (
-                  <button type="button" onClick={handleCreatePlatformRoom} disabled={creatingRoom} className={styles.createRoomBtn}>
-                    {creatingRoom ? 'Creating...' : 'Create Video Room'}
-                  </button>
-                )}
-              </div>
-            </label>
-
-            <label className={`${styles.meetingOption} ${meetingLinkType === 'custom' ? styles.meetingOptionSelected : ''}`}>
-              <input type="radio" name="meetingLinkType" checked={meetingLinkType === 'custom'} onChange={() => setMeetingLinkType('custom')} />
-              <div>
-                <div className={styles.meetingOptionTitle}>Custom meeting link</div>
-                <div className={styles.meetingOptionDesc}>
-                  Use Zoom, Google Meet, or any other video service.
-                </div>
-                {meetingLinkType === 'custom' && (
-                  <input
-                    type="url"
-                    name="meetingLink"
-                    value={formData.meetingLink}
-                    onChange={(e) => set({ meetingLink: e.target.value })}
-                    placeholder="https://zoom.us/j/..."
-                    className={styles.meetingLinkInput}
-                  />
-                )}
-              </div>
-            </label>
-
-            <label className={`${styles.meetingOption} ${meetingLinkType === 'none' ? styles.meetingOptionSelected : ''}`}>
-              <input type="radio" name="meetingLinkType" checked={meetingLinkType === 'none'}               onChange={() => { setMeetingLinkType('none'); set({ meetingLink: '', videoRoomId: null }) }} />
-              <div>
-                <div className={styles.meetingOptionTitle}>No meeting link</div>
-                <div className={styles.meetingOptionDesc}>
-                  Virtual event without a video call.
-                </div>
-              </div>
-            </label>
+      <details className={styles.settingsDetails}>
+        <summary className={styles.settingsSummary}>📍 Location / Virtual</summary>
+        <div>
+          <div className={styles.checkboxField}>
+            <input type="checkbox" id="ef-virtual" name="isVirtual" checked={formData.isVirtual} onChange={handleChange} />
+            <label htmlFor="ef-virtual">Virtual Event</label>
           </div>
+
+          {formData.isVirtual ? (
+            <div className={styles.virtualSection}>
+              <label className={styles.virtualSectionLabel}>Meeting Link</label>
+              <div className={styles.meetingOptions}>
+                <label className={`${styles.meetingOption} ${meetingLinkType === 'platform' ? styles.meetingOptionSelected : ''}`}>
+                  <input type="radio" name="meetingLinkType" checked={meetingLinkType === 'platform'} onChange={() => setMeetingLinkType('platform')} />
+                  <div>
+                    <div className={styles.meetingOptionTitle}>Platform Video Room</div>
+                    <div className={styles.meetingOptionDesc}>Create a video room on this platform.</div>
+                    {meetingLinkType === 'platform' && formData.meetingLink && (
+                      <code className={styles.meetingLinkPreview}>{formData.meetingLink}</code>
+                    )}
+                    {meetingLinkType === 'platform' && !formData.meetingLink && (
+                      <button type="button" onClick={handleCreatePlatformRoom} disabled={creatingRoom} className={styles.createRoomBtn}>
+                        {creatingRoom ? 'Creating...' : 'Create Video Room'}
+                      </button>
+                    )}
+                  </div>
+                </label>
+                <label className={`${styles.meetingOption} ${meetingLinkType === 'custom' ? styles.meetingOptionSelected : ''}`}>
+                  <input type="radio" name="meetingLinkType" checked={meetingLinkType === 'custom'} onChange={() => setMeetingLinkType('custom')} />
+                  <div>
+                    <div className={styles.meetingOptionTitle}>Custom meeting link</div>
+                    <div className={styles.meetingOptionDesc}>Use Zoom, Google Meet, etc.</div>
+                    {meetingLinkType === 'custom' && (
+                      <input type="url" name="meetingLink" value={formData.meetingLink} onChange={(e) => set({ meetingLink: e.target.value })} placeholder="https://zoom.us/j/..." className={styles.meetingLinkInput} />
+                    )}
+                  </div>
+                </label>
+                <label className={`${styles.meetingOption} ${meetingLinkType === 'none' ? styles.meetingOptionSelected : ''}`}>
+                  <input type="radio" name="meetingLinkType" checked={meetingLinkType === 'none'} onChange={() => { setMeetingLinkType('none'); set({ meetingLink: '', videoRoomId: null }) }} />
+                  <div>
+                    <div className={styles.meetingOptionTitle}>No meeting link</div>
+                    <div className={styles.meetingOptionDesc}>Virtual event without a video call.</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+          ) : (
+            <>
+              <LocationPicker
+                value={{ text: formData.location, latitude: formData.latitude, longitude: formData.longitude }}
+                onChange={v => set({ location: v.text, latitude: v.latitude, longitude: v.longitude })}
+              />
+              <div className={styles.field}>
+                <label htmlFor="ef-locationDetails">Location Details</label>
+                <input type="text" id="ef-locationDetails" name="locationDetails" value={formData.locationDetails} onChange={handleChange} placeholder="Room, floor, link, etc." />
+              </div>
+            </>
+          )}
         </div>
-      ) : (
-        <>
-          <div className={styles.field}>
-            <LocationOption
-              value={{ mode: formData.locationMode, text: formData.location, latitude: formData.latitude, longitude: formData.longitude }}
-              onChange={v => set({ location: v.text, latitude: v.latitude, longitude: v.longitude, locationMode: v.mode })}
-            />
-          </div>
+      </details>
 
-          <div className={styles.field}>
-            <label htmlFor="ef-locationDetails">Location Details</label>
-            <input type="text" id="ef-locationDetails" name="locationDetails" value={formData.locationDetails} onChange={handleChange} placeholder="Room, floor, link, etc." />
+      <details className={styles.settingsDetails}>
+        <summary className={styles.settingsSummary}>🎟️ Ticketing</summary>
+        <div>
+          <div className={styles.checkboxField}>
+            <input type="checkbox" id="ef-ticketed" name="isTicketed" checked={formData.isTicketed} onChange={handleChange} />
+            <label htmlFor="ef-ticketed">Ticketed Event</label>
           </div>
-        </>
-      )}
-
-      <div className={styles.checkboxField}>
-        <input type="checkbox" id="ef-ticketed" name="isTicketed" checked={formData.isTicketed} onChange={handleChange} />
-        <label htmlFor="ef-ticketed">Ticketed Event</label>
-      </div>
-
-      {formData.isTicketed && (
-        <div className={styles.row}>
-          <div className={styles.field}>
-            <label htmlFor="ef-ticketPrice">Ticket Price</label>
-            <input type="number" id="ef-ticketPrice" name="ticketPrice" value={formData.ticketPrice} onChange={handleChange} min={0} step={0.01} />
-          </div>
-          <div className={styles.field}>
-            <label htmlFor="ef-currency">Currency</label>
-            <select id="ef-currency" name="currency" value={formData.currency} onChange={handleChange}>
-              <option value="USD">USD</option>
-              <option value="EUR">EUR</option>
-              <option value="GBP">GBP</option>
-              <option value="XMR">XMR</option>
-              <option value="XTM">XTM</option>
-            </select>
-          </div>
+          {formData.isTicketed && (
+            <div className={styles.row}>
+              <div className={styles.field}>
+                <label htmlFor="ef-ticketPrice">Ticket Price</label>
+                <input type="number" id="ef-ticketPrice" name="ticketPrice" value={formData.ticketPrice} onChange={handleChange} min={0} step={0.01} />
+              </div>
+              <div className={styles.field}>
+                <label htmlFor="ef-currency">Currency</label>
+                <select id="ef-currency" name="currency" value={formData.currency} onChange={handleChange}>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                  <option value="GBP">GBP</option>
+                  <option value="XMR">XMR</option>
+                  <option value="XTM">XTM</option>
+                </select>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </details>
 
-      <div className={styles.checkboxField}>
-        <input type="checkbox" id="ef-volunteers" name="needsVolunteers" checked={formData.needsVolunteers} onChange={handleChange} />
-        <label htmlFor="ef-volunteers">Recruit Volunteers</label>
-      </div>
-
-      {formData.needsVolunteers && (
-        <>
-          <div className={styles.field}>
-            <label htmlFor="ef-volunteerRoles">Volunteer Roles (comma separated)</label>
-            <input type="text" id="ef-volunteerRoles" name="volunteerRoles" value={formData.volunteerRoles} onChange={handleChange} placeholder="e.g., Setup, Cleanup, Photography" />
+      <details className={styles.settingsDetails}>
+        <summary className={styles.settingsSummary}>🙋 Volunteers</summary>
+        <div>
+          <div className={styles.checkboxField}>
+            <input type="checkbox" id="ef-volunteers" name="needsVolunteers" checked={formData.needsVolunteers} onChange={handleChange} />
+            <label htmlFor="ef-volunteers">Recruit Volunteers</label>
           </div>
-          <div className={styles.field}>
-            <label htmlFor="ef-volunteerDesc">Volunteer Description</label>
-            <textarea id="ef-volunteerDesc" name="volunteerDescription" value={formData.volunteerDescription} onChange={handleChange} placeholder="Describe what volunteers will do..." rows={2} />
-          </div>
-        </>
-      )}
+          {formData.needsVolunteers && (
+            <>
+              <div className={styles.field}>
+                <label htmlFor="ef-volunteerRoles">Volunteer Roles (comma separated)</label>
+                <input type="text" id="ef-volunteerRoles" name="volunteerRoles" value={formData.volunteerRoles} onChange={handleChange} placeholder="e.g., Setup, Cleanup, Photography" />
+              </div>
+              <div className={styles.field}>
+                <label htmlFor="ef-volunteerDesc">Volunteer Description</label>
+                <textarea id="ef-volunteerDesc" name="volunteerDescription" value={formData.volunteerDescription} onChange={handleChange} placeholder="Describe what volunteers will do..." rows={2} />
+              </div>
+            </>
+          )}
+        </div>
+      </details>
 
       {!compact && (
-        <>
-          <div className={styles.checkboxField}>
-            <input type="checkbox" id="ef-donations" name="acceptsDonations" checked={formData.acceptsDonations} onChange={handleChange} />
-            <label htmlFor="ef-donations">Accept Donations</label>
-          </div>
-
-          {formData.acceptsDonations && (
-            <div className={styles.donationFields}>
+        <details className={styles.settingsDetails}>
+          <summary className={styles.settingsSummary}>💰 Donations & Links</summary>
+          <div>
+            <div className={styles.checkboxField}>
+              <input type="checkbox" id="ef-donations" name="acceptsDonations" checked={formData.acceptsDonations} onChange={handleChange} />
+              <label htmlFor="ef-donations">Accept Donations</label>
+            </div>
+            {formData.acceptsDonations && (
               <DonationAddressPicker
                 savedAddresses={userDonationAddrs}
                 selectedAddresses={formData.selectedDonationAddrs}
                 onAddressesChange={(addrs) => set({ selectedDonationAddrs: addrs })}
               />
+            )}
+            <div className={styles.field}>
+              <label>Hashtags</label>
+              <HashtagInput value={formData.hashtags} onChange={(tags) => set({ hashtags: tags })} placeholder="Add hashtags..." />
             </div>
-          )}
-
-          <div className={styles.field}>
-            <label>Hashtags</label>
-            <HashtagInput value={formData.hashtags} onChange={(tags) => set({ hashtags: tags })} placeholder="Add hashtags..." />
-          </div>
-
-          <details className={styles.settingsDetails}>
-            <summary className={styles.settingsSummary}>Entity Linking</summary>
             {fixedProjectId ? (
               <div className={styles.fixedProjectNotice}>
                 This event will be linked to: <strong>{fixedProjectTitle || 'this project'}</strong>
@@ -413,8 +401,8 @@ export default function EventFormFields({
                 label="Link to a project, group, shop, or school"
               />
             )}
-          </details>
-        </>
+          </div>
+        </details>
       )}
 
       {(onCancel || submitLabel) && (
