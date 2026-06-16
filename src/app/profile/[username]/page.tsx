@@ -1358,7 +1358,7 @@ export default function ProfilePage() {
           <div className={styles.projectsSection}>
             {projects.length > 0 ? (
               <div className={styles.projectsGrid}>
-                {projects.map((plan) => (
+                {projects.map((project) => (
                   <div key={project.id} className={`${styles.projectCard} ${project.pinned ? styles.pinnedCard : ''}`}>
                     {isOwnProfile && (
                       <Button 

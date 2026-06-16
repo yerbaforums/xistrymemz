@@ -39,8 +39,8 @@ export async function POST(
     const isAdmin = userRole === 'ADMIN'
 
     const isRequestOwner = req.userId === session.user.id
-    let isPlanOwner = false
-    let isPlanEditor = false
+    let isProjectOwner = false
+    let isProjectEditor = false
 
     if (req.projectId) {
       const project = await prisma.project.findFirst({
@@ -48,14 +48,14 @@ export async function POST(
         select: { userId: true }
       })
       if (project) {
-        isPlanOwner = project.userId === session.user.id
-        isPlanEditor = await prisma.projectEditor.findFirst({
+        isProjectOwner = project.userId === session.user.id
+        isProjectEditor = await prisma.projectEditor.findFirst({
           where: { projectId: req.projectId, userId: session.user.id }
         }).then(Boolean)
       }
     }
 
-    if (!isRequestOwner && !isPlanOwner && !isPlanEditor && !isAdmin) {
+    if (!isRequestOwner && !isProjectOwner && !isProjectEditor && !isAdmin) {
       return apiError("Unauthorized", 403)
     }
 

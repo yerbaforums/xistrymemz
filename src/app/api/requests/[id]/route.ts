@@ -12,17 +12,17 @@ async function canAccessRequest(userId: string, roleId: string, requestId: strin
   if (!req) return null
   const isOwner = req.userId === userId
   const isAdmin = roleId === 'ADMIN'
-  let isPlanOwner = false
-  let isPlanEditor = false
+  let isProjectOwner = false
+  let isProjectEditor = false
   if (req.projectId) {
     const project = await prisma.project.findFirst({ where: { id: req.projectId }, select: { userId: true } })
     if (project) {
-      isPlanOwner = project.userId === userId
-      isPlanEditor = await prisma.projectEditor.findFirst({ where: { projectId: req.projectId, userId } }).then(Boolean)
+      isProjectOwner = project.userId === userId
+      isProjectEditor = await prisma.projectEditor.findFirst({ where: { projectId: req.projectId, userId } }).then(Boolean)
     }
   }
-  const hasAccess = isOwner || isPlanOwner || isPlanEditor || isAdmin || req.isPublic
-  return { req, isOwner, isPlanOwner, isPlanEditor, isAdmin, hasAccess }
+  const hasAccess = isOwner || isProjectOwner || isProjectEditor || isAdmin || req.isPublic
+  return { req, isOwner, isProjectOwner, isProjectEditor, isAdmin, hasAccess }
 }
 
 export async function GET(
@@ -98,7 +98,7 @@ export async function PUT(
 
     const { id } = await params
     const access = await canAccessRequest(session.user.id, (session.user as { role?: string }).role || 'USER', id)
-    if (!access || !(access.isOwner || access.isPlanOwner || access.isPlanEditor || access.isAdmin)) {
+    if (!access || !(access.isOwner || access.isProjectOwner || access.isProjectEditor || access.isAdmin)) {
       return apiError("Request not found or unauthorized", 404)
     }
 
@@ -177,7 +177,7 @@ export async function DELETE(
 
     const { id } = await params
     const access = await canAccessRequest(session.user.id, (session.user as { role?: string }).role || 'USER', id)
-    if (!access || !(access.isOwner || access.isPlanOwner || access.isPlanEditor || access.isAdmin)) {
+    if (!access || !(access.isOwner || access.isProjectOwner || access.isProjectEditor || access.isAdmin)) {
       return apiError("Request not found or unauthorized", 404)
     }
 
@@ -201,7 +201,7 @@ export async function PATCH(
 
     const { id } = await params
     const access = await canAccessRequest(session.user.id, (session.user as { role?: string }).role || 'USER', id)
-    if (!access || !(access.isOwner || access.isPlanOwner || access.isPlanEditor || access.isAdmin)) {
+    if (!access || !(access.isOwner || access.isProjectOwner || access.isProjectEditor || access.isAdmin)) {
       return apiError("Request not found or unauthorized", 404)
     }
 

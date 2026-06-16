@@ -137,9 +137,9 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
           referenceTitle: project.title
         })
       })
-      if (res.ok) success('Shared to your feed!')
-      else error('Failed to share')
-    } catch { error('Failed to share') }
+      if (res.ok) toastSuccess('Shared to your feed!')
+      else toastError('Failed to share')
+    } catch { toastError('Failed to share') }
     finally { setSharingToFeed(false) }
   }
   const handleDeleteProject = async () => {

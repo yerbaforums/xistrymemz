@@ -68,17 +68,17 @@ export async function PUT(
     }
     const body = parsedBody
 
-    const existingPlan = await prisma.project.findUnique({
+    const existingProject = await prisma.project.findUnique({
       where: { id }
     })
 
-    if (!existingPlan) {
+    if (!existingProject) {
       return apiError("Project not found", 404)
     }
 
     const userRole = (session.user as { role?: string }).role
     const isAdmin = userRole === 'ADMIN'
-    const isOwner = existingPlan.userId === session.user.id
+    const isOwner = existingProject.userId === session.user.id
     const isEditor = await prisma.projectEditor.findFirst({
       where: { projectId: id, userId: session.user.id }
     })
@@ -90,41 +90,41 @@ export async function PUT(
     const project = await prisma.project.update({
       where: { id },
       data: {
-        title: (body as any).title ?? existingPlan.title,
-        description: body.description ?? existingPlan.description,
-        imageUrl: body.imageUrl !== undefined ? body.imageUrl : existingPlan.imageUrl,
-        status: body.status ?? existingPlan.status,
-        goals: body.goals !== undefined ? body.goals : existingPlan.goals,
-        mileposts: body.mileposts !== undefined ? body.mileposts : existingPlan.mileposts,
-        milepostStatus: body.milepostStatus !== undefined ? body.milepostStatus : existingPlan.milepostStatus,
-        published: body.published ?? existingPlan.published,
-        resources: body.resources !== undefined ? body.resources : existingPlan.resources,
-        schoolId: body.schoolId ?? existingPlan.schoolId,
-        shopId: body.shopId ?? existingPlan.shopId,
-        lookingForCollaborators: body.lookingForCollaborators ?? existingPlan.lookingForCollaborators,
-        acceptsDonations: body.acceptsDonations !== undefined ? body.acceptsDonations : existingPlan.acceptsDonations,
-        donationAddress: body.donationAddress !== undefined ? (body.donationAddress || null) : existingPlan.donationAddress,
-        donationCurrency: body.donationCurrency ?? existingPlan.donationCurrency,
-        donationDescription: body.donationDescription !== undefined ? (body.donationDescription || null) : existingPlan.donationDescription,
-        donationAddresses: body.donationAddresses !== undefined ? (body.donationAddresses || null) : existingPlan.donationAddresses,
-        category: body.category !== undefined ? body.category : existingPlan.category,
-        location: body.location !== undefined ? body.location : existingPlan.location,
-        locationDetails: body.locationDetails !== undefined ? body.locationDetails : existingPlan.locationDetails,
-        images: body.images !== undefined ? body.images : existingPlan.images,
-        goalAmount: body.goalAmount !== undefined ? body.goalAmount : existingPlan.goalAmount,
-        needsVolunteers: body.needsVolunteers !== undefined ? body.needsVolunteers : existingPlan.needsVolunteers,
-        volunteerRoles: body.volunteerRoles !== undefined ? body.volunteerRoles : existingPlan.volunteerRoles,
-        volunteerDescription: body.volunteerDescription !== undefined ? body.volunteerDescription : existingPlan.volunteerDescription,
-        videoUrl: body.videoUrl !== undefined ? body.videoUrl : existingPlan.videoUrl,
-        pinned: body.pinned !== undefined ? body.pinned : existingPlan.pinned
+        title: (body as any).title ?? existingProject.title,
+        description: body.description ?? existingProject.description,
+        imageUrl: body.imageUrl !== undefined ? body.imageUrl : existingProject.imageUrl,
+        status: body.status ?? existingProject.status,
+        goals: body.goals !== undefined ? body.goals : existingProject.goals,
+        mileposts: body.mileposts !== undefined ? body.mileposts : existingProject.mileposts,
+        milepostStatus: body.milepostStatus !== undefined ? body.milepostStatus : existingProject.milepostStatus,
+        published: body.published ?? existingProject.published,
+        resources: body.resources !== undefined ? body.resources : existingProject.resources,
+        schoolId: body.schoolId ?? existingProject.schoolId,
+        shopId: body.shopId ?? existingProject.shopId,
+        lookingForCollaborators: body.lookingForCollaborators ?? existingProject.lookingForCollaborators,
+        acceptsDonations: body.acceptsDonations !== undefined ? body.acceptsDonations : existingProject.acceptsDonations,
+        donationAddress: body.donationAddress !== undefined ? (body.donationAddress || null) : existingProject.donationAddress,
+        donationCurrency: body.donationCurrency ?? existingProject.donationCurrency,
+        donationDescription: body.donationDescription !== undefined ? (body.donationDescription || null) : existingProject.donationDescription,
+        donationAddresses: body.donationAddresses !== undefined ? (body.donationAddresses || null) : existingProject.donationAddresses,
+        category: body.category !== undefined ? body.category : existingProject.category,
+        location: body.location !== undefined ? body.location : existingProject.location,
+        locationDetails: body.locationDetails !== undefined ? body.locationDetails : existingProject.locationDetails,
+        images: body.images !== undefined ? body.images : existingProject.images,
+        goalAmount: body.goalAmount !== undefined ? body.goalAmount : existingProject.goalAmount,
+        needsVolunteers: body.needsVolunteers !== undefined ? body.needsVolunteers : existingProject.needsVolunteers,
+        volunteerRoles: body.volunteerRoles !== undefined ? body.volunteerRoles : existingProject.volunteerRoles,
+        volunteerDescription: body.volunteerDescription !== undefined ? body.volunteerDescription : existingProject.volunteerDescription,
+        videoUrl: body.videoUrl !== undefined ? body.videoUrl : existingProject.videoUrl,
+        pinned: body.pinned !== undefined ? body.pinned : existingProject.pinned
       }
     })
 
     if (body.hashtags !== undefined && Array.isArray(body.hashtags)) {
       await linkHashtags('PROJECT', id, body.hashtags)
     } else if (body.title !== undefined || body.description !== undefined) {
-      const title = body.title ?? existingPlan.title
-      const description = body.description ?? existingPlan.description
+      const title = body.title ?? existingProject.title
+      const description = body.description ?? existingProject.description
       await extractAndLinkHashtags(title + ' ' + (description || ''), 'PROJECT', id)
     }
 
@@ -148,14 +148,14 @@ export async function DELETE(
 
     const { id } = await params
 
-    const existingPlan = await prisma.project.findFirst({
+    const existingProject = await prisma.project.findFirst({
       where: {
         id,
         userId: session.user.id
       }
     })
 
-    if (!existingPlan) {
+    if (!existingProject) {
       return apiError("Project not found", 404)
     }
 

@@ -151,10 +151,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const userDonationAddrs = useDonationAddresses()
   const [saving, setSaving] = useState(false)
   const [resolvedParams, setResolvedParams] = useState<{ id: string } | null>(null)
-  const [showPlanModal, setShowPlanModal] = useState(false)
+  const [showProjectModal, setShowPlanModal] = useState(false)
   const [projects, setProjects] = useState<ProjectData[]>([])
-  const [selectedPlan, setSelectedPlan] = useState('')
-  const [addingToPlan, setAddingToPlan] = useState(false)
+  const [selectedProject, setSelectedPlan] = useState('')
+  const [addingToProject, setAddingToPlan] = useState(false)
   const [showRequestModal, setShowRequestModal] = useState(false)
   const [requestTitle, setRequestTitle] = useState('')
   const [requestDesc, setRequestDesc] = useState('')
@@ -278,7 +278,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   }, [session, product])
 
   useEffect(() => {
-    if (showPlanModal) {
+    if (showProjectModal) {
       fetch('/api/projects')
         .then(res => {
           if (!res.ok) {
@@ -293,7 +293,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           setProjects(userPlans)
         })
     }
-  }, [showPlanModal])
+  }, [showProjectModal])
 
   useRecordView('product', product?.id || '')
 
@@ -331,8 +331,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     }
   }
 
-  const handleAddToPlan = async () => {
-    if (!selectedPlan || !product) return
+  const handleAddToProject = async () => {
+    if (!selectedProject || !product) return
     setAddingToPlan(true)
 
     try {
@@ -342,7 +342,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         body: JSON.stringify({
           title: `Request: ${product.title}`,
           description: `Request for product: ${product.title}`,
-          projectId: selectedPlan,
+          projectId: selectedProject,
           productId: product.id
         })
       })
@@ -1025,7 +1025,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         </div>
       </div>
 
-      {showPlanModal && (
+      {showProjectModal && (
         <div className="modal-overlay" onClick={() => setShowPlanModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <h2>Add to Project</h2>
@@ -1035,13 +1035,13 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             ) : (
               <div className="form-group">
                 <select
-                  value={selectedPlan}
+                  value={selectedProject}
                   onChange={e => setSelectedPlan(e.target.value)}
                   className={styles.projectSelect}
                 >
                   <option value="">Select a project...</option>
                   {projects.map(project => (
-                    <option key={plan.id} value={plan.id}>{plan.title}</option>
+                    <option key={project.id} value={project.id}>{project.title}</option>
                   ))}
                 </select>
               </div>
@@ -1057,10 +1057,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               <Button 
                 type="button"
                 variant="primary" 
-                disabled={!selectedPlan || addingToPlan}
-                onClick={handleAddToPlan}
+                disabled={!selectedProject || addingToProject}
+                onClick={handleAddToProject}
               >
-                {addingToPlan ? 'Adding...' : 'Add to Project'}
+                {addingToProject ? 'Adding...' : 'Add to Project'}
               </Button>
             </div>
           </div>
