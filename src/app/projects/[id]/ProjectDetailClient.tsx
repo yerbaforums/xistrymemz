@@ -312,6 +312,9 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
         hashtags: projectHashtags,
       })
       setProject({ ...project, ...updated })
+      if (updated?.hashtags) {
+        setProjectHashtags(updated.hashtags.map((h: any) => h.hashtag?.tag).filter(Boolean))
+      }
       setEditingOverview(false)
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Failed to save')
@@ -721,7 +724,20 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
                     <summary className={styles.editSectionSummary}>📋 Planning Stages</summary>
                     <div className={styles.editSectionBody}>
                       {editedPhases.map((p, i) => (
-                        <div key={i} className={styles.phaseRow}>
+                        <div key={i} className={styles.phaseRow} draggable
+                          onDragStart={e => e.dataTransfer.setData('text/plain', String(i))}
+                          onDragOver={e => e.preventDefault()}
+                          onDrop={e => {
+                            const from = parseInt(e.dataTransfer.getData('text/plain'))
+                            const to = i
+                            if (from === to) return
+                            const next = [...editedPhases]
+                            const [moved] = next.splice(from, 1)
+                            next.splice(to, 0, moved)
+                            setEditedPhases(next)
+                          }}
+                        >
+                          <span className={styles.dragHandle} title="Drag to reorder">⠿</span>
                           <span className={styles.phaseNum}>{i + 1}.</span>
                           <input type="text" value={p} onChange={e => { const n = [...editedPhases]; n[i] = e.target.value; setEditedPhases(n) }} placeholder={`Phase ${i + 1}: Name — Description`} className={styles.formInput} />
                           <button type="button" onClick={() => setEditedPhases(editedPhases.filter((_, idx) => idx !== i))} className={styles.phaseRemoveBtn}>✕</button>

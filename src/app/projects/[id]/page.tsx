@@ -61,6 +61,9 @@ export default async function ProjectDetailPage({
       contributions: {
         orderBy: { createdAt: 'desc' },
         include: { user: { select: { id: true, name: true, email: true } } }
+      },
+      hashtags: {
+        include: { hashtag: { select: { id: true, tag: true } } }
       }
     }
   })

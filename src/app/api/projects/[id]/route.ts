@@ -120,6 +120,11 @@ export async function PUT(
         latitude: body.latitude !== undefined ? body.latitude : existingProject.latitude,
         longitude: body.longitude !== undefined ? body.longitude : existingProject.longitude,
         phases: body.phases !== undefined ? body.phases : existingProject.phases
+      },
+      include: {
+        hashtags: {
+          include: { hashtag: { select: { id: true, tag: true } } }
+        }
       }
     })
 

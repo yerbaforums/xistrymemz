@@ -1034,6 +1034,20 @@
   align-items: center;
 }
 
+.dragHandle {
+  cursor: grab;
+  color: var(--text-muted);
+  font-size: 1rem;
+  user-select: none;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+}
+
+.dragHandle:hover {
+  color: var(--accent-primary);
+  background: var(--bg-tertiary);
+}
+
 .phaseNum {
   font-size: 0.85rem;
   font-weight: 600;
