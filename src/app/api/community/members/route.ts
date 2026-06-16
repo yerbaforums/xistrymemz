@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return apiSuccess({ error: 'Unauthorized' }, { status: 401 })
+      return apiError('Unauthorized', 401)
     }
 
     const searchParams = request.nextUrl.searchParams
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
           lookingForCollaborators: true,
           _count: {
             select: { 
-              plans: true,
+              projects: true,
               requests: true,
               products: true,
               posts: true
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
     const [connections, totalConnections] = await Promise.all([
       prisma.connection.findMany({
         where: {
-          status: 'CONNECTED',
+          status: 'ACCEPTED',
           OR: [
             { requesterId: session.user.id },
             { receiverId: session.user.id }
@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
       }),
       prisma.connection.count({
         where: {
-          status: 'CONNECTED',
+          status: 'ACCEPTED',
           OR: [
             { requesterId: session.user.id },
             { receiverId: session.user.id }
@@ -153,6 +153,6 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error fetching community data:', error)
-    return apiSuccess({ error: 'Failed to fetch data' }, { status: 500 })
+    return apiError('Failed to fetch data', 500)
   }
 }
