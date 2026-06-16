@@ -538,6 +538,7 @@ export default function BoardDetailPage() {
                 boardSlug={slug}
                 onDelete={(id) => setDeleteTarget(id)}
                 onFlyTo={handlePinFlyTo}
+                onEdit={openEditPin}
                 onView={(pinId) => {
                   const idx = pins.findIndex(p => p.id === pinId)
                   if (idx >= 0) setCarouselIndex(idx)
