@@ -113,6 +113,7 @@ export async function createProject(data: {
       donationCurrency: data.donationCurrency || 'ETH',
       donationDescription: data.donationDescription || null,
       donationAddresses: data.donationAddresses || null,
+      phases: data.phases || null,
       userId: data.userId,
       status: data.status || 'ACTIVE',
       published: data.published ?? true,

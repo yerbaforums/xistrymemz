@@ -36,7 +36,7 @@ export const POST = withValidation(projectSchema, async (data, req, session) => 
       location, latitude, longitude,
       lookingForCollaborators, needsVolunteers, volunteerRoles, volunteerDescription,
       goalAmount, acceptsDonations, donationAddress, donationCurrency, donationDescription, donationAddresses,
-      images, videoUrl, hashtags,
+      images, videoUrl, phases, hashtags,
     } = data
 
     const project = await createProject({
@@ -63,6 +63,7 @@ export const POST = withValidation(projectSchema, async (data, req, session) => 
       donationCurrency: donationCurrency || 'ETH',
       donationDescription: donationDescription || null,
       donationAddresses: donationAddresses || null,
+      phases: phases || null,
       userId: session.user.id,
     })
 

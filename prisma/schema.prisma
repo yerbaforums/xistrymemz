@@ -309,6 +309,7 @@ model Project {
   resources               String? @default("[]")
   images                  String? // JSON array of image URLs
   videoUrl                String?
+  phases                  String? // JSON array of planning phase strings
   status                  String  @default("DRAFT")
   published               Boolean @default(false)
   pinned                  Boolean @default(false)

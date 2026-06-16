@@ -116,7 +116,10 @@ export async function PUT(
         volunteerRoles: body.volunteerRoles !== undefined ? body.volunteerRoles : existingProject.volunteerRoles,
         volunteerDescription: body.volunteerDescription !== undefined ? body.volunteerDescription : existingProject.volunteerDescription,
         videoUrl: body.videoUrl !== undefined ? body.videoUrl : existingProject.videoUrl,
-        pinned: body.pinned !== undefined ? body.pinned : existingProject.pinned
+        pinned: body.pinned !== undefined ? body.pinned : existingProject.pinned,
+        latitude: body.latitude !== undefined ? body.latitude : existingProject.latitude,
+        longitude: body.longitude !== undefined ? body.longitude : existingProject.longitude,
+        phases: body.phases !== undefined ? body.phases : existingProject.phases
       }
     })
 

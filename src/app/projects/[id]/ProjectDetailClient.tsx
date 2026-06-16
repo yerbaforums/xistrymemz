@@ -120,7 +120,8 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
     try { const p = project.images ? JSON.parse(project.images) : []; return Array.isArray(p) ? p : [] } catch { return project.imageUrl ? [project.imageUrl] : [] }
   })
   const [projectHashtags, setProjectHashtags] = useState<string[]>(() => {
-    try { return Array.isArray(project.hashtags) ? project.hashtags : [] } catch { return [] }
+    if (!Array.isArray(project.hashtags)) return []
+    return project.hashtags.map((h: any) => h.hashtag?.tag).filter(Boolean)
   })
   const [editedVideoUrl, setEditedVideoUrl] = useState(project.videoUrl || '')
   const [editedNeedsVolunteers, setEditedNeedsVolunteers] = useState(project.needsVolunteers)
@@ -128,7 +129,9 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
   const [editedVolunteerDescription, setEditedVolunteerDescription] = useState(project.volunteerDescription || '')
   const [editedGoalAmount, setEditedGoalAmount] = useState(project.goalAmount?.toString() || '')
   const [editedStatus, setEditedStatus] = useState(project.status)
-  const [editedPhases, setEditedPhases] = useState<string[]>([])
+  const [editedPhases, setEditedPhases] = useState<string[]>(() => {
+    try { const p = (project as any).phases ? JSON.parse((project as any).phases) : []; return Array.isArray(p) ? p : [] } catch { return [] }
+  })
   const [editingOverview, setEditingOverview] = useState(false)
   const [mapExpanded, setMapExpanded] = useState(false)
 
@@ -305,6 +308,7 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
         videoUrl: editedVideoUrl || null,
         imageUrl: editedImages[0] || null,
         images: editedImages.length > 0 ? JSON.stringify(editedImages) : null,
+        phases: editedPhases.length > 0 ? JSON.stringify(editedPhases) : null,
         hashtags: projectHashtags,
       })
       setProject({ ...project, ...updated })
@@ -760,6 +764,24 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
                           ))}
                         </div>
                       )}
+                      {(project as any).phases && (() => {
+                        let parsed: string[] = []
+                        try { parsed = JSON.parse((project as any).phases); if (!Array.isArray(parsed)) parsed = [] } catch {}
+                        if (parsed.length === 0) return null
+                        return (
+                          <div className={styles.phasesSection}>
+                            <h4 className={styles.phasesTitle}>📋 Planning Stages</h4>
+                            <div className={styles.phasesList}>
+                              {parsed.map((p, i) => (
+                                <div key={i} className={styles.phaseItem}>
+                                  <span className={styles.phaseNum}>{i + 1}.</span>
+                                  <span>{p}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )
+                      })()}
                       {userId && !isOwner && (
                         <div className={styles.my12}>
                           <CollaborateButton entityType="PROJECT" entityId={project.id} label="🤝 Join as Collaborator" variant="secondary" />

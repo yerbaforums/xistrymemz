@@ -235,6 +235,7 @@ export default function ProjectSupport({
                         placeholder="Amount"
                       />
                       <select value={editCurrency} onChange={e => setEditCurrency(e.target.value)} className={styles.editCurrencySelect}>
+                        <option value="USD">$ USD</option>
                         <option value="XMR">XMR (Monero)</option>
                         <option value="XTM">XTM (Tari)</option>
                         <option value="ARRR">ARRR (Pirate)</option>

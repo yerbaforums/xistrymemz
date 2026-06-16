@@ -1075,3 +1075,31 @@
   border-color: var(--accent-primary);
   color: var(--accent-primary);
 }
+
+/* Phases display */
+.phasesSection {
+  margin: 16px 0;
+}
+
+.phasesTitle {
+  font-size: 0.9rem;
+  margin: 0 0 8px;
+  color: var(--text-primary);
+}
+
+.phasesList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.phaseItem {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
