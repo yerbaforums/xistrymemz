@@ -17,7 +17,7 @@ export async function GET() {
       take: 20
     })
 
-    return apiSuccess(plans)
+    return apiSuccess(projects)
   } catch (error) {
     console.error('Error fetching plans:', error)
     return apiError("Failed to fetch projects", 500)

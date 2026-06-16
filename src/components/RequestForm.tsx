@@ -6,6 +6,7 @@ import { REQUEST_CATEGORIES, REQUEST_PRIORITIES } from '@/lib/request-categories
 import { getDefaultRequestFormData } from '@/types/request'
 import type { RequestFormData } from '@/types/request'
 import ImageUploader from '@/components/ImageUploader'
+import LocationPicker from '@/components/LocationPicker'
 
 interface RequestFormProps {
   initialData?: Partial<RequestFormData>
@@ -100,14 +101,11 @@ export default function RequestForm({
           className="input-field"
         />
       </div>
+      <LocationPicker
+        value={{ text: form.location, latitude: null, longitude: null }}
+        onChange={v => setForm({ ...form, location: v.text })}
+      />
       <div className="form-row">
-        <input
-          type="text"
-          placeholder="Location (optional)"
-          value={form.location}
-          onChange={e => setForm({ ...form, location: e.target.value })}
-          className="input-field"
-        />
         <input
           type="date"
           placeholder="Deadline"

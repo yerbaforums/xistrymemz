@@ -237,7 +237,7 @@ export const HOME_WELCOME_TOUR: TourStep[] = [
           adapts.
         </p>
         <p style={{ opacity: 0.8, fontSize: '0.85rem' }}>
-          We&apos;re in early development (v0.7.0). Your feedback shapes what comes next.
+          We just launched v0.8.0. The roadmap is community-driven — your feedback shapes what comes next.
         </p>
       </div>
     ),

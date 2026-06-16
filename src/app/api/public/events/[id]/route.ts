@@ -23,7 +23,7 @@ export async function GET(
     return apiError("Event not found", 404)
   }
 
-  const event = plan.events[0]
+    const event = project.events[0]
 
   return NextResponse.json({
     ...project,
@@ -34,7 +34,7 @@ export async function GET(
     latitude: event?.latitude || null,
     longitude: event?.longitude || null,
     maxJoiners: event?.maxJoiners || 0,
-    createdAt: plan.createdAt.toISOString(),
-    updatedAt: plan.updatedAt.toISOString()
+    createdAt: project.createdAt.toISOString(),
+    updatedAt: project.updatedAt.toISOString()
   })
 }

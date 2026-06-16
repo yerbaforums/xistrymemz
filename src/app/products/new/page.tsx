@@ -13,7 +13,7 @@ import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
 import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import { PRODUCT_CONDITIONS, PRODUCT_TYPES } from '@/lib/product-categories'
-import LocationOption from '@/components/LocationOption'
+import LocationPicker from '@/components/LocationPicker'
 import type { DonationAddr } from '@/types/product'
 import styles from './page.module.css'
 
@@ -50,8 +50,6 @@ export default function NewProductPage() {
     locationDetails: '',
     latitude: null as number | null,
     longitude: null as number | null,
-    locationMode: 'custom' as 'passport' | 'custom' | 'global',
-    isGlobal: false,
     imageUrl: '',
     paymentMethods: [] as string[],
     paymentType: 'BOTH',
@@ -122,11 +120,10 @@ export default function NewProductPage() {
           type: form.type,
           category: form.category || null,
           condition: form.condition || null,
-          location: form.locationMode === 'global' ? 'GLOBAL' : (form.location || null),
+          location: form.location || null,
           locationDetails: form.locationDetails || null,
           latitude: form.latitude,
           longitude: form.longitude,
-          isGlobal: form.locationMode === 'global',
           imageUrl: form.imageUrl || null,
           paymentMethods: form.paymentMethods.join(','),
           paymentType: settings.enableCheckout && settings.enableWallet ? form.paymentType : 'BOTH',
@@ -481,23 +478,15 @@ export default function NewProductPage() {
               <ImageUploader images={form.imageUrl ? [form.imageUrl] : []} onChange={urls => update('imageUrl', urls[0] || '')} maxImages={1} />
             </div>
             <div className="form-group">
-              <label className={styles.checkLabel}>
-                <input type="checkbox" checked={form.isGlobal} onChange={e => update('isGlobal', e.target.checked)} />
-                Available Globally (no location required)
-              </label>
+              <LocationPicker
+                value={{ text: form.location, latitude: form.latitude, longitude: form.longitude }}
+                onChange={v => update('location', v.text)}
+              />
             </div>
-            {!form.isGlobal && (
-              <>
-                <div className="form-group">
-                  <label>Location</label>
-                  <input type="text" value={form.location} onChange={e => update('location', e.target.value)} placeholder="City, State or full address" />
-                </div>
-                <div className="form-group">
-                  <label>Location Details</label>
-                  <input type="text" value={form.locationDetails} onChange={e => update('locationDetails', e.target.value)} placeholder="Additional details (optional)" />
-                </div>
-              </>
-            )}
+            <div className="form-group">
+              <label>Location Details</label>
+              <input type="text" value={form.locationDetails} onChange={e => update('locationDetails', e.target.value)} placeholder="Additional details (optional)" />
+            </div>
             <div className="form-group">
               <label className={styles.checkLabel}>
                 <input type="checkbox" checked={form.createGroup} onChange={e => update('createGroup', e.target.checked)} />
@@ -560,7 +549,7 @@ export default function NewProductPage() {
                 </div>
                 <div className={styles.reviewItem}>
                   <span className={styles.reviewLabel}>Location</span>
-                  <span>{form.isGlobal ? '🌍 Global' : form.location || 'Not specified'}</span>
+                  <span>{form.location || '🌍 Global / No location'}</span>
                 </div>
                 {form.paymentMethods.length > 0 && (
                   <div className={styles.reviewItem}>

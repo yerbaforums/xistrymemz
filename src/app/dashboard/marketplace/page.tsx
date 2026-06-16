@@ -7,6 +7,7 @@ import { useToast } from '@/context/ToastContext'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
+import LocationPicker from '@/components/LocationPicker'
 import Loading from '@/components/Loading'
 import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import type { DonationAddr } from '@/types/product'
@@ -581,12 +582,12 @@ function MarketplaceContent() {
                   Available Globally
                 </label>
               </div>
-              {!productForm.isGlobal && (
-                <div className="form-group">
-                  <label>Location</label>
-                  <input type="text" value={productForm.location} onChange={e => setProductForm({...productForm, location: e.target.value})} placeholder="City, State" />
-                </div>
-              )}
+              <div className="form-group">
+                <LocationPicker
+                  value={{ text: productForm.location, latitude: null, longitude: null }}
+                  onChange={v => setProductForm({...productForm, location: v.text})}
+                />
+              </div>
               <div className="form-group">
                 <label>Payment Methods</label>
                 <div className={styles.paymentOptions}>

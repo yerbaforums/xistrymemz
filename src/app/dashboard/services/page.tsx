@@ -14,7 +14,7 @@ import type { ServiceOffering, ServiceCategory } from '@/types/service'
 import { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service'
 import { EmptyState } from '@/components/EmptyState'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
-import LocationOption from '@/components/LocationOption'
+import LocationPicker from '@/components/LocationPicker'
 import styles from './page.module.css'
 
 interface ShopSettings {
@@ -42,7 +42,6 @@ const EMPTY_FORM = {
   location: '',
   latitude: null as number | null,
   longitude: null as number | null,
-  locationMode: 'custom' as 'passport' | 'custom' | 'global',
   meetingLink: '',
   imageUrl: '',
   imageUrls: [] as string[],
@@ -119,7 +118,7 @@ export default function DashboardServices() {
       location: s.location || '',
       latitude: (s as any).latitude || null,
       longitude: (s as any).longitude || null,
-      locationMode: (s as any).latitude ? 'custom' : 'global',
+
       meetingLink: s.meetingLink || '',
       imageUrl: s.imageUrl || '',
       imageUrls: s.imageUrl ? [s.imageUrl] : [],
@@ -384,9 +383,9 @@ export default function DashboardServices() {
 
               <div className="form-row">
                 <div className="form-group" style={{ flex: 1 }}>
-                  <LocationOption
-                    value={{ mode: form.locationMode, text: form.location, latitude: form.latitude, longitude: form.longitude }}
-                    onChange={v => setForm({...form, locationMode: v.mode, location: v.text, latitude: v.latitude, longitude: v.longitude })}
+                  <LocationPicker
+                    value={{ text: form.location, latitude: form.latitude, longitude: form.longitude }}
+                    onChange={v => setForm({...form, location: v.text, latitude: v.latitude, longitude: v.longitude })}
                   />
                 </div>
                 <div className="form-group" style={{ flex: 1 }}>

@@ -23,7 +23,7 @@ export async function POST(
     },
     include: {
       user: true,
-      plan: true,
+      project: true,
       product: true
     }
   })

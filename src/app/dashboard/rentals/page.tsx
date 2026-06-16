@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
 import ImageUploader from '@/components/ImageUploader'
+import LocationPicker from '@/components/LocationPicker'
 import styles from './rentals.module.css'
 import Skeleton from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
@@ -369,12 +370,12 @@ export default function RentalsPage() {
                   Available globally (no location restriction)
                 </label>
               </div>
-              {!form.isGlobal && (
-                <div className="form-group">
-                  <label>Location</label>
-                  <input type="text" value={form.location} onChange={e => setForm({...form, location: e.target.value})} placeholder="City, State" />
-                </div>
-              )}
+              <div className="form-group">
+                <LocationPicker
+                  value={{ text: form.location, latitude: null, longitude: null }}
+                  onChange={v => setForm({...form, location: v.text})}
+                />
+              </div>
               <div className={styles.checkGroup}>
                 <label className={styles.checkLabel}>
                   <input type="checkbox" checked={form.rentalAvailable} onChange={e => setForm({...form, rentalAvailable: e.target.checked})} />

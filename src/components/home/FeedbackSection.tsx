@@ -12,7 +12,7 @@ export default function FeedbackSection() {
 
   return (
     <section className={styles.section}>
-      <div className={styles.badge}>v0.7.0 — Early Development</div>
+      <div className={styles.badge}>v0.8.0 — Now Live</div>
       <h2 className={styles.title}>You Shape What&apos;s Next</h2>
       <p className={styles.subtitle}>
         XistrYmemZ is <strong>open source</strong> and <strong>community-driven</strong>.
