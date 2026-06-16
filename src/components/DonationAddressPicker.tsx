@@ -15,6 +15,7 @@ const CURRENCIES = [
   { value: 'ARRR', label: 'ARRR (Pirate)' },
   { value: 'DERO', label: 'DERO (Dero)' },
   { value: 'ZANO', label: 'ZANO (Zano)' },
+  { value: 'FIRO', label: 'FIRO (Firo)' },
 ]
 
 interface DonationAddressPickerProps {

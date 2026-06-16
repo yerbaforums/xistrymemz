@@ -235,11 +235,12 @@ export default function ProjectSupport({
                         placeholder="Amount"
                       />
                       <select value={editCurrency} onChange={e => setEditCurrency(e.target.value)} className={styles.editCurrencySelect}>
-                        <option value="USD">USD</option>
-                        <option value="ETH">ETH</option>
-                        <option value="BTC">BTC</option>
-                        <option value="XMR">XMR</option>
-                        <option value="XTM">XTM</option>
+                        <option value="XMR">XMR (Monero)</option>
+                        <option value="XTM">XTM (Tari)</option>
+                        <option value="ARRR">ARRR (Pirate)</option>
+                        <option value="DERO">DERO (Dero)</option>
+                        <option value="ZANO">ZANO (Zano)</option>
+                        <option value="FIRO">FIRO (Firo)</option>
                       </select>
                     </div>
                     <button onClick={async () => {
