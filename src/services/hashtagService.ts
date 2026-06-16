@@ -22,7 +22,7 @@ const ENTITY_RELATIONS: Record<HashtagEntityType, { model: string; idField: stri
   EVENT: { model: 'eventHashtag', idField: 'eventId', table: 'EventHashtag' },
   SERVICE: { model: 'serviceOfferingHashtag', idField: 'serviceOfferingId', table: 'ServiceOfferingHashtag' },
   SCHOOLCONTENT: { model: 'schoolContentHashtag', idField: 'schoolContentId', table: 'SchoolContentHashtag' },
-  PLAN: { model: 'projectHashtag', idField: 'projectId', table: 'ProjectHashtag' },
+  PROJECT: { model: 'projectHashtag', idField: 'projectId', table: 'ProjectHashtag' },
   REQUEST: { model: 'requestHashtag', idField: 'requestId', table: 'RequestHashtag' },
   GROUP: { model: 'groupHashtag', idField: 'groupId', table: 'GroupHashtag' },
 }
