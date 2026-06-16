@@ -290,7 +290,7 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
       </div>
 
       <EntityActions
-        entityType={pin.entityType && ['PRODUCT','EVENT','SERVICE','PROJECT','GROUP','REQUEST','SHOP'].includes(pin.entityType) ? pin.entityType as any : 'PRODUCT'}
+        entityType={pin.entityType && ['PRODUCT','EVENT','SERVICE','PROJECT','GROUP','REQUEST','SHOP'].includes(pin.entityType) ? pin.entityType as any : 'PIN'}
         entityId={pin.entityId || pin.id}
         title={pin.entityTitle || pin.title || 'Pin'}
         authorId={pin.userId}

@@ -28,6 +28,7 @@ const ENTITY_ROUTES: Record<string, string> = {
   SHOP: '/api/shops',
   POST: '/api/posts',
   SCHOOL_CONTENT: '/api/school-contents',
+  PIN: '/api/boards',
 }
 
 const ENTITY_LIST_ROUTES: Record<string, string> = {
@@ -40,6 +41,7 @@ const ENTITY_LIST_ROUTES: Record<string, string> = {
   SHOP: '/shops',
   POST: '/posts',
   SCHOOL_CONTENT: '/school/content',
+  PIN: '/boards',
 }
 
 export default function LinkedEntityDetail({ entityType, entityId, initialTitle, initialImage }: { entityType: string; entityId: string; initialTitle?: string | null; initialImage?: string | null }) {
