@@ -75,6 +75,26 @@
   overflow: hidden;
 }
 
+.hashtags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.hashtag {
+  font-size: 0.72rem;
+  color: var(--accent-primary);
+  text-decoration: none;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+}
+
+.hashtag:hover {
+  text-decoration: underline;
+}
+
 .meta {
   display: flex;
   align-items: center;

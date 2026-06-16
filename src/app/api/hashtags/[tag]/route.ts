@@ -39,7 +39,7 @@ export async function GET(
         prisma.postHashtag.count({ where: { hashtagId: hashtag.id, sourceType: 'GROUPPOST' } }),
       ])
 
-    const totals = { posts: postCount, products: productCount, events: eventCount, services: serviceCount, schoolContents: schoolContentCount, plans: planCount, requests: requestCount, groups: groupCount, forumPosts: forumPostCount, groupPosts: groupPostCount }
+    const totals = { posts: postCount, products: productCount, events: eventCount, services: serviceCount, schoolContents: schoolContentCount, projects: planCount, requests: requestCount, groups: groupCount, forumPosts: forumPostCount, groupPosts: groupPostCount }
 
     const data: Record<string, any> = {}
 
@@ -130,7 +130,7 @@ export async function GET(
       data.schoolContents = schoolContentHashtags.map(sch => sch.schoolContent)
     }
 
-    if (type === 'all' || type === 'plans') {
+    if (type === 'all' || type === 'projects') {
       const projectHashtags = await prisma.projectHashtag.findMany({
         where: { hashtagId: hashtag.id },
         include: {
@@ -145,7 +145,7 @@ export async function GET(
         take: type === 'all' ? 4 : limit,
         skip: type === 'all' ? 0 : skip,
       })
-      data.plans = projectHashtags.map(ph => ph.project)
+      data.projects = projectHashtags.map(ph => ph.project)
     }
 
     if (type === 'all' || type === 'requests') {

@@ -41,6 +41,7 @@ export async function GET(request: NextRequest) {
         where,
         include: {
           user: { select: { id: true, name: true, image: true, username: true } },
+          hashtags: { include: { hashtag: { select: { tag: true } } } }
         },
         skip,
         take: pageSize,

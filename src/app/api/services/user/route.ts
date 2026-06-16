@@ -22,6 +22,7 @@ export async function GET(request: Request) {
         where: { userId: session.user.id },
         include: {
           user: { select: { id: true, name: true, image: true, username: true } },
+          hashtags: { include: { hashtag: { select: { tag: true } } } }
         },
         orderBy: { createdAt: 'desc' },
         skip,

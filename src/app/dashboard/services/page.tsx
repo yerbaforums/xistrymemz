@@ -15,6 +15,7 @@ import { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } f
 import { EmptyState } from '@/components/EmptyState'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import LocationPicker from '@/components/LocationPicker'
+import HashtagInput from '@/components/HashtagInput'
 import styles from './page.module.css'
 
 interface ShopSettings {
@@ -53,6 +54,7 @@ const EMPTY_FORM = {
   appointmentLeadTime: '',
   appointmentLocation: '',
   appointmentMeetingLink: '',
+  hashtags: [] as string[],
 }
 
 export default function DashboardServices() {
@@ -134,6 +136,7 @@ export default function DashboardServices() {
       appointmentLeadTime: (s as any).appointmentLeadTime?.toString() || '',
       appointmentLocation: (s as any).appointmentLocation || '',
       appointmentMeetingLink: (s as any).appointmentMeetingLink || '',
+      hashtags: (s as any).hashtags?.map((h: any) => h.hashtag?.tag).filter(Boolean) || [],
     })
     setEditingId(s.id)
     setShowForm(true)
@@ -166,6 +169,7 @@ export default function DashboardServices() {
         appointmentLeadTime: form.acceptsAppointments && form.appointmentLeadTime ? parseInt(form.appointmentLeadTime) : null,
         appointmentLocation: form.acceptsAppointments ? (form.appointmentLocation || null) : null,
         appointmentMeetingLink: form.acceptsAppointments ? (form.appointmentMeetingLink || null) : null,
+        hashtags: form.hashtags,
       }
 
       const url = editingId ? `/api/services/${editingId}` : '/api/services'
@@ -452,6 +456,11 @@ export default function DashboardServices() {
                   </div>
                 </div>
               )}
+
+              <div className="form-group">
+                <label>Hashtags</label>
+                <HashtagInput value={form.hashtags} onChange={(tags) => setForm({...form, hashtags: tags})} placeholder="Add hashtags..." />
+              </div>
 
               <div className={styles.formActions}>
                 <button type="button" onClick={resetForm} className="btn-ghost">Cancel</button>
