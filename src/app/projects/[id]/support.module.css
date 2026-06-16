@@ -118,6 +118,11 @@
   margin-bottom: 6px;
 }
 
+.cryptoIcon {
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 .addressActions {
   display: flex;
   gap: 4px;
@@ -588,4 +593,20 @@
 
 .volunteerEditWrapper {
   margin-top: 12px;
+}
+
+.goalEditRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.editCurrencySelect {
+  padding: 8px 10px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  cursor: pointer;
 }

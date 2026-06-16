@@ -8,6 +8,7 @@ import type { DonationAddr } from '@/types/product'
 import { parseDonationAddresses } from '@/lib/donations'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { useToast } from '@/context/ToastContext'
+import { getCryptoIcon, getCryptoName } from '@/lib/crypto-icons'
 
 interface ProjectSupportProps {
   projectId: string
@@ -55,6 +56,7 @@ export default function ProjectSupport({
   const [qrModal, setQrModal] = useState<{ open: boolean; address: string; currency: string }>({ open: false, address: '', currency: '' })
   const [editGoal, setEditGoal] = useState(false)
   const [editGoalAmount, setEditGoalAmount] = useState(goalAmount || 0)
+  const [editCurrency, setEditCurrency] = useState(donationCurrency)
   const [savingGoal, setSavingGoal] = useState(false)
   const [editVolunteers, setEditVolunteers] = useState(false)
   const [editNeedsVolunteers, setEditNeedsVolunteers] = useState(needsVolunteers)
@@ -199,8 +201,11 @@ export default function ProjectSupport({
               <div className={styles.addressBox}>
                 {donationAddrs.map((addr, i) => (
                   <div key={i} className={styles.addressPill}>
-                    <span className={styles.addressLabel}>{addr.label || addr.currency}</span>
-                    <code className={styles.addressValue}>{addr.address}</code>
+                    {getCryptoIcon(addr.currency) && (
+                      <img src={getCryptoIcon(addr.currency)} alt={addr.currency} width={18} height={18} className={styles.cryptoIcon} />
+                    )}
+                    <span className={styles.addressLabel}>{addr.label || getCryptoName(addr.currency) || addr.currency}</span>
+                    <code className={styles.addressValue}>{addr.address.length > 20 ? addr.address.slice(0, 8) + '...' + addr.address.slice(-6) : addr.address}</code>
                     <div className={styles.addressActions}>
                       <button
                         className={styles.addressActionBtn}
@@ -221,12 +226,22 @@ export default function ProjectSupport({
               <div className={styles.ownerEditSection}>
                 {editGoal ? (
                   <div className={styles.editRow}>
-                    <label className={styles.editLabel}>Funding Goal ({donationCurrency}):</label>
-                    <input
-                      type="number" value={editGoalAmount} onChange={e => setEditGoalAmount(parseFloat(e.target.value) || 0)}
-                      className={styles.editInput}
-                      min={0} step={1}
-                    />
+                    <label className={styles.editLabel}>Funding Goal:</label>
+                    <div className={styles.goalEditRow}>
+                      <input
+                        type="number" value={editGoalAmount} onChange={e => setEditGoalAmount(parseFloat(e.target.value) || 0)}
+                        className={styles.editInput}
+                        min={0} step={1}
+                        placeholder="Amount"
+                      />
+                      <select value={editCurrency} onChange={e => setEditCurrency(e.target.value)} className={styles.editCurrencySelect}>
+                        <option value="USD">USD</option>
+                        <option value="ETH">ETH</option>
+                        <option value="BTC">BTC</option>
+                        <option value="XMR">XMR</option>
+                        <option value="XTM">XTM</option>
+                      </select>
+                    </div>
                     <button onClick={async () => {
                       setSavingGoal(true)
                       try {
@@ -245,7 +260,7 @@ export default function ProjectSupport({
                   </div>
                 ) : (
                   <button onClick={() => { setEditGoalAmount(goalAmount || 0); setEditGoal(true) }} className={`btn-ghost ${styles.editTriggerBtn}`}>
-                    {goalAmount ? `Goal: ${goalAmount} ${donationCurrency} — Edit` : 'Set Funding Goal'}
+                    {goalAmount ? `Goal: ${goalAmount} ${editCurrency || donationCurrency} — Edit` : 'Set Funding Goal'}
                   </button>
                 )}
               </div>

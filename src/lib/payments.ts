@@ -1,5 +1,5 @@
-export const PLATFORM_FEE_PERCENT = parseFloat(process.env.SITE_ESCROW_FEE || '10')
-export const DIRECT_FEE_PERCENT = parseFloat(process.env.SITE_DIRECT_FEE || '5')
+export const PLATFORM_FEE_PERCENT = 0
+export const DIRECT_FEE_PERCENT = 0
 
 export function calculatePlatformFee(amount: number, feeType: 'escrow' | 'direct' = 'escrow'): number {
   const percent = feeType === 'direct' ? DIRECT_FEE_PERCENT : PLATFORM_FEE_PERCENT

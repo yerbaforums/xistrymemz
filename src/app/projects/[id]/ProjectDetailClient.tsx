@@ -29,6 +29,8 @@ import type { EventFormData } from '@/components/EventFormFields'
 import TranslateButton from '@/components/TranslateButton'
 import ImageUploader from '@/components/ImageUploader'
 import HashtagInput from '@/components/HashtagInput'
+import LocationPicker from '@/components/LocationPicker'
+import { PROJECT_CATEGORIES } from '@/lib/project-categories'
 import { EmptyState } from '@/components/EmptyState'
 import { MapContainer as ProjectMapContainer, TileLayer as ProjectTileLayer, Marker as ProjectMarker, Popup as ProjectPopup } from '@/components/LeafletComponents'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
@@ -72,6 +74,7 @@ interface ProjectData {
   donationAddress: string | null; donationCurrency: string; donationAddresses: string | null
   acceptsDonations: boolean; donationDescription: string | null
   needsVolunteers: boolean; volunteerRoles: string | null; volunteerDescription: string | null
+  videoUrl: string | null
   joiners: ProjectJoiner[]; contributions: ProjectContribution[]
   user: { id: string; name: string | null; username: string | null; image?: string | null }
   hashtags?: Array<{ id: string; hashtag: { id: string; tag: string } }>
@@ -117,6 +120,13 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
   const [projectHashtags, setProjectHashtags] = useState<string[]>(() => {
     try { return Array.isArray(project.hashtags) ? project.hashtags : [] } catch { return [] }
   })
+  const [editedVideoUrl, setEditedVideoUrl] = useState(project.videoUrl || '')
+  const [editedNeedsVolunteers, setEditedNeedsVolunteers] = useState(project.needsVolunteers)
+  const [editedVolunteerRoles, setEditedVolunteerRoles] = useState(project.volunteerRoles || '')
+  const [editedVolunteerDescription, setEditedVolunteerDescription] = useState(project.volunteerDescription || '')
+  const [editedGoalAmount, setEditedGoalAmount] = useState(project.goalAmount?.toString() || '')
+  const [editedStatus, setEditedStatus] = useState(project.status)
+  const [editedPhases, setEditedPhases] = useState<string[]>([])
   const [editingOverview, setEditingOverview] = useState(false)
 
   const [showRequestModal, setShowRequestModal] = useState(false)
@@ -283,6 +293,11 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
         location: editedLocation || null,
         locationDetails: editedLocationDetails || null,
         lookingForCollaborators: editedLookingForCollaborators,
+        needsVolunteers: editedNeedsVolunteers,
+        volunteerRoles: editedVolunteerRoles || null,
+        volunteerDescription: editedVolunteerDescription || null,
+        goalAmount: editedGoalAmount ? parseFloat(editedGoalAmount) : null,
+        videoUrl: editedVideoUrl || null,
         imageUrl: editedImages[0] || null,
         images: editedImages.length > 0 ? JSON.stringify(editedImages) : null,
         hashtags: projectHashtags,
@@ -614,28 +629,99 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
                   </div>
                   <input type="text" value={editedTitle} onChange={e => setEditedTitle(e.target.value)} className={styles.titleInput} />
                   <textarea value={editedDescription} onChange={e => setEditedDescription(e.target.value)} className={styles.descInput} rows={3} />
-                    <div className={`${styles.formRow} ${styles.formRowGap}`}>
-                      <div className={styles.formGroup}>
+                  <div className={`${styles.formRow} ${styles.formRowGap}`}>
+                    <div className={styles.formGroup}>
                       <label>Category</label>
-                      <input type="text" value={editedCategory} onChange={e => setEditedCategory(e.target.value)} placeholder="e.g. Technology, Community..." className={styles.formInput} />
+                      <select value={editedCategory} onChange={e => setEditedCategory(e.target.value)} className={styles.formInput}>
+                        <option value="">Select...</option>
+                        {PROJECT_CATEGORIES.map(c => (
+                          <option key={c.value} value={c.value}>{c.icon} {c.label}</option>
+                        ))}
+                      </select>
                     </div>
                     <div className={styles.formGroup}>
-                      <label>Location</label>
-                      <input type="text" value={editedLocation} onChange={e => setEditedLocation(e.target.value)} placeholder="City, State" className={styles.formInput} />
+                      <label>Status</label>
+                      <select value={editedStatus} onChange={e => setEditedStatus(e.target.value)} className={styles.formInput}>
+                        <option value="IDEA">💡 Idea</option>
+                        <option value="ACTIVE">🚀 Active</option>
+                        <option value="IN_PROGRESS">🔨 In Progress</option>
+                        <option value="COMPLETED">✅ Completed</option>
+                      </select>
                     </div>
                   </div>
-                  <div className={styles.formGroup}>
-                    <label>Location Details</label>
-                    <input type="text" value={editedLocationDetails} onChange={e => setEditedLocationDetails(e.target.value)} placeholder="e.g. Meetup point, address" className={styles.formInput} />
-                  </div>
-                  <label className={styles.collabCheckbox}>
-                    <input type="checkbox" checked={editedLookingForCollaborators} onChange={e => setEditedLookingForCollaborators(e.target.checked)} />
-                    <span>Looking for collaborators</span>
-                  </label>
-                  <div className={styles.formGroup}>
-                    <label>Images</label>
-                    <ImageUploader images={editedImages} onChange={setEditedImages} maxImages={5} />
-                  </div>
+
+                  <details className={styles.editSection}>
+                    <summary className={styles.editSectionSummary}>📍 Location</summary>
+                    <div className={styles.editSectionBody}>
+                      <LocationPicker
+                        value={{ text: editedLocation, latitude: project.latitude, longitude: project.longitude }}
+                        onChange={v => setEditedLocation(v.text)}
+                      />
+                      <div className={styles.formGroup}>
+                        <label>Location Details</label>
+                        <input type="text" value={editedLocationDetails} onChange={e => setEditedLocationDetails(e.target.value)} placeholder="e.g. Meetup point, address" className={styles.formInput} />
+                      </div>
+                    </div>
+                  </details>
+
+                  <details className={styles.editSection}>
+                    <summary className={styles.editSectionSummary}>🤝 Collaborate</summary>
+                    <div className={styles.editSectionBody}>
+                      <label className={styles.collabCheckbox}>
+                        <input type="checkbox" checked={editedLookingForCollaborators} onChange={e => setEditedLookingForCollaborators(e.target.checked)} />
+                        <span>Looking for collaborators</span>
+                      </label>
+                      <label className={styles.collabCheckbox}>
+                        <input type="checkbox" checked={editedNeedsVolunteers} onChange={e => setEditedNeedsVolunteers(e.target.checked)} />
+                        <span>Needs volunteers</span>
+                      </label>
+                      {editedNeedsVolunteers && (
+                        <div className={styles.nestedFields}>
+                          <input type="text" value={editedVolunteerRoles} onChange={e => setEditedVolunteerRoles(e.target.value)} placeholder="Roles (comma separated)" className={styles.formInput} />
+                          <textarea value={editedVolunteerDescription} onChange={e => setEditedVolunteerDescription(e.target.value)} placeholder="Volunteer description..." className={styles.formInput} rows={2} />
+                        </div>
+                      )}
+                    </div>
+                  </details>
+
+                  <details className={styles.editSection}>
+                    <summary className={styles.editSectionSummary}>💰 Funding</summary>
+                    <div className={styles.editSectionBody}>
+                      <div className={styles.formGroup}>
+                        <label>Funding Goal ($)</label>
+                        <input type="number" value={editedGoalAmount} onChange={e => setEditedGoalAmount(e.target.value)} placeholder="0.00" className={styles.formInput} />
+                      </div>
+                    </div>
+                  </details>
+
+                  <details className={styles.editSection}>
+                    <summary className={styles.editSectionSummary}>📸 Media</summary>
+                    <div className={styles.editSectionBody}>
+                      <div className={styles.formGroup}>
+                        <label>Images</label>
+                        <ImageUploader images={editedImages} onChange={setEditedImages} maxImages={5} />
+                      </div>
+                      <div className={styles.formGroup}>
+                        <label>Video URL</label>
+                        <input type="url" value={editedVideoUrl} onChange={e => setEditedVideoUrl(e.target.value)} placeholder="https://youtube.com/watch?v=..." className={styles.formInput} />
+                      </div>
+                    </div>
+                  </details>
+
+                  <details className={styles.editSection}>
+                    <summary className={styles.editSectionSummary}>📋 Planning Stages</summary>
+                    <div className={styles.editSectionBody}>
+                      {editedPhases.map((p, i) => (
+                        <div key={i} className={styles.phaseRow}>
+                          <span className={styles.phaseNum}>{i + 1}.</span>
+                          <input type="text" value={p} onChange={e => { const n = [...editedPhases]; n[i] = e.target.value; setEditedPhases(n) }} placeholder={`Phase ${i + 1}: Name — Description`} className={styles.formInput} />
+                          <button type="button" onClick={() => setEditedPhases(editedPhases.filter((_, idx) => idx !== i))} className={styles.phaseRemoveBtn}>✕</button>
+                        </div>
+                      ))}
+                      <button type="button" onClick={() => setEditedPhases([...editedPhases, ''])} className={styles.phaseAddBtn}>+ Add Phase</button>
+                    </div>
+                  </details>
+
                   <div className={styles.formGroup}>
                     <label>Hashtags</label>
                     <HashtagInput value={projectHashtags} onChange={setProjectHashtags} placeholder="Add hashtags..." />

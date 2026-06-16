@@ -927,3 +927,119 @@
   font-size: 0.8rem;
   color: var(--text-muted);
 }
+
+/* Edit mode sections */
+.editSection {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.editSectionSummary {
+  padding: 10px 14px;
+  background: var(--bg-secondary);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  user-select: none;
+}
+
+.editSectionSummary:hover {
+  background: var(--bg-tertiary);
+}
+
+.editSectionBody {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.formInput {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-family: inherit;
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.nestedFields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  margin-left: 20px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  border-left: 2px solid var(--accent-primary);
+}
+
+.phaseRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.phaseNum {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  min-width: 20px;
+  text-align: right;
+}
+
+.phaseRemoveBtn {
+  padding: 6px 10px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.phaseRemoveBtn:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.phaseAddBtn {
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-family: inherit;
+  transition: var(--transition);
+  text-align: center;
+}
+
+.phaseAddBtn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
