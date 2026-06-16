@@ -18,6 +18,8 @@ import Breadcrumbs from '@/components/Breadcrumbs'
 import Loading from '@/components/Loading'
 import { getBoardMarkerIcon } from '@/lib/map-markers'
 import { getEntityIcon } from '@/lib/entity-icons'
+import { PIN_CATEGORIES } from '@/lib/pin-categories'
+import ImageUploader from '@/components/ImageUploader'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
@@ -116,6 +118,8 @@ export default function BoardDetailPage() {
   const [editPinContactName, setEditPinContactName] = useState('')
   const [editPinContactEmail, setEditPinContactEmail] = useState('')
   const [editPinContactPhone, setEditPinContactPhone] = useState('')
+  const [editPinImages, setEditPinImages] = useState<string[]>([])
+  const [editPinExpiresAt, setEditPinExpiresAt] = useState('')
   const [savingPin, setSavingPin] = useState(false)
 
   useEffect(() => {
@@ -212,6 +216,8 @@ export default function BoardDetailPage() {
           contactName: editPinContactName.trim() || null,
           contactEmail: editPinContactEmail.trim() || null,
           contactPhone: editPinContactPhone.trim() || null,
+          images: editPinImages.length > 0 ? editPinImages : null,
+          expiresAt: editPinExpiresAt || null,
         }),
       })
       if (res.ok) {
@@ -230,6 +236,8 @@ export default function BoardDetailPage() {
     setEditPinContactName(pin.contactName || '')
     setEditPinContactEmail(pin.contactEmail || '')
     setEditPinContactPhone(pin.contactPhone || '')
+    setEditPinImages(pin.images ? (() => { try { return JSON.parse(pin.images) as string[] } catch { return [] } })() : [])
+    setEditPinExpiresAt(pin.expiresAt ? pin.expiresAt.slice(0, 16) : '')
     setEditingPin(pin)
   }
 
@@ -630,18 +638,29 @@ export default function BoardDetailPage() {
                 <textarea value={editPinContent} onChange={e => setEditPinContent(e.target.value)} rows={3} />
               </div>
               <div className="form-group">
+                <label>Images</label>
+                <ImageUploader images={editPinImages} onChange={setEditPinImages} maxImages={6} />
+              </div>
+              <div className="form-group">
                 <label>Category</label>
                 <select value={editPinCategory} onChange={e => setEditPinCategory(e.target.value)}>
-                  <option value="GENERAL">General</option>
-                  <option value="PROMOTION">Promotion</option>
-                  <option value="EVENT">Event</option>
-                  <option value="SERVICE">Service</option>
-                  <option value="HOUSING">Housing</option>
-                  <option value="JOBS">Jobs</option>
-                  <option value="FREE">Free</option>
-                  <option value="LOST_FOUND">Lost & Found</option>
+                  {PIN_CATEGORIES.map(c => (
+                    <option key={c.value} value={c.value}>{c.label}</option>
+                  ))}
                 </select>
               </div>
+              <div className="form-group">
+                <label>Expires At</label>
+                <input type="datetime-local" value={editPinExpiresAt} onChange={e => setEditPinExpiresAt(e.target.value)} />
+              </div>
+              {editingPin.entityType && editingPin.entityId && (
+                <div className="form-group">
+                  <label>Linked Entity</label>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', padding: '8px 12px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-sm)' }}>
+                    {getEntityIcon(editingPin.entityType)} {editingPin.entityTitle || editingPin.entityId}
+                  </p>
+                </div>
+              )}
               <div className="form-group">
                 <label>Contact Name</label>
                 <input type="text" value={editPinContactName} onChange={e => setEditPinContactName(e.target.value)} />

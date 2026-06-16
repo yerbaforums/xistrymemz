@@ -114,6 +114,7 @@ export async function PATCH(
     if (body.contactPhone !== undefined) allowed.contactPhone = body.contactPhone
     if (body.category !== undefined) allowed.category = body.category
     if (body.expiresAt !== undefined) allowed.expiresAt = body.expiresAt ? new Date(body.expiresAt) : null
+    if (body.images !== undefined) allowed.images = Array.isArray(body.images) ? JSON.stringify(body.images) : body.images
     if (body.isPinned !== undefined && isBoardOwner) allowed.isPinned = body.isPinned
     if (body.pinOrder !== undefined && isBoardOwner) allowed.pinOrder = body.pinOrder
 
