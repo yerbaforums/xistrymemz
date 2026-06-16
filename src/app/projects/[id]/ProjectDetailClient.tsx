@@ -112,6 +112,8 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
   const [editedDescription, setEditedDescription] = useState(project.description || '')
   const [editedCategory, setEditedCategory] = useState(project.category || '')
   const [editedLocation, setEditedLocation] = useState(project.location || '')
+  const [editedLatitude, setEditedLatitude] = useState(project.latitude || null)
+  const [editedLongitude, setEditedLongitude] = useState(project.longitude || null)
   const [editedLocationDetails, setEditedLocationDetails] = useState(project.locationDetails || '')
   const [editedLookingForCollaborators, setEditedLookingForCollaborators] = useState(project.lookingForCollaborators)
   const [editedImages, setEditedImages] = useState<string[]>(() => {
@@ -128,6 +130,7 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
   const [editedStatus, setEditedStatus] = useState(project.status)
   const [editedPhases, setEditedPhases] = useState<string[]>([])
   const [editingOverview, setEditingOverview] = useState(false)
+  const [mapExpanded, setMapExpanded] = useState(false)
 
   const [showRequestModal, setShowRequestModal] = useState(false)
   const [showEventModal, setShowEventModal] = useState(false)
@@ -291,6 +294,8 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
         description: editedDescription || null,
         category: editedCategory || null,
         location: editedLocation || null,
+        latitude: editedLatitude ?? null,
+        longitude: editedLongitude ?? null,
         locationDetails: editedLocationDetails || null,
         lookingForCollaborators: editedLookingForCollaborators,
         needsVolunteers: editedNeedsVolunteers,
@@ -654,8 +659,8 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
                     <summary className={styles.editSectionSummary}>📍 Location</summary>
                     <div className={styles.editSectionBody}>
                       <LocationPicker
-                        value={{ text: editedLocation, latitude: project.latitude, longitude: project.longitude }}
-                        onChange={v => setEditedLocation(v.text)}
+                        value={{ text: editedLocation, latitude: editedLatitude, longitude: editedLongitude }}
+                        onChange={v => { setEditedLocation(v.text); setEditedLatitude(v.latitude); setEditedLongitude(v.longitude) }}
                       />
                       <div className={styles.formGroup}>
                         <label>Location Details</label>
@@ -800,11 +805,16 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
 
                       {(project.location || (project.latitude && project.longitude)) && (
                         <div className={styles.locationSection}>
-                          <h4 className={styles.locationTitle}>📍 Location</h4>
+                          <div className={styles.locationHeader}>
+                            <h4 className={styles.locationTitle}>📍 Location</h4>
+                            <button type="button" onClick={() => setMapExpanded(!mapExpanded)} className={styles.mapExpandBtn}>
+                              {mapExpanded ? '− Collapse' : '⛶ Expand'}
+                            </button>
+                          </div>
                           {project.location && <p className={styles.locationText}>{project.location}</p>}
                           {project.latitude && project.longitude && (
-                            <div className={styles.locationMapWrap}>
-                              <ProjectMapContainer center={[project.latitude, project.longitude]} zoom={13} className={styles.locationMap} scrollWheelZoom={false}>
+                            <div className={`${styles.locationMapWrap} ${mapExpanded ? styles.locationMapExpanded : ''}`}>
+                              <ProjectMapContainer center={[project.latitude, project.longitude]} zoom={mapExpanded ? 15 : 13} className={styles.locationMap} scrollWheelZoom={mapExpanded}>
                                 <ProjectTileLayer
                                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
                                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
