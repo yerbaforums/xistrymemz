@@ -34,7 +34,7 @@ const ENTITY_LIST_ROUTES: Record<string, string> = {
   PRODUCT: '/products',
   EVENT: '/events',
   SERVICE: '/services',
-  PROJECT: '/api/projects',
+  PROJECT: '/projects',
   GROUP: '/groups',
   REQUEST: '/requests',
   SHOP: '/shops',
