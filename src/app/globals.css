@@ -527,3 +527,20 @@ a:focus-visible {
     padding-bottom: 80px;
   }
 }
+
+@media (max-width: 480px) {
+  h1 { font-size: 1.4rem; }
+  h2 { font-size: 1.2rem; }
+  h3 { font-size: 0.95rem; }
+
+  body { font-size: 14px; }
+
+  button, .btn-primary, .btn-secondary, .btn-ghost {
+    padding: 10px 16px;
+    min-height: 40px;
+  }
+
+  .container {
+    padding: 0 12px;
+  }
+}

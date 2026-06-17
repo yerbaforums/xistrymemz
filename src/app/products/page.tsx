@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import styles from './page.module.css'
-import { calculateDistance, geocodeLocation } from '@/lib/geocoding'
+import { calculateDistance } from '@/lib/geocoding'
 import { useCart } from '@/context/CartContext'
 import { useToast } from '@/context/ToastContext'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
@@ -18,14 +18,13 @@ import Breadcrumbs from '@/components/Breadcrumbs'
 import ProductFilters from '@/components/ProductFilters'
 import ProductGrid from '@/components/ProductGrid'
 import ProductMapView from '@/components/ProductMapView'
+import LocationCard from '@/components/LocationCard'
 import type { Product } from '@/types/product'
 import ImageUploader from '@/components/ImageUploader'
 import Skeleton, { SkeletonCard, SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import Button from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
-
-const DEBOUNCE_MS = 300
 
 export default function ProductsPage() {
   const { data: session } = useSession()
@@ -42,11 +41,6 @@ export default function ProductsPage() {
   const [type, setType] = useState('ALL')
   const [category, setCategory] = useState('ALL')
   const [location, setLocation] = useState('ALL')
-  const [showGlobal, setShowGlobal] = useState(false)
-  const [zipCode, setZipCode] = useState('')
-  const [radius, setRadius] = useState('25')
-  const [userLocation, setUserLocation] = useState<{lat: number, lon: number} | null>(null)
-  const [geocodingLoading, setGeocodingLoading] = useState(false)
   const [condition, setCondition] = useState('ALL')
   const [priceMin, setPriceMin] = useState('')
   const [priceMax, setPriceMax] = useState('')
@@ -90,7 +84,6 @@ export default function ProductsPage() {
   })
   const userDonationAddrs = useDonationAddresses()
 
-  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const urlSynced = useRef(false)
 
   const fetchMyProducts = useCallback(async () => {
@@ -126,9 +119,6 @@ export default function ProductsPage() {
     }
     if (params.get('min')) setPriceMin(params.get('min')!)
     if (params.get('max')) setPriceMax(params.get('max')!)
-    if (params.get('global') === '1') setShowGlobal(true)
-    if (params.get('zip')) setZipCode(params.get('zip')!)
-    if (params.get('radius')) setRadius(params.get('radius')!)
     urlSynced.current = true
   }, [])
 
@@ -143,54 +133,18 @@ export default function ProductsPage() {
     if (viewMode !== 'grid') params.set('view', viewMode)
     if (priceMin) params.set('min', priceMin)
     if (priceMax) params.set('max', priceMax)
-    if (showGlobal) params.set('global', '1')
-    if (zipCode) params.set('zip', zipCode)
-    if (radius !== '25') params.set('radius', radius)
     const qs = params.toString()
     const url = qs ? `${window.location.pathname}?${qs}` : window.location.pathname
     window.history.replaceState(null, '', url)
-  }, [type, category, location, condition, sortBy, searchQuery, viewMode, priceMin, priceMax, showGlobal, zipCode, radius])
+  }, [type, category, location, condition, sortBy, searchQuery, viewMode, priceMin, priceMax])
 
   useEffect(() => {
     if (urlSynced.current) syncUrl()
   }, [syncUrl])
 
-  const debouncedSet = useCallback((setter: (v: string) => void, value: string) => {
-    if (debounceTimer.current) clearTimeout(debounceTimer.current)
-    debounceTimer.current = setTimeout(() => setter(value), DEBOUNCE_MS)
-  }, [])
-
-  const geocodeZipCode = useCallback(async () => {
-    if (!zipCode.trim()) {
-      setUserLocation(null)
-      return
-    }
-    setGeocodingLoading(true)
-    try {
-      const result = await geocodeLocation(zipCode)
-      if (result) {
-        setUserLocation({ lat: result.latitude, lon: result.longitude })
-      } else {
-        warning('Could not find location for that zip code')
-        setUserLocation(null)
-      }
-    } catch {
-      setUserLocation(null)
-    } finally {
-      setGeocodingLoading(false)
-    }
-  }, [zipCode, warning])
-
   useEffect(() => {
     fetchProducts()
   }, [])
-
-  useEffect(() => {
-    if (passportLocation?.latitude && passportLocation?.longitude && !zipCode) {
-      setUserLocation({ lat: passportLocation.latitude, lon: passportLocation.longitude })
-      setRadius(String(passportLocation.searchRadius || 25))
-    }
-  }, [passportLocation, zipCode])
 
   const fetchProducts = () => {
     fetch('/api/products')
@@ -216,7 +170,6 @@ export default function ProductsPage() {
     if (category !== 'ALL') result = result.filter(p => p.category === category)
     if (location !== 'ALL') result = result.filter(p => p.location === location)
     if (condition !== 'ALL') result = result.filter(p => p.condition === condition)
-    if (showGlobal) result = result.filter(p => p.isGlobal)
 
     if (priceMin) {
       const min = parseFloat(priceMin)
@@ -236,29 +189,37 @@ export default function ProductsPage() {
       )
     }
 
-    if (userLocation && radius) {
-      const radiusMiles = parseInt(radius)
+    const loc = passportLocation?.latitude ? { lat: passportLocation.latitude, lng: passportLocation.longitude, r: passportLocation.searchRadius || 50 } : null
+    if (loc) {
       result = result.filter(p => {
-        if (p.isGlobal) return true
+        if (p.isGlobal || p.isRemote) return true
         if (p.latitude == null || p.longitude == null) return false
-        return calculateDistance(userLocation.lat, userLocation.lon, p.latitude, p.longitude) <= radiusMiles
+        return calculateDistance(loc.lat, loc.lng, p.latitude, p.longitude) <= loc.r
       })
     }
 
     if (sortBy === 'price-low') result.sort((a, b) => (a.price || 0) - (b.price || 0))
     else if (sortBy === 'price-high') result.sort((a, b) => (b.price || 0) - (a.price || 0))
+    else if (sortBy === 'nearest' && loc) {
+      result.sort((a, b) => {
+        if (a.isGlobal && !b.isGlobal) return -1
+        if (!a.isGlobal && b.isGlobal) return 1
+        const dA = a.latitude ? calculateDistance(loc.lat, loc.lng, a.latitude, a.longitude!) : Infinity
+        const dB = b.latitude ? calculateDistance(loc.lat, loc.lng, b.latitude, b.longitude!) : Infinity
+        return dA - dB
+      })
+    }
     else if (sortBy === 'newest') result.reverse()
 
     return result
-  }, [products, type, category, location, condition, showGlobal, priceMin, priceMax, searchQuery, userLocation, radius, sortBy])
+  }, [products, type, category, location, condition, priceMin, priceMax, searchQuery, passportLocation, sortBy])
 
   const categories = useMemo(() => [...new Set(products.map(p => p.category).filter(Boolean))], [products])
   const locations = useMemo(() => [...new Set(products.map(p => p.location).filter(Boolean))], [products])
 
   const clearFilters = () => {
     setType('ALL'); setCategory('ALL'); setLocation('ALL'); setCondition('ALL')
-    setShowGlobal(false); setZipCode(''); setRadius('25'); setPriceMin(''); setPriceMax('')
-    setUserLocation(null); setSearchQuery('')
+    setPriceMin(''); setPriceMax(''); setSearchQuery('')
   }
 
   const handleMySubmit = async (e: React.FormEvent) => {
@@ -469,28 +430,28 @@ export default function ProductsPage() {
       )}
 
       {tab === 'browse' && (
+        <>
+        {session?.user && (
+          <LocationCard
+            homeCoords={passportLocation?.latitude ? [passportLocation.latitude, passportLocation.longitude] : null}
+            homeName={passportLocation?.location || ''}
+            passportLocName={passportLocation?.location}
+            settingLocation={false}
+            onSetLocation={() => {}}
+            onDetect={() => {}}
+            onFlyHome={() => {}}
+          />
+        )}
         <div className={styles.mainLayout}>
           <ProductFilters
             type={type} category={category} location={location} condition={condition}
-            showGlobal={showGlobal} priceMin={priceMin} priceMax={priceMax}
-            zipCode={zipCode} radius={radius} geocodingLoading={geocodingLoading}
-            hasPassportLocation={!!(passportLocation?.latitude && passportLocation?.longitude)}
+            priceMin={priceMin} priceMax={priceMax}
             categories={categories} locations={locations}
             onTypeChange={setType} onCategoryChange={setCategory}
             onLocationChange={setLocation} onConditionChange={setCondition}
-            onShowGlobalChange={setShowGlobal}
-            onPriceMinChange={v => debouncedSet(setPriceMin, v)}
-            onPriceMaxChange={v => debouncedSet(setPriceMax, v)}
-            onZipCodeChange={v => debouncedSet(setZipCode, v)}
-            onRadiusChange={setRadius} onGeocode={geocodeZipCode}
+            onPriceMinChange={setPriceMin}
+            onPriceMaxChange={setPriceMax}
             onClear={clearFilters}
-            onUsePassportLocation={() => {
-              if (passportLocation?.latitude && passportLocation?.longitude) {
-                setUserLocation({ lat: passportLocation.latitude, lon: passportLocation.longitude })
-                setRadius(String(passportLocation.searchRadius || 25))
-                setZipCode('')
-              }
-            }}
           />
 
           <main className={`${styles.content} page-enter`}>
@@ -503,6 +464,7 @@ export default function ProductsPage() {
                   <option value="newest">Newest First</option>
                   <option value="price-low">Price: Low to High</option>
                   <option value="price-high">Price: High to Low</option>
+                  {passportLocation?.latitude && <option value="nearest">📍 Nearest</option>}
                 </select>
                 <div className={styles.viewToggle}>
                   <Button
@@ -542,7 +504,10 @@ export default function ProductsPage() {
             </div>
 
             {viewMode === 'map' ? (
-              <ProductMapView products={filteredProducts} userLocation={userLocation} />
+              <ProductMapView
+                products={filteredProducts}
+                userLocation={passportLocation?.latitude ? { lat: passportLocation.latitude, lon: passportLocation.longitude } : null}
+              />
             ) : (
               <ProductGrid
                 products={filteredProducts}
@@ -557,6 +522,7 @@ export default function ProductsPage() {
             )}
           </main>
         </div>
+        </>
       )}
 
       {tab === 'mylistings' && session?.user && (

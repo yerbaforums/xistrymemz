@@ -135,3 +135,35 @@
 .deleteBtn:hover {
   color: #f44;
 }
+
+@media (max-width: 768px) {
+  .container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .filters::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filterBtn {
+    white-space: nowrap;
+  }
+
+  .markAllBtn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .itemContent {
+    flex-direction: column;
+    gap: 8px;
+  }
+}

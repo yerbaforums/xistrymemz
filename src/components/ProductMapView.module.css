@@ -6,6 +6,12 @@
   border: 1px solid var(--border-color);
   position: relative;
   background: var(--bg-secondary);
+  display: flex;
+  flex-direction: column;
+}
+
+.wrapper > div:last-child {
+  flex: 1;
 }
 
 .empty {
@@ -69,6 +75,94 @@
 
 .popupLink:hover {
   text-decoration: underline;
+}
+
+.globalBar {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.globalToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.globalToggle:hover {
+  background: var(--bg-tertiary);
+}
+
+.globalChevron {
+  margin-left: auto;
+  transition: transform 0.2s;
+  color: var(--text-muted);
+}
+
+.globalChevronOpen {
+  transform: rotate(90deg);
+}
+
+.globalList {
+  max-height: 240px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.globalItem {
+  display: flex;
+  gap: 10px;
+  padding: 10px 16px;
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: background 0.15s;
+  border-top: 1px solid var(--border-color);
+}
+
+.globalItem:hover {
+  background: var(--bg-tertiary);
+}
+
+.globalItemImg {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.globalItemInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.globalItemInfo strong {
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.globalItemPrice {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+
+.globalItemBadge {
+  font-size: 0.7rem;
+  color: var(--text-muted);
 }
 
 @media (max-width: 768px) {

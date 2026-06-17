@@ -132,3 +132,17 @@
 .actions {
   margin-top: 12px;
 }
+
+@media (max-width: 768px) {
+  .page {
+    padding: 16px 12px;
+  }
+
+  .imageGrid {
+    flex-direction: column;
+  }
+
+  .imageGrid img {
+    max-height: 200px;
+  }
+}

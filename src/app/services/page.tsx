@@ -19,6 +19,9 @@ import Button from '@/components/ui/Button'
 import { useQuickCreate } from '@/components/QuickCreateModal'
 import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
 import EntityMarker from '@/components/EntityMarker'
+import LocationCard from '@/components/LocationCard'
+import { usePassportLocation } from '@/hooks/usePassportLocation'
+import { calculateDistance } from '@/lib/geocoding'
 
 
 let L: any
@@ -44,13 +47,13 @@ export default function ServicesPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const quickCreate = useQuickCreate()
+  const { location: passportLocation } = usePassportLocation()
   const [services, setServices] = useState<ServiceOffering[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [totalServices, setTotalServices] = useState(0)
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '')
   const [category, setCategory] = useState(searchParams.get('category') || 'ALL')
-  const [location, setLocation] = useState('ALL')
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'newest')
   const [priceMin, setPriceMin] = useState('')
   const [priceMax, setPriceMax] = useState('')
@@ -113,7 +116,6 @@ export default function ServicesPage() {
   const filteredServices = useMemo(() => {
     let result = [...services]
     if (category !== 'ALL') result = result.filter(s => s.category === category)
-    if (location !== 'ALL') result = result.filter(s => s.location === location)
     if (searchQuery) {
       const q = searchQuery.toLowerCase()
       result = result.filter(s =>
@@ -129,20 +131,32 @@ export default function ServicesPage() {
       const max = parseFloat(priceMax)
       if (!isNaN(max)) result = result.filter(s => (s.price || 0) <= max)
     }
+
+    const loc = passportLocation?.latitude ? { lat: passportLocation.latitude, lng: passportLocation.longitude, r: passportLocation.searchRadius || 50 } : null
+    if (loc) {
+      result = result.filter(s => {
+        if (!s.latitude || !s.longitude) return true
+        const d = calculateDistance(loc.lat, loc.lng, s.latitude, s.longitude)
+        return d <= loc.r
+      })
+    }
+
     if (sortBy === 'price-low') result.sort((a, b) => (a.price || 0) - (b.price || 0))
     else if (sortBy === 'price-high') result.sort((a, b) => (b.price || 0) - (a.price || 0))
     else if (sortBy === 'duration') result.sort((a, b) => a.duration - b.duration)
+    else if (sortBy === 'nearest' && loc) {
+      result.sort((a, b) => {
+        const dA = a.latitude ? calculateDistance(loc.lat, loc.lng, a.latitude, a.longitude!) : Infinity
+        const dB = b.latitude ? calculateDistance(loc.lat, loc.lng, b.latitude, b.longitude!) : Infinity
+        return dA - dB
+      })
+    }
     else result.reverse()
     return result
-  }, [services, category, location, searchQuery, sortBy, priceMin, priceMax])
-
-  const locations = useMemo(
-    () => [...new Set(services.map(s => s.location).filter(Boolean))] as string[],
-    [services]
-  )
+  }, [services, category, searchQuery, sortBy, priceMin, priceMax, passportLocation])
 
   const clearFilters = () => {
-    setCategory('ALL'); setLocation('ALL'); setSearchQuery(''); setPriceMin(''); setPriceMax('')
+    setCategory('ALL'); setSearchQuery(''); setPriceMin(''); setPriceMax('')
   }
 
   const sel = selectedService
@@ -199,16 +213,25 @@ export default function ServicesPage() {
         )}
       </div>
 
+      {session?.user && (
+        <LocationCard
+          homeCoords={passportLocation?.latitude ? [passportLocation.latitude, passportLocation.longitude] : null}
+          homeName={passportLocation?.location || ''}
+          passportLocName={passportLocation?.location}
+          settingLocation={false}
+          onSetLocation={() => {}}
+          onDetect={() => {}}
+          onFlyHome={() => {}}
+        />
+      )}
+
       <div className={styles.mainLayout}>
         <ServiceFilters
           category={category}
-          location={location}
-          locations={locations}
           sortBy={sortBy}
           priceMin={priceMin}
           priceMax={priceMax}
           onCategoryChange={setCategory}
-          onLocationChange={setLocation}
           onSortChange={setSortBy}
           onPriceMinChange={setPriceMin}
           onPriceMaxChange={setPriceMax}

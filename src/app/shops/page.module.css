@@ -312,3 +312,56 @@
 .shopCard:nth-child(8) { animation-delay: 0.16s; }
 .shopCard:nth-child(9) { animation-delay: 0.18s; }
 .shopCard:nth-child(10) { animation-delay: 0.20s; }
+
+@media (max-width: 768px) {
+  .page {
+    padding: 16px 12px;
+  }
+
+  .header h1 {
+    font-size: 1.4rem;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .filterBar {
+    flex-direction: column;
+  }
+
+  .searchInput {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .filterSelect {
+    width: 100%;
+  }
+
+  .resultsHeader {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .list .shopCard {
+    flex-direction: column;
+  }
+
+  .list .shopImage {
+    width: 100%;
+    height: 120px;
+    margin-right: 0;
+    margin-bottom: 8px;
+  }
+
+  .mapWrapper:not(.mapExpanded) {
+    height: 200px;
+  }
+
+  .mapExpanded {
+    height: 350px;
+  }
+}

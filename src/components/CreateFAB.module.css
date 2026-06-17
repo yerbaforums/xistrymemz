@@ -8,6 +8,12 @@
   align-items: flex-end;
 }
 
+@media (max-width: 768px) {
+  .container {
+    display: none;
+  }
+}
+
 .fab {
   width: 52px;
   height: 52px;

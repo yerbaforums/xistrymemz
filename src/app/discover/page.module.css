@@ -92,6 +92,20 @@
   gap: 4px;
 }
 
+@media (max-width: 768px) {
+  .typeFilters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+
+  .typeFilters::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 .typePill {
   padding: 6px 14px;
   background: var(--bg-tertiary);

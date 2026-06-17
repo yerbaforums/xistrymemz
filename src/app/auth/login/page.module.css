@@ -311,3 +311,30 @@
   font-size: 0.8rem;
   margin-top: 8px;
 }
+
+@media (max-width: 768px) {
+  .authPage {
+    padding: 16px;
+  }
+
+  .authContainer {
+    max-width: 100%;
+  }
+
+  .logo {
+    font-size: 1.25rem;
+    margin-bottom: 24px;
+  }
+
+  .title {
+    font-size: 1.35rem;
+  }
+
+  .form {
+    padding: 20px;
+  }
+
+  .fediRow {
+    flex-direction: column;
+  }
+}

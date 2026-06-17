@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import type { Product } from '@/types/product'
@@ -14,7 +14,6 @@ const DARK_TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}
 const LIGHT_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 const DARK_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>'
 const LIGHT_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-
 
 let L: typeof import('leaflet') | null = null
 if (typeof window !== 'undefined') {
@@ -37,7 +36,13 @@ interface ProductMapViewProps {
 export default function ProductMapView({ products, userLocation }: ProductMapViewProps) {
   const { mode } = useTheme()
   const mapRef = useRef<any>(null)
-  const productsWithCoords = products.filter(p => p.latitude != null && p.longitude != null)
+  const [globalExpanded, setGlobalExpanded] = useState(false)
+
+  const mappableProducts = products.filter(p =>
+    (p.latitude != null && p.longitude != null) || p.isGlobal
+  )
+  const productsWithCoords = mappableProducts.filter(p => p.latitude != null && p.longitude != null)
+  const globalProducts = mappableProducts.filter(p => p.isGlobal && (p.latitude == null || p.longitude == null))
 
   const getCenter = (): [number, number] => {
     if (userLocation) return [userLocation.lat, userLocation.lon]
@@ -71,12 +76,42 @@ export default function ProductMapView({ products, userLocation }: ProductMapVie
     }
   }, [products, userLocation])
 
-  if (productsWithCoords.length === 0) {
-    return <EmptyState icon="🗺️" title="No products with location data" description="Products with coordinates will appear on this map." />
+  if (productsWithCoords.length === 0 && globalProducts.length === 0) {
+    return <EmptyState icon="🗺️" title="No products to show" description="Products with location data will appear on the map." />
   }
 
   return (
     <div className={styles.wrapper}>
+      {globalProducts.length > 0 && (
+        <div className={styles.globalBar}>
+          <button
+            className={styles.globalToggle}
+            onClick={() => setGlobalExpanded(!globalExpanded)}
+          >
+            <span>🌍 {globalProducts.length} Global Item{globalProducts.length !== 1 ? 's' : ''}</span>
+            <svg
+              className={`${styles.globalChevron} ${globalExpanded ? styles.globalChevronOpen : ''}`}
+              width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+            >
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+          {globalExpanded && (
+            <div className={styles.globalList}>
+              {globalProducts.map(p => (
+                <Link key={p.id} href={`/products/${p.id}`} className={styles.globalItem}>
+                  {p.imageUrl && <img src={p.imageUrl} alt="" className={styles.globalItemImg} />}
+                  <div className={styles.globalItemInfo}>
+                    <strong>{p.title}</strong>
+                    {p.price != null && <span className={styles.globalItemPrice}>${p.price}</span>}
+                    <span className={styles.globalItemBadge}>🌍 Available worldwide</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
       <MapContainer
         center={getCenter()}
         zoom={getZoom()}
@@ -91,7 +126,7 @@ export default function ProductMapView({ products, userLocation }: ProductMapVie
           <EntityMarker
             key={product.id}
             type="PRODUCT"
-            position={product.isGlobal ? [39.8283, -98.5795] : [product.latitude!, product.longitude!]}
+            position={[product.latitude!, product.longitude!]}
           >
             <Popup>
               <div className={styles.popup}>
