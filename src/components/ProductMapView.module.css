@@ -14,6 +14,21 @@
   flex: 1;
 }
 
+.mapOverlay {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  padding: 8px 20px;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
 .empty {
   display: flex;
   flex-direction: column;

@@ -31,11 +31,15 @@ if (typeof window !== 'undefined') {
 interface ProductMapViewProps {
   products: Product[]
   userLocation: { lat: number; lon: number } | null
+  mapRef?: React.MutableRefObject<any>
+  settingLocation?: boolean
+  onMapClickSetLocation?: (lat: number, lng: number) => void
 }
 
-export default function ProductMapView({ products, userLocation }: ProductMapViewProps) {
+export default function ProductMapView({ products, userLocation, mapRef: externalMapRef, settingLocation, onMapClickSetLocation }: ProductMapViewProps) {
   const { mode } = useTheme()
-  const mapRef = useRef<any>(null)
+  const internalMapRef = useRef<any>(null)
+  const mapRef = externalMapRef || internalMapRef
   const [globalExpanded, setGlobalExpanded] = useState(false)
 
   const mappableProducts = products.filter(p =>
@@ -76,12 +80,23 @@ export default function ProductMapView({ products, userLocation }: ProductMapVie
     }
   }, [products, userLocation])
 
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !settingLocation || !onMapClickSetLocation) return
+    const handler = (e: any) => {
+      onMapClickSetLocation(e.latlng.lat, e.latlng.lng)
+    }
+    map.on('click', handler)
+    return () => { map.off('click', handler) }
+  }, [settingLocation, onMapClickSetLocation])
+
   if (productsWithCoords.length === 0 && globalProducts.length === 0) {
     return <EmptyState icon="🗺️" title="No products to show" description="Products with location data will appear on the map." />
   }
 
   return (
     <div className={styles.wrapper}>
+      {settingLocation && <div className={styles.mapOverlay}>Click anywhere on the map to set your home location</div>}
       {globalProducts.length > 0 && (
         <div className={styles.globalBar}>
           <button

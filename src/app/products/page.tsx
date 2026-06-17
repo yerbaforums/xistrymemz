@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import styles from './page.module.css'
-import { calculateDistance } from '@/lib/geocoding'
+import { calculateDistance, reverseGeocodeLocation, shortenLocation } from '@/lib/geocoding'
 import { useCart } from '@/context/CartContext'
 import { useToast } from '@/context/ToastContext'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
@@ -32,6 +32,65 @@ export default function ProductsPage() {
   const { settings } = useSiteSettings()
   const { location: passportLocation } = usePassportLocation()
   const { addItem } = useCart()
+
+  const mapRef = useRef<any>(null)
+  const [settingLocation, setSettingLocation] = useState(false)
+
+  const handleDetectLocation = useCallback(async () => {
+    if (typeof window === 'undefined' || !('geolocation' in navigator)) {
+      error('Geolocation not available')
+      return
+    }
+    try {
+      const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
+        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 8000 })
+      )
+      const { latitude: lat, longitude: lng } = pos.coords
+      const displayName = await reverseGeocodeLocation(lat, lng)
+      const locationName = shortenLocation(displayName || `${lat.toFixed(4)}, ${lng.toFixed(4)}`)
+      const res = await fetch('/api/users/me', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ location: locationName, latitude: lat, longitude: lng }),
+      })
+      if (res.ok) {
+        success('📍 Location auto-detected!')
+      } else {
+        error('Failed to update location')
+      }
+    } catch {
+      error('Could not detect location. Try setting it manually.')
+    }
+  }, [success, error])
+
+  const handleMapClickSetLocation = useCallback(async (lat: number, lng: number) => {
+    setSettingLocation(false)
+    const displayName = await reverseGeocodeLocation(lat, lng)
+    const locationName = shortenLocation(displayName || `${lat.toFixed(4)}, ${lng.toFixed(4)}`)
+    try {
+      const res = await fetch('/api/users/me', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ location: locationName, latitude: lat, longitude: lng }),
+      })
+      if (res.ok) {
+        success('📍 Home location updated!')
+      } else {
+        error('Failed to update location')
+      }
+    } catch {
+      error('Failed to update location')
+    }
+  }, [success, error])
+
+  const handleFlyHome = useCallback(() => {
+    const coords = passportLocation?.latitude
+      ? [passportLocation.latitude, passportLocation.longitude]
+      : null
+    if (coords && mapRef.current) {
+      mapRef.current.flyTo(coords, 12, { duration: 1 })
+    }
+  }, [passportLocation])
 
   const [tab, setTab] = useState<'browse' | 'mylistings'>('browse')
 
@@ -436,10 +495,10 @@ export default function ProductsPage() {
             homeCoords={passportLocation?.latitude ? [passportLocation.latitude, passportLocation.longitude] : null}
             homeName={passportLocation?.location || ''}
             passportLocName={passportLocation?.location}
-            settingLocation={false}
-            onSetLocation={() => {}}
-            onDetect={() => {}}
-            onFlyHome={() => {}}
+            settingLocation={settingLocation}
+            onSetLocation={() => setSettingLocation(s => !s)}
+            onDetect={handleDetectLocation}
+            onFlyHome={handleFlyHome}
           />
         )}
         <div className={styles.mainLayout}>
@@ -507,6 +566,9 @@ export default function ProductsPage() {
               <ProductMapView
                 products={filteredProducts}
                 userLocation={passportLocation?.latitude ? { lat: passportLocation.latitude, lon: passportLocation.longitude } : null}
+                mapRef={mapRef}
+                settingLocation={settingLocation}
+                onMapClickSetLocation={handleMapClickSetLocation}
               />
             ) : (
               <ProductGrid

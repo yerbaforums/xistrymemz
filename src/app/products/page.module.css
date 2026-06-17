@@ -237,11 +237,28 @@
   }
 
   .resultsControls {
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .sortSelect {
+    width: 100%;
   }
 
   .viewToggle {
     justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .searchBar {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .searchClear {
+    align-self: flex-end;
   }
 }
 
