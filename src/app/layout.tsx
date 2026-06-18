@@ -114,6 +114,7 @@ export default async function RootLayout({
             </SiteSettingsProvider>
           </Providers>
         </LocaleProvider>
+        <Analytics />
       </body>
     </html>
   );
