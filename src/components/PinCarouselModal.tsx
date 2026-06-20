@@ -37,6 +37,7 @@ interface PinCarouselModalProps {
   initialIndex: number
   onClose: () => void
   boardSlug: string
+  initialAutoPlay?: boolean
 }
 
 function getCategoryLabel(category: string | null): string {
@@ -65,10 +66,10 @@ function getCategoryColor(category: string | null): string {
   }
 }
 
-export default function PinCarouselModal({ pins, initialIndex, onClose, boardSlug }: PinCarouselModalProps) {
+export default function PinCarouselModal({ pins, initialIndex, onClose, boardSlug, initialAutoPlay }: PinCarouselModalProps) {
   const [index, setIndex] = useState(initialIndex)
   const [imageIndex, setImageIndex] = useState(0)
-  const [autoPlay, setAutoPlay] = useState(false)
+  const [autoPlay, setAutoPlay] = useState(initialAutoPlay || false)
   const pin = pins[index]
 
   const goNext = useCallback(() => setIndex(i => (i + 1) % pins.length), [pins.length])
@@ -151,16 +152,6 @@ export default function PinCarouselModal({ pins, initialIndex, onClose, boardSlu
 
           <div className={styles.infoSection}>
             <Link href={`/boards/${boardSlug}/pins/${pin.id}`} className={styles.infoLink}>
-              <div className={styles.infoHeader}>
-                <span className={styles.categoryBadge} style={{ background: getCategoryColor(pin.category) }}>
-                  {getCategoryLabel(pin.category)}
-                </span>
-                <span className={styles.date}>{new Date(pin.createdAt).toLocaleDateString()}</span>
-              </div>
-
-              {pin.title && <h2 className={styles.title}>{pin.title}</h2>}
-              {pin.content && <p className={styles.content}>{pin.content}</p>}
-
               <div className={styles.userRow}>
                 <div className={styles.avatar}>
                   {pin.user.image ? (
@@ -183,6 +174,18 @@ export default function PinCarouselModal({ pins, initialIndex, onClose, boardSlu
                 />
               </div>
             )}
+
+            <Link href={`/boards/${boardSlug}/pins/${pin.id}`} className={styles.infoLink}>
+              <div className={styles.infoHeader}>
+                <span className={styles.categoryBadge} style={{ background: getCategoryColor(pin.category) }}>
+                  {getCategoryLabel(pin.category)}
+                </span>
+                <span className={styles.date}>{new Date(pin.createdAt).toLocaleDateString()}</span>
+              </div>
+
+              {pin.title && <h2 className={styles.title}>{pin.title}</h2>}
+              {pin.content && <p className={styles.content}>{pin.content}</p>}
+            </Link>
 
             {(pin.contactName || pin.contactEmail || pin.contactPhone) && (
               <div className={styles.contactSection} onClick={e => e.stopPropagation()}>

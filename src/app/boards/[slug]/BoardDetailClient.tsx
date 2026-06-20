@@ -105,6 +105,7 @@ export default function BoardDetailPage() {
   const [editLongitude, setEditLongitude] = useState('')
   const [editing, setEditing] = useState(false)
   const [carouselIndex, setCarouselIndex] = useState<number | null>(null)
+  const [carouselAutoPlay, setCarouselAutoPlay] = useState(false)
   const mapRef = useRef<any>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'map' | 'calendar'>('grid')
   const [currentMonth, setCurrentMonth] = useState(new Date())
@@ -420,6 +421,14 @@ export default function BoardDetailPage() {
         >
           📅 Calendar
         </button>
+        {pins.length > 0 && (
+          <button
+            className={styles.toggleBtn}
+            onClick={() => { setCarouselIndex(0); setCarouselAutoPlay(true) }}
+          >
+            ▶ Slideshow
+          </button>
+        )}
       </div>
 
       {viewMode === 'map' && (
@@ -570,8 +579,9 @@ export default function BoardDetailPage() {
         <PinCarouselModal
           pins={pins}
           initialIndex={carouselIndex}
-          onClose={() => setCarouselIndex(null)}
+          onClose={() => { setCarouselIndex(null); setCarouselAutoPlay(false) }}
           boardSlug={slug}
+          initialAutoPlay={carouselAutoPlay}
         />
       )}
 
