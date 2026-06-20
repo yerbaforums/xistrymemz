@@ -571,6 +571,7 @@ export default function BoardDetailPage() {
           pins={pins}
           initialIndex={carouselIndex}
           onClose={() => setCarouselIndex(null)}
+          boardSlug={slug}
         />
       )}
 

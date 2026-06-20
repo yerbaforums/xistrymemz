@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import LinkedEntityDetail from '@/components/LinkedEntityDetail'
 import styles from './PinCarouselModal.module.css'
 
 interface PinUser {
@@ -35,6 +36,7 @@ interface PinCarouselModalProps {
   pins: Pin[]
   initialIndex: number
   onClose: () => void
+  boardSlug: string
 }
 
 function getCategoryLabel(category: string | null): string {
@@ -63,9 +65,10 @@ function getCategoryColor(category: string | null): string {
   }
 }
 
-export default function PinCarouselModal({ pins, initialIndex, onClose }: PinCarouselModalProps) {
+export default function PinCarouselModal({ pins, initialIndex, onClose, boardSlug }: PinCarouselModalProps) {
   const [index, setIndex] = useState(initialIndex)
   const [imageIndex, setImageIndex] = useState(0)
+  const [autoPlay, setAutoPlay] = useState(false)
   const pin = pins[index]
 
   const goNext = useCallback(() => setIndex(i => (i + 1) % pins.length), [pins.length])
@@ -90,6 +93,12 @@ export default function PinCarouselModal({ pins, initialIndex, onClose }: PinCar
     return () => { document.body.style.overflow = '' }
   }, [])
 
+  useEffect(() => {
+    if (!autoPlay) return
+    const interval = setInterval(goNext, 4000)
+    return () => clearInterval(interval)
+  }, [autoPlay, goNext])
+
   if (!pin) return null
 
   const parsedImages = pin.images ? JSON.parse(pin.images) as string[] : []
@@ -104,14 +113,26 @@ export default function PinCarouselModal({ pins, initialIndex, onClose }: PinCar
         <button className={`${styles.navBtn} ${styles.navPrev}`} onClick={goPrev}>‹</button>
         <button className={`${styles.navBtn} ${styles.navNext}`} onClick={goNext}>›</button>
 
+        <button
+          className={`${styles.autoPlayBtn} ${autoPlay ? styles.autoPlayActive : ''}`}
+          onClick={() => setAutoPlay(!autoPlay)}
+          title={autoPlay ? 'Stop slideshow' : 'Start slideshow'}
+        >
+          {autoPlay ? '⏹' : '▶'}
+        </button>
+
         <div className={styles.content}>
           <div className={styles.imageSection}>
             {currentImage ? (
-              <div className={styles.mainImageWrap}>
-                <Image src={currentImage} alt="" fill style={{ objectFit: 'contain' }} />
-              </div>
+              <Link href={`/boards/${boardSlug}/pins/${pin.id}`} className={styles.imageLink}>
+                <div className={styles.mainImageWrap}>
+                  <Image src={currentImage} alt="" fill style={{ objectFit: 'contain' }} />
+                </div>
+              </Link>
             ) : (
-              <div className={styles.noImage}>📌</div>
+              <Link href={`/boards/${boardSlug}/pins/${pin.id}`} className={styles.imageLink}>
+                <div className={styles.noImage}>📌</div>
+              </Link>
             )}
             {parsedImages.length > 1 && (
               <div className={styles.thumbnails}>
@@ -129,38 +150,42 @@ export default function PinCarouselModal({ pins, initialIndex, onClose }: PinCar
           </div>
 
           <div className={styles.infoSection}>
-            <div className={styles.infoHeader}>
-              <span className={styles.categoryBadge} style={{ background: getCategoryColor(pin.category) }}>
-                {getCategoryLabel(pin.category)}
-              </span>
-              <span className={styles.date}>{new Date(pin.createdAt).toLocaleDateString()}</span>
-            </div>
-
-            {pin.title && <h2 className={styles.title}>{pin.title}</h2>}
-            {pin.content && <p className={styles.content}>{pin.content}</p>}
-
-            <div className={styles.userRow}>
-              <div className={styles.avatar}>
-                {pin.user.image ? (
-                  <Image src={pin.user.image} alt={pin.user.name || ''} width={32} height={32} />
-                ) : (
-                  <span className={styles.avatarInitial}>{(pin.user.name || 'U')[0]}</span>
-                )}
+            <Link href={`/boards/${boardSlug}/pins/${pin.id}`} className={styles.infoLink}>
+              <div className={styles.infoHeader}>
+                <span className={styles.categoryBadge} style={{ background: getCategoryColor(pin.category) }}>
+                  {getCategoryLabel(pin.category)}
+                </span>
+                <span className={styles.date}>{new Date(pin.createdAt).toLocaleDateString()}</span>
               </div>
-              <span>{pin.user.name || 'Unknown'}</span>
-            </div>
+
+              {pin.title && <h2 className={styles.title}>{pin.title}</h2>}
+              {pin.content && <p className={styles.content}>{pin.content}</p>}
+
+              <div className={styles.userRow}>
+                <div className={styles.avatar}>
+                  {pin.user.image ? (
+                    <Image src={pin.user.image} alt={pin.user.name || ''} width={32} height={32} />
+                  ) : (
+                    <span className={styles.avatarInitial}>{(pin.user.name || 'U')[0]}</span>
+                  )}
+                </div>
+                <span>{pin.user.name || 'Unknown'}</span>
+              </div>
+            </Link>
 
             {pin.entityType && pin.entityId && (
-              <Link
-                href={entityHref(pin.entityType, pin.entityId)}
-                className={styles.entityLink}
-              >
-                📎 {pin.entityTitle || `${pin.entityType.replace('_', ' ')}`} →
-              </Link>
+              <div onClick={e => e.stopPropagation()}>
+                <LinkedEntityDetail
+                  entityType={pin.entityType}
+                  entityId={pin.entityId}
+                  initialTitle={pin.entityTitle}
+                  initialImage={pin.entityImage}
+                />
+              </div>
             )}
 
             {(pin.contactName || pin.contactEmail || pin.contactPhone) && (
-              <div className={styles.contactSection}>
+              <div className={styles.contactSection} onClick={e => e.stopPropagation()}>
                 <strong>Contact</strong>
                 {pin.contactName && <span>{pin.contactName}</span>}
                 {pin.contactEmail && <a href={`mailto:${pin.contactEmail}`}>{pin.contactEmail}</a>}
@@ -174,18 +199,4 @@ export default function PinCarouselModal({ pins, initialIndex, onClose }: PinCar
   )
 }
 
-function entityHref(type: string, id: string): string {
-  switch (type) {
-    case 'USER': return `/profile/${id}`
-    case 'PRODUCT': return `/products/${id}`
-    case 'SERVICE': return `/services/${id}`
-    case 'SHOP': return `/shop/${id}`
-    case 'EVENT': return `/events/${id}`
-    case 'GROUP': return `/groups/${id}`
-    case 'PROJECT': return `/projects/${id}`
-    case 'REQUEST': return `/requests/${id}`
-    case 'POST': return `/posts/${id}`
-    case 'SCHOOL_CONTENT': return `/school/content/${id}`
-    default: return '#'
-  }
-}
+

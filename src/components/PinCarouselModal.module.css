@@ -263,6 +263,56 @@
   text-decoration: underline;
 }
 
+.autoPlayBtn {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+
+.autoPlayBtn:hover {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+}
+
+.autoPlayActive {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border-color: var(--accent-primary);
+}
+
+.infoLink {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  cursor: pointer;
+}
+
+.infoLink:hover .title {
+  color: var(--accent-primary);
+}
+
+.imageLink {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
 @media (max-width: 768px) {
   .content {
     grid-template-columns: 1fr;
