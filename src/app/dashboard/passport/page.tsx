@@ -71,6 +71,17 @@ export default function PassportPage() {
   const [editingCategory, setEditingCategory] = useState<{ id: string; name: string; icon: string; color: string } | null>(null)
   const [editingLocationId, setEditingLocationId] = useState<string | null>(null)
 
+  // Save-as-Location form
+  const [showSaveAsLocation, setShowSaveAsLocation] = useState(false)
+  const [saveAsLocationName, setSaveAsLocationName] = useState('')
+  const [saveAsLocationCategoryId, setSaveAsLocationCategoryId] = useState('')
+  const [savingAsLocation, setSavingAsLocation] = useState(false)
+  const [showQuickCategory, setShowQuickCategory] = useState(false)
+  const [quickCategoryName, setQuickCategoryName] = useState('')
+  const [quickCategoryIcon, setQuickCategoryIcon] = useState('📍')
+  const [quickCategoryColor, setQuickCategoryColor] = useState('#3b82f6')
+  const [quickCategorySaving, setQuickCategorySaving] = useState(false)
+
   // Map state
   const [mapReady, setMapReady] = useState(false)
   const [mapExpanded, setMapExpanded] = useState(false)
@@ -172,6 +183,64 @@ export default function PassportPage() {
       }).catch(() => toastError('Failed to update traveling status'))
       return next
     })
+  }
+
+  const handleSaveAsLocation = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!saveAsLocationName.trim() || !latitude || !longitude) return
+    setSavingAsLocation(true)
+    try {
+      const res = await fetch('/api/users/locations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: saveAsLocationName.trim(),
+          location: location || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+          latitude,
+          longitude,
+          categoryId: saveAsLocationCategoryId || null,
+        }),
+      })
+      if (res.ok) {
+        const saved = (await res.json())?.data
+        setSavedLocations(prev => [...prev, saved])
+        toastSuccess('📍 Location saved!')
+        setShowSaveAsLocation(false)
+        setSaveAsLocationName('')
+        setSaveAsLocationCategoryId('')
+      } else {
+        const data = await res.json()
+        toastError(data.error || 'Failed to save location')
+      }
+    } catch { toastError('Failed to save location') }
+    finally { setSavingAsLocation(false) }
+  }
+
+  const handleSaveQuickCategory = async () => {
+    if (!quickCategoryName.trim()) return
+    setQuickCategorySaving(true)
+    try {
+      const res = await fetch('/api/locations/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: quickCategoryName.trim(),
+          icon: quickCategoryIcon,
+          color: quickCategoryColor,
+        }),
+      })
+      if (res.ok) {
+        const cat = (await res.json())?.data
+        setCategories(prev => [...prev, cat].sort((a, b) => a.name.localeCompare(b.name)))
+        setSaveAsLocationCategoryId(cat.id)
+        setShowQuickCategory(false)
+        setQuickCategoryName('')
+        setQuickCategoryIcon('📍')
+        setQuickCategoryColor('#3b82f6')
+        toastSuccess('Category created')
+      } else { toastError('Failed to create category') }
+    } catch { toastError('Failed to create category') }
+    finally { setQuickCategorySaving(false) }
   }
 
   const handleSavePassport = async () => {
@@ -437,7 +506,77 @@ export default function PassportPage() {
     <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
       <input type="number" step="any" value={latitude ?? ''} onChange={e => setLatitude(e.target.value ? parseFloat(e.target.value) : null)} placeholder="Latitude" className={styles.input} style={{ flex: 1 }} />
       <input type="number" step="any" value={longitude ?? ''} onChange={e => setLongitude(e.target.value ? parseFloat(e.target.value) : null)} placeholder="Longitude" className={styles.input} style={{ flex: 1 }} />
-    </div></>
+    </div>
+    <div style={{ marginTop: 8 }}>
+      <button onClick={() => { setSaveAsLocationName(location || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`); setSaveAsLocationCategoryId(''); setShowSaveAsLocation(!showSaveAsLocation) }}
+        className={styles.geoBtn}>
+        💾 Save as Location
+      </button>
+    </div>
+    {showSaveAsLocation && (
+      <div className={styles.locationForm} style={{ marginTop: 8 }}>
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>Location Name</label>
+          <input type="text" value={saveAsLocationName} onChange={e => setSaveAsLocationName(e.target.value)}
+            placeholder="e.g., Home, Office, Cafe" className={styles.inputWFull} />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>Group / Category</label>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <select value={saveAsLocationCategoryId} onChange={e => setSaveAsLocationCategoryId(e.target.value)}
+              className={styles.inputSelect} style={{ flex: 1 }}>
+              <option value="">No group</option>
+              {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>)}
+            </select>
+            <button type="button" onClick={() => setShowQuickCategory(!showQuickCategory)}
+              className={styles.addBtn} style={{ whiteSpace: 'nowrap', padding: '8px 12px', fontSize: '0.8rem' }}>
+              + New
+            </button>
+          </div>
+          {showQuickCategory && (
+            <div className={styles.categoryForm} style={{ marginTop: 8, padding: 12 }}>
+              <div className={styles.formGroup} style={{ marginBottom: 8 }}>
+                <label className={styles.formLabel}>Name</label>
+                <input type="text" value={quickCategoryName} onChange={e => setQuickCategoryName(e.target.value)}
+                  placeholder="e.g., Cafe, Park" className={styles.inputWFull} />
+              </div>
+              <div className={styles.formGroup} style={{ marginBottom: 8 }}>
+                <label className={styles.formLabel}>Icon</label>
+                <div className={styles.iconGrid}>
+                  {['📍','🏠','🏢','🏕️','⛺','🏖️','🏔️','🌲','🌊','🏛️','🍽️','☕','🍺','🛒','🏪','⛽','🅿️','🚉','🏥','💊','📚','🎭','🏟️','⛪','🌄','🌋','🏜️','🌵','🌸','🎪','⚽','🎯','🎨','🎵','🛠️','🚜','🐾','🌻'].map(ic => (
+                    <button key={ic} type="button" onClick={() => setQuickCategoryIcon(ic)}
+                      className={`${styles.iconBtn} ${quickCategoryIcon === ic ? styles.iconBtnSelected : styles.iconBtnDefault}`}>
+                      {ic}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className={styles.formGroup} style={{ marginBottom: 8 }}>
+                <label className={styles.formLabel}>Color</label>
+                <input type="color" value={quickCategoryColor} onChange={e => setQuickCategoryColor(e.target.value)}
+                  className={styles.colorInput} />
+              </div>
+              <div className={styles.formActions}>
+                <button type="button" onClick={() => setShowQuickCategory(false)}
+                  className={styles.cancelBtn}>Cancel</button>
+                <button type="button" onClick={handleSaveQuickCategory} disabled={!quickCategoryName.trim() || quickCategorySaving}
+                  className={styles.submitBtn}>
+                  {quickCategorySaving ? 'Saving...' : 'Save Group'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className={styles.formActions}>
+          <button type="button" onClick={() => setShowSaveAsLocation(false)}
+            className={styles.cancelBtn}>Cancel</button>
+          <button type="button" onClick={handleSaveAsLocation} disabled={!saveAsLocationName.trim() || savingAsLocation}
+            className={styles.submitBtn}>
+            {savingAsLocation ? 'Saving...' : '💾 Save Location'}
+          </button>
+        </div>
+      </div>
+    )}</>
           )}
         </div>
 

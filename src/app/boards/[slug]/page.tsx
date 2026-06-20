@@ -6,12 +6,12 @@ export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
-  const board = await prisma.board.findUnique({
+  const board = await prisma.bulletinBoard.findUnique({
     where: { slug },
-    select: { title: true, description: true },
+    select: { name: true, description: true },
   })
   if (!board) return {}
-  const title = `${board.title} — Boards — XistrYmemZ`
+  const title = `${board.name} — Boards — XistrYmemZ`
   const description = board.description?.slice(0, 160) || 'A board on XistrYmemZ'
   return {
     title,
