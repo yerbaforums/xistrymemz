@@ -12,9 +12,10 @@ import FeaturesSection from '@/components/home/FeaturesSection'
 import CTASection from '@/components/home/CTASection'
 import PassportSection from '@/components/home/PassportSection'
 import FeedbackSection from '@/components/home/FeedbackSection'
+import MemberSpotlightSection from '@/components/home/MemberSpotlightSection'
 import HomeFooterSection from '@/components/home/HomeFooterSection'
 import HomeTourWrapper from '@/components/HomeTourWrapper'
-import type { PlatformStats, FeaturedShop, FeaturedProduct, PublicRequest, FeaturedEvent, PublicProject, FeaturedBoard } from '@/components/home/types'
+import type { PlatformStats, FeaturedShop, FeaturedProduct, PublicRequest, FeaturedEvent, PublicProject, FeaturedBoard, RecentMember } from '@/components/home/types'
 
 const ZERO_STATS: PlatformStats = {
   members: 0, shops: 0, schools: 0, products: 0, services: 0,
@@ -75,6 +76,8 @@ export default function Home() {
   const [loadingEvents, setLoadingEvents] = useState(true)
   const [loadingPlans, setLoadingPlans] = useState(true)
   const [loadingBoards, setLoadingBoards] = useState(true)
+  const [members, setMembers] = useState<RecentMember[]>([])
+  const [loadingMembers, setLoadingMembers] = useState(true)
   const [trendingTags, setTrendingTags] = useState<{ tag: string; postCount: number; entities: { posts: number; products: number; events: number; forumPosts: number; groupPosts: number } }[]>([])
   const animatedStats = useCountUp(stats)
 
@@ -134,6 +137,15 @@ export default function Home() {
       .then(r => r.ok ? r.json() : { boards: [] })
       .then(data => { setBoards(data?.data?.boards || data?.boards || []); setLoadingBoards(false) })
       .catch(() => setLoadingBoards(false))
+
+    fetch('/api/users/recent?take=6')
+      .then(r => r.ok ? r.json() : { data: { members: [] } })
+      .then(d => {
+        const list = d?.data?.members || (Array.isArray(d) ? d : [])
+        if (Array.isArray(list)) setMembers(list.slice(0, 6))
+        setLoadingMembers(false)
+      })
+      .catch(() => setLoadingMembers(false))
   }, [fetchProducts])
 
   return (
@@ -156,6 +168,7 @@ export default function Home() {
         loadingBoards={loadingBoards}
         trendingTags={trendingTags}
       />
+      <MemberSpotlightSection members={members} loading={loadingMembers} stats={animatedStats} />
       <StepsSection />
       <FeaturesSection />
       <PassportSection />

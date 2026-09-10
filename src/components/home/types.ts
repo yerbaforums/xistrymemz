@@ -66,3 +66,15 @@ export interface FeaturedBoard {
   location: string | null
   pinCount: number
 }
+
+export interface RecentMember {
+  id: string
+  name: string | null
+  username: string | null
+  image: string | null
+  location: string | null
+  userClass: string | null
+  createdAt: string
+  posts: number
+  products: number
+}
