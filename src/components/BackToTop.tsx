@@ -20,6 +20,7 @@ export default function BackToTop() {
 
   return (
     <button
+      type="button"
       className={`${styles.button} ${visible ? styles.visible : ''}`}
       onClick={scrollToTop}
       aria-label="Back to top"

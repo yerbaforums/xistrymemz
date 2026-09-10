@@ -152,7 +152,7 @@ export default function RentalsPage() {
         rentalDeposit: form.rentalDeposit ? parseFloat(form.rentalDeposit) : null,
         rentalMinDays: parseInt(form.rentalMinDays) || 1,
         rentalMaxDays: form.rentalMaxDays ? parseInt(form.rentalMaxDays) : null,
-        paymentType: 'BOTH',
+        paymentType: 'DIRECT',
         acceptsOffers: true,
       }
       const url = editing ? `/api/products/${editing.id}` : '/api/products'
@@ -306,7 +306,7 @@ export default function RentalsPage() {
                 <button onClick={() => handleTogglePublish(r.id, r.published)} className={r.published ? styles.hideBtn : styles.publishBtn}>
                   {r.published ? '👁️ Hide' : '✅ Publish'}
                 </button>
-                <button onClick={() => handleDelete(r.id, r.title)} className={styles.deleteBtn}>🗑️</button>
+                <button onClick={() => { setConfirmAction('delete-item'); setConfirmTitle(r.id) }} className={styles.deleteBtn}>🗑️</button>
               </div>
             </div>
           ))}

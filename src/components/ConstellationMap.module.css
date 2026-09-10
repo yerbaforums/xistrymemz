@@ -1,0 +1,51 @@
+.container {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid var(--border-color);
+  background: #070b1a;
+  opacity: 0;
+  transform: scale(0.985);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.loaded {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: pan-y;
+}
+
+.canvas:active {
+  cursor: grabbing;
+}
+
+.empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: rgba(203, 213, 225, 0.7);
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+
+.emptyIcon {
+  font-size: 2.5rem;
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .container {
+    transition: none;
+  }
+}

@@ -16,6 +16,7 @@ export async function POST(
   const { id } = await params
   const body = await request.json().catch(() => ({}))
   const role = body.role || 'ATTENDEE'
+  const message = body.message as string | undefined
 
   if (!['ATTENDEE', 'VOLUNTEER'].includes(role)) {
     return apiError("Invalid role", 400)
@@ -50,7 +51,7 @@ export async function POST(
   if (existingJoiner) {
     const joiner = await prisma.projectJoiner.update({
       where: { id: existingJoiner.id },
-      data: { role }
+      data: { role, ...(message ? { message } : {}) },
     })
     return apiSuccess(joiner)
   }
@@ -59,7 +60,8 @@ export async function POST(
     data: {
       projectId: project.id,
       userId: session.user.id,
-      role
+      role,
+      ...(message ? { message } : {}),
     }
   })
 

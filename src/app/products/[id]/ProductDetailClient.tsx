@@ -100,16 +100,10 @@ interface ProjectData {
 }
 
 const CRYPTO_DISPLAY = [
-  { symbol: 'BTC', decimals: 6, fallback: 68500 },
-  { symbol: 'ETH', decimals: 4, fallback: 3450 },
-  { symbol: 'USDT', decimals: 2, fallback: 1 },
-  { symbol: 'USDC', decimals: 2, fallback: 1 },
   { symbol: 'XMR', decimals: 4, fallback: 165 },
   { symbol: 'XTM', decimals: 4, fallback: 0.06 },
-  { symbol: 'ARRR', decimals: 4, fallback: 3.50 },
-  { symbol: 'DERO', decimals: 4, fallback: 2.00 },
   { symbol: 'ZANO', decimals: 4, fallback: 0.50 },
-  { symbol: 'FIRO', decimals: 2, fallback: 1.20 },
+  { symbol: 'FUSD', decimals: 2, fallback: 1 },
 ]
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -139,7 +133,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     acceptsDonations: false,
     selectedDonationAddrs: [] as DonationAddr[],
     sellerPayoutAddress: '',
-    sellerCryptoCurrency: 'ETH',
+    sellerCryptoCurrency: 'XMR',
     rentalDaily: '',
     rentalWeekly: '',
     rentalMonthly: '',
@@ -231,7 +225,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           acceptsDonations: data.acceptsDonations ?? false,
           selectedDonationAddrs: hydrateDonationAddresses(data.donationAddress, data.donationCurrency, data.donationAddresses),
           sellerPayoutAddress: data.sellerPayoutAddress || '',
-          sellerCryptoCurrency: data.sellerCryptoCurrency || 'ETH',
+          sellerCryptoCurrency: data.sellerCryptoCurrency || 'XMR',
           rentalDaily: data.rentalDaily?.toString() || '',
           rentalWeekly: data.rentalWeekly?.toString() || '',
           rentalMonthly: data.rentalMonthly?.toString() || '',
@@ -362,15 +356,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     }
   }
 
-  const handleEscrowCheckout = async () => {
+  const handleDirectCheckout = async () => {
     if (!product || !session?.user) {
-      info('Please sign in to use escrow checkout')
+      info('Please sign in to place an order')
       return
     }
     setEscrowLoading(true)
     try {
-      const selectedService = courierServices.find(c => c.id === selectedCourier)
-      const res = await fetch('/api/escrow', {
+      const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -378,19 +371,19 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           amount: product.price,
           productId: product.id,
           description: `Purchase: ${product.title}`,
-          courierId: selectedCourier || null,
-          courierFee: selectedService?.basePrice || null,
-          courierService: selectedService?.name || null,
-          deliveryAddress: deliveryAddress || null
+          sellerPayoutAddress: product.sellerPayoutAddress,
+          sellerPayoutCurrency: product.sellerCryptoCurrency,
+          courierServiceId: selectedCourier || null,
+          deliveryAddress: selectedCourier ? (deliveryAddress || null) : null
         })
       })
       if (res.ok) {
-        const data = await res.json()
-        success(`Escrow created! Transaction ID: ${data.id}. Please send crypto payment to fund the escrow.`)
+        success('Order created! Pay the seller directly, then mark it as paid from your Orders.')
         setShowEscrowModal(false)
+        router.push('/orders')
       } else {
         const err = await res.json()
-        error(err.error || 'Failed to create escrow')
+        error(err.error || 'Failed to create order')
       }
     } catch (err) {
       console.error(err)
@@ -431,13 +424,13 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     }
   }
 
-  const openEscrowModal = async () => {
+  const openCheckoutModal = async () => {
     if (!settings.enableCheckout) {
       setShowEscrowComingSoon(true)
       return
     }
     if (!session?.user) {
-      info('Please sign in to use escrow checkout')
+      info('Please sign in to place an order')
       return
     }
     try {
@@ -705,11 +698,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 </div>
               </details>
 
-              {settings.enableCheckout && (
-                <>
-                  <div className="form-group">
-                    <label>Payout Address</label>
-                    {userDonationAddrs.length === 0 ? (
+              <div className="form-group">
+                <label>Payout Address</label>
+                {userDonationAddrs.length === 0 ? (
                       <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                         No addresses saved.{' '}
                         <a href="/profile/edit" style={{ color: 'var(--accent-primary)' }}>Add one in profile settings</a>
@@ -739,8 +730,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                       </div>
                     )}
                   </div>
-                </>
-              )}
               <div className={styles.editActions}>
                 <Button onClick={() => setIsEditing(false)} variant="ghost">
                   Cancel
@@ -937,10 +926,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                      <Button 
                        className={styles.escrowBtn}
                        variant="secondary"
-                       onClick={openEscrowModal}
-                       title="Escrow checkout"
+                       onClick={openCheckoutModal}
+                       title="Direct order checkout"
                      >
-                       🔒 Escrow Checkout
+                       🛒 Buy Now
                      </Button>
                    )}
                  </>
@@ -1131,12 +1120,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       {showEscrowModal && product && (
         <div className="modal-overlay" onClick={() => setShowEscrowModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <h2>🔒 Secure Escrow Checkout</h2>
+            <h2>🛒 Buy Now</h2>
             <p className={styles.projectModalDesc}>
-              Your payment will be held securely until you confirm delivery.
-              The seller will receive funds only after you approve.
+              This is a direct sale — the platform never holds funds. You pay the seller directly,
+              then mark the order as paid once you transfer.
             </p>
-            
+
             <div className={styles.escrowSummary}>
               <div className={styles.escrowRow}>
                 <span>Item:</span>
@@ -1147,13 +1136,15 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 <strong>${product.price}</strong>
               </div>
               <div className={styles.escrowRow}>
-                <span>Platform Fee (10%):</span>
-                <span>${((product.price || 0) * 0.10).toFixed(2)}</span>
-              </div>
-              <div className={styles.escrowRow}>
                 <span>Seller:</span>
                 <span>{product.user.name || 'Unknown'}</span>
               </div>
+              {product.sellerPayoutAddress && (
+                <div className={styles.escrowRow}>
+                  <span>Payout:</span>
+                  <span>{product.sellerCryptoCurrency || 'USD'} — {product.sellerPayoutAddress}</span>
+                </div>
+              )}
             </div>
 
             {courierServices.length > 0 && (
@@ -1197,10 +1188,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               <Button 
                 type="button"
                 variant="primary" 
-                disabled={escrowLoading}
-                onClick={handleEscrowCheckout}
+                disabled={escrowLoading || (!!selectedCourier && !deliveryAddress.trim())}
+                onClick={handleDirectCheckout}
               >
-                {escrowLoading ? 'Creating...' : 'Create Escrow'}
+                {escrowLoading ? 'Creating...' : 'Place Order'}
               </Button>
             </div>
           </div>
@@ -1317,7 +1308,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       <ComingSoonModal
         isOpen={showEscrowComingSoon}
         onClose={() => setShowEscrowComingSoon(false)}
-        feature="Escrow checkout"
+        feature="Ordering"
       />
 
       <ConfirmDialog

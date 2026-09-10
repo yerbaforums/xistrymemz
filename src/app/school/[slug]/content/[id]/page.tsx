@@ -9,6 +9,7 @@ import LinkedItemsSection from '@/components/LinkedItemsSection'
 import styles from './page.module.css'
 import Skeleton from '@/components/Skeleton'
 import PinToBoardButton from '@/components/PinToBoardButton'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface ContentData {
   id: string
@@ -154,15 +155,12 @@ export default function SchoolContentDetailPage() {
 
   return (
     <div className={styles.page}>
-      <nav className="breadcrumbs">
-        <Link href="/" className="breadcrumb-link">Home</Link>
-        <span className="breadcrumb-sep"> / </span>
-        <Link href="/schools" className="breadcrumb-link">Schools</Link>
-        <span className="breadcrumb-sep"> / </span>
-        <Link href={`/school/${slug}`} className="breadcrumb-link">{content.user.schoolName || 'School'}</Link>
-        <span className="breadcrumb-sep"> / </span>
-        <span className="breadcrumb-current">{content.title}</span>
-      </nav>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Schools', href: '/schools' },
+        { label: content.user.schoolName || 'School', href: `/school/${slug}` },
+        { label: content.title },
+      ]} />
 
       <div className={styles.header}>
         <div className={styles.badges}>

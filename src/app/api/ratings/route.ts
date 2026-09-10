@@ -31,6 +31,10 @@ export async function GET(request: Request) {
         },
         user: {
           select: { id: true, name: true, image: true }
+        },
+        votes: { select: { id: true, userId: true } },
+        responses: {
+          select: { id: true, content: true, userId: true, createdAt: true, user: { select: { id: true, name: true, image: true } } }
         }
       },
       orderBy: { createdAt: 'desc' }
@@ -43,16 +47,19 @@ export async function GET(request: Request) {
     let userRating = null
     const session = await getServerSession(authOptions)
     if (session?.user?.id && userId) {
-      userRating = await prisma.rating.findUnique({
+      userRating = await prisma.rating.findFirst({
         where: {
-          raterId_userId: {
-            raterId: session.user.id,
-            userId
-          }
+          raterId: session.user.id,
+          userId,
+          ...(productId ? { productId } : {})
         },
         include: {
           rater: {
             select: { id: true, name: true, image: true }
+          },
+          votes: { select: { id: true, userId: true } },
+          responses: {
+            select: { id: true, content: true, userId: true, createdAt: true, user: { select: { id: true, name: true, image: true } } }
           }
         }
       })
@@ -84,21 +91,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { userId, productId, rating, comment, type, transactionId } = validation.data
+    const { userId, productId, rating, comment, type, transactionId, ratingImages } = validation.data
 
-    const existing = await prisma.rating.findUnique({
+    const existing = await prisma.rating.findFirst({
       where: {
-        raterId_userId: {
-          raterId: session.user.id,
-          userId
-        }
+        raterId: session.user.id,
+        userId,
+        ...(productId ? { productId } : {})
       }
     })
 
     if (existing) {
       const updated = await prisma.rating.update({
         where: { id: existing.id },
-        data: { rating, comment, type: type || 'SELLER' }
+        data: { rating, comment, type: type || 'SELLER', ratingImages: ratingImages || existing.ratingImages }
       })
       return apiSuccess(updated)
     }
@@ -111,7 +117,8 @@ export async function POST(request: Request) {
         rating,
         comment: comment || null,
         type: type || 'SELLER',
-        transactionId: transactionId || null
+        transactionId: transactionId || null,
+        ratingImages: ratingImages || null
       },
       include: {
         rater: {

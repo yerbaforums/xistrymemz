@@ -56,7 +56,7 @@ export default async function ProjectDetailPage({
         }
       },
       joiners: {
-        include: { user: { select: { id: true, name: true, email: true } } }
+        include: { user: { select: { id: true, name: true, email: true, bio: true, userClass: true } } }
       },
       contributions: {
         orderBy: { createdAt: 'desc' },
@@ -93,11 +93,11 @@ export default async function ProjectDetailPage({
     })),
     isOwner,
     isEditor: canEdit,
-    joiners: project.joiners.map(j => ({
-      ...j,
-      joinedAt: j.joinedAt.toISOString(),
-      user: { id: j.user.id, name: j.user.name, email: j.user.email }
-    })),
+      joiners: project.joiners.map(j => ({
+        ...j,
+        joinedAt: j.joinedAt.toISOString(),
+        user: { id: j.user.id, name: j.user.name, email: j.user.email, bio: j.user.bio, userClass: j.user.userClass }
+      })),
     contributions: project.contributions.map(c => ({
       ...c,
       createdAt: c.createdAt.toISOString(),

@@ -75,8 +75,8 @@ export default function ForumThreadPage() {
   const [submitting, setSubmitting] = useState(false)
   const [tipTarget, setTipTarget] = useState<{type: 'post' | 'reply', id: string, authorId: string} | null>(null)
   const [tipAmount, setTipAmount] = useState('')
-  const [tipCrypto, setTipCrypto] = useState('USDT')
-  const [cryptoBalances, setCryptoBalances] = useState<{symbol: string, name: string, available: number, icon: string, color: string}[]>([])
+  const [tipCrypto, setTipCrypto] = useState('XMR')
+  const [tipOptions, setTipOptions] = useState<{symbol: string, name: string, icon: string, color: string}[]>([])
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set())
   const [editingPost, setEditingPost] = useState(false)
   const [editPostTitle, setEditPostTitle] = useState('')
@@ -263,7 +263,7 @@ export default function ForumThreadPage() {
       const res = await fetch('/api/forum/tip-options')
       if (res.ok) {
         const data = await res.json()
-        setCryptoBalances(data.cryptoBalances || [])
+        setTipOptions(data.tipOptions || [])
       }
     } catch (err) {
       console.error(err)
@@ -639,7 +639,7 @@ export default function ForumThreadPage() {
             <div className={styles.cryptoSelect}>
               <label>Select Crypto</label>
               <div className={styles.cryptoGrid}>
-                {cryptoBalances.map(crypto => (
+                {tipOptions.map(crypto => (
                   <Button
                     key={crypto.symbol}
                     variant="secondary"
@@ -652,10 +652,6 @@ export default function ForumThreadPage() {
                   </Button>
                 ))}
               </div>
-            </div>
-
-            <div className={styles.balanceInfo}>
-              <span>Available: {cryptoBalances.find(c => c.symbol === tipCrypto)?.available?.toFixed(4) || '0'} {tipCrypto}</span>
             </div>
 
             <input

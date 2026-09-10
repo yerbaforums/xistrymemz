@@ -53,7 +53,7 @@ export default function OnboardingPage() {
   const [selectedOutlets, setSelectedOutlets] = useState<string[]>([])
   const [acceptsDonations, setAcceptsDonations] = useState(false)
   const [donationAddress, setDonationAddress] = useState('')
-  const [donationCurrency, setDonationCurrency] = useState('ETH')
+  const [donationCurrency, setDonationCurrency] = useState('XMR')
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const [completedSetupSteps, setCompletedSetupSteps] = useState<string[]>([])
@@ -581,15 +581,10 @@ export default function OnboardingPage() {
                         onChange={e => setDonationCurrency(e.target.value)}
                         className={styles.currencySelect}
                       >
-                        <option value="ETH">ETH</option>
-                        <option value="BTC">BTC</option>
-                        <option value="USDT">USDT</option>
-                        <option value="USDC">USDC</option>
                         <option value="XMR">XMR</option>
                         <option value="XTM">XTM</option>
-                        <option value="ARRR">ARRR</option>
-                        <option value="DERO">DERO</option>
                         <option value="ZANO">ZANO</option>
+                        <option value="FUSD">FUSD</option>
                       </select>
                       <input
                         type="text"

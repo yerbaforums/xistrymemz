@@ -8,24 +8,22 @@ import Button from '@/components/ui/Button'
 import Skeleton from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { useToast } from '@/context/ToastContext'
 
-interface EscrowTransaction {
+interface Order {
   id: string
   amount: number
   currency: string
   status: string
-  deliveryStatus: string
+  courierStatus: string | null
   description: string | null
   product: { id: string; title: string; imageUrl: string | null } | null
   buyer: { id: string; name: string | null; email: string }
   seller: { id: string; name: string | null; email: string }
   courier: { id: string; name: string | null } | null
   courierFee: number | null
-  platformFee: number
-  netAmount: number
   deliveryAddress: string | null
   trackingNumber: string | null
-  txHash: string | null
   createdAt: string
   updatedAt: string
   completedAt: string | null
@@ -34,11 +32,12 @@ interface EscrowTransaction {
 export default function AdminOrdersPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [orders, setOrders] = useState<EscrowTransaction[]>([])
+  const { success, error } = useToast()
+  const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('all')
-  const [selectedOrder, setSelectedOrder] = useState<EscrowTransaction | null>(null)
-  const [, setUpdating] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [updating, setUpdating] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
@@ -49,23 +48,18 @@ export default function AdminOrdersPage() {
 
   useEffect(() => {
     if (session?.user) {
-      checkAdminAndFetch()
+      fetchOrders()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, filter])
 
-  const checkAdminAndFetch = async () => {
-    // For now, allow access - in production, check user role
-    fetchOrders()
-  }
-
-  const fetchOrders = async () => {
+  async function fetchOrders() {
     try {
-      const url = filter === 'all' ? '/api/escrow' : `/api/escrow?type=${filter}`
+      const url = filter === 'all' ? '/api/orders?admin=true' : `/api/orders?type=${filter}&admin=true`
       const res = await fetch(url)
       if (res.ok) {
         const data = await res.json()
-        setOrders(data?.data || data || [])
+        setOrders(data?.orders || [])
       }
     } catch (error) {
       console.error('Failed to fetch orders:', error)
@@ -74,17 +68,21 @@ export default function AdminOrdersPage() {
     }
   }
 
-  const updateOrderStatus = async (orderId: string, action: string, data?: object) => {
+  const updateOrderStatus = async (action: string, dataObj?: object) => {
+    if (!selectedOrder) return
     setUpdating(true)
     try {
-      const res = await fetch(`/api/escrow/${orderId}`, {
+      const res = await fetch(`/api/orders/${selectedOrder.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, ...data })
+        body: JSON.stringify({ action, ...dataObj })
       })
       if (res.ok) {
+        success('Order updated')
         fetchOrders()
-        setSelectedOrder(null)
+      } else {
+        const err = await res.json()
+        error(err.error || 'Failed to update order')
       }
     } catch (error) {
       console.error('Failed to update order:', error)
@@ -96,11 +94,21 @@ export default function AdminOrdersPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'PENDING': return '#6b7280'
-      case 'FUNDED': return '#3b82f6'
-      case 'RELEASED': return '#10b981'
-      case 'DISPUTED': return '#f59e0b'
-      case 'REFUNDED': return '#ef4444'
+      case 'PAID': return '#3b82f6'
+      case 'SHIPPED': return '#f59e0b'
+      case 'DELIVERED': return '#10b981'
       case 'CANCELLED': return '#9ca3af'
+      default: return '#6b7280'
+    }
+  }
+
+  const getCourierColor = (status: string) => {
+    switch (status) {
+      case 'REQUESTED': return '#f59e0b'
+      case 'BOOKED': return '#3b82f6'
+      case 'IN_TRANSIT': return '#8b5cf6'
+      case 'DELIVERED': return '#10b981'
+      case 'DECLINED': return '#ef4444'
       default: return '#6b7280'
     }
   }
@@ -121,10 +129,10 @@ export default function AdminOrdersPage() {
   const stats = {
     total: orders.length,
     pending: orders.filter(o => o.status === 'PENDING').length,
-    funded: orders.filter(o => o.status === 'FUNDED').length,
-    released: orders.filter(o => o.status === 'RELEASED').length,
-    disputed: orders.filter(o => o.status === 'DISPUTED').length,
-    totalRevenue: orders.filter(o => o.status === 'RELEASED').reduce((sum, o) => sum + o.platformFee, 0)
+    paid: orders.filter(o => o.status === 'PAID').length,
+    shipped: orders.filter(o => o.status === 'SHIPPED').length,
+    delivered: orders.filter(o => o.status === 'DELIVERED').length,
+    totalVolume: orders.filter(o => o.status !== 'CANCELLED').reduce((sum, o) => sum + o.amount, 0)
   }
 
   if (status === 'loading' || loading) {
@@ -144,20 +152,20 @@ export default function AdminOrdersPage() {
           <span className={styles.statLabel}>Total Orders</span>
         </div>
         <div className={styles.statCard}>
-          <span className={styles.statValue} style={{ color: '#3b82f6' }}>{stats.pending}</span>
-          <span className={styles.statLabel}>Pending</span>
+          <span className={styles.statValue} style={{ color: '#3b82f6' }}>{stats.paid}</span>
+          <span className={styles.statLabel}>Paid</span>
         </div>
         <div className={styles.statCard}>
-          <span className={styles.statValue} style={{ color: '#10b981' }}>{stats.funded}</span>
-          <span className={styles.statLabel}>Funded</span>
+          <span className={styles.statValue} style={{ color: '#f59e0b' }}>{stats.shipped}</span>
+          <span className={styles.statLabel}>Shipped</span>
         </div>
         <div className={styles.statCard}>
-          <span className={styles.statValue} style={{ color: '#f59e0b' }}>{stats.disputed}</span>
-          <span className={styles.statLabel}>Disputed</span>
+          <span className={styles.statValue} style={{ color: '#10b981' }}>{stats.delivered}</span>
+          <span className={styles.statLabel}>Delivered</span>
         </div>
         <div className={styles.statCard}>
-          <span className={styles.statValue}>${stats.totalRevenue.toFixed(2)}</span>
-          <span className={styles.statLabel}>Platform Revenue</span>
+          <span className={styles.statValue}>${stats.totalVolume.toFixed(2)}</span>
+          <span className={styles.statLabel}>Sales Volume</span>
         </div>
       </div>
 
@@ -177,16 +185,22 @@ export default function AdminOrdersPage() {
             All
           </button>
           <button
-            className={`${styles.filterBtn} ${filter === 'asBuyer' ? styles.active : ''}`}
-            onClick={() => setFilter('asBuyer')}
+            className={`${styles.filterBtn} ${filter === 'buyer' ? styles.active : ''}`}
+            onClick={() => setFilter('buyer')}
           >
             Buyers
           </button>
           <button
-            className={`${styles.filterBtn} ${filter === 'asSeller' ? styles.active : ''}`}
-            onClick={() => setFilter('asSeller')}
+            className={`${styles.filterBtn} ${filter === 'seller' ? styles.active : ''}`}
+            onClick={() => setFilter('seller')}
           >
             Sellers
+          </button>
+          <button
+            className={`${styles.filterBtn} ${filter === 'courier' ? styles.active : ''}`}
+            onClick={() => setFilter('courier')}
+          >
+            Couriers
           </button>
         </div>
       </div>
@@ -214,7 +228,7 @@ export default function AdminOrdersPage() {
                 <td>{order.seller.name || order.seller.email}</td>
                 <td>${order.amount.toFixed(2)}</td>
                 <td>
-                  <span 
+                  <span
                     className={styles.statusBadge}
                     style={{ background: getStatusColor(order.status) }}
                   >
@@ -222,18 +236,19 @@ export default function AdminOrdersPage() {
                   </span>
                 </td>
                 <td>
-                  <span 
-                    className={styles.deliveryBadge}
-                    style={{ 
-                      color: order.deliveryStatus === 'COMPLETED' ? '#10b981' : 
-                             order.deliveryStatus === 'IN_TRANSIT' ? '#3b82f6' : '#6b7280' 
-                    }}
-                  >
-                    {order.deliveryStatus}
-                  </span>
+                  {order.courierStatus ? (
+                    <span
+                      className={styles.deliveryBadge}
+                      style={{ color: getCourierColor(order.courierStatus) }}
+                    >
+                      {order.courierStatus}
+                    </span>
+                  ) : (
+                    <span className={styles.deliveryBadge}>—</span>
+                  )}
                 </td>
                 <td>
-                  <button 
+                  <button
                     onClick={() => setSelectedOrder(order)}
                     className={styles.editBtn}
                   >
@@ -254,26 +269,24 @@ export default function AdminOrdersPage() {
         <div className="modal-overlay" onClick={() => setSelectedOrder(null)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <h2>Edit Order #{selectedOrder.id.slice(0, 8)}</h2>
-            
+
             <div className={styles.modalSection}>
-              <h3>Transaction Details</h3>
+              <h3>Order Details</h3>
               <div className={styles.detailGrid}>
                 <div className={styles.detailItem}>
                   <span>Amount:</span>
                   <strong>${selectedOrder.amount.toFixed(2)}</strong>
                 </div>
-                <div className={styles.detailItem}>
-                  <span>Platform Fee:</span>
-                  <strong>${selectedOrder.platformFee.toFixed(2)}</strong>
-                </div>
-                <div className={styles.detailItem}>
-                  <span>Net to Seller:</span>
-                  <strong>${selectedOrder.netAmount.toFixed(2)}</strong>
-                </div>
-                {selectedOrder.courierFee && (
+                {selectedOrder.courierFee != null && (
                   <div className={styles.detailItem}>
                     <span>Courier Fee:</span>
                     <strong>${selectedOrder.courierFee.toFixed(2)}</strong>
+                  </div>
+                )}
+                {selectedOrder.trackingNumber && (
+                  <div className={styles.detailItem}>
+                    <span>Tracking:</span>
+                    <strong>{selectedOrder.trackingNumber}</strong>
                   </div>
                 )}
               </div>
@@ -302,98 +315,43 @@ export default function AdminOrdersPage() {
             <div className={styles.modalSection}>
               <h3>Status</h3>
               <div className={styles.statusGrid}>
-                <label>
-                  <input
-                    type="radio"
-                    name="status"
-                    checked={selectedOrder.status === 'PENDING'}
-                    onChange={() => updateOrderStatus(selectedOrder.id, '', { status: 'PENDING' })}
-                  />
-                  Pending
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="status"
-                    checked={selectedOrder.status === 'FUNDED'}
-                    onChange={() => updateOrderStatus(selectedOrder.id, '', { status: 'FUNDED' })}
-                  />
-                  Funded
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="status"
-                    checked={selectedOrder.status === 'RELEASED'}
-                    onChange={() => updateOrderStatus(selectedOrder.id, '', { status: 'RELEASED' })}
-                  />
-                  Released
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="status"
-                    checked={selectedOrder.status === 'REFUNDED'}
-                    onChange={() => updateOrderStatus(selectedOrder.id, '', { status: 'REFUNDED' })}
-                  />
-                  Refunded
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="status"
-                    checked={selectedOrder.status === 'DISPUTED'}
-                    onChange={() => updateOrderStatus(selectedOrder.id, '', { status: 'DISPUTED' })}
-                  />
-                  Disputed
-                </label>
+                {['PENDING', 'PAID', 'SHIPPED', 'DELIVERED', 'CANCELLED'].map(s => (
+                  <label key={s}>
+                    <input
+                      type="radio"
+                      name="status"
+                      checked={selectedOrder.status === s}
+                      onChange={() => updateOrderStatus('admin_set_status', { status: s })}
+                      disabled={updating}
+                    />
+                    {s.charAt(0) + s.slice(1).toLowerCase()}
+                  </label>
+                ))}
               </div>
             </div>
 
-            <div className={styles.modalSection}>
-              <h3>Delivery Status</h3>
-              <div className={styles.statusGrid}>
-                <label>
-                  <input
-                    type="radio"
-                    name="deliveryStatus"
-                    checked={selectedOrder.deliveryStatus === 'PENDING'}
-                    onChange={() => updateOrderStatus(selectedOrder.id, 'update_delivery', { deliveryStatus: 'PENDING' })}
-                  />
-                  Pending
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="deliveryStatus"
-                    checked={selectedOrder.deliveryStatus === 'IN_TRANSIT'}
-                    onChange={() => updateOrderStatus(selectedOrder.id, 'update_delivery', { deliveryStatus: 'IN_TRANSIT' })}
-                  />
-                  In Transit
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="deliveryStatus"
-                    checked={selectedOrder.deliveryStatus === 'DELIVERED'}
-                    onChange={() => updateOrderStatus(selectedOrder.id, 'update_delivery', { deliveryStatus: 'DELIVERED' })}
-                  />
-                  Delivered
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="deliveryStatus"
-                    checked={selectedOrder.deliveryStatus === 'COMPLETED'}
-                    onChange={() => updateOrderStatus(selectedOrder.id, 'update_delivery', { deliveryStatus: 'COMPLETED' })}
-                  />
-                  Completed
-                </label>
+            {selectedOrder.courierStatus !== null && selectedOrder.courierStatus !== undefined && (
+              <div className={styles.modalSection}>
+                <h3>Courier Status</h3>
+                <div className={styles.statusGrid}>
+                  {['REQUESTED', 'BOOKED', 'IN_TRANSIT', 'DELIVERED', 'DECLINED'].map(s => (
+                    <label key={s}>
+                      <input
+                        type="radio"
+                        name="courierStatus"
+                        checked={selectedOrder.courierStatus === s}
+                        onChange={() => updateOrderStatus('admin_set_courier', { courierStatus: s })}
+                        disabled={updating}
+                      />
+                      {s.charAt(0) + s.slice(1).toLowerCase() + (s === 'IN_TRANSIT' ? ' (shipped)' : '')}
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            <Button 
-              onClick={() => setSelectedOrder(null)} 
+            <Button
+              onClick={() => setSelectedOrder(null)}
               variant="ghost"
               style={{ marginTop: '20px' }}
             >

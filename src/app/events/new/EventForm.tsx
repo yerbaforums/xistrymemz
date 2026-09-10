@@ -82,7 +82,9 @@ export function EventForm() {
           needsVolunteers: formData.needsVolunteers,
           volunteerRoles,
           volunteerDescription: formData.volunteerDescription,
-          hashtags: formData.hashtags
+          hashtags: formData.hashtags,
+          recurrenceRule: formData.recurrenceRule,
+          recurrenceEnd: formData.recurrenceEnd || null,
         })
       })
 

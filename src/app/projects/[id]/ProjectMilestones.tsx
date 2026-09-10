@@ -104,6 +104,45 @@ export default function ProjectMilestones({ milestones, isOwner, onChange }: Pro
               <span>⚠️</span> <span>{overdueCount} milestone{overdueCount !== 1 ? 's' : ''} past due date — prioritize completion</span>
             </div>
           )}
+
+          <div style={{ marginTop: 16, overflowX: 'auto', paddingBottom: 8 }}>
+            <div style={{ position: 'relative', minWidth: `${milestones.length * 120}px`, height: 80 }}>
+              <svg width="100%" height="80" style={{ display: 'block' }}>
+                {milestones.map((ms, i) => {
+                  const x = i * 120 + 60
+                  const color = PRIORITY_COLORS[ms.priority || 'medium'] || '#22c55e'
+                  const overdue = isOverdue(ms)
+                  const barColor = overdue ? '#ef4444' : color
+                  return (
+                    <g key={ms.id}>
+                      <line x1={x} y1="20" x2={i < milestones.length - 1 ? (i + 1) * 120 + 60 : x} y2="20" stroke="#333" strokeWidth="2" />
+                      <rect
+                        x={x - 3}
+                        y={overdue ? 8 : 12}
+                        width="6"
+                        height={overdue ? 24 : 16}
+                        fill={barColor}
+                        rx="2"
+                      />
+                      {ms.completed && (
+                        <text x={x} y={44} textAnchor="middle" fontSize="14" fill="var(--accent-success)">✓</text>
+                      )}
+                      {overdue && (
+                        <text x={x} y={64} textAnchor="middle" fontSize="10" fill="#ef4444">⚠</text>
+                      )}
+                    </g>
+                  )
+                })}
+              </svg>
+              <div style={{ display: 'flex', minWidth: `${milestones.length * 120}px`, marginTop: 4 }}>
+                {milestones.map(ms => (
+                  <div key={ms.id} style={{ width: 120, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{ms.title}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

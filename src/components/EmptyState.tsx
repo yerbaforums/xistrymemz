@@ -29,7 +29,7 @@ export function EmptyState({ icon, title, description, action }: EmptyStateProps
           {action.label}
         </Link>
       ) : action && 'onClick' in action ? (
-        <button className={styles.action} onClick={action.onClick} aria-label={action.label}>
+        <button type="button" className={styles.action} onClick={action.onClick} aria-label={action.label}>
           {action.label}
         </button>
       ) : null}

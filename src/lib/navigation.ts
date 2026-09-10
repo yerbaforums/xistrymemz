@@ -2,12 +2,15 @@ export interface NavItem {
   href: string
   icon: string
   label: string
-  walletRequired?: boolean
 }
 
 export interface NavSection {
   title: string
   items: NavItem[]
+}
+
+export interface SidebarNavItem extends NavItem {
+  section: 'primary' | 'secondary'
 }
 
 export interface NavConfig {
@@ -81,7 +84,6 @@ export const NAV: NavConfig = {
     { href: '/dashboard/messages', icon: '💬', label: 'Messages' },
     { href: '/courier/setup', icon: '🚚', label: 'Courier' },
     { href: '/templates', icon: '📋', label: 'Templates' },
-    { href: '/wallet', icon: '💰', label: 'Wallet', walletRequired: true },
   ],
 
   more: [
@@ -98,40 +100,38 @@ export const NAV: NavConfig = {
   admin: [
     { href: '/admin/subscribers', icon: '📧', label: 'Subscribers' },
     { href: '/admin/orders', icon: '📦', label: 'Orders' },
-    { href: '/admin/wallets', icon: '💳', label: 'Wallets' },
     { href: '/admin/messages', icon: '💬', label: 'Messages' },
     { href: '/admin/invite-codes', icon: '🎟️', label: 'Invite Codes' },
     { href: '/admin/users', icon: '👤', label: 'Users' },
+    { href: '/admin/badges', icon: '🏅', label: 'Badges' },
+    { href: '/admin/feedback', icon: '📨', label: 'Feedback' },
     { href: '/admin/settings', icon: '⚙️', label: 'Settings' },
   ],
 }
 
-export const DASHBOARD_SIDEBAR_PRIMARY: NavItem[] = [
-  { href: '/dashboard/overview', icon: '📊', label: 'Overview' },
-  { href: '/dashboard/feed', icon: '📡', label: 'Feed' },
-  { href: '/dashboard/messages', icon: '💬', label: 'Messages' },
-  { href: '/dashboard/passport', icon: '🌍', label: 'Passport' },
-  { href: '/dashboard/events', icon: '📅', label: 'Events' },
-  { href: '/dashboard/appointments', icon: '🗓️', label: 'Planner' },
-  { href: '/dashboard/projects', icon: '🚀', label: 'Projects' },
-  { href: '/dashboard/marketplace', icon: '🛒', label: 'Marketplace' },
-  { href: '/boards', icon: '📌', label: 'Boards' },
-  { href: '/discover', icon: '🌐', label: 'Discover' },
-  { href: '/dashboard/planning', icon: '🗺️', label: 'Planning' },
-]
-
-export const DASHBOARD_SIDEBAR_SECONDARY: NavItem[] = [
-  { href: '/dashboard/community', icon: '🌐', label: 'Community' },
-  { href: '/dashboard/requests', icon: '📝', label: 'Requests' },
-  { href: '/dashboard/services', icon: '🔧', label: 'Services' },
-  { href: '/dashboard/rentals', icon: '🏠', label: 'Rentals' },
-  { href: '/dashboard/shop', icon: '🏪', label: 'Shop' },
-  { href: '/dashboard/teaching', icon: '📚', label: 'Teaching' },
-  { href: '/dashboard/offers', icon: '🤝', label: 'Offers' },
-  { href: '/dashboard/saved', icon: '⭐', label: 'Saved' },
-  { href: '/dashboard/studio', icon: '🎨', label: 'Studio' },
-  { href: '/directory', icon: '📋', label: 'Directory' },
-  { href: '/dashboard/video', icon: '📹', label: 'Video Chat' },
+export const DASHBOARD_SIDEBAR: SidebarNavItem[] = [
+  { href: '/dashboard/overview', icon: '📊', label: 'Overview', section: 'primary' },
+  { href: '/dashboard/feed', icon: '📡', label: 'Feed', section: 'primary' },
+  { href: '/dashboard/messages', icon: '💬', label: 'Messages', section: 'primary' },
+  { href: '/dashboard/passport', icon: '🌍', label: 'Passport', section: 'primary' },
+  { href: '/dashboard/events', icon: '📅', label: 'Events', section: 'primary' },
+  { href: '/dashboard/appointments', icon: '🗓️', label: 'Planner', section: 'primary' },
+  { href: '/dashboard/projects', icon: '🚀', label: 'Projects', section: 'primary' },
+  { href: '/dashboard/marketplace', icon: '🛒', label: 'Marketplace', section: 'primary' },
+  { href: '/boards', icon: '📌', label: 'Boards', section: 'primary' },
+  { href: '/discover', icon: '🌐', label: 'Discover', section: 'primary' },
+  { href: '/dashboard/planning', icon: '🗺️', label: 'Planning', section: 'primary' },
+  { href: '/dashboard/community', icon: '👥', label: 'Community', section: 'secondary' },
+  { href: '/dashboard/requests', icon: '📝', label: 'Requests', section: 'secondary' },
+  { href: '/dashboard/services', icon: '🔧', label: 'Services', section: 'secondary' },
+  { href: '/dashboard/rentals', icon: '🏠', label: 'Rentals', section: 'secondary' },
+  { href: '/dashboard/shop', icon: '🏪', label: 'Shop', section: 'secondary' },
+  { href: '/dashboard/teaching', icon: '📚', label: 'Teaching', section: 'secondary' },
+  { href: '/dashboard/offers', icon: '🤝', label: 'Offers', section: 'secondary' },
+  { href: '/dashboard/saved', icon: '⭐', label: 'Saved', section: 'secondary' },
+  { href: '/dashboard/studio', icon: '🎨', label: 'Studio', section: 'secondary' },
+  { href: '/directory', icon: '📋', label: 'Directory', section: 'secondary' },
+  { href: '/dashboard/video', icon: '📹', label: 'Video Chat', section: 'secondary' },
 ]
 
 export const BREADCRUMB_LABELS: Record<string, string> = {

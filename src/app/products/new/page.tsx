@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { useToast } from '@/context/ToastContext'
-import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { extractHashtags } from '@/services/hashtagService'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import FormWizard, { useWizard } from '@/components/FormWizard'
@@ -30,7 +29,6 @@ export default function NewProductPage() {
   const router = useRouter()
   const { data: session } = useSession()
   const { warning, error, success } = useToast()
-  const { settings } = useSiteSettings()
   const wizard = useWizard(steps)
 
   const [loading, setLoading] = useState(true)
@@ -52,13 +50,13 @@ export default function NewProductPage() {
     longitude: null as number | null,
     imageUrl: '',
     paymentMethods: [] as string[],
-    paymentType: 'BOTH',
+    paymentType: 'DIRECT',
     acceptsOffers: true,
     acceptsRequests: false,
     acceptsDonations: false,
     selectedDonationAddrs: [] as DonationAddr[],
     sellerPayoutAddress: '',
-    sellerCryptoCurrency: 'ETH',
+    sellerCryptoCurrency: 'XMR',
     rentalDaily: '',
     rentalWeekly: '',
     rentalMonthly: '',
@@ -126,14 +124,14 @@ export default function NewProductPage() {
           longitude: form.longitude,
           imageUrl: form.imageUrl || null,
           paymentMethods: form.paymentMethods.join(','),
-          paymentType: settings.enableCheckout && settings.enableWallet ? form.paymentType : 'BOTH',
+          paymentType: 'DIRECT',
           acceptsOffers: form.acceptsOffers,
           acceptsRequests: form.acceptsRequests,
           acceptsDonations: form.acceptsDonations,
           ...donationAddressesToLegacy(form.acceptsDonations ? form.selectedDonationAddrs : []),
           donationAddresses: form.acceptsDonations ? serializeDonationAddresses(form.selectedDonationAddrs) : null,
-          sellerPayoutAddress: settings.enableCheckout ? (form.sellerPayoutAddress || null) : null,
-          sellerCryptoCurrency: settings.enableCheckout ? (form.sellerCryptoCurrency || 'ETH') : null,
+          sellerPayoutAddress: form.sellerPayoutAddress || null,
+          sellerCryptoCurrency: form.sellerCryptoCurrency || 'XMR',
           rentalDaily: form.type === 'RENTAL' ? (form.rentalDaily || null) : null,
           rentalWeekly: form.type === 'RENTAL' ? (form.rentalWeekly || null) : null,
           rentalMonthly: form.type === 'RENTAL' ? (form.rentalMonthly || null) : null,
@@ -386,58 +384,39 @@ export default function NewProductPage() {
               </div>
             </div>
 
-            {settings.enableCheckout && settings.enableWallet && (
-              <>
-                <div className="form-group">
-                  <label>Payment Type</label>
-                  <select value={form.paymentType} onChange={e => update('paymentType', e.target.value)}>
-                    <option value="BOTH">Both (Escrow + Direct)</option>
-                    <option value="ESCROW">Escrow Only (Protected)</option>
-                    <option value="DIRECT">Direct Payment Only</option>
-                  </select>
-                  <small className={styles.hint}>
-                    {form.paymentType === 'ESCROW' && `Buyers pay with escrow protection (${settings.platformFeePercent || 10}% fee)`}
-                    {form.paymentType === 'DIRECT' && `Buyers pay directly to your wallet (${Math.round((settings.platformFeePercent || 10) / 2)}% fee)`}
-                    {form.paymentType === 'BOTH' && 'Buyers can choose their preferred payment method'}
-                  </small>
-                </div>
-
-                {(form.paymentType === 'DIRECT' || form.paymentType === 'BOTH') && (
-                  <div className="form-group">
-                    <label>Payout Address for Payments</label>
-                    {userDonationAddrs.length === 0 ? (
-                      <p className={styles.noAddrs}>
-                        No addresses saved.{' '}
-                        <a href="/profile/edit" style={{ color: 'var(--accent-primary)' }}>Add one in profile settings</a>
-                      </p>
-                    ) : (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
-                        {userDonationAddrs.map(da => {
-                          const selected = form.sellerPayoutAddress === da.address && form.sellerCryptoCurrency === da.currency
-                          const shortAddr = da.address.length > 12 ? da.address.slice(0, 4) + '...' + da.address.slice(-4) : da.address
-                          return (
-                            <button
-                              key={da.id}
-                              type="button"
-                              onClick={() => { update('sellerPayoutAddress', da.address); update('sellerCryptoCurrency', da.currency) }}
-                              style={{
-                                padding: '6px 12px', borderRadius: 20, border: selected ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
-                                background: selected ? 'var(--accent-primary)' : 'var(--bg-tertiary)',
-                                color: selected ? 'var(--bg-primary)' : 'var(--text-secondary)',
-                                cursor: 'pointer', fontSize: '0.8rem',
-                              }}
-                            >
-                              <span style={{ fontWeight: 600, marginRight: 4 }}>{da.currency}</span>
-                              {shortAddr}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    )}
+            <div className="form-group">
+                <label>Payout Address for Payments</label>
+                <small className={styles.hint}>Buyers pay you directly — no platform fees, no escrow. This address is shown to buyers at checkout.</small>
+                {userDonationAddrs.length === 0 ? (
+                  <p className={styles.noAddrs}>
+                    No addresses saved.{' '}
+                    <a href="/profile/edit" style={{ color: 'var(--accent-primary)' }}>Add one in profile settings</a>
+                  </p>
+                ) : (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                    {userDonationAddrs.map(da => {
+                      const selected = form.sellerPayoutAddress === da.address && form.sellerCryptoCurrency === da.currency
+                      const shortAddr = da.address.length > 12 ? da.address.slice(0, 4) + '...' + da.address.slice(-4) : da.address
+                      return (
+                        <button
+                          key={da.id}
+                          type="button"
+                          onClick={() => { update('sellerPayoutAddress', da.address); update('sellerCryptoCurrency', da.currency) }}
+                          style={{
+                            padding: '6px 12px', borderRadius: 20, border: selected ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
+                            background: selected ? 'var(--accent-primary)' : 'var(--bg-tertiary)',
+                            color: selected ? 'var(--bg-primary)' : 'var(--text-secondary)',
+                            cursor: 'pointer', fontSize: '0.8rem',
+                          }}
+                        >
+                          <span style={{ fontWeight: 600, marginRight: 4 }}>{da.currency}</span>
+                          {shortAddr}
+                        </button>
+                      )
+                    })}
                   </div>
                 )}
-              </>
-            )}
+              </div>
 
             <details className={styles.listingSettings}>
               <summary className={styles.settingsSummary}>⚙️ Listing Settings</summary>

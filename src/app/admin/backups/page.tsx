@@ -339,7 +339,7 @@ export default function AdminBackupsPage() {
                         🧲 Magnet
                       </a>
                       <button
-                        onClick={() => handleDeleteBackup(b.id)}
+                        onClick={() => setDeleteTarget(b.id)}
                         className={`${styles.actionBtn} ${styles.danger}`}
                       >
                         🗑 Delete

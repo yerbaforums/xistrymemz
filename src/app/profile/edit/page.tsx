@@ -80,10 +80,6 @@ export default function ProfileEditPage() {
   const [location, setLocation] = useState('')
   const [website, setWebsite] = useState('')
   const [userClass, setUserClass] = useState('')
-  const [walletAddress, setWalletAddress] = useState('')
-  const [paymentAddress, setPaymentAddress] = useState('')
-  const [refundAddress, setRefundAddress] = useState('')
-  const [cryptoCurrency, setCryptoCurrency] = useState('ETH')
 
   // Earth Passport fields
   const [neighborhood, setNeighborhood] = useState('')
@@ -98,7 +94,7 @@ export default function ProfileEditPage() {
   const [donationAddresses, setDonationAddresses] = useState<DonationAddr[]>([])
   const [showDonationForm, setShowDonationForm] = useState(false)
   const [editingDonation, setEditingDonation] = useState<DonationAddr | null>(null)
-  const [donationForm, setDonationForm] = useState({ currency: 'ETH', address: '', label: '', showQR: true })
+  const [donationForm, setDonationForm] = useState({ currency: 'XMR', address: '', label: '', showQR: true })
   const [donationSaving, setDonationSaving] = useState(false)
   const [acceptsDonations, setAcceptsDonations] = useState(false)
   const [showShop, setShowShop] = useState(true)
@@ -158,10 +154,6 @@ export default function ProfileEditPage() {
       setLocation(user.location || '')
       setWebsite(user.website || '')
       setUserClass(user.userClass || '')
-      setWalletAddress(user.walletAddress || '')
-      setPaymentAddress(user.paymentAddress || '')
-      setRefundAddress(user.refundAddress || '')
-      setCryptoCurrency(user.cryptoCurrency || 'ETH')
       setNeighborhood(user.neighborhood || '')
       setSearchRadius(user.searchRadius || 50)
       setLatitude(user.latitude || null)
@@ -199,7 +191,6 @@ export default function ProfileEditPage() {
         headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             name, username, bio, image, coverImage, coverStyle, location, website, userClass,
-            walletAddress, paymentAddress, refundAddress, cryptoCurrency,
             acceptsDonations, neighborhood, searchRadius,
             latitude: latitude ?? null, longitude: longitude ?? null,
             traveling, lookingForCollaborators,
@@ -284,7 +275,7 @@ export default function ProfileEditPage() {
       }
       setShowDonationForm(false)
       setEditingDonation(null)
-      setDonationForm({ currency: 'ETH', address: '', label: '', showQR: true })
+      setDonationForm({ currency: 'XMR', address: '', label: '', showQR: true })
       fetchData()
     } catch {
       toastError('Failed to save donation address')
@@ -470,41 +461,9 @@ export default function ProfileEditPage() {
             </a>
           </div>
 
-          {/* Wallet Addresses - DISABLED until wallet features enabled */}
-          <div className={styles.disabledSection}>
-            <h2 className={styles.sectionTitle}>Wallet Addresses <span className={`${styles.small} ${styles.ml8}`}>— Coming Soon</span></h2>
-
-            <div className={styles.mb16}>
-              <label className={styles.label}>Wallet Address</label>
-              <input type="text" value={walletAddress} disabled placeholder="0x..." className={styles.inputMuted} />
-            </div>
-
-            <div className={styles.mb16}>
-              <label className={styles.label}>Payment Address</label>
-              <input type="text" value={paymentAddress} disabled placeholder="0x..." className={styles.inputMuted} />
-            </div>
-
-            <div className={styles.mb16}>
-              <label className={styles.label}>Refund Address</label>
-              <input type="text" value={refundAddress} disabled placeholder="0x..." className={styles.inputMuted} />
-            </div>
-
-            <div>
-              <label className={styles.label}>Default Currency</label>
-              <div className={styles.cryptoGrid}>
-                {allCryptos.map(crypto => (
-                  <div key={crypto.id} className={styles.cryptoCard}>
-                    {crypto.icon && <img src={crypto.icon} alt="" width={16} height={16} className={styles.roundImg} />}
-                    {crypto.symbol}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-        <button type="submit" disabled={saving} className={styles.saveBtnFull}>
-          {saving ? 'Saving...' : 'Save Profile'}
-        </button>
+          <button type="submit" disabled={saving} className={styles.saveBtnFull}>
+            {saving ? 'Saving...' : 'Save Profile'}
+          </button>
       </form>
 
       {/* Donation Settings */}
@@ -513,7 +472,7 @@ export default function ProfileEditPage() {
             <h2 className={styles.m0}>Donation Addresses</h2>
             <button
               type="button"
-              onClick={() => { setShowDonationForm(true); setEditingDonation(null); setDonationForm({ currency: 'ETH', address: '', label: '', showQR: true }) }}
+              onClick={() => { setShowDonationForm(true); setEditingDonation(null); setDonationForm({ currency: 'XMR', address: '', label: '', showQR: true }) }}
               className={styles.btnPrimary}
             >
               + Add Address

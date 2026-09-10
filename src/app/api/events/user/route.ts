@@ -194,7 +194,7 @@ export async function GET() {
       currency: 'USD',
       acceptsDonations: false,
       donationAddress: null,
-      donationCurrency: 'ETH',
+      donationCurrency: 'XMR',
       joinerCount: 0,
       type: 'PERSONAL',
       projectTitle: null,

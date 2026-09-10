@@ -45,6 +45,7 @@ export interface Product {
   imageUrl: string | null
   published: boolean
   pinned: boolean
+  isApproved?: boolean
   paymentMethods: string | null
   paymentType: string
   acceptsRequests: boolean

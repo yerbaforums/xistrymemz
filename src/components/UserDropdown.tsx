@@ -6,7 +6,6 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { NAV } from '@/lib/navigation'
 import { useTheme, type ThemeAccent } from '@/context/ThemeContext'
-import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { getUserProfileUrl } from '@/lib/utils'
 import styles from './Header.module.css'
 
@@ -19,7 +18,6 @@ interface UserDropdownProps {
 
 export default function UserDropdown({ session, open, onClose, traveling }: UserDropdownProps) {
   const { mode, accent, setAccent, toggleMode } = useTheme()
-  const { settings } = useSiteSettings()
   const router = useRouter()
 
   if (!open) return null
@@ -86,15 +84,6 @@ export default function UserDropdown({ session, open, onClose, traveling }: User
 
         <div className={styles.userDivider} />
         <div className={styles.userSectionLabel}>Content</div>
-        {settings.enableWallet ? (
-          <Link href="/wallet" className={styles.userLink} role="menuitem" onClick={onClose}>
-            <span aria-hidden="true">💰</span> Wallet
-          </Link>
-        ) : (
-          <span className={`${styles.userLink} ${styles.disabled}`} role="menuitem" aria-disabled="true">
-            <span aria-hidden="true">💰</span> Wallet (Coming Soon)
-          </span>
-        )}
         <Link href="/orders" className={styles.userLink} role="menuitem" onClick={onClose}>
           <span aria-hidden="true">📦</span> Orders
         </Link>

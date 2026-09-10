@@ -110,7 +110,7 @@ export async function createProject(data: {
       goalAmount: data.goalAmount ?? null,
       acceptsDonations: data.acceptsDonations ?? false,
       donationAddress: data.donationAddress || null,
-      donationCurrency: data.donationCurrency || 'ETH',
+      donationCurrency: data.donationCurrency || 'XMR',
       donationDescription: data.donationDescription || null,
       donationAddresses: data.donationAddresses || null,
       phases: data.phases || null,

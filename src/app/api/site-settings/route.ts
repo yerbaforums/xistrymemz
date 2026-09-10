@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { apiError, apiServerError, NextResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
@@ -10,23 +10,18 @@ export async function GET() {
     if (!settings) {
       settings = await prisma.platformSettings.create({
         data: {
-          platformFeePercent: 10,
-          enableCheckout: true,
-          enableWallet: true
+          enableCheckout: true
         }
       })
     }
 
     return NextResponse.json({
-      enableCheckout: settings.enableCheckout,
-      enableWallet: settings.enableWallet,
-      platformFeePercent: settings.platformFeePercent
+      enableCheckout: settings.enableCheckout
     })
   } catch (error) {
     console.error('Error fetching site settings:', error)
     return NextResponse.json({ 
-      enableCheckout: true, 
-      enableWallet: true 
+      enableCheckout: true
     }, { status: 200 })
   }
 }

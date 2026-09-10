@@ -103,7 +103,7 @@ function MarketplaceContent() {
     imageUrl: '',
     imageUrls: [] as string[],
     paymentMethods: [] as string[],
-    paymentType: 'BOTH',
+    paymentType: 'DIRECT',
     acceptsRequests: false,
     acceptsOffers: true,
     published: true,
@@ -111,7 +111,7 @@ function MarketplaceContent() {
     acceptsDonations: false,
     selectedDonationAddrs: [] as DonationAddr[],
     sellerPayoutAddress: '',
-    sellerCryptoCurrency: 'ETH',
+    sellerCryptoCurrency: 'XMR',
   })
 
   const [shopForm, setShopForm] = useState({
@@ -153,7 +153,7 @@ function MarketplaceContent() {
           imageUrl: product.imageUrl || '',
           imageUrls: product.imageUrl ? [product.imageUrl] : [] as string[],
           paymentMethods: product.paymentMethods?.split(',').filter(Boolean) || [],
-          paymentType: product.paymentType || 'BOTH',
+          paymentType: product.paymentType || 'DIRECT',
           acceptsRequests: product.acceptsRequests,
           acceptsOffers: product.acceptsOffers,
           published: product.published,
@@ -161,7 +161,7 @@ function MarketplaceContent() {
           acceptsDonations: product.acceptsDonations || false,
           selectedDonationAddrs: hydrateDonationAddresses(product.donationAddress, product.donationCurrency, product.donationAddresses),
           sellerPayoutAddress: product.sellerPayoutAddress || '',
-          sellerCryptoCurrency: product.sellerCryptoCurrency || 'ETH',
+          sellerCryptoCurrency: product.sellerCryptoCurrency || 'XMR',
         })
         setShowProductForm(true)
       }
@@ -216,7 +216,7 @@ function MarketplaceContent() {
       imageUrl: '',
       imageUrls: [] as string[],
       paymentMethods: [] as string[],
-      paymentType: 'BOTH',
+      paymentType: 'DIRECT',
       acceptsRequests: false,
       acceptsOffers: true,
       published: true,
@@ -224,7 +224,7 @@ function MarketplaceContent() {
       acceptsDonations: false,
       selectedDonationAddrs: [] as DonationAddr[],
       sellerPayoutAddress: '',
-      sellerCryptoCurrency: 'ETH',
+      sellerCryptoCurrency: 'XMR',
     })
     setEditingProduct(null)
     setShowProductForm(false)
@@ -244,7 +244,7 @@ function MarketplaceContent() {
       ...donationAddressesToLegacy(productForm.acceptsDonations ? productForm.selectedDonationAddrs : []),
       donationAddresses: productForm.acceptsDonations ? serializeDonationAddresses(productForm.selectedDonationAddrs) : null,
       sellerPayoutAddress: productForm.sellerPayoutAddress || null,
-      sellerCryptoCurrency: productForm.sellerCryptoCurrency || 'ETH',
+      sellerCryptoCurrency: productForm.sellerCryptoCurrency || 'XMR',
     }
 
     try {
@@ -319,7 +319,7 @@ function MarketplaceContent() {
       imageUrl: product.imageUrl || '',
       imageUrls: product.imageUrl ? [product.imageUrl] : [] as string[],
       paymentMethods: product.paymentMethods?.split(',').filter(Boolean) || [],
-      paymentType: product.paymentType || 'BOTH',
+      paymentType: product.paymentType || 'DIRECT',
       acceptsRequests: product.acceptsRequests,
       acceptsOffers: product.acceptsOffers,
       published: product.published,
@@ -327,7 +327,7 @@ function MarketplaceContent() {
       acceptsDonations: product.acceptsDonations || false,
       selectedDonationAddrs: hydrateDonationAddresses(product.donationAddress, product.donationCurrency, product.donationAddresses),
       sellerPayoutAddress: product.sellerPayoutAddress || '',
-      sellerCryptoCurrency: product.sellerCryptoCurrency || 'ETH',
+      sellerCryptoCurrency: product.sellerCryptoCurrency || 'XMR',
     })
     setShowProductForm(true)
   }
@@ -460,7 +460,7 @@ function MarketplaceContent() {
                 <button onClick={() => handleTogglePublish(product.id, product.published)} className={product.published ? styles.hideBtn : styles.publishBtn}>
                   {product.published ? '👁️ Hide' : '✅ Publish'}
                 </button>
-                <button onClick={() => handleDelete(product.id, product.title)} className={styles.deleteBtn}>🗑️</button>
+                <button onClick={() => { setConfirmAction('delete-item'); setConfirmTitle(product.id) }} className={styles.deleteBtn}>🗑️</button>
               </div>
             </div>
           ))}

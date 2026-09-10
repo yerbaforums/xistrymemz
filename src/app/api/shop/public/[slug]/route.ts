@@ -22,6 +22,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
       role: true,
       shopCoverImage: true,
       shopCoverStyle: true,
+      isShopApproved: true,
       userLinks: {
         select: { id: true, type: true, url: true, label: true, icon: true, sortOrder: true },
         orderBy: { sortOrder: 'asc' }
@@ -89,6 +90,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
     shopCoverImage: user.shopCoverImage,
     shopCoverStyle: user.shopCoverStyle,
     shopSlug: user.shopSlug,
+    isShopApproved: user.isShopApproved,
     user: {
       name: user.name,
       id: user.id,

@@ -7,47 +7,13 @@ export interface CryptoInfo {
 }
 
 const LOGO_URLS: Record<string, string> = {
-  ETH: '/crypto-logos/ethereum.png',
-  BTC: '/crypto-logos/bitcoin.png',
-  USDT: '/crypto-logos/tether.png',
-  USDC: '/crypto-logos/usd-coin.png',
   XMR: '/crypto-logos/monero.png',
   XTM: '/crypto-logos/tari.png',
-  ARRR: '/crypto-logos/pirate-chain.png',
-  DERO: '/crypto-logos/dero.png',
   ZANO: '/crypto-logos/zano.png',
-  FIRO: '/crypto-logos/firo.png',
+  FUSD: '/crypto-logos/freedom-dollar.png',
 }
 
 export const CRYPTO_ICONS: Record<string, CryptoInfo> = {
-  ETH: {
-    id: 'ETH',
-    symbol: 'ETH',
-    name: 'Ethereum',
-    icon: LOGO_URLS.ETH,
-    color: '#627EEA'
-  },
-  BTC: {
-    id: 'BTC',
-    symbol: 'BTC',
-    name: 'Bitcoin',
-    icon: LOGO_URLS.BTC,
-    color: '#F7931A'
-  },
-  USDT: {
-    id: 'USDT',
-    symbol: 'USDT',
-    name: 'Tether',
-    icon: LOGO_URLS.USDT,
-    color: '#26A17B'
-  },
-  USDC: {
-    id: 'USDC',
-    symbol: 'USDC',
-    name: 'USD Coin',
-    icon: LOGO_URLS.USDC,
-    color: '#2775CA'
-  },
   XMR: {
     id: 'XMR',
     symbol: 'XMR',
@@ -62,20 +28,6 @@ export const CRYPTO_ICONS: Record<string, CryptoInfo> = {
     icon: LOGO_URLS.XTM,
     color: '#8B5CF6'
   },
-  ARRR: {
-    id: 'ARRR',
-    symbol: 'ARRR',
-    name: 'Pirate Chain',
-    icon: LOGO_URLS.ARRR,
-    color: '#000000'
-  },
-  DERO: {
-    id: 'DERO',
-    symbol: 'DERO',
-    name: 'Dero',
-    icon: LOGO_URLS.DERO,
-    color: '#2F3854'
-  },
   ZANO: {
     id: 'ZANO',
     symbol: 'ZANO',
@@ -83,12 +35,12 @@ export const CRYPTO_ICONS: Record<string, CryptoInfo> = {
     icon: LOGO_URLS.ZANO,
     color: '#4A90D9'
   },
-  FIRO: {
-    id: 'FIRO',
-    symbol: 'FIRO',
-    name: 'Firo',
-    icon: LOGO_URLS.FIRO,
-    color: '#2472C8'
+  FUSD: {
+    id: 'FUSD',
+    symbol: 'FUSD',
+    name: 'Freedom Dollar',
+    icon: LOGO_URLS.FUSD,
+    color: '#22A06B'
   }
 }
 

@@ -150,7 +150,9 @@ export async function POST(request: NextRequest) {
       isVirtual,
       meetingLink,
       createGroup,
-      hashtags
+      hashtags,
+      recurrenceRule,
+      recurrenceEnd,
     } = validation.data
 
     if (eventType === 'personal') {
@@ -206,7 +208,7 @@ export async function POST(request: NextRequest) {
         currency: currency || 'USD',
         acceptsDonations: acceptsDonations || false,
         donationAddress: donationAddress || null,
-        donationCurrency: donationCurrency || 'ETH',
+        donationCurrency: donationCurrency || 'XMR',
         donationAddresses: donationAddresses || null,
         needsVolunteers: needsVolunteers || false,
         volunteerRoles: volunteerRoles || null,
@@ -217,7 +219,9 @@ export async function POST(request: NextRequest) {
         groupId: groupId || null,
         schoolId: schoolId || undefined,
         shopId: shopId || undefined,
-        organizerId: session.user.id
+        organizerId: session.user.id,
+        recurrenceRule: recurrenceRule || null,
+        recurrenceEnd: recurrenceEnd ? new Date(recurrenceEnd) : null,
       }
     })
 

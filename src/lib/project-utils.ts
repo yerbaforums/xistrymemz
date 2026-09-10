@@ -45,8 +45,16 @@ export interface ProjectJoiner {
   projectId: string
   userId: string
   role: string
+  message?: string | null
   joinedAt: string
-  user: { id: string; name: string | null; email: string }
+  user: { id: string; name: string | null; email: string; skills?: string | null; interests?: string | null }
+}
+
+export interface ProjectJoinerFull extends ProjectJoiner {
+  user: ProjectJoiner['user'] & {
+    bio?: string | null
+    userClass?: string | null
+  }
 }
 
 let _idCounter = 0

@@ -230,7 +230,10 @@ export const eventSchema = z.object({
   schoolId: z.string().optional().nullable(),
   shopId: z.string().optional().nullable(),
   createGroup: z.boolean().optional(),
-  hashtags: z.array(z.string()).optional()
+  hashtags: z.array(z.string()).optional(),
+  recurrenceRule: z.string().optional().nullable(),
+  recurrenceEnd: z.string().optional().nullable(),
+  parentEventId: z.string().optional().nullable(),
 })
 
 export const boardSchema = z.object({
@@ -321,10 +324,6 @@ export const profileUpdateSchema = z.object({
   longitude: z.number().min(-180).max(180).optional().nullable(),
   website: z.string().max(500).optional().nullable(),
   userClass: z.string().max(100).optional().nullable(),
-  walletAddress: z.string().max(200).optional().nullable(),
-  paymentAddress: z.string().max(200).optional().nullable(),
-  refundAddress: z.string().max(200).optional().nullable(),
-  cryptoCurrency: z.string().max(10).optional(),
   donationAddress: z.string().max(500).optional().nullable(),
   donationCurrency: z.string().max(10).optional(),
   acceptsDonations: z.boolean().optional(),
@@ -345,7 +344,8 @@ export const ratingSchema = z.object({
   comment: z.string().max(1000).optional().nullable(),
   type: z.enum(['SELLER', 'BUYER', 'GENERAL']).optional(),
   productId: z.string().min(1).optional().nullable(),
-  transactionId: z.string().optional().nullable()
+  transactionId: z.string().optional().nullable(),
+  ratingImages: z.string().optional().nullable()
 })
 
 export const connectionSchema = z.object({

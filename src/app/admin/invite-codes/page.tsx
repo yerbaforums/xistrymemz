@@ -223,7 +223,7 @@ export default function AdminInviteCodesPage() {
                 >
                   {code.isActive ? 'Deactivate' : 'Activate'}
                 </button>
-                <button onClick={() => deleteCode(code.id)} className={styles.deleteBtn}>
+                <button onClick={() => setDeleteTarget(code.id)} className={styles.deleteBtn}>
                   Delete
                 </button>
               </div>

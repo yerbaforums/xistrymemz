@@ -1,14 +1,15 @@
-import { DASHBOARD_SIDEBAR_PRIMARY } from './navigation'
+import { DASHBOARD_SIDEBAR } from './navigation'
 
 const SHORTCUT_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
 
 export function dashboardShortcuts(navigate: (href: string) => void) {
+  const primary = DASHBOARD_SIDEBAR.filter(item => item.section === 'primary')
   const handleKey = (e: KeyboardEvent) => {
     if (!e.altKey) return
     const idx = SHORTCUT_KEYS.indexOf(e.key)
-    if (idx >= 0 && idx < DASHBOARD_SIDEBAR_PRIMARY.length) {
+    if (idx >= 0 && idx < primary.length) {
       e.preventDefault()
-      navigate(DASHBOARD_SIDEBAR_PRIMARY[idx].href)
+      navigate(primary[idx].href)
     }
     if (e.key === 'b' && e.altKey) {
       e.preventDefault()

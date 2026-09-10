@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useToast } from '@/context/ToastContext'
 import RequestForm from '@/components/RequestForm'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import type { RequestFormData } from '@/types/request'
 
 export default function NewRequestPage() {
@@ -41,6 +42,7 @@ export default function NewRequestPage() {
 
   return (
     <div className="page-container">
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Requests', href: '/requests' }, { label: 'New Request' }]} />
       <Link href="/requests" className="back-link">← Back to Requests</Link>
       <h1>New Request</h1>
       <div className="form-card">

@@ -134,7 +134,8 @@ export async function PUT(
         deadline: body.deadline ? new Date(body.deadline) : existingRequest.deadline,
         isPublic: body.isPublic !== undefined ? body.isPublic : existingRequest.isPublic,
         allowFulfillments: body.allowFulfillments !== undefined ? body.allowFulfillments : existingRequest.allowFulfillments,
-        showDonationAddress: body.showDonationAddress !== undefined ? body.showDonationAddress : existingRequest.showDonationAddress
+        showDonationAddress: body.showDonationAddress !== undefined ? body.showDonationAddress : existingRequest.showDonationAddress,
+        projectId: body.projectId !== undefined ? body.projectId : existingRequest.projectId
       }
     })
 

@@ -15,6 +15,7 @@ import { USER_CLASSES, CLASS_ICONS, matchesClass } from '@/lib/user-classes'
 import RoleBadge from '@/components/RoleBadge'
 import ActiveStatus from '@/components/ActiveStatus'
 import LookingForCollaboratorsBadge from '@/components/LookingForCollaboratorsBadge'
+import QualityBadge from '@/components/QualityBadge'
 import HashtagText from '@/components/HashtagText'
 import LinkPreview from '@/components/LinkPreview'
 import Loading from '@/components/Loading'
@@ -879,6 +880,23 @@ export default function ProfilePage() {
                   {user.verifiedAddress && <span className={styles.compactVBadge} title="Verified address">✓A</span>}
                 </div>
               </div>
+
+              {(user.badges && user.badges.length > 0) && (
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: 6,
+                    overflowX: 'auto',
+                    padding: '4px 0',
+                    marginTop: 8,
+                    WebkitOverflowScrolling: 'touch',
+                  }}
+                >
+                  {user.badges.map(badge => (
+                    <QualityBadge key={badge.id} badge={badge} size="sm" />
+                  ))}
+                </div>
+              )}
 
               {(user.links && user.links.length > 0) && (
                 <div className={styles.compactLinks}>
@@ -1834,7 +1852,7 @@ export default function ProfilePage() {
                     <div className={styles.donationsList}>
                       {(donationAddresses.length > 0 ? donationAddresses : (user.donationAddress ? [{
                         id: 'legacy',
-                        currency: user.donationCurrency || 'ETH',
+                        currency: user.donationCurrency || 'XMR',
                         address: user.donationAddress,
                         label: null,
                         qrCodeUrl: null,

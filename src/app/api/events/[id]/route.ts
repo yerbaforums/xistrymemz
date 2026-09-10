@@ -118,6 +118,15 @@ export async function GET(
       isOrganizer,
       myTicket,
       hashtags: event.eventHashtags.map(eh => eh.hashtag.tag),
+      recurrenceRule: event.recurrenceRule || null,
+      recurrenceEnd: event.recurrenceEnd?.toISOString() || null,
+      parentEventId: event.parentEventId || null,
+      isCancelled: event.isCancelled,
+      cancelReason: event.cancelReason || null,
+      isRescheduled: event.isRescheduled,
+      rescheduledTo: event.rescheduledTo?.toISOString() || null,
+      overrideTitle: event.overrideTitle || null,
+      overrideDescription: event.overrideDescription || null,
       _count: event._count
     })
   } catch (error) {
@@ -183,7 +192,9 @@ export async function PUT(
       meetingLink,
       schoolId,
       shopId,
-      hashtags
+      hashtags,
+      recurrenceRule,
+      recurrenceEnd,
     } = validation.data
 
     let latitude = event.latitude
@@ -224,7 +235,9 @@ export async function PUT(
         isVirtual: isVirtual ?? event.isVirtual,
         meetingLink: meetingLink ?? event.meetingLink,
         schoolId: schoolId !== undefined ? schoolId : event.schoolId,
-        shopId: shopId !== undefined ? shopId : event.shopId
+        shopId: shopId !== undefined ? shopId : event.shopId,
+        recurrenceRule: recurrenceRule !== undefined ? recurrenceRule : event.recurrenceRule,
+        recurrenceEnd: recurrenceEnd !== undefined ? (recurrenceEnd ? new Date(recurrenceEnd) : event.recurrenceEnd) : event.recurrenceEnd,
       }
     })
 

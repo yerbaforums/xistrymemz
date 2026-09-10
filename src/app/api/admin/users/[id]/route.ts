@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { apiSuccess, apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -71,11 +71,6 @@ export async function GET(
         shopSlug: true,
         schoolName: true,
         schoolSlug: true,
-        walletAddress: true,
-        paymentAddress: true,
-        refundAddress: true,
-        cryptoCurrency: true,
-        balance: true,
         earthId: true,
         verificationLevel: true,
         reputationScore: true,
@@ -93,8 +88,8 @@ export async function GET(
             requests: true,
             sentConnections: true,
             receivedConnections: true,
-            escrowAsSeller: true,
-            escrowAsBuyer: true
+            ordersAsSeller: true,
+            ordersAsBuyer: true
           }
         }
       }

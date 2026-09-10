@@ -468,6 +468,10 @@
   padding: 1rem 0;
 }
 
+.constellationSection {
+  padding: 1rem 0;
+}
+
 .forumHeader {
   display: flex;
   justify-content: space-between;

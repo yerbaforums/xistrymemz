@@ -6,6 +6,7 @@ import styles from './page.module.css'
 import Button from '@/components/ui/Button'
 import { EmptyState } from '@/components/EmptyState'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 interface User {
   id: string
@@ -15,7 +16,6 @@ interface User {
   role: string
   verificationLevel: string
   reputationScore: number
-  balance: number
   location: string | null
   verifiedEmail: boolean
   verifiedPhone: boolean
@@ -210,7 +210,6 @@ export default function AdminUsersPage() {
                   <th>Role</th>
                   <th>Verification</th>
                   <th>Reputation</th>
-                  <th>Balance</th>
                   <th>Activity</th>
                   <th>Joined</th>
                   <th>Actions</th>
@@ -250,9 +249,6 @@ export default function AdminUsersPage() {
                     </td>
                     <td>
                       <span className={styles.reputation}>{user.reputationScore.toFixed(1)}</span>
-                    </td>
-                    <td>
-                      <span className={styles.balance}>${user.balance.toFixed(2)}</span>
                     </td>
                     <td>
                       <div className={styles.activity}>
@@ -329,34 +325,15 @@ export default function AdminUsersPage() {
         </>
       )}
 
-      {confirmDelete && (
-        <div className={styles.overlay} onClick={() => setConfirmDelete(null)}>
-          <div className={styles.modal} onClick={e => e.stopPropagation()}>
-            <h2 className={styles.modalTitle}>Delete User</h2>
-            <p className={styles.modalText}>
-              Are you sure you want to permanently delete <strong>{confirmDelete.name || confirmDelete.email}</strong>?
-            </p>
-            <p className={styles.modalWarning}>
-              This will permanently delete all of their projects, requests, products, posts, messages, and all other associated data. This action cannot be undone.
-            </p>
-            <div className={styles.modalActions}>
-              <button
-                onClick={() => setConfirmDelete(null)}
-                className={styles.cancelBtn}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleDelete(confirmDelete.id)}
-                disabled={deleting === confirmDelete.id}
-                className={styles.confirmDeleteBtn}
-              >
-                {deleting === confirmDelete.id ? 'Deleting...' : 'Delete User'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        isOpen={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={() => { if (confirmDelete) handleDelete(confirmDelete.id) }}
+        title="Delete User"
+        message={`Are you sure you want to permanently delete ${confirmDelete?.name || confirmDelete?.email || 'this user'}? This will permanently delete all of their projects, requests, products, posts, messages, and all other associated data. This action cannot be undone.`}
+        confirmLabel="Delete User"
+        variant="danger"
+      />
     </div>
   )
 }

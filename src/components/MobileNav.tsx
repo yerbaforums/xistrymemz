@@ -9,7 +9,6 @@ import { useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import { NAV } from '@/lib/navigation'
 import { useTheme, type ThemeAccent } from '@/context/ThemeContext'
-import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { getUserProfileUrl } from '@/lib/utils'
 import { useQuickCreate } from '@/components/QuickCreateModal'
 import LanguageRequestModal from './LanguageRequestModal'
@@ -48,7 +47,6 @@ export default function MobileNav({ open, onClose, isAdmin, isAuthenticated, ses
   const t = useTranslations('header')
   const router = useRouter()
   const { mode, accent, setAccent, toggleMode } = useTheme()
-  const { settings } = useSiteSettings()
   const quickCreate = useQuickCreate()
   const [langReqOpen, setLangReqOpen] = useState(false)
 
@@ -112,7 +110,7 @@ export default function MobileNav({ open, onClose, isAdmin, isAuthenticated, ses
           <button onClick={() => { onClose(); quickCreate.open() }} className={styles.mobileLink} style={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10, background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', cursor: 'pointer', fontSize: '0.9rem', padding: '10px 14px', borderRadius: 'var(--radius-md)', fontWeight: 600 }}>
             ✨ Quick Create
           </button>
-          {NAV.dashboard.filter(item => !('walletRequired' in item) || !item.walletRequired || settings.enableWallet).map(item => (
+          {NAV.dashboard.map(item => (
             <Link key={item.href} href={item.href} className={styles.mobileLink} onClick={onClose}>
               <span aria-hidden="true">{item.icon}</span> {item.label}
               {item.label === 'Messages' && messagesUnread && messagesUnread > 0 && (

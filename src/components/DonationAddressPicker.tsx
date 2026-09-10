@@ -6,16 +6,10 @@ import type { DonationAddr } from '@/types/product'
 import styles from './DonationAddressPicker.module.css'
 
 const CURRENCIES = [
-  { value: 'ETH', label: 'ETH (Ethereum)' },
-  { value: 'BTC', label: 'BTC (Bitcoin)' },
-  { value: 'USDT', label: 'USDT (Tether)' },
-  { value: 'USDC', label: 'USDC (USD Coin)' },
   { value: 'XMR', label: 'XMR (Monero)' },
   { value: 'XTM', label: 'XTM (Tari)' },
-  { value: 'ARRR', label: 'ARRR (Pirate)' },
-  { value: 'DERO', label: 'DERO (Dero)' },
   { value: 'ZANO', label: 'ZANO (Zano)' },
-  { value: 'FIRO', label: 'FIRO (Firo)' },
+  { value: 'FUSD', label: 'FUSD (Freedom Dollar)' },
 ]
 
 interface DonationAddressPickerProps {
@@ -38,7 +32,7 @@ export default function DonationAddressPicker({
   disabled = false,
 }: DonationAddressPickerProps) {
   const [showCustom, setShowCustom] = useState(false)
-  const [customCurrency, setCustomCurrency] = useState('ETH')
+  const [customCurrency, setCustomCurrency] = useState('XMR')
   const [customAddress, setCustomAddress] = useState('')
   const [customLabel, setCustomLabel] = useState('')
   const [saveToProfile, setSaveToProfile] = useState(false)
@@ -98,7 +92,7 @@ export default function DonationAddressPicker({
           setShowCustom(false)
           setCustomAddress('')
           setCustomLabel('')
-          setCustomCurrency('ETH')
+          setCustomCurrency('XMR')
           setSaveToProfile(false)
         }
       } catch {
@@ -224,7 +218,7 @@ export default function DonationAddressPicker({
             type="text"
             value={customLabel}
             onChange={e => setCustomLabel(e.target.value)}
-            placeholder="Label (optional, e.g. 'Main ETH Wallet')"
+            placeholder="Label (optional, e.g. 'Main XMR Wallet')"
             disabled={disabled || saving}
             className={styles.labelInput}
           />

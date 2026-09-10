@@ -113,11 +113,11 @@ export default async function DashboardOverview({
       },
       take: 10
     }),
-    prisma.escrowTransaction.findMany({
+    prisma.order.findMany({
       where: {
         OR: [{ buyerId: userId }, { sellerId: userId }, { courierId: userId }]
       },
-      select: { id: true, status: true, paymentType: true, deliveryStatus: true }
+      select: { id: true, status: true }
     }),
     prisma.product.count({ where: { userId, type: 'RENTAL' } }),
     prisma.schoolPurchase.aggregate({
@@ -127,12 +127,12 @@ export default async function DashboardOverview({
       },
       _sum: { amount: true }
     }),
-    prisma.escrowTransaction.aggregate({
+    prisma.order.aggregate({
       where: {
         sellerId: userId,
-        status: 'RELEASED'
+        status: 'DELIVERED'
       },
-      _sum: { netAmount: true }
+      _sum: { amount: true }
     }),
     prisma.schoolContent.findMany({
       where: { userId },
@@ -181,7 +181,7 @@ export default async function DashboardOverview({
 
   const user = await prisma.user.findUnique({ 
     where: { id: userId },
-    select: { name: true, bio: true, shopSlug: true, schoolSlug: true, onboardingCompleted: true, setupProgress: true, walletAddress: true, paymentAddress: true, refundAddress: true, cryptoCurrency: true, donationAddress: true, donationCurrency: true, acceptsDonations: true, userClass: true, inviteCount: true }
+    select: { name: true, bio: true, shopSlug: true, schoolSlug: true, onboardingCompleted: true, setupProgress: true, donationAddress: true, donationCurrency: true, acceptsDonations: true, userClass: true, inviteCount: true }
   })
 
   const userClasses = (user?.userClass || '').split(',').map(c => c.trim()).filter(Boolean)
@@ -260,7 +260,7 @@ export default async function DashboardOverview({
   const pendingRequests = requests.filter((r: { status: string }) => r.status === 'PENDING').length
   const eventAttendeeCount = eventJoinerCounts.find(r => r.role === 'ATTENDEE')?._count ?? 0
   const eventVolunteerCount = eventJoinerCounts.find(r => r.role === 'VOLUNTEER')?._count ?? 0
-  const totalEarnings = (sellerEarnings._sum.netAmount ?? 0) + (teachingEarnings._sum.amount ?? 0)
+  const totalEarnings = (sellerEarnings._sum.amount ?? 0) + (teachingEarnings._sum.amount ?? 0)
   const isNewUser = allStats[6] === 0 && projects.length === 0 && allStats[2] === 0 && connectionCount === 0
 
   const stats: StatDef[] = [
@@ -569,12 +569,10 @@ export default async function DashboardOverview({
 
             <StreakCard postCount={allStats[6]} connectionCount={connectionCount} />
 
-            {user && (user.walletAddress || user.paymentAddress || user.refundAddress || (user.acceptsDonations && user.donationAddress)) && (
+            {user && user.acceptsDonations && user.donationAddress && (
               <div className={styles.card}>
-                <h4>💳 {t('wallet')}</h4>
-                {user.walletAddress && <code title={user.walletAddress}>{user.walletAddress.slice(0, 10)}...{user.walletAddress.slice(-4)}</code>}
-                {user.paymentAddress && <code title={user.paymentAddress}>Pay: {user.paymentAddress.slice(0, 8)}...{user.paymentAddress.slice(-4)}</code>}
-                {user.acceptsDonations && user.donationAddress && <code title={user.donationAddress}>Donate: {user.donationAddress.slice(0, 8)}...{user.donationAddress.slice(-4)}</code>}
+                <h4>💳 Donation Address</h4>
+                <code title={user.donationAddress}>Donate: {user.donationAddress.slice(0, 8)}...{user.donationAddress.slice(-4)}</code>
                 <Link href="/profile/edit" className={overviewStyles.manageLink}>Manage</Link>
               </div>
             )}

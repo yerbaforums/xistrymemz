@@ -295,7 +295,7 @@ export default function ProductsPage() {
           hashtags: myForm.hashtags ? myForm.hashtags.split(',').map(t => t.trim()).filter(Boolean) : [],
           price: myForm.price ? parseFloat(myForm.price) : null,
           paymentMethods: '',
-          paymentType: 'BOTH',
+          paymentType: 'DIRECT',
           imageUrl: myForm.imageUrls?.[0] || null,
           ...donationAddressesToLegacy(myForm.acceptsDonations ? myForm.selectedDonationAddrs : []),
           donationAddresses: myForm.acceptsDonations ? serializeDonationAddresses(myForm.selectedDonationAddrs) : null,
@@ -355,20 +355,6 @@ export default function ProductsPage() {
       }
     } catch {
       error('Failed to update')
-    }
-  }
-
-  const deleteMyListing = async (product: Product) => {
-    try {
-      const res = await fetch(`/api/products/${product.id}`, { method: 'DELETE' })
-      if (res.ok) {
-        success('Listing deleted')
-        fetchMyProducts()
-      } else {
-        error('Failed to delete')
-      }
-    } catch {
-      error('Failed to delete')
     }
   }
 
@@ -761,10 +747,10 @@ export default function ProductsPage() {
                     </div>
                   </div>
                   <div className={styles.myListingActions}>
-                    <Link href={`/products/${deleteTarget}`} className={styles.myListingActionBtn} title="View">👁️</Link>
+                    <Link href={`/products/${product.id}`} className={styles.myListingActionBtn} title="View">👁️</Link>
                     <Button onClick={() => startMyEdit(product)} className={styles.myListingActionBtn} title="Edit">✏️</Button>
                     <Button onClick={() => toggleMyPublish(product)} className={styles.myListingActionBtn} title={product.published ? 'Hide' : 'Publish'}>{product.published ? '👁️‍🗨️' : '✅'}</Button>
-                    <Button onClick={() => deleteMyListing(product)} className={styles.myListingActionBtn} title="Delete">🗑️</Button>
+                    <Button onClick={() => setDeleteTarget(product.id)} className={styles.myListingActionBtn} title="Delete">🗑️</Button>
                   </div>
                 </div>
               ))}

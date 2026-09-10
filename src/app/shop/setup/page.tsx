@@ -89,7 +89,7 @@ export default function SetupShopPage() {
     isGlobal: false,
     imageUrl: '',
     paymentMethods: [] as string[],
-    paymentType: 'BOTH',
+    paymentType: 'DIRECT',
     acceptsRequests: false,
     acceptsOffers: true,
     requestPrice: '',
@@ -108,7 +108,7 @@ export default function SetupShopPage() {
     isGlobal: false,
     imageUrl: '',
     paymentMethods: [] as string[],
-    paymentType: 'BOTH',
+    paymentType: 'DIRECT',
     acceptsRequests: false,
     requestPrice: '',
     published: true,
@@ -259,7 +259,7 @@ export default function SetupShopPage() {
         setNewProduct({
           title: '', description: '', price: '', type: 'PRODUCT', category: '',
           condition: '', location: '', locationDetails: '', isGlobal: false,
-          imageUrl: '', paymentMethods: [], paymentType: 'BOTH',
+          imageUrl: '', paymentMethods: [], paymentType: 'DIRECT',
           acceptsRequests: false, acceptsOffers: true, requestPrice: '',
           hashtags: ''
         })
@@ -289,7 +289,7 @@ export default function SetupShopPage() {
       isGlobal: product.isGlobal,
       imageUrl: product.imageUrl || '',
       paymentMethods: product.paymentMethods ? product.paymentMethods.split(',') : [],
-      paymentType: (product as { paymentType?: string }).paymentType || 'BOTH',
+      paymentType: (product as { paymentType?: string }).paymentType || 'DIRECT',
       acceptsRequests: product.acceptsRequests,
       requestPrice: product.requestPrice?.toString() || '',
       published: product.published,
@@ -541,7 +541,7 @@ export default function SetupShopPage() {
                         <Button onClick={() => handleTogglePublish(product.id, product.published)} className={product.published ? styles.unpublishBtn : styles.publishBtn}>
                           {product.published ? 'Unpublish' : 'Publish'}
                         </Button>
-                        <Button onClick={() => handleDeleteProduct(product.id)} className={styles.deleteBtn}>Delete</Button>
+                        <Button onClick={() => setDeleteTarget(product.id)} className={styles.deleteBtn}>Delete</Button>
                       </div>
                     </div>
                   </div>
@@ -558,7 +558,7 @@ export default function SetupShopPage() {
             <div className={styles.infoBox}>
               <p>💡 You can configure payment methods for each product individually when adding listings.</p>
               <p>Supported methods: Cash, Venmo, PayPal, Zelle, Crypto, Card</p>
-              <p>Payment types: Both (Escrow + Direct), Escrow Only, Direct Only</p>
+              <p>Payment types: Direct only — buyers pay you directly, no escrow or platform fees.</p>
             </div>
           </div>
         )}
@@ -679,11 +679,7 @@ export default function SetupShopPage() {
               </div>
               <div className="form-group">
                 <label>Payment Type</label>
-                <select value={newProduct.paymentType} onChange={e => setNewProduct({...newProduct, paymentType: e.target.value})}>
-                  <option value="BOTH">Both (Escrow + Direct)</option>
-                  <option value="ESCROW">Escrow Only</option>
-                  <option value="DIRECT">Direct Only</option>
-                </select>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Direct payment — buyers pay you directly, no escrow or platform fees.</p>
               </div>
               <div className="form-group">
                 <label className={styles.checkboxLabel}>
@@ -802,11 +798,7 @@ export default function SetupShopPage() {
               </div>
               <div className="form-group">
                 <label>Payment Type</label>
-                <select value={editProduct.paymentType} onChange={e => setEditProduct({...editProduct, paymentType: e.target.value})}>
-                  <option value="BOTH">Both (Escrow + Direct)</option>
-                  <option value="ESCROW">Escrow Only (Protected)</option>
-                  <option value="DIRECT">Direct Payment Only</option>
-                </select>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Direct payment — buyers pay you directly, no escrow or platform fees.</p>
               </div>
               <div className={styles.modalActions}>
                 <Button type="button" onClick={() => setShowEditModal(false)} variant="ghost">Cancel</Button>
@@ -823,7 +815,7 @@ export default function SetupShopPage() {
       <ConfirmDialog
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
-        onConfirm={handleDeleteProduct}
+        onConfirm={() => { if (deleteTarget) { handleDeleteProduct(deleteTarget); setDeleteTarget(null) } }}
         title="Delete Listing"
         message="Delete this listing permanently?"
         confirmLabel="Delete"

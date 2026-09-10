@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import ImageUploader from '@/components/ImageUploader'
 import HashtagInput from '@/components/HashtagInput'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
@@ -46,6 +46,8 @@ export interface EventFormData {
   groupTitle: string | null
   schoolId: string | null
   shopId: string | null
+  recurrenceRule: string | null
+  recurrenceEnd: string
 }
 
 const DEFAULT_FORM_DATA: EventFormData = {
@@ -81,6 +83,8 @@ const DEFAULT_FORM_DATA: EventFormData = {
   groupTitle: null,
   schoolId: null,
   shopId: null,
+  recurrenceRule: null,
+  recurrenceEnd: '',
 }
 
 interface EventFormFieldsProps {
@@ -121,6 +125,56 @@ export default function EventFormFields({
     formData.meetingLink?.includes('/dashboard/video?invite=') ? 'platform' : formData.meetingLink ? 'custom' : 'none'
   )
   const [creatingRoom, setCreatingRoom] = useState(false)
+  const [recurrenceFreq, setRecurrenceFreq] = useState<string>(() => {
+    if (!formData.recurrenceRule) return 'WEEKLY'
+    const match = formData.recurrenceRule.match(/FREQ=(\w+)/)
+    return match ? match[1] : 'WEEKLY'
+  })
+  const [recurrenceInterval, setRecurrenceInterval] = useState<number>(() => {
+    if (!formData.recurrenceRule) return 1
+    const match = formData.recurrenceRule.match(/INTERVAL=(\d+)/)
+    return match ? parseInt(match[1], 10) : 1
+  })
+  const [recurrenceByDay, setRecurrenceByDay] = useState<string[]>(() => {
+    if (!formData.recurrenceRule) return []
+    const match = formData.recurrenceRule.match(/BYDAY=([A-Z,]+)/)
+    return match ? match[1].split(',') : []
+  })
+  const [recurrenceEndType, setRecurrenceEndType] = useState<'never' | 'after' | 'on'>('never')
+  const [recurrenceCount, setRecurrenceCount] = useState<number>(10)
+  const [recurrenceEndDate, setRecurrenceEndDate] = useState<string>(formData.recurrenceEnd || '')
+  const [recurrenceEnabled, setRecurrenceEnabled] = useState<boolean>(() => !!formData.recurrenceRule)
+
+  const toggleByDay = (day: string) => {
+    setRecurrenceByDay(prev =>
+      prev.includes(day)
+        ? prev.filter(d => d !== day)
+        : [...prev, day]
+    )
+  }
+
+  useEffect(() => {
+    if (recurrenceEnabled) {
+      const parts: string[] = [`FREQ=${recurrenceFreq}`]
+      if (recurrenceInterval > 1) parts.push(`INTERVAL=${recurrenceInterval}`)
+      if (recurrenceFreq === 'WEEKLY' && recurrenceByDay.length > 0) {
+        parts.push(`BYDAY=${recurrenceByDay.join(',')}`)
+      }
+      if (recurrenceEndType === 'after') {
+        parts.push(`COUNT=${recurrenceCount}`)
+      } else if (recurrenceEndType === 'on' && recurrenceEndDate) {
+        parts.push(`UNTIL=${recurrenceEndDate.replace(/-/g, '')}T235959Z`)
+      }
+      set({ recurrenceRule: parts.join(';') })
+      if (recurrenceEndType === 'on' && recurrenceEndDate) {
+        set({ recurrenceEnd: recurrenceEndDate })
+      } else if (recurrenceEndType !== 'after') {
+        set({ recurrenceEnd: '' })
+      }
+    } else {
+      set({ recurrenceRule: null, recurrenceEnd: '' })
+    }
+  }, [recurrenceEnabled, recurrenceFreq, recurrenceInterval, recurrenceByDay, recurrenceEndType, recurrenceEndDate, recurrenceCount])
 
   const handleCreatePlatformRoom = async () => {
     setCreatingRoom(true)
@@ -260,6 +314,91 @@ export default function EventFormFields({
       </div>
 
       <details className={styles.settingsDetails}>
+        <summary className={styles.settingsSummary}>🔁 Repeat</summary>
+        <div>
+          <div className={styles.checkboxField}>
+            <input type="checkbox" id="ef-recurrence" checked={recurrenceEnabled}
+              onChange={e => setRecurrenceEnabled(e.target.checked)} />
+            <label htmlFor="ef-recurrence">Enable recurring events</label>
+          </div>
+          {recurrenceEnabled && (
+            <>
+              <div className={styles.field}>
+                <label htmlFor="ef-recurrenceFreq">Frequency</label>
+                <select id="ef-recurrenceFreq" value={recurrenceFreq}
+                  onChange={e => setRecurrenceFreq(e.target.value)}
+                  >
+                  <option value="DAILY">Daily</option>
+                  <option value="WEEKLY">Weekly</option>
+                  <option value="MONTHLY">Monthly</option>
+                  <option value="YEARLY">Yearly</option>
+                </select>
+              </div>
+              <div className={styles.field}>
+                <label htmlFor="ef-recurrenceInterval">Repeat every</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input type="number" id="ef-recurrenceInterval" value={recurrenceInterval}
+                    onChange={e => setRecurrenceInterval(Math.max(1, parseInt(e.target.value) || 1))}
+                    min={1} style={{ width: 60 }} />
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                    {recurrenceFreq === 'DAILY' ? 'day(s)' : recurrenceFreq === 'WEEKLY' ? 'week(s)' : recurrenceFreq === 'MONTHLY' ? 'month(s)' : 'year(s)'}
+                  </span>
+                </div>
+              </div>
+              {recurrenceFreq === 'WEEKLY' && (
+                <div className={styles.field}>
+                  <label>On days</label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {[['MO', 'Mon'], ['TU', 'Tue'], ['WE', 'Wed'], ['TH', 'Thu'], ['FR', 'Fri'], ['SA', 'Sat'], ['SU', 'Sun']].map(([code, label]) => (
+                      <button key={code} type="button"
+                        onClick={() => toggleByDay(code)}
+                        style={{
+                          padding: '4px 10px', borderRadius: 6, border: '1px solid var(--border-color)',
+                          background: recurrenceByDay.includes(code) ? 'var(--accent-primary)' : 'var(--bg-secondary)',
+                          color: recurrenceByDay.includes(code) ? 'var(--bg-primary)' : 'var(--text-secondary)',
+                          cursor: 'pointer', fontSize: '0.8rem', fontWeight: 500,
+                        }}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className={styles.field}>
+                <label>Ends</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: '0.85rem' }}>
+                    <input type="radio" name="recurrenceEnd" checked={recurrenceEndType === 'never'}
+                      onChange={() => setRecurrenceEndType('never')} />
+                    Never
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: '0.85rem' }}>
+                    <input type="radio" name="recurrenceEnd" checked={recurrenceEndType === 'after'}
+                      onChange={() => setRecurrenceEndType('after')} />
+                    After
+                    <input type="number" value={recurrenceCount} min={1} max={999}
+                      onChange={e => setRecurrenceCount(Math.max(1, parseInt(e.target.value) || 1))}
+                      style={{ width: 50, padding: '2px 6px', fontSize: '0.85rem' }}
+                      onClick={e => e.stopPropagation()} />
+                    occurrences
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: '0.85rem' }}>
+                    <input type="radio" name="recurrenceEnd" checked={recurrenceEndType === 'on'}
+                      onChange={() => setRecurrenceEndType('on')} />
+                    On date
+                    <input type="date" value={recurrenceEndDate}
+                      onChange={e => setRecurrenceEndDate(e.target.value)}
+                      style={{ padding: '2px 6px', fontSize: '0.85rem' }}
+                      onClick={e => e.stopPropagation()} />
+                  </label>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </details>
+
+      <details className={styles.settingsDetails}>
         <summary className={styles.settingsSummary}>📍 Location / Virtual</summary>
         <div>
           <div className={styles.checkboxField}>
@@ -341,6 +480,8 @@ export default function EventFormFields({
                   <option value="GBP">GBP</option>
                   <option value="XMR">XMR</option>
                   <option value="XTM">XTM</option>
+                  <option value="ZANO">ZANO</option>
+                  <option value="FUSD">FUSD</option>
                 </select>
               </div>
             </div>

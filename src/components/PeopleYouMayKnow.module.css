@@ -1,0 +1,192 @@
+.widget {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--bg-secondary, #0f172a);
+  border: 1px solid var(--border-color, rgba(148, 163, 184, 0.2));
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary, #f1f5f9);
+}
+
+.viewAll {
+  font-size: 0.75rem;
+  color: #22d3ee;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.viewAll:hover {
+  text-decoration: underline;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+.card:hover {
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.cardLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  text-decoration: none;
+  color: inherit;
+}
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(0, 217, 255, 0.35);
+  flex-shrink: 0;
+}
+
+.avatarPlaceholder {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 217, 255, 0.12);
+  color: #67e8f9;
+  font-weight: 700;
+  font-size: 1rem;
+  border: 2px solid rgba(0, 217, 255, 0.25);
+  flex-shrink: 0;
+}
+
+.info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary, #f1f5f9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reason {
+  font-size: 0.7rem;
+  color: #67e8f9;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 0.7rem;
+  color: var(--text-muted, rgba(148, 163, 184, 0.8));
+}
+
+.classTag {
+  background: rgba(0, 217, 255, 0.1);
+  color: #67e8f9;
+  padding: 1px 6px;
+  border-radius: 6px;
+}
+
+.connectBtn {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 217, 255, 0.35);
+  background: rgba(0, 217, 255, 0.1);
+  color: #67e8f9;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.connectBtn:hover {
+  background: rgba(0, 217, 255, 0.2);
+  color: #fff;
+}
+
+.connectBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.skeletonList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeletonCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+}
+
+.skeletonAvatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.15);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeletonLines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.skeletonLine {
+  height: 10px;
+  border-radius: 4px;
+  background: rgba(148, 163, 184, 0.15);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}

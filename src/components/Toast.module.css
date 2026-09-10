@@ -114,7 +114,7 @@
 
 @media (max-width: 480px) {
   .container {
-    bottom: 16px;
+    bottom: calc(var(--bottom-nav-height, 64px) + 16px);
     right: 16px;
     left: 16px;
     width: auto;

@@ -38,6 +38,7 @@ import { useToast } from '@/context/ToastContext'
 
 interface Request {
   id: string; title: string; description: string | null; status: string
+  goalAmount: number | null; currentFunding: number | null
   createdAt: string; productId: string | null
   product: { id: string; title: string; price: number | null; imageUrl: string | null } | null
   user: { name: string | null; email: string }
@@ -258,6 +259,8 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
         groupTitle: null,
         schoolId: null,
         shopId: null,
+        recurrenceRule: null,
+        recurrenceEnd: '',
       })
     } else {
       setEditingEvent(null)
@@ -1140,16 +1143,29 @@ donationDescription={project.donationDescription}
             <EmptyState icon="📝" title="No requests yet" description="Create a request to get what you need for this project." action={isOwner ? { label: 'New Request', onClick: () => setShowRequestModal(true) } : undefined} />
           ) : (
             <div className={styles.requestList}>
-              {project.requests.map(req => (
-                <Link key={req.id} href={`/requests/${req.id}`} className={styles.requestItem}>
-                  <div className={styles.requestInfo}>
-                    <span className={styles.requestTitle}>{req.title}</span>
-                    {req.description && <span className={styles.requestDesc}>{req.description}</span>}
-                    {req.product && <span className={styles.productBadge}>From: {req.product.title}{req.product.price && ` - $${req.product.price}`}</span>}
-                  </div>
-                  <span className={`badge badge-${req.status.toLowerCase()}`}>{req.status}</span>
-                </Link>
-              ))}
+              {project.requests.map(req => {
+                const goal = (req as any).goalAmount || 0
+                const funding = (req as any).currentFunding || 0
+                const pct = goal > 0 ? Math.min(Math.round((funding / goal) * 100), 100) : 0
+                return (
+                  <Link key={req.id} href={`/requests/${req.id}`} className={styles.requestItem}>
+                    <div className={styles.requestInfo}>
+                      <span className={styles.requestTitle}>{req.title}</span>
+                      {req.description && <span className={styles.requestDesc}>{req.description}</span>}
+                      {req.product && <span className={styles.productBadge}>From: {req.product.title}{req.product.price && ` - $${req.product.price}`}</span>}
+                      {goal > 0 && (
+                        <div className={styles.requestFundingBar}>
+                          <div className={styles.requestFundingTrack}>
+                            <div className={styles.requestFundingFill} style={{ width: `${pct}%` }} />
+                          </div>
+                          <span className={styles.requestFundingText}>${funding} / ${goal} ({pct}%)</span>
+                        </div>
+                      )}
+                    </div>
+                    <span className={`badge badge-${req.status.toLowerCase()}`}>{req.status}</span>
+                  </Link>
+                )
+              })}
             </div>
           )}
         </div>

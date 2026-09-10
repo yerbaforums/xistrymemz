@@ -260,6 +260,10 @@
   gap: 16px;
 }
 
+.constellationWrap {
+  margin-bottom: 16px;
+}
+
 .card {
   display: flex;
   flex-direction: column;

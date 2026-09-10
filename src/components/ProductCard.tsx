@@ -70,6 +70,32 @@ const ProductCard = memo(function ProductCard({
               </svg>
             </button>
           </div>
+          {product.isApproved && (
+            <span
+              title="Approved"
+              style={{
+                position: 'absolute',
+                top: 8,
+                left: 8,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 3,
+                padding: '2px 8px',
+                borderRadius: 10,
+                fontSize: 11,
+                fontWeight: 600,
+                color: '#00c853',
+                background: 'rgba(0,0,0,0.6)',
+                border: '1px solid rgba(0,200,83,0.5)',
+                zIndex: 2,
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Approved
+            </span>
+          )}
         </div>
       ) : (
         <div className={styles.imageWrap}>
@@ -87,6 +113,32 @@ const ProductCard = memo(function ProductCard({
               </svg>
             </button>
           </div>
+          {product.isApproved && (
+            <span
+              title="Approved"
+              style={{
+                position: 'absolute',
+                top: 8,
+                left: 8,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 3,
+                padding: '2px 8px',
+                borderRadius: 10,
+                fontSize: 11,
+                fontWeight: 600,
+                color: '#00c853',
+                background: 'rgba(0,0,0,0.6)',
+                border: '1px solid rgba(0,200,83,0.5)',
+                zIndex: 2,
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Approved
+            </span>
+          )}
         </div>
       )}
 

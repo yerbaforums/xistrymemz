@@ -43,7 +43,6 @@ export async function GET(request: Request) {
         role: true,
         verificationLevel: true,
         reputationScore: true,
-        balance: true,
         location: true,
         verifiedEmail: true,
         verifiedPhone: true,

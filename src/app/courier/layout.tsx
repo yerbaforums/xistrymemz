@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import Link from 'next/link'
 
 export default async function CourierLayout({
   children,
@@ -16,9 +15,6 @@ export default async function CourierLayout({
 
   return (
     <>
-      <nav className="breadcrumbs" style={{ marginBottom: '1rem', padding: '1rem 2rem', background: 'var(--bg-secondary)' }}>
-        <Link href="/courier/setup" className="breadcrumb-link">Courier</Link>
-      </nav>
       {children}
     </>
   )

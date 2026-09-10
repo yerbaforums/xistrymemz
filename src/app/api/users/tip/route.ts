@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { apiSuccess, apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json()
-    const { userId, amount } = body
+    const { userId, amount, currency } = body
 
     if (!userId || !amount || amount <= 0) {
       return apiError("Invalid parameters", 400)
@@ -29,32 +29,24 @@ export async function POST(req: Request) {
       return apiError("User not found", 404)
     }
 
-    const sender = await prisma.user.findUnique({
-      where: { id: session.user.id }
+    await prisma.entityTip.create({
+      data: {
+        userId: session.user.id,
+        entityType: 'USER',
+        entityId: userId,
+        amount: Number(amount),
+        currency: currency || 'XTM'
+      }
     })
 
-    if (!sender || sender.balance < amount) {
-      return apiError("Insufficient balance", 400)
-    }
-
-    await prisma.$transaction([
-      prisma.user.update({
-        where: { id: session.user.id },
-        data: { balance: { decrement: amount } }
-      }),
-      prisma.user.update({
-        where: { id: userId },
-        data: { balance: { increment: amount } }
-      })
-    ])
-
-    return NextResponse.json({ 
-      success: true, 
-      newBalance: sender.balance - amount,
-      message: `Tipped ${targetUser.name || targetUser.email} successfully!`
+    return NextResponse.json({
+      success: true,
+      amount: Number(amount),
+      currency: currency || 'XTM',
+      message: `Donation of ${amount} ${currency || 'XTM'} recorded for ${targetUser.name || targetUser.email}!`
     })
   } catch (error) {
-    console.error('Error tipping user:', error)
-    return apiError("Failed to tip user", 500)
+    console.error('Error recording tip:', error)
+    return apiError("Failed to record tip", 500)
   }
 }

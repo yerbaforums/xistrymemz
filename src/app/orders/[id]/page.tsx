@@ -10,36 +10,27 @@ import Button from '@/components/ui/Button'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
-interface EscrowTransaction {
+interface Order {
   id: string
   amount: number
   currency: string
-  cryptoAmount: number | null
-  cryptoCurrency: string | null
   status: string
-  paymentType: string
-  deliveryStatus: string
   description: string | null
   notes: string | null
-  txHash: string | null
-  fundingTxHash: string | null
-  releaseTxHash: string | null
-  paymentAddress: string | null
-  platformFee: number
-  netAmount: number
-  feePercent: number
+  sellerPayoutAddress: string | null
+  sellerPayoutCurrency: string | null
+  courierStatus: string | null
+  courierFee: number | null
+  deliveryAddress: string | null
+  trackingNumber: string | null
+  completedAt: string | null
+  createdAt: string
+  updatedAt: string
   product: { id: string; title: string; imageUrl: string | null; description: string | null } | null
   buyer: { id: string; name: string | null; email: string }
   seller: { id: string; name: string | null; email: string }
   courier: { id: string; name: string | null } | null
-  courierFee: number | null
-  courierService: string | null
-  deliveryAddress: string | null
-  trackingNumber: string | null
-  expectedDelivery: string | null
-  createdAt: string
-  updatedAt: string
-  completedAt: string | null
+  courierService: { id: string; name: string; serviceType: string; availableAreas: string[] } | null
 }
 
 export default function OrderDetailPage() {
@@ -47,9 +38,10 @@ export default function OrderDetailPage() {
   const router = useRouter()
   const params = useParams()
   const { success, error } = useToast()
-  const [order, setOrder] = useState<EscrowTransaction | null>(null)
+  const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
+  const [trackingInput, setTrackingInput] = useState('')
   const [messageText, setMessageText] = useState('')
   const [sendingMessage, setSendingMessage] = useState(false)
   const [showMessageModal, setShowMessageModal] = useState(false)
@@ -73,11 +65,12 @@ export default function OrderDetailPage() {
 
   const fetchOrder = async () => {
     try {
-      const res = await fetch(`/api/escrow/${orderId}`)
+      const res = await fetch(`/api/orders/${orderId}`)
       if (res.ok) {
         const data = await res.json()
-        setOrder(data)
-        setNotes(data.notes || '')
+        setOrder(data.order)
+        setNotes(data.order.notes || '')
+        setTrackingInput(data.order.trackingNumber || '')
       } else {
         router.push('/orders')
       }
@@ -89,22 +82,48 @@ export default function OrderDetailPage() {
     }
   }
 
-  const updateOrderStatus = async (action: string, data?: object) => {
+  const updateOrder = async (action: string, dataObj?: object) => {
     if (!order) return
     setUpdating(true)
     try {
-      const res = await fetch(`/api/escrow/${order.id}`, {
+      const res = await fetch(`/api/orders/${order.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, ...data })
+        body: JSON.stringify({ action, ...dataObj })
       })
       if (res.ok) {
+        success('Order updated')
         fetchOrder()
+      } else {
+        const err = await res.json()
+        error(err.error || 'Failed to update order')
       }
     } catch (err) {
       console.error(err)
     } finally {
       setUpdating(false)
+    }
+  }
+
+  const saveNotes = async () => {
+    if (!order) return
+    setSavingNotes(true)
+    try {
+      const res = await fetch(`/api/orders/${order.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update_notes', notes })
+      })
+      if (res.ok) {
+        success('Notes saved')
+      } else {
+        const err = await res.json()
+        error(err.error || 'Failed to save notes')
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setSavingNotes(false)
     }
   }
 
@@ -117,8 +136,7 @@ export default function OrderDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           recipientId: messageTo.id,
-          content: messageText,
-          orderId: order?.id
+          content: messageText
         })
       })
       if (res.ok) {
@@ -136,25 +154,6 @@ export default function OrderDetailPage() {
     }
   }
 
-  const saveNotes = async () => {
-    if (!order) return
-    setSavingNotes(true)
-    try {
-      const res = await fetch(`/api/escrow/${order.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'update_notes', notes })
-      })
-      if (res.ok) {
-        fetchOrder()
-      }
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setSavingNotes(false)
-    }
-  }
-
   const openMessageModal = (to: {id: string, name: string | null}) => {
     setMessageTo(to)
     setShowMessageModal(true)
@@ -162,22 +161,20 @@ export default function OrderDetailPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'FUNDED': return '#3b82f6'
-      case 'RELEASED': return '#10b981'
-      case 'DISPUTED': return '#f97316'
-      case 'REFUNDED': return '#ef4444'
+      case 'PAID': return '#3b82f6'
+      case 'SHIPPED': return '#f59e0b'
+      case 'DELIVERED': return '#10b981'
       case 'CANCELLED': return '#6b7280'
       default: return '#6b7280'
     }
   }
 
-  const getDeliveryColor = (status: string) => {
+  const getCourierColor = (status: string) => {
     switch (status) {
-      case 'ACCEPTED': return '#10b981'
-      case 'PICKED_UP': return '#8b5cf6'
-      case 'IN_TRANSIT': return '#3b82f6'
+      case 'REQUESTED': return '#f59e0b'
+      case 'BOOKED': return '#3b82f6'
+      case 'IN_TRANSIT': return '#8b5cf6'
       case 'DELIVERED': return '#10b981'
-      case 'COMPLETED': return '#10b981'
       case 'DECLINED': return '#ef4444'
       default: return '#6b7280'
     }
@@ -193,12 +190,7 @@ export default function OrderDetailPage() {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
   }
 
-  const getOrderTotal = (o: EscrowTransaction) => {
-    const platformFee = o.amount * (o.feePercent / 100)
-    return o.amount + (o.courierFee || 0) + platformFee
-  }
-
-  const getUserRole = (o: EscrowTransaction) => {
+  const getUserRole = (o: Order) => {
     if (o.buyer.id === session?.user?.id) return 'Buyer'
     if (o.seller.id === session?.user?.id) return 'Seller'
     return 'Courier'
@@ -230,8 +222,10 @@ export default function OrderDetailPage() {
         <div className={styles.orderMain}>
           <div className={styles.orderHeader}>
             <span className={styles.statusBadge} style={{ background: getStatusColor(order.status) }}>{order.status}</span>
-            <span className={styles.paymentBadge}>{order.paymentType || 'ESCROW'}</span>
             <span className={styles.roleBadge}>{getUserRole(order)}</span>
+            {order.courierStatus && (
+              <span className={styles.paymentBadge} style={{ color: getCourierColor(order.courierStatus) }}>📦 {order.courierStatus}</span>
+            )}
           </div>
 
           {order.product && (
@@ -250,17 +244,13 @@ export default function OrderDetailPage() {
           )}
 
           <div className={styles.section}>
-            <h2>Price Breakdown</h2>
+            <h2>Amount</h2>
             <div className={styles.priceTable}>
               <div className={styles.priceRow}>
-                <span>Item Subtotal</span>
+                <span>Order Amount</span>
                 <span>${order.amount.toFixed(2)}</span>
               </div>
-              <div className={styles.priceRow}>
-                <span>Platform Fee ({order.feePercent}%)</span>
-                <span>${order.platformFee.toFixed(2)}</span>
-              </div>
-              {order.courierFee && (
+              {order.courierFee != null && (
                 <div className={styles.priceRow}>
                   <span>Courier Delivery</span>
                   <span>${order.courierFee.toFixed(2)}</span>
@@ -268,63 +258,42 @@ export default function OrderDetailPage() {
               )}
               <div className={`${styles.priceRow} ${styles.totalRow}`}>
                 <span>Total</span>
-                <span>${getOrderTotal(order).toFixed(2)}</span>
+                <span>${(order.amount + (order.courierFee || 0)).toFixed(2)}</span>
               </div>
             </div>
           </div>
 
-          <div className={styles.section}>
-            <h2>Delivery</h2>
-            <div className={styles.deliveryCard}>
-              <div className={styles.deliveryStatus}>
-                <span className={styles.statusBadge} style={{ background: getDeliveryColor(order.deliveryStatus) }}>
-                  {order.deliveryStatus}
-                </span>
-                {order.expectedDelivery && (
-                  <span className={styles.expectedDate}>Expected: {formatDate(order.expectedDelivery)}</span>
-                )}
-              </div>
-              {order.courierService && (
-                <p><strong>Service:</strong> {order.courierService}</p>
-              )}
-              {order.deliveryAddress && (
-                <p><strong>Address:</strong> {order.deliveryAddress}</p>
-              )}
-              {order.trackingNumber && (
-                <p><strong>Tracking:</strong> {order.trackingNumber}</p>
-              )}
-            </div>
-          </div>
-
-          {order.cryptoCurrency && (
+          {order.buyer.id === session?.user?.id && order.sellerPayoutAddress && (
             <div className={styles.section}>
-              <h2>Crypto Payment</h2>
-              <div className={styles.cryptoCard}>
-                <div className={styles.priceRow}>
-                  <span>Currency</span>
-                  <span>{order.cryptoCurrency}</span>
-                </div>
-                <div className={styles.priceRow}>
-                  <span>Amount</span>
-                  <span>{order.cryptoAmount?.toFixed(4)} {order.cryptoCurrency}</span>
-                </div>
-                {order.paymentAddress && (
-                  <div className={styles.cryptoField}>
-                    <span>Payment Address</span>
-                    <code className={styles.addressCode}>{order.paymentAddress}</code>
-                  </div>
+              <h2>Pay the Seller</h2>
+              <div className={styles.deliveryCard}>
+                <p>This is a direct sale — the platform never holds funds. Send payment directly to:</p>
+                <code className={styles.addressCode}>{order.sellerPayoutAddress}</code>
+                {order.sellerPayoutCurrency && (
+                  <p><strong>Currency:</strong> {order.sellerPayoutCurrency}</p>
                 )}
-                {order.fundingTxHash && (
-                  <div className={styles.cryptoField}>
-                    <span>Funding Transaction</span>
-                    <code className={styles.txHash}>{order.fundingTxHash}</code>
-                  </div>
+              </div>
+            </div>
+          )}
+
+          {order.courierService && (
+            <div className={styles.section}>
+              <h2>Delivery</h2>
+              <div className={styles.deliveryCard}>
+                <div className={styles.deliveryStatus}>
+                  <span className={styles.statusBadge} style={{ background: getCourierColor(order.courierStatus || '') }}>
+                    {order.courierStatus || 'REQUESTED'}
+                  </span>
+                  {order.completedAt && (
+                    <span className={styles.expectedDate}>Completed: {formatDate(order.completedAt)}</span>
+                  )}
+                </div>
+                <p><strong>Service:</strong> {order.courierService.name} ({order.courierService.serviceType})</p>
+                {order.deliveryAddress && (
+                  <p><strong>Address:</strong> {order.deliveryAddress}</p>
                 )}
-                {order.releaseTxHash && (
-                  <div className={styles.cryptoField}>
-                    <span>Release Transaction</span>
-                    <code className={styles.txHash}>{order.releaseTxHash}</code>
-                  </div>
+                {order.trackingNumber && (
+                  <p><strong>Tracking:</strong> {order.trackingNumber}</p>
                 )}
               </div>
             </div>
@@ -379,71 +348,74 @@ export default function OrderDetailPage() {
               {order.buyer.id === session?.user?.id && (
                 <>
                   {order.status === 'PENDING' && (
-                    <Button className={styles.fundBtn} disabled={updating} onClick={() => updateOrderStatus('fund', { txHash: 'manual-' + Date.now() })}>
-                      Fund Escrow
+                    <Button className={styles.fundBtn} disabled={updating} onClick={() => updateOrder('mark_paid')}>
+                      Mark as Paid
                     </Button>
                   )}
-                  {order.status === 'FUNDED' && (
-                    <>
-                      <Button className={styles.releaseBtn} disabled={updating} onClick={() => updateOrderStatus('release')}>
-                        Release Payment
-                      </Button>
-                      <Button className={styles.disputeBtn} disabled={updating} onClick={() => updateOrderStatus('dispute')}>
-                        Open Dispute
-                      </Button>
-                    </>
+                  {order.status === 'SHIPPED' && (
+                    <Button className={styles.deliverBtn} disabled={updating} onClick={() => updateOrder('deliver')}>
+                      Confirm Receipt
+                    </Button>
                   )}
                 </>
               )}
 
               {order.seller.id === session?.user?.id && (
                 <>
-                  {order.status === 'FUNDED' && (
-                    <Button className={styles.refundBtn} disabled={updating} onClick={() => updateOrderStatus('refund')}>
-                      Issue Refund
-                    </Button>
-                  )}
-                  {order.status === 'DISPUTED' && (
-                    <Button className={styles.resolveBtn} disabled={updating} onClick={() => updateOrderStatus('refund')}>
-                      Resolve (Refund)
+                  {order.status === 'PAID' && (
+                    <Button className={styles.shipBtn} disabled={updating} onClick={() => updateOrder('ship')}>
+                      Mark Shipped
                     </Button>
                   )}
                 </>
               )}
 
-              {order.courier?.id === session?.user?.id && (
+              {(order.buyer.id === session?.user?.id || order.seller.id === session?.user?.id) && (
+                (order.status === 'PENDING' || order.status === 'PAID') && (
+                  <Button className={styles.disputeBtn} disabled={updating} onClick={() => updateOrder('cancel')}>
+                    Cancel Order
+                  </Button>
+                )
+              )}
+
+              {order.courier?.id === session?.user?.id && order.courierStatus && (
                 <>
-                  {order.deliveryStatus === 'PENDING' && order.status !== 'CANCELLED' && order.status !== 'REFUNDED' && (
-                    <>
-                      <Button className={styles.acceptBtn} disabled={updating} onClick={() => updateOrderStatus('courier_accept')}>
-                        Accept Delivery
-                      </Button>
-                      <Button className={styles.declineBtn} disabled={updating} onClick={() => updateOrderStatus('courier_decline')}>
-                        Decline Delivery
-                      </Button>
-                    </>
+                  {order.courierStatus === 'REQUESTED' && (
+                    <Button className={styles.acceptBtn} disabled={updating} onClick={() => updateOrder('courier_accept')}>
+                      Accept Delivery
+                    </Button>
                   )}
-                  {order.deliveryStatus === 'ACCEPTED' && (
-                    <Button className={styles.shipBtn} disabled={updating} onClick={() => updateOrderStatus('courier_pickup')}>
+                  {order.courierStatus === 'BOOKED' && (
+                    <Button className={styles.shipBtn} disabled={updating} onClick={() => updateOrder('courier_pickup')}>
                       Mark Picked Up
                     </Button>
                   )}
-                  {order.deliveryStatus === 'PICKED_UP' && (
-                    <Button className={styles.shipBtn} disabled={updating} onClick={() => updateOrderStatus('update_delivery', { deliveryStatus: 'IN_TRANSIT' })}>
-                      Mark In Transit
-                    </Button>
-                  )}
-                  {order.deliveryStatus === 'IN_TRANSIT' && (
-                    <Button className={styles.deliverBtn} disabled={updating} onClick={() => updateOrderStatus('confirm_delivery')}>
+                  {order.courierStatus === 'IN_TRANSIT' && (
+                    <Button className={styles.deliverBtn} disabled={updating} onClick={() => updateOrder('courier_delivered')}>
                       Confirm Delivery
                     </Button>
                   )}
                 </>
               )}
+
+              {(order.courier?.id === session?.user?.id || order.seller.id === session?.user?.id) && (
+                <div className={styles.trackingRow}>
+                  <input
+                    type="text"
+                    value={trackingInput}
+                    onChange={(e) => setTrackingInput(e.target.value)}
+                    placeholder="Add tracking number..."
+                    className={styles.trackingInput}
+                  />
+                  <Button className={styles.shipBtn} disabled={updating || !trackingInput.trim()} onClick={() => updateOrder('update_tracking', { trackingNumber: trackingInput.trim() })}>
+                    Save Tracking
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
 
-          {(order.seller.id === session?.user?.id || order.buyer.id === session?.user?.id) && (
+          {(order.seller.id === session?.user?.id || order.buyer.id === session?.user?.id || order.courier?.id === session?.user?.id) && (
             <div className={styles.sidebarSection}>
               <h3>Order Notes</h3>
               <textarea
@@ -460,38 +432,45 @@ export default function OrderDetailPage() {
           )}
 
           <div className={styles.sidebarSection}>
-            <h3>Timeline</h3>
+            <h3>Status</h3>
             <div className={styles.timeline}>
-              <div className={`${styles.timelineItem} ${order.status !== 'PENDING' ? styles.completed : ''}`}>
+              <div className={styles.timelineItem}>
                 <div className={styles.timelineDot}></div>
                 <div className={styles.timelineContent}>
                   <span className={styles.timelineTitle}>Order Created</span>
                   <span className={styles.timelineDate}>{formatDateTime(order.createdAt)}</span>
                 </div>
               </div>
-              {(order.fundingTxHash || order.status === 'FUNDED') && (
-                <div className={`${styles.timelineItem} ${styles.completed}`}>
+              {order.status !== 'PENDING' && (
+                <div className={styles.timelineItem}>
                   <div className={styles.timelineDot}></div>
                   <div className={styles.timelineContent}>
-                    <span className={styles.timelineTitle}>Payment Funded</span>
-                    <span className={styles.timelineDate}>{formatDateTime(order.updatedAt)}</span>
+                    <span className={styles.timelineTitle}>Paid</span>
                   </div>
                 </div>
               )}
-              {(order.deliveryStatus === 'IN_TRANSIT' || order.deliveryStatus === 'DELIVERED') && (
-                <div className={`${styles.timelineItem} ${styles.completed}`}>
+              {order.status === 'SHIPPED' || order.status === 'DELIVERED' ? (
+                <div className={styles.timelineItem}>
                   <div className={styles.timelineDot}></div>
                   <div className={styles.timelineContent}>
-                    <span className={styles.timelineTitle}>Order Shipped</span>
+                    <span className={styles.timelineTitle}>Shipped</span>
                   </div>
                 </div>
-              )}
-              {order.status === 'RELEASED' && (
-                <div className={`${styles.timelineItem} ${styles.completed}`}>
+              ) : null}
+              {order.status === 'DELIVERED' && (
+                <div className={styles.timelineItem}>
                   <div className={styles.timelineDot}></div>
                   <div className={styles.timelineContent}>
-                    <span className={styles.timelineTitle}>Payment Released</span>
+                    <span className={styles.timelineTitle}>Delivered</span>
                     {order.completedAt && <span className={styles.timelineDate}>{formatDateTime(order.completedAt)}</span>}
+                  </div>
+                </div>
+              )}
+              {order.status === 'CANCELLED' && (
+                <div className={styles.timelineItem}>
+                  <div className={styles.timelineDot}></div>
+                  <div className={styles.timelineContent}>
+                    <span className={styles.timelineTitle}>Cancelled</span>
                   </div>
                 </div>
               )}

@@ -20,7 +20,7 @@ interface DonationAddr {
 }
 
 function formatPrice(price: number, currency: string): string {
-  if (currency === 'USDT' || currency === 'USDC') return `$${price.toFixed(2)}`
+  if (currency === 'USDT' || currency === 'USDC' || currency === 'FUSD' || currency === 'USD') return `$${price.toFixed(2)}`
   if (price >= 1000) return `$${price.toLocaleString('en-US', { maximumFractionDigits: 2 })}`
   if (price >= 1) return `$${price.toFixed(2)}`
   return `$${price.toFixed(6)}`

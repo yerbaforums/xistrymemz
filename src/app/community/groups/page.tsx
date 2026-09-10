@@ -6,6 +6,7 @@ import Image from 'next/image'
 import styles from './groups.module.css'
 import Button from '@/components/ui/Button'
 import { EmptyState } from '@/components/EmptyState'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface Group {
   id: string
@@ -46,6 +47,7 @@ export default function GroupsPage() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Community', href: '/community' }, { label: 'Groups' }]} />
       <div className={styles.header}>
         <div>
           <h1>Groups</h1>

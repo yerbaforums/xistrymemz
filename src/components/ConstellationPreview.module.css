@@ -1,0 +1,146 @@
+.widget {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(10, 16, 34, 0.9), rgba(20, 16, 44, 0.9));
+  border: 1px solid rgba(0, 217, 255, 0.2);
+  border-radius: 14px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.widget::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.1), transparent 60%);
+  pointer-events: none;
+}
+
+.widget:hover {
+  border-color: rgba(0, 217, 255, 0.45);
+  transform: translateY(-2px);
+}
+
+.visual {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+}
+
+.starOwn {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #b3ecff, #00d9ff);
+  box-shadow: 0 0 12px rgba(0, 217, 255, 0.8);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.starConn {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #b3ecff, rgba(0, 217, 255, 0.6));
+  box-shadow: 0 0 6px rgba(0, 217, 255, 0.5);
+}
+
+.c1 {
+  left: 8px;
+  top: 20px;
+}
+
+.c2 {
+  right: 6px;
+  top: 30px;
+}
+
+.c3 {
+  left: 28px;
+  bottom: 8px;
+}
+
+.line1,
+.line2,
+.line3 {
+  position: absolute;
+  height: 1px;
+  background: rgba(0, 217, 255, 0.3);
+  transform-origin: left center;
+}
+
+.line1 {
+  left: 50%;
+  top: 50%;
+  width: 34px;
+  transform: rotate(200deg);
+  transform-origin: left center;
+}
+
+.line2 {
+  left: 50%;
+  top: 50%;
+  width: 32px;
+  transform: rotate(330deg);
+}
+
+.line3 {
+  left: 50%;
+  top: 50%;
+  width: 38px;
+  transform: rotate(90deg);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  position: relative;
+}
+
+.title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.sub {
+  font-size: 0.72rem;
+  color: rgba(203, 213, 225, 0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cta {
+  font-size: 0.75rem;
+  color: #22d3ee;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+@media (max-width: 480px) {
+  .sub {
+    white-space: normal;
+  }
+}

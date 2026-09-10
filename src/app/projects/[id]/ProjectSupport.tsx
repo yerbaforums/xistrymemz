@@ -238,10 +238,8 @@ export default function ProjectSupport({
                         <option value="USD">$ USD</option>
                         <option value="XMR">XMR (Monero)</option>
                         <option value="XTM">XTM (Tari)</option>
-                        <option value="ARRR">ARRR (Pirate)</option>
-                        <option value="DERO">DERO (Dero)</option>
                         <option value="ZANO">ZANO (Zano)</option>
-                        <option value="FIRO">FIRO (Firo)</option>
+                        <option value="FUSD">FUSD (Freedom Dollar)</option>
                       </select>
                     </div>
                     <button onClick={async () => {
@@ -376,7 +374,28 @@ export default function ProjectSupport({
                 <h3 className={styles.volunteersTitle}>Current Volunteers ({volunteers.length})</h3>
                 <div className={styles.volunteerNames}>
                   {volunteers.map(v => (
-                    <span key={v.id} className={styles.volunteerName}>{v.user.name || v.user.email}</span>
+                    <div key={v.id} className={styles.volunteerCard}>
+                      <span className={styles.volunteerName}>{v.user.name || v.user.email}</span>
+                      {v.message && <p className={styles.volunteerMessage}>{v.message}</p>}
+                      {(v as any).user?.skills || (v as any).user?.interests ? (
+                        <div className={styles.volunteerTags}>
+                          {(v as any).user?.skills && (() => {
+                            try {
+                              const skills = JSON.parse((v as any).user.skills)
+                              if (!Array.isArray(skills)) return null
+                              return skills.map((s: string, i: number) => <span key={i} className={styles.volunteerTag}>#{s}</span>)
+                            } catch { return null }
+                          })()}
+                          {(v as any).user?.interests && (() => {
+                            try {
+                              const interests = JSON.parse((v as any).user.interests)
+                              if (!Array.isArray(interests)) return null
+                              return interests.map((s: string, i: number) => <span key={i} className={styles.volunteerTag}>#{s}</span>)
+                            } catch { return null }
+                          })()}
+                        </div>
+                      ) : null}
+                    </div>
                   ))}
                 </div>
               </div>

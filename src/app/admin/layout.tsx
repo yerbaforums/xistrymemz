@@ -37,9 +37,6 @@ export default async function AdminLayout({
           <Link href="/admin/orders" className={styles.navLink}>
             📦 Orders
           </Link>
-          <Link href="/admin/wallets" className={styles.navLink}>
-            💳 Wallets
-          </Link>
           <Link href="/admin/messages" className={styles.navLink}>
             💬 Messages
           </Link>

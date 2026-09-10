@@ -768,7 +768,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
       <ConfirmDialog
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
-        onConfirm={handleDelete}
+        onConfirm={() => { if (deleteTarget) { handleDelete(deleteTarget); setDeleteTarget(null) } }}
         title="Delete Request"
         message="Delete this request permanently?"
         confirmLabel="Delete"

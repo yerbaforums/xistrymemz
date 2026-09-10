@@ -8,6 +8,21 @@ import type { RequestFormData } from '@/types/request'
 import ImageUploader from '@/components/ImageUploader'
 import LocationPicker from '@/components/LocationPicker'
 
+interface RequestTemplate {
+  label: string
+  category: string
+  priority: string
+  hint: string
+}
+
+const TEMPLATES: RequestTemplate[] = [
+  { label: 'Looking for Service', category: 'SERVICE', priority: 'MEDIUM', hint: 'Find a service provider near you' },
+  { label: 'Funding Needed', category: 'FUNDING', priority: 'MEDIUM', hint: 'Raise funds for a project or cause' },
+  { label: 'Collaboration', category: 'COLLABORATION', priority: 'MEDIUM', hint: 'Find collaborators for your project' },
+  { label: 'Lost & Found', category: 'GENERAL', priority: 'HIGH', hint: 'Post or find lost & found items' },
+  { label: 'Custom', category: 'GENERAL', priority: 'MEDIUM', hint: 'Start from scratch' },
+]
+
 interface RequestFormProps {
   initialData?: Partial<RequestFormData>
   isPublic?: boolean
@@ -29,8 +44,14 @@ export default function RequestForm({
     ...initialData,
   })
   const [saving, setSaving] = useState(false)
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
 
   const isSaving = externalSaving ?? saving
+
+  const handleTemplateSelect = (template: RequestTemplate) => {
+    setSelectedTemplate(template.label)
+    setForm({ ...form, category: template.category, priority: template.priority })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -45,6 +66,33 @@ export default function RequestForm({
 
   return (
     <form onSubmit={handleSubmit}>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
+        {TEMPLATES.map(t => (
+          <button
+            key={t.label}
+            type="button"
+            onClick={() => handleTemplateSelect(t)}
+            style={{
+              padding: '6px 14px',
+              borderRadius: 20,
+              border: `1px solid ${selectedTemplate === t.label ? 'var(--accent-primary)' : 'var(--border-color)'}`,
+              background: selectedTemplate === t.label ? 'rgba(0,217,255,0.1)' : 'var(--bg-tertiary)',
+              color: selectedTemplate === t.label ? 'var(--accent-primary)' : 'var(--text-secondary)',
+              fontSize: '0.8rem',
+              fontWeight: selectedTemplate === t.label ? 600 : 400,
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+            }}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+      {selectedTemplate && (
+        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: 16, marginTop: -8 }}>
+          {TEMPLATES.find(t => t.label === selectedTemplate)?.hint}
+        </p>
+      )}
       <input
         type="text"
         placeholder="Request title *"

@@ -53,12 +53,6 @@ export default async function ProfileSettingsPage() {
               <p>Configure email and message alerts</p>
             </Link>
 
-            <Link href="/wallet" className={styles.card}>
-              <span className={styles.cardIcon}>💳</span>
-              <h3>{t('wallet')}</h3>
-              <p>Manage your crypto wallet and balances</p>
-            </Link>
-
             <Link href="/settings/privacy" className={styles.card}>
               <span className={styles.cardIcon}>🔒</span>
               <h3>Privacy</h3>

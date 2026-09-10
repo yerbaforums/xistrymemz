@@ -1,8 +1,8 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useToast } from '@/context/ToastContext'
 import styles from './community.module.css'
@@ -13,6 +13,7 @@ import RoleBadge from '@/components/RoleBadge'
 import ActiveStatus from '@/components/ActiveStatus'
 import LookingForCollaboratorsBadge from '@/components/LookingForCollaboratorsBadge'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import ConstellationExplorer from '@/components/ConstellationExplorer'
 import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
 import EntityMarker from '@/components/EntityMarker'
 import Button from '@/components/ui/Button'
@@ -79,11 +80,24 @@ interface Request {
   user: { id: string; name: string | null; email: string }
 }
 
+function unwrap<T>(d: T | { data?: T }): T {
+  const o = d as { data?: T } | null
+  return (o?.data ?? d) as T
+}
+
 export default function CommunityPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const { success, error, warning } = useToast()
-  const [activeTab, setActiveTab] = useState<'members' | 'connections' | 'requests' | 'groups' | 'marketRequests' | 'forum'>('members')
+  const searchParams = useSearchParams()
+  const [activeTab, setActiveTab] = useState<'members' | 'connections' | 'requests' | 'groups' | 'marketRequests' | 'forum' | 'constellation'>(() =>
+    searchParams.get('tab') === 'constellation' ? 'constellation' : 'members'
+  )
+  const [prevTabParam, setPrevTabParam] = useState(searchParams.get('tab'))
+  if (prevTabParam !== searchParams.get('tab')) {
+    setPrevTabParam(searchParams.get('tab'))
+    if (searchParams.get('tab') === 'constellation') setActiveTab('constellation')
+  }
   const [members, setMembers] = useState<Member[]>([])
   const [connections, setConnections] = useState<Connection[]>([])
   const [pendingRequests, setPendingRequests] = useState<Connection[]>([])
@@ -96,28 +110,14 @@ export default function CommunityPage() {
   const [newPostContent, setNewPostContent] = useState('')
   const [showNewPost, setShowNewPost] = useState(false)
   const [tipAmount, setTipAmount] = useState('')
-  const [tipCrypto, setTipCrypto] = useState('USDT')
+  const [tipCrypto, setTipCrypto] = useState('XMR')
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>('grid')
   const [tipTarget, setTipTarget] = useState<{type: 'post' | 'user', id: string, authorId: string} | null>(null)
-  const [cryptoBalances, setCryptoBalances] = useState<{symbol: string, name: string, available: number, icon: string, color: string}[]>([])
+  const [tipOptions, setTipOptions] = useState<{symbol: string, name: string, icon: string, color: string}[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/login')
-    }
-  }, [status, router])
-
-  useEffect(() => {
-    if (session?.user) {
-      fetchData()
-    }
-  }, [session])
-
-  const unwrap = (d: any) => d?.data ?? d
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [membersRes, groupsRes, requestsRes, forumCatRes, forumPostsRes] = await Promise.all([
         fetch('/api/community/members'),
@@ -158,14 +158,26 @@ export default function CommunityPage() {
       const tipRes = await fetch('/api/forum/tip-options')
       if (tipRes.ok) {
         const tipData = await tipRes.json()
-        setCryptoBalances(unwrap(tipData).cryptoBalances || [])
+        setTipOptions(unwrap(tipData).tipOptions || [])
       }
     } catch (err) {
       console.error(err)
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/auth/login')
+    }
+  }, [status, router])
+
+  useEffect(() => {
+    if (session?.user) {
+      fetchData()
+    }
+  }, [session, fetchData])
 
   const fetchForumPosts = async (categoryId?: string) => {
     try {
@@ -213,7 +225,7 @@ export default function CommunityPage() {
         const res = await fetch('/api/users/tip', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: authorId, amount, cryptoSymbol: tipCrypto })
+          body: JSON.stringify({ userId: authorId, amount, currency: tipCrypto })
         })
         if (res.ok) {
           success(`Tip sent! ${amount} ${tipCrypto}`)
@@ -348,6 +360,13 @@ export default function CommunityPage() {
           onClick={() => { setActiveTab('forum'); }}
         >
           Forum
+        </Button>
+        <Button 
+          variant="ghost"
+          className={`${styles.tab} ${activeTab === 'constellation' ? styles.active : ''}`}
+          onClick={() => { setActiveTab('constellation'); }}
+        >
+          🌌 Constellation
         </Button>
       </div>
 
@@ -742,7 +761,7 @@ export default function CommunityPage() {
                 <div className={styles.cryptoSelect}>
                   <label>Select Crypto</label>
                   <div className={styles.cryptoGrid}>
-                    {cryptoBalances.map(crypto => (
+                    {tipOptions.map(crypto => (
                       <Button
                         key={crypto.symbol}
                         variant="secondary"
@@ -755,10 +774,6 @@ export default function CommunityPage() {
                       </Button>
                     ))}
                   </div>
-                </div>
-
-                <div className={styles.balanceInfo}>
-                  <span>Available: {cryptoBalances.find(c => c.symbol === tipCrypto)?.available?.toFixed(4) || '0'} {tipCrypto}</span>
                 </div>
 
                 <input
@@ -781,6 +796,16 @@ export default function CommunityPage() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {activeTab === 'constellation' && (
+        <div className={styles.constellationSection}>
+          <div className={styles.header} style={{ marginBottom: 12 }}>
+            <h2>🌌 Constellation</h2>
+            <p>Explore connections between members. Stars that share groups, interests, or proximity form visible constellations.</p>
+          </div>
+          <ConstellationExplorer height={620} />
         </div>
       )}
     </div>

@@ -17,7 +17,7 @@ export function parseDonationAddresses(json: string | null | undefined): Donatio
     if (!Array.isArray(parsed)) return []
     return parsed.map((a: RawDonationAddress, i: number) => ({
       id: a.id || `addr-${i}`,
-      currency: a.currency || 'ETH',
+      currency: a.currency || 'XMR',
       address: a.address || '',
       label: a.label || null,
       qrCodeUrl: a.qrCodeUrl || null,
@@ -38,7 +38,7 @@ export function serializeDonationAddresses(addresses: DonationAddr[]): string {
 }
 
 export function donationAddressesToLegacy(addresses: DonationAddr[]): { donationAddress: string | null; donationCurrency: string } {
-  if (addresses.length === 0) return { donationAddress: null, donationCurrency: 'ETH' }
+  if (addresses.length === 0) return { donationAddress: null, donationCurrency: 'XMR' }
   return {
     donationAddress: addresses[0].address,
     donationCurrency: addresses[0].currency,
@@ -55,7 +55,7 @@ export function hydrateDonationAddresses(
   if (donationAddress) {
     return [{
       id: 'legacy-0',
-      currency: donationCurrency || 'ETH',
+      currency: donationCurrency || 'XMR',
       address: donationAddress,
       label: null,
       qrCodeUrl: null,

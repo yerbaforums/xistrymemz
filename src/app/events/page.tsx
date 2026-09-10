@@ -561,7 +561,7 @@ export default function EventsPage() {
                             onClick={(e) => { e.stopPropagation(); setQrOpen(event.id) }}
                             className={styles.donationBadge}
                             variant="ghost"
-                            title={`Donate ${event.donationCurrency || 'ETH'}`}
+                            title={`Donate ${event.donationCurrency || 'XMR'}`}
                           >
                             💰 Donate
                           </Button>
@@ -602,7 +602,7 @@ export default function EventsPage() {
           const ev = events.find(e => e.id === qrOpen)
           if (!ev) return null
           return (
-            <QRCodeModal isOpen={true} onClose={() => setQrOpen(null)} currency={ev.donationCurrency || 'ETH'} address={ev.donationAddress || ''} />
+            <QRCodeModal isOpen={true} onClose={() => setQrOpen(null)} currency={ev.donationCurrency || 'XMR'} address={ev.donationAddress || ''} />
           )
         })()}
       </div>

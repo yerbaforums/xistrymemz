@@ -4,8 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 const CRYPTO_RATES: Record<string, number> = {
-  XMR: 1, XTM: 100, ARRR: 200, DERO: 50, ZANO: 25,
-  USDT: 1, USDC: 1, ETH: 2000, BTC: 50000
+  XMR: 1, XTM: 100, ZANO: 25, FUSD: 1
 }
 
 export async function POST(req: Request) {
@@ -22,7 +21,7 @@ export async function POST(req: Request) {
       return apiError("Invalid parameters", 400)
     }
 
-    const cryptoRate = CRYPTO_RATES[cryptoSymbol || 'USDT'] || 1
+    const cryptoRate = CRYPTO_RATES[cryptoSymbol || 'XMR'] || 1
     const usdAmount = amount * cryptoRate
 
     const post = await prisma.post.findUnique({
@@ -32,19 +31,7 @@ export async function POST(req: Request) {
       return apiError("Post not found", 404)
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
-    })
-
-    if (!user || user.balance < usdAmount) {
-      return NextResponse.json({ error: 'Insufficient balance', required: usdAmount, available: user?.balance || 0 }, { status: 400 })
-    }
-
     await prisma.$transaction([
-      prisma.user.update({
-        where: { id: session.user.id },
-        data: { balance: { decrement: usdAmount } }
-      }),
       prisma.post.update({
         where: { id: postId },
         data: {
@@ -61,7 +48,7 @@ export async function POST(req: Request) {
       })
     ])
 
-    return NextResponse.json({ success: true, amount: usdAmount, cryptoSymbol, newBalance: (user.balance || 0) - usdAmount })
+    return NextResponse.json({ success: true, amount: usdAmount, cryptoSymbol })
   } catch (error) {
     console.error('Error tipping post:', error)
     return apiError("Failed to tip", 500)

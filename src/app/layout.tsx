@@ -3,7 +3,6 @@ import "./design-system.css";
 import "./globals.css";
 import "./themes.css";
 import { Providers } from "@/components/Providers";
-import { TariWalletProvider } from "@/context/TariWalletContext";
 import { SiteSettingsProvider } from "@/hooks/useSiteSettings";
 import { ToastContainer } from "@/components/Toast";
 import AppShell from "@/components/AppShell";
@@ -100,17 +99,15 @@ export default async function RootLayout({
           </a>
           <Providers>
             <SiteSettingsProvider>
-              <TariWalletProvider>
-                <QuickCreateProvider>
-                  <AppShell>
-                    {children}
-                    <ToastContainer />
-                    <CreateFAB />
-                  </AppShell>
-                  <BottomNav />
-                  <Footer />
-                </QuickCreateProvider>
-              </TariWalletProvider>
+              <QuickCreateProvider>
+                <AppShell>
+                  {children}
+                  <ToastContainer />
+                  <CreateFAB />
+                </AppShell>
+                <BottomNav />
+                <Footer />
+              </QuickCreateProvider>
             </SiteSettingsProvider>
           </Providers>
         </LocaleProvider>

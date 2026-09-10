@@ -9,8 +9,6 @@ import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 interface SiteSettings {
   enableCheckout: boolean
-  enableWallet: boolean
-  platformFeePercent: number
   donationAddresses: DonationAddr[]
 }
 
@@ -27,8 +25,6 @@ interface DonationAddr {
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<SiteSettings>({
     enableCheckout: true,
-    enableWallet: true,
-    platformFeePercent: 10,
     donationAddresses: []
   })
   const [loading, setLoading] = useState(true)
@@ -37,11 +33,8 @@ export default function AdminSettingsPage() {
 
   const [showDonationForm, setShowDonationForm] = useState(false)
   const [editingDonation, setEditingDonation] = useState<DonationAddr | null>(null)
-  const [donationForm, setDonationForm] = useState({ currency: 'ETH', address: '', label: '', showQR: true })
+  const [donationForm, setDonationForm] = useState({ currency: 'XMR', address: '', label: '', showQR: true })
 
-  const [feePercent, setFeePercent] = useState(10)
-  const [directFeePercent, setDirectFeePercent] = useState(5)
-  const [savingFee, setSavingFee] = useState(false)
   const [qrAddress, setQrAddress] = useState<string | null>(null)
   const [qrDonationCurrency, setQrDonationCurrency] = useState<string | null>(null)
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
@@ -60,12 +53,8 @@ export default function AdminSettingsPage() {
         const data = await res.json()
         setSettings({
           enableCheckout: data.enableCheckout,
-          enableWallet: data.enableWallet,
-          platformFeePercent: data.platformFeePercent,
           donationAddresses: data.donationAddresses || []
         })
-        setFeePercent(data.platformFeePercent || 10)
-        setDirectFeePercent(Math.round((data.platformFeePercent || 10) / 2))
       }
     } catch (error) {
       console.error('Failed to fetch settings:', error)
@@ -74,28 +63,7 @@ export default function AdminSettingsPage() {
     }
   }
 
-  const handleSaveFees = async () => {
-    setSavingFee(true)
-    try {
-      const res = await fetch('/api/admin/settings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ platformFeePercent: feePercent })
-      })
-      if (res.ok) {
-        setSettings(prev => ({ ...prev, platformFeePercent: feePercent }))
-        setDirectFeePercent(Math.round(feePercent / 2))
-        setSaved(true)
-        setTimeout(() => setSaved(false), 2000)
-      }
-    } catch (error) {
-      console.error('Failed to save fee:', error)
-    } finally {
-      setSavingFee(false)
-    }
-  }
-
-  const handleToggle = async (key: 'enableCheckout' | 'enableWallet') => {
+  const handleToggle = async (key: 'enableCheckout') => {
     const newValue = !settings[key]
     setSettings(prev => ({ ...prev, [key]: newValue }))
     setSaved(false)
@@ -176,7 +144,7 @@ export default function AdminSettingsPage() {
       setSaving(false)
       setShowDonationForm(false)
       setEditingDonation(null)
-      setDonationForm({ currency: 'ETH', address: '', label: '', showQR: true })
+      setDonationForm({ currency: 'XMR', address: '', label: '', showQR: true })
     }
   }
 
@@ -261,65 +229,6 @@ export default function AdminSettingsPage() {
               <span className={styles.toggleKnob} />
             </button>
           </div>
-
-          <div className={styles.toggleItem}>
-            <div className={styles.toggleInfo}>
-              <span className={styles.toggleLabel}>Wallet</span>
-              <span className={styles.toggleDescription}>
-                Enable the cryptocurrency wallet feature. When disabled, users will see &quot;Coming Soon&quot; on the wallet page link.
-              </span>
-            </div>
-            <button
-              className={`${styles.toggle} ${settings.enableWallet ? styles.active : ''}`}
-              onClick={() => !saving && handleToggle('enableWallet')}
-              disabled={saving}
-              aria-pressed={settings.enableWallet}
-            >
-              <span className={styles.toggleKnob} />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className={styles.section}>
-        <h2>Platform Fees</h2>
-        <p className={styles.description}>
-          Set the platform fee percentage for escrow transactions. Direct payment fees are automatically calculated at half the escrow rate.
-        </p>
-
-        <div className={styles.feeEditor}>
-          <div className={styles.feeInputs}>
-            <div className={styles.feeField}>
-              <label className={styles.feeLabel}>Escrow Fee (%)</label>
-              <input
-                type="number"
-                value={feePercent}
-                onChange={e => setFeePercent(Math.min(50, Math.max(0, parseFloat(e.target.value) || 0)))}
-                className={styles.feeInput}
-                min={0}
-                max={50}
-                step={0.5}
-                disabled={savingFee}
-              />
-            </div>
-            <div className={styles.feeField}>
-              <label className={styles.feeLabel}>Direct Fee (%)</label>
-              <input
-                type="text"
-                value={directFeePercent}
-                className={`${styles.feeInput} ${styles.feeInputDisabled}`}
-                disabled
-                title="Automatically calculated as half the escrow fee"
-              />
-            </div>
-          </div>
-          <button
-            onClick={handleSaveFees}
-            disabled={savingFee}
-            className={styles.feeSaveBtn}
-          >
-            {savingFee ? 'Saving...' : 'Save Fees'}
-          </button>
         </div>
       </div>
 
@@ -330,12 +239,6 @@ export default function AdminSettingsPage() {
             <span className={styles.statusLabel}>Checkout</span>
             <span className={`${styles.statusValue} ${settings.enableCheckout ? styles.enabled : styles.disabled}`}>
               {settings.enableCheckout ? '🟢 Enabled' : '🔴 Disabled'}
-            </span>
-          </div>
-          <div className={styles.statusItem}>
-            <span className={styles.statusLabel}>Wallet</span>
-            <span className={`${styles.statusValue} ${settings.enableWallet ? styles.enabled : styles.disabled}`}>
-              {settings.enableWallet ? '🟢 Enabled' : '🔴 Disabled'}
             </span>
           </div>
         </div>
@@ -352,7 +255,7 @@ export default function AdminSettingsPage() {
           </div>
           <button
             type="button"
-            onClick={() => { setShowDonationForm(true); setEditingDonation(null); setDonationForm({ currency: 'ETH', address: '', label: '', showQR: true }) }}
+            onClick={() => { setShowDonationForm(true); setEditingDonation(null); setDonationForm({ currency: 'XMR', address: '', label: '', showQR: true }) }}
             className={styles.addBtn}
           >
             + Add Address
@@ -361,7 +264,7 @@ export default function AdminSettingsPage() {
 
         {settings.donationAddresses.length === 0 && !showDonationForm && (
           <p className={styles.emptyState}>
-            No donation addresses configured. Add BTC, ETH, XMR, or other crypto addresses.
+            No donation addresses configured. Add XMR, XTM, ZANO, or FUSD donation addresses.
           </p>
         )}
 
@@ -402,7 +305,7 @@ export default function AdminSettingsPage() {
               </div>
               <div className={styles.donationActions} onClick={e => e.stopPropagation()}>
                 <button onClick={() => { setEditingDonation(da); setDonationForm({ currency: da.currency, address: da.address, label: da.label || '', showQR: da.showQR }); setShowDonationForm(true) }} className={styles.editBtn}>Edit</button>
-                <button onClick={() => handleDeleteDonation(da.id)} className={styles.deleteBtn}>Delete</button>
+                <button onClick={() => setDeleteTarget(da.id)} className={styles.deleteBtn}>Delete</button>
               </div>
             </div>
           )
@@ -480,7 +383,7 @@ export default function AdminSettingsPage() {
       <ConfirmDialog
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
-        onConfirm={() => { handleDeleteDonation(deleteTarget); setDeleteTarget(null) }}
+        onConfirm={() => { if (deleteTarget) { handleDeleteDonation(deleteTarget); setDeleteTarget(null) } }}
         title="Delete Donation Address"
         message="Delete this donation address?"
         confirmLabel="Delete"

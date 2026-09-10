@@ -181,6 +181,8 @@ export default function DashboardEvents() {
           hashtags: editFormData.hashtags,
           projectId: editFormData.projectId,
           groupId: editFormData.groupId,
+          recurrenceRule: editFormData.recurrenceRule,
+          recurrenceEnd: editFormData.recurrenceEnd || null,
         })
       })
       if (res.ok) {
@@ -580,7 +582,7 @@ export default function DashboardEvents() {
                   {selectedEvent.acceptsDonations && (
                     <div className={styles.eventDetailRow}>
                       <span className={styles.eventLabel}>💎 Donate</span>
-                      <span style={{color: 'var(--accent-primary)'}}>{selectedEvent.donationCurrency || 'ETH'}</span>
+                      <span style={{color: 'var(--accent-primary)'}}>{selectedEvent.donationCurrency || 'XMR'}</span>
                     </div>
                   )}
                   <div className={styles.eventDetailRow}>

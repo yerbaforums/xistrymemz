@@ -71,6 +71,15 @@ export interface Event {
     selectedCurrency: string | null
     selectedAddress: string | null
   } | null
+  recurrenceRule?: string | null
+  recurrenceEnd?: string | null
+  parentEventId?: string | null
+  isCancelled?: boolean
+  cancelReason?: string | null
+  isRescheduled?: boolean
+  rescheduledTo?: string | null
+  overrideTitle?: string | null
+  overrideDescription?: string | null
 }
 
 export interface DashboardEvent {

@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiUnauthorized, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { apiSuccess, apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -28,10 +28,6 @@ export async function GET() {
           longitude: true,
           searchRadius: true,
           website: true,
-          walletAddress: true,
-          paymentAddress: true,
-          refundAddress: true,
-          cryptoCurrency: true,
           role: true,
           userClass: true,
           createdAt: true,
@@ -81,7 +77,6 @@ export async function PUT(request: Request) {
 
     const {
       name, username, image, bio, location, neighborhood, searchRadius, traveling, website, userClass,
-      walletAddress, paymentAddress, refundAddress, cryptoCurrency,
       donationAddress, donationCurrency, acceptsDonations,
       latitude, longitude, lookingForCollaborators,
       coverImage, coverStyle,
@@ -118,13 +113,9 @@ export async function PUT(request: Request) {
     if (latitude !== undefined) updateData.latitude = latitude ?? null
     if (longitude !== undefined) updateData.longitude = longitude ?? null
     if (website !== undefined) updateData.website = website || null
-    if (walletAddress !== undefined) updateData.walletAddress = walletAddress || null
-    if (paymentAddress !== undefined) updateData.paymentAddress = paymentAddress || null
-    if (refundAddress !== undefined) updateData.refundAddress = refundAddress || null
-    if (cryptoCurrency !== undefined) updateData.cryptoCurrency = cryptoCurrency || 'ETH'
     if (userClass !== undefined) updateData.userClass = userClass || null
     if (donationAddress !== undefined) updateData.donationAddress = donationAddress || null
-    if (donationCurrency !== undefined) updateData.donationCurrency = donationCurrency || 'ETH'
+    if (donationCurrency !== undefined) updateData.donationCurrency = donationCurrency || 'XMR'
     if (acceptsDonations !== undefined) updateData.acceptsDonations = acceptsDonations ?? false
     if (lookingForCollaborators !== undefined) updateData.lookingForCollaborators = lookingForCollaborators ?? false
     if (coverImage !== undefined) updateData.coverImage = coverImage ?? null
@@ -153,10 +144,6 @@ export async function PUT(request: Request) {
         latitude: true,
         longitude: true,
         website: true,
-        walletAddress: true,
-        paymentAddress: true,
-        refundAddress: true,
-        cryptoCurrency: true,
         userClass: true,
         donationAddress: true,
         donationCurrency: true,

@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { apiSuccess, apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -86,7 +86,7 @@ export async function GET(
     const postsTake = 20
     const [projects, posts, products, connections, groupMemberships, totalPostCount, userLocations,
       eventVolunteerCount, projectVolunteerCount, eventAttendeeCount, forumPostCount, forumReplyCount,
-      badgeCount, barterOfferSentCount, barterOfferReceivedCount, escrowCount, requestCount
+      badgeCount, barterOfferSentCount, barterOfferReceivedCount, orderCount, requestCount
     ] = await Promise.all([
       prisma.project.findMany({
         where: { userId },
@@ -201,7 +201,7 @@ export async function GET(
       prisma.badge.count({ where: { userId } }),
       prisma.barterOffer.count({ where: { makerId: userId } }),
       prisma.barterOffer.count({ where: { receiverId: userId, status: 'ACCEPTED' } }),
-      prisma.escrowTransaction.count({ where: { OR: [{ sellerId: userId }, { buyerId: userId }] } }),
+      prisma.order.count({ where: { OR: [{ sellerId: userId }, { buyerId: userId }] } }),
       prisma.request.count({ where: { userId } })
     ])
 
@@ -286,7 +286,7 @@ export async function GET(
         forumPostCount,
         forumReplyCount,
         badgeCount,
-        dealsCount: barterOfferSentCount + barterOfferReceivedCount + escrowCount,
+        dealsCount: barterOfferSentCount + barterOfferReceivedCount + orderCount,
         requestCount,
         groupCount: groupMemberships.length,
         badges,

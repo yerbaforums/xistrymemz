@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useEntityActions, type ActionEntityType } from '@/hooks/useEntityActions'
-import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { useToast } from '@/context/ToastContext'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import type { DonationAddr } from '@/types/product'
@@ -51,7 +50,6 @@ export default function EntityActions({
   variant = 'bar', onEdit, donationAddresses, triggerClassName, shareUrl,
 }: EntityActionsProps) {
   const { data: session } = useSession()
-  const { settings } = useSiteSettings()
   const { success, error } = useToast()
   const {
     likes, liked, toggleLike,
@@ -96,7 +94,6 @@ export default function EntityActions({
   const [replying, setReplying] = useState(false)
 
   const isOwner = session?.user?.id === authorId
-  const walletEnabled = settings?.enableWallet !== false
   const hasShop = !!(session?.user as any)?.shopSlug
   const hasSchool = !!(session?.user as any)?.schoolSlug
 
@@ -227,21 +224,18 @@ export default function EntityActions({
         <div className={styles.overlay} onClick={() => setShowTipModal(false)}>
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
             <h3 className={styles.modalTitle}>💎 Send Tip</h3>
-            {walletEnabled ? (
-              <>
-                <p className={styles.modalDesc}>Support this content with a crypto tip</p>
-                <div className={styles.tipRow}>
-                  {['XTM', 'XMR', 'BTC', 'ETH', 'USDT'].map(coin => (
-                    <button key={coin} className={styles.tipBtn} onClick={() => {
-                      fetch('/api/actions/tip', {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ entityType, entityId, amount: 1, currency: coin }),
-                      }).then(r => { if (r.ok) { success(`Tipped 1 ${coin}!`); setShowTipModal(false) } else error('Tip failed') })
-                    }}>{coin}</button>
-                  ))}
-                </div>
-              </>
-            ) : loadingDonations ? (
+            <p className={styles.modalDesc}>Support this content with a crypto donation. Send directly to the address below, or log your tip here.</p>
+            <div className={styles.tipRow}>
+              {['XTM', 'XMR', 'ZANO', 'FUSD'].map(coin => (
+                <button key={coin} className={styles.tipBtn} onClick={() => {
+                  fetch('/api/actions/tip', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ entityType, entityId, amount: 1, currency: coin }),
+                  }).then(r => { if (r.ok) { success(`Tipped 1 ${coin}!`); setShowTipModal(false) } else error('Tip failed') })
+                }}>{coin}</button>
+              ))}
+            </div>
+            {loadingDonations ? (
               <p className={styles.modalDesc}>Loading donation addresses...</p>
             ) : activeDonations.length > 0 ? (
               <>

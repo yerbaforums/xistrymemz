@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import styles from './layout.module.css'
 
 export default async function EventsLayout({
@@ -10,9 +9,6 @@ export default async function EventsLayout({
   return (
     <div className={styles.layout}>
       <div className={styles.container}>
-        <nav className="breadcrumbs" style={{ marginBottom: '1rem' }}>
-          <Link href="/events" className="breadcrumb-link">Events</Link>
-        </nav>
         <main className={styles.main}>
           {children}
         </main>

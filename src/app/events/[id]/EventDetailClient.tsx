@@ -13,6 +13,7 @@ import EventFormFields, { getDefaultEventFormData } from '@/components/EventForm
 import type { EventFormData } from '@/components/EventFormFields'
 import { getUserProfileUrl } from '@/lib/utils'
 import { CRYPTO_LOGOS } from '@/lib/constants'
+import { getRecurrenceLabel } from '@/lib/recurrence'
 import RoleBadge from '@/components/RoleBadge'
 import ShareBar from '@/components/ShareBar'
 import EntityActions from '@/components/EntityActions'
@@ -85,6 +86,8 @@ function EventDetailContent() {
   const router = useRouter()
   const [relatedEvents, setRelatedEvents] = useState<Event[]>([])
   const [relatedLoading, setRelatedLoading] = useState(false)
+  const [showNextDates, setShowNextDates] = useState(false)
+  const [nextDates, setNextDates] = useState<Array<{ date: string; isPersisted: boolean; childEventId: string | null }>>([])
 
   const confirmDelete = async () => {
     if (!event) return
@@ -148,6 +151,8 @@ function EventDetailContent() {
       groupTitle: event.group?.name || null,
       schoolId: event.schoolId || null,
       shopId: event.shopId || null,
+      recurrenceRule: event.recurrenceRule || null,
+      recurrenceEnd: event.recurrenceEnd ? event.recurrenceEnd.slice(0, 10) : '',
     })
     setIsEditing(true)
   }
@@ -191,6 +196,8 @@ function EventDetailContent() {
           groupId: editFormData.groupId,
           schoolId: editFormData.schoolId,
           shopId: editFormData.shopId,
+          recurrenceRule: editFormData.recurrenceRule,
+          recurrenceEnd: editFormData.recurrenceEnd || null,
         })
       })
 
@@ -262,6 +269,29 @@ function EventDetailContent() {
       })
       .catch(() => setLoading(false))
   }, [params.id])
+
+  useEffect(() => {
+    if (event?.recurrenceRule && event.parentEventId === null) {
+      fetch(`/api/events/${event.id}/instances`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          const instances = data?.data?.instances
+          if (Array.isArray(instances)) {
+            const upcoming = instances
+              .filter((i: { date: string }) => new Date(i.date) >= new Date())
+              .slice(0, 10)
+            setNextDates(upcoming.map((i: { date: string; isPersisted: boolean; childEventId: string | null }) => ({
+              date: i.date,
+              isPersisted: i.isPersisted,
+              childEventId: i.childEventId,
+            })))
+          }
+        })
+        .catch(() => {})
+    } else if (event?.isCancelled === undefined) {
+      setNextDates([])
+    }
+  }, [event?.id, event?.recurrenceRule])
 
   useEffect(() => {
     if (event?.isTicketed && userId === event.organizer?.id) {
@@ -503,6 +533,11 @@ function EventDetailContent() {
                   {event.eventCategory}
                 </span>
               )}
+              {event.recurrenceRule && (
+                <span className="badge badge-recurring" title={event.recurrenceRule}>
+                  🔁 {event.eventDate ? getRecurrenceLabel(event.recurrenceRule, new Date(event.eventDate)) : 'Repeats'}
+                </span>
+              )}
               {event.isTicketed && (
                 <span className="badge badge-active">
                   🎟️ Ticketed (${event.ticketPrice} {event.currency})
@@ -521,6 +556,65 @@ function EventDetailContent() {
                 </span>
               )}
             </div>
+            
+            {event.isCancelled && (
+              <div style={{
+                padding: '12px 16px', background: '#fef2f2', border: '1px solid #fecaca',
+                borderRadius: 8, marginBottom: 16, color: '#dc2626', fontSize: '0.9rem',
+                fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8,
+              }}>
+                ⚠️ This event was cancelled{event.cancelReason ? `: ${event.cancelReason}` : ''}
+              </div>
+            )}
+            {event.isRescheduled && event.rescheduledTo && (
+              <div style={{
+                padding: '12px 16px', background: '#eff6ff', border: '1px solid #bfdbfe',
+                borderRadius: 8, marginBottom: 16, color: '#1d4ed8', fontSize: '0.9rem',
+                fontWeight: 600,
+              }}>
+                📅 Rescheduled to {new Date(event.rescheduledTo).toLocaleString('en-US', {
+                  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                  hour: 'numeric', minute: '2-digit',
+                })}
+              </div>
+            )}
+            
+            {event.recurrenceRule && event.parentEventId === null && (
+              <details style={{ marginBottom: 16 }}>
+                <summary
+                  onClick={e => { e.preventDefault(); setShowNextDates(!showNextDates); }}
+                  style={{ cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}
+                >
+                  📆 Next dates {showNextDates ? '▲' : '▼'}
+                </summary>
+                {showNextDates && (
+                  <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {nextDates.length === 0 ? (
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Loading dates...</span>
+                    ) : (
+                      nextDates.map((nd, i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.85rem' }}>
+                          <span style={{ color: 'var(--text-secondary)' }}>
+                            {new Date(nd.date).toLocaleDateString('en-US', {
+                              weekday: 'short', month: 'short', day: 'numeric'
+                            })}
+                            {' '}
+                            {new Date(nd.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                          </span>
+                          {nd.isPersisted && nd.childEventId ? (
+                            <Link href={`/events/${nd.childEventId}`} style={{ color: 'var(--accent-primary)', fontWeight: 500 }}>
+                              Modified
+                            </Link>
+                          ) : (
+                            <span style={{ color: 'var(--text-muted)' }}>Upcoming</span>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </details>
+            )}
             
             <div className={styles.titleRow}>
               <h1>{isEditing ? 'Editing Event' : event.title}</h1>
@@ -964,9 +1058,9 @@ function EventDetailContent() {
                 })
                 if (event.donationAddress) return (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 0' }}>
-                    <img src={`/crypto-logos/${CRYPTO_LOGOS[event.donationCurrency || 'ETH'] || 'ethereum.png'}`} alt="" width={20} height={20} style={{ borderRadius: '50%' }} />
+                    <img src={`/crypto-logos/${CRYPTO_LOGOS[event.donationCurrency || 'XMR'] || 'ethereum.png'}`} alt="" width={20} height={20} style={{ borderRadius: '50%' }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{event.donationCurrency || 'ETH'}</div>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{event.donationCurrency || 'XMR'}</div>
                       <code style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', wordBreak: 'break-all' }}>{event.donationAddress.length > 20 ? event.donationAddress.slice(0, 10) + '...' + event.donationAddress.slice(-8) : event.donationAddress}</code>
                     </div>
                     <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
@@ -989,7 +1083,7 @@ function EventDetailContent() {
             }
             const addr = addrs.find(a => a.address === qrOpen)
             return (
-              <QRCodeModal isOpen={true} onClose={() => setQrOpen(null)} currency={addr?.currency || event?.donationCurrency || 'ETH'} address={qrOpen} />
+              <QRCodeModal isOpen={true} onClose={() => setQrOpen(null)} currency={addr?.currency || event?.donationCurrency || 'XMR'} address={qrOpen} />
             )
           })()}
 

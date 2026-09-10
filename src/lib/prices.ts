@@ -5,29 +5,17 @@ export interface CryptoPrice {
 }
 
 const COINGECKO_IDS: Record<string, string> = {
-  BTC: 'bitcoin',
-  ETH: 'ethereum',
-  USDT: 'tether',
-  USDC: 'usd-coin',
   XMR: 'monero',
   XTM: 'minotari',
-  ARRR: 'pirate-chain',
-  DERO: 'dero',
   ZANO: 'zano',
-  FIRO: 'firo',
+  FUSD: 'freedom-dollar',
 }
 
 const FALLBACK_PRICES: Record<string, number> = {
-  BTC: 68500,
-  ETH: 3450,
-  USDT: 1,
-  USDC: 1,
   XMR: 165,
   XTM: 0.06,
-  ARRR: 3.50,
-  DERO: 2.00,
   ZANO: 0.50,
-  FIRO: 1.20,
+  FUSD: 1,
 }
 
 const SYMBOLS = Object.keys(COINGECKO_IDS) as (keyof typeof COINGECKO_IDS)[]

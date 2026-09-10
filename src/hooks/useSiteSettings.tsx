@@ -4,8 +4,6 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 
 interface SiteSettings {
   enableCheckout: boolean
-  enableWallet: boolean
-  platformFeePercent: number
 }
 
 interface SiteSettingsContextType {
@@ -14,9 +12,7 @@ interface SiteSettingsContextType {
 }
 
 const defaultSettings: SiteSettings = {
-  enableCheckout: true,
-  enableWallet: true,
-  platformFeePercent: 10
+  enableCheckout: true
 }
 
 const SiteSettingsContext = createContext<SiteSettingsContextType>({
@@ -33,9 +29,7 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
       .then(res => res.json())
       .then(data => {
         setSettings({
-          enableCheckout: data.enableCheckout ?? true,
-          enableWallet: data.enableWallet ?? true,
-          platformFeePercent: data.platformFeePercent ?? 10
+          enableCheckout: data.enableCheckout ?? true
         })
       })
       .catch(() => {})

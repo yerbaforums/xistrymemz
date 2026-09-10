@@ -19,6 +19,7 @@ import LinkedItemsSection from '@/components/LinkedItemsSection'
 import PinToBoardButton from '@/components/PinToBoardButton'
 import CollaborateButton from '@/components/CollaborateButton'
 import { REQUEST_CATEGORIES } from '@/lib/request-categories'
+import { apiGet } from '@/lib/api-helpers'
 
 const PRIORITIES = [
   { value: 'LOW', label: 'Low', color: '#888' },
@@ -121,6 +122,8 @@ interface Request {
   allowFulfillments: boolean
   imageUrl: string | null
   viewCount?: number
+  assigneeId: string | null
+  projectId: string | null
   project: {
     id: string
     title: string
@@ -144,6 +147,22 @@ interface Request {
   fulfillments: Fulfillment[]
   supportCount?: number
   hashtags?: Array<{ id: string; hashtag: { id: string; tag: string } }>
+}
+
+interface MatchItem {
+  type: 'PRODUCT' | 'SERVICE'
+  id: string
+  title: string
+  imageUrl: string | null
+  price: number | null
+  ratingAvg: number | null
+  ratingCount: number
+  distanceKm: number | null
+}
+
+interface ProjectOption {
+  id: string
+  title: string
 }
 
 interface RequestDetailClientProps {
@@ -191,6 +210,11 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
     allowFulfillments: initialRequest.allowFulfillments,
     showDonationAddress: initialRequest.showDonationAddress,
   })
+  const [matches, setMatches] = useState<MatchItem[]>([])
+  const [showLinkModal, setShowLinkModal] = useState(false)
+  const [myProjects, setMyProjects] = useState<ProjectOption[]>([])
+  const [selectedProjectId, setSelectedProjectId] = useState('')
+  const [countdown, setCountdown] = useState({ days: 0, hours: 0 })
 
   const isPlanOwner = request.project?.user.id === userId
   const isOwnRequest = request.user.id === userId
@@ -204,6 +228,8 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
   const category = REQUEST_CATEGORIES.find(c => c.value === request.category) || REQUEST_CATEGORIES[0]
   const priority = PRIORITIES.find(p => p.value === request.priority) || PRIORITIES[1]
   const resolvedDonationAddrs = showDonationAddress ? (request.user?.donationAddresses || []) : []
+  const canMarkInProgress = (request.status === 'APPROVED' || request.status === 'PENDING') && (isOwner || request.assigneeId === userId || userRole === 'ADMIN')
+  const isOverdue = !!request.deadline && new Date(request.deadline) < new Date() && request.status !== 'COMPLETED'
 
   useEffect(() => {
     fetchSupporters()
@@ -219,6 +245,81 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
         .catch(() => {})
     }
   }, [])
+
+  useEffect(() => {
+    if (request.status === 'PENDING' && request.allowFulfillments) {
+      apiGet<MatchItem[]>(`/api/requests/matches?requestId=${request.id}`)
+        .then(setMatches)
+        .catch(() => {})
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!request.deadline) return
+    const deadline = new Date(request.deadline)
+    const compute = () => {
+      const diff = deadline.getTime() - Date.now()
+      if (diff <= 0) { setCountdown({ days: 0, hours: 0 }); return }
+      setCountdown({ days: Math.floor(diff / 86400000), hours: Math.floor((diff % 86400000) / 3600000) })
+    }
+    compute()
+    const t = setInterval(compute, 60000)
+    return () => clearInterval(t)
+  }, [request.deadline])
+
+  const handleMarkInProgress = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/requests/${request.id}/in-progress`, { method: 'POST' })
+      if (res.ok) {
+        setRequest({ ...request, status: 'IN_PROGRESS' })
+        addToHistory(request.status, 'IN_PROGRESS', 'Marked as in progress')
+        success('Request is now in progress')
+      } else {
+        const d = await res.json()
+        toastError(d.error || 'Failed to mark in progress')
+      }
+    } catch (err) {
+      toastError('Failed to mark in progress')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const openLinkProjectModal = () => {
+    fetch('/api/projects?mine=true')
+      .then(r => r.json())
+      .then(data => {
+        const items = data?.items || data?.data?.items || data?.data || []
+        setMyProjects(Array.isArray(items) ? items.map((p: any) => ({ id: p.id, title: p.title })) : [])
+      })
+      .catch(() => setMyProjects([]))
+    setShowLinkModal(true)
+  }
+
+  const handleLinkProject = async () => {
+    if (!selectedProjectId) return
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/requests/${request.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId: selectedProjectId }),
+      })
+      if (res.ok) {
+        const updated = await res.json()
+        setRequest({ ...request, projectId: selectedProjectId })
+        setShowLinkModal(false)
+        success('Linked to project')
+      } else {
+        toastError('Failed to link project')
+      }
+    } catch (err) {
+      toastError('Failed to link project')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const fetchSupporters = () => {
     fetch(`/api/requests/${request.id}/support`)
@@ -718,6 +819,105 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
             </div>
           </div>
 
+          {/* PROGRESS BAR */}
+          <div className={styles.detailCard}>
+            <h2 className={styles.sectionTitle}>Progress</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {['PENDING', 'IN_PROGRESS', 'COMPLETED'].map((status, i) => {
+                const idx = ['PENDING', 'IN_PROGRESS', 'COMPLETED'].indexOf(request.status)
+                const isReached = i <= idx
+                return (
+                  <div key={status} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                    <div style={{
+                      flex: 1,
+                      height: 8,
+                      borderRadius: 4,
+                      background: isReached ? 'var(--accent-success)' : 'var(--bg-tertiary)',
+                      position: 'relative',
+                    }}>
+                      <span style={{
+                        position: 'absolute', top: -4, left: '50%', transform: 'translateX(-50%)',
+                        width: 16, height: 16, borderRadius: '50%',
+                        background: isReached ? 'var(--accent-success)' : 'var(--bg-tertiary)',
+                        border: '2px solid var(--border-color)',
+                      }} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              <span>Pending</span>
+              <span>In Progress</span>
+              <span>Completed</span>
+            </div>
+            {canMarkInProgress && (
+              <div style={{ marginTop: 12 }}>
+                <Button onClick={handleMarkInProgress} className={styles.approveBtn} disabled={loading}>
+                  {loading ? 'Processing...' : '▶ Mark In Progress'}
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {request.deadline && request.status !== 'COMPLETED' && (
+            <div className={styles.detailCard}>
+              <h2 className={styles.sectionTitle}>⏳ Deadline</h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{
+                  fontSize: '1.2rem', fontWeight: 700,
+                  color: isOverdue ? '#ef4444' : 'var(--text-primary)',
+                }}>
+                  {isOverdue ? 'Overdue' : `${countdown.days}d ${countdown.hours}h remaining`}
+                </span>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  {new Date(request.deadline).toLocaleDateString()}
+                </span>
+              </div>
+              {isOverdue && <p style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: 8 }}>This request is past its deadline.</p>}
+            </div>
+          )}
+
+          {/* MATCHING SERVICES */}
+          {request.status === 'PENDING' && request.allowFulfillments && (
+            <div className={styles.detailCard}>
+              <h2 className={styles.sectionTitle}>Matching Services</h2>
+              {matches.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {matches.slice(0, 3).map(m => (
+                    <div key={`${m.type}-${m.id}`} style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: 12, borderRadius: 'var(--radius-md)',
+                      background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)',
+                    }}>
+                      {m.imageUrl ? (
+                        <img src={m.imageUrl} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover' }} />
+                      ) : (
+                        <span style={{ width: 40, height: 40, borderRadius: 8, background: 'var(--bg-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>
+                          {m.type === 'SERVICE' ? '🔧' : '🛒'}
+                        </span>
+                      )}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <Link href={`/${m.type === 'SERVICE' ? 'services' : 'products'}/${m.id}`} style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {m.title}
+                        </Link>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                          {m.ratingAvg != null && <span>⭐ {Number(m.ratingAvg).toFixed(1)} ({m.ratingCount})</span>}
+                          {m.distanceKm != null && <span>📍 {m.distanceKm < 1 ? `${Math.round(m.distanceKm * 1000)}m` : `${m.distanceKm.toFixed(1)}km`}</span>}
+                        </div>
+                      </div>
+                      {m.price != null && (
+                        <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>${m.price.toFixed(2)}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>No matches yet</p>
+              )}
+            </div>
+          )}
+
           {/* FUNDING & DONATIONS SECTION */}
           {((request.goalAmount || 0) > 0 || resolvedDonationAddrs.length > 0 || isOwner) && (
             <div className={styles.detailCard}>
@@ -936,6 +1136,11 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                 variant="ghost"
                 label="Pin to Board"
               />
+              {isOwner && (
+                <Button onClick={openLinkProjectModal} className={styles.actionBtn}>
+                  🔗 Link to Project
+                </Button>
+              )}
               <Link href="/dashboard/projects" className={styles.createProjectBtn}>
                 Create Project
               </Link>
@@ -1362,6 +1567,37 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                 disabled={loading}
               >
                 {loading ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* LINK TO PROJECT MODAL */}
+      {showLinkModal && (
+        <div className="modal-overlay" onClick={() => setShowLinkModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2>🔗 Link to Project</h2>
+            <p className={styles.modalText}>Select a project to link this request to.</p>
+            <div className="form-group">
+              <label>Project</label>
+              <select
+                value={selectedProjectId}
+                onChange={e => setSelectedProjectId(e.target.value)}
+              >
+                <option value="">-- Select project --</option>
+                {myProjects.map(p => (
+                  <option key={p.id} value={p.id}>{p.title}</option>
+                ))}
+              </select>
+            </div>
+            {myProjects.length === 0 && (
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>You have no projects to link to.</p>
+            )}
+            <div className={styles.modalActions}>
+              <Button type="button" onClick={() => setShowLinkModal(false)} variant="ghost">Cancel</Button>
+              <Button type="button" onClick={handleLinkProject} variant="primary" disabled={loading || !selectedProjectId}>
+                {loading ? 'Linking...' : 'Link'}
               </Button>
             </div>
           </div>

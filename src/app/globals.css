@@ -80,12 +80,6 @@ html {
   --text-3xl: 2rem;
   --text-4xl: 2.5rem;
 
-  --z-base: 0;
-  --z-dropdown: 100;
-  --z-sticky: 200;
-  --z-overlay: 300;
-  --z-modal: 1100;
-  --z-toast: 1200;
 }
 
 * {
@@ -429,6 +423,7 @@ a:focus-visible {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
@@ -455,24 +450,6 @@ a:focus-visible {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
-}
-
-.sr-only:focus {
-  position: fixed;
-  width: auto;
-  height: auto;
-  padding: 12px 24px;
-  margin: 0;
-  overflow: visible;
-  clip: auto;
-  white-space: normal;
-  background: var(--bg-secondary);
-  border: 1px solid var(--accent-primary);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  z-index: 9999;
-  top: 16px;
-  left: 16px;
 }
 
 .skeleton {
@@ -524,7 +501,7 @@ a:focus-visible {
   }
 
   .page, main, [class*="page"] {
-    padding-bottom: 80px;
+    padding-bottom: calc(var(--bottom-nav-height, 64px) + 16px);
   }
 }
 

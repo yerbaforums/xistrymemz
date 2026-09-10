@@ -476,6 +476,8 @@ function EventForm({ onDone }: { onDone: () => void }) {
           currency: formData.currency,
           eventCategory: formData.eventCategory,
           published: formData.visibility === 'PUBLIC',
+          recurrenceRule: formData.recurrenceRule,
+          recurrenceEnd: formData.recurrenceEnd || null,
         }),
       })
       if (res.ok) {
@@ -1083,7 +1085,7 @@ function ProjectForm({ onDone }: { onDone: () => void }) {
           goalAmount: goalAmount ? parseFloat(goalAmount) : null,
           acceptsDonations,
           donationAddress: selectedDonationAddrs[0]?.address || null,
-          donationCurrency: selectedDonationAddrs[0]?.currency || 'ETH',
+          donationCurrency: selectedDonationAddrs[0]?.currency || 'XMR',
           donationAddresses: selectedDonationAddrs.length > 0 ? JSON.stringify(selectedDonationAddrs) : null,
           location: location.text || undefined,
           latitude: location.latitude ?? undefined,

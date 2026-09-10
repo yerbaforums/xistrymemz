@@ -26,15 +26,16 @@ function ToastItem({ toast, onDismiss }: { toast: { id: string; message: string;
   }
 
   return (
-    <div className={`${styles.toast} ${styles[toast.type]}`} role="alert">
+    <div className={`${styles.toast} ${styles[toast.type]}`} role={toast.type === 'error' || toast.type === 'warning' ? 'alert' : 'status'}>
       <span className={styles.icon}>{icons[toast.type] || '\u2139'}</span>
       <span className={styles.message}>{toast.message}</span>
       <button 
+        type="button"
         className={styles.dismiss} 
         onClick={onDismiss}
         aria-label="Dismiss notification"
       >
-        \u2715
+        {'\u2715'}
       </button>
     </div>
   )

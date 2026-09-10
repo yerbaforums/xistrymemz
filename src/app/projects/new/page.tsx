@@ -161,7 +161,7 @@ export default function NewProjectPage() {
         goalAmount: goalAmount ? parseFloat(goalAmount) : null,
         acceptsDonations,
         donationAddress: selectedDonationAddrs[0]?.address || null,
-        donationCurrency: selectedDonationAddrs[0]?.currency || 'ETH',
+        donationCurrency: selectedDonationAddrs[0]?.currency || 'XMR',
         donationDescription: donationDescription || null,
         donationAddresses: selectedDonationAddrs.length > 0 ? JSON.stringify(selectedDonationAddrs) : null,
         goals: goals || null,

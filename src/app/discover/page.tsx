@@ -10,6 +10,7 @@ import Breadcrumbs from '@/components/Breadcrumbs'
 import Button from '@/components/ui/Button'
 import Loading from '@/components/Loading'
 import { EmptyState } from '@/components/EmptyState'
+import ConstellationExplorer from '@/components/ConstellationExplorer'
 import { MapContainer, TileLayer, Marker, Popup } from '@/components/LeafletComponents'
 import EntityMarker from '@/components/EntityMarker'
 import { getEntityIcon, getEntityColor } from '@/lib/entity-icons'
@@ -121,6 +122,7 @@ export default function DiscoverPage() {
   const [hashtagFilter, setHashtagFilter] = useState('')
   const [sortBy, setSortBy] = useState('newest')
   const [calVisible, setCalVisible] = useState(false)
+  const [constellationVisible, setConstellationVisible] = useState(false)
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [results, setResults] = useState<DiscoverItem[]>([])
   const [loading, setLoading] = useState(false)
@@ -354,18 +356,27 @@ export default function DiscoverPage() {
           <option value="nearest">📍 Nearest</option>
         </select>
         <div className={styles.viewToggle}>
-          <Button variant="ghost" className={`${styles.viewBtn} ${mapVisible ? styles.viewBtnActive : ''}`} onClick={() => setMapVisible(v => !v)}>
+          <Button variant="ghost" className={`${styles.viewBtn} ${mapVisible ? styles.viewBtnActive : ''}`} onClick={() => { setMapVisible(v => !v); setConstellationVisible(false) }}>
             {mapVisible ? '🙈' : '🗺️'} {mapVisible ? 'Hide Map' : 'Show Map'}
           </Button>
-          <Button variant="ghost" className={`${styles.viewBtn} ${calVisible ? styles.viewBtnActive : ''}`} onClick={() => setCalVisible(v => !v)}>
+          <Button variant="ghost" className={`${styles.viewBtn} ${calVisible ? styles.viewBtnActive : ''}`} onClick={() => { setCalVisible(v => !v); setConstellationVisible(false) }}>
             {calVisible ? '📅' : '📅'} {calVisible ? 'Hide Calendar' : 'Show Calendar'}
+          </Button>
+          <Button variant="ghost" className={`${styles.viewBtn} ${constellationVisible ? styles.viewBtnActive : ''}`} onClick={() => setConstellationVisible(v => !v)}>
+            🌌 {constellationVisible ? 'Hide Constellation' : 'Constellation'}
           </Button>
         </div>
       </div>
 
-      {loading && <Loading size="medium" message="Searching..." />}
+      {constellationVisible && (
+        <div className={styles.constellationWrap}>
+          <ConstellationExplorer height={600} />
+        </div>
+      )}
 
-      {!loading && mapVisible && (
+      {!constellationVisible && loading && <Loading size="medium" message="Searching..." />}
+
+      {!constellationVisible && !loading && mapVisible && (
         <div className={styles.mapContainer}>
           <MapContainer ref={mapRef} center={mapCenter} zoom={4} className={styles.map} scrollWheelZoom={true}>
             <TileLayer
@@ -412,7 +423,7 @@ export default function DiscoverPage() {
         </div>
       )}
 
-      {!loading && calVisible && (
+      {!constellationVisible && !loading && calVisible && (
         <div className={styles.calendarWrap}>
           <div className={styles.calendarHeader}>
             <Button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))} className={styles.calendarNavBtn} variant="ghost">←</Button>
@@ -428,7 +439,7 @@ export default function DiscoverPage() {
         </div>
       )}
 
-      {!loading && (
+      {!constellationVisible && !loading && (
         <>
           <div className={styles.resultInfo}>{total} result{total !== 1 ? 's' : ''} found</div>
           <div className={styles.grid}>

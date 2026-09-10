@@ -8,20 +8,6 @@ export const registerSchema = z.object({
   inviteCode: z.string().optional().nullable()
 })
 
-export const escrowSchema = z.object({
-  sellerId: z.string().min(1, 'Seller ID required'),
-  amount: z.number().positive('Amount must be positive').max(1000000, 'Amount exceeds maximum'),
-  currency: z.string().optional(),
-  productId: z.string().optional(),
-  description: z.string().max(500).optional(),
-  courierId: z.string().optional(),
-  courierFee: z.number().optional(),
-  courierService: z.string().optional(),
-  deliveryAddress: z.string().max(500).optional(),
-  cryptoCurrency: z.string().optional(),
-  paymentType: z.enum(['DIRECT', 'ESCROW']).optional()
-})
-
 export function validateInput<T>(schema: z.ZodSchema<T>, data: unknown): { success: true; data: T } | { success: false; error: string } {
   const result = schema.safeParse(data)
   if (result.success) {

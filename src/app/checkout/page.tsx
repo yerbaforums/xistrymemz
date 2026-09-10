@@ -6,10 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import styles from './page.module.css'
 import { CartItem } from '@/context/CartContext'
-import Image from 'next/image'
-import { getCryptoInfo, CRYPTO_ICONS } from '@/lib/crypto-icons'
 import { useToast } from '@/context/ToastContext'
-import { useSiteSettings } from '@/hooks/useSiteSettings'
 import Skeleton from '@/components/Skeleton'
 import Loading from '@/components/Loading'
 import Breadcrumbs from '@/components/Breadcrumbs'
@@ -19,11 +16,9 @@ interface Product {
   title: string
   description: string | null
   price: number | null
-  type: string
-  category: string | null
   imageUrl: string | null
-  paymentMethods: string | null
-  paymentType: string
+  sellerPayoutAddress: string | null
+  sellerCryptoCurrency: string | null
   user: {
     id: string
     name: string | null
@@ -31,38 +26,29 @@ interface Product {
   }
 }
 
-const CRYPTO_OPTIONS = [
-  getCryptoInfo('XMR'),
-  getCryptoInfo('XTM'),
-  getCryptoInfo('ARRR'),
-  getCryptoInfo('DERO'),
-  getCryptoInfo('ZANO'),
-  getCryptoInfo('USDT'),
-  getCryptoInfo('USDC'),
-  getCryptoInfo('ETH'),
-  getCryptoInfo('BTC')
-].filter(c => c !== undefined && c !== null)
-
-const PAYMENT_FEE = 0.02
+interface CreatedOrder {
+  id: string
+  amount: number
+  courierFee: number | null
+  sellerName: string | null
+  sellerPayoutAddress: string | null
+  sellerPayoutCurrency: string | null
+}
 
 function CheckoutContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { success, error, warning } = useToast()
-  const { settings: siteSettings } = useSiteSettings()
+  const { success } = useToast()
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [directProduct, setDirectProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(false)
-  const [selectedCrypto, setSelectedCrypto] = useState(CRYPTO_OPTIONS[0] || CRYPTO_OPTIONS[1])
-  const [paymentMethod, setPaymentMethod] = useState<'escrow' | 'direct'>('escrow')
   const [courierOption, setCourierOption] = useState('')
   const [deliveryAddress, setDeliveryAddress] = useState('')
   const [courierServices, setCourierServices] = useState<{id: string, name: string, basePrice: number}[]>([])
   const [orderCreated, setOrderCreated] = useState<string | null>(null)
-  const [escrowData, setEscrowData] = useState<{ id?: string; paymentAddress?: string; cryptoCurrency?: string } | null>(null)
-  const [txHash, setTxHash] = useState('')
+  const [createdOrders, setCreatedOrders] = useState<CreatedOrder[]>([])
 
   const productId = searchParams.get('product')
   const quantity = parseInt(searchParams.get('qty') || '1')
@@ -72,16 +58,6 @@ function CheckoutContent() {
       router.push('/auth/login')
     }
   }, [status, router])
-
-  useEffect(() => {
-    if (session?.user) {
-      loadCart()
-      if (productId) {
-        loadProduct(productId)
-      }
-      loadCourierServices()
-    }
-  }, [session, productId])
 
   const loadCart = () => {
     const saved = localStorage.getItem('cart')
@@ -97,11 +73,6 @@ function CheckoutContent() {
       if (res.ok) {
         const data = await res.json()
         setDirectProduct(data)
-        if (data.paymentType === 'DIRECT') {
-          setPaymentMethod('direct')
-        } else if (data.paymentType === 'ESCROW') {
-          setPaymentMethod('escrow')
-        }
       }
     } catch (err) {
       console.error(err)
@@ -120,6 +91,16 @@ function CheckoutContent() {
     }
   }
 
+  useEffect(() => {
+    if (session?.user) {
+      loadCart()
+      if (productId) {
+        loadProduct(productId)
+      }
+      loadCourierServices()
+    }
+  }, [session, productId])
+
   const getSubtotal = () => {
     if (directProduct && directProduct.price) {
       return directProduct.price * quantity
@@ -132,26 +113,45 @@ function CheckoutContent() {
     return service?.basePrice || 0
   }
 
-  const getPaymentFee = () => {
-    const directFeePercent = Math.round((siteSettings.platformFeePercent || 10) / 2)
-    if (paymentMethod === 'direct') {
-      return getSubtotal() * (directFeePercent / 100)
-    }
-    return getSubtotal() * PAYMENT_FEE
-  }
-
-  const getPlatformFee = () => {
-    if (paymentMethod === 'direct') {
-      return 0
-    }
-    return getSubtotal() * ((siteSettings.platformFeePercent || 10) / 100)
-  }
-
-  const getTotal = () => getSubtotal() + getCourierFee() + getPaymentFee() + getPlatformFee()
+  const getTotal = () => getSubtotal() + getCourierFee()
 
   const clearCart = () => {
     setCartItems([])
     localStorage.removeItem('cart')
+  }
+
+  const createOrder = async (sellerId: string, payload: Record<string, unknown>) => {
+    const res = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sellerId,
+        amount: payload.amount,
+        currency: 'USD',
+        productId: payload.productId,
+        description: payload.description,
+        sellerPayoutAddress: payload.sellerPayoutAddress,
+        sellerPayoutCurrency: payload.sellerPayoutCurrency,
+        courierServiceId: courierOption || null,
+        deliveryAddress: courierOption ? (deliveryAddress || null) : null
+      })
+    })
+
+    if (!res.ok) {
+      const err = await res.json()
+      throw new Error(err.error || 'Failed to create order')
+    }
+
+    const data = await res.json()
+    const order = data.order
+    return {
+      id: order.id,
+      amount: order.amount,
+      courierFee: order.courierFee,
+      sellerName: payload.sellerName,
+      sellerPayoutAddress: order.sellerPayoutAddress,
+      sellerPayoutCurrency: order.sellerPayoutCurrency
+    } as CreatedOrder
   }
 
   const handleCheckout = async () => {
@@ -159,68 +159,68 @@ function CheckoutContent() {
     setProcessing(true)
 
     try {
+      const results: CreatedOrder[] = []
+
       if (directProduct) {
-        const res = await fetch('/api/escrow', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sellerId: directProduct.user.id,
-            amount: getSubtotal(),
-            currency: 'USD',
-            productId: directProduct.id,
-            description: `Purchase: ${directProduct.title}`,
-            courierId: courierOption || null,
-            courierFee: getCourierFee() || null,
-            courierService: courierServices.find(c => c.id === courierOption)?.name || null,
-            deliveryAddress: deliveryAddress || null,
-            cryptoCurrency: selectedCrypto.id,
-            paymentType: paymentMethod.toUpperCase()
-          })
+        const created = await createOrder(directProduct.user.id, {
+          amount: getSubtotal(),
+          productId: directProduct.id,
+          description: `Purchase: ${directProduct.title}`,
+          sellerPayoutAddress: directProduct.sellerPayoutAddress,
+          sellerPayoutCurrency: directProduct.sellerCryptoCurrency,
+          sellerName: directProduct.user.name
         })
+        results.push(created)
+        clearCart()
+      } else if (cartItems.length > 0) {
+        const sellers = new Map<string, {
+          items: CartItem[],
+          payoutAddress: string | null,
+          payoutCurrency: string | null,
+          sellerName: string | null
+        }>()
 
-        if (res.ok) {
-          const data = await res.json()
-          setOrderCreated(data.id)
-          setEscrowData(data)
-          clearCart()
+        for (const item of cartItems) {
+          const res = await fetch(`/api/products/${item.id}`)
+          if (!res.ok) continue
+          const product: Product = await res.json()
+          const sellerId = product.user.id
+          const existing = sellers.get(sellerId) || {
+            items: [],
+            payoutAddress: product.sellerPayoutAddress,
+            payoutCurrency: product.sellerCryptoCurrency,
+            sellerName: product.user.name
+          }
+          existing.items.push({ ...item, price: Number(product.price) || item.price })
+          sellers.set(sellerId, existing)
         }
-      }
-    } catch (err) {
-      console.error(err)
-      error('Checkout failed. Please try again.')
-    } finally {
-      setProcessing(false)
-    }
-  }
 
-  const handleFundEscrow = async () => {
-    if (!escrowData?.id || !txHash) {
-      warning('Please enter your transaction hash')
-      return
-    }
-    
-    setProcessing(true)
-    try {
-      const res = await fetch(`/api/escrow/${escrowData.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'fund',
-          txHash: txHash
-        })
-      })
-      
-      if (res.ok) {
-        success('Payment confirmed! Your funds are now held in escrow.')
-        setEscrowData(null)
-        setTxHash('')
-      } else {
-        const err = await res.json()
-        error(err.error || 'Failed to confirm payment')
+        for (const [sellerId, group] of sellers.entries()) {
+          const groupTotal = group.items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0)
+          const created = await createOrder(sellerId, {
+            amount: groupTotal,
+            productId: group.items.length === 1 ? group.items[0].id : undefined,
+            description: group.items.length === 1
+              ? `Purchase: ${group.items[0].title}`
+              : `Purchase: ${group.items.map(i => i.title).join(', ')}`,
+            sellerPayoutAddress: group.payoutAddress,
+            sellerPayoutCurrency: group.payoutCurrency,
+            sellerName: group.sellerName
+          })
+          results.push(created)
+        }
+        clearCart()
       }
+
+      if (results.length === 0) {
+        throw new Error('No order created')
+      }
+
+      setCreatedOrders(results)
+      setOrderCreated(results[0].id)
+      success('Orders created!')
     } catch (err) {
       console.error(err)
-      error('Failed to submit transaction hash')
     } finally {
       setProcessing(false)
     }
@@ -253,48 +253,26 @@ function CheckoutContent() {
       ) : orderCreated ? (
         <div className={styles.orderSuccess}>
           <div className={styles.successIcon}>Success</div>
-          <h2>Order Created!</h2>
-          <p className={styles.orderId}>Order ID: <code>{orderCreated}</code></p>
-          
-          {escrowData?.paymentAddress && (
-            <div className={styles.paymentInstructions}>
-              <h3>Send Payment</h3>
-              <p className={styles.paymentAddress}>
-                <strong>Payment Address:</strong>
-                <code>{escrowData.paymentAddress}</code>
-              </p>
-              <p className={styles.paymentAmount}>
-                <strong>Amount:</strong> {getSubtotal()} USD equivalent
-              </p>
-              
-              <div className={styles.txHashInput}>
-                <label>Enter your transaction hash after sending:</label>
-                <input
-                  type="text"
-                  value={txHash}
-                  onChange={(e) => setTxHash(e.target.value)}
-                  placeholder="Paste your transaction hash here"
-                  className={styles.txInput}
-                />
-                <button 
-                  onClick={handleFundEscrow}
-                  disabled={processing || !txHash}
-                  className={styles.confirmBtn}
-                >
-                  {processing ? 'Confirming...' : 'Confirm Payment'}
-                </button>
-              </div>
-            </div>
-          )}
+          <h2>Orders Created!</h2>
+          <p className={styles.orderId}>These orders are direct sales — the platform never holds funds.</p>
 
-          <div className={styles.nextSteps}>
-            <h3>How It Works:</h3>
-            <ol>
-              <li>Send your payment to the address above</li>
-              <li>Enter your transaction hash to track</li>
-              <li>Funds held until delivery confirmed</li>
-              <li>Payment released to seller</li>
-            </ol>
+          <div className={styles.paymentInstructions}>
+            <h3>Send Payment to the Sellers</h3>
+            {createdOrders.map((order) => (
+              <div key={order.id} className={styles.paymentCard}>
+                <p className={styles.paymentAddress}>
+                  <strong>{order.sellerName || 'Seller'}:</strong> ${order.amount.toFixed(2)}
+                  {order.courierFee != null && <span> + ${order.courierFee.toFixed(2)} delivery</span>}
+                </p>
+                {order.sellerPayoutAddress && (
+                  <code>{order.sellerPayoutAddress}</code>
+                )}
+                {order.sellerPayoutCurrency && (
+                  <p className={styles.paymentAmount}>{order.sellerPayoutCurrency}</p>
+                )}
+              </div>
+            ))}
+            <p className={styles.paymentAddress}>Then mark each order as paid from your Orders page once you transfer.</p>
           </div>
 
           <div className={styles.successActions}>
@@ -306,7 +284,7 @@ function CheckoutContent() {
         <div className={styles.checkoutGrid}>
           <div className={styles.orderSummary}>
             <h2>Order Summary</h2>
-            
+
             {directProduct && (
               <div className={styles.orderItem}>
                 {directProduct.imageUrl && (
@@ -316,6 +294,9 @@ function CheckoutContent() {
                   <h4>{directProduct.title}</h4>
                   <p>Sold by {directProduct.user.name || 'Unknown'}</p>
                   <p className={styles.itemPrice}>${directProduct.price} x {quantity}</p>
+                  {directProduct.sellerPayoutAddress && (
+                    <p className={styles.payoutNote}>Payout: {directProduct.sellerCryptoCurrency || 'USD'} — {directProduct.sellerPayoutAddress}</p>
+                  )}
                 </div>
               </div>
             )}
@@ -339,14 +320,6 @@ function CheckoutContent() {
                 <span>Delivery</span>
                 <span>${getCourierFee().toFixed(2)}</span>
               </div>
-              <div className={styles.summaryLine}>
-                <span>Payment Fee ({paymentMethod === 'direct' ? Math.round((siteSettings.platformFeePercent || 10) / 2) : PAYMENT_FEE * 100}%)</span>
-                <span>${getPaymentFee().toFixed(2)}</span>
-              </div>
-              <div className={styles.summaryLine}>
-                <span>Platform Fee ({paymentMethod === 'direct' ? 0 : siteSettings.platformFeePercent || 10}%)</span>
-                <span>${getPlatformFee().toFixed(2)}</span>
-              </div>
               <div className={`${styles.summaryLine} ${styles.total}`}>
                 <span>Total</span>
                 <span>${getTotal().toFixed(2)}</span>
@@ -355,137 +328,63 @@ function CheckoutContent() {
           </div>
 
           <div className={styles.paymentSection}>
-            <h2>Payment Method</h2>
-            
-            <div className={styles.paymentOptions}>
-              {(!directProduct || directProduct.paymentType === 'BOTH' || directProduct.paymentType === 'ESCROW') && (
-                <button
-                  className={`${styles.paymentOption} ${paymentMethod === 'escrow' ? styles.active : ''}`}
-                  onClick={() => setPaymentMethod('escrow')}
-                  disabled={!!directProduct && directProduct.paymentType === 'DIRECT'}
-                >
-                  <span className={styles.optionIcon}>Escrow</span>
-                  <div className={styles.optionInfo}>
-                    <strong>Secure Escrow</strong>
-                    <small>Crypto held until delivery ({siteSettings.platformFeePercent || 10}% fee)</small>
-                  </div>
-                </button>
+            <h2>Direct Payment</h2>
+            <div className={styles.escrowInfo}>
+              <h3>How Direct Payment Works</h3>
+              <ol>
+                <li>You pay the seller directly (no platform holds funds)</li>
+                <li>Mark the order as paid once you transfer</li>
+                <li>Seller ships the item</li>
+                <li>You confirm receipt when it arrives</li>
+              </ol>
+            </div>
+
+            <div className={styles.deliverySection}>
+              <h3>Delivery Options</h3>
+              {courierServices.length > 0 ? (
+                <div className="form-group">
+                  <select
+                    value={courierOption}
+                    onChange={e => setCourierOption(e.target.value)}
+                    className={styles.select}
+                  >
+                    <option value="">No delivery needed</option>
+                    {courierServices.map(service => (
+                      <option key={service.id} value={service.id}>
+                        {service.name} - ${service.basePrice}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <p className={styles.noCourier}>No courier services available</p>
               )}
-              {(!directProduct || directProduct.paymentType === 'BOTH' || directProduct.paymentType === 'DIRECT') && (
-                <button
-                  className={`${styles.paymentOption} ${paymentMethod === 'direct' ? styles.active : ''}`}
-                  onClick={() => setPaymentMethod('direct')}
-                  disabled={!!directProduct && directProduct.paymentType === 'ESCROW'}
-                >
-                  <span className={styles.optionIcon}>Direct</span>
-                  <div className={styles.optionInfo}>
-                    <strong>Direct Payment</strong>
-                    <small>Pay directly ({Math.round((siteSettings.platformFeePercent || 10) / 2)}% fee)</small>
-                  </div>
-                </button>
+
+              {courierOption && (
+                <div className="form-group">
+                  <label>Delivery Address</label>
+                  <textarea
+                    value={deliveryAddress}
+                    onChange={e => setDeliveryAddress(e.target.value)}
+                    placeholder="Enter your delivery address..."
+                    rows={2}
+                    className={styles.textarea}
+                  />
+                </div>
               )}
             </div>
 
-            {(paymentMethod === 'escrow' || paymentMethod === 'direct') && (
-              <>
-                <div className={styles.cryptoSelect}>
-                  <h3>Select Cryptocurrency</h3>
-<div className={styles.cryptoGrid}>
-                    {CRYPTO_OPTIONS.map(crypto => (
-                      <button
-                          key={crypto.id}
-                          className={`${styles.cryptoBtn} ${selectedCrypto.id === crypto.id ? styles.selected : ''}`}
-                          onClick={() => setSelectedCrypto(crypto)}
-                        >
-                          {crypto.icon ? (
-                            <img 
-                              src={crypto.icon} 
-                              alt={crypto.symbol}
-                              className={styles.cryptoIcon}
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = 'none';
-                              }}
-                            />
-                          ) : (
-                            <span className={styles.cryptoIcon} style={{display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: '50%', background: crypto.color, color: '#fff', fontWeight: 700, fontSize: 12}}>
-                              {crypto.symbol.slice(0, 3)}
-                            </span>
-                          )}
-                          <span className={styles.cryptoName}>{crypto.symbol}</span>
-                        </button>
-                      ))}
-                  </div>
-                </div>
-
-                <div className={styles.deliverySection}>
-                  <h3>Delivery Options</h3>
-                  {courierServices.length > 0 ? (
-                    <div className="form-group">
-                      <select
-                        value={courierOption}
-                        onChange={e => setCourierOption(e.target.value)}
-                        className={styles.select}
-                      >
-                        <option value="">No delivery needed</option>
-                        {courierServices.map(service => (
-                          <option key={service.id} value={service.id}>
-                            {service.name} - ${service.basePrice}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  ) : (
-                    <p className={styles.noCourier}>No courier services available</p>
-                  )}
-                  
-                  {courierOption && (
-                    <div className="form-group">
-                      <label>Delivery Address</label>
-                      <textarea
-                        value={deliveryAddress}
-                        onChange={e => setDeliveryAddress(e.target.value)}
-                        placeholder="Enter your delivery address..."
-                        rows={2}
-                        className={styles.textarea}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {paymentMethod === 'escrow' ? (
-                  <div className={styles.escrowInfo}>
-                    <h3>How Escrow Works</h3>
-                    <ol>
-                      <li>Payment held securely in escrow</li>
-                      <li>Seller ships your item</li>
-                      <li>You confirm delivery</li>
-                      <li>Payment released to seller</li>
-                    </ol>
-                  </div>
-                ) : (
-                  <div className={styles.escrowInfo}>
-                    <h3>How Direct Payment Works</h3>
-                    <ol>
-                      <li>Payment sent directly to seller</li>
-                      <li>Faster: no escrow waiting</li>
-                      <li>{Math.round((siteSettings.platformFeePercent || 10) / 2)}% fee (lower than escrow)</li>
-                    </ol>
-                  </div>
-                )}
-
-                <button
-                  className={styles.checkoutBtn}
-                  onClick={handleCheckout}
-                  disabled={processing}
-                >
-                  {processing ? 'Processing...' : `Pay $${getTotal().toFixed(2)}`}
-                </button>
-              </>
-            )}
+            <button
+              className={styles.checkoutBtn}
+              onClick={handleCheckout}
+              disabled={processing || (!!courierOption && !deliveryAddress.trim())}
+            >
+              {processing ? 'Processing...' : `Create Order — $${getTotal().toFixed(2)}`}
+            </button>
 
             <div className={styles.securityBadges}>
               <span>SSL Secured</span>
-              <span>Escrow Protected</span>
+              <span>Direct Payment</span>
             </div>
           </div>
         </div>

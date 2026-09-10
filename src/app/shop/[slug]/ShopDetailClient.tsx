@@ -27,6 +27,7 @@ import dynamic from 'next/dynamic'
 import Button from '@/components/ui/Button'
 import PinToBoardButton from '@/components/PinToBoardButton'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import ApprovalBadge from '@/components/ApprovalBadge'
 
 
 interface UserLink {
@@ -54,6 +55,7 @@ interface ShopData {
   shopCoverImage: string | null
   shopCoverStyle: string
   shopSlug: string | null
+  isShopApproved: boolean
   user: {
     id: string
     name: string | null
@@ -342,6 +344,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
             <div className={styles.nameRow}>
               <h1>{shop.shopName || 'Untitled Shop'}</h1>
               <RoleBadge role={shop.user.role} />
+              {shop.isShopApproved && <ApprovalBadge />}
             </div>
             {userClasses.length > 0 && (
               <div className={styles.classes}>

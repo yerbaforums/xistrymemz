@@ -35,7 +35,7 @@ export default class ErrorBoundary extends Component<Props, State> {
         return this.props.fallback
       }
       return (
-        <div style={{
+        <div role="alert" style={{
           padding: 'var(--space-8)',
           textAlign: 'center',
           color: 'var(--text-secondary)',
@@ -48,6 +48,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           <h2 style={{ color: 'var(--text-primary)', margin: 0 }}>Something went wrong</h2>
           <p style={{ margin: 0 }}>{this.state.error?.message || 'An unexpected error occurred'}</p>
           <button
+            type="button"
             onClick={() => this.setState({ hasError: false, error: null })}
             style={{
               padding: 'var(--space-3) var(--space-6)',

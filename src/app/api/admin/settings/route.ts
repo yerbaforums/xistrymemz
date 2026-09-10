@@ -11,9 +11,7 @@ async function getOrCreateSettings() {
 
   return prisma.platformSettings.create({
     data: {
-      platformFeePercent: 10,
-      enableCheckout: true,
-      enableWallet: true
+      enableCheckout: true
     }
   })
 }
@@ -37,8 +35,6 @@ export async function GET() {
     }
     return NextResponse.json({
       enableCheckout: settings.enableCheckout,
-      enableWallet: settings.enableWallet,
-      platformFeePercent: settings.platformFeePercent,
       donationAddresses,
       enableAutoBackup: settings.enableAutoBackup,
       backupIntervalHours: settings.backupIntervalHours,
@@ -61,7 +57,7 @@ export async function PUT(request: Request) {
 
   try {
     const body = await request.json()
-    const { enableCheckout, enableWallet, platformFeePercent, donationAddresses, enableAutoBackup, backupIntervalHours, backupRetentionCount, ipfsGatewayUrl } = body
+    const { enableCheckout, donationAddresses, enableAutoBackup, backupIntervalHours, backupRetentionCount, ipfsGatewayUrl } = body
 
     const settings = await getOrCreateSettings()
 
@@ -69,8 +65,6 @@ export async function PUT(request: Request) {
       where: { id: settings.id },
       data: {
         enableCheckout: enableCheckout !== undefined ? enableCheckout : settings.enableCheckout,
-        enableWallet: enableWallet !== undefined ? enableWallet : settings.enableWallet,
-        platformFeePercent: platformFeePercent !== undefined ? platformFeePercent : settings.platformFeePercent,
         donationAddresses: donationAddresses !== undefined ? JSON.stringify(donationAddresses) : settings.donationAddresses,
         enableAutoBackup: enableAutoBackup !== undefined ? enableAutoBackup : settings.enableAutoBackup,
         backupIntervalHours: backupIntervalHours !== undefined ? backupIntervalHours : settings.backupIntervalHours,
@@ -90,8 +84,6 @@ export async function PUT(request: Request) {
 
     return NextResponse.json({
       enableCheckout: updated.enableCheckout,
-      enableWallet: updated.enableWallet,
-      platformFeePercent: updated.platformFeePercent,
       donationAddresses: parsedAddresses,
       enableAutoBackup: updated.enableAutoBackup,
       backupIntervalHours: updated.backupIntervalHours,

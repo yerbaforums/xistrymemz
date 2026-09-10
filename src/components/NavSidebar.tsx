@@ -1,11 +1,11 @@
 'use client'
 
-import { useSession } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { NAV, DASHBOARD_SIDEBAR_PRIMARY, DASHBOARD_SIDEBAR_SECONDARY } from '@/lib/navigation'
+import { NAV, DASHBOARD_SIDEBAR } from '@/lib/navigation'
 import { useQuickCreate } from '@/components/QuickCreateModal'
 import styles from './NavSidebar.module.css'
 
@@ -13,12 +13,8 @@ export default function NavSidebar() {
   const pathname = usePathname()
   const { data: session, status } = useSession()
   const quickCreate = useQuickCreate()
-  const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('navSidebarCollapsed') === 'true'
-    }
-    return false
-  })
+  const [collapsed, setCollapsed] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
@@ -34,8 +30,18 @@ export default function NavSidebar() {
   }, [toggleCollapsed])
 
   useEffect(() => {
+    const initializeCollapsed = async () => {
+      const stored = localStorage.getItem('navSidebarCollapsed')
+      if (stored === 'true') setCollapsed(true)
+      setMounted(true)
+    }
+    initializeCollapsed()
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
     localStorage.setItem('navSidebarCollapsed', String(collapsed))
-  }, [collapsed])
+  }, [collapsed, mounted])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -108,12 +114,12 @@ export default function NavSidebar() {
               <div className={styles.profileDropdown}>
                 <Link href={profileHref} className={styles.profileDropdownLink} onClick={() => setProfileOpen(false)}>My Profile</Link>
                 <Link href="/dashboard/settings" className={styles.profileDropdownLink} onClick={() => setProfileOpen(false)}>Settings</Link>
-                <Link href="/auth/logout" className={styles.profileDropdownLink} onClick={() => setProfileOpen(false)}>Sign Out</Link>
+                <button className={styles.profileDropdownLink} onClick={() => { setProfileOpen(false); signOut({ callbackUrl: '/' }) }}>Sign Out</button>
               </div>
             )}
           </div>
           <div className={styles.divider} />
-          {DASHBOARD_SIDEBAR_PRIMARY.map((item, i) => (
+          {DASHBOARD_SIDEBAR.filter(item => item.section === 'primary').map((item, i) => (
             <Link
               key={item.href}
               href={item.href}
@@ -136,7 +142,7 @@ export default function NavSidebar() {
           </button>
           {moreOpen && (
             <div className={styles.moreSection}>
-              {DASHBOARD_SIDEBAR_SECONDARY.map(item => (
+              {DASHBOARD_SIDEBAR.filter(item => item.section === 'secondary').map(item => (
                 <Link
                   key={item.href}
                   href={item.href}

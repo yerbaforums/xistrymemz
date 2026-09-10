@@ -209,7 +209,7 @@ export default function SubscribersPage() {
                 <td>{new Date(subscriber.createdAt).toLocaleDateString()}</td>
                 <td>
                   <button
-                    onClick={() => handleDelete(subscriber.id)}
+                    onClick={() => setDeleteTarget(subscriber.id)}
                     className={styles.deleteBtn}
                   >
                     Delete
