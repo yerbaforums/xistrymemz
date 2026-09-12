@@ -9,25 +9,53 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const postId = searchParams.get('postId')
-    const page = parseInt(searchParams.get("page") || "1")
-    const limit = parseInt(searchParams.get("limit") || "20")
+    const side = searchParams.get('side') // PRO | CON | NEUTRAL
+    const page = parseInt(searchParams.get("page") || "1", 10)
+    const limit = Math.min(parseInt(searchParams.get("limit") || "20", 10), 50)
     const skip = (page - 1) * limit
 
     if (!postId) {
       return apiError("Post ID required", 400)
     }
 
-    const replies = await prisma.forumReply.findMany({ skip, take: limit,
-      where: { postId },
+    const post = await prisma.forumPost.findUnique({
+      where: { id: postId },
+      select: { postType: true }
+    })
+
+    const where: Record<string, unknown> = { postId }
+    if (post?.postType === 'DEBATE' && side) {
+      where.side = side
+    }
+
+    const replies = await prisma.forumReply.findMany({
+      where,
       include: {
         author: { select: { id: true, name: true, username: true, email: true, image: true, shopSlug: true } }
       },
+      orderBy: [{ score: 'desc' }, { createdAt: 'asc' }],
       skip,
-        take: limit,
-        orderBy: { createdAt: 'asc' }
+      take: limit
     })
 
-    return apiSuccess(replies)
+    const session = await getServerSession(authOptions)
+    const userId = session?.user?.id
+
+    let myReplyVotes: { replyId: string; value: number }[] = []
+    if (userId && replies.length > 0) {
+      myReplyVotes = await prisma.forumReplyVote.findMany({
+        where: { voterId: userId, replyId: { in: replies.map(r => r.id) } },
+        select: { replyId: true, value: true }
+      })
+    }
+    const myVoteMap = new Map(myReplyVotes.map(v => [v.replyId, v.value]))
+
+    const repliesWithMeta = replies.map(r => ({
+      ...r,
+      myVote: myVoteMap.get(r.id) || 0
+    }))
+
+    return apiSuccess(repliesWithMeta)
   } catch (error) {
     console.error('Error fetching replies:', error)
     return apiError("Failed to fetch replies", 500)
@@ -47,13 +75,26 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { content, postId } = validation.data
+    const { content, postId, side } = validation.data
+
+    const post = await prisma.forumPost.findUnique({
+      where: { id: postId },
+      select: { locked: true, postType: true }
+    })
+
+    if (!post) {
+      return apiError("Post not found", 404)
+    }
+    if (post.locked) {
+      return apiError("This thread is locked", 403)
+    }
 
     const reply = await prisma.forumReply.create({
       data: {
         content,
         postId,
-        authorId: session.user.id
+        authorId: session.user.id,
+        side: post.postType === 'DEBATE' ? (side || 'NEUTRAL') : 'NEUTRAL'
       },
       include: {
         author: { select: { id: true, name: true, username: true, email: true, image: true, shopSlug: true } }
@@ -88,7 +129,7 @@ export async function POST(req: Request) {
       }
     }
 
-    return apiSuccess(reply)
+    return apiSuccess({ ...reply, myVote: 0 })
   } catch (error) {
     console.error('Error creating reply:', error)
     return apiError("Failed to create reply", 500)

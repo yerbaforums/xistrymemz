@@ -126,6 +126,11 @@ model User {
   forumPostTips          ForumPostTip[]
   forumReplyTips         ForumReplyTip[]
   pollVotes              ForumPollVote[]
+  forumPostVotes         ForumVote[]
+  forumReplyVotes        ForumReplyVote[]
+  reportsMade            Report[]               @relation("ReportReporter")
+  blocksMade             UserBlock[]            @relation("UserBlockBlocker")
+  blocksReceived         UserBlock[]            @relation("UserBlockBlocked")
   userEvents             UserEvent[]
   schoolEvents           Event[]                @relation("SchoolEvents")
   shopEvents             Event[]                @relation("ShopEvents")
@@ -1605,6 +1610,9 @@ model ForumPost {
   category    ForumCategory     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   authorId    String
   author      User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  postType    String            @default("GENERAL") // GENERAL, IDEA, DEBATE
+  status      String            @default("NONE") // NONE, PROPOSED, UNDER_REVIEW, ACCEPTED, IMPLEMENTED, REJECTED
+  score       Int               @default(0) // net up/down votes
   pinned      Boolean           @default(false)
   locked      Boolean           @default(false)
   isPoll      Boolean           @default(false)
@@ -1618,12 +1626,16 @@ model ForumPost {
   postTips    ForumPostTip[]
   pollOptions ForumPollOption[]
   pollVotes   ForumPollVote[]
+  votes       ForumVote[]
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
 
   @@index([categoryId])
   @@index([authorId])
   @@index([pinned])
+  @@index([postType])
+  @@index([status])
+  @@index([score])
 }
 
 model ForumPollOption {
@@ -1647,9 +1659,38 @@ model ForumPollVote {
   postId   String
   post     ForumPost       @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, postId])
+  /// One vote per user per OPTION (enables multi-choice polls).
+  @@unique([userId, optionId])
   @@index([postId])
   @@index([userId])
+}
+
+model ForumVote {
+  id       String    @id @default(cuid())
+  voterId  String
+  voter    User      @relation(fields: [voterId], references: [id], onDelete: Cascade)
+  postId   String
+  post     ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  value    Int // +1 = upvote, -1 = downvote
+  createdAt DateTime @default(now())
+
+  @@unique([voterId, postId])
+  @@index([postId])
+  @@index([voterId])
+}
+
+model ForumReplyVote {
+  id       String      @id @default(cuid())
+  voterId  String
+  voter    User        @relation(fields: [voterId], references: [id], onDelete: Cascade)
+  replyId  String
+  reply    ForumReply  @relation(fields: [replyId], references: [id], onDelete: Cascade)
+  value    Int // +1 = upvote, -1 = downvote
+  createdAt DateTime   @default(now())
+
+  @@unique([voterId, replyId])
+  @@index([replyId])
+  @@index([voterId])
 }
 
 model ForumReply {
@@ -1659,14 +1700,18 @@ model ForumReply {
   post      ForumPost       @relation(fields: [postId], references: [id], onDelete: Cascade)
   authorId  String
   author    User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  side      String          @default("NEUTRAL") // NONE, PRO, CON, NEUTRAL (debates)
+  score     Int             @default(0)
   totalTips Float           @default(0)
   tippers   Int             @default(0)
   replyTips ForumReplyTip[]
+  replyVotes ForumReplyVote[]
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
 
   @@index([postId])
   @@index([authorId])
+  @@index([side])
 }
 
 model ForumPostTip {
@@ -2267,4 +2312,33 @@ model EntityReply {
 
   @@index([entityType, entityId])
   @@index([userId])
+}
+
+model Report {
+  id          String    @id @default(cuid())
+  reporterId  String
+  reporter    User      @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  entityType  String // FORUMPOST | FORUMREPLY | POST | PRODUCT | SERVICE | EVENT | PLAN | REQUEST | GROUP | USER
+  entityId    String
+  reason      String // SPAM | ABUSE | HARASSMENT | INAPPROPRIATE | OTHER
+  description String?   @db.Text
+  status      String    @default("PENDING") // PENDING, REVIEWING, RESOLVED, DISMISSED
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([entityType, entityId])
+  @@index([status])
+  @@index([reporterId])
+}
+
+model UserBlock {
+  id        String   @id @default(cuid())
+  blockerId String
+  blocker   User     @relation("UserBlockBlocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blockedId String
+  blocked   User     @relation("UserBlockBlocked", fields: [blockedId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([blockerId, blockedId])
+  @@index([blockedId])
 }

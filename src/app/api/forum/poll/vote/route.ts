@@ -35,15 +35,21 @@ export async function POST(req: Request) {
       return apiError("Poll not found", 404)
     }
 
+    if (post.pollEndsAt && new Date(post.pollEndsAt) < new Date()) {
+      return apiError("Poll has ended", 400)
+    }
+
     const validOption = post.pollOptions.find(o => o.id === optionId)
     if (!validOption) {
       return apiError("Invalid option", 400)
     }
 
     if (post.pollType === 'single') {
-      const existingVote = await prisma.forumPollVote.findUnique({
-        where: { userId_postId: { userId, postId } }
+      const existingVotes = await prisma.forumPollVote.findMany({
+        where: { userId, postId }
       })
+
+      const existingVote = existingVotes[0] || null
 
       if (existingVote) {
         if (existingVote.optionId !== optionId) {
@@ -52,8 +58,8 @@ export async function POST(req: Request) {
               where: { id: existingVote.optionId },
               data: { voteCount: { decrement: 1 } }
             }),
-            prisma.forumPollVote.delete({
-              where: { id: existingVote.id }
+            prisma.forumPollVote.deleteMany({
+              where: { userId, postId }
             }),
             prisma.forumPollOption.update({
               where: { id: optionId },
@@ -76,8 +82,8 @@ export async function POST(req: Request) {
         ])
       }
     } else {
-      const existingVote = await prisma.forumPollVote.findFirst({
-        where: { userId, postId, optionId }
+      const existingVote = await prisma.forumPollVote.findUnique({
+        where: { userId_optionId: { userId, optionId } }
       })
 
       if (existingVote) {

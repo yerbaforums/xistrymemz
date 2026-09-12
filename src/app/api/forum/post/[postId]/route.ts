@@ -31,7 +31,17 @@ export async function GET(
       data: { viewCount: { increment: 1 } }
     })
 
-    return apiSuccess(post)
+    const session = await getServerSession(authOptions)
+    let myVote = 0
+    if (session?.user?.id) {
+      const vote = await prisma.forumVote.findUnique({
+        where: { voterId_postId: { voterId: session.user.id, postId } },
+        select: { value: true }
+      })
+      myVote = vote?.value || 0
+    }
+
+    return apiSuccess({ ...post, myVote })
   } catch (error) {
     console.error('Error fetching post:', error)
     return apiError("Failed to fetch post", 500)
@@ -98,7 +108,7 @@ export async function PATCH(
 
   const { postId } = await params
   const body = await request.json()
-  const { pinned, locked } = body
+  const { pinned, locked, status } = body
 
   const existingPost = await prisma.forumPost.findUnique({
     where: { id: postId }
@@ -112,7 +122,8 @@ export async function PATCH(
     where: { id: postId },
     data: {
       ...(pinned !== undefined && { pinned }),
-      ...(locked !== undefined && { locked })
+      ...(locked !== undefined && { locked }),
+      ...(status !== undefined && { status })
     }
   })
 

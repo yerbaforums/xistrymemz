@@ -11,12 +11,46 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const categoryId = searchParams.get('categoryId')
     const authorId = searchParams.get('authorId')
-    const limit = parseInt(searchParams.get('limit') || '20')
-    const offset = parseInt(searchParams.get('offset') || '0')
+    const postType = searchParams.get('postType')
+    const status = searchParams.get('status')
+    const q = searchParams.get('q')
+    const sortBy = searchParams.get('sortBy')
+    const limit = Math.min(parseInt(searchParams.get('limit') || '20', 10), 50)
+    const offset = parseInt(searchParams.get('offset') || '0', 10)
 
     const where: Record<string, unknown> = {}
     if (categoryId) where.categoryId = categoryId
     if (authorId) where.authorId = authorId
+    if (postType) where.postType = postType
+    if (status) where.status = status
+    if (q && q.trim().length >= 2) {
+      const search = q.trim()
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { content: { contains: search, mode: 'insensitive' } }
+      ]
+    }
+
+    const orderBy: Record<string, unknown>[] = [{ pinned: 'desc' }]
+    switch (sortBy) {
+      case 'score':
+        orderBy.push({ score: 'desc' }, { createdAt: 'desc' })
+        break
+      case 'oldest':
+        orderBy.push({ createdAt: 'asc' })
+        break
+      case 'mostReplies':
+        orderBy.push({ replyCount: 'desc' }, { createdAt: 'desc' })
+        break
+      case 'mostViews':
+        orderBy.push({ viewCount: 'desc' }, { createdAt: 'desc' })
+        break
+      case 'mostTips':
+        orderBy.push({ totalTips: 'desc' }, { createdAt: 'desc' })
+        break
+      default:
+        orderBy.push({ createdAt: 'desc' })
+    }
 
     const posts = await prisma.forumPost.findMany({
       where,
@@ -26,17 +60,27 @@ export async function GET(request: Request) {
         pollOptions: { select: { id: true, optionText: true, voteCount: true, sortOrder: true }, orderBy: { sortOrder: 'asc' } },
         _count: { select: { replies: true } }
       },
-      orderBy: [{ pinned: 'desc' }, { createdAt: 'desc' }],
+      orderBy,
       take: limit,
       skip: offset
     })
+
+    const session = await getServerSession(authOptions)
+    const myVotes = session?.user?.id
+      ? await prisma.forumVote.findMany({
+          where: { voterId: session.user.id, postId: { in: posts.map(p => p.id) } },
+          select: { postId: true, value: true }
+        })
+      : []
+    const myVoteMap = new Map(myVotes.map(v => [v.postId, v.value]))
 
     const postsWithMeta = posts.map(p => ({
       ...p,
       viewCount: p.viewCount || 0,
       replyCount: p._count?.replies || 0,
       totalVotes: p.pollOptions.reduce((sum, opt) => sum + opt.voteCount, 0) || 0,
-      totalTips: p.totalTips || 0
+      totalTips: p.totalTips || 0,
+      myVote: myVoteMap.get(p.id) || 0
     }))
 
     return apiSuccess(postsWithMeta)
@@ -60,7 +104,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { title, content, categoryId, isPoll, pollType, pollEndsAt, pollOptions } = validation.data
+    const { title, content, categoryId, postType, status, isPoll, pollType, pollEndsAt, pollOptions } = validation.data
 
     if (!categoryId) {
       return apiError("Category is required", 400)
@@ -72,6 +116,8 @@ export async function POST(req: Request) {
         content,
         categoryId,
         authorId: session.user.id,
+        postType: postType || 'GENERAL',
+        status: status || 'NONE',
         isPoll: isPoll || false,
         pollType: pollType || 'single',
         pollEndsAt: pollEndsAt ? new Date(pollEndsAt) : null

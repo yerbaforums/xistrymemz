@@ -7,9 +7,10 @@ const SEED_CATEGORIES = [
   { name: 'General', slug: 'general', icon: '💬', sortOrder: 1 },
   { name: 'Projects', slug: 'projects', icon: '🚀', sortOrder: 2 },
   { name: 'Ideas', slug: 'ideas', icon: '💡', sortOrder: 3 },
-  { name: 'Announcements', slug: 'announcements', icon: '📣', sortOrder: 4 },
-  { name: 'Help', slug: 'help', icon: '🆘', sortOrder: 5 },
-  { name: 'Development', slug: 'development', icon: '🔧', sortOrder: 6 }
+  { name: 'Debates', slug: 'debates', icon: '⚖️', sortOrder: 4 },
+  { name: 'Announcements', slug: 'announcements', icon: '📣', sortOrder: 5 },
+  { name: 'Help', slug: 'help', icon: '🆘', sortOrder: 6 },
+  { name: 'Development', slug: 'development', icon: '🔧', sortOrder: 7 }
 ]
 
 const SITE_UPDATE_CONTENT = `
@@ -84,7 +85,7 @@ export async function GET() {
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      return apiSuccess({ error: 'Unauthorized' }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const categories = await prisma.forumCategory.findMany({
@@ -98,6 +99,7 @@ export async function GET() {
       include: {
         author: { select: { id: true, name: true, username: true, image: true, shopSlug: true } },
         category: { select: { id: true, name: true, slug: true } },
+        pollOptions: { select: { id: true, optionText: true, voteCount: true, sortOrder: true }, orderBy: { sortOrder: 'asc' } },
         _count: { select: { replies: true } }
       },
       orderBy: [{ pinned: 'desc' }, { createdAt: 'desc' }],
@@ -109,7 +111,9 @@ export async function GET() {
       totalTips: p.totalTips || 0,
       tippers: p.tippers || 0,
       viewCount: p.viewCount || 0,
-      replyCount: p._count?.replies || 0
+      replyCount: p._count?.replies || 0,
+      totalVotes: p.pollOptions?.reduce((sum, opt) => sum + opt.voteCount, 0) || 0,
+      score: p.score || 0
     }))
 
     if (categories.length === 0) {
@@ -126,6 +130,6 @@ export async function GET() {
     })
   } catch (error) {
     console.error('Error fetching forum data:', error)
-    return apiSuccess({ error: 'Failed to fetch data' }, { status: 500 })
+    return apiError('Failed to fetch data', 500)
   }
 }

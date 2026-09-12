@@ -29,10 +29,15 @@ interface Post {
   id: string
   title: string
   content: string
+  postType: string
+  status: string
+  score: number
+  myVote?: number
   pinned: boolean
   locked: boolean
   isPoll: boolean
   pollType: string
+  pollEndsAt?: string | null
   viewCount: number
   replyCount: number
   totalTips: number
@@ -47,6 +52,9 @@ interface Post {
 interface Reply {
   id: string
   content: string
+  side: string
+  score: number
+  myVote?: number
   totalTips: number
   tippers: number
   createdAt: string
@@ -91,8 +99,15 @@ export default function ForumThreadPage() {
   const [userVoted, setUserVoted] = useState(false)
   const [userVotes, setUserVotes] = useState<string[]>([])
   const [voting, setVoting] = useState(false)
+  const [replyVotingId, setReplyVotingId] = useState<string | null>(null)
   const [isPollExpired, setIsPollExpired] = useState(false)
   const [pollEndsAt, setPollEndsAt] = useState<string | null>(null)
+  const [replySide, setReplySide] = useState('NEUTRAL')
+  const [sideFilter, setSideFilter] = useState('')
+  const [reportTarget, setReportTarget] = useState<string | null>(null)
+  const [reportReason, setReportReason] = useState<'SPAM' | 'ABUSE' | 'HARASSMENT' | 'INAPPROPRIATE' | 'OTHER'>('SPAM')
+  const [reportDescription, setReportDescription] = useState('')
+  const [reporting, setReporting] = useState(false)
 
   const userId = session?.user?.id
   const userRole = (session?.user as { role?: string })?.role
@@ -223,6 +238,10 @@ export default function ForumThreadPage() {
     fetchTipOptions()
   }, [postId])
 
+  useEffect(() => {
+    if (post && !loading) fetchReplies()
+  }, [sideFilter])
+
   const fetchPost = async () => {
     try {
       const res = await fetch(`/api/forum/post/${postId}`)
@@ -230,6 +249,10 @@ export default function ForumThreadPage() {
         const data = await res.json()
         const p = data?.data || data
         setPost(p)
+        if (p.pollEndsAt) {
+          setPollEndsAt(p.pollEndsAt)
+          setIsPollExpired(new Date(p.pollEndsAt) < new Date())
+        }
         if (p.isPoll && p.pollOptions) {
           const total = p.pollOptions.reduce((sum: number, o: { voteCount: number }) => sum + o.voteCount, 0)
           setTotalVotes(total)
@@ -248,13 +271,102 @@ export default function ForumThreadPage() {
 
   const fetchReplies = async () => {
     try {
-      const res = await fetch(`/api/forum/replies?postId=${postId}`)
+      const base = `/api/forum/replies?postId=${postId}`
+      const url = sideFilter ? `${base}&side=${sideFilter}` : base
+      const res = await fetch(url)
       if (res.ok) {
         const data = await res.json()
         setReplies(data?.data || data || [])
       }
     } catch (err) {
       console.error(err)
+    }
+  }
+
+  const handlePostVote = async (value: number) => {
+    if (!post || !session?.user?.id) return
+    const current = post.myVote || 0
+    const finalValue = current === value ? 0 : value
+    try {
+      const res = await fetch('/api/forum/vote', {
+        method: finalValue === 0 ? 'DELETE' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ postId: post.id, value: finalValue })
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setPost({
+          ...post,
+          score: data?.data?.score ?? (post.score || 0),
+          myVote: finalValue
+        })
+      } else {
+        const data = await res.json()
+        error(data.error || 'Failed to vote')
+      }
+    } catch {
+      error('Failed to vote')
+    }
+  }
+
+  const handleReplyVote = async (replyId: string, value: number) => {
+    if (!session?.user?.id) return
+    const target = replies.find(r => r.id === replyId)
+    if (!target) return
+    const current = target.myVote || 0
+    const finalValue = current === value ? 0 : value
+    setReplyVotingId(replyId)
+    try {
+      const res = await fetch('/api/forum/reply-vote', {
+        method: finalValue === 0 ? 'DELETE' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ replyId, value: finalValue })
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setReplies(prev => prev.map(r => r.id === replyId ? {
+          ...r,
+          score: data?.data?.score ?? (r.score || 0),
+          myVote: finalValue
+        } : r))
+      } else {
+        const data = await res.json()
+        error(data.error || 'Failed to vote')
+      }
+    } catch {
+      error('Failed to vote')
+    } finally {
+      setReplyVotingId(null)
+    }
+  }
+
+  const handleSubmitReport = async () => {
+    if (!reportTarget) return
+    setReporting(true)
+    try {
+      const res = await fetch('/api/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          entityType: 'FORUMPOST',
+          entityId: reportTarget,
+          reason: reportReason,
+          description: reportDescription || undefined,
+        })
+      })
+      if (res.ok) {
+        success('Report submitted. our team will review it.');
+        setReportTarget(null)
+        setReportDescription('')
+        setReportReason('SPAM')
+      } else {
+        const data = await res.json()
+        error(data.error || 'Failed to submit report')
+      }
+    } catch {
+      error('Failed to submit report')
+    } finally {
+      setReporting(false)
     }
   }
 
@@ -274,13 +386,18 @@ export default function ForumThreadPage() {
     if (!replyContent.trim()) return
     setSubmitting(true)
     try {
+      const body: Record<string, unknown> = { content: replyContent, postId }
+      if (post?.postType === 'DEBATE') {
+        body.side = replySide
+      }
       const res = await fetch('/api/forum/replies', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: replyContent, postId })
+        body: JSON.stringify(body)
       })
       if (res.ok) {
         setReplyContent('')
+        setReplySide('NEUTRAL')
         fetchReplies()
         fetchPost()
       }
@@ -372,14 +489,36 @@ export default function ForumThreadPage() {
       <div className={styles.threadPost}>
         <div className={styles.threadHeader}>
           <span className={styles.threadCategory}>{post.category.name}</span>
+          {post.postType === 'IDEA' && <span className={styles.ideaBadge}>💡 Idea</span>}
+          {post.postType === 'DEBATE' && <span className={styles.debateBadge}>⚖️ Debate</span>}
+          {post.status && post.status !== 'NONE' && <span className={styles[`status_${post.status}`]}>{post.status.replace('_', ' ')}</span>}
           {post.pinned && <span className={styles.pinnedBadge}>📌 Pinned</span>}
           {post.locked && <span className={styles.lockedBadge}>🔒 Locked</span>}
           <h1>{post.title}</h1>
           <div className={styles.threadMeta}>
             <span>👁️ {post.viewCount} views</span>
             <span>💬 {post.replyCount} replies</span>
+            <span>⬆️ {post.score || 0} votes</span>
             {post.totalTips > 0 && <span>💰 ${post.totalTips.toFixed(2)} in tips</span>}
           </div>
+        </div>
+
+        <div className={styles.voteSide}>
+          <button
+            onClick={() => handlePostVote(1)}
+            className={`${styles.voteCtrl} ${post.myVote === 1 ? styles.voteUp : ''}`}
+            aria-label="Upvote post"
+          >
+            ▲
+          </button>
+          <span className={styles.voteScore}>{post.score || 0}</span>
+          <button
+            onClick={() => handlePostVote(-1)}
+            className={`${styles.voteCtrl} ${post.myVote === -1 ? styles.voteDown : ''}`}
+            aria-label="Downvote post"
+          >
+            ▼
+          </button>
         </div>
 
         <div className={styles.threadAuthor}>
@@ -517,11 +656,40 @@ export default function ForumThreadPage() {
               </Button>
             </>
           )}
+          {!canModerate && (
+            <Button variant="ghost" onClick={() => setReportTarget(post.id)} className={styles.actionBtn}>
+              🚩 Report
+            </Button>
+          )}
         </div>
       </div>
 
       <div className={styles.repliesSection}>
-        <h2>Replies ({replies.length})</h2>
+        <h2>
+          Replies ({replies.length})
+          {post.postType === 'DEBATE' && (
+            <span className={styles.sideFilter}>
+              <select value={sideFilter} onChange={e => setSideFilter(e.target.value)}>
+                <option value="">All sides</option>
+                <option value="PRO">PRO</option>
+                <option value="CON">CON</option>
+                <option value="NEUTRAL">NEUTRAL</option>
+              </select>
+            </span>
+          )}
+        </h2>
+
+        {post.postType === 'DEBATE' && replies.length > 0 && (
+          <div className={styles.consensusBox}>
+            {(() => {
+              const votes = replies.reduce((acc: Record<string, number>, r) => ({
+                ...acc,
+                [r.side]: (acc[r.side] || 0) + 1
+              }), {})
+              return `⚖️ ${(votes.PRO || 0)} arguing PRO · ${(votes.CON || 0)} arguing CON · ${(votes.NEUTRAL || 0)} neutral`
+            })()}
+          </div>
+        )}
         
         {replies.length === 0 ? (
           <EmptyState icon="💬" title="No replies yet" description="Be the first to respond!" action={session?.user ? { label: 'Post Reply', onClick: () => document.querySelector('[class*="replyForm"]')?.scrollIntoView({ behavior: 'smooth' }) } : undefined} />
@@ -545,6 +713,9 @@ export default function ForumThreadPage() {
                     <span className={styles.replyDate}>
                       {new Date(reply.createdAt).toLocaleDateString()}
                     </span>
+                    {post.postType === 'DEBATE' && reply.side && (
+                      <span className={`${styles.sideBadge} ${styles[`side_${reply.side}`]}`}>{reply.side}</span>
+                    )}
                   </div>
                 </div>
                 
@@ -573,6 +744,25 @@ export default function ForumThreadPage() {
                 </div>
                 
                 <div className={styles.replyActions}>
+                  <div className={styles.replyVotes}>
+                    <button
+                      onClick={() => handleReplyVote(reply.id, 1)}
+                      disabled={replyVotingId === reply.id}
+                      className={`${styles.replyVoteBtn} ${reply.myVote === 1 ? styles.voteUp : ''}`}
+                      aria-label="Upvote reply"
+                    >
+                      ▲
+                    </button>
+                    <span className={styles.replyScore}>{reply.score || 0}</span>
+                    <button
+                      onClick={() => handleReplyVote(reply.id, -1)}
+                      disabled={replyVotingId === reply.id}
+                      className={`${styles.replyVoteBtn} ${reply.myVote === -1 ? styles.voteDown : ''}`}
+                      aria-label="Downvote reply"
+                    >
+                      ▼
+                    </button>
+                  </div>
                   {reply.totalTips > 0 && (
                     <span className={styles.replyTips}>💰 ${reply.totalTips.toFixed(2)}</span>
                   )}
@@ -602,6 +792,23 @@ export default function ForumThreadPage() {
 
       <div className={styles.replyForm}>
         <h3>Post a Reply</h3>
+        {post.postType === 'DEBATE' && (
+          <div className={styles.sideSelect}>
+            <span className={styles.sideSelectLabel}>Your stance:</span>
+            {(['PRO', 'CON', 'NEUTRAL'] as const).map(s => (
+              <label key={s} className={styles.sideSelectOption}>
+                <input
+                  type="radio"
+                  name="replySide"
+                  value={s}
+                  checked={replySide === s}
+                  onChange={() => setReplySide(s)}
+                />
+                {s === 'PRO' ? '✅ For' : s === 'CON' ? '⛔ Against' : '🤔 Neutral'}
+              </label>
+            ))}
+          </div>
+        )}
         <div className={styles.mentionInputWrapper}>
           <MentionInput
             ref={replyMentionRef}
@@ -669,6 +876,46 @@ export default function ForumThreadPage() {
                 Confirm Tip
               </Button>
               <Button variant="ghost" onClick={() => { setTipTarget(null); setTipAmount(''); }} className={styles.cancelTipBtn}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {reportTarget && (
+        <div className={styles.tipModal}>
+          <div className={styles.tipModalContent}>
+            <h3>Report Post</h3>
+            <p className={styles.reportHint}>Help keep the community safe and respectful.</p>
+
+            <label className={styles.reportLabel}>Reason</label>
+            <select
+              value={reportReason}
+              onChange={e => setReportReason(e.target.value as 'SPAM' | 'ABUSE' | 'HARASSMENT' | 'INAPPROPRIATE' | 'OTHER')}
+              className={styles.reportSelect}
+            >
+              <option value="SPAM">Spam</option>
+              <option value="ABUSE">Abuse</option>
+              <option value="HARASSMENT">Harassment</option>
+              <option value="INAPPROPRIATE">Inappropriate content</option>
+              <option value="OTHER">Other</option>
+            </select>
+
+            <textarea
+              placeholder="Add details (optional)"
+              value={reportDescription}
+              onChange={e => setReportDescription(e.target.value)}
+              className={styles.reportTextarea}
+              rows={3}
+              maxLength={1000}
+            />
+
+            <div className={styles.tipActions}>
+              <Button variant="danger" onClick={handleSubmitReport} disabled={reporting} className={styles.confirmTipBtn}>
+                {reporting ? 'Submitting...' : 'Submit Report'}
+              </Button>
+              <Button variant="ghost" onClick={() => { setReportTarget(null); setReportDescription(''); setReportReason('SPAM') }} className={styles.cancelTipBtn}>
                 Cancel
               </Button>
             </div>

@@ -72,7 +72,9 @@ export default function EntityActions({
   const [showFeedModal, setShowFeedModal] = useState(false)
   const [showTipModal, setShowTipModal] = useState(false)
 
-  const activeDonations = donationAddresses || fetchedDonations
+  const activeDonations = (donationAddresses || fetchedDonations).filter(
+    (da: DonationAddr) => Boolean(CRYPTO_LOGOS[da.currency])
+  )
 
   useEffect(() => {
     if (showTipModal && !donationAddresses && authorId) {
@@ -223,23 +225,12 @@ export default function EntityActions({
       {showTipModal && (
         <div className={styles.overlay} onClick={() => setShowTipModal(false)}>
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
-            <h3 className={styles.modalTitle}>💎 Send Tip</h3>
-            <p className={styles.modalDesc}>Support this content with a crypto donation. Send directly to the address below, or log your tip here.</p>
-            <div className={styles.tipRow}>
-              {['XTM', 'XMR', 'ZANO', 'FUSD'].map(coin => (
-                <button key={coin} className={styles.tipBtn} onClick={() => {
-                  fetch('/api/actions/tip', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ entityType, entityId, amount: 1, currency: coin }),
-                  }).then(r => { if (r.ok) { success(`Tipped 1 ${coin}!`); setShowTipModal(false) } else error('Tip failed') })
-                }}>{coin}</button>
-              ))}
-            </div>
+            <h3 className={styles.modalTitle}>💎 Send Donation</h3>
+            <p className={styles.modalDesc}>Send a donation directly to one of the author's addresses below.</p>
             {loadingDonations ? (
               <p className={styles.modalDesc}>Loading donation addresses...</p>
             ) : activeDonations.length > 0 ? (
               <>
-                <p className={styles.modalDesc}>Support via donation address:</p>
                 <div className={styles.donationAddrList}>
                   {activeDonations.map(da => (
                     <div key={da.id} className={styles.donationAddrRow}>

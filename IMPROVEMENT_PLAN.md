@@ -3,6 +3,8 @@
 > **v2.2 — Refreshed from Session 2 (Translations + Community Layout).** Reflects completion of i18n, new languages, language request feature, dashboard breadcrumb cleanup, sidebar sticky fix, project creation error handling, community sidebar unification, and breadcrumb label gaps.
 > **Execution strategy**: All passes follow the 7-step cycle in `.opencode/plans/pass-playbook.md`.
 
+> **v3.0 REFERENCE — see `COMPREHENSIVE_PLAN.md`** for the current community/UX roadmap: Ideas & Voting (Phase 4), Debates, Lightweight Cleanup (Phase 0), Smooth UX (Phase 1), Customizable Forms (Phase 2), Search/Filter (Phase 3), Community+Location+Coop (Phase 5). Below is the legacy improvement roadmap (mostly complete or superseded).
+
 ---
 
 ## Current State Assessment

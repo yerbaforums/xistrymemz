@@ -189,6 +189,8 @@ export const forumPostSchema = z.object({
   title: z.string().min(1, 'Title is required').max(300),
   content: z.string().min(1, 'Content is required').max(20000),
   categoryId: z.string().optional(),
+  postType: z.enum(['GENERAL', 'IDEA', 'DEBATE']).optional(),
+  status: z.enum(['NONE', 'PROPOSED', 'UNDER_REVIEW', 'ACCEPTED', 'IMPLEMENTED', 'REJECTED']).optional(),
   isPoll: z.boolean().optional(),
   pollType: z.enum(['single', 'multi']).optional(),
   pollEndsAt: z.string().optional(),
@@ -198,6 +200,30 @@ export const forumPostSchema = z.object({
 export const pollVoteSchema = z.object({
   postId: z.string().min(1, 'Post ID is required'),
   optionId: z.string().min(1, 'Option ID is required')
+})
+
+export const forumVoteSchema = z.object({
+  postId: z.string().min(1, 'Post ID is required'),
+  value: z.enum(['1', '-1']).transform(v => parseInt(v, 10)).or(z.number().refine(n => n === 1 || n === -1, 'Value must be +1 or -1'))
+})
+
+export const forumVoteDeleteSchema = z.object({
+  postId: z.string().min(1, 'Post ID is required')
+})
+
+export const forumReplyVoteSchema = z.object({
+  replyId: z.string().min(1, 'Reply ID is required'),
+  value: z.number().refine(n => n === 1 || n === -1, 'Value must be +1 or -1')
+})
+
+export const forumReplyVoteDeleteSchema = z.object({
+  replyId: z.string().min(1, 'Reply ID is required')
+})
+
+export const replySchema = z.object({
+  content: z.string().min(1, 'Content is required').max(10000),
+  postId: z.string().min(1, 'Valid post ID is required'),
+  side: z.enum(['PRO', 'CON', 'NEUTRAL']).optional()
 })
 
 export const eventSchema = z.object({
@@ -351,9 +377,4 @@ export const ratingSchema = z.object({
 export const connectionSchema = z.object({
   receiverId: z.string().min(1, 'Valid user ID is required'),
   message: z.string().max(1000).optional()
-})
-
-export const replySchema = z.object({
-  content: z.string().min(1, 'Content is required').max(10000),
-  postId: z.string().min(1, 'Valid post ID is required')
 })

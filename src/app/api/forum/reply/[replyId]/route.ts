@@ -15,11 +15,7 @@ export async function PUT(
 
   const { replyId } = await params
   const body = await request.json()
-  const { content } = body
-
-  if (!content) {
-    return apiError("Content is required", 400)
-  }
+  const { content, side } = body
 
   const existingReply = await prisma.forumReply.findUnique({
     where: { id: replyId }
@@ -38,9 +34,16 @@ export async function PUT(
     return apiError("Forbidden", 403)
   }
 
+  if (content !== undefined && !content.trim()) {
+    return apiError("Content is required", 400)
+  }
+
   const updated = await prisma.forumReply.update({
     where: { id: replyId },
-    data: { content }
+    data: {
+      ...(content !== undefined && content !== null && { content }),
+      ...(side !== undefined && { side })
+    }
   })
 
   return apiSuccess(updated)

@@ -14,6 +14,9 @@ interface SearchResult {
   title: string
   type: string
   url: string
+  name?: string
+  username?: string
+  content?: string
 }
 
 interface SearchResults {
@@ -127,6 +130,7 @@ export default function SearchResultsClient() {
       events: '📅 Events',
       requests: '📝 Requests',
       schoolContent: '🎓 School',
+      forumPosts: '💬 Forum Posts',
     }
     return ((results[filter as keyof SearchResults] || []) as SearchResult[]).map(r => ({
       ...r,
@@ -150,6 +154,7 @@ export default function SearchResultsClient() {
     { key: 'hashtags', label: 'Hashtags', count: results?.hashtags?.length || 0 },
     { key: 'requests', label: 'Requests', count: results?.requests?.length || 0 },
     { key: 'schoolContent', label: 'School', count: results?.schoolContent?.length || 0 },
+    { key: 'forumPosts', label: 'Forum', count: results?.forumPosts?.length || 0 },
   ].filter(c => c.count > 0 || c.key === 'all')
 
   let currentSection = ''
