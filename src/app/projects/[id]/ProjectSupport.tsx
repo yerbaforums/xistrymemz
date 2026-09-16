@@ -7,6 +7,7 @@ import type { ProjectContribution, ProjectJoiner } from '@/lib/project-utils'
 import type { DonationAddr } from '@/types/product'
 import { parseDonationAddresses } from '@/lib/donations'
 import { QRCodeModal } from '@/components/QRCodeModal'
+import SponsorButton from '@/components/SponsorButton'
 import { useToast } from '@/context/ToastContext'
 import { getCryptoIcon, getCryptoName } from '@/lib/crypto-icons'
 
@@ -270,9 +271,12 @@ export default function ProjectSupport({
             {userId && !isOwner && (
               <div className={styles.contributeSection}>
                 {!showContributeForm ? (
-                  <button onClick={() => setShowContributeForm(true)} className={styles.contributeBtn} disabled={loading}>
-                    💸 Contribute
-                  </button>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <button onClick={() => setShowContributeForm(true)} className={styles.contributeBtn} disabled={loading}>
+                      💸 Contribute
+                    </button>
+                    <SponsorButton entityType="PROJECT" entityId={projectId} isOwner={isOwner} />
+                  </div>
                 ) : (
                   <form onSubmit={handleContribute} className={styles.contributeForm}>
                     <div className={styles.sliderRow}>

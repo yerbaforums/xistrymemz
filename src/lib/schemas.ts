@@ -395,3 +395,15 @@ export const connectionSchema = z.object({
   receiverId: z.string().min(1, 'Valid user ID is required'),
   message: z.string().max(1000).optional()
 })
+
+export const sponsorshipSchema = z.object({
+  entityType: z.enum(['REQUEST', 'PROJECT']),
+  entityId: z.string().min(1, 'Entity ID is required'),
+  amount: z.coerce.number().positive('Amount must be positive'),
+  currency: z.string().max(10).optional(),
+})
+
+export const sponsorshipCompleteSchema = z.object({
+  txHash: z.string().max(200).optional().nullable(),
+  note: z.string().max(500).optional().nullable(),
+})

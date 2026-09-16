@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { QRCodeModal } from '@/components/QRCodeModal'
+import SponsorButton from '@/components/SponsorButton'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import ReviewPrompt from '@/components/ReviewPrompt'
@@ -1121,12 +1122,15 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
             <div className={styles.supportersHeader}>
               <h2 className={styles.sectionTitle}>Supporters ({supportCount})</h2>
               {request.status === 'PENDING' && !isOwnRequest && (
-                <Button
-                  className={`${styles.supportBtn} ${isSupporting ? styles.supported : ''}`}
-                  onClick={handleSupport}
-                >
-                  👍 {isSupporting ? 'Supported' : 'Support'}
-                </Button>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <Button
+                    className={`${styles.supportBtn} ${isSupporting ? styles.supported : ''}`}
+                    onClick={handleSupport}
+                  >
+                    👍 {isSupporting ? 'Supported' : 'Support'}
+                  </Button>
+                  <SponsorButton entityType="REQUEST" entityId={request.id} isOwner={isOwnRequest} />
+                </div>
               )}
             </div>
 

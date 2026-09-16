@@ -135,6 +135,7 @@ model User {
   reportsMade            Report[]               @relation("ReportReporter")
   blocksMade             UserBlock[]            @relation("UserBlockBlocker")
   blocksReceived         UserBlock[]            @relation("UserBlockBlocked")
+  sponsorships           Sponsorship[]          @relation("SponsorshipSponsor")
   userEvents             UserEvent[]
   schoolEvents           Event[]                @relation("SchoolEvents")
   shopEvents             Event[]                @relation("ShopEvents")
@@ -2364,4 +2365,40 @@ model UserBlock {
 
   @@unique([blockerId, blockedId])
   @@index([blockedId])
+}
+
+// Monthly sponsorships (manual crypto donations driven by reminders —
+// Complete records a self-reported payment, Skip advances a month)
+model Sponsorship {
+  id              String    @id @default(cuid())
+  sponsorId       String
+  sponsor         User      @relation("SponsorshipSponsor", fields: [sponsorId], references: [id], onDelete: Cascade)
+  entityType      String    // REQUEST | PROJECT
+  entityId        String
+  amount          Float
+  currency        String    @default("XMR")
+  status          String    @default("ACTIVE") // ACTIVE | PAUSED | CANCELLED
+  nextReminderAt  DateTime  @default(now())
+  lastCompletedAt DateTime?
+  skipCount       Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  payments        SponsorshipPayment[]
+
+  @@unique([sponsorId, entityType, entityId])
+  @@index([sponsorId, status])
+  @@index([entityType, entityId])
+  @@index([status, nextReminderAt])
+}
+
+model SponsorshipPayment {
+  id            String      @id @default(cuid())
+  sponsorshipId String
+  sponsorship   Sponsorship @relation(fields: [sponsorshipId], references: [id], onDelete: Cascade)
+  amount        Float
+  txHash        String?
+  note          String?
+  createdAt     DateTime    @default(now())
+
+  @@index([sponsorshipId])
 }

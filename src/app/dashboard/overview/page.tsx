@@ -193,6 +193,23 @@ export default async function DashboardOverview({
     prisma.event.count({ where: { organizerId: userId } }),
   ])
 
+  // Attention queue: things waiting on this user
+  const [pendingConnections, dueSponsorships, pendingTickets] = await Promise.all([
+    prisma.connection.count({ where: { receiverId: userId, status: 'PENDING' } }),
+    prisma.sponsorship.count({ where: { sponsorId: userId, status: 'ACTIVE', nextReminderAt: { lte: new Date() } } }),
+    prisma.eventTicket.count({
+      where: {
+        paymentStatus: 'PENDING',
+        event: { organizerId: userId, isTicketed: true },
+      },
+    }),
+  ])
+  const attentionItems = [
+    pendingConnections > 0 ? { icon: '🔗', label: `${pendingConnections} connection request${pendingConnections === 1 ? '' : 's'}`, href: '/connections' } : null,
+    dueSponsorships > 0 ? { icon: '💝', label: `${dueSponsorships} sponsorship${dueSponsorships === 1 ? '' : 's'} due`, href: '/dashboard/sponsorships' } : null,
+    pendingTickets > 0 ? { icon: '🎟️', label: `${pendingTickets} ticket${pendingTickets === 1 ? '' : 's'} to verify`, href: '/dashboard/events' } : null,
+  ].filter(Boolean) as { icon: string; label: string; href: string }[]
+
   const productTypeCounts: Record<string, number> = {}
   for (const p of products) {
     productTypeCounts[p.type] = (productTypeCounts[p.type] || 0) + 1
@@ -314,6 +331,20 @@ export default async function DashboardOverview({
         <h2>Welcome back, {session.user.name?.split(' ')[0] || 'User'}! 👋</h2>
         <p>{isNewUser ? 'Let&apos;s get started — here are your first steps.' : `${allStats[6]} posts · ${connectionCount} connections${totalViews > 0 ? ` · ${totalViews} views` : ''}${totalEarnings > 0 ? ` · $${totalEarnings.toFixed(0)} earned` : ''}`}</p>
       </div>
+
+      {attentionItems.length > 0 && (
+        <div className={styles.firstVisitBanner} role="status" aria-label="Needs your attention">
+          <div className={styles.firstVisitIcon}>⚡</div>
+          <div className={styles.firstVisitContent}>
+            <h3>Needs your attention</h3>
+            <div className={styles.firstVisitLinks}>
+              {attentionItems.map(a => (
+                <Link key={a.href + a.label} href={a.href} className={styles.firstVisitLink}>{a.icon} {a.label} →</Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       <DashboardWidgets />
 
