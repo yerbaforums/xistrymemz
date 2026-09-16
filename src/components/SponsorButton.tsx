@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
 
 interface SponsorButtonProps {
-  entityType: 'REQUEST' | 'PROJECT'
+  entityType: 'REQUEST' | 'PROJECT' | 'SCHOOL'
   entityId: string
   isOwner: boolean
   compact?: boolean

@@ -25,10 +25,14 @@ export async function GET(request: Request) {
   let reminded = 0
   for (const s of due) {
     let title = 'a request'
+    let linkEntity: { type: string; id: string } | null = null
     try {
       if (s.entityType === 'REQUEST') {
         const r = await prisma.request.findUnique({ where: { id: s.entityId }, select: { title: true } })
         if (r) title = `"${r.title}"`
+      } else if (s.entityType === 'SCHOOL') {
+        const u = await prisma.user.findUnique({ where: { id: s.entityId }, select: { schoolName: true, name: true } })
+        if (u) title = `"${u.schoolName || u.name}"`
       } else {
         const p = await prisma.project.findUnique({ where: { id: s.entityId }, select: { title: true } })
         const row = p as { title?: string } | null

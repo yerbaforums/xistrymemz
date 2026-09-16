@@ -1,6 +1,8 @@
 'use client'
 
 import { memo } from 'react'
+import Image from 'next/image'
+import StarButton from '@/components/StarButton'
 import type { ServiceOffering, ServiceCategory } from '@/types/service'
 import { SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service'
 import ViewCount from '@/components/ViewCount'
@@ -38,7 +40,7 @@ const ServiceCard = memo(function ServiceCard({ service, onClick, style }: Servi
   return (
     <div onClick={onClick} className={styles.card} style={style}>
       {imageUrl ? (
-        <img src={imageUrl} alt={title} className={styles.image} />
+        <Image src={imageUrl} alt={title} width={400} height={220} className={styles.image} style={{ width: '100%', height: 'auto' }} />
       ) : (
         <div className={styles.imagePlaceholder}>{icon}</div>
       )}
@@ -63,7 +65,7 @@ const ServiceCard = memo(function ServiceCard({ service, onClick, style }: Servi
         </div>
         <div className={styles.author}>
           {userImage ? (
-            <img src={userImage} alt="" className={styles.authorAvatar} />
+            <Image src={userImage} alt="" width={24} height={24} className={styles.authorAvatar} />
           ) : (
             <span className={styles.authorInitials}>{(userName || 'U')[0]}</span>
           )}
@@ -77,6 +79,7 @@ const ServiceCard = memo(function ServiceCard({ service, onClick, style }: Servi
           >
             🔗
           </button>
+          <StarButton itemType="SERVICE" itemId={service.id} className={styles.copyBtn} title="Star this service" />
         </div>
       </div>
     </div>

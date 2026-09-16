@@ -3,7 +3,15 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
-const VALID_TYPES = ['PROJECT', 'PRODUCT', 'REQUEST', 'EVENT', 'FORUM_POST', 'POST', 'SERVICE', 'SCHOOLCONTENT', 'GROUP']
+const VALID_TYPES = ['PROJECT', 'PRODUCT', 'REQUEST', 'EVENT', 'FORUM_POST', 'POST', 'SERVICE', 'SCHOOLCONTENT', 'GROUP', 'SCHOOL', 'SHOP', 'PROFILE', 'PIN', 'BOARD']
+
+// EntityActions sends ActionEntityType values; normalize aliases to saved types
+export function normalizeSavedType(t: string): string {
+  const upper = (t || '').toUpperCase()
+  if (upper === 'FORUMPOST') return 'FORUM_POST'
+  if (upper === 'PLAN') return 'PROJECT'
+  return upper
+}
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -34,7 +42,7 @@ export async function GET() {
     switch (type) {
       case 'PROJECT': {
         const items = await prisma.project.findMany({ where: { id: { in: ids } }, select: { id: true, title: true } })
-        items.forEach(i => { titles.PLAN[i.id] = i.title })
+        items.forEach(i => { titles.PROJECT[i.id] = i.title })
         break
       }
       case 'PRODUCT': {
@@ -77,6 +85,16 @@ export async function GET() {
         items.forEach(i => { titles.GROUP[i.id] = i.name })
         break
       }
+      case 'SCHOOL': {
+        const items = await prisma.user.findMany({ where: { id: { in: ids } }, select: { id: true, schoolName: true, name: true } })
+        items.forEach(i => { titles.SCHOOL[i.id] = i.schoolName || i.name })
+        break
+      }
+      case 'SHOP': {
+        const items = await prisma.user.findMany({ where: { id: { in: ids } }, select: { id: true, shopName: true, name: true } })
+        items.forEach(i => { titles.SHOP[i.id] = (i as { shopName?: string | null }).shopName || i.name })
+        break
+      }
     }
   }
 
@@ -96,12 +114,13 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { itemType, itemId } = body
+    const { itemType: rawType, itemId } = body
 
-    if (!itemType || !itemId) {
+    if (!rawType || !itemId) {
       return apiError("itemType and itemId are required", 400)
     }
 
+    const itemType = normalizeSavedType(rawType)
     if (!VALID_TYPES.includes(itemType)) {
       return NextResponse.json({ error: `Invalid itemType. Must be one of: ${VALID_TYPES.join(', ')}` }, { status: 400 })
     }
@@ -142,11 +161,13 @@ export async function DELETE(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { itemType, itemId } = body
+    const { itemType: rawType, itemId } = body
 
-    if (!itemType || !itemId) {
+    if (!rawType || !itemId) {
       return apiError("itemType and itemId are required", 400)
     }
+
+    const itemType = normalizeSavedType(rawType)
 
     const existing = await prisma.savedItem.findUnique({
       where: {

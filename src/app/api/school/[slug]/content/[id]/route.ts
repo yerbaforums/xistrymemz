@@ -8,7 +8,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
   const { id } = await params
   const content = await prisma.schoolContent.findUnique({
     where: { id },
-    include: { 
+    include: {
       author: { select: { id: true, name: true, image: true } },
       user: { select: { id: true, schoolName: true, schoolSlug: true, image: true } },
       hashtags: { include: { hashtag: { select: { id: true, tag: true } } } },
@@ -22,7 +22,28 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
     }
   })
   if (!content) return apiError("Not found", 404)
-  return apiSuccess(content)
+
+  // Paid content: redact body for non-owners without a completed purchase
+  if (content.isPaid) {
+    try {
+      const session = await getServerSession(authOptions)
+      const viewerId = session?.user?.id as string | undefined
+      const isOwner = !!viewerId && viewerId === content.userId
+      let hasAccess = isOwner
+      if (!hasAccess && viewerId) {
+        const purchase = await prisma.schoolPurchase.findFirst({
+          where: { contentId: id, userId: viewerId, status: 'COMPLETED' },
+          select: { id: true },
+        })
+        hasAccess = !!purchase
+      }
+      if (!hasAccess) {
+        const preview = content.content.slice(0, 200)
+        return apiSuccess({ ...content, content: preview, locked: true })
+      }
+    } catch { /* fall through unlocked on error */ }
+  }
+  return apiSuccess({ ...content, locked: false })
 }
 
 export async function PUT(request: Request, { params }: { params: Promise<{ slug: string; id: string }> }) {

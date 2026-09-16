@@ -16,6 +16,8 @@ export async function GET(request: Request) {
 
     const session = await getServerSession(authOptions)
     const type = entityType.toUpperCase()
+    // Match /api/saved normalization so Save state is consistent everywhere
+    const savedType = type === 'FORUMPOST' ? 'FORUM_POST' : type === 'PLAN' ? 'PROJECT' : type
 
     const [likeCount, replyCount, tipTotal, viewCount, liked, saved] = await Promise.all([
       prisma.entityLike.count({ where: { entityType: type, entityId } }),
@@ -26,7 +28,7 @@ export async function GET(request: Request) {
         ? prisma.entityLike.findUnique({ where: { userId_entityType_entityId: { userId: session.user.id, entityType: type, entityId } } })
         : null,
       session?.user?.id
-        ? prisma.savedItem.findUnique({ where: { userId_itemType_itemId: { userId: session.user.id, itemType: type, itemId: entityId } } })
+        ? prisma.savedItem.findUnique({ where: { userId_itemType_itemId: { userId: session.user.id, itemType: savedType, itemId: entityId } } })
         : null,
     ])
 

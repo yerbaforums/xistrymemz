@@ -103,6 +103,12 @@ export default function SchoolContentDetailPage() {
   const [related, setRelated] = useState<ContentData[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState(false)
+  const [purchase, setPurchase] = useState<{ status: string } | null>(null)
+  const [pendingPurchases, setPendingPurchases] = useState<{ id: string; user: { id: string; name: string | null; image: string | null }; amount: number }[]>([])
+  const [isOwner, setIsOwner] = useState(false)
+  const [buying, setBuying] = useState(false)
+  const [txHash, setTxHash] = useState('')
+  const [approving, setApproving] = useState<string | null>(null)
 
   useEffect(() => {
     Promise.all([
@@ -114,6 +120,53 @@ export default function SchoolContentDetailPage() {
     }).catch(() => setFetchError(true))
       .finally(() => setLoading(false))
   }, [slug, id])
+
+  useEffect(() => {
+    if (!session?.user?.id) return
+    fetch(`/api/school/${slug}/content/${id}/purchase`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        const d = data?.data || data
+        if (!d) return
+        setPurchase(d.purchase || null)
+        setIsOwner(!!d.isOwner)
+        setPendingPurchases(d.pending || [])
+      })
+      .catch(() => {})
+  }, [session, slug, id])
+
+  const handleBuy = async () => {
+    setBuying(true)
+    try {
+      const res = await fetch(`/api/school/${slug}/content/${id}/purchase`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ txHash: txHash.trim() || undefined }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        const p = data?.data || data
+        setPurchase(p)
+        setTxHash('')
+      }
+    } catch { /* ignore */ } finally {
+      setBuying(false)
+    }
+  }
+
+  const handleApprove = async (purchaseId: string, action: 'approve' | 'cancel') => {
+    setApproving(purchaseId)
+    try {
+      const res = await fetch(`/api/school/${slug}/content/${id}/purchase`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ purchaseId, action }),
+      })
+      if (res.ok) setPendingPurchases(prev => prev.filter(p => p.id !== purchaseId))
+    } catch { /* ignore */ } finally {
+      setApproving(null)
+    }
+  }
 
   if (loading) return <Skeleton width="100%" height="2rem" />
   if (fetchError) return <div className={styles.error}>Failed to load content</div>
@@ -152,6 +205,7 @@ export default function SchoolContentDetailPage() {
     setCompleting(false)
   }
   const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').trim()
+  const locked = !!content?.isPaid && !isOwner && purchase?.status !== 'COMPLETED'
 
   return (
     <div className={styles.page}>
@@ -178,7 +232,29 @@ export default function SchoolContentDetailPage() {
         </div>
       </div>
 
-      {content.contentType === 'quiz' ? (
+      {locked ? (
+        <div className={styles.body}>
+          <div style={{ padding: '24px 16px', textAlign: 'center', background: 'var(--bg-secondary)', borderRadius: 10, border: '1px dashed var(--border-color)' }}>
+            <div style={{ fontSize: '2rem' }}>🔒</div>
+            <h3>Premium content</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>
+              This {content.contentType} costs <strong>${content.price || 0}</strong>. {purchase?.status === 'PENDING' ? 'Your request is pending approval — the full content unlocks once confirmed.' : 'Request access and the instructor will unlock it once your payment is confirmed.'}
+            </p>
+            {purchase?.status !== 'PENDING' && (
+              <>
+                <input
+                  value={txHash} onChange={e => setTxHash(e.target.value)} placeholder="Transaction hash (optional)" aria-label="Transaction hash"
+                  style={{ width: '100%', maxWidth: 360, padding: 8, borderRadius: 6, border: '1px solid var(--border-color)', marginBottom: 8 }}
+                />
+                <br />
+                <button onClick={handleBuy} disabled={buying} style={{ padding: '10px 24px', background: 'var(--accent-primary)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}>
+                  {buying ? 'Requesting...' : `🎓 Request access — $${content.price || 0}`}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      ) : content.contentType === 'quiz' ? (
         <QuizSection content={content.content} />
       ) : (
         <div className={styles.body}>
@@ -190,7 +266,20 @@ export default function SchoolContentDetailPage() {
         </div>
       )}
 
-      {images.length > 0 && (
+      {isOwner && pendingPurchases.length > 0 && (
+        <div className={styles.body} style={{ marginTop: 12 }}>
+          <h3>🎟️ Pending access requests ({pendingPurchases.length})</h3>
+          {pendingPurchases.map(p => (
+            <div key={p.id} style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--border-color)' }}>
+              <span style={{ flex: 1, fontSize: '0.85rem' }}>{p.user.name || 'Someone'} · ${p.amount}</span>
+              <button onClick={() => handleApprove(p.id, 'approve')} disabled={approving === p.id} style={{ padding: '6px 12px', borderRadius: 6, border: 'none', background: 'var(--accent-primary)', color: '#fff', cursor: 'pointer' }}>Approve</button>
+              <button onClick={() => handleApprove(p.id, 'cancel')} disabled={approving === p.id} style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border-color)', background: 'transparent', cursor: 'pointer' }}>Decline</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {!locked && images.length > 0 && (
         <div className={styles.imageGrid}>
           {images.map((url, i) => (
             <div key={i} className={styles.imageWrap}>
@@ -200,7 +289,7 @@ export default function SchoolContentDetailPage() {
         </div>
       )}
 
-      {content.videoUrl && (
+      {!locked && content.videoUrl && (
         <div className={styles.videoWrap}>
           <video src={content.videoUrl} controls className={styles.video} />
         </div>

@@ -2,11 +2,13 @@
 
 import { memo } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useSession } from 'next-auth/react'
 import { useCart } from '@/context/CartContext'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import type { Product } from '@/types/product'
 import ViewCount from '@/components/ViewCount'
+import StarButton from '@/components/StarButton'
 import styles from './ProductCard.module.css'
 
 interface ProductCardProps {
@@ -58,7 +60,7 @@ const ProductCard = memo(function ProductCard({
     >
       {product.imageUrl ? (
         <div className={styles.imageWrap}>
-          <img src={product.imageUrl} alt={product.title} className={styles.image} loading="lazy" />
+          <Image src={product.imageUrl} alt={product.title} width={400} height={280} className={styles.image} style={{ width: '100%', height: 'auto' }} />
           <div className={styles.imageOverlay}>
             <button
               className={styles.qvBtn}
@@ -216,6 +218,9 @@ const ProductCard = memo(function ProductCard({
               <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
             </svg>
           </button>
+          {session?.user && (
+            <StarButton itemType="PRODUCT" itemId={product.id} className={styles.actionIcon} title="Star this product" />
+          )}
           {session?.user && onFund && (
             <button
               className={styles.actionIcon}

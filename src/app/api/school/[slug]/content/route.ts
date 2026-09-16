@@ -18,7 +18,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
 
   const contents = await prisma.schoolContent.findMany({
     where: { userId: user.id },
-    include: { 
+    include: {
       author: { select: { id: true, name: true } },
       user: { select: { schoolName: true, schoolSlug: true } },
       hashtags: { include: { hashtag: true } }
@@ -26,7 +26,25 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
     orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }]
   })
 
-  return apiSuccess(contents)
+  // Redact paid bodies in listings for non-owners without a completed purchase
+  let purchasedIds = new Set<string>()
+  try {
+    const session = await getServerSession(authOptions)
+    const viewerId = session?.user?.id as string | undefined
+    if (viewerId && viewerId !== user.id) {
+      const purchases = await prisma.schoolPurchase.findMany({
+        where: { userId: viewerId, status: 'COMPLETED' },
+        select: { contentId: true },
+      })
+      purchasedIds = new Set(purchases.map(p => p.contentId))
+    } else if (viewerId === user.id) {
+      return apiSuccess(contents)
+    }
+  } catch { /* fall through redacted */ }
+
+  return apiSuccess(contents.map(c =>
+    c.isPaid && !purchasedIds.has(c.id) ? { ...c, content: c.content.slice(0, 200) } : c
+  ))
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ slug: string }> }) {

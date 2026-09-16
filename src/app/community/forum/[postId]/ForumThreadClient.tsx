@@ -4,8 +4,11 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
+import Image from 'next/image'
 import MentionInput, { type MentionInputHandle } from '@/components/MentionInput'
 import HashtagText from '@/components/HashtagText'
+import StarButton from '@/components/StarButton'
+import LinkedItemsSection from '@/components/LinkedItemsSection'
 import styles from '../../community.module.css'
 import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
@@ -512,7 +515,7 @@ export default function ForumThreadPage() {
         <div className={styles.threadAuthor}>
           <div className={styles.authorAvatar}>
             {post.author.image ? (
-              <img src={post.author.image} alt={post.author.name || 'User'} />
+              <Image src={post.author.image} alt={post.author.name || 'User'} width={40} height={40} />
             ) : (
               <span>{post.author.name?.[0] || 'A'}</span>
             )}
@@ -610,6 +613,9 @@ export default function ForumThreadPage() {
           >
             {likedPosts.has(post.id) ? '❤️ Liked' : '🤍 Like'}
           </Button>
+          {session && (
+            <StarButton itemType="FORUM_POST" itemId={post.id} className={styles.actionBtn} title="Star this discussion" />
+          )}
           <Button
             variant="ghost"
             onClick={() => navigator.clipboard.writeText(`${window.location.origin}/community/forum/${post.id}`)}
@@ -651,6 +657,8 @@ export default function ForumThreadPage() {
           )}
         </div>
       </div>
+
+      <LinkedItemsSection entityType="FORUMPOST" entityId={post.id} currentUserId={userId} />
 
       <div className={styles.repliesSection}>
         <h2>

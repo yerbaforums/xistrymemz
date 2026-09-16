@@ -17,6 +17,7 @@ interface Sponsorship {
   entityType: string
   entityId: string
   entityTitle?: string | null
+  entitySlug?: string | null
   amount: number
   currency: string
   status: string
@@ -104,7 +105,7 @@ function SponsorshipsContent() {
     }
   }
 
-  const entityUrl = (s: Sponsorship) => s.entityType === 'REQUEST' ? `/requests/${s.entityId}` : `/projects/${s.entityId}`
+  const entityUrl = (s: Sponsorship) => s.entityType === 'REQUEST' ? `/requests/${s.entityId}` : s.entityType === 'SCHOOL' ? (s.entitySlug ? `/school/${s.entitySlug}` : '/schools') : `/projects/${s.entityId}`
   const dueSoon = (s: Sponsorship) => s.status === 'ACTIVE' && new Date(s.nextReminderAt).getTime() <= Date.now() + 7 * 24 * 60 * 60 * 1000
 
   if (status === 'loading' || loading) return <SkeletonList count={3} />

@@ -10,6 +10,10 @@ async function entityTitle(entityType: string, entityId: string): Promise<string
       const r = await prisma.request.findUnique({ where: { id: entityId }, select: { title: true } })
       return r?.title || null
     }
+    if (entityType === 'SCHOOL') {
+      const u = await prisma.user.findUnique({ where: { id: entityId }, select: { schoolName: true, name: true } })
+      return u?.schoolName || u?.name || null
+    }
     const p = await prisma.project.findUnique({ where: { id: entityId }, select: { title: true } })
     return (p as { title?: string } | null)?.title || null
   } catch {
@@ -23,8 +27,19 @@ async function entityOwner(entityType: string, entityId: string): Promise<string
       const r = await prisma.request.findUnique({ where: { id: entityId }, select: { userId: true } })
       return r?.userId || null
     }
+    if (entityType === 'SCHOOL') return entityId
     const p = await prisma.project.findUnique({ where: { id: entityId }, select: { userId: true } })
     return (p as { userId?: string } | null)?.userId || null
+  } catch {
+    return null
+  }
+}
+
+async function entitySlug(entityType: string, entityId: string): Promise<string | null> {
+  if (entityType !== 'SCHOOL') return null
+  try {
+    const u = await prisma.user.findUnique({ where: { id: entityId }, select: { schoolSlug: true, username: true } })
+    return u?.schoolSlug || u?.username || null
   } catch {
     return null
   }
@@ -39,11 +54,12 @@ export async function GET(request: Request) {
   const view = searchParams.get('view') || 'mine'
 
   if (view === 'incoming') {
-    const [myRequests, myProjects] = await Promise.all([
+    const [myRequests, myProjects, me] = await Promise.all([
       prisma.request.findMany({ where: { userId }, select: { id: true, title: true } }),
       prisma.project.findMany({ where: { userId } as Record<string, unknown>, select: { id: true, title: true } }),
+      prisma.user.findUnique({ where: { id: userId }, select: { schoolName: true, name: true } }),
     ])
-    const entityIds = [...myRequests.map(r => r.id), ...myProjects.map(p => p.id)]
+    const entityIds = [...myRequests.map(r => r.id), ...myProjects.map(p => p.id), userId]
     if (entityIds.length === 0) return apiSuccess({ items: [], totals: { sponsors: 0, monthlyPledged: 0, received: 0 } })
     const sponsorships = await prisma.sponsorship.findMany({
       where: { entityId: { in: entityIds }, status: { not: 'CANCELLED' } },
@@ -53,7 +69,8 @@ export async function GET(request: Request) {
       },
       orderBy: { createdAt: 'desc' },
     })
-    const titleById = new Map([...myRequests.map(r => [r.id, r.title] as const), ...myProjects.map(p => [p.id, (p as { title?: string }).title || 'Untitled'] as const)])
+    const titleById = new Map<string, string>([...myRequests.map(r => [r.id, r.title] as const), ...myProjects.map(p => [p.id, (p as { title?: string }).title || 'Untitled'] as const)])
+    titleById.set(userId, me?.schoolName || me?.name || 'My school')
     const items = sponsorships.map(s => ({
       ...s,
       entityTitle: titleById.get(s.entityId) || 'Untitled',
@@ -78,6 +95,7 @@ export async function GET(request: Request) {
   const items = await Promise.all(sponsorships.map(async s => ({
     ...s,
     entityTitle: await entityTitle(s.entityType, s.entityId),
+    entitySlug: await entitySlug(s.entityType, s.entityId),
     lifetimeGiven: undefined as never,
   })))
   const givenTotals = await prisma.sponsorshipPayment.findMany({
@@ -107,8 +125,12 @@ export async function POST(request: Request) {
   const { entityType, entityId, amount, currency } = validation.data
 
   const ownerId = await entityOwner(entityType, entityId)
-  if (!ownerId) return apiError('Request or project not found', 404)
-  if (ownerId === userId) return apiError('You cannot sponsor your own request or project', 400)
+  if (!ownerId) return apiError('Request, project, or school not found', 404)
+  if (entityType === 'SCHOOL') {
+    const school = await prisma.user.findUnique({ where: { id: entityId }, select: { id: true, showSchool: true } })
+    if (!school) return apiError('Request, project, or school not found', 404)
+  }
+  if (ownerId === userId) return apiError('You cannot sponsor your own request, project, or school', 400)
 
   const existing = await prisma.sponsorship.findUnique({
     where: { sponsorId_entityType_entityId: { sponsorId: userId, entityType, entityId } },

@@ -13,6 +13,10 @@ async function ownerOf(entityType: string, entityId: string): Promise<{ ownerId:
       const r = await prisma.request.findUnique({ where: { id: entityId }, select: { userId: true, title: true } })
       return { ownerId: r?.userId || null, title: r?.title || 'a request' }
     }
+    if (entityType === 'SCHOOL') {
+      const u = await prisma.user.findUnique({ where: { id: entityId }, select: { schoolName: true, name: true } })
+      return { ownerId: entityId, title: u?.schoolName || u?.name || 'a school' }
+    }
     const p = await prisma.project.findUnique({ where: { id: entityId }, select: { userId: true, title: true } })
     const row = p as { userId?: string; title?: string } | null
     return { ownerId: row?.userId || null, title: row?.title || 'a project' }

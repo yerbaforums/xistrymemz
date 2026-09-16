@@ -8,6 +8,7 @@ import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
 import { QRCodeModal } from '@/components/QRCodeModal'
+import SponsorButton from '@/components/SponsorButton'
 import { DonationActions } from '@/components/DonationActions'
 import ImageUploader from '@/components/ImageUploader'
 import MentionInput from '@/components/MentionInput'
@@ -476,6 +477,9 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
               <button onClick={handleEnroll} disabled={enrolling} className={styles.enrollBtn}>
                 {enrolling ? '...' : enrolled ? '✅ Enrolled' : '📝 Enroll'}
               </button>
+            )}
+            {session?.user && session.user.id !== school?.user?.id && school?.user?.id && (
+              <SponsorButton entityType="SCHOOL" entityId={school.user.id} isOwner={!!isOwner} />
             )}
             {isOwner && (
               <button onClick={() => { setShowEditModal(true); setActiveTab('about'); }} className={styles.editBtn}>Edit School</button>

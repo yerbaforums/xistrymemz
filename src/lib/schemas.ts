@@ -397,7 +397,7 @@ export const connectionSchema = z.object({
 })
 
 export const sponsorshipSchema = z.object({
-  entityType: z.enum(['REQUEST', 'PROJECT']),
+  entityType: z.enum(['REQUEST', 'PROJECT', 'SCHOOL']),
   entityId: z.string().min(1, 'Entity ID is required'),
   amount: z.coerce.number().positive('Amount must be positive'),
   currency: z.string().max(10).optional(),
