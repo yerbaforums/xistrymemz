@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState, useRef, Suspense } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import styles from '../../messages/messages.module.css'
 import { getUserProfileUrl } from '@/lib/utils'
 import TranslateButton from '@/components/TranslateButton'
@@ -48,6 +49,8 @@ function DashboardMessagesContent() {
   const [loading, setLoading] = useState(true)
   const [mode, setMode] = useState<'chat' | 'inbox'>('inbox')
   const [fetchError, setFetchError] = useState<string | null>(null)
+  const [sendError, setSendError] = useState<string | null>(null)
+  const [sending, setSending] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const userParam = searchParams.get('user')
@@ -87,8 +90,8 @@ function DashboardMessagesContent() {
         const data = await res.json()
         setConversations(data?.data?.conversations || data?.conversations || [])
       }
-    } catch (error) {
-      console.error('Error fetching conversations:', error)
+    } catch {
+      // silent — empty state covers failure
     } finally {
       setLoading(false)
     }
@@ -104,8 +107,7 @@ function DashboardMessagesContent() {
       } else {
         setFetchError('User not found')
       }
-    } catch (error) {
-      console.error('Error fetching user:', error)
+    } catch {
       setFetchError('Failed to load user')
     }
   }
@@ -120,15 +122,28 @@ function DashboardMessagesContent() {
       } else {
         setFetchError('Failed to load messages')
       }
-    } catch (error) {
-      console.error('Error fetching messages:', error)
+    } catch {
       setFetchError('Failed to load messages')
     }
   }
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newMessage.trim() || !selectedUser) return
+    if (!newMessage.trim() || !selectedUser || sending) return
+
+    const content = newMessage.trim()
+    const tempId = `temp-${Date.now()}`
+    const optimistic: Message = {
+      id: tempId,
+      senderId: session?.user?.id || '',
+      receiverId: selectedUser.id,
+      content,
+      createdAt: new Date().toISOString(),
+    }
+    setMessages(prev => [...prev, optimistic])
+    setNewMessage('')
+    setSendError(null)
+    setSending(true)
 
     try {
       const res = await fetch('/api/messages', {
@@ -136,17 +151,24 @@ function DashboardMessagesContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           receiverId: selectedUser.id,
-          content: newMessage.trim()
+          content
         })
       })
 
       if (res.ok) {
-        setNewMessage('')
         fetchMessages(selectedUser.id)
         fetchConversations()
+      } else {
+        setMessages(prev => prev.filter(m => m.id !== tempId))
+        setNewMessage(content)
+        setSendError('Failed to send. Tap Send to retry.')
       }
-    } catch (error) {
-      console.error('Error sending message:', error)
+    } catch {
+      setMessages(prev => prev.filter(m => m.id !== tempId))
+      setNewMessage(content)
+      setSendError('Failed to send. Check connection and retry.')
+    } finally {
+      setSending(false)
     }
   }
 
@@ -199,7 +221,7 @@ function DashboardMessagesContent() {
                 >
                   <div className={styles.conversationAvatar}>
                     {conv.user.image ? (
-                      <img src={conv.user.image} alt={conv.user.name || 'User'} />
+                      <Image src={conv.user.image} alt={conv.user.name || 'User'} width={40} height={40} />
                     ) : (
                       <span>{conv.user.name?.[0] || conv.user.email[0].toUpperCase()}</span>
                     )}
@@ -231,7 +253,7 @@ function DashboardMessagesContent() {
                 <div className={styles.chatUserInfo}>
                   <div className={styles.chatAvatar}>
                     {selectedUser.image ? (
-                      <img src={selectedUser.image} alt={selectedUser.name || 'User'} />
+                      <Image src={selectedUser.image} alt={selectedUser.name || 'User'} width={40} height={40} />
                     ) : (
                       <span>{selectedUser.name?.[0] || selectedUser.email[0].toUpperCase()}</span>
                     )}
@@ -261,7 +283,7 @@ function DashboardMessagesContent() {
                       {!isOwn && (
                         <div className={styles.messageAvatar}>
                           {message.sender?.image ? (
-                            <img src={message.sender.image} alt="" />
+                            <Image src={message.sender.image} alt="" width={24} height={24} />
                           ) : (
                             <span>{message.sender?.name?.[0] || '?'}</span>
                           )}
@@ -280,6 +302,10 @@ function DashboardMessagesContent() {
                 <div ref={messagesEndRef} />
               </div>
 
+              {sendError && (
+                <div className={styles.errorBanner} role="alert">{sendError}</div>
+              )}
+
               <form className={styles.messageForm} onSubmit={sendMessage}>
                 <input
                   type="text"
@@ -287,9 +313,10 @@ function DashboardMessagesContent() {
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder="Type a message..."
                   className={styles.messageInput}
+                  aria-label="Type a message"
                 />
-                <button type="submit" className={styles.sendBtn} disabled={!newMessage.trim()}>
-                  Send
+                <button type="submit" className={styles.sendBtn} disabled={!newMessage.trim() || sending}>
+                  {sending ? 'Sending...' : 'Send'}
                 </button>
               </form>
             </>

@@ -53,7 +53,14 @@ export default function BottomNav() {
             </button>
           )
         }
-        const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')
+        const getIsActive = () => {
+          if (item.href === '/') return pathname === '/' || pathname === '/dashboard/overview'
+          if (item.label === 'Studio') return pathname?.startsWith('/dashboard') && pathname !== '/dashboard/overview'
+          if (item.label === 'Profile') return pathname?.startsWith('/profile') || pathname?.startsWith('/settings')
+          if (!item.href) return false
+          return pathname === item.href || pathname?.startsWith(item.href + '/')
+        }
+        const isActive = getIsActive()
         return (
           <Link
             key={item.label}

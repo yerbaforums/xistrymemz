@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { NAV } from '@/lib/navigation'
 import { useTheme, type ThemeAccent } from '@/context/ThemeContext'
 import { getUserProfileUrl } from '@/lib/utils'
+import { useUserPreferences } from '@/hooks/useUserPreferences'
 import styles from './Header.module.css'
 
 interface UserDropdownProps {
@@ -18,6 +19,7 @@ interface UserDropdownProps {
 
 export default function UserDropdown({ session, open, onClose, traveling }: UserDropdownProps) {
   const { mode, accent, setAccent, toggleMode } = useTheme()
+  const { isToolVisible } = useUserPreferences()
   const router = useRouter()
 
   if (!open) return null
@@ -70,7 +72,7 @@ export default function UserDropdown({ session, open, onClose, traveling }: User
 
         <div className={styles.userDivider} />
         <div className={styles.userSectionLabel}>Dashboard</div>
-        {NAV.main.slice(0, 4).map(item => (
+        {NAV.main.slice(0, 4).filter(item => isToolVisible(item.href)).map(item => (
           <Link key={item.href} href={item.href} className={styles.userLink} role="menuitem" onClick={onClose}>
             <span aria-hidden="true">{item.icon}</span> {item.label}
           </Link>
@@ -90,7 +92,7 @@ export default function UserDropdown({ session, open, onClose, traveling }: User
 
         <div className={styles.userDivider} />
         <div className={styles.userSectionLabel}>Business</div>
-        {NAV.more.filter(m => m.href === '/courier/setup' || m.href === '/templates').map(item => (
+        {NAV.more.filter(m => isToolVisible(m.href) && (m.href === '/courier/setup' || m.href === '/templates')).map(item => (
           <Link key={item.href} href={item.href} className={styles.userLink} role="menuitem" onClick={onClose}>
             <span aria-hidden="true">{item.icon}</span> {item.label}
           </Link>

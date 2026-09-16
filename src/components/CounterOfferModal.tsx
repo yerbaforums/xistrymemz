@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
 import styles from './MakeOfferModal.module.css'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
@@ -22,6 +23,7 @@ interface CounterOfferModalProps {
 
 export function CounterOfferModal({ isOpen, onClose, originalOffer, listingTitle, listingId, offerId }: CounterOfferModalProps) {
   const { success, error } = useToast()
+  const router = useRouter()
   const modalRef = useFocusTrap(isOpen, onClose)
   const [offeredItem, setOfferedItem] = useState('')
   const [offeredValue, setOfferedValue] = useState('')
@@ -55,12 +57,11 @@ export function CounterOfferModal({ isOpen, onClose, originalOffer, listingTitle
         setOfferedValue('')
         setMessage('')
         onClose()
-        window.location.reload()
+        router.refresh()
       } else {
         error(data.error || 'Failed to send counter offer')
       }
-    } catch (err) {
-      console.error(err)
+    } catch {
       error('Failed to send counter offer')
     } finally {
       setLoading(false)

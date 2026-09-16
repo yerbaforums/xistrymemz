@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { EmptyState } from '@/components/EmptyState'
-import styles from '../page.module.css'
+import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
 

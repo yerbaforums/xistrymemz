@@ -21,6 +21,15 @@ export const SERVICE_CATEGORIES = [
 
 export type ServiceCategory = (typeof SERVICE_CATEGORIES)[number]
 
+export type FormFieldType = 'text' | 'textarea' | 'select' | 'number' | 'date' | 'checkbox'
+
+export interface FormField {
+  label: string
+  type: FormFieldType
+  required: boolean
+  options?: string[] | null
+}
+
 export const SERVICE_CATEGORY_LABELS: Record<ServiceCategory, string> = {
   PERFORMANCE: 'Performance / Gigs',
   RECORDING: 'Recording & Production',

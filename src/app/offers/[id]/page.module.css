@@ -210,6 +210,28 @@
   color: var(--primary-color);
 }
 
+.completeBtn {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  background: #2a2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.completeBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.completeBtn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
 .counterChain {
   display: flex;
   flex-direction: column;

@@ -18,6 +18,9 @@ import { PRODUCT_CONDITIONS, PRODUCT_TYPES } from '@/lib/product-categories'
 
 import { EmptyState } from '@/components/EmptyState'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
+import { AppointmentSettings } from '@/components/listings/AppointmentSettings'
+import { FieldListEditor } from '@/components/listings/FieldListEditor'
+import type { FormField } from '@/types/service'
 import styles from './marketplace.module.css'
 
 interface Product {
@@ -50,7 +53,8 @@ interface Product {
   appointmentLeadTime?: number | null
   appointmentLocation?: string | null
   appointmentMeetingLink?: string | null
-  appointmentFormFields?: { label: string; type: string; required: boolean }[] | null
+  appointmentFormFields?: FormField[] | null
+  customizationFields?: FormField[] | null
   acceptsDonations?: boolean
   donationAddress?: string | null
   donationCurrency?: string | null
@@ -112,6 +116,13 @@ function MarketplaceContent() {
     selectedDonationAddrs: [] as DonationAddr[],
     sellerPayoutAddress: '',
     sellerCryptoCurrency: 'XMR',
+    acceptsAppointments: false,
+    appointmentDuration: '',
+    appointmentLeadTime: '',
+    appointmentLocation: '',
+    appointmentMeetingLink: '',
+    appointmentFormFields: [] as FormField[],
+    customizationFields: [] as FormField[],
   })
 
   const [shopForm, setShopForm] = useState({
@@ -162,6 +173,17 @@ function MarketplaceContent() {
           selectedDonationAddrs: hydrateDonationAddresses(product.donationAddress, product.donationCurrency, product.donationAddresses),
           sellerPayoutAddress: product.sellerPayoutAddress || '',
           sellerCryptoCurrency: product.sellerCryptoCurrency || 'XMR',
+          acceptsAppointments: product.acceptsAppointments || false,
+          appointmentDuration: product.appointmentDuration?.toString() || '',
+          appointmentLeadTime: product.appointmentLeadTime?.toString() || '',
+          appointmentLocation: product.appointmentLocation || '',
+          appointmentMeetingLink: product.appointmentMeetingLink || '',
+          appointmentFormFields: Array.isArray(product.appointmentFormFields)
+            ? product.appointmentFormFields.map(ff => ({ label: String(ff.label), type: (ff.type as FormField['type']) || 'text', required: ff.required === true, options: Array.isArray(ff.options) && ff.options.length > 0 ? ff.options : null }))
+            : [],
+          customizationFields: Array.isArray(product.customizationFields)
+            ? product.customizationFields.map(ff => ({ label: String(ff.label), type: (ff.type as FormField['type']) || 'text', required: ff.required === true, options: Array.isArray(ff.options) && ff.options.length > 0 ? ff.options : null }))
+            : [],
         })
         setShowProductForm(true)
       }
@@ -225,6 +247,13 @@ function MarketplaceContent() {
       selectedDonationAddrs: [] as DonationAddr[],
       sellerPayoutAddress: '',
       sellerCryptoCurrency: 'XMR',
+      acceptsAppointments: false,
+      appointmentDuration: '',
+      appointmentLeadTime: '',
+      appointmentLocation: '',
+      appointmentMeetingLink: '',
+      appointmentFormFields: [] as FormField[],
+      customizationFields: [] as FormField[],
     })
     setEditingProduct(null)
     setShowProductForm(false)
@@ -245,6 +274,12 @@ function MarketplaceContent() {
       donationAddresses: productForm.acceptsDonations ? serializeDonationAddresses(productForm.selectedDonationAddrs) : null,
       sellerPayoutAddress: productForm.sellerPayoutAddress || null,
       sellerCryptoCurrency: productForm.sellerCryptoCurrency || 'XMR',
+      acceptsAppointments: productForm.acceptsAppointments,
+      appointmentDuration: productForm.acceptsAppointments && productForm.appointmentDuration ? parseInt(productForm.appointmentDuration) : null,
+      appointmentLeadTime: productForm.acceptsAppointments && productForm.appointmentLeadTime ? parseInt(productForm.appointmentLeadTime) : null,
+      appointmentLocation: productForm.acceptsAppointments ? (productForm.appointmentLocation || null) : null,
+      appointmentMeetingLink: productForm.acceptsAppointments ? (productForm.appointmentMeetingLink || null) : null,
+      appointmentFormFields: productForm.acceptsAppointments ? productForm.appointmentFormFields : [],
     }
 
     try {
@@ -328,6 +363,17 @@ function MarketplaceContent() {
       selectedDonationAddrs: hydrateDonationAddresses(product.donationAddress, product.donationCurrency, product.donationAddresses),
       sellerPayoutAddress: product.sellerPayoutAddress || '',
       sellerCryptoCurrency: product.sellerCryptoCurrency || 'XMR',
+      acceptsAppointments: product.acceptsAppointments || false,
+      appointmentDuration: product.appointmentDuration?.toString() || '',
+      appointmentLeadTime: product.appointmentLeadTime?.toString() || '',
+      appointmentLocation: product.appointmentLocation || '',
+      appointmentMeetingLink: product.appointmentMeetingLink || '',
+      appointmentFormFields: Array.isArray(product.appointmentFormFields)
+        ? product.appointmentFormFields.map(ff => ({ label: String(ff.label), type: (ff.type as FormField['type']) || 'text', required: ff.required === true, options: Array.isArray(ff.options) && ff.options.length > 0 ? ff.options : null }))
+        : [],
+      customizationFields: Array.isArray(product.customizationFields)
+        ? product.customizationFields.map(ff => ({ label: String(ff.label), type: (ff.type as FormField['type']) || 'text', required: ff.required === true, options: Array.isArray(ff.options) && ff.options.length > 0 ? ff.options : null }))
+        : [],
     })
     setShowProductForm(true)
   }
@@ -627,6 +673,26 @@ function MarketplaceContent() {
                   onAddressesChange={(addrs) => setProductForm({...productForm, selectedDonationAddrs: addrs})}
                 />
               )}
+              <AppointmentSettings
+                value={{
+                  acceptsAppointments: productForm.acceptsAppointments,
+                  appointmentDuration: productForm.appointmentDuration,
+                  appointmentLeadTime: productForm.appointmentLeadTime,
+                  appointmentLocation: productForm.appointmentLocation,
+                  appointmentMeetingLink: productForm.appointmentMeetingLink,
+                  appointmentFormFields: productForm.appointmentFormFields,
+                }}
+                onChange={(v) => setProductForm({...productForm, ...v})}
+              />
+              <div className={styles.customFieldsBlock}>
+                <FieldListEditor
+                  fields={productForm.customizationFields}
+                  onChange={(fields) => setProductForm({...productForm, customizationFields: fields})}
+                  title="Order Customization Options"
+                  hint="Questions buyers answer when ordering this item — e.g. size, color, engraving, personalization."
+                  placeholder="e.g. What size?"
+                />
+              </div>
               <div className={styles.formActions}>
                 <button type="button" onClick={resetProductForm} className="btn-ghost">Cancel</button>
                 <button type="submit" className="btn-primary" disabled={saving}>

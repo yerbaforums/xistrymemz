@@ -93,8 +93,8 @@ function MessagesContent() {
         const data = await res.json()
         setConversations(data?.data?.conversations || data?.conversations || [])
       }
-    } catch (error) {
-      console.error('Error fetching conversations:', error)
+    } catch {
+      // silent — empty state covers failure
     } finally {
       setLoading(false)
     }
@@ -110,8 +110,7 @@ function MessagesContent() {
       } else {
         setFetchError('User not found')
       }
-    } catch (error) {
-      console.error('Error fetching user:', error)
+    } catch {
       setFetchError('Failed to load user')
     }
   }
@@ -126,8 +125,7 @@ function MessagesContent() {
       } else {
         setFetchError('Failed to load messages')
       }
-    } catch (error) {
-      console.error('Error fetching messages:', error)
+    } catch {
       setFetchError('Failed to load messages')
     }
   }
@@ -150,9 +148,11 @@ function MessagesContent() {
         setNewMessage('')
         fetchMessages(selectedUser.id)
         fetchConversations()
+      } else {
+        setFetchError('Failed to send message')
       }
-    } catch (error) {
-      console.error('Error sending message:', error)
+    } catch {
+      setFetchError('Failed to send message')
     }
   }
 

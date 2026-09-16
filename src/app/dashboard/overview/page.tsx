@@ -285,6 +285,7 @@ export default async function DashboardOverview({
   ]
 
   const quickActions = [
+    { label: 'My Deals', icon: '🤝', href: '/dashboard/deals' },
     { label: 'Creative Studio', icon: '🎨', href: '/dashboard/studio' },
     { label: 'New Project', icon: '🚀', href: '/dashboard/projects' },
     { label: 'New Product', icon: '🛒', href: '/products/new' },

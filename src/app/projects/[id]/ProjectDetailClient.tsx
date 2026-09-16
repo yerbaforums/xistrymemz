@@ -241,6 +241,10 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
         endDate: event.endDate ? event.endDate.slice(0, 16) : '',
         location: event.location || '',
         locationDetails: event.locationDetails || '',
+        gateLocation: (event as { gateLocation?: boolean }).gateLocation || false,
+        exactAddress: (event as { exactAddress?: string | null }).exactAddress || '',
+        latitude: event.latitude ?? null,
+        longitude: event.longitude ?? null,
         maxJoiners: event.maxJoiners,
         isTicketed: event.isTicketed || false,
         ticketPrice: event.ticketPrice || 0,
@@ -252,6 +256,9 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
         volunteerDescription: '',
         acceptsDonations: false,
         selectedDonationAddrs: [],
+        isVirtual: false,
+        meetingLink: '',
+        videoRoomId: null,
         hashtags: [],
         projectId: project.id,
         projectTitle: project.title || null,
@@ -404,6 +411,8 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
         endDate: eventFormData.endDate ? new Date(eventFormData.endDate).toISOString() : null,
         location: eventFormData.location || null,
         locationDetails: eventFormData.locationDetails || null,
+        gateLocation: eventFormData.gateLocation,
+        exactAddress: eventFormData.exactAddress || null,
         maxJoiners: eventFormData.maxJoiners || 0,
         isTicketed: eventFormData.isTicketed,
         ticketPrice: eventFormData.ticketPrice,
@@ -435,11 +444,10 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
         setShowEventModal(false)
       } else {
         const data = await res.json()
-        alert(data.error || 'Failed to save event')
+        toastError(data.error || 'Failed to save event')
       }
-    } catch (err) {
-      console.error(err)
-      alert('Failed to save event')
+    } catch {
+      toastError('Failed to save event')
     } finally {
       setLoading(false)
     }

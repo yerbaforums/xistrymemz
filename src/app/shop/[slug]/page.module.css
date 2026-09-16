@@ -100,6 +100,16 @@
   font-size: 1.5rem;
 }
 
+.categoryBadge {
+  font-size: 0.75rem;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--accent-soft, rgba(99, 102, 241, 0.12));
+  border: 1px solid var(--border, rgba(99, 102, 241, 0.25));
+  color: var(--text-primary, inherit);
+  white-space: nowrap;
+}
+
 .classes {
   display: flex;
   flex-wrap: wrap;

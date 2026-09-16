@@ -7,12 +7,14 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { NAV, DASHBOARD_SIDEBAR } from '@/lib/navigation'
 import { useQuickCreate } from '@/components/QuickCreateModal'
+import { useUserPreferences } from '@/hooks/useUserPreferences'
 import styles from './NavSidebar.module.css'
 
 export default function NavSidebar() {
   const pathname = usePathname()
   const { data: session, status } = useSession()
   const quickCreate = useQuickCreate()
+  const { isToolVisible } = useUserPreferences()
   const [collapsed, setCollapsed] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
@@ -119,7 +121,7 @@ export default function NavSidebar() {
             )}
           </div>
           <div className={styles.divider} />
-          {DASHBOARD_SIDEBAR.filter(item => item.section === 'primary').map((item, i) => (
+          {DASHBOARD_SIDEBAR.filter(item => item.section === 'primary' && isToolVisible(item.href)).map((item, i) => (
             <Link
               key={item.href}
               href={item.href}
@@ -142,7 +144,7 @@ export default function NavSidebar() {
           </button>
           {moreOpen && (
             <div className={styles.moreSection}>
-              {DASHBOARD_SIDEBAR.filter(item => item.section === 'secondary').map(item => (
+              {DASHBOARD_SIDEBAR.filter(item => item.section === 'secondary' && isToolVisible(item.href)).map(item => (
                 <Link
                   key={item.href}
                   href={item.href}
@@ -172,7 +174,7 @@ export default function NavSidebar() {
       ) : (
         <>
           {!collapsed && <div className={styles.sectionHeader}>Explore</div>}
-          {NAV.explore.map(item => (
+          {NAV.explore.filter(item => isToolVisible(item.href)).map(item => (
             <Link
               key={item.href}
               href={item.href}
@@ -185,7 +187,7 @@ export default function NavSidebar() {
             </Link>
           ))}
           {!collapsed && <div className={styles.sectionHeader}>Community</div>}
-          {NAV.community.map(item => (
+          {NAV.community.filter(item => isToolVisible(item.href)).map(item => (
             <Link
               key={item.href}
               href={item.href}

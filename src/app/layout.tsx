@@ -9,6 +9,7 @@ import AppShell from "@/components/AppShell";
 import Footer from "@/components/Footer";
 import BackToTop from "@/components/BackToTop";
 import CreateFAB from "@/components/CreateFAB";
+import CommandPalette from "@/components/CommandPalette";
 import { QuickCreateProvider } from "@/components/QuickCreateModal";
 import BottomNav from "@/components/BottomNav";
 import LocaleProvider from "@/components/LocaleProvider";
@@ -39,6 +40,7 @@ export async function generateMetadata() {
   const messages = await getMessages();
 
   return {
+    metadataBase: new URL('https://xistrymemz.xyz'),
     title: messages.layout?.title || "XistrYmemZ - Plan. Request. Complete.",
     description: messages.layout?.description || "Collaborative planning platform.",
     icons: [
@@ -57,11 +59,13 @@ export async function generateMetadata() {
       type: "website",
       siteName: "XistrYmemZ",
       locale: OG_LOCALE_MAP[locale] || "en_US",
+      images: [{ url: "/logo.png", width: 512, height: 512, alt: "XistrYmemZ" }],
     },
     twitter: {
       card: "summary_large_image",
       title: messages.layout?.title || "XistrYmemZ - Plan. Request. Complete.",
       description: messages.layout?.description || "Collaborative planning platform.",
+      images: ["/logo.png"],
     },
     keywords: ["collaborative planning", "community platform", "project management", "crypto payments", "business platform", "local marketplace", "community boards"],
     robots: { index: true, follow: true },
@@ -104,6 +108,7 @@ export default async function RootLayout({
                   {children}
                   <ToastContainer />
                   <CreateFAB />
+                  <CommandPalette />
                 </AppShell>
                 <BottomNav />
                 <Footer />

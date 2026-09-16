@@ -16,6 +16,7 @@ import { EmptyState } from '@/components/EmptyState'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import LocationPicker from '@/components/LocationPicker'
 import HashtagInput from '@/components/HashtagInput'
+import { AppointmentSettings, type AppointmentField } from '@/components/listings/AppointmentSettings'
 import styles from './page.module.css'
 
 interface ShopSettings {
@@ -54,6 +55,7 @@ const EMPTY_FORM = {
   appointmentLeadTime: '',
   appointmentLocation: '',
   appointmentMeetingLink: '',
+  appointmentFormFields: [] as AppointmentField[],
   hashtags: [] as string[],
 }
 
@@ -136,6 +138,9 @@ export default function DashboardServices() {
       appointmentLeadTime: (s as any).appointmentLeadTime?.toString() || '',
       appointmentLocation: (s as any).appointmentLocation || '',
       appointmentMeetingLink: (s as any).appointmentMeetingLink || '',
+      appointmentFormFields: Array.isArray((s as any).appointmentFormFields)
+        ? (s as any).appointmentFormFields.map((f: any) => ({ label: String(f.label), type: f.type || 'text', required: f.required === true, options: Array.isArray(f.options) && f.options.length > 0 ? f.options : null }))
+        : [],
       hashtags: (s as any).hashtags?.map((h: any) => h.hashtag?.tag).filter(Boolean) || [],
     })
     setEditingId(s.id)
@@ -169,6 +174,7 @@ export default function DashboardServices() {
         appointmentLeadTime: form.acceptsAppointments && form.appointmentLeadTime ? parseInt(form.appointmentLeadTime) : null,
         appointmentLocation: form.acceptsAppointments ? (form.appointmentLocation || null) : null,
         appointmentMeetingLink: form.acceptsAppointments ? (form.appointmentMeetingLink || null) : null,
+        appointmentFormFields: form.acceptsAppointments ? form.appointmentFormFields : [],
         hashtags: form.hashtags,
       }
 
@@ -182,7 +188,12 @@ export default function DashboardServices() {
       })
 
       if (res.ok) {
-        success(editingId ? 'Service updated!' : 'Service created!')
+        const data = res.status === 201 ? await res.json().catch(() => null) : null
+        if (!editingId && data?.needsEmailVerification) {
+          success('Service saved as draft. Verify your email to publish it.')
+        } else {
+          success(editingId ? 'Service updated!' : 'Service created!')
+        }
         resetForm()
         fetchAll()
       } else {
@@ -424,38 +435,28 @@ export default function DashboardServices() {
                 />
               )}
 
-              <label className={styles.checkLabel}>
-                <input type="checkbox" checked={form.acceptsAppointments} onChange={e => setForm({...form, acceptsAppointments: e.target.checked})} />
-                Accept Appointments
-              </label>
-              {form.acceptsAppointments && (
-                <div className={styles.appointmentFields}>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Default Session Duration (min)</label>
-                      <input type="number" value={form.appointmentDuration} onChange={e => setForm({...form, appointmentDuration: e.target.value})} placeholder={form.duration.toString()} min={5} step={5} />
-                      <small style={{color: 'var(--text-secondary)'}}>Leave blank to use service duration ({form.duration} min)</small>
-                    </div>
-                    <div className="form-group">
-                      <label>Minimum Lead Time (hours)</label>
-                      <input type="number" value={form.appointmentLeadTime} onChange={e => setForm({...form, appointmentLeadTime: e.target.value})} placeholder="24" min={0} />
-                      <small style={{color: 'var(--text-secondary)'}}>How far in advance must bookings be made</small>
-                    </div>
-                  </div>
-                  <div className="form-row">
-                    <div className="form-group" style={{ flex: 1 }}>
-                      <label>Appointment Location Override</label>
-                      <input type="text" value={form.appointmentLocation} onChange={e => setForm({...form, appointmentLocation: e.target.value})} placeholder="Leave blank to use service location" />
-                    </div>
-                  </div>
-                  <div className="form-row">
-                    <div className="form-group" style={{ flex: 1 }}>
-                      <label>Appointment Meeting Link Override</label>
-                      <input type="url" value={form.appointmentMeetingLink} onChange={e => setForm({...form, appointmentMeetingLink: e.target.value})} placeholder="Leave blank to use service meeting link" />
-                    </div>
-                  </div>
-                </div>
-              )}
+              <AppointmentSettings
+                value={{
+                  acceptsAppointments: form.acceptsAppointments,
+                  appointmentDuration: form.appointmentDuration,
+                  appointmentLeadTime: form.appointmentLeadTime,
+                  appointmentLocation: form.appointmentLocation,
+                  appointmentMeetingLink: form.appointmentMeetingLink,
+                  appointmentFormFields: form.appointmentFormFields,
+                }}
+                onChange={(v) => setForm({
+                  ...form,
+                  acceptsAppointments: v.acceptsAppointments,
+                  appointmentDuration: v.appointmentDuration,
+                  appointmentLeadTime: v.appointmentLeadTime,
+                  appointmentLocation: v.appointmentLocation,
+                  appointmentMeetingLink: v.appointmentMeetingLink,
+                  appointmentFormFields: v.appointmentFormFields,
+                })}
+                defaultDurationLabel={`service duration (${form.duration} min)`}
+                defaultLocationLabel="the service location"
+                defaultMeetingLinkLabel="the service meeting link"
+              />
 
               <div className="form-group">
                 <label>Hashtags</label>

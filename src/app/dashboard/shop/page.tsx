@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
 import ImageUploader from '@/components/ImageUploader'
+import { SHOP_CATEGORIES } from '@/lib/shop-categories'
 
 import styles from './shop.module.css'
 import Loading from '@/components/Loading'
@@ -16,6 +17,9 @@ interface ShopData {
   shopName: string | null
   shopAbout: string | null
   shopImage: string | null
+  shopCoverImage: string | null
+  shopCoverStyle: string | null
+  shopCategory: string | null
   shopSlug: string | null
   email: string | null
   name: string | null
@@ -34,6 +38,7 @@ export default function ShopDashboard() {
   const [deleteTarget, setDeleteTarget] = useState<DeleteAction | null>(null)
   const [form, setForm] = useState({
     shopName: '', shopAbout: '', shopImage: '', shopImages: [] as string[],
+    shopCoverImage: '', shopCoverImages: [] as string[], shopCoverStyle: 'cover', shopCategory: 'OTHER',
     shopSlug: '', email: '', name: ''
   })
 
@@ -55,6 +60,10 @@ export default function ShopDashboard() {
         shopAbout: shopData.shopAbout || '',
         shopImage: shopData.shopImage || '',
         shopImages: shopData.shopImage ? [shopData.shopImage] : [],
+        shopCoverImage: shopData.shopCoverImage || '',
+        shopCoverImages: shopData.shopCoverImage ? [shopData.shopCoverImage] : [],
+        shopCoverStyle: shopData.shopCoverStyle || 'cover',
+        shopCategory: shopData.shopCategory || 'OTHER',
         shopSlug: shopData.shopSlug || '',
         email: shopData.email || '',
         name: shopData.name || ''
@@ -77,7 +86,7 @@ export default function ShopDashboard() {
       const res = await fetch('/api/shop', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, shopImage: form.shopImages?.[0] || null })
+        body: JSON.stringify({ ...form, shopImage: form.shopImages?.[0] || null, shopCoverImage: form.shopCoverImages?.[0] || null })
       })
       if (res.ok) { success('Shop saved!'); setEditing(false); fetchShop() }
       else { const err = await res.json(); error(err.error || 'Failed to save') }
@@ -136,12 +145,32 @@ export default function ShopDashboard() {
               <label>About Your Shop</label>
               <textarea value={form.shopAbout} onChange={e => setForm({...form, shopAbout: e.target.value})} rows={3} placeholder="Tell customers about your shop..." />
             </div>
-            <div className="form-group">
-              <label>Shop Image</label>
-              <ImageUploader images={form.shopImages || []} onChange={(urls) => setForm({...form, shopImages: urls})} maxImages={1} />
-            </div>
-            <div className="form-group">
-              <label>Shop URL Slug</label>
+<div className="form-group">
+                <label>Shop Image</label>
+                <ImageUploader images={form.shopImages} onChange={(urls) => setForm(f => ({...f, shopImages: urls, shopImage: urls[0] || ''}))} maxImages={1} />
+              </div>
+              <div className="form-group">
+                <label>Cover Image</label>
+                <ImageUploader images={form.shopCoverImages} onChange={(urls) => setForm(f => ({...f, shopCoverImages: urls, shopCoverImage: urls[0] || ''}))} maxImages={1} />
+              </div>
+              <div className="form-group">
+                <label>Cover Style</label>
+                <select value={form.shopCoverStyle} onChange={e => setForm(f => ({...f, shopCoverStyle: e.target.value}))}>
+                  <option value="cover">Wide Cover</option>
+                  <option value="tile">Tile Pattern</option>
+                  <option value="gradient">Gradient</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Shop Category</label>
+                <select value={form.shopCategory} onChange={e => setForm(f => ({...f, shopCategory: e.target.value}))}>
+                  {SHOP_CATEGORIES.map(cat => (
+                    <option key={cat.value} value={cat.value}>{cat.icon} {cat.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Shop URL Slug</label>
               <input type="text" value={form.shopSlug} onChange={e => setForm({...form, shopSlug: e.target.value})} placeholder="my-shop" />
               <small style={{color: 'var(--text-secondary)'}}>xistrymemz.xyz/shop/{form.shopSlug || 'your-slug'}</small>
             </div>

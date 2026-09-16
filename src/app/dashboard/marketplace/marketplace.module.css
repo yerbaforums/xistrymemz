@@ -356,6 +356,14 @@
   color: white;
 }
 
+.customFieldsBlock {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--bg-tertiary);
+}
+
 @media (max-width: 768px) {
   .item {
     flex-direction: column;

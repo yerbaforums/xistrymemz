@@ -23,7 +23,7 @@ interface User {
   verifiedAddress: boolean
   createdAt: string
   _count: {
-    plans: number
+    projects: number
     requests: number
     sentConnections: number
     receivedConnections: number

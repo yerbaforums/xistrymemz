@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { useToast } from '@/context/ToastContext'
+import ReviewPrompt from '@/components/ReviewPrompt'
 import AddToCalendar from '@/components/AddToCalendar'
 import styles from '../events/events.module.css'
 
@@ -21,6 +22,10 @@ interface AppointmentItem {
   appointmentNotes?: string | null
   formResponses?: Record<string, string> | null
   category?: string | null
+  paymentStatus?: string | null
+  paidAt?: string | null
+  txHash?: string | null
+  selectedCurrency?: string | null
   product: { id: string; title: string; imageUrl: string | null } | null
   createdAt: string
   buyer: { id: string; name: string | null; image: string | null; username: string | null }
@@ -34,10 +39,14 @@ interface EventItem {
   title: string
   description: string | null
   eventDate: string | null
+  endDate?: string | null
   eventCategory: string | null
   location: string | null
   joinerCount: number
   type: string
+  isTicketed?: boolean
+  myTicket?: { paymentStatus: string } | null
+  meetingLink?: string | null
   projectTitle: string | null
   projectId: string | null
   groupTitle: string | null
@@ -51,6 +60,7 @@ type PlannerItem = AppointmentItem | EventItem
 const STATUS_CONFIG: Record<string, { icon: string; label: string; color: string }> = {
   PENDING: { icon: '⏳', label: 'Pending', color: '#f59e0b' },
   CONFIRMED: { icon: '✅', label: 'Confirmed', color: '#22c55e' },
+  PAID: { icon: '💰', label: 'Paid', color: '#a855f7' },
   CANCELLED: { icon: '❌', label: 'Cancelled', color: '#ef4444' },
   COMPLETED: { icon: '✅', label: 'Completed', color: '#3b82f6' },
   REJECTED: { icon: '🚫', label: 'Declined', color: '#ef4444' },
@@ -101,6 +111,14 @@ export default function DashboardAppointments() {
   const [declineReason, setDeclineReason] = useState('')
   const [showDeclineModal, setShowDeclineModal] = useState(false)
   const [declineAppt, setDeclineAppt] = useState<AppointmentItem | null>(null)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [paymentAppt, setPaymentAppt] = useState<AppointmentItem | null>(null)
+  const [paymentTxHash, setPaymentTxHash] = useState('')
+  const [paymentCurrency, setPaymentCurrency] = useState('XMR')
+  const [paymentAddress, setPaymentAddress] = useState('')
+  const [paymentNote, setPaymentNote] = useState('')
+  const [showReviewPrompt, setShowReviewPrompt] = useState(false)
+  const [reviewTarget, setReviewTarget] = useState<{ sellerId: string; sellerName: string; productId?: string } | null>(null)
 
   const fetchAll = async () => {
     setLoading(true)
@@ -139,7 +157,9 @@ export default function DashboardAppointments() {
         decline: 'Booking declined',
         cancel: 'Appointment cancelled',
         complete: 'Marked as complete',
-        reschedule: 'Rescheduled — awaiting confirmation'
+        reschedule: 'Rescheduled — awaiting confirmation',
+        pay: 'Payment submitted for review',
+        'mark-paid': 'Marked as paid',
       }
       success(labels[action] || 'Updated')
       fetchAll()
@@ -186,6 +206,62 @@ export default function DashboardAppointments() {
     await handleAction(declineAppt.id, 'decline', { declineReason })
     setShowDeclineModal(false)
     setDeclineAppt(null)
+  }
+
+  const openPayment = (appt: AppointmentItem) => {
+    setPaymentAppt(appt)
+    setPaymentTxHash('')
+    setPaymentCurrency(appt.selectedCurrency || 'XMR')
+    setPaymentAddress('')
+    setPaymentNote('')
+    setShowPaymentModal(true)
+  }
+
+  const openReview = (appt: AppointmentItem) => {
+    setReviewTarget({
+      sellerId: appt.seller.id,
+      sellerName: appt.seller.name || 'this seller',
+      productId: appt.product?.id
+    })
+    setShowReviewPrompt(true)
+  }
+
+  const submitReview = async (rating: number, comment: string) => {
+    if (!reviewTarget) return
+    const res = await fetch('/api/ratings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: reviewTarget.sellerId,
+        rating,
+        comment,
+        type: 'SELLER',
+        productId: reviewTarget.productId,
+        transactionId: null
+      })
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.error || 'Failed to submit review')
+    }
+    success('Review submitted!')
+    setReviewTarget(null)
+  }
+
+  const handlePaymentSubmit = async () => {
+    if (!paymentAppt) return
+    if (!paymentTxHash.trim() && !paymentNote.trim()) {
+      toastError('Add a transaction hash or a payment note')
+      return
+    }
+    await handleAction(paymentAppt.id, 'pay', {
+      txHash: paymentTxHash.trim() || undefined,
+      paymentNote: paymentNote.trim() || undefined,
+      selectedCurrency: paymentCurrency,
+      selectedAddress: paymentAddress.trim() || undefined
+    })
+    setShowPaymentModal(false)
+    setPaymentAppt(null)
   }
 
   const allItems: PlannerItem[] = useMemo(() => {
@@ -352,6 +428,9 @@ export default function DashboardAppointments() {
                           {appt.status === 'CONFIRMED' && appt._role === 'seller' && (
                             <button onClick={() => handleAction(appt.id, 'complete')} className={styles.cardActionBtn} style={{ color: '#3b82f6', borderColor: '#3b82f6' }}>✅ Complete</button>
                           )}
+                          {appt.status === 'COMPLETED' && appt._role === 'buyer' && (
+                            <button onClick={() => openReview(appt)} className={styles.cardActionBtn} style={{ color: '#eab308', borderColor: '#eab308' }}>⭐ Review</button>
+                          )}
                         </div>
                       </div>
                       {appt.meetingLink && (appt.status === 'CONFIRMED' || appt.status === 'PAID') && (
@@ -488,6 +567,20 @@ export default function DashboardAppointments() {
                     <div className={styles.eventModalContent}>
                       <div className={styles.eventDetailRow}><span className={styles.eventLabel}>Status</span><span style={{ color: sc.color }}>{sc.icon} {sc.label}</span></div>
                       {a.category && <div className={styles.eventDetailRow}><span className={styles.eventLabel}>Category</span><span>🔧 {a.category.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase())}</span></div>}
+                      {a.paymentStatus && (
+                        <div className={styles.eventDetailRow}>
+                          <span className={styles.eventLabel}>Payment</span>
+                          <span style={{ color: a.paymentStatus === 'PAID' ? '#22c55e' : '#f59e0b', fontWeight: 600 }}>
+                            {a.paymentStatus === 'PAID' ? '💰 Paid' : '⏳ Payment Pending'}
+                          </span>
+                        </div>
+                      )}
+                      {a.txHash && (
+                        <div className={styles.eventDetailRow}>
+                          <span className={styles.eventLabel}>TX Hash</span>
+                          <span>{a.txHash}</span>
+                        </div>
+                      )}
                       <div className={styles.eventDetailRow}><span className={styles.eventLabel}>Start</span><span>{formatDate(a.startTime)} at {formatTime(a.startTime)}</span></div>
                       <div className={styles.eventDetailRow}><span className={styles.eventLabel}>End</span><span>{formatDate(a.endTime)} at {formatTime(a.endTime)}</span></div>
                       {a.location && <div className={styles.eventDetailRow}><span className={styles.eventLabel}>Location</span><span>{a.location}</span></div>}
@@ -523,8 +616,17 @@ export default function DashboardAppointments() {
                           <button onClick={() => { handleAction(a.id, 'cancel'); setSelectedItem(null) }} className={styles.deleteBtn}>❌ Cancel</button>
                         </>
                       )}
-                      {a._role === 'seller' && a.status === 'CONFIRMED' && (
+                      {a._role === 'seller' && a.status === 'CONFIRMED' && a.paymentStatus !== 'PAID' && (
+                        <button onClick={() => { handleAction(a.id, 'mark-paid'); setSelectedItem(null) }} className="btn-primary">💰 Mark as Paid</button>
+                      )}
+                      {a._role === 'buyer' && a.status === 'CONFIRMED' && a.paymentStatus !== 'PAID' && (
+                        <button onClick={() => { openPayment(a); setSelectedItem(null) }} className="btn-primary">💳 Submit Payment</button>
+                      )}
+                      {a._role === 'seller' && (a.status === 'CONFIRMED' || a.status === 'PAID') && (
                         <button onClick={() => { handleAction(a.id, 'complete'); setSelectedItem(null) }} className="btn-primary">✅ Mark Complete</button>
+                      )}
+                      {a._role === 'buyer' && a.status === 'COMPLETED' && (
+                        <button onClick={() => { openReview(a); setSelectedItem(null) }} className="btn-primary">⭐ Leave a Review</button>
                       )}
                       {a.product && a._role === 'seller' && (
                         <Link href={`/dashboard/marketplace?editId=${a.product.id}`} className="btn-secondary">⚙️ Edit Listing Settings</Link>
@@ -616,6 +718,54 @@ export default function DashboardAppointments() {
             </div>
           </div>
         </div>
+      )}
+
+      {showPaymentModal && paymentAppt && (
+        <div className="modal-overlay" onClick={() => setShowPaymentModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className={styles.eventModalHeader}>
+              <h2>💳 Submit Payment</h2>
+              <button onClick={() => setShowPaymentModal(false)} className={styles.closeBtn}>✕</button>
+            </div>
+            <div className={styles.modalBody}>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: 0 }}>
+                For "{paymentAppt.title}". Send the amount to your host's payout address, then share the transaction hash.
+              </p>
+              <label className={styles.modalLabel}>
+                Transaction Hash (optional)
+                <input type="text" value={paymentTxHash} onChange={e => setPaymentTxHash(e.target.value)} className={styles.modalInput} placeholder="e.g. 0x... / 4a1b..." />
+              </label>
+              <label className={styles.modalLabel}>
+                Currency
+                <select value={paymentCurrency} onChange={e => setPaymentCurrency(e.target.value)} className={styles.modalInput}>
+                  {['XMR', 'BTC', 'ETH', 'USDT'].map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </label>
+              <label className={styles.modalLabel}>
+                Sent From Address (optional)
+                <input type="text" value={paymentAddress} onChange={e => setPaymentAddress(e.target.value)} className={styles.modalInput} placeholder="Your wallet address" />
+              </label>
+              <label className={styles.modalLabel}>
+                Note (optional)
+                <textarea value={paymentNote} onChange={e => setPaymentNote(e.target.value)} rows={2} className={styles.modalTextarea} placeholder="Anything the seller should know" />
+              </label>
+              <div className={styles.modalActions}>
+                <button onClick={() => setShowPaymentModal(false)} className="btn-secondary">Cancel</button>
+                <button onClick={handlePaymentSubmit} className="btn-primary">Submit Payment</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showReviewPrompt && reviewTarget && (
+        <ReviewPrompt
+          open={showReviewPrompt}
+          onClose={() => { setShowReviewPrompt(false); setReviewTarget(null) }}
+          targetType="seller"
+          targetLabel={reviewTarget.sellerName}
+          onSubmit={submitReview}
+        />
       )}
     </div>
   )

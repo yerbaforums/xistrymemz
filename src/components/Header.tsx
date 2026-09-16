@@ -111,7 +111,6 @@ export default function Header() {
           setMessagesUnread(inboxData?.data?.unreadCount ?? inboxData?.unreadCount ?? 0)
         }
       } catch (error) {
-        console.error('Error fetching notifications:', error)
       }
     }
     load()
@@ -133,7 +132,7 @@ export default function Header() {
         setMessagesUnread(data?.data?.unreadCount ?? data?.unreadCount ?? 0)
       }
       setNotificationCount(total)
-    } catch (e) { console.error('Error fetching notification count:', e) }
+    } catch { /* badge stays stale — SSE will correct it */ }
   }, [])
 
   useNotificationSSE(useCallback((event) => {
@@ -174,14 +173,11 @@ export default function Header() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault()
-        if (isAuthenticated) {
-          setSearchOpen(prev => !prev)
-        }
-        return
-      }
       if (e.key === 'Escape') {
+        if (searchOpen) {
+          setSearchOpen(false)
+          return
+        }
         if (menuOpen) {
           setMenuOpen(false)
           return
@@ -194,7 +190,7 @@ export default function Header() {
     }
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [menuOpen, openDropdown, isAuthenticated])
+  }, [menuOpen, openDropdown, isAuthenticated, searchOpen])
 
   const toggleDropdown = useCallback((name: string) => {
     setOpenDropdown(prev => prev === name ? null : name)
@@ -223,7 +219,6 @@ export default function Header() {
       const data = await res.json()
       setSearchResults(data.results)
     } catch (error) {
-      console.error('Search error:', error)
     } finally {
       setSearching(false)
     }
@@ -446,6 +441,16 @@ export default function Header() {
                                 {searchResults.requests.map(r => (
                                   <Link key={r.id} href={r.url} className={styles.searchResult} onClick={() => setSearchOpen(false)}>
                                     {r.title}
+                                  </Link>
+                                ))}
+                              </div>
+                            )}
+                            {searchResults.schoolContent?.length > 0 && (
+                              <div className={styles.searchSection}>
+                                <div className={styles.searchSectionTitle}><span aria-hidden="true">📚</span> School Content</div>
+                                {searchResults.schoolContent.map(sc => (
+                                  <Link key={sc.id} href={sc.url} className={styles.searchResult} onClick={() => setSearchOpen(false)}>
+                                    {sc.title}
                                   </Link>
                                 ))}
                               </div>

@@ -82,7 +82,7 @@ const nextConfig = {
   poweredByHeader: false,
   serverExternalPackages: ['@prisma/client', 'prisma', 'geoip-lite'],
   experimental: {
-    optimizePackageImports: ['next-auth'],
+    optimizePackageImports: ['next-auth', 'leaflet', 'emoji-picker-react', 'html5-qrcode'],
   },
   async headers() {
     return [
@@ -115,7 +115,7 @@ const nextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(self), microphone=(self), geolocation=()',
+            value: 'camera=(self), microphone=(self), geolocation=(self)',
           },
         ],
       },

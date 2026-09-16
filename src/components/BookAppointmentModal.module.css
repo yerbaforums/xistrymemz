@@ -231,6 +231,14 @@
   font-size: 0.9rem;
   color: var(--text-primary);
 }
+.tzNote {
+  font-size: 0.74rem;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
 .radioInput {
   margin-top: 2px;
 }

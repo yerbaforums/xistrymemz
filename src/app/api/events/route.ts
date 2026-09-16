@@ -67,7 +67,8 @@ export async function GET(request: Request) {
 
     const formattedEvents = events.map(event => {
       const linkedTitle = event.project?.title || event.group?.name || event.school?.schoolName || event.shop?.shopName || null
-      
+      const gatedList = event.gateLocation === true && event.organizerId !== userId
+
       return {
         id: event.id,
         title: event.title,
@@ -77,9 +78,11 @@ export async function GET(request: Request) {
         eventDate: event.eventDate?.toISOString() || null,
         endDate: event.endDate?.toISOString() || null,
         location: event.location,
-        locationDetails: event.locationDetails,
-        latitude: event.latitude,
-        longitude: event.longitude,
+        locationDetails: gatedList ? null : event.locationDetails,
+        latitude: gatedList ? null : event.latitude,
+        longitude: gatedList ? null : event.longitude,
+        isGated: gatedList,
+        gateLocation: event.gateLocation || false,
         maxJoiners: event.maxJoiners,
         pinned: event.pinned,
         isTicketed: event.isTicketed,
@@ -121,15 +124,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { 
-      title, 
-      description, 
+    const {
+      title,
+      description,
       imageUrl,
-      eventCategory, 
-      eventDate, 
+      eventCategory,
+      eventDate,
       endDate,
-      location, 
-      locationDetails, 
+      location,
+      locationDetails,
+      gateLocation,
+      exactAddress,
       maxJoiners,
       isTicketed,
       ticketPrice,
@@ -200,6 +205,8 @@ export async function POST(request: NextRequest) {
         endDate: endDate ? new Date(endDate) : undefined,
         location,
         locationDetails,
+        gateLocation: gateLocation || false,
+        exactAddress: exactAddress || null,
         latitude,
         longitude,
         maxJoiners: maxJoiners || 0,

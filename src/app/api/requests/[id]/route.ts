@@ -135,7 +135,18 @@ export async function PUT(
         isPublic: body.isPublic !== undefined ? body.isPublic : existingRequest.isPublic,
         allowFulfillments: body.allowFulfillments !== undefined ? body.allowFulfillments : existingRequest.allowFulfillments,
         showDonationAddress: body.showDonationAddress !== undefined ? body.showDonationAddress : existingRequest.showDonationAddress,
-        projectId: body.projectId !== undefined ? body.projectId : existingRequest.projectId
+        projectId: body.projectId !== undefined ? body.projectId : existingRequest.projectId,
+        customFields: body.customFields !== undefined && Array.isArray(body.customFields)
+          ? body.customFields
+              .filter((f: any) => f && typeof f === 'object' && typeof f.label === 'string' && f.label.trim())
+              .map((f: any) => ({
+                label: f.label.trim(),
+                type: f.type ?? 'text',
+                required: !!f.required,
+                options: Array.isArray(f.options) ? f.options.filter((o: unknown) => typeof o === 'string') : null,
+                defaultValue: typeof f.defaultValue === 'string' ? f.defaultValue : null,
+              }))
+          : undefined
       }
     })
 

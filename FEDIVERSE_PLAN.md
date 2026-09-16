@@ -5,6 +5,27 @@ Enable XistrYmemZ users to federate with the broader fediverse (Mastodon, Pixelf
 
 ---
 
+## Current Implementation Status
+
+| Area | Status | Notes |
+|---|---|---|
+| Prisma models (`Follow`, `OutboxActivity`, `InboxActivity`, `FederatedIdentity`, `User.federatedUrl`) | Done | Live in schema + Neon DB |
+| `src/lib/federation.ts` (`generateActorKeys`, `getBaseUrl`, `escapeHtml`, `deliverToInbox`) | Done | RSA keys on registration |
+| WebFinger (`/.well-known/webfinger`) | Done | JRD + profile page alias |
+| NodeInfo (`/.well-known/nodeinfo` + `/api/fediverse/nodeinfo/2.1`) | Done | User/post/active counts |
+| Actor (`/api/fediverse/actor/[username]`) | Done | Person + publicKey |
+| Shared Inbox (`/api/fediverse/inbox`) | Done | Follow / Like / Announce / Undo / Delete handled |
+| Outbox (`/api/fediverse/outbox/[userId]`) | Done | `OrderedCollectionPage` of ForumPosts |
+| Delivery cron (`/api/cron/deliver-fediverse`) | Done | PENDING -> DELIVERED/FAILED + retries |
+| Follow UI (`FollowButton`, follower/following counts) | Done | Local + remote actors |
+| Remote sign-in (`/api/auth/fediverse/init`) | Done | OAuth-style federated identity |
+
+**Remaining gaps (future work):**
+- HTTP signature *verification* on incoming activities (inbox currently trusts plain JSON).
+- Incoming `Create`/`Note` - store remote posts as local wall posts (only Like/Announce counters today).
+- Admin UI for fediverse settings (instance description, blocklist, relay).
+- Follower approval workflow (PENDING -> ACCEPT with signed `Accept`).
+
 ## Architecture
 
 ```

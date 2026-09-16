@@ -8,6 +8,8 @@ export interface DonationAddr {
   sortOrder: number
 }
 
+import type { FormField } from '@/types/service'
+
 export interface RequestBase {
   id: string
   title: string
@@ -68,6 +70,7 @@ export interface RequestFormData {
   images: string[]
   hashtags: string[]
   projectId?: string
+  customFields: FormField[]
 }
 
 export function getDefaultRequestFormData(): RequestFormData {
@@ -85,5 +88,6 @@ export function getDefaultRequestFormData(): RequestFormData {
     showDonationAddress: true,
     images: [],
     hashtags: [],
+    customFields: [],
   }
 }

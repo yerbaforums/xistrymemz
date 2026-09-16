@@ -1,10 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { useUserPreferences } from '@/hooks/useUserPreferences'
 
 const NOTIFICATION_TYPES = [
   { id: 'messages', label: 'Messages', description: 'When someone sends you a message', icon: '💬' },
@@ -25,38 +24,12 @@ const PUSH_TYPES = [
 ]
 
 export default function NotificationsSettingsPage() {
-  const { data: session } = useSession()
   const router = useRouter()
-  const [enabled, setEnabled] = useState<Record<string, boolean>>(() => {
-    const saved = typeof window !== 'undefined' ? localStorage.getItem('notification_prefs') : null
-    if (saved) return JSON.parse(saved)
-    return Object.fromEntries(NOTIFICATION_TYPES.map(t => [t.id, true]))
-  })
-  const [pushEnabled, setPushEnabled] = useState<Record<string, boolean>>(() => ({
-    in_app: true,
-    email: true,
-    push: false,
-  }))
-  const [saved, setSaved] = useState(false)
+  const { prefs, loaded, setPreference } = useUserPreferences()
 
-  if (!session) {
+  if (loaded && !prefs) {
     router.push('/auth/login')
     return null
-  }
-
-  const toggle = (id: string) => {
-    const next = { ...enabled, [id]: !enabled[id] }
-    setEnabled(next)
-    localStorage.setItem('notification_prefs', JSON.stringify(next))
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
-  }
-
-  const togglePush = (id: string) => {
-    const next = { ...pushEnabled, [id]: !pushEnabled[id] }
-    setPushEnabled(next)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
   }
 
   return (
@@ -66,8 +39,6 @@ export default function NotificationsSettingsPage() {
         <h1>Notification Settings</h1>
         <p>Control what notifications you receive and how they are delivered</p>
       </div>
-
-      {saved && <div className={styles.savedBanner}>Preferences saved</div>}
 
       <section className={styles.section}>
         <h2>Notification Types</h2>
@@ -82,10 +53,14 @@ export default function NotificationsSettingsPage() {
                 </div>
               </div>
               <button
-                className={`${styles.toggle} ${enabled[nt.id] ? styles.toggleOn : ''}`}
-                onClick={() => toggle(nt.id)}
+                className={`${styles.toggle} ${prefs?.notifications?.[nt.id] !== false ? styles.toggleOn : ''}`}
+                onClick={() =>
+                  setPreference({
+                    notifications: { [nt.id]: prefs?.notifications?.[nt.id] === false },
+                  })
+                }
                 role="switch"
-                aria-checked={enabled[nt.id]}
+                aria-checked={prefs?.notifications?.[nt.id] !== false}
                 aria-label={`${nt.label} notifications`}
               >
                 <span className={styles.toggleKnob} />
@@ -108,10 +83,14 @@ export default function NotificationsSettingsPage() {
                 </div>
               </div>
               <button
-                className={`${styles.toggle} ${pushEnabled[pt.id] ? styles.toggleOn : ''}`}
-                onClick={() => togglePush(pt.id)}
+                className={`${styles.toggle} ${prefs?.delivery?.[pt.id] !== false ? styles.toggleOn : ''}`}
+                onClick={() =>
+                  setPreference({
+                    delivery: { [pt.id]: prefs?.delivery?.[pt.id] === false },
+                  })
+                }
                 role="switch"
-                aria-checked={pushEnabled[pt.id]}
+                aria-checked={prefs?.delivery?.[pt.id] !== false}
                 aria-label={`${pt.label} delivery`}
               >
                 <span className={styles.toggleKnob} />

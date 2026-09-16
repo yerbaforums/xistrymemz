@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import Image from 'next/image'
+import { useToast } from '@/context/ToastContext'
 
 interface ImageUploaderProps {
   images: string[]
@@ -12,6 +14,7 @@ interface ImageUploaderProps {
 export default function ImageUploader({ images, onChange, maxImages = 6, maxSizeMB = 20 }: ImageUploaderProps) {
   const [uploading, setUploading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const { error: toastError } = useToast()
 
   const handleSelect = () => inputRef.current?.click()
 
@@ -19,7 +22,7 @@ export default function ImageUploader({ images, onChange, maxImages = 6, maxSize
     const files = Array.from(e.target.files || [])
     if (!files.length) return
     if (images.length + files.length > maxImages) {
-      alert(`Maximum ${maxImages} images allowed`)
+      toastError(`Maximum ${maxImages} images allowed`)
       return
     }
 
@@ -28,7 +31,7 @@ export default function ImageUploader({ images, onChange, maxImages = 6, maxSize
       const formData = new FormData()
       for (const file of files) {
         if (file.size > maxSizeMB * 1024 * 1024) {
-          alert(`File too large: ${file.name}. Max ${maxSizeMB}MB`)
+          toastError(`File too large: ${file.name}. Max ${maxSizeMB}MB`)
           continue
         }
         formData.append('file', file)
@@ -40,7 +43,7 @@ export default function ImageUploader({ images, onChange, maxImages = 6, maxSize
       const newUrls = Array.isArray(data.uploads) ? data.uploads.map((u: any) => u.url) : [data.url]
       onChange([...images, ...newUrls])
     } catch {
-      alert('Failed to upload images')
+      toastError('Failed to upload images')
     } finally {
       setUploading(false)
       if (inputRef.current) inputRef.current.value = ''
@@ -56,7 +59,7 @@ export default function ImageUploader({ images, onChange, maxImages = 6, maxSize
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
         {images.map((url, i) => (
           <div key={i} style={{ position: 'relative', width: 72, height: 72, borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', background: 'var(--bg-tertiary)' }}>
-            <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <Image src={url} alt="" width={72} height={72} style={{ objectFit: 'cover' }} />
             <button
               type="button"
               onClick={() => remove(i)}

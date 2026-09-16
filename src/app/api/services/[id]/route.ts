@@ -6,6 +6,7 @@ import { serviceOfferingSchema, validateBody } from '@/lib/schemas'
 import { geocodeLocation } from '@/lib/geocoding'
 import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import { extractHashtags, linkHashtags, removeHashtags } from '@/services/hashtagService'
+import { hasVerifiedEmail } from '@/lib/verified-email'
 
 export async function GET(
   request: Request,
@@ -112,6 +113,9 @@ export async function PUT(
     if (d.meetingLink !== undefined) updateData.meetingLink = d.meetingLink || null
     if (d.imageUrl !== undefined) updateData.imageUrl = d.imageUrl || null
     if (d.isActive !== undefined) updateData.isActive = d.isActive
+    if (d.isActive === true && !(await hasVerifiedEmail(session.user.id))) {
+      return apiError('Verify your email before publishing', 403)
+    }
     if (d.acceptsDonations !== undefined) updateData.acceptsDonations = d.acceptsDonations
     if (d.acceptsDonations && d.selectedDonationAddrs) {
       const legacy = donationAddressesToLegacy(d.selectedDonationAddrs as any)

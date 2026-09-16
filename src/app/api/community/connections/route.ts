@@ -32,15 +32,15 @@ export async function GET(request: Request) {
       ]
     }
 
-    const connections = await prisma.connection.findMany({ skip, take: limit,
+    const connections = await prisma.connection.findMany({
       where,
       include: {
         requester: { select: { id: true, name: true, image: true, earthId: true, verificationLevel: true, username: true } },
         receiver: { select: { id: true, name: true, image: true, earthId: true, verificationLevel: true, username: true } }
       },
       skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' }
+      take: limit,
+      orderBy: { createdAt: 'desc' }
     })
 
     return apiSuccess(connections)

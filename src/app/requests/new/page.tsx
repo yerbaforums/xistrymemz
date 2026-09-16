@@ -28,6 +28,7 @@ export default function NewRequestPage() {
         allowFulfillments: data.allowFulfillments,
         showDonationAddress: data.showDonationAddress,
         hashtags: data.hashtags,
+        customFields: (data.customFields || []).length > 0 ? data.customFields : undefined,
       })
     })
     if (res.ok) {

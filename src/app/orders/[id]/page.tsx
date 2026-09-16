@@ -7,6 +7,7 @@ import Link from 'next/link'
 import styles from '../page.module.css'
 import { useToast } from '@/context/ToastContext'
 import Button from '@/components/ui/Button'
+import ReviewPrompt from '@/components/ReviewPrompt'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
@@ -17,6 +18,10 @@ interface Order {
   status: string
   description: string | null
   notes: string | null
+  quantity: number
+  customizationAnswers: { label: string; value: string }[] | null
+  rentalStart: string | null
+  rentalEnd: string | null
   sellerPayoutAddress: string | null
   sellerPayoutCurrency: string | null
   courierStatus: string | null
@@ -48,6 +53,7 @@ export default function OrderDetailPage() {
   const [messageTo, setMessageTo] = useState<{id: string, name: string | null} | null>(null)
   const [notes, setNotes] = useState('')
   const [savingNotes, setSavingNotes] = useState(false)
+  const [showReviewPrompt, setShowReviewPrompt] = useState(false)
 
   const orderId = params.id as string
 
@@ -75,7 +81,6 @@ export default function OrderDetailPage() {
         router.push('/orders')
       }
     } catch (err) {
-      console.error(err)
       router.push('/orders')
     } finally {
       setLoading(false)
@@ -94,12 +99,14 @@ export default function OrderDetailPage() {
       if (res.ok) {
         success('Order updated')
         fetchOrder()
+        if (action === 'deliver' && session?.user?.id === order.buyer.id) {
+          setShowReviewPrompt(true)
+        }
       } else {
         const err = await res.json()
         error(err.error || 'Failed to update order')
       }
     } catch (err) {
-      console.error(err)
     } finally {
       setUpdating(false)
     }
@@ -121,7 +128,6 @@ export default function OrderDetailPage() {
         error(err.error || 'Failed to save notes')
       }
     } catch (err) {
-      console.error(err)
     } finally {
       setSavingNotes(false)
     }
@@ -135,7 +141,7 @@ export default function OrderDetailPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          recipientId: messageTo.id,
+          receiverId: messageTo.id,
           content: messageText
         })
       })
@@ -148,7 +154,6 @@ export default function OrderDetailPage() {
         error(err.error || 'Failed to send message')
       }
     } catch (err) {
-      console.error(err)
     } finally {
       setSendingMessage(false)
     }
@@ -157,6 +162,27 @@ export default function OrderDetailPage() {
   const openMessageModal = (to: {id: string, name: string | null}) => {
     setMessageTo(to)
     setShowMessageModal(true)
+  }
+
+  const submitReview = async (rating: number, comment: string) => {
+    if (!order) return
+    const res = await fetch('/api/ratings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: order.seller.id,
+        rating,
+        comment,
+        type: 'SELLER',
+        productId: order.product?.id,
+        transactionId: order.id
+      })
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.error || 'Failed to submit review')
+    }
+    success('Review submitted!')
   }
 
   const getStatusColor = (status: string) => {
@@ -250,6 +276,12 @@ export default function OrderDetailPage() {
                 <span>Order Amount</span>
                 <span>${order.amount.toFixed(2)}</span>
               </div>
+              {order.quantity > 1 && (
+                <div className={styles.priceRow}>
+                  <span>Quantity</span>
+                  <span>× {order.quantity}</span>
+                </div>
+              )}
               {order.courierFee != null && (
                 <div className={styles.priceRow}>
                   <span>Courier Delivery</span>
@@ -262,6 +294,39 @@ export default function OrderDetailPage() {
               </div>
             </div>
           </div>
+
+          {order.customizationAnswers && order.customizationAnswers.length > 0 && (
+            <div className={styles.section}>
+              <h2>Customization</h2>
+              <div className={styles.deliveryCard}>
+                {order.customizationAnswers.filter(a => a.value).map(a => (
+                  <p key={a.label} style={{ margin: '6px 0' }}>
+                    <strong>{a.label}:</strong> {a.value}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {order.rentalStart && order.rentalEnd && (
+            <div className={styles.section}>
+              <h2>📅 Rental Period</h2>
+              <div className={styles.deliveryCard}>
+                <div className={styles.priceRow}>
+                  <span>Start</span>
+                  <span>{new Date(order.rentalStart).toLocaleDateString()}</span>
+                </div>
+                <div className={styles.priceRow}>
+                  <span>End</span>
+                  <span>{new Date(order.rentalEnd).toLocaleDateString()}</span>
+                </div>
+                <div className={styles.priceRow}>
+                  <span>Duration</span>
+                  <span>{Math.round((new Date(order.rentalEnd).getTime() - new Date(order.rentalStart).getTime()) / 86400000)} days</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {order.buyer.id === session?.user?.id && order.sellerPayoutAddress && (
             <div className={styles.section}>
@@ -500,6 +565,16 @@ export default function OrderDetailPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {showReviewPrompt && order && (
+        <ReviewPrompt
+          open={showReviewPrompt}
+          onClose={() => setShowReviewPrompt(false)}
+          targetType="seller"
+          targetLabel={order.seller.name || 'this seller'}
+          onSubmit={submitReview}
+        />
       )}
     </div>
     </ErrorBoundary>

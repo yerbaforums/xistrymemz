@@ -1,5 +1,6 @@
 import { NextRequest, apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { zonedDayBounds, isValidTimeZone } from '@/lib/timezone'
 
 export const dynamic = 'force-dynamic'
 
@@ -8,13 +9,22 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('userId')
     const date = searchParams.get('date')
+    const tz = searchParams.get('tz')
 
     if (!userId || !date) {
       return apiError("userId and date required", 400)
     }
 
-    const dateStart = new Date(`${date}T00:00:00`)
-    const dateEnd = new Date(`${date}T23:59:59`)
+    let dateStart: Date
+    let dateEnd: Date
+    if (isValidTimeZone(tz)) {
+      const bounds = zonedDayBounds(date, tz)
+      dateStart = bounds.start
+      dateEnd = bounds.end
+    } else {
+      dateStart = new Date(`${date}T00:00:00`)
+      dateEnd = new Date(`${date}T23:59:59`)
+    }
 
     const [confirmedAppointments, pendingAppointments, organizedEvents, joinedEvents] = await Promise.all([
       prisma.appointment.findMany({

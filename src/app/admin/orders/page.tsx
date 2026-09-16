@@ -62,7 +62,6 @@ export default function AdminOrdersPage() {
         setOrders(data?.orders || [])
       }
     } catch (error) {
-      console.error('Failed to fetch orders:', error)
     } finally {
       setLoading(false)
     }
@@ -85,7 +84,6 @@ export default function AdminOrdersPage() {
         error(err.error || 'Failed to update order')
       }
     } catch (error) {
-      console.error('Failed to update order:', error)
     } finally {
       setUpdating(false)
     }

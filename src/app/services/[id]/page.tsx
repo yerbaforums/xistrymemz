@@ -50,11 +50,12 @@ function sanitizeService(raw: any): ServiceOffering | null {
         }))
       : []
 
-    const ff: { label: string; type: string; required: boolean }[] = Array.isArray(raw.appointmentFormFields)
+    const ff: { label: string; type: string; required: boolean; options?: string[] | null }[] = Array.isArray(raw.appointmentFormFields)
       ? raw.appointmentFormFields.filter((f: any) => f && typeof f === 'object' && typeof f.label === 'string').map((f: any) => ({
           label: String(f.label),
-          type: String(f.type ?? 'text'),
-          required: safeBool(f.required)
+          type: ['text', 'textarea', 'select', 'number', 'date', 'checkbox'].includes(String(f.type ?? 'text')) ? String(f.type) : 'text',
+          required: safeBool(f.required),
+          options: Array.isArray(f.options) ? f.options.map((o: any) => String(o)) : null,
         }))
       : []
 
@@ -66,6 +67,8 @@ function sanitizeService(raw: any): ServiceOffering | null {
       duration: typeof raw.duration === 'number' ? raw.duration : 60,
       price: safeNum(raw.price),
       location: safeStr(raw.location),
+      latitude: safeNum(raw.latitude),
+      longitude: safeNum(raw.longitude),
       meetingLink: safeStr(raw.meetingLink),
       imageUrl: safeStr(raw.imageUrl),
       isActive: safeBool(raw.isActive),
@@ -94,7 +97,7 @@ function sanitizeService(raw: any): ServiceOffering | null {
 
 interface FormField {
   label: string
-  type: string
+  type: 'text' | 'textarea'
   required: boolean
 }
 
@@ -177,7 +180,9 @@ export default function ServiceDetailPage() {
   const hashtags = Array.isArray(service.hashtags) ? service.hashtags.filter(h => h?.hashtag?.tag && typeof h.hashtag.tag === 'string') : []
   const acceptsAppointments = service.acceptsAppointments === true
   const formFields: FormField[] = Array.isArray(service.appointmentFormFields)
-    ? service.appointmentFormFields.filter((f: any) => f && typeof f === 'object' && typeof f.label === 'string')
+    ? service.appointmentFormFields
+        .filter((f: any) => f && typeof f === 'object' && typeof f.label === 'string')
+        .map((f: any) => ({ label: String(f.label), type: String(f.type ?? 'text') === 'textarea' ? 'textarea' as const : 'text' as const, required: f.required === true }))
     : []
   const duration = typeof service.duration === 'number' ? service.duration : 60
   const price = typeof service.price === 'number' ? service.price : null
@@ -402,6 +407,7 @@ export default function ServiceDetailPage() {
             serviceCategory={category}
             serviceOfferingId={service.id}
             productTitle={title}
+            formFields={formFields}
           />
         )}
 

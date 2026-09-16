@@ -58,7 +58,7 @@ export async function POST(
 
     const req = await prisma.request.findFirst({
       where: { id },
-      select: { userId: true, allowFulfillments: true, title: true }
+      select: { userId: true, allowFulfillments: true, title: true, customFields: true }
     })
 
     if (!req) {
@@ -77,6 +77,31 @@ export async function POST(
       return apiError("Title and content are required", 400)
     }
 
+    const fields: any[] = Array.isArray(req.customFields) ? req.customFields : []
+    const submitted = Array.isArray(body.answers) ? body.answers : []
+    const errors: string[] = []
+    for (const field of fields) {
+      if (!field || typeof field !== 'object' || typeof field.label !== 'string') continue
+      const value = submitted.find((a: any) => a && typeof a === 'object' && a.label === field.label)?.value
+      if (field.required && (value == null || String(value).trim() === '')) {
+        errors.push(field.label)
+      }
+    }
+    if (errors.length > 0) {
+      return apiError(`Please answer: ${errors.join(', ')}`, 400)
+    }
+
+    const answers = fields.length > 0
+      ? fields
+          .map((f: any) => {
+            const value = submitted.find((a: any) => a && typeof a === 'object' && a.label === f.label)?.value
+            return value == null || String(value).trim() === ''
+              ? null
+              : { label: f.label, value: String(value) }
+          })
+          .filter((a: unknown): a is { label: string; value: string } => a != null)
+      : undefined
+
     const existing = await prisma.requestFulfillment.findFirst({
       where: { requestId: id, userId: session.user.id, status: 'PENDING' }
     })
@@ -90,7 +115,8 @@ export async function POST(
         requestId: id,
         userId: session.user.id,
         title: body.title.trim(),
-        content: body.content.trim()
+        content: body.content.trim(),
+        answers: answers as any
       },
       include: {
         user: { select: { id: true, name: true, username: true, email: true, image: true, shopSlug: true } }

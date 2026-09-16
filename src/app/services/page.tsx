@@ -132,12 +132,15 @@ export default function ServicesPage() {
       if (!isNaN(max)) result = result.filter(s => (s.price || 0) <= max)
     }
 
-    const loc = passportLocation?.latitude ? { lat: passportLocation.latitude, lng: passportLocation.longitude, r: passportLocation.searchRadius || 50 } : null
+    const passportLat = passportLocation?.latitude
+    const passportLng = passportLocation?.longitude
+    const loc = passportLat != null && passportLng != null ? { lat: passportLat, lng: passportLng, r: passportLocation?.searchRadius || 50 } : null
     if (loc) {
       result = result.filter(s => {
-        if (!s.latitude || !s.longitude) return true
-        const d = calculateDistance(loc.lat, loc.lng, s.latitude, s.longitude)
-        return d <= loc.r
+        const sLat = s.latitude
+        const sLng = s.longitude
+        if (!sLat || !sLng) return true
+        return calculateDistance(loc.lat, loc.lng, sLat, sLng) <= loc.r
       })
     }
 
@@ -146,8 +149,12 @@ export default function ServicesPage() {
     else if (sortBy === 'duration') result.sort((a, b) => a.duration - b.duration)
     else if (sortBy === 'nearest' && loc) {
       result.sort((a, b) => {
-        const dA = a.latitude ? calculateDistance(loc.lat, loc.lng, a.latitude, a.longitude!) : Infinity
-        const dB = b.latitude ? calculateDistance(loc.lat, loc.lng, b.latitude, b.longitude!) : Infinity
+        const latA = a.latitude
+        const lngA = a.longitude
+        const latB = b.latitude
+        const lngB = b.longitude
+        const dA = latA != null && lngA != null ? calculateDistance(loc.lat, loc.lng, latA, lngA) : Infinity
+        const dB = latB != null && lngB != null ? calculateDistance(loc.lat, loc.lng, latB, lngB) : Infinity
         return dA - dB
       })
     }
@@ -171,6 +178,11 @@ export default function ServicesPage() {
   const selUserImage = sel ? safeStr(sel.user?.image) : null
   const selUserUsername = sel ? safeStr(sel.user?.username) : null
   const selCategory = sel ? (typeof sel.category === 'string' ? sel.category as ServiceCategory : 'OTHER' as ServiceCategory) : 'OTHER' as ServiceCategory
+  const selFormFields = sel && Array.isArray(sel.appointmentFormFields)
+    ? sel.appointmentFormFields
+        .filter((f: any) => f && typeof f === 'object' && typeof f.label === 'string')
+        .map((f: any) => ({ label: String(f.label), type: f.type === 'textarea' ? 'textarea' as const : 'text' as const, required: f.required === true }))
+    : null
 
   return (
     <div className={styles.page}>
@@ -215,7 +227,7 @@ export default function ServicesPage() {
 
       {session?.user && (
         <LocationCard
-          homeCoords={passportLocation?.latitude ? [passportLocation.latitude, passportLocation.longitude] : null}
+          homeCoords={passportLocation?.latitude != null && passportLocation.longitude != null ? [passportLocation.latitude, passportLocation.longitude] : null}
           homeName={passportLocation?.location || ''}
           passportLocName={passportLocation?.location}
           settingLocation={false}
@@ -424,6 +436,7 @@ export default function ServicesPage() {
           serviceCategory={selCategory}
           serviceOfferingId={sel.id}
           productTitle={selTitle}
+          formFields={selFormFields}
         />
       )}
     </div>

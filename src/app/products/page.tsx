@@ -248,12 +248,16 @@ export default function ProductsPage() {
       )
     }
 
-    const loc = passportLocation?.latitude ? { lat: passportLocation.latitude, lng: passportLocation.longitude, r: passportLocation.searchRadius || 50 } : null
+    const passportLat = passportLocation?.latitude
+    const passportLng = passportLocation?.longitude
+    const loc = passportLat != null && passportLng != null ? { lat: passportLat, lng: passportLng, r: passportLocation?.searchRadius || 50 } : null
     if (loc) {
       result = result.filter(p => {
         if (p.isGlobal || p.isRemote) return true
-        if (p.latitude == null || p.longitude == null) return false
-        return calculateDistance(loc.lat, loc.lng, p.latitude, p.longitude) <= loc.r
+        const pLat = p.latitude
+        const pLng = p.longitude
+        if (pLat == null || pLng == null) return false
+        return calculateDistance(loc.lat, loc.lng, pLat, pLng) <= loc.r
       })
     }
 
@@ -263,8 +267,12 @@ export default function ProductsPage() {
       result.sort((a, b) => {
         if (a.isGlobal && !b.isGlobal) return -1
         if (!a.isGlobal && b.isGlobal) return 1
-        const dA = a.latitude ? calculateDistance(loc.lat, loc.lng, a.latitude, a.longitude!) : Infinity
-        const dB = b.latitude ? calculateDistance(loc.lat, loc.lng, b.latitude, b.longitude!) : Infinity
+        const latA = a.latitude
+        const lngA = a.longitude
+        const latB = b.latitude
+        const lngB = b.longitude
+        const dA = latA != null && lngA != null ? calculateDistance(loc.lat, loc.lng, latA, lngA) : Infinity
+        const dB = latB != null && lngB != null ? calculateDistance(loc.lat, loc.lng, latB, lngB) : Infinity
         return dA - dB
       })
     }
@@ -278,8 +286,13 @@ export default function ProductsPage() {
 
   const clearFilters = () => {
     setType('ALL'); setCategory('ALL'); setLocation('ALL'); setCondition('ALL')
-    setPriceMin(''); setPriceMax(''); setSearchQuery('')
+    setPriceMin(''); setPriceMax(''); setSearchQuery(''); setPage(1)
   }
+
+  // Reset to first page whenever the result set criteria change
+  useEffect(() => {
+    setPage(1)
+  }, [type, category, location, condition, priceMin, priceMax, searchQuery, sortBy])
 
   const handleMySubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -462,6 +475,7 @@ export default function ProductsPage() {
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Search products and services..."
+            aria-label="Search products and services"
             className={styles.searchInput}
           />
           {searchQuery && (
@@ -478,7 +492,7 @@ export default function ProductsPage() {
         <>
         {session?.user && (
           <LocationCard
-            homeCoords={passportLocation?.latitude ? [passportLocation.latitude, passportLocation.longitude] : null}
+            homeCoords={passportLocation?.latitude != null && passportLocation.longitude != null ? [passportLocation.latitude, passportLocation.longitude] : null}
             homeName={passportLocation?.location || ''}
             passportLocName={passportLocation?.location}
             settingLocation={settingLocation}
@@ -501,11 +515,11 @@ export default function ProductsPage() {
 
           <main className={`${styles.content} page-enter`}>
             <div className={styles.resultsHeader}>
-              <span className={styles.resultsCount}>
+              <span className={styles.resultsCount} role="status" aria-live="polite">
                 <strong>{filteredProducts.length}</strong> {filteredProducts.length === 1 ? 'item' : 'items'} found
               </span>
               <div className={styles.resultsControls}>
-                <select value={sortBy} onChange={e => setSortBy(e.target.value)} className={styles.sortSelect}>
+                <select value={sortBy} onChange={e => setSortBy(e.target.value)} className={styles.sortSelect} aria-label="Sort products">
                   <option value="newest">Newest First</option>
                   <option value="price-low">Price: Low to High</option>
                   <option value="price-high">Price: High to Low</option>
@@ -516,6 +530,8 @@ export default function ProductsPage() {
                     className={`${styles.viewToggleBtn} ${viewMode === 'grid' ? styles.active : ''}`}
                     onClick={() => setViewMode('grid')}
                     title="Grid view"
+                    aria-label="Grid view"
+                    aria-pressed={viewMode === 'grid'}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                       <rect x="3" y="3" width="7" height="7" rx="1"/>
@@ -528,6 +544,8 @@ export default function ProductsPage() {
                     className={`${styles.viewToggleBtn} ${viewMode === 'list' ? styles.active : ''}`}
                     onClick={() => setViewMode('list')}
                     title="List view"
+                    aria-label="List view"
+                    aria-pressed={viewMode === 'list'}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                       <rect x="3" y="4" width="18" height="4" rx="1"/>
@@ -539,6 +557,8 @@ export default function ProductsPage() {
                     className={`${styles.viewToggleBtn} ${viewMode === 'map' ? styles.active : ''}`}
                     onClick={() => setViewMode('map')}
                     title="Map view"
+                    aria-label="Map view"
+                    aria-pressed={viewMode === 'map'}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
@@ -551,7 +571,7 @@ export default function ProductsPage() {
             {viewMode === 'map' ? (
               <ProductMapView
                 products={filteredProducts}
-                userLocation={passportLocation?.latitude ? { lat: passportLocation.latitude, lon: passportLocation.longitude } : null}
+                userLocation={passportLocation?.latitude != null && passportLocation.longitude != null ? { lat: passportLocation.latitude, lon: passportLocation.longitude } : null}
                 mapRef={mapRef}
                 settingLocation={settingLocation}
                 onMapClickSetLocation={handleMapClickSetLocation}
@@ -564,6 +584,7 @@ export default function ProductsPage() {
                 page={page}
                 pageSize={pageSize}
                 onViewModeChange={setViewMode}
+                onPageChange={setPage}
                 onFund={handleFund}
                 onClearFilters={clearFilters}
               />

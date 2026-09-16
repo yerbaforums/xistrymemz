@@ -71,6 +71,12 @@ export async function GET(
       })
     }
 
+    const isGated = event.gateLocation === true
+    const hasPaidTicket = myTicket?.paymentStatus === 'PAID'
+    // Free gated events unlock on RSVP/join; ticketed gated events require verified (PAID) ticket
+    const canSeeExact = isOrganizer || hasPaidTicket || (!event.isTicketed && joined)
+    const gated = isGated && !canSeeExact
+
     return apiSuccess({
       id: event.id,
       title: event.title,
@@ -80,9 +86,12 @@ export async function GET(
       eventDate: event.eventDate?.toISOString() || null,
       endDate: event.endDate?.toISOString() || null,
       location: event.location,
-      locationDetails: event.locationDetails,
-      latitude: event.latitude,
-      longitude: event.longitude,
+      locationDetails: gated ? null : event.locationDetails,
+      exactAddress: gated ? null : (event.exactAddress || null),
+      latitude: gated ? null : event.latitude,
+      longitude: gated ? null : event.longitude,
+      isGated: gated,
+      gateLocation: event.gateLocation || false,
       maxJoiners: event.maxJoiners,
       pinned: event.pinned,
       isPrivate: event.isPrivate,
@@ -168,15 +177,17 @@ export async function PUT(
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { 
-      title, 
-      description, 
+    const {
+      title,
+      description,
       imageUrl,
-      eventCategory, 
-      eventDate, 
-      endDate, 
-      location, 
+      eventCategory,
+      eventDate,
+      endDate,
+      location,
       locationDetails,
+      gateLocation,
+      exactAddress,
       maxJoiners,
       isTicketed,
       ticketPrice,
@@ -219,6 +230,8 @@ export async function PUT(
         endDate: endDate ? new Date(endDate) : event.endDate,
         location,
         locationDetails,
+        gateLocation: gateLocation ?? undefined,
+        exactAddress: exactAddress !== undefined ? (exactAddress || null) : undefined,
         latitude,
         longitude,
         maxJoiners: maxJoiners ?? event.maxJoiners,

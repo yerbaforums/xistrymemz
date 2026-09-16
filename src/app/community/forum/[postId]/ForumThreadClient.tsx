@@ -127,7 +127,6 @@ export default function ForumThreadPage() {
         setPost({ ...post, pinned: !post.pinned })
       }
     } catch (e) {
-      console.error(e)
     }
   }
 
@@ -143,7 +142,6 @@ export default function ForumThreadPage() {
         setPost({ ...post, locked: !post.locked })
       }
     } catch (e) {
-      console.error(e)
     }
   }
 
@@ -169,7 +167,6 @@ export default function ForumThreadPage() {
         setEditingPost(false)
       }
     } catch (e) {
-      console.error(e)
     } finally {
       setSubmitting(false)
     }
@@ -183,7 +180,6 @@ export default function ForumThreadPage() {
         router.push('/community/forum')
       }
     } catch (e) {
-      console.error(e)
     } finally {
       setDeleting(false)
     }
@@ -209,7 +205,6 @@ export default function ForumThreadPage() {
         setEditingReply(null)
       }
     } catch (e) {
-      console.error(e)
     } finally {
       setSubmitting(false)
     }
@@ -226,7 +221,6 @@ export default function ForumThreadPage() {
         if (post) setPost({ ...post, replyCount: post.replyCount - 1 })
       }
     } catch (e) {
-      console.error(e)
     } finally {
       setSubmitting(false)
     }
@@ -263,7 +257,6 @@ export default function ForumThreadPage() {
         }
       }
     } catch (err) {
-      console.error(err)
     } finally {
       setLoading(false)
     }
@@ -279,7 +272,6 @@ export default function ForumThreadPage() {
         setReplies(data?.data || data || [])
       }
     } catch (err) {
-      console.error(err)
     }
   }
 
@@ -378,7 +370,6 @@ export default function ForumThreadPage() {
         setTipOptions(data.tipOptions || [])
       }
     } catch (err) {
-      console.error(err)
     }
   }
 
@@ -402,7 +393,6 @@ export default function ForumThreadPage() {
         fetchPost()
       }
     } catch (err) {
-      console.error(err)
     } finally {
       setSubmitting(false)
     }
@@ -425,7 +415,6 @@ export default function ForumThreadPage() {
         setUserVotes([optionId])
       }
     } catch (err) {
-      console.error(err)
     } finally {
       setVoting(false)
     }
@@ -460,7 +449,6 @@ export default function ForumThreadPage() {
         error(data.error || 'Failed to send tip')
       }
     } catch (err) {
-      console.error(err)
     }
   }
 

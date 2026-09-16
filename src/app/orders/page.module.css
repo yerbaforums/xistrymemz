@@ -383,6 +383,28 @@
   margin: 12px 0;
 }
 
+.priceTable {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px;
+}
+
+.trackingRow {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.trackingInput {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
 .priceRow {
   display: flex;
   justify-content: space-between;

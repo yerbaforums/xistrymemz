@@ -16,6 +16,7 @@ function VerifyEmailContent() {
   const [status, setStatus] = useState<'verifying' | 'success' | 'error' | 'idle'>('idle')
   const [error, setError] = useState('')
   const [email, setEmail] = useState('')
+  const [resendSuccess, setResendSuccess] = useState('')
 
   useEffect(() => {
     if (token) {
@@ -48,6 +49,7 @@ function VerifyEmailContent() {
   const handleResend = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setResendSuccess('')
 
     try {
       const res = await fetch('/api/auth/resend-verification', {
@@ -59,7 +61,7 @@ function VerifyEmailContent() {
       const data = await res.json()
 
       if (res.ok) {
-        alert('Verification email sent!')
+        setResendSuccess('Verification email sent! Check your inbox.')
       } else {
         setError(data.error || 'Failed to send email')
       }
@@ -130,6 +132,7 @@ function VerifyEmailContent() {
               <p style={{textAlign: 'center', marginBottom: '20px'}}>Request a new verification email:</p>
               <form onSubmit={handleResend}>
                 {error && <div className={styles.error} role="alert">⚠️ {error}</div>}
+                {resendSuccess && <div role="status">✅ {resendSuccess}</div>}
                 <div className={styles.formGroup}>
                   <label htmlFor="email">Email</label>
                   <input
@@ -155,6 +158,7 @@ function VerifyEmailContent() {
             <div className={styles.form}>
               <form onSubmit={handleResend}>
                 {error && <div className={styles.error} role="alert">⚠️ {error}</div>}
+                {resendSuccess && <div role="status">✅ {resendSuccess}</div>}
                 <div className={styles.formGroup}>
                   <label htmlFor="email">Email</label>
                   <input

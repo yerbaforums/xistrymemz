@@ -17,13 +17,6 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.2",
-    "@tari-project/indexer-provider": "^0.14.6",
-    "@tari-project/metamask-signer": "^0.14.6",
-    "@tari-project/tari-permissions": "^0.14.6",
-    "@tari-project/tari-universe-signer": "^0.14.6",
-    "@tari-project/tarijs": "^0.4.0",
-    "@tari-project/wallet_jrpc_client": "^1.15.0",
-    "@tari-project/wallet-daemon-signer": "^0.14.6",
     "@types/leaflet": "^1.9.21",
     "@types/simple-peer": "^9.11.9",
     "@vercel/analytics": "^2.0.1",

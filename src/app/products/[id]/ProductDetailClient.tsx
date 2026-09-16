@@ -18,6 +18,10 @@ import { MakeOfferModal } from '@/components/MakeOfferModal'
 import { ComingSoonModal } from '@/components/ComingSoonModal'
 import EntityActions from '@/components/EntityActions'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
+import { AppointmentSettings } from '@/components/listings/AppointmentSettings'
+import { FieldListEditor } from '@/components/listings/FieldListEditor'
+import FormFieldInput, { fieldDefaultValue, isFieldAnswered } from '@/components/listings/FormFieldInput'
+import type { FormField } from '@/types/service'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import ShareBar from '@/components/ShareBar'
 import ViewCount from '@/components/ViewCount'
@@ -83,7 +87,8 @@ interface Product {
   appointmentLeadTime?: number | null
   appointmentLocation?: string | null
   appointmentMeetingLink?: string | null
-  appointmentFormFields?: { label: string; type: string; required: boolean }[] | null
+  appointmentFormFields?: FormField[] | null
+  customizationFields?: FormField[] | null
   hashtags?: { id: string; tag?: string; hashtag?: { id: string; tag: string } }[]
   viewCount?: number
 }
@@ -105,6 +110,26 @@ const CRYPTO_DISPLAY = [
   { symbol: 'ZANO', decimals: 4, fallback: 0.50 },
   { symbol: 'FUSD', decimals: 2, fallback: 1 },
 ]
+
+function computeRentalPrice(p: { rentalDaily: number | null; rentalWeekly: number | null; rentalMonthly: number | null; rentalDeposit: number | null }, days: number): number | null {
+  const daily = p.rentalDaily
+  if (!daily || days <= 0) return null
+  let total = 0
+  let remaining = days
+  if (p.rentalMonthly && remaining >= 30) {
+    const months = Math.floor(remaining / 30)
+    total += months * p.rentalMonthly
+    remaining -= months * 30
+  }
+  if (p.rentalWeekly && remaining >= 7) {
+    const weeks = Math.floor(remaining / 7)
+    total += weeks * p.rentalWeekly
+    remaining -= weeks * 7
+  }
+  total += remaining * daily
+  if (p.rentalDeposit) total += p.rentalDeposit
+  return total
+}
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { data: session } = useSession()
@@ -140,7 +165,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     rentalDeposit: '',
     rentalMinDays: 1,
     rentalMaxDays: '',
-    rentalAvailable: true
+    rentalAvailable: true,
+    acceptsAppointments: false,
+    appointmentDuration: '',
+    appointmentLeadTime: '',
+    appointmentLocation: '',
+    appointmentMeetingLink: '',
+    appointmentFormFields: [] as FormField[],
+    customizationFields: [] as FormField[],
   })
   const userDonationAddrs = useDonationAddresses()
   const [saving, setSaving] = useState(false)
@@ -156,6 +188,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [requestLoading, setRequestLoading] = useState(false)
   const [showEscrowModal, setShowEscrowModal] = useState(false)
   const [escrowLoading, setEscrowLoading] = useState(false)
+  const [orderQty, setOrderQty] = useState(1)
+  const [rentalStart, setRentalStart] = useState('')
+  const [rentalEnd, setRentalEnd] = useState('')
+  const [customAnswers, setCustomAnswers] = useState<Record<string, string>>({})
   const [courierServices, setCourierServices] = useState<{id: string, name: string, basePrice: number}[]>([])
   const [selectedCourier, setSelectedCourier] = useState('')
   const [deliveryAddress, setDeliveryAddress] = useState('')
@@ -232,7 +268,18 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           rentalDeposit: data.rentalDeposit?.toString() || '',
           rentalMinDays: data.rentalMinDays || 1,
           rentalMaxDays: data.rentalMaxDays?.toString() || '',
-          rentalAvailable: data.rentalAvailable ?? true
+          rentalAvailable: data.rentalAvailable ?? true,
+          acceptsAppointments: data.acceptsAppointments ?? false,
+          appointmentDuration: data.appointmentDuration?.toString() || '',
+          appointmentLeadTime: data.appointmentLeadTime?.toString() || '',
+          appointmentLocation: data.appointmentLocation || '',
+          appointmentMeetingLink: data.appointmentMeetingLink || '',
+          appointmentFormFields: Array.isArray(data.appointmentFormFields)
+            ? data.appointmentFormFields.map((ff: FormField) => ({ label: String(ff.label), type: (ff.type as FormField['type']) || 'text', required: ff.required === true, options: Array.isArray(ff.options) && ff.options.length > 0 ? ff.options : null }))
+            : [],
+          customizationFields: Array.isArray(data.customizationFields)
+            ? data.customizationFields.map((ff: FormField) => ({ label: String(ff.label), type: (ff.type as FormField['type']) || 'text', required: ff.required === true, options: Array.isArray(ff.options) && ff.options.length > 0 ? ff.options : null }))
+            : [],
         })
         fetch(`/api/user/shop?userId=${data.user.id}`)
           .then(r => {
@@ -361,6 +408,41 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       info('Please sign in to place an order')
       return
     }
+    const requiredMissing = (product.customizationFields || [])
+      .filter(f => f.required && !isFieldAnswered(f, customAnswers[f.label] || ''))
+    if (requiredMissing.length > 0) {
+      error(`Please answer: ${requiredMissing.map(f => f.label).join(', ')}`)
+      return
+    }
+
+    let rentalAmount: number | null = null
+    if (product.type === 'RENTAL') {
+      if (!rentalStart || !rentalEnd) {
+        error('Please select rental start and end dates')
+        return
+      }
+      const start = new Date(rentalStart)
+      const end = new Date(rentalEnd)
+      if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end <= start) {
+        error('Please select a valid rental window')
+        return
+      }
+      const days = Math.round((end.getTime() - start.getTime()) / 86400000)
+      if (product.rentalMinDays && days < product.rentalMinDays) {
+        error(`Minimum rental period is ${product.rentalMinDays} day${product.rentalMinDays > 1 ? 's' : ''}`)
+        return
+      }
+      if (product.rentalMaxDays && days > product.rentalMaxDays) {
+        error(`Maximum rental period is ${product.rentalMaxDays} days`)
+        return
+      }
+      rentalAmount = computeRentalPrice(product, days)
+      if (!rentalAmount) {
+        error('This rental has no daily, weekly, or monthly price set')
+        return
+      }
+    }
+
     setEscrowLoading(true)
     try {
       const res = await fetch('/api/orders', {
@@ -368,9 +450,20 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sellerId: product.user.id,
-          amount: product.price,
+          amount: product.type === 'RENTAL'
+            ? (rentalAmount ?? 0)
+            : (product.price == null ? Number(product.price) || 0 : Number(product.price) * orderQty),
           productId: product.id,
-          description: `Purchase: ${product.title}`,
+          description: product.type === 'RENTAL'
+            ? `Rental: ${product.title} (${rentalStart} → ${rentalEnd})`
+            : `Purchase: ${product.title}`,
+          quantity: product.type === 'RENTAL' || product.price == null ? 1 : orderQty,
+          customizationAnswers: (product.customizationFields || []).map(f => ({
+            label: f.label,
+            value: customAnswers[f.label] != null ? String(customAnswers[f.label]) : fieldDefaultValue(f)
+          })),
+          rentalStart: product.type === 'RENTAL' ? new Date(rentalStart).toISOString() : undefined,
+          rentalEnd: product.type === 'RENTAL' ? new Date(rentalEnd).toISOString() : undefined,
           sellerPayoutAddress: product.sellerPayoutAddress,
           sellerPayoutCurrency: product.sellerCryptoCurrency,
           courierServiceId: selectedCourier || null,
@@ -443,6 +536,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       console.error(err)
     }
     setShowEscrowModal(true)
+    setOrderQty(1)
+    setCustomAnswers({})
   }
 
   const handleSave = async () => {
@@ -695,6 +790,24 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                       onAddressesChange={(addrs) => setEditData({...editData, selectedDonationAddrs: addrs})}
                     />
                   )}
+                  <AppointmentSettings
+                    value={{
+                      acceptsAppointments: editData.acceptsAppointments,
+                      appointmentDuration: editData.appointmentDuration,
+                      appointmentLeadTime: editData.appointmentLeadTime,
+                      appointmentLocation: editData.appointmentLocation,
+                      appointmentMeetingLink: editData.appointmentMeetingLink,
+                      appointmentFormFields: editData.appointmentFormFields,
+                    }}
+                    onChange={(v) => setEditData({...editData, ...v})}
+                  />
+                  <FieldListEditor
+                    fields={editData.customizationFields}
+                    onChange={(fields) => setEditData({...editData, customizationFields: fields})}
+                    title="Order Customization Options"
+                    hint="Questions buyers answer when ordering this item — e.g. size, color, engraving, personalization."
+                    placeholder="e.g. What size?"
+                  />
                 </div>
               </details>
 
@@ -1120,7 +1233,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       {showEscrowModal && product && (
         <div className="modal-overlay" onClick={() => setShowEscrowModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <h2>🛒 Buy Now</h2>
+            <h2>{product.type === 'RENTAL' ? '📅 Rent Now' : '🛒 Buy Now'}</h2>
             <p className={styles.projectModalDesc}>
               This is a direct sale — the platform never holds funds. You pay the seller directly,
               then mark the order as paid once you transfer.
@@ -1174,6 +1287,92 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   placeholder="Enter delivery address..."
                   rows={2}
                 />
+              </div>
+            )}
+
+            {product.type !== 'RENTAL' && product.price != null && (
+              <div className="form-group">
+                <label>Quantity</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={orderQty}
+                  onChange={e => setOrderQty(Math.max(1, parseInt(e.target.value) || 1))}
+                  style={{ maxWidth: 120 }}
+                />
+              </div>
+            )}
+
+            {product.type === 'RENTAL' && (
+              <div className="form-group">
+                <label>Rental Period</label>
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  <div style={{ flex: 1, minWidth: 130 }}>
+                    <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Start Date</label>
+                    <input
+                      type="date"
+                      className={styles.projectSelect}
+                      style={{ width: '100%', marginTop: 4 }}
+                      value={rentalStart}
+                      min={new Date().toISOString().split('T')[0]}
+                      onChange={e => setRentalStart(e.target.value)}
+                    />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 130 }}>
+                    <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>End Date</label>
+                    <input
+                      type="date"
+                      className={styles.projectSelect}
+                      style={{ width: '100%', marginTop: 4 }}
+                      value={rentalEnd}
+                      min={rentalStart || new Date().toISOString().split('T')[0]}
+                      onChange={e => setRentalEnd(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <small style={{ color: 'var(--text-muted)', display: 'block', marginTop: 6 }}>
+                  Min {product.rentalMinDays} day{product.rentalMinDays !== 1 ? 's' : ''}
+                  {product.rentalMaxDays ? `, max ${product.rentalMaxDays} days` : ''} ·{' '}
+                  {product.rentalDaily ? `$${product.rentalDaily}/day` : ''}
+                  {product.rentalWeekly ? ` · $${product.rentalWeekly}/week` : ''}
+                  {product.rentalMonthly ? ` · $${product.rentalMonthly}/month` : ''}
+                  {product.rentalDeposit ? ` · +$${product.rentalDeposit} deposit` : ''}
+                </small>
+                {rentalStart && rentalEnd && new Date(rentalEnd) > new Date(rentalStart) && (() => {
+                  const days = Math.round((new Date(rentalEnd).getTime() - new Date(rentalStart).getTime()) / 86400000)
+                  const total = computeRentalPrice(product, days)
+                  return (
+                    <div className={styles.escrowSummary} style={{ marginTop: 10 }}>
+                      <div className={styles.escrowRow}>
+                        <span>Duration:</span>
+                        <strong>{days} day{days !== 1 ? 's' : ''}</strong>
+                      </div>
+                      <div className={styles.escrowRow}>
+                        <span>Total{product.rentalDeposit ? ' (incl. deposit)' : ''}:</span>
+                        <strong>${total?.toFixed(2) ?? '—'}</strong>
+                      </div>
+                    </div>
+                  )
+                })()}
+              </div>
+            )}
+
+            {product.customizationFields && product.customizationFields.length > 0 && (
+              <div className={styles.escrowSummary}>
+                <h4 style={{ margin: '0 0 10px' }}>Customization</h4>
+                {product.customizationFields.map((field, index) => (
+                  <div className="form-group" key={`${field.label}-${index}`}>
+                    <label>
+                      {field.label}{field.required ? ' *' : ''}
+                    </label>
+                    <FormFieldInput
+                      field={field}
+                      value={customAnswers[field.label] ?? ''}
+                      onChange={v => setCustomAnswers(prev => ({ ...prev, [field.label]: v }))}
+                      id={`custom-${index}`}
+                    />
+                  </div>
+                ))}
               </div>
             )}
 
@@ -1332,7 +1531,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         defaultLeadTime={product.appointmentLeadTime}
         defaultLocation={product.appointmentLocation}
         defaultMeetingLink={product.appointmentMeetingLink}
-        formFields={product.appointmentFormFields as { label: string; type: 'text' | 'textarea'; required: boolean }[] | null}
+        formFields={product.appointmentFormFields as FormField[] | null}
       />
 
       <LinkedItemsSection

@@ -51,7 +51,7 @@ export async function GET(request: Request) {
         createdAt: true,
         _count: {
           select: {
-            plans: true,
+            projects: true,
             requests: true,
             sentConnections: true,
             receivedConnections: true

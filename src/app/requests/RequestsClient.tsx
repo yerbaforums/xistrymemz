@@ -385,7 +385,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
 
           <div className={styles.filterGroup}>
             <label className={styles.filterLabel}>Search</label>
-            <input type="text" placeholder="Search requests..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className={styles.filterInput} />
+            <input type="text" placeholder="Search requests..." aria-label="Search requests" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className={styles.filterInput} />
           </div>
 
           <div className={styles.filterGroup}>
@@ -508,7 +508,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
           ) : (
             <>
               <div className={styles.resultsHeader}>
-                <span className={styles.resultsCount}>
+                <span className={styles.resultsCount} role="status" aria-live="polite">
                   <strong>{filtered.length}</strong> {filtered.length === 1 ? 'request' : 'requests'} found
                 </span>
                 <div className={styles.viewToggle}>
@@ -516,16 +516,22 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
                     className={`${styles.viewBtn} ${viewMode === 'grid' ? styles.viewBtnActive : ''}`}
                     onClick={() => setViewMode('grid')}
                     title="Grid view"
+                    aria-label="Grid view"
+                    aria-pressed={viewMode === 'grid'}
                   >▦</button>
                   <button
                     className={`${styles.viewBtn} ${viewMode === 'list' ? styles.viewBtnActive : ''}`}
                     onClick={() => setViewMode('list')}
                     title="List view"
+                    aria-label="List view"
+                    aria-pressed={viewMode === 'list'}
                   >☰</button>
                   <button
                     className={`${styles.viewBtn} ${viewMode === 'map' ? styles.viewBtnActive : ''}`}
                     onClick={() => setViewMode('map')}
                     title="Map view"
+                    aria-label="Map view"
+                    aria-pressed={viewMode === 'map'}
                   >🗺</button>
                 </div>
               </div>

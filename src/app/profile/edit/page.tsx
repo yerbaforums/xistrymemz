@@ -10,6 +10,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { useToast } from '@/context/ToastContext'
 import ImageUploader from '@/components/ImageUploader'
 import AvailabilityEditor from '@/components/AvailabilityEditor'
+import { TimeZoneSelect } from '@/components/listings/TimeZoneSelect'
 import Skeleton from '@/components/Skeleton'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import { USER_CLASSES, CLASS_ICONS } from '@/lib/user-classes'
@@ -77,6 +78,7 @@ export default function ProfileEditPage() {
   const [image, setImage] = useState('')
   const [coverImage, setCoverImage] = useState('')
   const [coverStyle, setCoverStyle] = useState('cover')
+  const [timeZone, setTimeZone] = useState('')
   const [location, setLocation] = useState('')
   const [website, setWebsite] = useState('')
   const [userClass, setUserClass] = useState('')
@@ -151,6 +153,7 @@ export default function ProfileEditPage() {
       setImage(user.image || '')
       setCoverImage(user.coverImage || '')
       setCoverStyle(user.coverStyle || 'cover')
+      setTimeZone(user.timeZone || '')
       setLocation(user.location || '')
       setWebsite(user.website || '')
       setUserClass(user.userClass || '')
@@ -190,7 +193,7 @@ export default function ProfileEditPage() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            name, username, bio, image, coverImage, coverStyle, location, website, userClass,
+            name, username, bio, image, coverImage, coverStyle, timeZone, location, website, userClass,
             acceptsDonations, neighborhood, searchRadius,
             latitude: latitude ?? null, longitude: longitude ?? null,
             traveling, lookingForCollaborators,
@@ -387,6 +390,10 @@ export default function ProfileEditPage() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            <div className={styles.mb16}>
+              <TimeZoneSelect value={timeZone} onChange={setTimeZone} label="Your Timezone" />
             </div>
 
             <AvailabilityEditor userId={session?.user.id ?? ''} />

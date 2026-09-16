@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { shouldNotify } from '@/services/preferenceService'
 
 type NotificationType = 'CONNECTION_REQUEST' | 'CONNECTION_ACCEPTED' | 'NEW_MESSAGE'
   | 'PROJECT_UPDATE' | 'EVENT_REMINDER' | 'REQUEST_FULFILLED' | 'NEW_FOLLOWER'
@@ -6,25 +7,30 @@ type NotificationType = 'CONNECTION_REQUEST' | 'CONNECTION_ACCEPTED' | 'NEW_MESS
   | 'TICKET_PAID'
   | 'APPOINTMENT_REQUEST' | 'APPOINTMENT_CONFIRMED' | 'APPOINTMENT_DECLINED'
   | 'APPOINTMENT_RESCHEDULED' | 'APPOINTMENT_PAID' | 'APPOINTMENT_COMPLETED'
+  | 'OFFER_RECEIVED' | 'OFFER_ACCEPTED' | 'OFFER_REJECTED' | 'OFFER_WITHDRAWN'
+  | 'OFFER_COMPLETED' | 'ORDER_UPDATE'
 
 export async function createNotification(params: {
   type: NotificationType
   userId: string
+  title?: string
   actorId?: string
   entityId?: string
   entityType?: string
   message: string
   link?: string
 }) {
+  const enabled = await shouldNotify(params.userId, params.type)
+  if (!enabled) return null
+
   return prisma.notification.create({
     data: {
       type: params.type,
       userId: params.userId,
-      actorId: params.actorId || null,
-      entityId: params.entityId || null,
-      entityType: params.entityType || null,
+      title: params.title ?? params.type,
       message: params.message,
       link: params.link || null,
+      relatedId: params.entityId ?? params.actorId ?? null,
     },
   })
 }
@@ -39,7 +45,6 @@ export async function findNotifications(userId: string, query: { page?: number; 
   const [notifications, total, unreadCount] = await Promise.all([
     prisma.notification.findMany({
       where,
-      include: { actor: { select: { id: true, name: true, image: true } } },
       orderBy: { createdAt: 'desc' },
       skip,
       take: limit,

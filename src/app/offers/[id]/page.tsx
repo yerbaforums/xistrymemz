@@ -9,6 +9,7 @@ import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
 import { CounterOfferModal } from '@/components/CounterOfferModal'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import ReviewPrompt from '@/components/ReviewPrompt'
 import Skeleton from '@/components/Skeleton'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
@@ -64,6 +65,7 @@ export default function OfferDetailPage({
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [showCounterModal, setShowCounterModal] = useState(false)
+  const [showReviewPrompt, setShowReviewPrompt] = useState(false)
 
   useEffect(() => {
     if (!resolvedParams) return
@@ -94,8 +96,9 @@ export default function OfferDetailPage({
   const canAccept = offer?.status === 'PENDING' && isReceiver
   const canWithdraw = offer?.status === 'PENDING' && isMaker
   const canCounter = offer?.status === 'PENDING' && isReceiver
+  const canComplete = offer?.status === 'ACCEPTED'
 
-  const handleAction = async (action: 'ACCEPTED' | 'REJECTED' | 'WITHDRAWN') => {
+  const handleAction = async (action: 'ACCEPTED' | 'REJECTED' | 'WITHDRAWN' | 'COMPLETED') => {
     if (!offer) return
     setActionLoading(true)
 
@@ -115,13 +118,15 @@ export default function OfferDetailPage({
           error('Offer rejected')
         } else if (action === 'WITHDRAWN') {
           success('Offer withdrawn')
+        } else if (action === 'COMPLETED') {
+          success('Offer marked as complete!')
+          setShowReviewPrompt(true)
         }
       } else {
         const err = await res.json()
         error(err.error || 'Failed to update offer')
       }
     } catch (err) {
-      console.error(err)
       error('Failed to update offer')
     } finally {
       setActionLoading(false)
@@ -139,6 +144,26 @@ export default function OfferDetailPage({
   const statusInfo = STATUS_LABELS[offer.status] || { label: offer.status, color: '#888' }
   const otherUser = isMaker ? offer.receiver : offer.maker
   const messageUser = isMaker ? offer.receiver : offer.maker
+
+  const submitReview = async (rating: number, comment: string) => {
+    if (!offer) return
+    const res = await fetch('/api/ratings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: messageUser.id,
+        rating,
+        comment,
+        type: 'GENERAL',
+        transactionId: offer.id
+      })
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.error || 'Failed to submit review')
+    }
+    success('Review submitted!')
+  }
 
   return (
     <ErrorBoundary>
@@ -258,6 +283,23 @@ export default function OfferDetailPage({
               {actionLoading ? 'Processing...' : 'Withdraw Offer'}
             </button>
           )}
+          {canComplete && (
+            <button
+              className={styles.completeBtn}
+              onClick={() => handleAction('COMPLETED')}
+              disabled={actionLoading}
+            >
+              {actionLoading ? 'Processing...' : '✓ Mark Complete'}
+            </button>
+          )}
+          {offer.status === 'COMPLETED' && (
+            <button
+              className={styles.completeBtn}
+              onClick={() => setShowReviewPrompt(true)}
+            >
+              ⭐ Leave a Review
+            </button>
+          )}
           {canAccept && (
             <button
               className={styles.rejectBtn}
@@ -329,6 +371,16 @@ export default function OfferDetailPage({
           listingTitle={offer.listingTitle}
           listingId={offer.listingId}
           offerId={offer.id}
+        />
+      )}
+
+      {offer && (
+        <ReviewPrompt
+          open={showReviewPrompt}
+          onClose={() => setShowReviewPrompt(false)}
+          targetType="member"
+          targetLabel={messageUser.name || 'this member'}
+          onSubmit={submitReview}
         />
       )}
     </div>

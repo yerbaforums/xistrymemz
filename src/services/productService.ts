@@ -26,7 +26,7 @@ export async function findProducts(query: ProductQuery) {
 
   if (category) where.category = category
   if (type) where.type = type
-  if (shopSlug) where.shopSlug = shopSlug
+  if (shopSlug) where.user = { shopSlug }
   if (userId) where.userId = userId
   if (search) where.title = { contains: search, mode: 'insensitive' }
   if (location) where.location = { contains: location, mode: 'insensitive' }
@@ -36,7 +36,7 @@ export async function findProducts(query: ProductQuery) {
       where,
       include: {
         user: { select: { id: true, name: true, image: true, shopSlug: true } },
-        _count: { select: { reviews: true } },
+        _count: { select: { ratings: true } },
       },
       orderBy: sort === 'price_asc' ? { price: 'asc' } : sort === 'price_desc' ? { price: 'desc' } : { createdAt: 'desc' },
       skip,
@@ -53,7 +53,7 @@ export async function getProductById(id: string) {
     where: { id },
     include: {
       user: { select: { id: true, name: true, image: true, shopSlug: true, location: true } },
-      _count: { select: { reviews: true } },
+      _count: { select: { ratings: true } },
       hashtags: { include: { hashtag: true } },
     },
   })
@@ -71,9 +71,7 @@ export async function createProduct(data: Record<string, unknown>, userId: strin
       condition: data.condition as string || 'NEW',
       location: data.location as string || null,
       imageUrl: data.imageUrl as string || null,
-      images: data.images as string[] || [],
       userId,
-      shopSlug: data.shopSlug as string || null,
     },
   })
 
@@ -100,8 +98,6 @@ export async function updateProduct(id: string, data: Record<string, unknown>, u
       condition: data.condition as string | undefined,
       location: data.location as string | null | undefined,
       imageUrl: data.imageUrl as string | null | undefined,
-      images: data.images as string[] | undefined,
-      shopSlug: data.shopSlug as string | null | undefined,
     },
   })
 

@@ -13,6 +13,9 @@ import DonationAddressPicker from '@/components/DonationAddressPicker'
 import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import { PRODUCT_CONDITIONS, PRODUCT_TYPES } from '@/lib/product-categories'
 import LocationPicker from '@/components/LocationPicker'
+import { AppointmentSettings } from '@/components/listings/AppointmentSettings'
+import type { AppointmentField } from '@/components/listings/AppointmentSettings'
+import { FieldListEditor } from '@/components/listings/FieldListEditor'
 import type { DonationAddr } from '@/types/product'
 import styles from './page.module.css'
 
@@ -72,7 +75,8 @@ export default function NewProductPage() {
     appointmentLeadTime: '24',
     appointmentLocation: '',
     appointmentMeetingLink: '',
-    appointmentFormFields: [] as { label: string; type: string; required: boolean }[],
+    appointmentFormFields: [] as AppointmentField[],
+    customizationFields: [] as AppointmentField[],
   })
 
   useEffect(() => {
@@ -90,6 +94,11 @@ export default function NewProductPage() {
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [session])
+
+  useEffect(() => {
+    const typeParam = new URLSearchParams(window.location.search).get('type')
+    if (typeParam === 'rental') setForm(prev => ({ ...prev, type: 'RENTAL' }))
+  }, [])
 
   const update = useCallback(<K extends keyof typeof form>(key: K, value: (typeof form)[K]) => {
     setForm(prev => ({ ...prev, [key]: value }))
@@ -152,6 +161,11 @@ export default function NewProductPage() {
       })
       if (res.ok) {
         const productRes = await res.json(); const product = productRes?.data || productRes
+        if (product.needsEmailVerification) {
+          warning('Saved as draft. Verify your email to publish this listing.')
+          router.push('/dashboard/marketplace')
+          return
+        }
         if (form.shareToFeed) {
           await fetch('/api/posts', {
             method: 'POST',
@@ -442,9 +456,26 @@ export default function NewProductPage() {
                     />
                   </div>
                 )}
-                <p style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', margin: 0 }}>
-                  Want to offer bookable services? Visit <a href="/dashboard/services" style={{ color: 'var(--accent-primary)' }}>Services page</a> to create one
-                </p>
+                <AppointmentSettings
+                  value={{
+                    acceptsAppointments: form.acceptsAppointments,
+                    appointmentDuration: form.appointmentDuration,
+                    appointmentLeadTime: form.appointmentLeadTime,
+                    appointmentLocation: form.appointmentLocation,
+                    appointmentMeetingLink: form.appointmentMeetingLink,
+                    appointmentFormFields: form.appointmentFormFields,
+                  }}
+                  onChange={(v) => setForm(prev => ({ ...prev, ...v }))}
+                />
+                <div className={styles.customFieldsBlock}>
+                  <FieldListEditor
+                    fields={form.customizationFields}
+                    onChange={(fields) => update('customizationFields', fields)}
+                    title="Order Customization Options"
+                    hint="Questions buyers answer when ordering this item — e.g. size, color, engraving, personalization."
+                    placeholder="e.g. What size?"
+                  />
+                </div>
               </div>
             </details>
           </div>

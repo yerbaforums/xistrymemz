@@ -7,6 +7,8 @@ import { getDefaultRequestFormData } from '@/types/request'
 import type { RequestFormData } from '@/types/request'
 import ImageUploader from '@/components/ImageUploader'
 import LocationPicker from '@/components/LocationPicker'
+import { FieldListEditor } from '@/components/listings/FieldListEditor'
+import type { FormField } from '@/types/service'
 
 interface RequestTemplate {
   label: string
@@ -186,6 +188,17 @@ export default function RequestForm({
         />
         Show my donation addresses on this request
       </label>
+      <div style={{ margin: '18px 0' }}>
+        <h3 style={{ fontSize: '0.95rem', marginBottom: 4 }}>Questions for helpers (optional)</h3>
+        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: 10 }}>
+          Ask helpers to answer questions before they submit an offer (e.g. availability, location, gear).
+        </p>
+        <FieldListEditor
+          fields={form.customFields}
+          onChange={(fields: FormField[]) => setForm({ ...form, customFields: fields })}
+          title="Add a question"
+        />
+      </div>
       <div className="form-actions">
         <button type="submit" disabled={isSaving || !form.title.trim()} className="btn-primary">
           {isSaving ? 'Saving...' : submitLabel}

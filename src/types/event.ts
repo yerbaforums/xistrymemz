@@ -22,6 +22,9 @@ export interface Event {
   endDate: string | null
   location: string | null
   locationDetails: string | null
+  exactAddress?: string | null
+  gateLocation?: boolean
+  isGated?: boolean
   latitude: number | null
   longitude: number | null
   maxJoiners: number

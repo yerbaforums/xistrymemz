@@ -16,6 +16,8 @@ export async function GET() {
       shopName: true,
       shopAbout: true,
       shopImage: true,
+      shopCoverImage: true,
+      shopCoverStyle: true,
       shopSlug: true,
       shopCategory: true,
       email: true,

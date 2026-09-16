@@ -82,7 +82,7 @@ export async function GET(
         updatedAt: true,
         _count: {
           select: {
-            plans: true,
+            projects: true,
             posts: true,
             products: true,
             requests: true,

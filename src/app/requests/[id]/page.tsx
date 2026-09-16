@@ -170,6 +170,7 @@ export default async function RequestDetailPage({
       title: f.title,
       content: f.content,
       status: f.status,
+      answers: (f as any).answers || null,
       createdAt: f.createdAt.toISOString(),
       user: {
         id: f.user.id,
@@ -178,6 +179,7 @@ export default async function RequestDetailPage({
         shopSlug: f.user.shopSlug,
       },
     })),
+    customFields: (request as any).customFields || null,
     supportCount: (request as any)._count?.supports || 0,
   }
 

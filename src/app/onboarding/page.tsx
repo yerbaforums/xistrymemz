@@ -62,6 +62,26 @@ export default function OnboardingPage() {
   const [suggestedTags, setSuggestedTags] = useState<{tag: string; postCount: number}[]>([])
   const [communityGroups, setCommunityGroups] = useState<{id: string; name: string; memberCount: number}[]>([])
   const [communityMembers, setCommunityMembers] = useState<{id: string; name: string; image: string | null}[]>([])
+  const [joinedGroupIds, setJoinedGroupIds] = useState<string[]>([])
+  const [connectedIds, setConnectedIds] = useState<string[]>([])
+
+  // Restore lightweight progress so refresh doesn't lose picks
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('onboarding-progress')
+      if (raw) {
+        const saved = JSON.parse(raw)
+        if (Array.isArray(saved.interestTags)) setInterestTags(saved.interestTags)
+        if (Array.isArray(saved.selectedOutlets)) setSelectedOutlets(saved.selectedOutlets)
+      }
+    } catch {}
+  }, [])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('onboarding-progress', JSON.stringify({ interestTags, selectedOutlets }))
+    } catch {}
+  }, [interestTags, selectedOutlets])
 
   const toggleSetupStep = (id: string) => {
     setCompletedSetupSteps(prev => {
@@ -206,8 +226,8 @@ export default function OnboardingPage() {
           setLocation(newLoc.location)
         }
       }
-    } catch (e) {
-      console.error(e)
+    } catch {
+      // location add failed silently — user can retry
     } finally {
       setAddingLocation(false)
     }
@@ -323,7 +343,9 @@ export default function OnboardingPage() {
           interestTags: interestTags.length > 0 ? interestTags : undefined,
         }),
       })
-      if (selectedOutlets.length > 0) {
+      try { localStorage.removeItem('onboarding-progress') } catch {}
+      // Single pick → deep-link there; multiple picks → dashboard (avoid silently dropping the rest)
+      if (selectedOutlets.length === 1) {
         const outlet = TOUR_OUTLETS.find(o => o.id === selectedOutlets[0])
         if (outlet) {
           router.push(outlet.url)
@@ -334,6 +356,24 @@ export default function OnboardingPage() {
     } catch {
       setError('Failed to complete onboarding. Please try again.')
     }
+  }
+
+  const handleJoinGroup = async (groupId: string) => {
+    try {
+      const res = await fetch(`/api/groups/${groupId}/join`, { method: 'POST' })
+      if (res.ok) setJoinedGroupIds(prev => [...prev, groupId])
+    } catch {}
+  }
+
+  const handleConnect = async (userId: string) => {
+    try {
+      const res = await fetch('/api/community/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receiverId: userId }),
+      })
+      if (res.ok) setConnectedIds(prev => [...prev, userId])
+    } catch {}
   }
 
   const sessionUser = session?.user
@@ -361,7 +401,7 @@ export default function OnboardingPage() {
 >
         <div className={styles.header}>
           <div className={styles.logo}>
-            <img src="/logo.png" alt="XistrYmemZ" style={{height: '40px', marginRight: '10px'}} />
+            <Image src="/logo.png" alt="XistrYmemZ" width={40} height={40} style={{marginRight: '10px'}} priority />
             XistrYmemZ
           </div>
           <div className={styles.headerActions}>
@@ -610,8 +650,8 @@ export default function OnboardingPage() {
                 <button onClick={handleSaveProfile} className={styles.primaryBtn} disabled={loading}>
                   {loading ? 'Saving...' : 'Continue'}
                 </button>
-                <button onClick={handleSaveProfile} className={styles.secondaryBtn} disabled={loading}>
-                  {loading ? 'Saving...' : 'Skip'}
+                <button onClick={nextStep} className={styles.secondaryBtn} disabled={loading}>
+                  Skip
                 </button>
               </div>
             </div>
@@ -791,12 +831,25 @@ export default function OnboardingPage() {
                 <div className={styles.formGroup}>
                   <label>Popular Groups</label>
                   <div className={styles.suggestionGrid}>
-                    {communityGroups.slice(0, 4).map(g => (
-                      <Link key={g.id} href={`/groups/${g.id}`} className={styles.suggestionCard}>
-                        <strong>{g.name}</strong>
-                        <span>{g.memberCount} members</span>
-                      </Link>
-                    ))}
+                    {communityGroups.slice(0, 4).map(g => {
+                      const joined = joinedGroupIds.includes(g.id)
+                      return (
+                        <div key={g.id} className={styles.suggestionCard}>
+                          <Link href={`/groups/${g.id}`}>
+                            <strong>{g.name}</strong>
+                            <span>{g.memberCount} members</span>
+                          </Link>
+                          <button
+                            type="button"
+                            className={styles.smallBtn}
+                            disabled={joined}
+                            onClick={() => handleJoinGroup(g.id)}
+                          >
+                            {joined ? '✓ Joined' : '+ Join'}
+                          </button>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )}
@@ -805,16 +858,30 @@ export default function OnboardingPage() {
                 <div className={styles.formGroup}>
                   <label>Active Members</label>
                   <div className={styles.memberRow}>
-                    {communityMembers.slice(0, 6).map(m => (
-                      <Link key={m.id} href={`/profile/${m.id}`} className={styles.memberChip}>
-                        {m.image ? (
-                          <Image src={m.image} alt={m.name || 'Member'} width={28} height={28} className={styles.memberAvatar} />
-                        ) : (
-                          <span className={styles.memberInitial}>{(m.name || '?')[0]}</span>
-                        )}
-                        <span>{m.name}</span>
-                      </Link>
-                    ))}
+                    {communityMembers.slice(0, 6).map(m => {
+                      const connected = connectedIds.includes(m.id)
+                      return (
+                        <div key={m.id} className={styles.memberChip}>
+                          <Link href={`/profile/${m.id}`}>
+                            {m.image ? (
+                              <Image src={m.image} alt={m.name || 'Member'} width={28} height={28} className={styles.memberAvatar} />
+                            ) : (
+                              <span className={styles.memberInitial}>{(m.name || '?')[0]}</span>
+                            )}
+                            <span>{m.name}</span>
+                          </Link>
+                          <button
+                            type="button"
+                            className={styles.smallBtn}
+                            disabled={connected}
+                            onClick={() => handleConnect(m.id)}
+                            aria-label={`Connect with ${m.name}`}
+                          >
+                            {connected ? '✓ Sent' : '+ Connect'}
+                          </button>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )}

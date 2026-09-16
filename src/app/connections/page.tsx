@@ -10,6 +10,7 @@ import { useToast } from '@/context/ToastContext'
 import { SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 import styles from './connections.module.css'
 
 interface ConnectionUser {
@@ -35,6 +36,9 @@ export default function ConnectionsPage() {
   const router = useRouter()
   const [pendingReceived, setPendingReceived] = useState<Connection[]>([])
   const [pendingSent, setPendingSent] = useState<Connection[]>([])
+  const [accepted, setAccepted] = useState<Connection[]>([])
+  const [search, setSearch] = useState('')
+  const [confirmTarget, setConfirmTarget] = useState<{ id: string; kind: 'cancel' | 'decline' } | null>(null)
   const [loading, setLoading] = useState(true)
   const { success, error: toastError } = useToast()
   const [updating, setUpdating] = useState<string | null>(null)
@@ -48,14 +52,18 @@ export default function ConnectionsPage() {
   useEffect(() => {
     if (session?.user) {
       fetchConnections()
+      const onFocus = () => fetchConnections()
+      window.addEventListener('focus', onFocus)
+      return () => window.removeEventListener('focus', onFocus)
     }
   }, [session])
 
   const fetchConnections = async () => {
     try {
-      const [receivedRes, sentRes] = await Promise.all([
+      const [receivedRes, sentRes, acceptedRes] = await Promise.all([
         fetch('/api/community/connections?filter=pending'),
-        fetch('/api/community/connections?filter=sent')
+        fetch('/api/community/connections?filter=sent'),
+        fetch('/api/community/connections?filter=accepted&limit=50')
       ])
       
       if (receivedRes.ok) {
@@ -66,8 +74,12 @@ export default function ConnectionsPage() {
         const data = await sentRes.json()
         setPendingSent(data?.data || data || [])
       }
-    } catch (error) {
-      console.error('Failed to fetch connections:', error)
+      if (acceptedRes.ok) {
+        const data = await acceptedRes.json()
+        setAccepted(data?.data || data || [])
+      }
+    } catch {
+      // fetch failed — loading state already handles empty UI
     } finally {
       setLoading(false)
     }
@@ -88,8 +100,7 @@ export default function ConnectionsPage() {
       } else {
         toastError('Failed to respond to request')
       }
-    } catch (err) {
-      console.error('Failed to respond:', err)
+    } catch {
       toastError('Failed to respond to request')
     } finally {
       setUpdating(null)
@@ -109,8 +120,7 @@ export default function ConnectionsPage() {
       } else {
         toastError('Failed to cancel request')
       }
-    } catch (err) {
-      console.error('Failed to cancel:', err)
+    } catch {
       toastError('Failed to cancel request')
     } finally {
       setUpdating(null)
@@ -122,6 +132,22 @@ export default function ConnectionsPage() {
   }
 
   const pendingTotal = pendingReceived.length + pendingSent.length
+  const q = search.trim().toLowerCase()
+  const matches = (name: string | null) => !q || (name || '').toLowerCase().includes(q)
+  const filteredReceived = pendingReceived.filter(c => matches(c.requester.name))
+  const filteredSent = pendingSent.filter(c => matches(c.receiver.name))
+  const filteredAccepted = accepted.filter(c => {
+    const other = c.requester.id === session?.user?.id ? c.receiver : c.requester
+    return matches(other.name)
+  })
+
+  const runConfirm = async () => {
+    if (!confirmTarget) return
+    const id = confirmTarget.id
+    if (confirmTarget.kind === 'cancel') await cancelRequest(id)
+    else await handleResponse(id, 'REJECTED')
+    setConfirmTarget(null)
+  }
 
   return (
     <div className={styles.page}>
@@ -132,22 +158,30 @@ export default function ConnectionsPage() {
         <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Connections' }]} />
         <h1 className={styles.title}>Connections</h1>
         <p className={styles.subtitle}>
-          {pendingTotal > 0 ? `${pendingTotal} pending request(s)` : 'No pending requests'}
+          {pendingTotal > 0 ? `${pendingTotal} pending request(s) · ${accepted.length} connected` : `${accepted.length} connected`}
         </p>
+        <input
+          type="search"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search connections..."
+          aria-label="Search connections"
+          style={{ marginTop: 12, padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', maxWidth: 360 }}
+        />
       </div>
 
-      {pendingReceived.length > 0 && (
+      {filteredReceived.length > 0 && (
         <div className={styles.section}>
           <h2 className={styles.sectionTitle}>
-            Requests Received ({pendingReceived.length})
+            Requests Received ({filteredReceived.length})
           </h2>
           <div className={styles.list}>
-            {pendingReceived.map(conn => (
+            {filteredReceived.map(conn => (
               <div key={conn.id} className={styles.card}>
                 <Link href={getUserProfileUrl(conn.requester)}>
                   <div className={styles.avatarWrap}>
                     {conn.requester.image ? (
-                      <Image src={conn.requester.image} alt="" fill style={{ objectFit: 'cover' }} />
+                      <Image src={conn.requester.image} alt={conn.requester.name || 'Member'} fill style={{ objectFit: 'cover' }} sizes="48px" />
                     ) : (
                       <div className={styles.avatarInitial}>
                         {conn.requester.name?.[0] || '?'}
@@ -181,7 +215,7 @@ export default function ConnectionsPage() {
                     Accept
                   </button>
                   <button
-                    onClick={() => handleResponse(conn.id, 'REJECTED')}
+                    onClick={() => setConfirmTarget({ id: conn.id, kind: 'decline' })}
                     disabled={updating === conn.id}
                     className={styles.declineBtn}
                   >
@@ -194,18 +228,18 @@ export default function ConnectionsPage() {
         </div>
       )}
 
-      {pendingSent.length > 0 && (
+      {filteredSent.length > 0 && (
         <div>
           <h2 className={styles.sectionTitle}>
-            Requests Sent ({pendingSent.length})
+            Requests Sent ({filteredSent.length})
           </h2>
           <div className={styles.list}>
-            {pendingSent.map(conn => (
+            {filteredSent.map(conn => (
               <div key={conn.id} className={styles.cardSent}>
                 <Link href={getUserProfileUrl(conn.receiver)}>
                   <div className={styles.avatarWrapSmall}>
                     {conn.receiver.image ? (
-                      <Image src={conn.receiver.image} alt="" fill style={{ objectFit: 'cover' }} />
+                      <Image src={conn.receiver.image} alt={conn.receiver.name || 'Member'} fill style={{ objectFit: 'cover' }} sizes="40px" />
                     ) : (
                       <div className={styles.avatarInitialSmall}>
                         {conn.receiver.name?.[0] || '?'}
@@ -224,7 +258,7 @@ export default function ConnectionsPage() {
                   </div>
                 </div>
                 <button
-                  onClick={() => cancelRequest(conn.id)}
+                  onClick={() => setConfirmTarget({ id: conn.id, kind: 'cancel' })}
                   disabled={updating === conn.id}
                   className={styles.cancelBtn}
                 >
@@ -236,9 +270,55 @@ export default function ConnectionsPage() {
         </div>
       )}
 
-      {pendingTotal === 0 && (
-        <EmptyState icon="🤝" title="No pending requests" description="When you send or receive connection requests, they'll appear here" />
+      {filteredAccepted.length > 0 && (
+        <div className={styles.section}>
+          <h2 className={styles.sectionTitle}>Connected ({filteredAccepted.length})</h2>
+          <div className={styles.list}>
+            {filteredAccepted.map(conn => {
+              const other = conn.requester.id === session?.user?.id ? conn.receiver : conn.requester
+              return (
+                <div key={conn.id} className={styles.cardSent}>
+                  <Link href={getUserProfileUrl(other)}>
+                    <div className={styles.avatarWrapSmall}>
+                      {other.image ? (
+                        <Image src={other.image} alt={other.name || 'Member'} fill style={{ objectFit: 'cover' }} sizes="40px" />
+                      ) : (
+                        <div className={styles.avatarInitialSmall}>{other.name?.[0] || '?'}</div>
+                      )}
+                    </div>
+                  </Link>
+                  <div className={styles.info}>
+                    <Link href={getUserProfileUrl(other)} className={styles.userNameLink}>
+                      <div className={styles.userNameSmall}>{other.name || 'Unknown'}</div>
+                    </Link>
+                  </div>
+                  <Link href={`/dashboard/messages?user=${other.id}`} className={styles.cancelBtn}>
+                    Message
+                  </Link>
+                </div>
+              )
+            })}
+          </div>
+        </div>
       )}
+
+      {pendingTotal === 0 && accepted.length === 0 && (
+        <EmptyState
+          icon="🤝"
+          title="No pending requests"
+          description="When you send or receive connection requests, they'll appear here. Discover members to grow your network."
+          action={{ label: 'Discover members', href: '/community' }}
+        />
+      )}
+      <ConfirmDialog
+        isOpen={!!confirmTarget}
+        onClose={() => setConfirmTarget(null)}
+        onConfirm={runConfirm}
+        title={confirmTarget?.kind === 'cancel' ? 'Cancel request?' : 'Decline request?'}
+        message={confirmTarget?.kind === 'cancel' ? 'This will withdraw your connection request.' : 'This will decline the connection request.'}
+        confirmLabel={confirmTarget?.kind === 'cancel' ? 'Yes, cancel' : 'Yes, decline'}
+        variant="warning"
+      />
     </div>
   )
 }

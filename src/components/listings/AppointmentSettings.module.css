@@ -1,0 +1,169 @@
+.block {
+  margin-top: 18px;
+  padding: 14px;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
+  border-radius: 12px;
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.03));
+}
+
+.checkLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--text-primary, #fff);
+  cursor: pointer;
+}
+
+.checkLabel input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent-primary, #00d9ff);
+}
+
+.fields {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.group {
+  flex: 1;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.group label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary, #9aa4b8);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.group input {
+  padding: 9px 12px;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
+  border-radius: 8px;
+  background: var(--bg-input, rgba(255, 255, 255, 0.04));
+  color: var(--text-primary, #fff);
+  font-size: 0.9rem;
+  width: 100%;
+}
+
+.group small {
+  font-size: 0.74rem;
+  color: var(--text-tertiary, #6b7280);
+}
+
+.fieldsEditor {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border-color, rgba(255, 255, 255, 0.12));
+}
+
+.fieldsEditor h4 {
+  margin: 0 0 2px;
+  font-size: 0.85rem;
+  color: var(--text-primary, #fff);
+}
+
+.hint {
+  margin: 0 0 10px;
+  font-size: 0.74rem;
+  color: var(--text-tertiary, #6b7280);
+}
+
+.fieldsList {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--bg-secondary, rgba(255, 255, 255, 0.05));
+  border-radius: 8px;
+}
+
+.fieldLabel {
+  flex: 1;
+  font-size: 0.85rem;
+  color: var(--text-primary, #fff);
+}
+
+.fieldType {
+  font-size: 0.72rem;
+  color: var(--text-tertiary, #6b7280);
+}
+
+.removeBtn {
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary, #6b7280);
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.removeBtn:hover {
+  color: #ef4444;
+}
+
+.addFieldRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.fieldInput {
+  flex: 1;
+  min-width: 160px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
+  border-radius: 8px;
+  background: var(--bg-input, rgba(255, 255, 255, 0.04));
+  color: var(--text-primary, #fff);
+  font-size: 0.85rem;
+}
+
+.fieldSelect {
+  padding: 8px 10px;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
+  border-radius: 8px;
+  background: var(--bg-input, rgba(255, 255, 255, 0.04));
+  color: var(--text-primary, #fff);
+  font-size: 0.85rem;
+}
+
+.addBtn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent-primary, #00d9ff);
+  color: #06232d;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.addBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { validateBody, productSchema } from '@/lib/schemas'
 import { geocodeLocation } from '@/lib/geocoding'
 import { extractHashtags, linkHashtags, removeHashtags } from '@/services/hashtagService'
+import { hasVerifiedEmail } from '@/lib/verified-email'
 
 export async function GET(
   request: Request,
@@ -57,7 +58,7 @@ export async function PUT(
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { title, description, price, type, category, condition, location, locationDetails, imageUrl, isGlobal, published, paymentMethods, paymentType, acceptsRequests, acceptsOffers, requestPrice, acceptsDonations, donationAddress, donationCurrency, donationAddresses, sellerPayoutAddress, sellerCryptoCurrency, rentalDaily, rentalWeekly, rentalMonthly, rentalDeposit, rentalMinDays, rentalMaxDays, rentalAvailable, hashtags, acceptsAppointments, appointmentDuration, appointmentLeadTime, appointmentLocation, appointmentMeetingLink, appointmentFormFields } = body
+    const { title, description, price, type, category, condition, location, locationDetails, imageUrl, isGlobal, published, paymentMethods, paymentType, acceptsRequests, acceptsOffers, requestPrice, acceptsDonations, donationAddress, donationCurrency, donationAddresses, sellerPayoutAddress, sellerCryptoCurrency, rentalDaily, rentalWeekly, rentalMonthly, rentalDeposit, rentalMinDays, rentalMaxDays, rentalAvailable, hashtags, acceptsAppointments, appointmentDuration, appointmentLeadTime, appointmentLocation, appointmentMeetingLink, appointmentFormFields, customizationFields } = body
 
     const existing = await prisma.product.findFirst({
       where: { id, userId: session.user.id }
@@ -65,6 +66,10 @@ export async function PUT(
 
     if (!existing) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+    }
+
+    if (published === true && !(await hasVerifiedEmail(session.user.id))) {
+      return apiError('Verify your email before publishing', 403)
     }
 
     const paymentMethodsString = paymentMethods ? 
@@ -125,7 +130,8 @@ export async function PUT(
         appointmentLeadTime: appointmentLeadTime != null ? parseInt(appointmentLeadTime) : existing.appointmentLeadTime,
         appointmentLocation: appointmentLocation ?? existing.appointmentLocation,
         appointmentMeetingLink: appointmentMeetingLink ?? existing.appointmentMeetingLink,
-        appointmentFormFields: appointmentFormFields ?? existing.appointmentFormFields
+        appointmentFormFields: appointmentFormFields ?? existing.appointmentFormFields,
+        customizationFields: customizationFields ?? existing.customizationFields
       }
     })
 

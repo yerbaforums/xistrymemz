@@ -15,6 +15,7 @@ interface ProductGridProps {
   page: number
   pageSize: number
   onViewModeChange: (mode: 'grid' | 'list') => void
+  onPageChange?: (page: number) => void
   onFund?: (product: Product) => void
   onClearFilters?: () => void
   showOwnerActions?: boolean
@@ -31,6 +32,7 @@ export default function ProductGrid({
   page,
   pageSize,
   onViewModeChange,
+  onPageChange,
   onFund,
   onClearFilters,
   showOwnerActions,
@@ -95,11 +97,22 @@ export default function ProductGrid({
             Showing {paginated.length} of {products.length}
           </span>
           <div className={styles.loadMoreRow}>
+            <button
+              className={styles.pageBtn}
+              onClick={() => onPageChange?.(page + 1)}
+              aria-label={`Show more products (page ${page + 1})`}
+            >
+              Load More ({products.length - paginated.length} more)
+            </button>
+          </div>
+          <div className={styles.loadMoreRow}>
             {Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => (
               <button
                 key={i}
                 className={`${styles.pageBtn} ${page === i + 1 ? styles.active : ''}`}
-                onClick={() => onViewModeChange(viewMode)}
+                onClick={() => onPageChange?.(i + 1)}
+                aria-label={`Go to page ${i + 1}`}
+                aria-current={page === i + 1 ? 'page' : undefined}
               >
                 {i + 1}
               </button>

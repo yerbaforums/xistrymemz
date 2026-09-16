@@ -38,6 +38,7 @@ model User {
   schoolCoverImage String?
   schoolCoverStyle String  @default("cover")
   schoolSlug       String? @unique
+  timeZone         String? // IANA timezone, e.g. "America/New_York". Anchors booking availability & busy-time boundaries.
 
   // Passport & Identity
   earthId                 String?   @unique // Unique Earth Passport ID
@@ -62,6 +63,9 @@ model User {
   inviteCode              String?   @unique
   invitedBy               String?
   inviteCount             Int       @default(0)
+
+  // Consolidated preferences (theme, view modes, tool visibility, notification prefs)
+  preferences             Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -394,6 +398,9 @@ model Event {
   locationDetails String?
   latitude        Float?
   longitude       Float?
+  // Optional gating: when true, exact address + precise coords only visible to organizer / verified holders / joiners
+  gateLocation  Boolean @default(false)
+  exactAddress  String?
   maxJoiners      Int       @default(0)
   pinned          Boolean   @default(false)
 
@@ -697,6 +704,9 @@ model Request {
   donationCurrency  String  @default("ETH")
   donationAddresses String? // JSON: [{currency, address, label}]
 
+  // Custom questions for help requests
+  customFields Json? // [{label, type, required, options?}]
+
   viewCount    Int                  @default(0)
   contentViews ContentView[]        @relation("RequestViews")
   createdAt    DateTime             @default(now())
@@ -772,6 +782,7 @@ model RequestFulfillment {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   title     String
   content   String
+  answers   Json? // [{label, value}] for request customFields
   status    String   @default("PENDING")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -821,6 +832,9 @@ model Product {
   appointmentLocation    String?
   appointmentMeetingLink String?
   appointmentFormFields  Json? // [{ label: string, type: "text"|"textarea", required: boolean }]
+
+  // Order customization questions buyers answer at checkout
+  customizationFields Json? // [{ label: string, type: "text"|"textarea", required: boolean }]
 
   sellerPayoutAddress  String? // Crypto address for direct payouts
   sellerCryptoCurrency String? // BTC, ETH, USDT, USDC, XMR, XTM, ARRR, DERO, ZANO, OTHER
@@ -1536,6 +1550,12 @@ model Order {
   status      String  @default("PENDING") // PENDING, PAID, SHIPPED, DELIVERED, CANCELLED
   description String?
   notes       String? // Order notes
+  quantity    Int     @default(1)
+  customizationAnswers Json? // [{ label: string, value: string }]
+
+  // Rental booking window
+  rentalStart DateTime?
+  rentalEnd   DateTime?
 
   // Direct payment target (buyer pays seller off-platform)
   sellerPayoutAddress  String?
@@ -1622,6 +1642,9 @@ model ForumPost {
   replyCount  Int               @default(0)
   totalTips   Float             @default(0)
   tippers     Int               @default(0)
+  federatedUrl String?          @unique
+  likes       Int               @default(0)
+  reposts     Int               @default(0)
   replies     ForumReply[]
   postTips    ForumPostTip[]
   pollOptions ForumPollOption[]

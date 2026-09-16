@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import styles from './page.module.css'
 import { calculateDistance, geocodeLocation } from '@/lib/geocoding'
 import { useToast } from '@/context/ToastContext'
@@ -494,7 +495,7 @@ export default function EventsPage() {
                           {event.eventCategory && <Badge variant="primary">{event.eventCategory}</Badge>}
                           {event.eventDate && (<p className={styles.popupDetail}>📅 {new Date(event.eventDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</p>)}
                           {event.location && <p className={styles.popupDetail}>📍 {event.location}</p>}
-                          {event.locationDetails && <p className={styles.popupDetailSmall}>{event.locationDetails}</p>}
+                          {!event.isGated && event.locationDetails && <p className={styles.popupDetailSmall}>{event.locationDetails}</p>}
                           <p className={styles.popupDetail}>👥 {(event.joiners || []).length}{event.maxJoiners > 0 ? `/${event.maxJoiners}` : ''} joined</p>
                           <div className={styles.popupActions}>
                             {event.maxJoiners === 0 || (event.joiners || []).length < event.maxJoiners ? (
@@ -550,7 +551,7 @@ export default function EventsPage() {
                     <div key={event.id} className={`${styles.eventCard} ${selectedEvent?.id === event.id ? styles.selected : ''}`} onClick={() => { setSelectedEvent(event); if (event.latitude && event.longitude && mapRef.current) { mapRef.current.setView([event.latitude, event.longitude], 15, { animate: true }) } }}>
                       {event.imageUrl && (
                         <div className={styles.eventImageWrapper}>
-                          <img src={event.imageUrl} alt={event.title} className={styles.eventCardImage} />
+                          <Image src={event.imageUrl} alt={event.title} width={400} height={200} className={styles.eventCardImage} style={{ width: '100%', height: 'auto' }} />
                         </div>
                       )}
                       <div className={styles.eventHeader}>
@@ -573,6 +574,8 @@ export default function EventsPage() {
                       {event.description && <p className={styles.eventDesc}>{event.description}</p>}
                       <div className={styles.eventMeta}>
                         <span>📍 {event.location}</span>
+                        {event.isGated && <span title="Exact location is private until ticket verification or RSVP">🔒 Private location</span>}
+                        {event.isTicketed && <span>🎟️ ${event.ticketPrice}</span>}
                         {event.maxJoiners > 0 && (<span>👥 {(event.joiners || []).length}/{event.maxJoiners} joined</span>)}
                         {event.userName && <span>👤 {event.userName}</span>}
                       </div>

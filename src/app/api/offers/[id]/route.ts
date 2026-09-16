@@ -83,7 +83,8 @@ export async function PUT(
       return apiError("Not authorized to update this offer", 403)
     }
 
-    if (existingOffer.status !== 'PENDING' && existingOffer.status !== 'COUNTERED') {
+    const isCompleteTransition = status === 'COMPLETED' && existingOffer.status === 'ACCEPTED'
+    if (existingOffer.status !== 'PENDING' && existingOffer.status !== 'COUNTERED' && !isCompleteTransition) {
       return apiError("Cannot update offer with current status", 400)
     }
 
@@ -112,19 +113,23 @@ export async function PUT(
       }
     })
 
-    if (status === 'ACCEPTED' || status === 'REJECTED') {
-      const receiver = await prisma.user.findUnique({
-        where: { id: existingOffer.receiverId },
+    if (status === 'ACCEPTED' || status === 'REJECTED' || status === 'COMPLETED') {
+      const notifiedUserId = isMaker ? existingOffer.receiverId : existingOffer.makerId
+      const notifier = await prisma.user.findUnique({
+        where: { id: isMaker ? existingOffer.makerId : existingOffer.receiverId },
         select: { name: true }
       })
 
+      const actionLabel = status === 'ACCEPTED' ? 'accepted' : status === 'REJECTED' ? 'rejected' : 'marked your offer as complete on'
+      const actionNoun = status === 'ACCEPTED' ? 'Offer Accepted!' : status === 'REJECTED' ? 'Offer Rejected' : 'Offer Completed!'
+
       await prisma.notification.create({
         data: {
-          type: status === 'ACCEPTED' ? 'OFFER_ACCEPTED' : 'OFFER_REJECTED',
-          title: status === 'ACCEPTED' ? 'Offer Accepted!' : 'Offer Rejected',
-          message: `${receiver?.name || 'The owner'} ${status === 'ACCEPTED' ? 'accepted' : 'rejected'} your offer on "${existingOffer.listingTitle}"`,
+          type: status === 'ACCEPTED' ? 'OFFER_ACCEPTED' : status === 'REJECTED' ? 'OFFER_REJECTED' : 'OFFER_COMPLETED',
+          title: actionNoun,
+          message: `${notifier?.name || 'The other party'} ${actionLabel} "${existingOffer.listingTitle}"`,
           link: `/offers/${id}`,
-          userId: existingOffer.makerId,
+          userId: notifiedUserId,
           relatedId: id
         }
       })

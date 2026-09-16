@@ -6,6 +6,7 @@ import { QRCodeModal } from '@/components/QRCodeModal'
 import { getAllCryptos, getCryptoIcon, getCryptoName } from '@/lib/crypto-icons'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
+import { useToast } from '@/context/ToastContext'
 
 interface SiteSettings {
   enableCheckout: boolean
@@ -37,6 +38,7 @@ export default function AdminSettingsPage() {
 
   const [qrAddress, setQrAddress] = useState<string | null>(null)
   const [qrDonationCurrency, setQrDonationCurrency] = useState<string | null>(null)
+  const { error: toastError } = useToast()
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
@@ -57,7 +59,6 @@ export default function AdminSettingsPage() {
         })
       }
     } catch (error) {
-      console.error('Failed to fetch settings:', error)
     } finally {
       setLoading(false)
     }
@@ -80,7 +81,6 @@ export default function AdminSettingsPage() {
         setTimeout(() => setSaved(false), 2000)
       }
     } catch (error) {
-      console.error('Failed to save setting:', error)
       setSettings(prev => ({ ...prev, [key]: !newValue }))
     } finally {
       setSaving(false)
@@ -101,7 +101,7 @@ export default function AdminSettingsPage() {
 
     if (existingAddr) {
       setSaving(false)
-      alert(`This ${donationForm.currency} address already exists in your donation list.`)
+      toastError(`This ${donationForm.currency} address already exists in your donation list.`)
       return
     }
 
@@ -138,7 +138,6 @@ export default function AdminSettingsPage() {
         await fetchSettings()
       }
     } catch {
-      console.error('Failed to save donation address')
       await fetchSettings()
     } finally {
       setSaving(false)

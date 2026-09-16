@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import Loading from '@/components/Loading'
 import { EmptyState } from '@/components/EmptyState'
 import { PIN_CATEGORIES } from '@/lib/pin-categories'
@@ -114,7 +115,7 @@ export default function QuickPinModal({ entityType, entityId, entityTitle, entit
             <div className={styles.previewTitle}>{entityTitle}</div>
           </div>
           {entityImage && (
-            <img src={entityImage} alt="" className={styles.previewImg} />
+            <Image src={entityImage} alt="" width={48} height={48} className={styles.previewImg} />
           )}
         </div>
 

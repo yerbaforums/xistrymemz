@@ -13,7 +13,7 @@ const orderInclude = {
   courierService: { select: { id: true, name: true, serviceType: true, basePrice: true, availableAreas: true } }
 } satisfies Prisma.OrderInclude
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions)
 
@@ -21,7 +21,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       return apiError('Unauthorized', 401)
     }
 
-    const { id } = params
+    const { id } = await params
 
     const order = await prisma.order.findUnique({
       where: { id },
@@ -48,7 +48,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions)
 
@@ -56,7 +56,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       return apiError('Unauthorized', 401)
     }
 
-    const { id } = params
+    const { id } = await params
 
     const order = await prisma.order.findUnique({
       where: { id }

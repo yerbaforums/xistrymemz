@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { geocodeLocation } from '@/lib/geocoding'
 import { extractHashtags, linkHashtags } from '@/services/hashtagService'
 import { productSchema, validateBody } from '@/lib/schemas'
+import { hasVerifiedEmail } from '@/lib/verified-email'
 
 export async function GET(request: Request) {
   try {
@@ -171,7 +172,7 @@ export async function POST(request: Request) {
       acceptsDonations, donationAddress, donationCurrency, donationAddresses,
       sellerPayoutAddress, sellerCryptoCurrency,
       createGroup, hashtags,
-      acceptsAppointments, appointmentDuration, appointmentLeadTime, appointmentLocation, appointmentMeetingLink, appointmentFormFields
+      acceptsAppointments, appointmentDuration, appointmentLeadTime, appointmentLocation, appointmentMeetingLink, appointmentFormFields, customizationFields
     } = validation.data
 
     let latitude: number | null = null
@@ -182,6 +183,10 @@ export async function POST(request: Request) {
         if (geo) { latitude = geo.latitude; longitude = geo.longitude }
       } catch {}
     }
+
+    const verifiedPublish = await hasVerifiedEmail(session.user.id)
+    const wantsPublish = published ?? true
+    const needsEmailVerification = wantsPublish && !verifiedPublish
 
     const paymentMethodsString = paymentMethods ? 
       (Array.isArray(paymentMethods) ? paymentMethods.join(',') : String(paymentMethods)) 
@@ -207,7 +212,7 @@ export async function POST(request: Request) {
         acceptsRequests: acceptsRequests ?? false,
         acceptsOffers: acceptsOffers ?? true,
         requestPrice: requestPrice || null,
-        published: published ?? true,
+        published: needsEmailVerification ? false : wantsPublish,
         rentalDaily: rentalDaily || null,
         rentalWeekly: rentalWeekly || null,
         rentalMonthly: rentalMonthly || null,
@@ -227,6 +232,7 @@ export async function POST(request: Request) {
         appointmentLocation: appointmentLocation || null,
         appointmentMeetingLink: appointmentMeetingLink || null,
         appointmentFormFields: appointmentFormFields || undefined,
+        customizationFields: customizationFields || undefined,
         userId: session.user.id
       }
     })
@@ -255,7 +261,7 @@ export async function POST(request: Request) {
           addedBy: session.user.id
         }
       })
-      return NextResponse.json({ ...product, _group: group })
+      return NextResponse.json({ ...product, _group: group, needsEmailVerification })
     }
 
     const allTags = [...new Set([
@@ -271,7 +277,7 @@ export async function POST(request: Request) {
       })
     }
 
-    return apiSuccess(product)
+    return apiSuccess({ ...product, needsEmailVerification })
   } catch (error) {
     console.error('POST /api/products:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'

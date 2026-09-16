@@ -60,9 +60,10 @@ export default function DashboardEvents() {
         endDate: '',
         location: editingEvent.location || '',
         locationDetails: editingEvent.locationDetails || '',
+        gateLocation: (editingEvent as { gateLocation?: boolean }).gateLocation || false,
+        exactAddress: (editingEvent as { exactAddress?: string | null }).exactAddress || '',
         latitude: editingEvent.latitude,
         longitude: editingEvent.longitude,
-        locationMode: editingEvent.latitude != null ? 'custom' as const : 'global' as const,
         maxJoiners: editingEvent.maxJoiners,
         isTicketed: editingEvent.isTicketed,
         ticketPrice: editingEvent.ticketPrice || 0,
@@ -84,6 +85,8 @@ export default function DashboardEvents() {
         groupTitle: editingEvent.groupTitle || null,
         schoolId: null,
         shopId: null,
+        recurrenceRule: null,
+        recurrenceEnd: '',
       })
     }
   }, [editingEvent])
@@ -168,6 +171,8 @@ export default function DashboardEvents() {
           endDate: editFormData.endDate || undefined,
           location: editFormData.location,
           locationDetails: editFormData.locationDetails,
+          gateLocation: editFormData.gateLocation,
+          exactAddress: editFormData.exactAddress || null,
           maxJoiners: editFormData.maxJoiners,
           isTicketed: editFormData.isTicketed,
           ticketPrice: editFormData.ticketPrice,

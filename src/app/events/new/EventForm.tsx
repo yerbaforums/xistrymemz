@@ -66,6 +66,8 @@ export function EventForm() {
           endDate: formData.endDate || undefined,
           location: formData.location,
           locationDetails: formData.locationDetails,
+          gateLocation: formData.gateLocation,
+          exactAddress: formData.exactAddress || undefined,
           maxJoiners: formData.maxJoiners,
           isTicketed: formData.isTicketed,
           ticketPrice: formData.ticketPrice,
@@ -89,9 +91,10 @@ export function EventForm() {
       })
 
       if (res.ok) {
-        const event = await res.json()
+        const body = await res.json().catch(() => null)
+        const createdId = (body as { data?: { id?: string }; id?: string })?.data?.id || (body as { id?: string })?.id
         success('Event created successfully!')
-        router.push(`/events/${event.id}`)
+        router.push(createdId ? `/events/${createdId}?fresh=1` : '/events')
       } else {
         const data = await res.json()
         error(data.error || 'Failed to create event')

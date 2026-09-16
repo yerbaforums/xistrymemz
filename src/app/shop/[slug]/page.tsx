@@ -21,6 +21,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 }
 
-export default function ShopDetailPage() {
-  return <ShopDetailClient />
+export default function ShopDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  return <ShopDetailClient params={params} />
 }

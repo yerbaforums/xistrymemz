@@ -2,7 +2,7 @@ import { apiSuccess, apiError, withAuth } from '@/lib/api-helpers'
 import { getMessagesBetweenUsers, markMessagesAsRead, sendMessage } from '@/services/messageService'
 
 export const GET = withAuth(async (req, session, context) => {
-  const userId = context.searchParams.get('user')
+  const userId = context.searchParams.user
 
   if (!userId) {
     return apiError('User ID required', 400)
@@ -16,13 +16,13 @@ export const GET = withAuth(async (req, session, context) => {
 
 export const POST = withAuth(async (req, session) => {
   try {
-    let body: unknown
+    let body: { receiverId?: string; content?: string }
     try {
-      body = await req.json()
+      body = (await req.json()) as { receiverId?: string; content?: string }
     } catch {
       return apiError('Invalid JSON body', 400)
     }
-    const { receiverId, content } = body as any
+    const { receiverId, content } = body
 
     if (!receiverId || !content) {
       return apiError('Receiver and content required', 400)

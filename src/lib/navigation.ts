@@ -15,7 +15,6 @@ export interface SidebarNavItem extends NavItem {
 
 export interface NavConfig {
   main: NavItem[]
-  personal: NavItem[]
   explore: NavItem[]
   community: NavItem[]
   dashboard: NavItem[]
@@ -33,13 +32,6 @@ export const NAV: NavConfig = {
     { href: '/dashboard/shop', icon: '🏪', label: 'Shop' },
     { href: '/dashboard/events', icon: '📅', label: 'Events' },
     { href: '/dashboard/appointments', icon: '🗓️', label: 'Planner' },
-  ],
-
-  personal: [
-    { href: '/dashboard/passport', icon: '🌍', label: 'Passport' },
-    { href: '/dashboard/feed', icon: '📡', label: 'Feed' },
-    { href: '/dashboard/messages', icon: '💬', label: 'Messages' },
-    { href: '/dashboard/saved', icon: '⭐', label: 'Saved' },
   ],
 
   explore: [
@@ -67,9 +59,10 @@ export const NAV: NavConfig = {
   dashboard: [
     { href: '/dashboard/overview', icon: '📊', label: 'Overview' },
     { href: '/dashboard/feed', icon: '📡', label: 'Feed' },
+    { href: '/dashboard/deals', icon: '🤝', label: 'My Deals' },
     { href: '/dashboard/projects', icon: '🚀', label: 'My Projects' },
     { href: '/dashboard/requests', icon: '📝', label: 'My Requests' },
-    { href: '/dashboard/offers', icon: '🤝', label: 'Offers' },
+    { href: '/dashboard/offers', icon: '💼', label: 'Offers' },
     { href: '/dashboard/services', icon: '🔧', label: 'Services' },
     { href: '/dashboard/rentals', icon: '🏠', label: 'Rentals' },
     { href: '/dashboard/teaching', icon: '🏫', label: 'Teaching' },
@@ -112,6 +105,7 @@ export const NAV: NavConfig = {
 export const DASHBOARD_SIDEBAR: SidebarNavItem[] = [
   { href: '/dashboard/overview', icon: '📊', label: 'Overview', section: 'primary' },
   { href: '/dashboard/feed', icon: '📡', label: 'Feed', section: 'primary' },
+  { href: '/dashboard/deals', icon: '🤝', label: 'My Deals', section: 'primary' },
   { href: '/dashboard/messages', icon: '💬', label: 'Messages', section: 'primary' },
   { href: '/dashboard/passport', icon: '🌍', label: 'Passport', section: 'primary' },
   { href: '/dashboard/events', icon: '📅', label: 'Events', section: 'primary' },
@@ -136,6 +130,7 @@ export const DASHBOARD_SIDEBAR: SidebarNavItem[] = [
 
 export const BREADCRUMB_LABELS: Record<string, string> = {
   overview: 'Overview',
+  deals: 'My Deals',
   studio: 'Studio',
   feed: 'Feed',
   messages: 'Messages',

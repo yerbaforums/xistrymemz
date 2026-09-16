@@ -794,7 +794,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
         )}
 
         {activeTab === 'students' && isOwner && (
-          <StudentList resolvedSlug={resolvedSlug} userId={userId} />
+          <StudentList resolvedSlug={resolvedSlug ?? ''} userId={userId ?? ''} />
         )}
         {activeTab === 'about' && (
           <div className={styles.aboutSection}>

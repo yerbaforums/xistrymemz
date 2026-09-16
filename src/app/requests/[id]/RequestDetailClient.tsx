@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
+import ReviewPrompt from '@/components/ReviewPrompt'
 import { MakeOfferModal } from '@/components/MakeOfferModal'
 import { getUserProfileUrl } from '@/lib/utils'
 import { getCryptoIcon, getCryptoName } from '@/lib/crypto-icons'
@@ -20,6 +21,9 @@ import PinToBoardButton from '@/components/PinToBoardButton'
 import CollaborateButton from '@/components/CollaborateButton'
 import { REQUEST_CATEGORIES } from '@/lib/request-categories'
 import { apiGet } from '@/lib/api-helpers'
+import FormFieldInput, { fieldDefaultValue, isFieldAnswered } from '@/components/listings/FormFieldInput'
+import { FieldListEditor } from '@/components/listings/FieldListEditor'
+import type { FormField } from '@/types/service'
 
 const PRIORITIES = [
   { value: 'LOW', label: 'Low', color: '#888' },
@@ -79,6 +83,7 @@ interface Fulfillment {
   title: string
   content: string
   status: string
+  answers: { label: string; value: string }[] | null
   createdAt: string
   user: {
     id: string
@@ -147,6 +152,7 @@ interface Request {
   fulfillments: Fulfillment[]
   supportCount?: number
   hashtags?: Array<{ id: string; hashtag: { id: string; tag: string } }>
+  customFields?: FormField[] | null
 }
 
 interface MatchItem {
@@ -189,6 +195,8 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
   const [contactMessage, setContactMessage] = useState('')
   const [showFulfillmentForm, setShowFulfillmentForm] = useState(false)
   const [fulfillmentForm, setFulfillmentForm] = useState({ title: '', content: '' })
+  const [fulfillmentAnswers, setFulfillmentAnswers] = useState<Record<string, string>>({})
+  const [answerError, setAnswerError] = useState('')
   const [fulfillments, setFulfillments] = useState<Fulfillment[]>(initialRequest.fulfillments || [])
   const [allowFulfillments, setAllowFulfillments] = useState(initialRequest.allowFulfillments)
   const [showDonationAddress, setShowDonationAddress] = useState(initialRequest.showDonationAddress)
@@ -209,17 +217,21 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
     deadline: initialRequest.deadline ? initialRequest.deadline.split('T')[0] : '',
     allowFulfillments: initialRequest.allowFulfillments,
     showDonationAddress: initialRequest.showDonationAddress,
+    customFields: (initialRequest.customFields || []) as FormField[],
   })
   const [matches, setMatches] = useState<MatchItem[]>([])
   const [showLinkModal, setShowLinkModal] = useState(false)
   const [myProjects, setMyProjects] = useState<ProjectOption[]>([])
   const [selectedProjectId, setSelectedProjectId] = useState('')
   const [countdown, setCountdown] = useState({ days: 0, hours: 0 })
+  const [showReviewPrompt, setShowReviewPrompt] = useState(false)
+  const [reviewTarget, setReviewTarget] = useState<{ id: string; name: string; label: string } | null>(null)
 
   const isPlanOwner = request.project?.user.id === userId
   const isOwnRequest = request.user.id === userId
   const isOwner = isOwnRequest || isPlanOwner
-  const canHelpComplete = request.status === 'PENDING' && !isOwnRequest && !request.product
+  const canHelpComplete = request.status === 'PENDING' && isOwner && !request.product
+  const isOwnerCompleting = isOwner
   const canContact = !isOwnRequest
   const canEdit = isOwnRequest && request.status === 'PENDING'
   const canRollback = (isOwnRequest || isPlanOwner || userRole === 'ADMIN') && request.status !== 'PENDING'
@@ -383,13 +395,60 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
           completedBy: userId,
           completedAt: new Date().toISOString()
         })
-        addToHistory('PENDING', 'COMPLETED', completeMessage || 'Request completed by helper')
+        addToHistory('PENDING', 'COMPLETED', completeMessage || 'Request completed')
+        success('Request marked as completed!')
+      } else {
+        const data = await res.json().catch(() => ({}))
+        toastError(data.error || 'Failed to mark as completed')
       }
     } catch (err) {
       console.error(err)
+      toastError('Failed to mark as completed')
     } finally {
       setLoading(false)
     }
+  }
+
+  const canReview =
+    request.status === 'COMPLETED' &&
+    isOwnRequest &&
+    request.completedBy &&
+    request.completedBy !== request.user.id &&
+    request.completedBy !== userId
+
+  const canReviewAsHelper =
+    request.status === 'COMPLETED' &&
+    userId === request.completedBy &&
+    request.completedBy !== request.user.id
+
+  const openReview = () => {
+    if (canReview) {
+      setReviewTarget({ id: request.completedBy!, name: 'the helper', label: 'Helper' })
+    } else if (canReviewAsHelper) {
+      setReviewTarget({ id: request.user.id, name: request.user.name || 'the requester', label: 'Requester' })
+    }
+    setShowReviewPrompt(true)
+  }
+
+  const submitReview = async (rating: number, comment: string) => {
+    if (!reviewTarget) return
+    const res = await fetch('/api/ratings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: reviewTarget.id,
+        rating,
+        comment,
+        type: 'GENERAL',
+        transactionId: request.id
+      })
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.error || 'Failed to submit review')
+    }
+    success('Review submitted!')
+    setReviewTarget(null)
   }
 
   const handleRollback = async () => {
@@ -477,6 +536,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
           deadline: editForm.deadline ? new Date(editForm.deadline).toISOString() : null,
           allowFulfillments: editForm.allowFulfillments,
           showDonationAddress: editForm.showDonationAddress,
+          customFields: editForm.customFields.length > 0 ? editForm.customFields : [],
         })
       })
 
@@ -492,6 +552,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
           deadline: editForm.deadline ? new Date(editForm.deadline).toISOString() : null,
           allowFulfillments: editForm.allowFulfillments,
           showDonationAddress: editForm.showDonationAddress,
+          customFields: editForm.customFields,
         })
         setAllowFulfillments(editForm.allowFulfillments)
         setShowDonationAddress(editForm.showDonationAddress)
@@ -534,20 +595,39 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
     e.preventDefault()
     if (!fulfillmentForm.title.trim() || !fulfillmentForm.content.trim()) return
 
+    const fields = request.customFields || []
+    const missing = fields.filter(f => f.required && !isFieldAnswered(f, fulfillmentAnswers[f.label] || ''))
+    if (missing.length > 0) {
+      setAnswerError(`Please answer: ${missing.map(f => f.label).join(', ')}`)
+      return
+    }
+    setAnswerError('')
+
     setLoading(true)
     try {
       const res = await fetch(`/api/requests/${request.id}/fulfillments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(fulfillmentForm)
+        body: JSON.stringify({
+          title: fulfillmentForm.title,
+          content: fulfillmentForm.content,
+          answers: fields.map(f => ({
+            label: f.label,
+            value: fulfillmentAnswers[f.label] != null ? String(fulfillmentAnswers[f.label]) : fieldDefaultValue(f)
+          }))
+        })
       })
 
       if (res.ok) {
         const newFulfillment = await res.json()
         setFulfillments([newFulfillment, ...fulfillments])
         setFulfillmentForm({ title: '', content: '' })
+        setFulfillmentAnswers({})
         setShowFulfillmentForm(false)
         success('Offer submitted!')
+      } else {
+        const data = await res.json()
+        toastError(data.error || 'Failed to submit offer')
       }
     } catch (err) {
       console.error(err)
@@ -814,6 +894,16 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                   <Link href={getUserProfileUrl({ id: request.completedBy })} className={styles.metaValue}>
                     {request.completedBy === request.user.id ? 'Requester (Self)' : 'Helper'}
                   </Link>
+                </div>
+              )}
+              {(canReview || canReviewAsHelper) && (
+                <div className={styles.metaItem}>
+                  <Button
+                    onClick={openReview}
+                    className={styles.actionBtn}
+                  >
+                    ⭐ {canReview ? 'Review Helper' : 'Review Requester'}
+                  </Button>
                 </div>
               )}
             </div>
@@ -1090,7 +1180,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                 className={styles.helpBtn}
                 disabled={loading}
               >
-                🤝 Help Complete This Request
+                ✓ Mark as Completed
               </Button>
             </div>
           )}
@@ -1213,6 +1303,28 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                     required
                   />
                 </div>
+                {(request.customFields || []).length > 0 && (
+                  <div style={{ margin: '12px 0' }}>
+                    <p style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: 8 }}>Questions</p>
+                    {(request.customFields || []).map((field, index) => (
+                      <div className="form-group" key={`${field.label}-${index}`}>
+                        <label>
+                          {field.label}{field.required ? ' *' : ''}
+                        </label>
+                        <FormFieldInput
+                          field={field}
+                          value={fulfillmentAnswers[field.label] ?? ''}
+                          onChange={(val: string) => setFulfillmentAnswers({ ...fulfillmentAnswers, [field.label]: val })}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {answerError && (
+                  <p style={{ color: 'var(--red)', fontSize: '0.85rem', margin: '4px 0 8px' }}>
+                    {answerError}
+                  </p>
+                )}
                 <Button type="submit" variant="primary" disabled={loading}>
                   Submit Offer
                 </Button>
@@ -1237,6 +1349,15 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                   </div>
                   <h4 className={styles.fulfillmentTitle}>{f.title}</h4>
                   <p className={styles.fulfillmentContent}>{f.content}</p>
+                  {f.answers && f.answers.length > 0 && (
+                    <div style={{ margin: '8px 0 0', padding: '8px 10px', background: 'rgba(255,255,255,0.04)', borderRadius: 8, fontSize: '0.82rem' }}>
+                      {f.answers.filter(a => a.value).map(a => (
+                        <p key={a.label} style={{ margin: '3px 0' }}>
+                          <strong>{a.label}:</strong> {a.value}
+                        </p>
+                      ))}
+                    </div>
+                  )}
                   {isOwnRequest && f.status === 'PENDING' && (
                     <div className={styles.fulfillmentActions}>
                       <Button
@@ -1307,17 +1428,16 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
       {showCompleteModal && (
         <div className="modal-overlay" onClick={() => setShowCompleteModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <h2>🤝 Help Complete This Request</h2>
+            <h2>✓ Mark Request as Completed</h2>
             <p className={styles.modalText}>
-              You are offering to help {request.user.name || 'this user'} with this request.
-              Mark it as completed and send them a message.
+              Mark this request as completed and let everyone know how it was resolved.
             </p>
             <div className="form-group">
               <label>Message</label>
               <textarea
                 value={completeMessage}
                 onChange={e => setCompleteMessage(e.target.value)}
-                placeholder="Let them know how you can help..."
+                placeholder="Describe how the request was completed..."
                 rows={3}
               />
             </div>
@@ -1552,6 +1672,14 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                 <span className={styles.toggleText}>Show donation addresses on this request</span>
               </label>
             </div>
+            <div style={{ margin: '16px 0' }}>
+              <p style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: 8 }}>Questions for helpers</p>
+              <FieldListEditor
+                fields={editForm.customFields}
+                onChange={(customFields: FormField[]) => setEditForm({ ...editForm, customFields })}
+                title="Edit questions"
+              />
+            </div>
             <div className={styles.modalActions}>
               <Button
                 type="button"
@@ -1636,6 +1764,16 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
       )}
 
       <LinkedItemsSection entityType="REQUEST" entityId={request.id} currentUserId={userId || null} />
+
+      {showReviewPrompt && reviewTarget && (
+        <ReviewPrompt
+          open={showReviewPrompt}
+          onClose={() => { setShowReviewPrompt(false); setReviewTarget(null) }}
+          targetType={reviewTarget.label?.toLowerCase() || 'member'}
+          targetLabel={reviewTarget.name}
+          onSubmit={submitReview}
+        />
+      )}
 
       {/* OFFER MODAL */}
       <MakeOfferModal

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
+import { hasVerifiedEmail } from '@/lib/verified-email'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,6 +13,10 @@ export async function POST(request: Request) {
 
     if (!session?.user?.id) {
       return apiError('Unauthorized', 401)
+    }
+
+    if (!(await hasVerifiedEmail(session.user.id))) {
+      return apiError('Verify your email before placing an order', 403)
     }
 
     let body: Record<string, unknown>
@@ -31,6 +36,25 @@ export async function POST(request: Request) {
     const sellerPayoutCurrency = typeof body.sellerPayoutCurrency === 'string' ? body.sellerPayoutCurrency : undefined
     const deliveryAddress = typeof body.deliveryAddress === 'string' ? body.deliveryAddress : undefined
     const courierServiceId = typeof body.courierServiceId === 'string' ? body.courierServiceId : undefined
+    const quantity = typeof body.quantity === 'number' && body.quantity > 0 ? Math.floor(body.quantity) : 1
+    const customizationAnswers = Array.isArray(body.customizationAnswers)
+      ? body.customizationAnswers
+          .filter((a: any) => a && typeof a === 'object' && typeof a.label === 'string')
+          .map((a: any) => ({ label: String(a.label), value: String(a.value ?? '') }))
+      : undefined
+    let rentalStart: Date | undefined
+    let rentalEnd: Date | undefined
+    if (typeof body.rentalStart === 'string') {
+      const d = new Date(body.rentalStart)
+      if (!Number.isNaN(d.getTime())) rentalStart = d
+    }
+    if (typeof body.rentalEnd === 'string') {
+      const d = new Date(body.rentalEnd)
+      if (!Number.isNaN(d.getTime())) rentalEnd = d
+    }
+    if (rentalStart && rentalEnd && rentalEnd <= rentalStart) {
+      return apiError('Rental end must be after rental start', 400)
+    }
 
     if (!sellerId) {
       return apiError('Seller is required', 400)
@@ -86,7 +110,11 @@ export async function POST(request: Request) {
         courierServiceId: courierServiceId ?? null,
         courierId: courierId ?? null,
         courierFee: courierFee ?? null,
-        courierStatus: courierStatus ?? null
+        courierStatus: courierStatus ?? null,
+        quantity,
+        customizationAnswers: customizationAnswers ?? undefined,
+        rentalStart: rentalStart ?? null,
+        rentalEnd: rentalEnd ?? null,
       }
     })
 

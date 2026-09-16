@@ -10,6 +10,8 @@ import styles from './rentals.module.css'
 import Skeleton from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
+import { FieldListEditor } from '@/components/listings/FieldListEditor'
+import type { FormField } from '@/types/service'
 
 interface ShopSettings {
   shopName: string | null
@@ -38,6 +40,7 @@ interface RentalItem {
   imageUrl: string | null
   published: boolean
   createdAt: string
+  customizationFields?: FormField[] | null
 }
 
 export default function RentalsPage() {
@@ -74,6 +77,7 @@ export default function RentalsPage() {
     imageUrl: '',
     imageUrls: [] as string[],
     published: true,
+    customizationFields: [] as FormField[],
   })
 
   useEffect(() => { fetchAll() }, [])
@@ -110,6 +114,7 @@ export default function RentalsPage() {
       rentalMonthly: '', rentalDeposit: '', rentalMinDays: '1',
       rentalMaxDays: '', rentalAvailable: true, category: '',
       location: '', isGlobal: false, imageUrl: '', imageUrls: [] as string[], published: true,
+      customizationFields: [] as FormField[],
     })
     setEditing(null)
     setShowForm(false)
@@ -132,6 +137,9 @@ export default function RentalsPage() {
       imageUrl: r.imageUrl || '',
       imageUrls: r.imageUrl ? [r.imageUrl] : [] as string[],
       published: r.published,
+      customizationFields: Array.isArray(r.customizationFields)
+        ? r.customizationFields.map(ff => ({ label: String(ff.label), type: (ff.type as FormField['type']) || 'text', required: ff.required === true, options: Array.isArray(ff.options) && ff.options.length > 0 ? ff.options : null }))
+        : [],
     })
     setEditing(r)
     setShowForm(true)
@@ -152,6 +160,7 @@ export default function RentalsPage() {
         rentalDeposit: form.rentalDeposit ? parseFloat(form.rentalDeposit) : null,
         rentalMinDays: parseInt(form.rentalMinDays) || 1,
         rentalMaxDays: form.rentalMaxDays ? parseInt(form.rentalMaxDays) : null,
+        customizationFields: form.customizationFields.length > 0 ? form.customizationFields : null,
         paymentType: 'DIRECT',
         acceptsOffers: true,
       }
@@ -385,6 +394,14 @@ export default function RentalsPage() {
                   <input type="checkbox" checked={form.published} onChange={e => setForm({...form, published: e.target.checked})} />
                   Publish now
                 </label>
+              </div>
+              <div style={{ marginTop: 16 }}>
+                <FieldListEditor
+                  fields={form.customizationFields}
+                  onChange={(fields) => setForm({...form, customizationFields: fields})}
+                  title="Booking Questions"
+                  hint="Questions renters must answer when renting. Great for sizing, quantity, damage waivers, or preferred pickup times."
+                />
               </div>
               <div className={styles.formActions}>
                 <button type="button" onClick={resetForm} className="btn-ghost">Cancel</button>

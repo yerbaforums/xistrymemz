@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useSession } from 'next-auth/react'
 import { useToast } from '@/context/ToastContext'
 import { CLASS_ICONS } from '@/lib/user-classes'
@@ -118,7 +119,7 @@ export default function PeopleYouMayKnow({ limit = 5, className }: PeopleYouMayK
           <div key={member.id} className={styles.card}>
             <Link href={`/profile/${member.username || member.id}`} className={styles.cardLink}>
               {member.image ? (
-                <img src={member.image} alt="" className={styles.avatar} />
+                <Image src={member.image} alt="" width={40} height={40} className={styles.avatar} />
               ) : (
                 <span className={styles.avatarPlaceholder}>{member.title[0]?.toUpperCase() || '?'}</span>
               )}

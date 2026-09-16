@@ -140,6 +140,13 @@
   padding: 14px;
 }
 
+.card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+}
+
 .sectionHeader {
   display: flex;
   justify-content: space-between;

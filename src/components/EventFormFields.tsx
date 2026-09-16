@@ -22,6 +22,8 @@ export interface EventFormData {
   endDate: string
   location: string
   locationDetails: string
+  gateLocation: boolean
+  exactAddress: string
   latitude: number | null
   longitude: number | null
   maxJoiners: number
@@ -60,6 +62,8 @@ const DEFAULT_FORM_DATA: EventFormData = {
   endDate: '',
   location: '',
   locationDetails: '',
+  gateLocation: false,
+  exactAddress: '',
   latitude: null,
   longitude: null,
   maxJoiners: 0,
@@ -454,6 +458,17 @@ export default function EventFormFields({
                 <label htmlFor="ef-locationDetails">Location Details</label>
                 <input type="text" id="ef-locationDetails" name="locationDetails" value={formData.locationDetails} onChange={handleChange} placeholder="Room, floor, link, etc." />
               </div>
+              <div className={styles.checkboxField}>
+                <input type="checkbox" id="ef-gateLocation" name="gateLocation" checked={formData.gateLocation} onChange={handleChange} />
+                <label htmlFor="ef-gateLocation">🔒 Gate exact location (only ticket holders / RSVPs see it)</label>
+              </div>
+              {formData.gateLocation && (
+                <div className={styles.field}>
+                  <label htmlFor="ef-exactAddress">Exact address (private)</label>
+                  <input type="text" id="ef-exactAddress" name="exactAddress" value={formData.exactAddress} onChange={handleChange} placeholder="123 Main St, Apt 4B — only visible to verified attendees" />
+                  <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: '4px 0 0' }}>Public listing shows the area above. Exact address unlocks after ticket verification (or RSVP for free events).</p>
+                </div>
+              )}
             </>
           )}
         </div>

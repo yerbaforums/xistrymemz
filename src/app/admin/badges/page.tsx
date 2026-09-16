@@ -68,7 +68,6 @@ export default function AdminBadgesPage() {
         setBadges(data.data.badges)
       }
     } catch (err) {
-      console.error('Failed to fetch badges:', err)
     } finally {
       setLoading(false)
     }

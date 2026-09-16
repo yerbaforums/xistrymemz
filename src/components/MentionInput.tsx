@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react'
+import Image from 'next/image'
 import { getSelectionAfterAt } from '@/lib/mentions'
 import { useToast } from '@/context/ToastContext'
 import { fetchApi } from '@/lib/fetch-api'
@@ -264,7 +265,7 @@ const MentionInput = forwardRef<MentionInputHandle, MentionInputProps>(function 
               }}
             >
               {(user as UserResult).image ? (
-                <img src={(user as UserResult).image!} alt="" width={24} height={24} style={{ borderRadius: '50%' }} />
+                <Image src={(user as UserResult).image!} alt="" width={24} height={24} style={{ borderRadius: '50%' }} />
               ) : (
                 <span style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>
                   {(user as UserResult).name?.[0] || 'U'}

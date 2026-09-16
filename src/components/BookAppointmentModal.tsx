@@ -5,12 +5,12 @@ import { useSession } from 'next-auth/react'
 import { useToast } from '@/context/ToastContext'
 import styles from './BookAppointmentModal.module.css'
 import { EmptyState } from '@/components/EmptyState'
-
-interface FormField {
-  label: string
-  type: 'text' | 'textarea'
-  required: boolean
-}
+import FormFieldInput, { isFieldAnswered, fieldDefaultValue } from '@/components/listings/FormFieldInput'
+import type { FormField } from '@/types/service'
+import {
+  isValidTimeZone, browserTimeZone, zonedTimeToUtc, zonedDateStr,
+  zonedDayOfWeek, zonedMinutesSinceMidnight, tzShortLabel,
+} from '@/lib/timezone'
 
 interface AvailSlot {
   dayOfWeek: number
@@ -78,6 +78,7 @@ export default function BookAppointmentModal({
   const [booking, setBooking] = useState(false)
 
   const [availSlots, setAvailSlots] = useState<AvailSlot[]>([])
+  const [sellerTz, setSellerTz] = useState<string | null>(null)
   const [loadingAvail, setLoadingAvail] = useState(false)
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState('')
@@ -88,62 +89,65 @@ export default function BookAppointmentModal({
   const duration = defaultDuration || 60
   const leadTime = defaultLeadTime || 0
 
+  const effectiveTz = useMemo(() => (isValidTimeZone(sellerTz) ? sellerTz! : browserTimeZone()), [sellerTz])
+  const todayInTz = useMemo(() => zonedDateStr(new Date(), effectiveTz), [effectiveTz])
+
+  const minDateStr = useMemo(() => {
+    const candidate = new Date(Date.now() + leadTime * 3600000)
+    return zonedDateStr(candidate, effectiveTz)
+  }, [leadTime, effectiveTz])
+
   useEffect(() => {
     if (!isOpen) return
     setLoadingAvail(true)
     setSelectedDate('')
     setSelectedTime('')
-    setCurrentMonth(new Date())
+    setCurrentMonth(new Date(todayInTz + 'T12:00:00Z'))
     setBusySlots([])
     setMeetingLinkType(defaultMeetingLink ? 'default' : 'none')
     setCustomMeetingLink('')
     setPlatformRoom(null)
     fetch(`/api/availability?userId=${sellerId}`)
       .then(r => r.json())
-      .then(data => setAvailSlots(data?.data?.slots || data?.slots || []))
+      .then(data => {
+        setAvailSlots(data?.data?.slots || data?.slots || [])
+        const tzVal = data?.data?.timeZone || data?.timeZone
+        if (!isValidTimeZone(tzVal)) setSellerTz(null)
+        else setSellerTz(tzVal)
+      })
       .catch(() => setAvailSlots([]))
       .finally(() => setLoadingAvail(false))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, sellerId])
 
   useEffect(() => {
     if (!selectedDate) { setBusySlots([]); return }
     setLoadingBusy(true)
-    fetch(`/api/appointments/busy-slots?userId=${sellerId}&date=${selectedDate}`)
+    fetch(`/api/appointments/busy-slots?userId=${sellerId}&date=${selectedDate}&tz=${encodeURIComponent(effectiveTz)}`)
       .then(r => r.json())
       .then(data => setBusySlots(data?.data?.slots || data?.slots || []))
       .catch(() => setBusySlots([]))
       .finally(() => setLoadingBusy(false))
-  }, [selectedDate, sellerId])
+  }, [selectedDate, sellerId, effectiveTz])
 
   useEffect(() => {
     setSelectedTime('')
   }, [selectedDate])
 
-  const minDateStr = useMemo(() => {
-    const d = new Date()
-    d.setHours(d.getHours() + leadTime)
-    return d.toISOString().split('T')[0]
-  }, [leadTime])
-
-  const minDate = new Date(minDateStr)
-
   function isDateAvailable(dateStr: string) {
-    const d = new Date(dateStr + 'T12:00:00')
-    if (d < minDate) return false
-    const dow = d.getDay()
+    if (dateStr < minDateStr) return false
+    const dow = zonedDayOfWeek(dateStr, effectiveTz)
     return availSlots.some(s => s.dayOfWeek === dow)
   }
 
   function getFreeTimes() {
-    if (!selectedDate || busySlots.length === 0 && !loadingBusy) {
-    }
-    const d = new Date(selectedDate + 'T12:00:00')
-    const dow = d.getDay()
+    if (!selectedDate) return []
+    const dow = zonedDayOfWeek(selectedDate, effectiveTz)
     const daySlots = availSlots.filter(s => s.dayOfWeek === dow)
     if (daySlots.length === 0) return []
 
-    const isToday = selectedDate === new Date().toISOString().split('T')[0]
-    const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes()
+    const isToday = selectedDate === todayInTz
+    const nowMinutes = zonedMinutesSinceMidnight(new Date(), effectiveTz)
     const leadMinutes = leadTime * 60
 
     const busyRanges = busySlots.map(s => ({
@@ -197,10 +201,8 @@ export default function BookAppointmentModal({
   }
 
   function isDateInPast(day: number) {
-    const d = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
-    d.setHours(12, 0, 0, 0)
-    minDate.setHours(12, 0, 0, 0)
-    return d < minDate
+    const dateStr = formatDate(currentMonth.getFullYear(), currentMonth.getMonth(), day)
+    return dateStr < minDateStr
   }
 
   async function handleCreatePlatformRoom() {
@@ -243,7 +245,7 @@ export default function BookAppointmentModal({
 
     if (formFields) {
       for (const field of formFields) {
-        if (field.required && !formResponses[field.label]?.trim()) {
+        if (field.required && !isFieldAnswered(field, formResponses[field.label] || '')) {
           toastError(`"${field.label}" is required`)
           return
         }
@@ -264,11 +266,11 @@ export default function BookAppointmentModal({
 
     setBooking(true)
     try {
-      const startTime = new Date(`${selectedDate}T${selectedTime}`)
+      const startTime = zonedTimeToUtc(selectedDate, selectedTime, effectiveTz)
       const endTime = new Date(startTime.getTime() + duration * 60000)
 
       const responses = formFields
-        ? formFields.map(f => ({ label: f.label, value: formResponses[f.label] || '' }))
+        ? formFields.map(f => ({ label: f.label, value: formResponses[f.label] != null ? String(formResponses[f.label]) : fieldDefaultValue(f) }))
         : undefined
 
       const res = await fetch('/api/appointments', {
@@ -334,6 +336,9 @@ export default function BookAppointmentModal({
               {/* Calendar */}
               <div className={styles.mb16}>
                 <label className={styles.label}>Select Date</label>
+                <div className={styles.tzNote}>
+                  ⏰ Times shown in {sellerTz ? 'your host\'s timezone' : 'your timezone'} ({tzShortLabel(effectiveTz)})
+                </div>
                 <div className={styles.calendarInner}>
                   {/* Month nav */}
                   <div className={`${styles.flexBetween} ${styles.mb8}`}>
@@ -450,19 +455,18 @@ export default function BookAppointmentModal({
                   <label className={`${styles.label} ${styles.fs082}`}>
                     {f.label} {f.required && <span className={styles.requiredStar}>*</span>}
                   </label>
-                  {f.type === 'textarea' ? (
-                    <textarea
+                  {f.type === 'checkbox' ? (
+                    <FormFieldInput
+                      field={f}
                       value={formResponses[f.label] || ''}
-                      onChange={e => setFormResponses(r => ({ ...r, [f.label]: e.target.value }))}
-                      rows={3}
-                      className={styles.textareaField}
+                      onChange={v => setFormResponses(r => ({ ...r, [f.label]: v }))}
                     />
                   ) : (
-                    <input
-                      type="text"
+                    <FormFieldInput
+                      field={f}
                       value={formResponses[f.label] || ''}
-                      onChange={e => setFormResponses(r => ({ ...r, [f.label]: e.target.value }))}
-                      className={styles.inputField}
+                      onChange={v => setFormResponses(r => ({ ...r, [f.label]: v }))}
+                      className={f.type === 'textarea' ? styles.textareaField : styles.inputField}
                     />
                   )}
                 </div>

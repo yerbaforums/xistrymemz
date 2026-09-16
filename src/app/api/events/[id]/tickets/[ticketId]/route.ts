@@ -17,7 +17,7 @@ export async function PUT(
   try {
     const event = await prisma.event.findUnique({
       where: { id },
-      select: { id: true, title: true, organizerId: true, isVirtual: true, meetingLink: true },
+      select: { id: true, title: true, organizerId: true, isVirtual: true, meetingLink: true, gateLocation: true },
     })
     if (!event) return apiError("Event not found", 404)
     if (event.organizerId !== session.user.id) {
@@ -49,6 +49,15 @@ export async function PUT(
               link: `/events/${event.id}`,
             } as any)
           } catch (e) { console.error('Failed to send meeting link notification:', e) }
+        } else if (event.gateLocation) {
+          try {
+            await createNotification({
+              type: 'TICKET_PAID',
+              userId: ticket.userId,
+              message: `Your ticket for "${event.title}" is confirmed! The exact location is now unlocked.`,
+              link: `/events/${event.id}`,
+            } as any)
+          } catch (e) { console.error('Failed to send location unlock notification:', e) }
         }
         break
       case 'approve':

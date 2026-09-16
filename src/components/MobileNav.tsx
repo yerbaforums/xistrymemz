@@ -14,6 +14,32 @@ import { useQuickCreate } from '@/components/QuickCreateModal'
 import LanguageRequestModal from './LanguageRequestModal'
 import styles from './Header.module.css'
 
+const BROWSE_PRIMARY = [
+  { href: '/discover', icon: '🌐', label: 'Discover' },
+  { href: '/products', icon: '🛒', label: 'Products' },
+  { href: '/services', icon: '🔧', label: 'Services' },
+  { href: '/requests', icon: '📝', label: 'Requests' },
+  { href: '/rentals', icon: '🏠', label: 'Rentals' },
+  { href: '/events', icon: '📅', label: 'Events' },
+  { href: '/community/groups', icon: '👥', label: 'Groups' },
+]
+
+const STUDIO_PRIMARY = [
+  { href: '/dashboard/deals', icon: '🤝', label: 'My Deals' },
+  { href: '/dashboard/requests', icon: '📝', label: 'My Requests' },
+  { href: '/dashboard/projects', icon: '🚀', label: 'My Projects' },
+  { href: '/dashboard/appointments', icon: '🗓️', label: 'Planner' },
+  { href: '/dashboard/messages', icon: '💬', label: 'Messages' },
+  { href: '/orders', icon: '📦', label: 'Orders' },
+  { href: '/profile/settings', icon: '⚙️', label: 'Settings' },
+]
+
+const BROWSE_PRIMARY_HREFS = new Set(BROWSE_PRIMARY.map(i => i.href))
+const STUDIO_PRIMARY_HREFS = new Set(STUDIO_PRIMARY.map(i => i.href))
+const ALL_BROWSE = [...NAV.explore, ...NAV.community]
+const BROWSE_EXTRA = ALL_BROWSE.filter(i => !BROWSE_PRIMARY_HREFS.has(i.href))
+const STUDIO_EXTRA = NAV.dashboard.filter(i => !STUDIO_PRIMARY_HREFS.has(i.href))
+
 const LOCALES = [
   { code: 'en', label: 'EN' },
   { code: 'es', label: 'ES' },
@@ -49,6 +75,8 @@ export default function MobileNav({ open, onClose, isAdmin, isAuthenticated, ses
   const { mode, accent, setAccent, toggleMode } = useTheme()
   const quickCreate = useQuickCreate()
   const [langReqOpen, setLangReqOpen] = useState(false)
+  const [browseExpanded, setBrowseExpanded] = useState(false)
+  const [studioExpanded, setStudioExpanded] = useState(false)
 
   return (
     <div className={`${styles.mobileNav} ${open ? styles.mobileNavOpen : ''}`} id="mobile-nav-drawer" role="dialog" aria-modal="true" aria-label="Navigation menu">
@@ -81,12 +109,7 @@ export default function MobileNav({ open, onClose, isAdmin, isAuthenticated, ses
       {/* Browse section — all users */}
       <div className={styles.mobileSection}>
         <div className={styles.mobileSectionTitle}>Browse</div>
-        {NAV.explore.map(item => (
-          <Link key={item.href} href={item.href} className={styles.mobileLink} onClick={onClose}>
-            <span aria-hidden="true">{item.icon}</span> {item.label}
-          </Link>
-        ))}
-        {NAV.community.map(item => (
+        {BROWSE_PRIMARY.map(item => (
           <Link key={item.href} href={item.href} className={styles.mobileLink} onClick={onClose}>
             <span aria-hidden="true">{item.icon}</span> {item.label}
           </Link>
@@ -101,6 +124,19 @@ export default function MobileNav({ open, onClose, isAdmin, isAuthenticated, ses
             </Link>
           </>
         )}
+        <button className={styles.mobileExpandBtn} onClick={() => setBrowseExpanded(prev => !prev)} aria-expanded={browseExpanded}>
+          <span>All tools</span>
+          <span className={`${styles.mobileExpandChevron} ${browseExpanded ? styles.mobileExpandChevronOpen : ''}`}>▾</span>
+        </button>
+        {browseExpanded && (
+          <div className={styles.mobileExpandBody}>
+            {BROWSE_EXTRA.map(item => (
+              <Link key={item.href} href={item.href} className={styles.mobileLink} onClick={onClose}>
+                <span aria-hidden="true">{item.icon}</span> {item.label}
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Studio section — auth only */}
@@ -110,7 +146,7 @@ export default function MobileNav({ open, onClose, isAdmin, isAuthenticated, ses
           <button onClick={() => { onClose(); quickCreate.open() }} className={styles.mobileLink} style={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10, background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', cursor: 'pointer', fontSize: '0.9rem', padding: '10px 14px', borderRadius: 'var(--radius-md)', fontWeight: 600 }}>
             ✨ Quick Create
           </button>
-          {NAV.dashboard.map(item => (
+          {STUDIO_PRIMARY.map(item => (
             <Link key={item.href} href={item.href} className={styles.mobileLink} onClick={onClose}>
               <span aria-hidden="true">{item.icon}</span> {item.label}
               {item.label === 'Messages' && messagesUnread && messagesUnread > 0 && (
@@ -120,17 +156,26 @@ export default function MobileNav({ open, onClose, isAdmin, isAuthenticated, ses
               )}
             </Link>
           ))}
-          <Link href={session?.user ? getUserProfileUrl({ id: session.user.id, username: session.user?.username }) : '/auth/login'} className={styles.mobileLink} onClick={onClose}>
-            <span aria-hidden="true">👤</span> Profile
-          </Link>
-          <Link href="/profile/settings" className={styles.mobileLink} onClick={onClose}>
-            <span aria-hidden="true">⚙️</span> Settings
-          </Link>
-          <Link href="/onboarding" className={styles.mobileLink} onClick={onClose}>🚀 Getting Started</Link>
-          {/* Switch to Browse */}
-          <Link href="/" className={styles.mobileLink} onClick={onClose}>
-            <span aria-hidden="true">🌐</span> Browse
-          </Link>
+          <button className={styles.mobileExpandBtn} onClick={() => setStudioExpanded(prev => !prev)} aria-expanded={studioExpanded}>
+            <span>All tools</span>
+            <span className={`${styles.mobileExpandChevron} ${studioExpanded ? styles.mobileExpandChevronOpen : ''}`}>▾</span>
+          </button>
+          {studioExpanded && (
+            <div className={styles.mobileExpandBody}>
+              {STUDIO_EXTRA.map(item => (
+                <Link key={item.href} href={item.href} className={styles.mobileLink} onClick={onClose}>
+                  <span aria-hidden="true">{item.icon}</span> {item.label}
+                </Link>
+              ))}
+              <Link href={session?.user ? getUserProfileUrl({ id: session.user.id, username: session.user?.username }) : '/auth/login'} className={styles.mobileLink} onClick={onClose}>
+                <span aria-hidden="true">👤</span> Profile
+              </Link>
+              <Link href="/onboarding" className={styles.mobileLink} onClick={onClose}>🚀 Getting Started</Link>
+              <Link href="/" className={styles.mobileLink} onClick={onClose}>
+                <span aria-hidden="true">🌐</span> Browse
+              </Link>
+            </div>
+          )}
         </div>
       ) : null}
 

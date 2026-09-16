@@ -24,6 +24,8 @@ interface Order {
   trackingNumber: string | null
   completedAt: string | null
   createdAt: string
+  rentalStart: string | null
+  rentalEnd: string | null
   product: { id: string; title: string } | null
   buyer: { id: string; name: string | null }
   seller: { id: string; name: string | null }
@@ -66,7 +68,6 @@ export default function OrdersPage() {
         setOrders(data?.orders || [])
       }
     } catch (err) {
-      console.error(err)
     } finally {
       setLoading(false)
     }
@@ -90,7 +91,6 @@ export default function OrdersPage() {
         error(err.error || 'Failed to update order')
       }
     } catch (err) {
-      console.error(err)
     } finally {
       setUpdating(false)
     }
@@ -104,7 +104,7 @@ export default function OrdersPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          recipientId: messageTo.id,
+          receiverId: messageTo.id,
           content: messageText
         })
       })
@@ -117,7 +117,6 @@ export default function OrdersPage() {
         error(err.error || 'Failed to send message')
       }
     } catch (err) {
-      console.error(err)
     } finally {
       setSendingMessage(false)
     }
@@ -306,6 +305,26 @@ export default function OrdersPage() {
                 )}
               </div>
             </div>
+
+            {selectedOrder.rentalStart && selectedOrder.rentalEnd && (
+              <div className={styles.modalSection}>
+                <h3>📅 Rental Period</h3>
+                <div className={styles.detailGrid}>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>Start</span>
+                    <span className={styles.detailValue}>{new Date(selectedOrder.rentalStart).toLocaleDateString()}</span>
+                  </div>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>End</span>
+                    <span className={styles.detailValue}>{new Date(selectedOrder.rentalEnd).toLocaleDateString()}</span>
+                  </div>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>Duration</span>
+                    <span className={styles.detailValue}>{Math.round((new Date(selectedOrder.rentalEnd).getTime() - new Date(selectedOrder.rentalStart).getTime()) / 86400000)} days</span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {selectedOrder.sellerPayoutAddress && selectedOrder.buyer.id === session?.user?.id && (
               <div className={styles.modalSection}>

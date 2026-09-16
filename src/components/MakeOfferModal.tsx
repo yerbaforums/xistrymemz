@@ -57,8 +57,7 @@ export function MakeOfferModal({ isOpen, onClose, listingId, listingTitle, listi
       } else {
         error(data.error || 'Failed to send offer')
       }
-    } catch (err) {
-      console.error(err)
+    } catch {
       error('Failed to send offer')
     } finally {
       setLoading(false)

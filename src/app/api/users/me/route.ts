@@ -39,6 +39,7 @@ export async function GET() {
           lookingForCollaborators: true,
           coverImage: true,
           coverStyle: true,
+          timeZone: true,
           traveling: true,
           showShop: true,
           showSchool: true,
@@ -79,7 +80,7 @@ export async function PUT(request: Request) {
       name, username, image, bio, location, neighborhood, searchRadius, traveling, website, userClass,
       donationAddress, donationCurrency, acceptsDonations,
       latitude, longitude, lookingForCollaborators,
-      coverImage, coverStyle,
+      coverImage, coverStyle, timeZone,
       showShop, showSchool, enableTips, enableReplies, enableLikes, showViewCount
     } = validation.data
 
@@ -120,6 +121,7 @@ export async function PUT(request: Request) {
     if (lookingForCollaborators !== undefined) updateData.lookingForCollaborators = lookingForCollaborators ?? false
     if (coverImage !== undefined) updateData.coverImage = coverImage ?? null
     if (coverStyle !== undefined) updateData.coverStyle = coverStyle ?? undefined
+    if (timeZone !== undefined) updateData.timeZone = timeZone || null
     if (showShop !== undefined) updateData.showShop = showShop ?? true
     if (showSchool !== undefined) updateData.showSchool = showSchool ?? true
     if (enableTips !== undefined) updateData.enableTips = enableTips ?? true

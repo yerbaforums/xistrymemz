@@ -46,6 +46,17 @@ const TABS = [
   { id: 'service', label: 'Service', icon: '🔧' },
 ]
 
+function extractCreatedId(body: unknown): string | null {
+  if (!body || typeof body !== 'object') return null
+  const b = body as Record<string, unknown>
+  const d1 = b.data as Record<string, unknown> | undefined
+  if (d1 && typeof d1.id === 'string') return d1.id
+  const d2 = d1?.data as Record<string, unknown> | undefined
+  if (d2 && typeof d2.id === 'string') return d2.id
+  if (typeof b.id === 'string') return b.id
+  return null
+}
+
 export function QuickCreateProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false)
   const [tab, setTab] = useState('post')
@@ -125,9 +136,12 @@ function PostForm({ onDone }: { onDone: () => void }) {
         }),
       })
       if (res.ok) {
+        const body = await res.json().catch(() => null)
+        const id = extractCreatedId(body)
         success('Post published!')
         onDone()
-        router.refresh()
+        if (id) router.push(`/posts/${id}`)
+        else router.refresh()
       } else {
         const err = await res.json()
         error(err.error || 'Failed to post')
@@ -350,9 +364,12 @@ function ProductForm({ onDone }: { onDone: () => void }) {
         }),
       })
       if (res.ok) {
+        const body = await res.json().catch(() => null)
+        const id = extractCreatedId(body)
         success('Product created!')
         onDone()
-        router.refresh()
+        if (id) router.push(`/products/${id}`)
+        else router.refresh()
       } else {
         const err = await res.json()
         error(err.error || 'Failed to create')
@@ -470,6 +487,8 @@ function EventForm({ onDone }: { onDone: () => void }) {
           endDate: formData.endDate || undefined,
           location: formData.location,
           locationDetails: formData.locationDetails,
+          gateLocation: formData.gateLocation,
+          exactAddress: formData.exactAddress || undefined,
           maxJoiners: formData.maxJoiners,
           isTicketed: formData.isTicketed,
           ticketPrice: formData.ticketPrice,
@@ -481,9 +500,12 @@ function EventForm({ onDone }: { onDone: () => void }) {
         }),
       })
       if (res.ok) {
+        const body = await res.json().catch(() => null)
+        const id = extractCreatedId(body)
         success('Event created!')
         onDone()
-        router.refresh()
+        if (id) router.push(`/events/${id}?fresh=1`)
+        else router.refresh()
       } else {
         const err = await res.json()
         error(err.error || 'Failed to create')
@@ -547,9 +569,12 @@ function GroupForm({ onDone }: { onDone: () => void }) {
         }),
       })
       if (res.ok) {
+        const body = await res.json().catch(() => null)
+        const id = extractCreatedId(body)
         success('Group created!')
         onDone()
-        router.refresh()
+        if (id) router.push(`/groups/${id}`)
+        else router.refresh()
       } else {
         const err = await res.json()
         error(err.error || 'Failed to create')
@@ -691,9 +716,12 @@ function RequestForm({ onDone }: { onDone: () => void }) {
         }),
       })
       if (res.ok) {
+        const body = await res.json().catch(() => null)
+        const id = extractCreatedId(body)
         success('Request created!')
         onDone()
-        router.refresh()
+        if (id) router.push(`/requests/${id}`)
+        else router.refresh()
       } else {
         const err = await res.json()
         error(err.error || 'Failed to create')
@@ -887,9 +915,12 @@ function ServiceForm({ onDone }: { onDone: () => void }) {
         }),
       })
       if (res.ok) {
+        const body = await res.json().catch(() => null)
+        const id = extractCreatedId(body)
         success('Service created!')
         onDone()
-        router.refresh()
+        if (id) router.push(`/services/${id}`)
+        else router.refresh()
       } else {
         const err = await res.json()
         error(err.error || 'Failed to create')
@@ -1098,9 +1129,12 @@ function ProjectForm({ onDone }: { onDone: () => void }) {
         }),
       })
       if (res.ok) {
+        const body = await res.json().catch(() => null)
+        const id = extractCreatedId(body)
         success('Project created!')
         onDone()
-        router.refresh()
+        if (id) router.push(`/projects/${id}`)
+        else router.refresh()
       } else {
         const err = await res.json()
         error(err.error || 'Failed to create')

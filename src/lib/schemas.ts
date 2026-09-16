@@ -68,7 +68,14 @@ export const requestSchema = z.object({
   })).optional(),
   isPublic: z.boolean().optional(),
   createGroup: z.boolean().optional(),
-  hashtags: z.array(z.string()).optional()
+  hashtags: z.array(z.string()).optional(),
+  customFields: z.array(z.object({
+    label: z.string().min(1, 'Question label is required').max(200),
+    type: z.enum(['text', 'textarea', 'select', 'number', 'date', 'checkbox']).optional(),
+    required: z.boolean().optional(),
+    options: z.array(z.string()).optional().nullable(),
+    defaultValue: z.string().optional().nullable(),
+  })).optional(),
 })
 
 export const productSchema = z.object({
@@ -111,8 +118,15 @@ export const productSchema = z.object({
   appointmentMeetingLink: z.string().optional().nullable(),
   appointmentFormFields: z.array(z.object({
     label: z.string().min(1),
-    type: z.enum(['text', 'textarea']),
-    required: z.boolean()
+    type: z.enum(['text', 'textarea', 'select', 'number', 'date', 'checkbox']),
+    required: z.boolean(),
+    options: z.array(z.string()).optional().nullable(),
+  })).optional().nullable(),
+  customizationFields: z.array(z.object({
+    label: z.string().min(1),
+    type: z.enum(['text', 'textarea', 'select', 'number', 'date', 'checkbox']),
+    required: z.boolean(),
+    options: z.array(z.string()).optional().nullable(),
   })).optional().nullable()
 })
 
@@ -235,6 +249,8 @@ export const eventSchema = z.object({
   endDate: z.string().optional(),
   location: z.string().optional(),
   locationDetails: z.string().optional(),
+  gateLocation: z.boolean().optional(),
+  exactAddress: z.string().max(500).optional().nullable(),
   maxJoiners: z.coerce.number().int().min(0).optional(),
   isPrivate: z.boolean().optional(),
   isTicketed: z.boolean().optional(),
@@ -356,6 +372,7 @@ export const profileUpdateSchema = z.object({
   lookingForCollaborators: z.boolean().optional(),
   coverImage: z.string().max(500).optional().nullable(),
   coverStyle: z.string().max(20).optional().nullable(),
+  timeZone: z.string().max(50).optional().nullable(),
   showShop: z.boolean().optional(),
   showSchool: z.boolean().optional(),
   enableTips: z.boolean().optional(),

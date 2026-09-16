@@ -75,8 +75,8 @@ export class ValidationError extends Error {
   }
 }
 
-export function withAuth<T>(
-  handler: (req: Request, session: Session, context: { params: Record<string, string>; searchParams: Record<string, string> }) => Promise<NextResponse<T>>
+export function withAuth(
+  handler: (req: Request, session: Session, context: { params: Record<string, string>; searchParams: Record<string, string> }) => Promise<NextResponse<unknown>>
 ) {
   return async (req: Request, context: { params: Promise<Record<string, string>> } | Record<string, string>) => {
     try {

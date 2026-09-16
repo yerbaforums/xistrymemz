@@ -2,7 +2,8 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
-import { useParams, useRouter } from 'next/navigation'
+import Image from 'next/image'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import styles from './page.module.css'
 import dynamic from 'next/dynamic'
 import { useToast } from '@/context/ToastContext'
@@ -84,6 +85,14 @@ function EventDetailContent() {
   const [deleting, setDeleting] = useState(false)
   const [confirmDeleteModal, setConfirmDeleteModal] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const isFresh = searchParams.get('fresh') === '1'
+  const [freshDismissed, setFreshDismissed] = useState(false)
+  const [previewAttendee, setPreviewAttendee] = useState(false)
+  const dismissFresh = () => {
+    setFreshDismissed(true)
+    router.replace(`/events/${params.id}`, { scroll: false })
+  }
   const [relatedEvents, setRelatedEvents] = useState<Event[]>([])
   const [relatedLoading, setRelatedLoading] = useState(false)
   const [showNextDates, setShowNextDates] = useState(false)
@@ -127,9 +136,10 @@ function EventDetailContent() {
       endDate: event.endDate ? event.endDate.slice(0, 16) : '',
       location: event.location || '',
       locationDetails: event.locationDetails || '',
+      gateLocation: event.gateLocation || false,
+      exactAddress: event.exactAddress || '',
       latitude: event.latitude,
       longitude: event.longitude,
-      locationMode: event.latitude != null ? 'custom' as const : 'global' as const,
       maxJoiners: event.maxJoiners,
       isTicketed: event.isTicketed,
       ticketPrice: event.ticketPrice,
@@ -181,6 +191,8 @@ function EventDetailContent() {
           endDate: editFormData.endDate || undefined,
           location: editFormData.location,
           locationDetails: editFormData.locationDetails,
+          gateLocation: editFormData.gateLocation,
+          exactAddress: editFormData.exactAddress || null,
           maxJoiners: editFormData.maxJoiners,
           isTicketed: editFormData.isTicketed,
           ticketPrice: editFormData.ticketPrice,
@@ -312,12 +324,21 @@ function EventDetailContent() {
         body: JSON.stringify({ role: role || joinRole })
       })
       if (res.ok) {
-        setEvent({ 
-          ...event, 
-          joined: true, 
-          joiners: [...event.joiners, { id: '', userId, role: role || joinRole, user: { name: null, email: '', role: 'USER', userClass: null } }],
-          _count: event._count ? { eventJoiners: event._count.eventJoiners + 1 } : undefined
-        })
+        fetch(`/api/events/${event.id}`)
+          .then(r => r.json())
+          .then(data => {
+            const ev = data?.data || data
+            setEvent(ev)
+            setMyTicket(ev.myTicket || null)
+          })
+          .catch(() => {
+            setEvent({
+              ...event,
+              joined: true,
+              joiners: [...event.joiners, { id: '', userId, role: role || joinRole, user: { name: null, email: '', role: 'USER', userClass: null } }],
+              _count: event._count ? { eventJoiners: event._count.eventJoiners + 1 } : undefined
+            })
+          })
       } else {
         const data = await res.json()
         error(data.error || 'Failed to join event')
@@ -336,12 +357,21 @@ function EventDetailContent() {
     try {
       const res = await fetch(`/api/events/${event.id}/join`, { method: 'DELETE' })
       if (res.ok) {
-        setEvent({ 
-          ...event, 
-          joined: false, 
-          joiners: event.joiners.filter(j => j.userId !== userId),
-          _count: event._count ? { eventJoiners: event._count.eventJoiners - 1 } : undefined
-        })
+        fetch(`/api/events/${event.id}`)
+          .then(r => r.json())
+          .then(data => {
+            const ev = data?.data || data
+            setEvent(ev)
+            setMyTicket(ev.myTicket || null)
+          })
+          .catch(() => {
+            setEvent({
+              ...event,
+              joined: false,
+              joiners: event.joiners.filter(j => j.userId !== userId),
+              _count: event._count ? { eventJoiners: event._count.eventJoiners - 1 } : undefined
+            })
+          })
       } else {
         const data = await res.json()
         error(data.error || 'Failed to leave event')
@@ -524,6 +554,17 @@ function EventDetailContent() {
         ← Back to Events
       </Link>
 
+      {isFresh && !freshDismissed && isOwner && (
+        <div style={{ padding: '12px 16px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, margin: '12px 0' }} role="status">
+          <div style={{ fontWeight: 700, marginBottom: 4 }}>🎉 Event posted! Two quick next steps:</div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.85rem' }}>{event.isTicketed ? '🎫 Tickets are on — watch requests under Manage Tickets.' : '🎫 Want tickets? Edit event → enable Ticketed.'}</span>
+            <span style={{ fontSize: '0.85rem' }}>📌 Pin it to your local boards below to get found.</span>
+            <button onClick={dismissFresh} style={{ marginLeft: 'auto', background: 'transparent', border: '1px solid #86efac', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: '0.78rem' }}>Dismiss</button>
+          </div>
+        </div>
+      )}
+
       <div className={styles.content}>
         <div className={styles.mainSection}>
           <div className={styles.card}>
@@ -666,7 +707,7 @@ function EventDetailContent() {
                 
                 {event.imageUrl && (
                   <div className={styles.detailImageWrapper}>
-                    <img src={event.imageUrl} alt={event.title} className={styles.detailImage} />
+                    <Image src={event.imageUrl} alt={event.title} width={800} height={400} className={styles.detailImage} style={{ width: '100%', height: 'auto' }} priority={false} />
                   </div>
                 )}
 
@@ -689,15 +730,47 @@ function EventDetailContent() {
 
                 <div className={styles.locationSection}>
                   <h3>📍 Location</h3>
-                  <p className={styles.locationType}>{event.location || 'Not specified'}</p>
-                  {event.locationDetails && (
-                    <p className={styles.locationDetails}>{event.locationDetails}</p>
+                  {isOwner && event.gateLocation && (
+                    <button
+                      onClick={() => setPreviewAttendee(v => !v)}
+                      style={{ marginBottom: 8, background: 'transparent', border: '1px solid var(--border-color)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: '0.76rem' }}
+                      aria-pressed={previewAttendee}
+                    >
+                      {previewAttendee ? '👁 Exit attendee preview' : '👁 View as attendee'}
+                    </button>
                   )}
+                  <p className={styles.locationType}>{event.location || 'Not specified'}</p>
+                  {(() => {
+                    const lockedForMe = event.isGated && !isOwner && !(event.myTicket?.paymentStatus === 'PAID' || (!event.isTicketed && event.joined))
+                    const previewing = previewAttendee && isOwner && !!event.gateLocation
+                    if (lockedForMe || previewing) {
+                      return (
+                        <div style={{ padding: '10px 14px', background: 'var(--bg-secondary)', borderRadius: 8, border: '1px dashed var(--border-color)', marginTop: 8 }}>
+                          <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>🔒 Exact address is private{previewing ? ' (attendee preview)' : ''}</div>
+                          <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
+                            {event.isTicketed
+                              ? 'Get a verified ticket to unlock the exact address.'
+                              : 'RSVP to this event to unlock the exact address.'}
+                          </p>
+                        </div>
+                      )
+                    }
+                    return (
+                      <>
+                        {event.locationDetails && (
+                          <p className={styles.locationDetails}>{event.locationDetails}</p>
+                        )}
+                        {event.exactAddress && (
+                          <p className={styles.locationDetails}>📮 {event.exactAddress}</p>
+                        )}
+                      </>
+                    )
+                  })()}
                 </div>
               </>
             )}
 
-            {event.latitude && event.longitude && (
+            {event.latitude && event.longitude && !(previewAttendee && isOwner && event.gateLocation) && (
               <div className={styles.mapSection}>
                 <h3>🗺️ Event Location</h3>
                 <div className={styles.mapContainer}>
@@ -823,8 +896,8 @@ function EventDetailContent() {
                   entityId={event.id}
                   entityTitle={event.title}
                   entityImage={event.imageUrl || undefined}
-                  entityLatitude={event.latitude || undefined}
-                  entityLongitude={event.longitude || undefined}
+                  entityLatitude={!event.isGated ? (event.latitude || undefined) : undefined}
+                  entityLongitude={!event.isGated ? (event.longitude || undefined) : undefined}
                   variant="ghost"
                   label="Pin to Board"
                 />
@@ -1042,7 +1115,7 @@ function EventDetailContent() {
                   const shortAddr = da.address.length > 20 ? da.address.slice(0, 10) + '...' + da.address.slice(-8) : da.address
                   return (
                     <div key={da.id || da.address} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid var(--border-color)' }}>
-                      <img src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'ethereum.png'}`} alt="" width={20} height={20} style={{ borderRadius: '50%' }} />
+                      <Image src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'ethereum.png'}`} alt="" width={20} height={20} style={{ borderRadius: '50%' }} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{da.label || da.currency}</div>
                         <code style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', wordBreak: 'break-all' }}>{shortAddr}</code>
@@ -1058,7 +1131,7 @@ function EventDetailContent() {
                 })
                 if (event.donationAddress) return (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 0' }}>
-                    <img src={`/crypto-logos/${CRYPTO_LOGOS[event.donationCurrency || 'XMR'] || 'ethereum.png'}`} alt="" width={20} height={20} style={{ borderRadius: '50%' }} />
+                    <Image src={`/crypto-logos/${CRYPTO_LOGOS[event.donationCurrency || 'XMR'] || 'ethereum.png'}`} alt="" width={20} height={20} style={{ borderRadius: '50%' }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{event.donationCurrency || 'XMR'}</div>
                       <code style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', wordBreak: 'break-all' }}>{event.donationAddress.length > 20 ? event.donationAddress.slice(0, 10) + '...' + event.donationAddress.slice(-8) : event.donationAddress}</code>
@@ -1224,7 +1297,7 @@ function EventDetailContent() {
               <Link key={re.id} href={`/events/${re.id}`} className={styles.relatedCard}>
                 {re.imageUrl && (
                   <div className={styles.relatedCardImage}>
-                    <img src={re.imageUrl} alt={re.title} />
+                    <Image src={re.imageUrl} alt={re.title} width={300} height={120} style={{ objectFit: 'cover', width: '100%' }} />
                   </div>
                 )}
                 <div className={styles.relatedCardBody}>

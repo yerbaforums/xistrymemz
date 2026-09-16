@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
 import { useSession } from 'next-auth/react'
 import { useEntityActions, type ActionEntityType } from '@/hooks/useEntityActions'
 import { useToast } from '@/context/ToastContext'
@@ -116,6 +117,19 @@ export default function EntityActions({
 
   const url = shareUrl || (typeof window !== 'undefined' ? window.location.href : '')
 
+  const closeAllModals = () => {
+    setShowTipModal(false)
+    setShowShareModal(false)
+    closeFeedModal()
+  }
+
+  useEffect(() => {
+    if (!showTipModal && !showShareModal && !showFeedModal) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeAllModals() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [showTipModal, showShareModal, showFeedModal])
+
   const copyLink = async () => {
     try {
       await navigator.clipboard.writeText(url)
@@ -223,7 +237,7 @@ export default function EntityActions({
   const modals = (
     <>
       {showTipModal && (
-        <div className={styles.overlay} onClick={() => setShowTipModal(false)}>
+        <div className={styles.overlay} onClick={() => setShowTipModal(false)} role="dialog" aria-modal="true" aria-label="Send donation">
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
             <h3 className={styles.modalTitle}>💎 Send Donation</h3>
             <p className={styles.modalDesc}>Send a donation directly to one of the author's addresses below.</p>
@@ -234,7 +248,7 @@ export default function EntityActions({
                 <div className={styles.donationAddrList}>
                   {activeDonations.map(da => (
                     <div key={da.id} className={styles.donationAddrRow}>
-                      {CRYPTO_LOGOS[da.currency] && <img src={`/crypto-logos/${CRYPTO_LOGOS[da.currency]}`} alt="" width={16} height={16} style={{borderRadius:'50%'}} />}
+                      {CRYPTO_LOGOS[da.currency] && <Image src={`/crypto-logos/${CRYPTO_LOGOS[da.currency]}`} alt="" width={16} height={16} style={{borderRadius:'50%'}} />}
                       <span className={styles.donationAddrCurrency}>{da.currency}</span>
                       <code className={styles.donationAddrCode}>{da.address.length > 20 ? da.address.slice(0, 10) + '...' + da.address.slice(-6) : da.address}</code>
                       <button onClick={() => { navigator.clipboard.writeText(da.address); success('Address copied!') }} className={styles.copyBtn} style={{padding:'4px 10px',fontSize:'0.75rem'}}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy</button>
@@ -251,14 +265,14 @@ export default function EntityActions({
         </div>
       )}
       {showShareModal && (
-        <div className={styles.overlay} onClick={() => setShowShareModal(false)}>
+        <div className={styles.overlay} onClick={() => setShowShareModal(false)} role="dialog" aria-modal="true" aria-label="Share">
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h3 className={styles.modalTitle}>Share</h3>
               <button onClick={() => setShowShareModal(false)} className={styles.xBtn}>×</button>
             </div>
             <div className={styles.preview}>
-              {image && <img src={image} alt="" className={styles.previewImg} />}
+              {image && <Image src={image} alt="" width={48} height={48} className={styles.previewImg} />}
               <div>
                 <div className={styles.previewType}>{entityType}</div>
                 <div className={styles.previewTitle}>{title}</div>
@@ -271,7 +285,7 @@ export default function EntityActions({
             <button onClick={nativeShare} className={styles.nativeBtn}>📤 Share via device</button>
             <div className={styles.socialGrid}>
               {SOCIAL_PLATFORMS.map(p => (
-                <a key={p.key} href={`${p.url}?${p.key === 'x' ? `text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}` : p.key === 'facebook' ? `u=${encodeURIComponent(url)}` : p.key === 'linkedin' ? `url=${encodeURIComponent(url)}` : p.key === 'reddit' ? `url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}` : p.key === 'telegram' ? `url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}` : p.key === 'whatsapp' ? `text=${encodeURIComponent(title + ' ' + url)}` : p.key === 'mastodon' ? `text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}` : `subject=${encodeURIComponent(title)}&body=${encodeURIComponent(url)}`}`} target="_blank" rel="noopener noreferrer" className={styles.socialBtn}>{p.icon && <img src={p.icon} alt="" width={16} height={16} style={{borderRadius:'3px'}} />} {p.label}</a>
+                <a key={p.key} href={`${p.url}?${p.key === 'x' ? `text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}` : p.key === 'facebook' ? `u=${encodeURIComponent(url)}` : p.key === 'linkedin' ? `url=${encodeURIComponent(url)}` : p.key === 'reddit' ? `url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}` : p.key === 'telegram' ? `url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}` : p.key === 'whatsapp' ? `text=${encodeURIComponent(title + ' ' + url)}` : p.key === 'mastodon' ? `text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}` : `subject=${encodeURIComponent(title)}&body=${encodeURIComponent(url)}`}`} target="_blank" rel="noopener noreferrer" className={styles.socialBtn}>{p.icon && <Image src={p.icon} alt="" width={16} height={16} style={{borderRadius:'3px'}} />} {p.label}</a>
               ))}
             </div>
             <div className={styles.divider} />
@@ -283,7 +297,7 @@ export default function EntityActions({
         <QRCodeModal isOpen={true} onClose={() => setQrAddr(null)} currency={qrAddr.currency} address={qrAddr.address} />
       )}
       {showFeedModal && (
-        <div className={styles.overlay} onClick={closeFeedModal} style={{ zIndex: 1001 }}>
+        <div className={styles.overlay} onClick={closeFeedModal} style={{ zIndex: 1001 }} role="dialog" aria-modal="true" aria-label="Share to feed">
           <div className={styles.feedModal} onClick={e => e.stopPropagation()}>
             <h4 className={styles.feedTitle}>{entityType === 'PROFILE' ? 'Mention in a Post' : 'Share to Post'}</h4>
             <textarea value={feedContent} onChange={e => setFeedContent(e.target.value)} placeholder={entityType === 'PROFILE' ? 'Add a comment about this profile (optional)...' : 'Add a comment (optional)...'} rows={3} className={styles.feedTextarea} />
@@ -396,7 +410,7 @@ export default function EntityActions({
           {replies.map(reply => (
             <div key={reply.id} className={styles.reply}>
               <div className={styles.replyAvatar}>
-                {reply.user?.image ? <img src={reply.user.image} alt="" /> : <span>{reply.user?.name?.[0] || 'U'}</span>}
+                {reply.user?.image ? <Image src={reply.user.image} alt="" width={24} height={24} /> : <span>{reply.user?.name?.[0] || 'U'}</span>}
               </div>
               <div>
                 <div className={styles.replyAuthor}>{reply.user?.name || 'Unknown'}</div>

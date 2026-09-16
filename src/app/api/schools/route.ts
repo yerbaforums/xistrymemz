@@ -51,8 +51,7 @@ export async function GET(request: Request) {
     },
     orderBy: sort === 'popular' 
       ? { purchases: { _count: 'desc' } }
-      : { createdAt: 'desc' },
-    take: 50
+      : { createdAt: 'desc' }
   })
 
   const schools = await prisma.user.findMany({ skip, take: limit,

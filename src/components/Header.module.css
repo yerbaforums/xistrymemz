@@ -923,6 +923,41 @@
   background: var(--bg-tertiary);
 }
 
+.mobileExpandBtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: calc(100% - 32px);
+  margin: 4px 16px;
+  padding: 10px 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.mobileExpandBtn:hover {
+  color: var(--text-primary);
+  border-color: var(--accent-primary);
+}
+
+.mobileExpandChevron {
+  transition: transform 0.2s;
+  font-size: 0.7rem;
+}
+
+.mobileExpandChevronOpen {
+  transform: rotate(180deg);
+}
+
+.mobileExpandBody {
+  overflow: hidden;
+}
+
 .adminLink {
   color: var(--accent-primary) !important;
 }
@@ -987,6 +1022,10 @@
 
 @media (max-width: 768px) {
   .nav {
+    display: none;
+  }
+
+  .sidebarToggle {
     display: none;
   }
 

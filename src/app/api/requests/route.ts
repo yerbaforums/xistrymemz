@@ -121,7 +121,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { title, description, imageUrl, projectId, productId, groupId, schoolContentId, eventId, category, priority, budget, goalAmount, currentFunding, location, isPublic, createGroup, acceptsDonations, selectedDonationAddrs, hashtags } = validation.data
+    const { title, description, imageUrl, projectId, productId, groupId, schoolContentId, eventId, category, priority, budget, goalAmount, currentFunding, location, isPublic, createGroup, acceptsDonations, selectedDonationAddrs, hashtags, customFields } = validation.data
 
     if (projectId) {
       const project = await prisma.project.findFirst({
@@ -200,7 +200,17 @@ export async function POST(request: Request) {
         acceptsDonations: acceptsDonations ?? false,
         ...donationAddressesToLegacy((acceptsDonations ? (selectedDonationAddrs || []) : []) as any),
         donationAddresses: serializeDonationAddresses((acceptsDonations ? selectedDonationAddrs || [] : []) as any) as any,
-        status: 'PENDING'
+        status: 'PENDING',
+        customFields: customFields != null
+          ? customFields.filter(f => f && typeof f === 'object' && typeof f.label === 'string' && f.label.trim())
+            .map(f => ({
+              label: f.label.trim(),
+              type: f.type ?? 'text',
+              required: !!f.required,
+              options: Array.isArray(f.options) ? f.options.filter((o: unknown) => typeof o === 'string') : null,
+              defaultValue: typeof f.defaultValue === 'string' ? f.defaultValue : null,
+            })) as any
+          : undefined,
       },
       include: {
         user: { select: { id: true, name: true, username: true, email: true, image: true, shopSlug: true } }

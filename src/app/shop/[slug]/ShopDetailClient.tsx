@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import styles from './page.module.css'
+import { SHOP_CATEGORY_MAP } from '@/lib/shop-categories'
 import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
 import { QRCodeModal } from '@/components/QRCodeModal'
@@ -55,6 +56,7 @@ interface ShopData {
   shopCoverImage: string | null
   shopCoverStyle: string
   shopSlug: string | null
+  shopCategory: string | null
   isShopApproved: boolean
   user: {
     id: string
@@ -343,6 +345,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
           <div className={styles.shopInfo}>
             <div className={styles.nameRow}>
               <h1>{shop.shopName || 'Untitled Shop'}</h1>
+              {(() => { const cat = SHOP_CATEGORY_MAP.get(shop.shopCategory || '') || SHOP_CATEGORY_MAP.get('OTHER'); return cat && shop.shopCategory !== 'OTHER' ? <span className={styles.categoryBadge}>{cat.icon} {cat.label}</span> : null })()}
               <RoleBadge role={shop.user.role} />
               {shop.isShopApproved && <ApprovalBadge />}
             </div>

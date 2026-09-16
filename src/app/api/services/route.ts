@@ -6,6 +6,7 @@ import { serviceOfferingSchema, validateBody } from '@/lib/schemas'
 import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import { extractHashtags, linkHashtags } from '@/services/hashtagService'
 import { geocodeLocation } from '@/lib/geocoding'
+import { hasVerifiedEmail } from '@/lib/verified-email'
 
 export const dynamic = 'force-dynamic'
 
@@ -115,6 +116,10 @@ export async function POST(request: NextRequest) {
       } catch {}
     }
 
+    const verifiedPublish = await hasVerifiedEmail(session.user.id)
+    const wantsPublish = parsed.data.isActive ?? true
+    const needsEmailVerification = wantsPublish && !verifiedPublish
+
     const service = await prisma.serviceOffering.create({
       data: {
         title: parsed.data.title.trim(),
@@ -127,7 +132,7 @@ export async function POST(request: NextRequest) {
         longitude,
         meetingLink: parsed.data.meetingLink || null,
         imageUrl: parsed.data.imageUrl || null,
-        isActive: parsed.data.isActive ?? true,
+        isActive: wantsPublish && verifiedPublish,
         acceptsDonations: parsed.data.acceptsDonations ?? false,
         ...donationAddressesToLegacy((parsed.data.acceptsDonations ? (parsed.data.selectedDonationAddrs || []) : []) as any),
         donationAddresses: serializeDonationAddresses((parsed.data.acceptsDonations ? parsed.data.selectedDonationAddrs || [] : []) as any) as any,
@@ -154,7 +159,7 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    return NextResponse.json({ service }, { status: 201 })
+    return NextResponse.json({ service, needsEmailVerification }, { status: 201 })
   } catch (error) {
     console.error('Error creating service:', error)
     return apiError("Failed to create service", 500)

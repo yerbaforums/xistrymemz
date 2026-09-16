@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { useToast } from '@/context/ToastContext'
 import { SOCIAL_PLATFORMS, buildShareUrl } from '@/lib/share-links'
 import styles from './ShareBar.module.css'
@@ -69,7 +70,7 @@ export default function ShareBar({ entityType, title, description, image, varian
             className={styles.socialBtn}
             title={p.label}
           >
-            <img src={p.icon} alt={p.label} width={16} height={16} />
+            <Image src={p.icon} alt={p.label} width={16} height={16} />
           </a>
         ))}
         {SOCIAL_PLATFORMS.length > 4 && (
@@ -90,7 +91,7 @@ export default function ShareBar({ entityType, title, description, image, varian
               className={styles.socialBtn}
               title={p.label}
             >
-              <img src={p.icon} alt={p.label} width={16} height={16} />
+              <Image src={p.icon} alt={p.label} width={16} height={16} />
               <span className={styles.socialLabel}>{p.label}</span>
             </a>
           ))}
@@ -99,7 +100,7 @@ export default function ShareBar({ entityType, title, description, image, varian
 
       {image && (
         <div className={styles.preview}>
-          <img src={image} alt="" className={styles.previewImg} />
+          <Image src={image} alt="" width={48} height={48} className={styles.previewImg} />
           <div className={styles.previewInfo}>
             <span className={styles.previewType}>{entityType}</span>
             <span className={styles.previewTitle}>{title}</span>

@@ -27,7 +27,7 @@ export async function findEvents(query: {
       include: {
         organizer: { select: { id: true, name: true, image: true } },
         project: { select: { id: true, title: true } },
-        _count: { select: { joiners: true } },
+        _count: { select: { eventJoiners: true } },
       },
       orderBy: { eventDate: 'asc' },
       skip,
@@ -46,8 +46,8 @@ export async function getEventById(id: string) {
       organizer: { select: { id: true, name: true, image: true, location: true } },
       project: { select: { id: true, title: true } },
       group: { select: { id: true, name: true } },
-      joiners: { include: { user: { select: { id: true, name: true, image: true } } } },
-      hashtags: { include: { hashtag: true } },
+      eventJoiners: { include: { user: { select: { id: true, name: true, image: true } } } },
+      eventHashtags: { include: { hashtag: true } },
     },
   })
 }
@@ -62,9 +62,9 @@ export async function createEvent(data: Record<string, unknown>, userId: string)
       endDate: data.endDate ? new Date(data.endDate as string) : null,
       location: data.location as string || null,
       eventCategory: data.eventCategory as string || 'GENERAL',
-      maxJoiners: data.maxJoiners as number | null,
+      maxJoiners: (data.maxJoiners as number | null) ?? undefined,
       isTicketed: data.isTicketed as boolean ?? false,
-      ticketPrice: data.ticketPrice as number | null,
+      ticketPrice: (data.ticketPrice as number | null) ?? undefined,
       organizerId: userId,
       projectId: data.projectId as string | null,
       groupId: data.groupId as string | null,
@@ -91,9 +91,9 @@ export async function updateEvent(id: string, data: Record<string, unknown>, use
       eventDate: data.eventDate ? new Date(data.eventDate as string) : undefined,
       location: data.location as string | null | undefined,
       eventCategory: data.eventCategory as string | undefined,
-      maxJoiners: data.maxJoiners as number | null | undefined,
+      maxJoiners: (data.maxJoiners as number | null | undefined) ?? undefined,
       isTicketed: data.isTicketed as boolean | undefined,
-      ticketPrice: data.ticketPrice as number | null | undefined,
+      ticketPrice: (data.ticketPrice as number | null | undefined) ?? undefined,
     },
   })
 }

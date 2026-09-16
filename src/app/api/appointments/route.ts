@@ -61,12 +61,59 @@ export async function POST(request: NextRequest) {
       return apiError("Cannot book appointment with yourself", 400)
     }
 
+    const start = new Date(startTime)
+    const end = new Date(endTime)
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return apiError("Invalid start or end time", 400)
+    }
+    if (end <= start) {
+      return apiError("End time must be after start time", 400)
+    }
+
+    if (productId) {
+      const product = await prisma.product.findUnique({
+        where: { id: productId },
+        select: { userId: true, acceptsAppointments: true, title: true },
+      })
+      if (!product) {
+        return apiError("Product not found", 404)
+      }
+      if (product.userId !== sellerId) {
+        return apiError("Product does not belong to this seller", 400)
+      }
+      if (!product.acceptsAppointments) {
+        return apiError(`"${product.title}" does not accept bookings`, 400)
+      }
+    }
+
+    if (serviceOfferingId) {
+      const service = await prisma.serviceOffering.findUnique({
+        where: { id: serviceOfferingId },
+        select: { userId: true, acceptsAppointments: true, title: true },
+      })
+      if (!service) {
+        return apiError("Service not found", 404)
+      }
+      if (service.userId !== sellerId) {
+        return apiError("Service does not belong to this seller", 400)
+      }
+      if (!service.acceptsAppointments) {
+        return apiError(`"${service.title}" does not accept bookings`, 400)
+      }
+    }
+
+    const normalizedResponses = Array.isArray(formResponses)
+      ? formResponses
+          .filter((r: any) => r && typeof r === 'object' && typeof r.label === 'string')
+          .map((r: any) => ({ label: String(r.label), value: String(r.value ?? '') }))
+      : undefined
+
     const appointment = await prisma.appointment.create({
       data: {
         title: title.trim(),
         description: description?.trim(),
-        startTime: new Date(startTime),
-        endTime: new Date(endTime),
+        startTime: start,
+        endTime: end,
         duration: duration || null,
         location: location || null,
         meetingLink: meetingLink || null,
@@ -75,7 +122,7 @@ export async function POST(request: NextRequest) {
         productId: productId || null,
         category: category || null,
         serviceOfferingId: serviceOfferingId || null,
-        formResponses: formResponses || undefined
+        formResponses: normalizedResponses || undefined
       },
       include: {
         buyer: { select: { id: true, name: true, image: true, username: true } },

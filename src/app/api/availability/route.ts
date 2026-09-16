@@ -17,7 +17,12 @@ export async function GET(request: Request) {
       orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }]
     })
 
-    return apiSuccess({ slots })
+    const seller = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { timeZone: true }
+    })
+
+    return apiSuccess({ slots, timeZone: seller?.timeZone || null })
   } catch (error) {
     console.error('Error fetching availability:', error)
     return apiError("Failed to fetch availability", 500)
