@@ -25,7 +25,11 @@ export default function CTASection({ memberCount }: Props) {
           <Link href="/projects" className={styles.btnSecondary}>
             {t('ctaBrowseProjects')}
           </Link>
+          <Link href="/about" className={styles.btnSecondary}>
+            {t('ctaDonate')}
+          </Link>
         </div>
+        <p className={styles.noCut}>{t('ctaNoCut')}</p>
       </div>
     </section>
   )

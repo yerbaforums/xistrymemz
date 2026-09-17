@@ -1,6 +1,7 @@
 import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError, NextResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { barterOfferUpdateSchema, validateBody } from '@/lib/schemas'
+import { createNotification } from '@/services/notificationService'
 
 export async function GET(
   request: Request,
@@ -123,16 +124,20 @@ export async function PUT(
       const actionLabel = status === 'ACCEPTED' ? 'accepted' : status === 'REJECTED' ? 'rejected' : 'marked your offer as complete on'
       const actionNoun = status === 'ACCEPTED' ? 'Offer Accepted!' : status === 'REJECTED' ? 'Offer Rejected' : 'Offer Completed!'
 
-      await prisma.notification.create({
-        data: {
+      // Pref-gated: Settings → Notifications → Offers & Trades.
+      try {
+        await createNotification({
           type: status === 'ACCEPTED' ? 'OFFER_ACCEPTED' : status === 'REJECTED' ? 'OFFER_REJECTED' : 'OFFER_COMPLETED',
+          userId: notifiedUserId,
+          entityId: id,
+          entityType: 'OFFER',
           title: actionNoun,
           message: `${notifier?.name || 'The other party'} ${actionLabel} "${existingOffer.listingTitle}"`,
           link: `/offers/${id}`,
-          userId: notifiedUserId,
-          relatedId: id
-        }
-      })
+        })
+      } catch {
+        // silent — offer was already updated
+      }
     }
 
     return apiSuccess(updatedOffer)

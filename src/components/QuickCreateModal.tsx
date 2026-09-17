@@ -445,7 +445,7 @@ function ProductForm({ onDone }: { onDone: () => void }) {
         <div className={styles.sectionContent}>
           <label className={styles.checkLabel}>
             <input type="checkbox" checked={acceptsDonations} onChange={e => setAcceptsDonations(e.target.checked)} />
-            Accept crypto donations
+            Accept private-money donations
           </label>
           {acceptsDonations && (
             <DonationAddressPicker
@@ -640,7 +640,7 @@ function GroupForm({ onDone }: { onDone: () => void }) {
         <div className={styles.sectionContent}>
           <label className={styles.checkLabel}>
             <input type="checkbox" checked={acceptsDonations} onChange={e => setAcceptsDonations(e.target.checked)} />
-            Accept crypto donations
+            Accept private-money donations
           </label>
           {acceptsDonations && (
             <DonationAddressPicker
@@ -808,7 +808,7 @@ function RequestForm({ onDone }: { onDone: () => void }) {
         <div className={styles.sectionContent}>
           <label className={styles.checkLabel}>
             <input type="checkbox" checked={acceptsDonations} onChange={e => setAcceptsDonations(e.target.checked)} />
-            Accept crypto donations
+            Accept private-money donations
           </label>
           {acceptsDonations && (
             <DonationAddressPicker
@@ -1035,7 +1035,7 @@ function ServiceForm({ onDone }: { onDone: () => void }) {
         <div className={styles.sectionContent}>
           <label className={styles.checkLabel}>
             <input type="checkbox" checked={acceptsDonations} onChange={e => setAcceptsDonations(e.target.checked)} />
-            Accept crypto donations
+            Accept private-money donations
           </label>
           {acceptsDonations && (
             <DonationAddressPicker
@@ -1206,7 +1206,7 @@ function ProjectForm({ onDone }: { onDone: () => void }) {
           <input type="number" value={goalAmount} onChange={e => setGoalAmount(e.target.value)} className={styles.input} placeholder="Funding goal ($)" step="0.01" />
           <label className={styles.checkLabel}>
             <input type="checkbox" checked={acceptsDonations} onChange={e => setAcceptsDonations(e.target.checked)} />
-            Accept crypto donations
+            Accept private-money donations
           </label>
           {acceptsDonations && (
             <DonationAddressPicker

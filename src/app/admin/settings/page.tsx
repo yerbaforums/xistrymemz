@@ -249,7 +249,7 @@ export default function AdminSettingsPage() {
           <div>
             <h2 className={styles.mb4}>Site Donation Addresses</h2>
             <p className={`${styles.description} ${styles.mb0}`}>
-              Crypto addresses displayed on the home page, about page, and footer for site-wide donations.
+              Private-money addresses displayed on the home page, about page, and footer for site-wide donations.
             </p>
           </div>
           <button

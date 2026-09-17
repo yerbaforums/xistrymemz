@@ -249,11 +249,17 @@ export default function ServiceDetailPage() {
             )}
 
             <div className={styles.detailsGrid}>
-              {price != null && (
+              {price != null ? (
                 <div className={styles.detailCard}>
                   <div className={styles.detailIcon}>💰</div>
                   <div className={styles.detailLabel}>Price</div>
                   <div className={styles.detailValue}>${price}</div>
+                </div>
+              ) : (
+                <div className={styles.detailCard}>
+                  <div className={styles.detailIcon}>💬</div>
+                  <div className={styles.detailLabel}>Price</div>
+                  <div className={styles.detailValue}>Quote on inquiry — book or message to get a quote</div>
                 </div>
               )}
               {location && (
@@ -371,6 +377,16 @@ export default function ServiceDetailPage() {
               >
                 {session ? '📅 Book This Service' : 'Sign in to Book'}
               </Button>
+
+              {session ? (
+                <Link
+                  href={`/dashboard/messages?user=${service.userId}&inquiry=${service.id}`}
+                  className={styles.bookBtn}
+                  style={{ textDecoration: 'none', textAlign: 'center', display: 'block', marginTop: 8 }}
+                >
+                  💬 Send Inquiry
+                </Link>
+              ) : null}
 
               {session && (
                 <>

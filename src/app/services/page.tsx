@@ -76,9 +76,21 @@ export default function ServicesPage() {
         duration: typeof s.duration === 'number' ? s.duration : 60,
         price: typeof s.price === 'number' ? s.price : null,
         location: typeof s.location === 'string' ? s.location : null,
+        latitude: typeof s.latitude === 'number' ? s.latitude : null,
+        longitude: typeof s.longitude === 'number' ? s.longitude : null,
         meetingLink: typeof s.meetingLink === 'string' ? s.meetingLink : null,
         imageUrl: typeof s.imageUrl === 'string' ? s.imageUrl : null,
         isActive: s.isActive === true,
+        acceptsAppointments: s.acceptsAppointments === true,
+        appointmentDuration: typeof s.appointmentDuration === 'number' ? s.appointmentDuration : null,
+        appointmentLeadTime: typeof s.appointmentLeadTime === 'number' ? s.appointmentLeadTime : null,
+        appointmentLocation: typeof s.appointmentLocation === 'string' ? s.appointmentLocation : null,
+        appointmentMeetingLink: typeof s.appointmentMeetingLink === 'string' ? s.appointmentMeetingLink : null,
+        appointmentFormFields: Array.isArray(s.appointmentFormFields)
+          ? s.appointmentFormFields
+              .filter((f: any) => f && typeof f === 'object' && typeof f.label === 'string')
+              .map((f: any) => ({ label: String(f.label), type: String(f.type ?? 'text'), required: f.required === true }))
+          : null,
         userId: String(s.userId ?? ''),
         user: s.user && typeof s.user === 'object' ? {
           id: String(s.user.id ?? ''),
@@ -420,6 +432,14 @@ export default function ServicesPage() {
               >
                 {session ? '📅 Book This Service' : 'Sign in to Book'}
               </Button>
+              {session && sel && (
+                <Link
+                  href={`/dashboard/messages?user=${sel.userId}&inquiry=${sel.id}`}
+                  className={styles.viewDetailsBtn}
+                >
+                  💬 Send Inquiry
+                </Link>
+              )}
             </div>
         </Modal>
       )}
@@ -430,9 +450,10 @@ export default function ServicesPage() {
           onClose={() => { setShowBooking(false); setSelectedService(null) }}
           sellerId={sel.userId}
           sellerName={selUserName}
-          defaultDuration={typeof sel.duration === 'number' ? sel.duration : 60}
-          defaultLocation={selLocation}
-          defaultMeetingLink={selMeetingLink}
+          defaultDuration={typeof sel.appointmentDuration === 'number' ? sel.appointmentDuration : (typeof sel.duration === 'number' ? sel.duration : 60)}
+          defaultLeadTime={typeof sel.appointmentLeadTime === 'number' ? sel.appointmentLeadTime : null}
+          defaultLocation={typeof sel.appointmentLocation === 'string' ? sel.appointmentLocation : selLocation}
+          defaultMeetingLink={typeof sel.appointmentMeetingLink === 'string' ? sel.appointmentMeetingLink : selMeetingLink}
           serviceCategory={selCategory}
           serviceOfferingId={sel.id}
           productTitle={selTitle}

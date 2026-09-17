@@ -296,6 +296,12 @@ export default function DashboardServices() {
         </div>
       </div>
 
+      <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', margin: '0 0 12px' }}>
+        🔔 Booking requests and inquiries arrive as notifications + planner entries —{' '}
+        <Link href="/settings/notifications" style={{ color: 'var(--accent-primary)' }}>tune alert prefs</Link>
+        {' '}and keep <Link href="/profile/edit" style={{ color: 'var(--accent-primary)' }}>availability</Link> up to date so clients can book you.
+      </p>
+
       <div className={styles.filters}>
         <input
           type="text"

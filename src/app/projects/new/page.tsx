@@ -346,7 +346,7 @@ export default function NewProjectPage() {
                   <label className={styles.checkField}>
                     <input type="checkbox" checked={acceptsDonations}
                       onChange={e => setAcceptsDonations(e.target.checked)} />
-                    <span>Accept crypto donations</span>
+                    <span>Accept private-money donations</span>
                   </label>
                   {acceptsDonations && (
                     <>
@@ -488,7 +488,7 @@ export default function NewProjectPage() {
                     <div className={styles.reviewSection}>
                       <strong>💰 Funding</strong>
                       {goalAmount && <span>Goal: ${parseFloat(goalAmount).toFixed(2)}</span>}
-                      {acceptsDonations && <span>Accepts crypto donations</span>}
+                      {acceptsDonations && <span>Accepts private-money donations</span>}
                     </div>
                   )}
 

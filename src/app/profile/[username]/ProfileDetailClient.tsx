@@ -327,6 +327,7 @@ export default function ProfilePage() {
   const [posts, setPosts] = useState<Post[]>([])
   const [projects, setProjects] = useState<ProjectData[]>([])
   const [products, setProducts] = useState<Product[]>([])
+  const [services, setServices] = useState<{ id: string; title: string; category: string; price: number | null; imageUrl: string | null; location: string | null; duration: number; createdAt: string }[]>([])
   const [connections, setConnections] = useState<Connection[]>([])
   const [groups, setGroups] = useState<UserGroup[]>([])
   const [donationAddresses, setDonationAddresses] = useState<DonationAddr[]>([])
@@ -335,7 +336,7 @@ export default function ProfilePage() {
   const [postsOffset, setPostsOffset] = useState(0)
   const [totalPostCount, setTotalPostCount] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'posts' | 'projects' | 'connections' | 'groups' | 'forum' | 'events' | 'requests' | 'shop' | 'school' | 'reviews' | 'about'>('posts')
+  const [activeTab, setActiveTab] = useState<'posts' | 'projects' | 'connections' | 'groups' | 'forum' | 'events' | 'requests' | 'shop' | 'services' | 'school' | 'reviews' | 'about'>('posts')
   const [activeClass, setActiveClass] = useState<string | null>(null)
   const [forumPosts, setForumPosts] = useState<ForumPostEntry[]>([])
   const [userEvents, setUserEvents] = useState<UserEventEntry[]>([])
@@ -406,6 +407,7 @@ export default function ProfilePage() {
       setPosts(data.posts || [])
       setProjects(data.projects || [])
       setProducts(data.products || [])
+      setServices(data.services || [])
       setConnections(data.connections || [])
       setGroups(data.groups || [])
       setDonationAddresses(data.user.donationAddresses || [])
@@ -1105,6 +1107,14 @@ export default function ProfilePage() {
             Shop ({products.length})
           </Button>
         )}
+        {services.length > 0 && (
+          <Button
+            className={`${styles.tab} ${activeTab === 'services' ? styles.active : ''}`}
+            onClick={() => setActiveTab('services')}
+          >
+            Services ({services.length})
+          </Button>
+        )}
         {(user.schoolName || user.schoolSlug) && (
           <Button 
             className={`${styles.tab} ${activeTab === 'school' ? styles.active : ''}`}
@@ -1575,6 +1585,43 @@ export default function ProfilePage() {
               </div>
             ) : (
               <EmptyState icon="🛒" title="No listings" description={`${user.name || 'This user'} hasn't listed any products or services yet.`} />
+            )}
+          </div>
+        )}
+
+        {activeClass === null && activeTab === 'services' && (
+          <div className={styles.shopSection}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: '0 0 12px' }}>
+              Bookable services — pick a time or send an inquiry for a quote.
+            </p>
+            {services.length > 0 ? (
+              <div className={styles.productsGrid}>
+                {services.map((service) => (
+                  <div key={service.id} className={styles.productCard}>
+                    <Link href={`/services/${service.id}`} className={styles.productCardLink}>
+                      {service.imageUrl && (
+                        <div className={styles.productImage}>
+                          <Image src={service.imageUrl} alt={service.title} fill style={{objectFit: 'cover'}} />
+                        </div>
+                      )}
+                      <div className={styles.productInfo}>
+                        <span className="badge badge-category">
+                          {service.category.replace(/_/g, ' ')}
+                        </span>
+                        <h3>{service.title}</h3>
+                        {service.price != null
+                          ? <p className={styles.productPrice}>${service.price}</p>
+                          : <p className={styles.productPrice}>Quote on inquiry</p>}
+                        {service.location && (
+                          <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: '4px 0 0' }}>📍 {service.location}</p>
+                        )}
+                      </div>
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <EmptyState icon="🔧" title="No services" description={`${user.name || 'This user'} hasn't listed any services yet.`} />
             )}
           </div>
         )}

@@ -557,7 +557,7 @@ export default function SetupShopPage() {
             <p>Configure accepted payment methods for your shop</p>
             <div className={styles.infoBox}>
               <p>💡 You can configure payment methods for each product individually when adding listings.</p>
-              <p>Supported methods: Cash, Venmo, PayPal, Zelle, Crypto, Card</p>
+              <p>Supported methods: Cash, Venmo, PayPal, Zelle, Private Money, Card</p>
               <p>Payment types: Direct only — buyers pay you directly, no escrow or platform fees.</p>
             </div>
           </div>

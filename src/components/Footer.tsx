@@ -58,13 +58,6 @@ export default function Footer() {
         <div className={styles.brand}>
           <Link href="/" className={styles.logo}>XistrYmemZ</Link>
           <p>{t('brandTagline')}</p>
-          <div className={styles.pillars}>
-            <span className={styles.pillar}><span aria-hidden="true">🚫</span> Ad-Free</span>
-            <span className={styles.pillar}><span aria-hidden="true">🔒</span> No Data Selling</span>
-            <span className={styles.pillar}><span aria-hidden="true">🤖</span> AI-Free</span>
-            <span className={styles.pillar}><span aria-hidden="true">📊</span> No Algorithms</span>
-            <span className={styles.pillar}><span aria-hidden="true">👁️</span> No Shadowbans</span>
-          </div>
         </div>
         
         <div className={styles.links}>

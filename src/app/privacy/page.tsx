@@ -23,7 +23,7 @@ export default function Privacy() {
             <li><strong>Content you create:</strong> Projects, plans, posts, requests, events, service listings, product listings, group content, and forum posts.</li>
             <li><strong>Location data:</strong> Neighborhood and search radius preferences you voluntarily provide for local discovery features.</li>
             <li><strong>Transaction data:</strong> Offer history, appointment bookings, and marketplace activity between you and other users.</li>
-            <li><strong>Cryptocurrency addresses:</strong> Wallet addresses you voluntarily provide for receiving donations. These are public by nature.</li>
+            <li><strong>Private-money addresses:</strong> Open-source, auditable, secure private-money wallet addresses you voluntarily provide for receiving donations. These are public by nature.</li>
             <li><strong>Usage data:</strong> Page views, feature interactions, and analytics to improve the platform.</li>
             <li><strong>Communication data:</strong> Messages between users and notification preferences.</li>
           </ul>
@@ -51,7 +51,7 @@ export default function Privacy() {
             <li><strong>Other users:</strong> Your public profile, listings, and content are visible to other users as intended by the platform&apos;s features.</li>
             <li><strong>Legal authorities:</strong> When required by law, regulation, or legal process.</li>
           </ul>
-          <p>Cryptocurrency wallet addresses you share for donations are public by nature and may be visible to anyone who views your profile or content.</p>
+          <p>Private-money wallet addresses you share for donations are public by nature and may be visible to anyone who views your profile or content.</p>
         </div>
 
         <div className={styles.section}>

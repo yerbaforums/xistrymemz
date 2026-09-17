@@ -145,7 +145,7 @@
     "heroTitleAccent": "Cosmic Whitepages",
     "heroTitlePost": " Cooperative",
     "heroBadge": "🚀 Grand Opening",
-    "heroSubtitle": "Build, share, and grow together — ad-free, AI-free, no data selling, no algorithms, no shadowbanning, no censorship. Sign up and start creating something extraordinary with the community.",
+    "heroSubtitle": "Build, share, and grow together on open-source software that is 100% funded by community donations. Sign up and start creating something extraordinary with the community.",
     "heroCta": "Join the Coop",
     "heroBrowseShops": "Browse Shops",
     "heroBrowseDirectory": "Directory",
@@ -253,6 +253,19 @@
     "ctaTitle": "Ready to Claim Your Place?",
     "ctaDesc": "Join {count} other members on the cosmic whitepages cooperative. Create your profile, launch your first project, and start connecting with people who share your vision.",
     "ctaSignUp": "Sign Up & Start Building",
-    "ctaBrowseProjects": "Browse Projects"
+    "ctaBrowseProjects": "Browse Projects",
+    "ctaDonate": "💎 Donate to the Coop",
+    "ctaNoCut": "XistrYmemZ takes no cut and never holds your money — trade happens directly between members. The platform just facilitates.",
+    "startHereTitle": "Start Here",
+    "startHereSubtitle": "Pick your path — every road leads somewhere active in under a minute",
+    "startHereOfferTitle": "Offer a skill",
+    "startHereOfferDesc": "List a service with calendar booking or quote-on-inquiry, set your availability, and get notified the moment someone reaches out.",
+    "startHereOfferCta": "Create your service",
+    "startHereFindTitle": "Find help",
+    "startHereFindDesc": "Browse services, book a time slot or send an inquiry for a quote — then track it all in My Deals.",
+    "startHereFindCta": "Browse services",
+    "startHereCollaborateTitle": "Collaborate",
+    "startHereCollaborateDesc": "Meet members, join groups, back a project, or post a request and let the community come to you.",
+    "startHereCollaborateCta": "Meet the community"
   }
 }

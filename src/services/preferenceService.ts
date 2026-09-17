@@ -56,6 +56,7 @@ const TYPE_TO_PREF_KEY: Record<string, string | null> = {
   OFFER_ACCEPTED: 'offers',
   OFFER_REJECTED: 'offers',
   OFFER_WITHDRAWN: 'offers',
+  OFFER_COUNTERED: 'offers',
   OFFER_COMPLETED: 'offers',
 }
 

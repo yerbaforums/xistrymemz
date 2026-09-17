@@ -1,5 +1,6 @@
 import { apiSuccess, apiError, withAuth } from '@/lib/api-helpers'
 import { getMessagesBetweenUsers, markMessagesAsRead, sendMessage } from '@/services/messageService'
+import { createNotification } from '@/services/notificationService'
 
 export const GET = withAuth(async (req, session, context) => {
   const userId = context.searchParams.user
@@ -29,6 +30,25 @@ export const POST = withAuth(async (req, session) => {
     }
 
     const message = await sendMessage(session.user.id, receiverId, content)
+
+    // Notify the receiver (pref-gated: Settings → Notifications → Messages).
+    // Failure must never break message delivery.
+    try {
+      const preview = content.length > 120 ? `${content.slice(0, 120)}…` : content
+      await createNotification({
+        type: 'NEW_MESSAGE',
+        userId: receiverId,
+        actorId: session.user.id,
+        entityId: message.id,
+        entityType: 'MESSAGE',
+        title: 'New Message',
+        message: `${(message.sender as { name?: string | null })?.name || 'Someone'}: ${preview}`,
+        link: `/dashboard/messages?user=${session.user.id}`,
+      })
+    } catch {
+      // silent — message was already delivered
+    }
+
     return apiSuccess({ message }, 201)
   } catch (error) {
     console.error('Send message error:', error)

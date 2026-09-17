@@ -2,6 +2,7 @@ import { NextRequest, apiSuccess, apiError, apiUnauthorized, apiServerError, Nex
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { createNotification } from '@/services/notificationService'
 
 export async function GET(request: NextRequest) {
   try {
@@ -133,16 +134,21 @@ export async function POST(request: NextRequest) {
 
     const buyerName = (appointment.buyer?.name || session.user.name || 'Someone')
 
-    await prisma.notification.create({
-      data: {
+    // Pref-gated: Settings → Notifications → Appointments. Never fail the booking.
+    try {
+      await createNotification({
         type: 'APPOINTMENT_REQUEST',
+        userId: sellerId,
+        actorId: session.user.id,
+        entityId: appointment.id,
+        entityType: 'APPOINTMENT',
         title: 'New Booking Request',
         message: `${buyerName} wants to book "${title}" with you`,
         link: `/dashboard/appointments`,
-        userId: sellerId,
-        relatedId: appointment.id
-      }
-    }).catch(() => {})
+      })
+    } catch {
+      // silent — appointment was already created
+    }
 
     return NextResponse.json({ appointment }, { status: 201 })
   } catch (error) {

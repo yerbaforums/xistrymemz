@@ -84,7 +84,7 @@ export async function GET(
     const userId = user.id
 
     const postsTake = 20
-    const [projects, posts, products, connections, groupMemberships, totalPostCount, userLocations,
+    const [projects, posts, products, services, connections, groupMemberships, totalPostCount, userLocations,
       eventVolunteerCount, projectVolunteerCount, eventAttendeeCount, forumPostCount, forumReplyCount,
       badgeCount, barterOfferSentCount, barterOfferReceivedCount, orderCount, requestCount
     ] = await Promise.all([
@@ -144,6 +144,21 @@ export async function GET(
           { pinned: 'desc' },
           { createdAt: 'desc' }
         ],
+        take: 10
+      }),
+      prisma.serviceOffering.findMany({
+        where: { userId: userId, isActive: true },
+        select: {
+          id: true,
+          title: true,
+          category: true,
+          price: true,
+          imageUrl: true,
+          location: true,
+          duration: true,
+          createdAt: true
+        },
+        orderBy: { createdAt: 'desc' },
         take: 10
       }),
       prisma.connection.findMany({
@@ -302,6 +317,7 @@ export async function GET(
       projects,
       posts,
       products,
+      services,
       connections: userConnections,
       groups: groupMemberships.map(gm => ({
         id: gm.group.id,

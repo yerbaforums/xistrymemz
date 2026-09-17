@@ -1146,7 +1146,7 @@ function EventDetailContent() {
                 )
                 return null
               })()}
-              <p className={styles.donationHint}>Send crypto to any address above to support</p>
+              <p className={styles.donationHint}>Send private money to any address above to support</p>
             </div>
           )}
           {qrOpen && (() => {

@@ -20,10 +20,9 @@ interface Props {
   loadingEvents: boolean
   loadingPlans: boolean
   loadingBoards: boolean
-  trendingTags?: { tag: string; entities?: { products: number; events: number; posts: number; forumPosts: number; groupPosts: number } }[]
 }
 
-export default function PulseSection({ shops, products, requests, events, projects, boards, loadingShops, loadingProducts, loadingRequests, loadingEvents, loadingPlans, loadingBoards, trendingTags }: Props) {
+export default function PulseSection({ shops, products, requests, events, projects, boards, loadingShops, loadingProducts, loadingRequests, loadingEvents, loadingPlans, loadingBoards }: Props) {
   const { ref, visible } = useScrollReveal()
   const t = useTranslations('home')
 
@@ -177,23 +176,6 @@ export default function PulseSection({ shops, products, requests, events, projec
           <Link href="/boards" className={styles.viewAll}>{t('exploreBoards')} →</Link>
         </div>
       </div>
-
-      {trendingTags && trendingTags.length > 0 && (
-        <div className={styles.hashtagRow}>
-          <div className={styles.hashtagRowHeader}>
-            <span className={styles.hashtagRowIcon}>🏷️</span>
-            <span>{t('trendingTags')}</span>
-          </div>
-          <div className={styles.hashtagRowCloud}>
-            {trendingTags.slice(0, 8).map(h => (
-              <Link key={h.tag} href={`/hashtag/${h.tag}`} className={styles.hashtagRowPill}>
-                #{h.tag}
-              </Link>
-            ))}
-            <Link href="/hashtags" className={styles.hashtagRowMore}>{t('viewAllTags')} →</Link>
-          </div>
-        </div>
-      )}
     </section>
   )
 }

@@ -759,7 +759,7 @@ export default function CommunityPage() {
                 <h3>Send Tip</h3>
                 
                 <div className={styles.cryptoSelect}>
-                  <label>Select Crypto</label>
+                  <label>Select Private Money</label>
                   <div className={styles.cryptoGrid}>
                     {tipOptions.map(crypto => (
                       <Button

@@ -99,7 +99,9 @@ export default async function DashboardDeals() {
       },
       include: {
         buyer: { select: { id: true, name: true } },
-        seller: { select: { id: true, name: true } }
+        seller: { select: { id: true, name: true } },
+        serviceOffering: { select: { id: true, title: true } },
+        product: { select: { id: true, title: true } }
       },
       orderBy: { updatedAt: 'desc' },
       take: 30
@@ -145,7 +147,7 @@ export default async function DashboardDeals() {
     ...appointments.map(a => ({
       kind: 'Appointment' as const,
       id: a.id,
-      title: a.title,
+      title: (a as { serviceOffering?: { title: string } | null }).serviceOffering?.title || a.title,
       counterpart: a.buyerId === userId ? (a.seller.name || 'Seller') : (a.buyer.name || 'Buyer'),
       status: a.status,
       role: a.buyerId === userId ? 'Buyer' : 'Host',

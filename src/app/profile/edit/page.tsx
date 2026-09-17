@@ -500,7 +500,7 @@ export default function ProfileEditPage() {
 
           {donationAddresses.length === 0 && !showDonationForm && acceptsDonations && (
             <p className={styles.emptyState}>
-              No donation addresses yet. Add crypto addresses to receive donations with QR codes.
+              No donation addresses yet. Add private-money addresses to receive donations with QR codes.
             </p>
           )}
 

@@ -267,7 +267,7 @@ function SchoolSetupContent() {
             <div className={styles.infoBox}>
               <p>💡 You can set individual prices for each content item when creating them.</p>
               <p>Options: Free, Paid, Subscription-based</p>
-              <p>Supported payment methods: PayPal, Card, Crypto</p>
+              <p>Supported payment methods: PayPal, Card, Private Money</p>
             </div>
           </div>
         )}

@@ -54,15 +54,40 @@ function DashboardMessagesContent() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const userParam = searchParams.get('user')
+  const inquiryParam = searchParams.get('inquiry')
 
   useEffect(() => {
     if (session?.user) {
       fetchConversations()
       if (userParam) {
         fetchUser(userParam)
+        setMode('chat')
       }
     }
   }, [session, userParam])
+
+  // Prefill a service inquiry into the composer (once per inquiry param).
+  // Reads newMessage via ref to avoid re-running after the user starts typing.
+  const inquiryPrefilledRef = useRef<string | null>(null)
+  const newMessageRef = useRef(newMessage)
+  newMessageRef.current = newMessage
+  useEffect(() => {
+    if (!userParam || !inquiryParam) return
+    if (inquiryPrefilledRef.current === inquiryParam) return
+    if (newMessageRef.current.trim()) return
+    inquiryPrefilledRef.current = inquiryParam
+    fetch(`/api/services/${inquiryParam}`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(data => {
+        const svc = data?.data?.service || data?.service
+        const title = svc?.title || 'your service'
+        const url = `${window.location.origin}/services/${inquiryParam}`
+        setNewMessage(`Hi! I'm interested in "${title}" (${url}). Here's what I'm looking for: `)
+      })
+      .catch(() => {
+        setNewMessage(`Hi! I'm interested in your service (${window.location.origin}/services/${inquiryParam}). Here's what I'm looking for: `)
+      })
+  }, [userParam, inquiryParam])
 
   useEffect(() => {
     if (selectedUser) {

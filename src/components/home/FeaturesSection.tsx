@@ -14,12 +14,13 @@ export default function FeaturesSection() {
       icon: '🏪',
       features: [
         { icon: '🏪', title: 'Shop', desc: 'Create your storefront, list products or services, and accept payments.', href: '/shops' },
-        { icon: '🛒', title: 'Products', desc: 'Sell physical goods, digital items, or offer services with flexible pricing.', href: '/products' },
-        { icon: '🔧', title: 'Services', desc: 'Offer your skills — tutoring, design, consultations. Accept appointments with built-in scheduling.', href: '/services' },
+        { icon: '🛒', title: 'Products', desc: 'Sell physical and digital goods with flexible pricing, buyer offers, and open-source private-money payments. No platform cut — buyers pay you directly.', href: '/products' },
+        { icon: '🔧', title: 'Services', desc: 'Offer your skills — travel planning, tech & multimedia, photoshoots, tutoring, design and more. Fixed prices or quote-on-inquiry, with built-in booking or direct inquiry.', href: '/services' },
         { icon: '🏠', title: 'Rentals', desc: 'List items for rent with daily, weekly, monthly pricing and deposits.', href: '/rentals' },
-        { icon: '🎫', title: 'Event Tickets', desc: 'Sell tickets with crypto payments, donation addresses, and QR check-in.', href: '/events' },
-        { icon: '💎', title: 'Donations & Tips', desc: 'Receive crypto donations and tips for projects, requests, and content.', href: '/requests' },
-        { icon: '🤝', title: 'Offers & Barter', desc: 'Exchange items or services directly through barter. Make offers, negotiate, and close arrangements.', href: '/dashboard/offers' },
+        { icon: '🎫', title: 'Event Tickets', desc: 'Sell tickets with private-money payments, donation addresses, and QR check-in.', href: '/events' },
+        { icon: '💎', title: 'Donations & Tips', desc: 'Receive donations and tips in open-source, auditable, secure private money for projects, requests, and content.', href: '/requests' },
+        { icon: '🤝', title: 'Offers & Barter', desc: 'Exchange items or services directly through barter. Make offers, negotiate, and close arrangements — the platform never takes a cut or holds your money.', href: '/dashboard/offers' },
+        { icon: '📁', title: 'My Deals', desc: 'Track every active order, request, offer, and booking — with clear flags when something needs your action.', href: '/dashboard/deals' },
       ]
     },
     {
@@ -36,7 +37,7 @@ export default function FeaturesSection() {
         { icon: '🔄', title: 'Share & Repost', desc: 'Share any project, service, or event to your feed or social media.', href: '/dashboard/feed' },
         { icon: '📌', title: 'Boards', desc: 'Pin announcements, listings, and cards to location-based community bulletin boards.', href: '/boards' },
         { icon: '🌐', title: 'Discover', desc: 'Browse an interactive map of everything near you — people, products, events, and projects.', href: '/discover' },
-        { icon: '📬', title: 'Inbox', desc: 'Unified inbox for messages, connection requests, offers, and collaboration invites.', href: '/dashboard/messages' },
+        { icon: '📬', title: 'Inbox', desc: 'Unified inbox for messages, connection requests, offers, collaboration invites — and direct inquiries about your services.', href: '/dashboard/messages' },
       ]
     },
     {
@@ -46,7 +47,7 @@ export default function FeaturesSection() {
         { icon: '🚀', title: 'Projects', desc: 'Create plans with goals, milestones, and track progress. Rally collaborators.', href: '/projects' },
         { icon: '📝', title: 'Requests', desc: 'Need help? Post a request. Have skills? Fulfill and earn reputation.', href: '/requests' },
         { icon: '🏫', title: 'School & Teaching', desc: 'Create courses, share knowledge, and earn from your expertise.', href: '/schools' },
-        { icon: '🗓️', title: 'Planner & Appointments', desc: 'Schedule appointments, set availability, and manage your calendar.', href: '/dashboard/appointments' },
+        { icon: '🗓️', title: 'Planner & Appointments', desc: 'Offer bookable services with your own availability, custom booking questions, and quote-on-inquiry options. Manage everything in one calendar.', href: '/dashboard/appointments' },
         { icon: '🤲', title: 'Collaboration', desc: 'Send and receive collaboration requests for products, events, groups, and projects.', href: '/dashboard/messages' },
       ]
     },

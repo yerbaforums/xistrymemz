@@ -67,7 +67,7 @@ export async function generateMetadata() {
       description: messages.layout?.description || "Collaborative planning platform.",
       images: ["/logo.png"],
     },
-    keywords: ["collaborative planning", "community platform", "project management", "crypto payments", "business platform", "local marketplace", "community boards"],
+    keywords: ["collaborative planning", "community platform", "project management", "private money payments", "business platform", "local marketplace", "community boards"],
     robots: { index: true, follow: true },
     alternates: {
       types: {

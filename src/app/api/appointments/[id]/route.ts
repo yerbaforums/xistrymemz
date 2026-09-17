@@ -2,6 +2,9 @@ import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } fr
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { createNotification } from '@/services/notificationService'
+
+type AppointmentNotifType = 'APPOINTMENT_CONFIRMED' | 'APPOINTMENT_DECLINED' | 'APPOINTMENT_PAID' | 'APPOINTMENT_RESCHEDULED'
 
 export async function PUT(
   request: Request,
@@ -37,7 +40,7 @@ export async function PUT(
     const { action, title, description, startTime, endTime, location, meetingLink, declineReason, txHash, paymentNote, selectedCurrency, selectedAddress } = body
 
     const updateData: Record<string, unknown> = {}
-    let notificationData: { type: string; title: string; message: string; link: string; userId: string; relatedId: string } | null = null
+    let notificationData: { type: AppointmentNotifType; title: string; message: string; link: string; userId: string; relatedId: string } | null = null
 
     if (action === 'accept') {
       if (!isSeller) {
@@ -161,7 +164,20 @@ export async function PUT(
     })
 
     if (notificationData) {
-      await prisma.notification.create({ data: notificationData }).catch(() => {})
+      // Pref-gated: Settings → Notifications → Appointments. Never fail the update.
+      try {
+        await createNotification({
+          type: notificationData.type,
+          userId: notificationData.userId,
+          entityId: id,
+          entityType: 'APPOINTMENT',
+          title: notificationData.title,
+          message: notificationData.message,
+          link: notificationData.link,
+        })
+      } catch {
+        // silent — appointment was already updated
+      }
     }
 
     return apiSuccess({ appointment: updated })

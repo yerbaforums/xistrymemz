@@ -47,7 +47,9 @@ const ServiceCard = memo(function ServiceCard({ service, onClick, style }: Servi
       <div className={styles.body}>
         <div className={styles.topRow}>
           <span className={styles.categoryBadge}>{icon} {label}</span>
-          {price != null && <span className={styles.price}>${price}</span>}
+          {price != null
+            ? <span className={styles.price}>${price}</span>
+            : <span className={styles.price}>💬 Quote on inquiry</span>}
         </div>
         <h3 className={styles.title}>{title}</h3>
         {description && <p className={styles.description}>{description}</p>}

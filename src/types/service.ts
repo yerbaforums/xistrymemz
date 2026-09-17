@@ -15,7 +15,9 @@ export const SERVICE_CATEGORIES = [
   'PET_CARE',
   'CHILDCARE',
   'TECH_SUPPORT',
+  'TECH_MULTIMEDIA',
   'TRANSPORTATION',
+  'TRAVEL_TOURISM',
   'OTHER',
 ] as const
 
@@ -47,7 +49,9 @@ export const SERVICE_CATEGORY_LABELS: Record<ServiceCategory, string> = {
   PET_CARE: 'Pet Care',
   CHILDCARE: 'Childcare',
   TECH_SUPPORT: 'Tech Support',
+  TECH_MULTIMEDIA: 'Tech & Multimedia',
   TRANSPORTATION: 'Transportation',
+  TRAVEL_TOURISM: 'Travel & Tourism',
   OTHER: 'Other',
 }
 
@@ -68,7 +72,9 @@ export const SERVICE_CATEGORY_ICONS: Record<ServiceCategory, string> = {
   PET_CARE: '🐾',
   CHILDCARE: '👶',
   TECH_SUPPORT: '💻',
+  TECH_MULTIMEDIA: '🎛️',
   TRANSPORTATION: '🚗',
+  TRAVEL_TOURISM: '✈️',
   OTHER: '📋',
 }
 

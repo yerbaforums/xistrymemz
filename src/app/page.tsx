@@ -8,6 +8,7 @@ import StatsSection from '@/components/home/StatsSection'
 import HashtagSection from '@/components/home/HashtagSection'
 import PulseSection from '@/components/home/PulseSection'
 import StepsSection from '@/components/home/StepsSection'
+import StartHereSection from '@/components/home/StartHereSection'
 import FeaturesSection from '@/components/home/FeaturesSection'
 import CTASection from '@/components/home/CTASection'
 import PassportSection from '@/components/home/PassportSection'
@@ -152,7 +153,7 @@ export default function Home() {
     <div className={`${styles.landing} page-enter`}>
       <HeroSection />
       <StatsSection stats={animatedStats} />
-      <HashtagSection tags={trendingTags} />
+      <StartHereSection />
       <PulseSection
         shops={shops}
         products={products}
@@ -166,13 +167,13 @@ export default function Home() {
         loadingEvents={loadingEvents}
         loadingPlans={loadingPlans}
         loadingBoards={loadingBoards}
-        trendingTags={trendingTags}
       />
-      <MemberSpotlightSection members={members} loading={loadingMembers} stats={animatedStats} />
+      <HashtagSection tags={trendingTags} />
       <StepsSection />
       <FeaturesSection />
       <PassportSection />
       <HomeMap />
+      <MemberSpotlightSection members={members} loading={loadingMembers} stats={animatedStats} />
       <CTASection memberCount={animatedStats.members} />
       <FeedbackSection />
       <HomeFooterSection />

@@ -16,9 +16,14 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category')
     const location = searchParams.get('location')
     const search = searchParams.get('q')
+    const userId = searchParams.get('userId')
     const sort = searchParams.get('sort') || 'newest'
 
     const where: Record<string, unknown> = { isActive: true }
+
+    if (userId) {
+      where.userId = userId
+    }
 
     if (category && category !== 'ALL') {
       where.category = category
@@ -65,6 +70,8 @@ export async function GET(request: NextRequest) {
       duration: s.duration,
       price: s.price ?? null,
       location: s.location ?? null,
+      latitude: s.latitude ?? null,
+      longitude: s.longitude ?? null,
       meetingLink: s.meetingLink ?? null,
       imageUrl: s.imageUrl ?? null,
       isActive: s.isActive === true,
@@ -76,6 +83,8 @@ export async function GET(request: NextRequest) {
       appointmentLeadTime: s.appointmentLeadTime ?? null,
       appointmentLocation: s.appointmentLocation ?? null,
       appointmentMeetingLink: s.appointmentMeetingLink ?? null,
+      appointmentFormFields: Array.isArray(s.appointmentFormFields) ? s.appointmentFormFields : null,
+      hashtags: s.hashtags ?? [],
       createdAt: s.createdAt instanceof Date ? s.createdAt.toISOString() : String(s.createdAt),
       updatedAt: s.updatedAt instanceof Date ? s.updatedAt.toISOString() : String(s.updatedAt),
     }))

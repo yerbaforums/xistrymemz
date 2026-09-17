@@ -2,6 +2,7 @@ import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError, Nex
 import { prisma } from '@/lib/prisma'
 import { barterOfferCreateSchema, validateBody } from '@/lib/schemas'
 import { Prisma } from '@prisma/client'
+import { createNotification } from '@/services/notificationService'
 
 export async function GET(request: Request) {
   try {
@@ -135,16 +136,21 @@ export async function POST(request: Request) {
       select: { name: true }
     })
 
-    await prisma.notification.create({
-      data: {
+    // Pref-gated: Settings → Notifications → Offers & Trades.
+    try {
+      await createNotification({
         type: 'OFFER_RECEIVED',
+        userId: receiverId,
+        actorId: session.user.id,
+        entityId: offer.id,
+        entityType: 'OFFER',
         title: 'New Barter Offer',
         message: `${maker?.name || 'Someone'} offered ${offeredItem} for your listing "${listingTitle}"`,
         link: `/offers/${offer.id}`,
-        userId: receiverId,
-        relatedId: offer.id
-      }
-    })
+      })
+    } catch {
+      // silent — offer was already created
+    }
 
     return NextResponse.json(offer, { status: 201 })
   } catch (error) {

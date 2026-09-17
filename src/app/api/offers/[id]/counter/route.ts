@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { counterOfferSchema, validateBody } from '@/lib/schemas'
+import { createNotification } from '@/services/notificationService'
 
 export async function POST(
   request: Request,
@@ -69,16 +70,21 @@ export async function POST(
       select: { name: true }
     })
 
-    await prisma.notification.create({
-      data: {
+    // Pref-gated: Settings → Notifications → Offers & Trades.
+    try {
+      await createNotification({
         type: 'OFFER_COUNTERED',
+        userId: original.makerId,
+        actorId: session.user.id,
+        entityId: counterOffer.id,
+        entityType: 'OFFER',
         title: 'Counter Offer Received',
         message: `${counterMaker?.name || 'Someone'} countered your offer on "${original.listingTitle}"`,
         link: `/offers/${counterOffer.id}`,
-        userId: original.makerId,
-        relatedId: counterOffer.id
-      }
-    })
+      })
+    } catch {
+      // silent — counter offer was already created
+    }
 
     return NextResponse.json(counterOffer, { status: 201 })
   } catch (error) {
