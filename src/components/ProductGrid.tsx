@@ -14,7 +14,6 @@ interface ProductGridProps {
   viewMode: 'grid' | 'list'
   page: number
   pageSize: number
-  onViewModeChange: (mode: 'grid' | 'list') => void
   onPageChange?: (page: number) => void
   onFund?: (product: Product) => void
   onClearFilters?: () => void
@@ -31,7 +30,6 @@ export default function ProductGrid({
   viewMode,
   page,
   pageSize,
-  onViewModeChange,
   onPageChange,
   onFund,
   onClearFilters,

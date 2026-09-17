@@ -583,7 +583,6 @@ export default function ProductsPage() {
                 viewMode={viewMode}
                 page={page}
                 pageSize={pageSize}
-                onViewModeChange={setViewMode}
                 onPageChange={setPage}
                 onFund={handleFund}
                 onClearFilters={clearFilters}

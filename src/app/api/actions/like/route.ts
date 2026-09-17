@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
-const VALID_TYPES = ['POST','PRODUCT','SERVICE','EVENT','PROJECT','REQUEST','SCHOOLCONTENT','GROUP','SHOP']
+const VALID_TYPES = ['POST','PRODUCT','SERVICE','EVENT','PROJECT','REQUEST','SCHOOLCONTENT','GROUP','SHOP','PROFILE','PIN','SCHOOL','BOARD']
 
 export async function POST(request: Request) {
   try {
