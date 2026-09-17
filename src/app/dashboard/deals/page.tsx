@@ -1,9 +1,9 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { EmptyState } from '@/components/EmptyState'
+import DealRow from './DealRow'
 import styles from './deals.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -19,27 +19,6 @@ interface Deal {
   actionNeeded: boolean
   updatedAt: Date | null
   amount?: number | null
-}
-
-const STATUS_COLOR: Record<string, string> = {
-  PENDING: 'var(--accent-warning, #f59e0b)',
-  PAID: 'var(--accent-primary, #3b82f6)',
-  SHIPPED: 'var(--accent-primary, #3b82f6)',
-  ACCEPTED: '#22c55e',
-  CONFIRMED: '#22c55e',
-  IN_PROGRESS: '#f59e0b',
-  DELIVERED: '#10b981',
-  COMPLETED: '#10b981',
-  CANCELLED: '#6b7280',
-  REJECTED: '#ef4444',
-  WITHDRAWN: '#6b7280',
-}
-
-const KIND_ICON: Record<string, string> = {
-  Order: '📦',
-  Request: '📝',
-  Offer: '💼',
-  Appointment: '🗓️',
 }
 
 export default async function DashboardDeals() {
@@ -117,7 +96,12 @@ export default async function DashboardDeals() {
       status: o.status,
       role: o.buyerId === userId ? 'Buyer' : 'Seller',
       href: `/orders/${o.id}`,
-      actionNeeded: o.status === 'PAID' && o.buyerId === userId ? true : o.status === 'PENDING',
+      // PENDING/PAID → seller acts (confirm/ship); SHIPPED → buyer confirms receipt
+      actionNeeded: o.status === 'PENDING' || o.status === 'PAID'
+        ? o.buyerId !== userId
+        : o.status === 'SHIPPED'
+          ? o.buyerId === userId
+          : false,
       updatedAt: o.updatedAt,
       amount: o.amount
     })),
@@ -201,28 +185,7 @@ export default async function DashboardDeals() {
           <h2>All Deals</h2>
           <div className={styles.list}>
             {deals.map(deal => (
-              <Link key={`${deal.kind}-${deal.id}`} href={deal.href} className={styles.item}>
-                <div className={styles.itemMain}>
-                  <span className={styles.itemTitle}>
-                    {KIND_ICON[deal.kind]} {deal.title}
-                  </span>
-                  <span className={styles.itemMeta}>
-                    {deal.kind} • {deal.role} • {deal.counterpart}
-                    {deal.amount != null && deal.amount > 0 && ` • $${deal.amount.toFixed(2)}`}
-                    {deal.actionNeeded && (
-                      <span className={styles.actionBadge}>
-                        ⚡ Action needed
-                      </span>
-                    )}
-                  </span>
-                </div>
-                <span
-                  className={styles.itemStatus}
-                  style={{ color: STATUS_COLOR[deal.status] || undefined, borderColor: STATUS_COLOR[deal.status] || undefined }}
-                >
-                  {deal.status}
-                </span>
-              </Link>
+              <DealRow key={`${deal.kind}-${deal.id}`} deal={deal} styles={styles} />
             ))}
           </div>
         </div>

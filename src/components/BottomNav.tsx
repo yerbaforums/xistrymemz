@@ -28,8 +28,8 @@ export default function BottomNav() {
     { href: '/', label: 'Home', icon: '🏠' },
     { href: '/discover', label: 'Discover', icon: '🌐' },
     { href: null, label: 'Create', icon: '+', isFab: true, action: handleCreate },
-    { href: '/dashboard/studio', label: 'Studio', icon: '🎨' },
-    { href: `/${session?.user?.username || 'profile'}`, label: 'Profile', icon: '👤' },
+    { href: '/dashboard/deals', label: 'Deals', icon: '🤝' },
+    { href: session?.user?.username ? `/profile/${session.user.username}` : '/profile', label: 'Profile', icon: '👤' },
   ] : [
     { href: '/', label: 'Home', icon: '🏠' },
     { href: '/discover', label: 'Discover', icon: '🌐' },
@@ -55,7 +55,7 @@ export default function BottomNav() {
         }
         const getIsActive = () => {
           if (item.href === '/') return pathname === '/' || pathname === '/dashboard/overview'
-          if (item.label === 'Studio') return pathname?.startsWith('/dashboard') && pathname !== '/dashboard/overview'
+          if (item.label === 'Deals') return pathname?.startsWith('/dashboard') && pathname !== '/dashboard/overview'
           if (item.label === 'Profile') return pathname?.startsWith('/profile') || pathname?.startsWith('/settings')
           if (!item.href) return false
           return pathname === item.href || pathname?.startsWith(item.href + '/')

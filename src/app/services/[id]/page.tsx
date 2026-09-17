@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { fetchApi } from '@/lib/fetch-api'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
+import { MakeOfferModal } from '@/components/MakeOfferModal'
 import ShareBar from '@/components/ShareBar'
 import EntityActions from '@/components/EntityActions'
 import Button from '@/components/ui/Button'
@@ -128,6 +129,7 @@ export default function ServiceDetailPage() {
   const [service, setService] = useState<ServiceOffering | null>(null)
   const [loading, setLoading] = useState(true)
   const [showBooking, setShowBooking] = useState(false)
+  const [showOffer, setShowOffer] = useState(false)
   const [relatedServices, setRelatedServices] = useState<ServiceOffering[]>([])
   const [relatedLoading, setRelatedLoading] = useState(false)
 
@@ -388,6 +390,16 @@ export default function ServiceDetailPage() {
                 </Link>
               ) : null}
 
+              {session && service.userId !== session.user?.id && (
+                <Button
+                  onClick={() => setShowOffer(true)}
+                  className={styles.bookBtn}
+                  variant="secondary"
+                >
+                  🤝 Make Barter Offer
+                </Button>
+              )}
+
               {session && (
                 <>
                   <CollaborateButton entityType="SERVICE" entityId={service.id} label="🤝 Collaborate" variant="secondary" />
@@ -410,6 +422,17 @@ export default function ServiceDetailPage() {
             </div>
           </aside>
         </div>
+
+        {showOffer && (
+          <MakeOfferModal
+            isOpen={true}
+            onClose={() => setShowOffer(false)}
+            listingId={service.id}
+            listingTitle={title}
+            listingType="SERVICE"
+            listingOwnerName={userName || undefined}
+          />
+        )}
 
         {showBooking && (
           <BookAppointmentModal

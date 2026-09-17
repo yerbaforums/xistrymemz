@@ -11,7 +11,7 @@ interface MakeOfferModalProps {
   onClose: () => void
   listingId: string
   listingTitle: string
-  listingType: 'PRODUCT' | 'REQUEST'
+  listingType: 'PRODUCT' | 'REQUEST' | 'SERVICE'
   listingOwnerName?: string
 }
 

@@ -55,6 +55,7 @@ function DashboardMessagesContent() {
 
   const userParam = searchParams.get('user')
   const inquiryParam = searchParams.get('inquiry')
+  const [inquiryService, setInquiryService] = useState<{ id: string; title: string; price: number | null } | null>(null)
 
   useEffect(() => {
     if (session?.user) {
@@ -81,6 +82,7 @@ function DashboardMessagesContent() {
       .then(data => {
         const svc = data?.data?.service || data?.service
         const title = svc?.title || 'your service'
+        if (svc) setInquiryService({ id: inquiryParam, title: svc.title, price: svc.price ?? null })
         const url = `${window.location.origin}/services/${inquiryParam}`
         setNewMessage(`Hi! I'm interested in "${title}" (${url}). Here's what I'm looking for: `)
       })
@@ -292,6 +294,15 @@ function DashboardMessagesContent() {
                   View Profile
                 </Link>
               </div>
+
+              {inquiryService && (
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '8px 12px', background: 'var(--bg-secondary)', borderRadius: 8, marginBottom: 8, fontSize: '0.82rem' }} role="status">
+                  <span>💬 Inquiry about</span>
+                  <Link href={`/services/${inquiryService.id}`} style={{ fontWeight: 700 }}>{inquiryService.title}</Link>
+                  {inquiryService.price != null && <span>· ${inquiryService.price}</span>}
+                  <Link href={`/services/${inquiryService.id}`} style={{ marginLeft: 'auto' }}>Book →</Link>
+                </div>
+              )}
 
               {fetchError && (
                 <div className={styles.errorBanner}>{fetchError}</div>

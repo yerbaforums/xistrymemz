@@ -191,8 +191,8 @@ export default function OfferDetailPage({
             <div className={styles.cardValue}>{offer.listingType}</div>
             
             <div className={styles.cardLabel}>Title</div>
-            <Link 
-              href={`/${offer.listingType.toLowerCase() === 'product' ? 'products' : 'requests'}/${offer.listingId}`}
+            <Link
+              href={`/${offer.listingType.toLowerCase() === 'product' ? 'products' : offer.listingType.toLowerCase() === 'service' ? 'services' : 'requests'}/${offer.listingId}`}
               className={styles.cardLink}
             >
               {offer.listingTitle}

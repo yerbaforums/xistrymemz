@@ -90,6 +90,12 @@ export async function POST(request: Request) {
         select: { userId: true }
       })
       receiverId = req?.userId ?? null
+    } else if (listingType === 'SERVICE') {
+      const svc = await prisma.serviceOffering.findUnique({
+        where: { id: listingId },
+        select: { userId: true }
+      })
+      receiverId = svc?.userId ?? null
     }
 
     if (!receiverId) {

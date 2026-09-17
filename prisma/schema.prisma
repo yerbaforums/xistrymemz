@@ -1778,7 +1778,7 @@ model BarterOffer {
   id           String   @id @default(cuid())
   status       String   @default("PENDING") // PENDING, ACCEPTED, REJECTED, COUNTERED, WITHDRAWN, COMPLETED
   offerType    String // MAKE_OFFER (I offer my item), REQUEST_OFFER (I want offers)
-  listingType  String // PRODUCT, REQUEST
+  listingType  String // PRODUCT, REQUEST, SERVICE
   listingId    String
   listingTitle String // Cached listing title for easier display
   offeredItem  String // Description of item being offered
