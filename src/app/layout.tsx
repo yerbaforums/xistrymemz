@@ -88,9 +88,10 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)" />
         <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
         <link rel="alternate" type="application/rss+xml" title="XistrYmemZ Feed" href="/feed.xml" />
         <WebSiteLD />
         <OrganizationLD />
@@ -109,6 +110,7 @@ export default async function RootLayout({
                   <ToastContainer />
                   <CreateFAB />
                   <CommandPalette />
+                  <BackToTop />
                 </AppShell>
                 <BottomNav />
                 <Footer />

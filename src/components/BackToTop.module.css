@@ -1,6 +1,6 @@
 .button {
   position: fixed;
-  bottom: calc(var(--bottom-nav-height, 64px) + 16px);
+  bottom: calc(var(--bottom-nav-height, 64px) + env(safe-area-inset-bottom, 0px) + 16px);
   left: 24px;
   width: 44px;
   height: 44px;

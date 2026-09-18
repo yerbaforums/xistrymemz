@@ -4,11 +4,11 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 64px;
+  height: calc(64px + env(safe-area-inset-bottom, 0px));
+  padding: 0 8px env(safe-area-inset-bottom, 0px);
   background: var(--bg-primary);
   border-top: 1px solid var(--border-color);
   z-index: 100;
-  padding: 0 8px;
   align-items: center;
   justify-content: space-around;
   backdrop-filter: blur(12px);

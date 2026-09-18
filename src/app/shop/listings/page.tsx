@@ -5,6 +5,7 @@ import Link from 'next/link'
 
 import styles from './listings.module.css'
 import Loading from '@/components/Loading'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface ShopInfo {
   shopName: string | null
@@ -17,7 +18,7 @@ interface ProductRow {
   id: string
   title: string
   type: string
-  price?: any
+  price?: number | string
   published: boolean
   acceptsAppointments: boolean
   acceptsDonations: boolean
@@ -28,10 +29,34 @@ interface ProductRow {
 interface ServiceRow {
   id: string
   title: string
-  price?: any
+  price?: number | string
   isActive: boolean
   acceptsAppointments: boolean
   acceptsDonations: boolean
+  imageUrl?: string | null
+  createdAt: string
+}
+
+interface RawProduct {
+  id: string
+  title: string
+  type: string
+  price?: number | string
+  published?: boolean
+  acceptsAppointments?: boolean
+  acceptsDonations?: boolean
+  imageUrl?: string | null
+  images?: Array<{ url?: string } | string> | null
+  createdAt: string
+}
+
+interface RawService {
+  id: string
+  title: string
+  price?: number | string
+  isActive?: boolean
+  acceptsAppointments?: boolean
+  acceptsDonations?: boolean
   imageUrl?: string | null
   createdAt: string
 }
@@ -51,19 +76,22 @@ export default function ShopListingsPage() {
       .then(([shopData, productsData, servicesData]) => {
         setShop(shopData)
         const items = Array.isArray(productsData) ? productsData : productsData?.items || productsData?.products || []
-        setProducts(items.map((p: any) => ({
-          id: p.id,
-          title: p.title,
-          type: p.type,
-          price: p.price,
-          published: p.published ?? true,
-          acceptsAppointments: p.acceptsAppointments ?? false,
-          acceptsDonations: p.acceptsDonations ?? false,
-          imageUrl: p.imageUrl || p.images?.[0] || null,
-          createdAt: p.createdAt,
-        })))
+        setProducts(items.map((p: RawProduct) => {
+          const firstImage = typeof p.images?.[0] === 'string' ? p.images![0] : p.images?.[0]?.url
+          return {
+            id: p.id,
+            title: p.title,
+            type: p.type,
+            price: p.price,
+            published: p.published ?? true,
+            acceptsAppointments: p.acceptsAppointments ?? false,
+            acceptsDonations: p.acceptsDonations ?? false,
+            imageUrl: p.imageUrl || firstImage || null,
+            createdAt: p.createdAt,
+          }
+        }))
         const svcs = servicesData?.data?.services || servicesData?.services || []
-        setServices(svcs.map((s: any) => ({
+        setServices(svcs.map((s: RawService) => ({
           id: s.id,
           title: s.title,
           price: s.price,
@@ -93,7 +121,6 @@ export default function ShopListingsPage() {
         <div className={styles.cardMain}>
           <div className={styles.cardThumb}>
             {item.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
               <img src={item.imageUrl} alt="" />
             ) : (
               <span className={styles.cardIcon}>{isService ? '🔧' : (item as ProductRow).type === 'RENTAL' ? '🏠' : '📦'}</span>
@@ -122,6 +149,7 @@ export default function ShopListingsPage() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Shop', href: '/shops' }, { label: 'My Listings' }]} />
       <div className={styles.header}>
         <div>
           <h1>🏷️ My Listings</h1>

@@ -1,14 +1,19 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
+import { z } from 'zod'
 import { REQUEST_CATEGORIES, REQUEST_PRIORITIES } from '@/lib/request-categories'
 import { getDefaultRequestFormData } from '@/types/request'
 import type { RequestFormData } from '@/types/request'
 import ImageUploader from '@/components/ImageUploader'
 import LocationPicker from '@/components/LocationPicker'
 import { FieldListEditor } from '@/components/listings/FieldListEditor'
-import type { FormField } from '@/types/service'
+import type { FormField as CustomFormField } from '@/types/service'
+import { useZodForm } from '@/hooks/useZodForm'
+import FormField from '@/components/ui/FormField'
+import FormInput from '@/components/ui/FormInput'
+import FormTextarea from '@/components/ui/FormTextarea'
+import FormSelect from '@/components/ui/FormSelect'
 
 interface RequestTemplate {
   label: string
@@ -24,6 +29,28 @@ const TEMPLATES: RequestTemplate[] = [
   { label: 'Lost & Found', category: 'GENERAL', priority: 'HIGH', hint: 'Post or find lost & found items' },
   { label: 'Custom', category: 'GENERAL', priority: 'MEDIUM', hint: 'Start from scratch' },
 ]
+
+const requestFormSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(1, 'Title is required')
+    .max(200, 'Keep the title under 200 characters'),
+  description: z.string().max(5000, 'Keep the description under 5000 characters'),
+  category: z.string(),
+  priority: z.string(),
+  budget: z.string(),
+  goalAmount: z.string(),
+  location: z.string(),
+  deadline: z.string(),
+  isPublic: z.boolean(),
+  allowFulfillments: z.boolean(),
+  showDonationAddress: z.boolean(),
+  images: z.array(z.string()),
+  hashtags: z.array(z.string()),
+  customFields: z.unknown().optional(),
+  projectId: z.string().optional(),
+})
 
 interface RequestFormProps {
   initialData?: Partial<RequestFormData>
@@ -41,10 +68,10 @@ export default function RequestForm({
   submitLabel = 'Create Request',
   saving: externalSaving,
 }: RequestFormProps) {
-  const [form, setForm] = useState<RequestFormData>({
-    ...getDefaultRequestFormData(),
-    ...initialData,
-  })
+  const { values: form, errors, setValue, patch, handleSubmit } = useZodForm<RequestFormData>(
+    requestFormSchema,
+    { ...getDefaultRequestFormData(), ...initialData },
+  )
   const [saving, setSaving] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
 
@@ -52,22 +79,20 @@ export default function RequestForm({
 
   const handleTemplateSelect = (template: RequestTemplate) => {
     setSelectedTemplate(template.label)
-    setForm({ ...form, category: template.category, priority: template.priority })
+    patch({ category: template.category, priority: template.priority })
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!form.title.trim()) return
+  const submit = handleSubmit(async data => {
     setSaving(true)
     try {
-      await onSubmit(form)
+      await onSubmit(data)
     } finally {
       setSaving(false)
     }
-  }
+  })
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={submit} noValidate>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
         {TEMPLATES.map(t => (
           <button
@@ -95,80 +120,95 @@ export default function RequestForm({
           {TEMPLATES.find(t => t.label === selectedTemplate)?.hint}
         </p>
       )}
-      <input
-        type="text"
-        placeholder="Request title *"
-        value={form.title}
-        onChange={e => setForm({ ...form, title: e.target.value })}
-        className="input-field"
-        required
-      />
-      <textarea
-        placeholder="Describe what you need..."
-        value={form.description}
-        onChange={e => setForm({ ...form, description: e.target.value })}
-        className="textarea-field"
-        rows={3}
-      />
+      <FormField label="Title" htmlFor="request-title" error={errors.title} required>
+        <FormInput
+          id="request-title"
+          type="text"
+          placeholder="Request title *"
+          value={form.title}
+          error={errors.title}
+          onChange={e => setValue('title', e.target.value)}
+          autoComplete="off"
+        />
+      </FormField>
+      <FormField label="Description" htmlFor="request-description" error={errors.description}>
+        <FormTextarea
+          id="request-description"
+          placeholder="Describe what you need..."
+          value={form.description}
+          error={errors.description}
+          onChange={e => setValue('description', e.target.value)}
+          rows={3}
+        />
+      </FormField>
       <ImageUploader
         images={form.images}
-        onChange={(urls) => setForm({ ...form, images: urls })}
+        onChange={(urls) => setValue('images', urls)}
         maxImages={1}
       />
       <div className="form-row">
-        <select
-          value={form.category}
-          onChange={e => setForm({ ...form, category: e.target.value })}
-          className="select-field"
-        >
-          {REQUEST_CATEGORIES.map(cat => (
-            <option key={cat.value} value={cat.value}>{cat.icon} {cat.label}</option>
-          ))}
-        </select>
-        <select
-          value={form.priority}
-          onChange={e => setForm({ ...form, priority: e.target.value })}
-          className="select-field"
-        >
-          {REQUEST_PRIORITIES.map(p => (
-            <option key={p} value={p}>{p}</option>
-          ))}
-        </select>
+        <FormField label="Category" htmlFor="request-category">
+          <FormSelect
+            id="request-category"
+            value={form.category}
+            onChange={e => setValue('category', e.target.value)}
+          >
+            {REQUEST_CATEGORIES.map(cat => (
+              <option key={cat.value} value={cat.value}>{cat.icon} {cat.label}</option>
+            ))}
+          </FormSelect>
+        </FormField>
+        <FormField label="Priority" htmlFor="request-priority">
+          <FormSelect
+            id="request-priority"
+            value={form.priority}
+            onChange={e => setValue('priority', e.target.value)}
+          >
+            {REQUEST_PRIORITIES.map(p => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+          </FormSelect>
+        </FormField>
       </div>
       <div className="form-row">
-        <input
-          type="number"
-          placeholder="Budget (optional)"
-          value={form.budget}
-          onChange={e => setForm({ ...form, budget: e.target.value })}
-          className="input-field"
-        />
-        <input
-          type="number"
-          placeholder="Goal Amount (optional)"
-          value={form.goalAmount}
-          onChange={e => setForm({ ...form, goalAmount: e.target.value })}
-          className="input-field"
-        />
+        <FormField label="Budget (optional)" htmlFor="request-budget">
+          <FormInput
+            id="request-budget"
+            type="number"
+            placeholder="Budget (optional)"
+            value={form.budget}
+            onChange={e => setValue('budget', e.target.value)}
+          />
+        </FormField>
+        <FormField label="Goal Amount (optional)" htmlFor="request-goal">
+          <FormInput
+            id="request-goal"
+            type="number"
+            placeholder="Goal Amount (optional)"
+            value={form.goalAmount}
+            onChange={e => setValue('goalAmount', e.target.value)}
+          />
+        </FormField>
       </div>
-      <LocationPicker
-        value={{ text: form.location, latitude: null, longitude: null }}
-        onChange={v => setForm({ ...form, location: v.text })}
-      />
-      <div className="form-row">
-        <input
+      <FormField label="Location" htmlFor="request-location" hint="Where do you need this?">
+        <LocationPicker
+          value={{ text: form.location, latitude: null, longitude: null }}
+          onChange={v => setValue('location', v.text)}
+        />
+      </FormField>
+      <FormField label="Deadline (optional)" htmlFor="request-deadline">
+        <FormInput
+          id="request-deadline"
           type="date"
-          placeholder="Deadline"
           value={form.deadline}
-          onChange={e => setForm({ ...form, deadline: e.target.value })}
-          className="input-field"
+          onChange={e => setValue('deadline', e.target.value)}
         />
-      </div>
+      </FormField>
       <label className="checkbox-field">
         <input
           type="checkbox"
           checked={form.isPublic}
-          onChange={e => setForm({ ...form, isPublic: e.target.checked })}
+          onChange={e => setValue('isPublic', e.target.checked)}
         />
         Make public (visible to everyone)
       </label>
@@ -176,7 +216,7 @@ export default function RequestForm({
         <input
           type="checkbox"
           checked={form.allowFulfillments}
-          onChange={e => setForm({ ...form, allowFulfillments: e.target.checked })}
+          onChange={e => setValue('allowFulfillments', e.target.checked)}
         />
         Allow others to offer to fulfill this request
       </label>
@@ -184,7 +224,7 @@ export default function RequestForm({
         <input
           type="checkbox"
           checked={form.showDonationAddress}
-          onChange={e => setForm({ ...form, showDonationAddress: e.target.checked })}
+          onChange={e => setValue('showDonationAddress', e.target.checked)}
         />
         Show my donation addresses on this request
       </label>
@@ -195,12 +235,12 @@ export default function RequestForm({
         </p>
         <FieldListEditor
           fields={form.customFields}
-          onChange={(fields: FormField[]) => setForm({ ...form, customFields: fields })}
+          onChange={(fields: CustomFormField[]) => setValue('customFields', fields)}
           title="Add a question"
         />
       </div>
       <div className="form-actions">
-        <button type="submit" disabled={isSaving || !form.title.trim()} className="btn-primary">
+        <button type="submit" disabled={isSaving} className="btn-primary">
           {isSaving ? 'Saving...' : submitLabel}
         </button>
         {onCancel && (
