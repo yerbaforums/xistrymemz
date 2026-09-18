@@ -17,6 +17,9 @@ interface LinkItemModalProps {
   sourceType: string
   sourceId: string
   onLinked: () => void
+  /** Defer the /api/reference call to the parent (e.g. before the source entity exists yet). */
+  deferCommit?: boolean
+  onSelect?: (target: SearchResult, relationType: string) => void
 }
 
 const ENTITY_TYPES = [
@@ -27,6 +30,7 @@ const ENTITY_TYPES = [
   { value: 'SERVICE', label: 'Service', icon: '🔧' },
   { value: 'GROUP', label: 'Group', icon: '👥' },
   { value: 'POST', label: 'Post', icon: '📝' },
+  { value: 'FORUMPOST', label: 'Forum Post', icon: '💬' },
   { value: 'SCHOOLCONTENT', label: 'School Content', icon: '📚' },
   { value: 'SHOP', label: 'Shop', icon: '🏪' },
   { value: 'SCHOOL', label: 'School', icon: '🏫' },
@@ -46,6 +50,8 @@ export default function LinkItemModal({
   sourceType,
   sourceId,
   onLinked,
+  deferCommit = false,
+  onSelect,
 }: LinkItemModalProps) {
   const [targetType, setTargetType] = useState('')
   const [query, setQuery] = useState('')
@@ -98,6 +104,15 @@ export default function LinkItemModal({
 
   const handleLink = async () => {
     if (!selected) return
+
+    // Deferred mode: hand the selection back to the parent (e.g. a post composer
+    // whose source entity does not exist yet). Link is created after the source saves.
+    if (deferCommit && onSelect) {
+      onSelect(selected, relationType)
+      handleReset()
+      return
+    }
+
     setLinking(true)
     setError(null)
 

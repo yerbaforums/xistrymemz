@@ -11,6 +11,7 @@ interface UserResult {
   name: string | null
   image: string | null
   username: string | null
+  isConnection?: boolean
 }
 
 interface HashtagResult {
@@ -74,13 +75,32 @@ const MentionInput = forwardRef<MentionInputHandle, MentionInputProps>(function 
       return
     }
     try {
-        const { users } = await fetchApi<{ users: any[] }>(`/api/users/search?q=${encodeURIComponent(query)}`)
+      // Autosuggest from the user's connections first, then merge global results
+      // so people you already know surface at the top of the mention picker.
+      const [connRes, globalRes] = await Promise.all([
+        fetchApi<{ users: UserResult[] }>(`/api/users/search?q=${encodeURIComponent(query)}&scope=connections`),
+        fetchApi<{ users: UserResult[] }>(`/api/users/search?q=${encodeURIComponent(query)}`),
+      ])
+      const connections = connRes?.users || []
+      const global = globalRes?.users || []
+      const connIds = new Set(connections.map(u => u.id))
+      const merged: UserResult[] = [
+        ...connections.map(u => ({ ...u, isConnection: true })),
+        ...global.filter(u => !connIds.has(u.id)),
+      ]
+      setSuggestions(merged)
+      setShowSuggestions(merged.length > 0)
+    } catch {
+      // Fall back to global search alone if the connections query fails
+      try {
+        const { users } = await fetchApi<{ users: UserResult[] }>(`/api/users/search?q=${encodeURIComponent(query)}`)
         setSuggestions(users || [])
         setShowSuggestions((users || []).length > 0)
-    } catch {
-      setSuggestions([])
-      setShowSuggestions(false)
-      toastError('Failed to search users')
+      } catch {
+        setSuggestions([])
+        setShowSuggestions(false)
+        toastError('Failed to search users')
+      }
     }
   }, [])
 
@@ -272,6 +292,21 @@ const MentionInput = forwardRef<MentionInputHandle, MentionInputProps>(function 
                 </span>
               )}
               <span>{(user as UserResult).name || 'Unknown'}</span>
+              {(user as UserResult).isConnection && (
+                <span
+                  style={{
+                    marginLeft: 'auto',
+                    fontSize: '0.65rem',
+                    padding: '2px 6px',
+                    borderRadius: '999px',
+                    background: 'var(--accent-primary)',
+                    color: '#fff',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  🔗 Connection
+                </span>
+              )}
             </button>
           ))}
           {suggestionType === 'hashtag' && suggestions.map((h, i) => (

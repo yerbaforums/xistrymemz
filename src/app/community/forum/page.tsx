@@ -3,10 +3,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import MentionInput, { type MentionInputHandle } from '@/components/MentionInput'
 import { getUserProfileUrl } from '@/lib/utils'
 import HashtagText from '@/components/HashtagText'
 import ImageUploader from '@/components/ImageUploader'
+import LinkItemModal from '@/components/LinkItemModal'
+import Modal from '@/components/ui/Modal'
 import { EmptyState } from '@/components/EmptyState'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import Skeleton from '@/components/Skeleton'
@@ -21,6 +24,38 @@ const POST_TYPES = [
   { value: 'GENERAL', label: 'General', icon: '💬' },
 ] as const
 
+const PAGE_SIZE = 21 // fetch limit + 1 sentinel to detect whether more pages exist
+
+const SORT_MAP: Record<string, string> = {
+  top: 'score',
+  oldest: 'oldest',
+  mostReplies: 'mostReplies',
+  mostViews: 'mostViews',
+  mostTips: 'mostTips',
+}
+
+// Server-side filtering: search, sort, type and category (including
+// subcategories, reddit-style) are applied by GET /api/forum/posts so the
+// whole forum is browsable, not just the first page.
+function buildPostsUrl(off: number, cats: Category[], catSlug: string | null, sort: string, type: string | null, q: string) {
+  const params = new URLSearchParams()
+  params.set('limit', String(PAGE_SIZE))
+  params.set('offset', String(off))
+  if (q && q.trim()) params.set('q', q.trim())
+  if (sort !== 'newest') params.set('sortBy', SORT_MAP[sort] || 'score')
+  if (type) params.set('postType', type)
+  const selected = cats.find(c => c.slug === catSlug)
+  if (selected) {
+    const ids = [selected.id]
+    selected.children?.forEach(ch => {
+      ids.push(ch.id)
+      ch.children?.forEach(g => ids.push(g.id))
+    })
+    params.set('categoryIds', ids.join(','))
+  }
+  return `/api/forum/posts?${params.toString()}`
+}
+
 const STATUS_BADGES: Record<string, { label: string; className: string }> = {
   PROPOSED: { label: '💡 Proposed', className: 'statusProposed' },
   UNDER_REVIEW: { label: '🔍 Under Review', className: 'statusReview' },
@@ -28,6 +63,25 @@ const STATUS_BADGES: Record<string, { label: string; className: string }> = {
   IMPLEMENTED: { label: '🚀 Implemented', className: 'statusImplemented' },
   REJECTED: { label: '❌ Rejected', className: 'statusRejected' },
 }
+
+const badgeBtnStyle = {
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
+  fontSize: '0.9rem',
+  padding: 0,
+} as const
+
+const inputStyle = {
+  padding: '10px 12px',
+  borderRadius: 8,
+  border: '1px solid var(--border-color)',
+  background: 'var(--bg-primary)',
+  color: 'var(--text-primary)',
+  fontSize: '0.9rem',
+  flex: 1,
+  minWidth: 0,
+} as const
 
 interface Post {
   id: string
@@ -55,17 +109,49 @@ interface Category {
   name: string
   slug: string
   icon: string
+  description?: string | null
+  status?: string
+  parentId?: string | null
+  parent?: { id: string; name: string; slug: string; icon: string } | null
+  children?: Category[]
+  createdBy?: { id: string; name: string | null; username: string | null } | null
   _count: { posts: number }
+}
+
+interface PendingLink {
+  type: string
+  id: string
+  title: string
+  relationType: string
+}
+
+function extractCreatedId(body: unknown): string | null {
+  if (!body || typeof body !== 'object') return null
+  const b = body as Record<string, unknown>
+  if (typeof b.id === 'string') return b.id
+  const d = b.data as Record<string, unknown> | undefined
+  if (d && typeof d.id === 'string') return d.id
+  const d2 = d?.data as Record<string, unknown> | undefined
+  if (d2 && typeof d2.id === 'string') return d2.id
+  return null
 }
 
 export default function ForumPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { success, error } = useToast()
+  const { data: session } = useSession()
   const categorySlug = searchParams.get('category')
   const typeParam = searchParams.get('type')
 
   const [categories, setCategories] = useState<Category[]>([])
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [showCategoryModal, setShowCategoryModal] = useState(false)
+  const [catName, setCatName] = useState('')
+  const [catDesc, setCatDesc] = useState('')
+  const [catIcon, setCatIcon] = useState('📁')
+  const [catParentId, setCatParentId] = useState('')
+  const [creatingCategory, setCreatingCategory] = useState(false)
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
   const [newPostTitle, setNewPostTitle] = useState('')
@@ -80,18 +166,41 @@ export default function ForumPage() {
   const [errorMsg, setErrorMsg] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('newest')
+  const [pollEndsAt, setPollEndsAt] = useState('')
+  const [showLinkModal, setShowLinkModal] = useState(false)
+  const [pendingLink, setPendingLink] = useState<PendingLink | null>(null)
+  const [activeSearch, setActiveSearch] = useState('')
+  const [offset, setOffset] = useState(0)
+  const [hasMore, setHasMore] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
   const mentionRef = useRef<MentionInputHandle>(null)
+
+  // Keeps the latest filters available to the stable fetch/loadMore callbacks.
+  const filterRef = useRef({ categorySlug, sortBy, typeParam, activeSearch })
+  useEffect(() => {
+    filterRef.current = { categorySlug, sortBy, typeParam, activeSearch }
+  }, [categorySlug, sortBy, typeParam, activeSearch])
 
   const fetchForumData = useCallback(async () => {
     setLoading(true)
     setErrorMsg('')
     try {
-      const res = await fetch('/api/community/forum')
-      if (!res.ok) throw new Error('Failed to fetch')
-      const data = await res.json()
+      const params = filterRef.current
+      const forumRes = await fetch('/api/community/forum')
+      if (!forumRes.ok) throw new Error('Failed to fetch')
+      const data = await forumRes.json()
       const cats = data?.data?.categories || data?.categories || []
       setCategories(cats)
-      setPosts(data?.data?.posts || data?.posts || [])
+      setIsAdmin(!!data?.data?.isAdmin)
+
+      const postsRes = await fetch(buildPostsUrl(0, cats, params.categorySlug, params.sortBy, params.typeParam, params.activeSearch))
+      if (!postsRes.ok) throw new Error('Failed to fetch posts')
+      const postsData = await postsRes.json()
+      const incoming = (postsData?.data || postsData || []) as Post[]
+      const pagePosts = incoming.slice(0, PAGE_SIZE - 1)
+      setPosts(pagePosts)
+      setHasMore(incoming.length === PAGE_SIZE)
+      setOffset(pagePosts.length)
 
       if (cats.length === 0) {
         await seedCategories()
@@ -114,45 +223,32 @@ export default function ForumPage() {
 
   useEffect(() => {
     fetchForumData()
-  }, [fetchForumData, categorySlug, sortBy])
+  }, [fetchForumData, categorySlug, sortBy, typeParam, activeSearch])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
+    setActiveSearch(searchQuery.trim())
   }
 
-  const filteredPosts = (() => {
-    let result = posts
-    if (searchQuery.trim()) {
-      result = result.filter(p =>
-        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.content.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+  const loadMore = async () => {
+    if (loadingMore) return
+    setLoadingMore(true)
+    try {
+      const params = filterRef.current
+      const postsRes = await fetch(buildPostsUrl(offset, categories, params.categorySlug, params.sortBy, params.typeParam, params.activeSearch))
+      if (!postsRes.ok) throw new Error('Failed to fetch posts')
+      const postsData = await postsRes.json()
+      const incoming = (postsData?.data || postsData || []) as Post[]
+      const pagePosts = incoming.slice(0, PAGE_SIZE - 1)
+      setPosts(prev => [...prev, ...pagePosts])
+      setHasMore(incoming.length === PAGE_SIZE)
+      setOffset(prev => prev + pagePosts.length)
+    } catch {
+      error('Failed to load more posts')
+    } finally {
+      setLoadingMore(false)
     }
-    if (categorySlug) {
-      result = result.filter(p => p.category.slug === categorySlug)
-    }
-    if (typeParam) {
-      result = result.filter(p => p.postType === typeParam)
-    }
-    return result
-  })()
-
-  const sortedPosts = [...filteredPosts].sort((a, b) => {
-    switch (sortBy) {
-      case 'top':
-        return (b.score || 0) - (a.score || 0)
-      case 'oldest':
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-      case 'mostReplies':
-        return b.replyCount - a.replyCount
-      case 'mostViews':
-        return b.viewCount - a.viewCount
-      case 'mostTips':
-        return b.totalTips - a.totalTips
-      default:
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    }
-  })
+  }
 
   const handleVote = async (postId: string, value: number, e: React.MouseEvent) => {
     e.preventDefault()
@@ -196,6 +292,7 @@ export default function ForumPage() {
       payload.isPoll = true
       payload.pollType = pollType
       payload.pollOptions = pollOptions.filter(o => o.trim())
+      if (pollEndsAt) payload.pollEndsAt = pollEndsAt
     }
 
     setPosting(true)
@@ -206,6 +303,22 @@ export default function ForumPage() {
         body: JSON.stringify(payload)
       })
       if (res.ok) {
+        const body = await res.json().catch(() => null)
+        const createdId = extractCreatedId(body)
+        // Create the backlink to the linked listing now that the post exists.
+        if (createdId && pendingLink) {
+          fetch('/api/reference', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sourceType: 'FORUMPOST',
+              sourceId: createdId,
+              targetType: pendingLink.type,
+              targetId: pendingLink.id,
+              relationType: pendingLink.relationType,
+            }),
+          }).catch(() => {})
+        }
         success('Post created!')
         setNewPostTitle('')
         setNewPostContent('')
@@ -213,9 +326,10 @@ export default function ForumPage() {
         setIsPoll(false)
         setPostType('')
         setPollOptions(['', '', '', ''])
+        setPollEndsAt('')
         setPostImages([])
-        const updated = await fetch('/api/community/forum').then(r => r.json())
-        setPosts(updated?.data?.posts || updated?.posts || [])
+        setPendingLink(null)
+        fetchForumData()
       } else {
         const data = await res.json()
         error(data.error || 'Failed to create post')
@@ -234,6 +348,87 @@ export default function ForumPage() {
     router.push(url.pathname + url.search)
   }
 
+  // Reddit-style: main categories with nested subcategories, plus
+  // community-submitted categories awaiting approval.
+  const visibleCats = categories.filter(c => isAdmin || c.status === 'APPROVED')
+  const mainCats = visibleCats.filter(c => !c.parentId)
+  const myPendingCats = categories.filter(c => c.status === 'PENDING' && c.createdBy?.id === session?.user?.id)
+  const pendingCats = isAdmin ? categories.filter(c => c.status === 'PENDING') : myPendingCats
+  const categoryOptions = mainCats.flatMap(main => [
+    { slug: main.slug, name: `${main.icon} ${main.name}` },
+    ...(main.children || [])
+      .filter(c => isAdmin || c.status === 'APPROVED')
+      .map(sub => ({ slug: sub.slug, name: `— ${sub.name}` })),
+  ])
+
+  const handleCreateCategory = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!catName.trim()) return
+    setCreatingCategory(true)
+    try {
+      const res = await fetch('/api/forum/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: catName,
+          description: catDesc,
+          icon: catIcon,
+          parentId: catParentId || undefined,
+        }),
+      })
+      if (res.ok) {
+        success(isAdmin ? 'Category created!' : 'Category submitted for review — it will appear once approved.')
+        setShowCategoryModal(false)
+        setCatName('')
+        setCatDesc('')
+        setCatIcon('📁')
+        setCatParentId('')
+        fetchForumData()
+      } else {
+        const d = await res.json()
+        error(d.error || 'Failed to create category')
+      }
+    } catch {
+      error('Failed to create category')
+    } finally {
+      setCreatingCategory(false)
+    }
+  }
+
+  const handleCategoryStatus = async (id: string, status: string) => {
+    try {
+      const res = await fetch(`/api/forum/categories/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      })
+      if (res.ok) {
+        success(status === 'APPROVED' ? 'Category approved' : 'Category rejected')
+        fetchForumData()
+      } else {
+        const d = await res.json()
+        error(d.error || 'Failed to update category')
+      }
+    } catch {
+      error('Failed to update category')
+    }
+  }
+
+  const handleDeleteCategory = async (id: string) => {
+    try {
+      const res = await fetch(`/api/forum/categories/${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        success('Category deleted')
+        fetchForumData()
+      } else {
+        const d = await res.json()
+        error(d.error || 'Failed to delete category')
+      }
+    } catch {
+      error('Failed to delete category')
+    }
+  }
+
   return (
     <div className={styles.page}>
       <Breadcrumbs items={[
@@ -250,23 +445,82 @@ export default function ForumPage() {
         <aside className={styles.sidebar}>
           <div className={styles.categories}>
 
-            <Link 
-              href="/community/forum" 
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 8px' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)' }}>
+                Categories
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowCategoryModal(true)}
+                title="Create a main or sub category"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.05rem', color: 'var(--text-muted)', padding: 0 }}
+              >
+                ➕
+              </button>
+            </div>
+
+            <Link
+              href="/community/forum"
               className={`${styles.categoryLink} ${!categorySlug ? styles.active : ''}`}
             >
+              <span>🌐</span>
               All Posts
             </Link>
-            {categories.map(cat => (
-              <Link
-                key={cat.id}
-                href={`/community/forum?category=${cat.slug}`}
-                className={`${styles.categoryLink} ${categorySlug === cat.slug ? styles.active : ''}`}
-              >
-                <span>{cat.icon}</span>
-                {cat.name}
-                <span className={styles.catCount}>{cat._count.posts}</span>
-              </Link>
-            ))}
+
+            {mainCats.map(main => {
+              const subs = (main.children || []).filter(c => isAdmin || c.status === 'APPROVED')
+              const total = main._count.posts + subs.reduce((s, c) => s + (c._count?.posts || 0), 0)
+              return (
+                <div key={main.id}>
+                  <Link
+                    href={`/community/forum?category=${main.slug}`}
+                    className={`${styles.categoryLink} ${categorySlug === main.slug ? styles.active : ''}`}
+                  >
+                    <span>{main.icon}</span>
+                    {main.name}
+                    <span className={styles.catCount}>{total}</span>
+                  </Link>
+                  {subs.map(sub => (
+                    <Link
+                      key={sub.id}
+                      href={`/community/forum?category=${sub.slug}`}
+                      className={`${styles.categoryLink} ${categorySlug === sub.slug ? styles.active : ''}`}
+                      style={{ paddingLeft: 34, fontSize: '0.85rem' }}
+                    >
+                      <span>{sub.icon}</span>
+                      {sub.name}
+                      <span className={styles.catCount}>{sub._count?.posts || 0}</span>
+                    </Link>
+                  ))}
+                </div>
+              )
+            })}
+
+            {pendingCats.length > 0 && (
+              <div style={{ marginTop: 12, borderTop: '1px solid var(--border-color)', paddingTop: 8 }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--accent-primary)', padding: '0 8px' }}>
+                  Pending approval
+                </span>
+                {pendingCats.map(cat => (
+                  <div key={cat.id} style={{ padding: '4px 8px', display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem' }}>
+                    <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={cat.description || cat.name}>
+                      {cat.icon} {cat.name}
+                      {!isAdmin && (cat.createdBy?.name || cat.createdBy?.username) && (
+                        <span style={{ color: 'var(--text-muted)' }}> · by {cat.createdBy?.name || cat.createdBy?.username}</span>
+                      )}
+                    </span>
+                    {isAdmin ? (
+                      <>
+                        <button type="button" onClick={() => handleCategoryStatus(cat.id, 'APPROVED')} title="Approve" style={badgeBtnStyle}>✅</button>
+                        <button type="button" onClick={() => handleCategoryStatus(cat.id, 'REJECTED')} title="Reject" style={badgeBtnStyle}>❌</button>
+                      </>
+                    ) : (
+                      <button type="button" onClick={() => handleDeleteCategory(cat.id)} title="Withdraw request" style={badgeBtnStyle}>🗑️</button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </aside>
 
@@ -358,11 +612,20 @@ export default function ForumPage() {
                 className={styles.categorySelect}
               >
                 <option value="">Select category</option>
-                {categories.map(cat => (
-                  <option key={cat.id} value={cat.slug}>{cat.name}</option>
+                {categoryOptions.map(opt => (
+                  <option key={opt.slug} value={opt.slug}>{opt.name}</option>
                 ))}
               </select>
               <ImageUploader images={postImages} onChange={setPostImages} maxImages={6} />
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setShowLinkModal(true)}
+                className={styles.mentionBtn}
+                title="Link a listing, product, event or group"
+              >
+                🔗
+              </Button>
               <Button 
                 variant="primary"
                 onClick={handleCreatePost} 
@@ -372,6 +635,32 @@ export default function ForumPage() {
                 {posting ? 'Posting...' : 'Post'}
               </Button>
             </div>
+
+            {pendingLink && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  marginTop: 8,
+                  padding: '6px 12px',
+                  borderRadius: 8,
+                  border: '1px solid var(--border-color)',
+                  background: 'var(--bg-secondary)',
+                  fontSize: '0.85rem',
+                }}
+              >
+                <span>🔗 {pendingLink.title}</span>
+                <button
+                  type="button"
+                  onClick={() => setPendingLink(null)}
+                  style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+                  aria-label="Remove linked item"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
 
             {postType === 'IDEA' && (
               <div className={styles.typeHint}>
@@ -424,6 +713,16 @@ export default function ForumPage() {
                     />
                   ))}
                 </div>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                  Poll ends at
+                  <input
+                    type="datetime-local"
+                    value={pollEndsAt}
+                    onChange={e => setPollEndsAt(e.target.value)}
+                    className={styles.pollOptionInput}
+                    style={{ flex: 1, minWidth: 0 }}
+                  />
+                </label>
                 {pollOptions.length < 6 && (
                   <Button 
                     type="button"
@@ -453,11 +752,11 @@ export default function ForumPage() {
               <p>{errorMsg}</p>
               <Button variant="primary" onClick={fetchForumData} className={styles.postBtn}>Retry</Button>
             </div>
-          ) : sortedPosts.length === 0 ? (
+          ) : posts.length === 0 ? (
             <EmptyState icon="💬" title="No posts yet" description="Be the first to post!" />
           ) : (
             <div className={styles.posts}>
-              {sortedPosts.map(post => (
+              {posts.map(post => (
                 <Link key={post.id} href={`/community/forum/${post.id}`} className={styles.postCard}>
                   <div className={styles.postHeader}>
                     <span className={styles.postCategory}>{post.category.name}</span>
@@ -515,9 +814,83 @@ export default function ForumPage() {
                 </Link>
               ))}
             </div>
-          )}
+            )}
+            {hasMore && (
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
+                <Button variant="primary" onClick={loadMore} disabled={loadingMore} className={styles.postBtn}>
+                  {loadingMore ? 'Loading more...' : 'Load more posts'}
+                </Button>
+              </div>
+            )}
         </main>
       </div>
+
+      <LinkItemModal
+        isOpen={showLinkModal}
+        onClose={() => setShowLinkModal(false)}
+        sourceType="FORUMPOST"
+        sourceId=""
+        onLinked={() => setShowLinkModal(false)}
+        deferCommit
+        onSelect={(target, relationType) => {
+          setPendingLink({ type: target.type, id: target.id, title: target.title, relationType })
+          setShowLinkModal(false)
+        }}
+      />
+
+      <Modal open={showCategoryModal} onClose={() => setShowCategoryModal(false)}>
+        <form onSubmit={handleCreateCategory} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <h3 style={{ margin: 0 }}>Create a category</h3>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            Start a <strong>main category</strong> or a <strong>subcategory</strong> under an existing one.
+            {!isAdmin && ' Your submission will appear once an admin approves it.'}
+          </p>
+          <input
+            type="text"
+            placeholder="Category name (e.g. Gardening)"
+            value={catName}
+            onChange={e => setCatName(e.target.value)}
+            maxLength={40}
+            style={inputStyle}
+            required
+          />
+          <input
+            type="text"
+            placeholder="Short description (optional)"
+            value={catDesc}
+            onChange={e => setCatDesc(e.target.value)}
+            maxLength={120}
+            style={inputStyle}
+          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input
+              type="text"
+              placeholder="Icon emoji"
+              value={catIcon}
+              onChange={e => setCatIcon(e.target.value)}
+              maxLength={4}
+              style={{ ...inputStyle, width: 90 }}
+              aria-label="Category icon emoji"
+            />
+            <select
+              value={catParentId}
+              onChange={e => setCatParentId(e.target.value)}
+              style={inputStyle}
+            >
+              <option value="">— Main category —</option>
+              {mainCats.map(m => (
+                <option key={m.id} value={m.id}>{m.icon} {m.name}</option>
+              ))}
+            </select>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 4 }}>
+            <Button type="button" variant="ghost" onClick={() => setShowCategoryModal(false)}>Cancel</Button>
+            <Button type="submit" variant="primary" disabled={creatingCategory || !catName.trim()}>
+              {creatingCategory ? 'Creating...' : 'Create category'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   )
 }

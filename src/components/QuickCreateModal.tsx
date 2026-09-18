@@ -1,10 +1,12 @@
 'use client'
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useState, useCallback, useRef, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import Modal from '@/components/ui/Modal'
 import ImageUploader from '@/components/ImageUploader'
 import HashtagInput from '@/components/HashtagInput'
+import MentionInput, { type MentionInputHandle } from '@/components/MentionInput'
+import LinkItemModal from '@/components/LinkItemModal'
 import EventFormFields, { getDefaultEventFormData } from '@/components/EventFormFields'
 import LocationPicker from '@/components/LocationPicker'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
@@ -21,8 +23,23 @@ import type { UserAsset } from '@/components/AssetPicker'
 import type { DonationAddr } from '@/types/product'
 import { REQUEST_CATEGORIES } from '@/lib/request-categories'
 
+export interface QuickCreatePrefill {
+  title?: string
+  name?: string
+  description?: string
+  price?: string
+  category?: string
+  duration?: string
+  goalAmount?: string
+  budget?: string
+  deadline?: string
+  volunteerRoles?: string
+  lookingForCollaborators?: boolean
+  needsVolunteers?: boolean
+}
+
 interface QuickCreateContextType {
-  open: (tab?: string) => void
+  open: (tab?: string, prefill?: QuickCreatePrefill | null) => void
   close: () => void
 }
 
@@ -60,30 +77,38 @@ function extractCreatedId(body: unknown): string | null {
 export function QuickCreateProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false)
   const [tab, setTab] = useState('post')
+  const [prefill, setPrefill] = useState<QuickCreatePrefill | null>(null)
+
+  const closeModal = () => {
+    setIsOpen(false)
+    setPrefill(null)
+  }
 
   return (
     <QuickCreateContext.Provider value={{
-      open: (t) => { setTab(t || 'post'); setIsOpen(true) },
-      close: () => setIsOpen(false),
+      open: (t, p) => { setTab(t || 'post'); setPrefill(p || null); setIsOpen(true) },
+      close: closeModal,
     }}>
       {children}
       <QuickCreateModalContent
         open={isOpen}
-        onClose={() => setIsOpen(false)}
+        onClose={closeModal}
         initialTab={tab}
         onTabChange={setTab}
+        prefill={prefill}
       />
     </QuickCreateContext.Provider>
   )
 }
 
 function QuickCreateModalContent({
-  open, onClose, initialTab, onTabChange,
+  open, onClose, initialTab, onTabChange, prefill,
 }: {
   open: boolean
   onClose: () => void
   initialTab: string
   onTabChange: (tab: string) => void
+  prefill: QuickCreatePrefill | null
 }) {
   return (
     <Modal open={open} onClose={onClose} title="✨ Quick Create" size="lg">
@@ -101,12 +126,12 @@ function QuickCreateModalContent({
       <div className={styles.tabContent}>
         {initialTab === 'post' && <PostForm onDone={onClose} />}
         {initialTab === 'content' && <ContentForm onDone={onClose} />}
-        {initialTab === 'product' && <ProductForm onDone={onClose} />}
+        {initialTab === 'product' && <ProductForm onDone={onClose} prefill={prefill} />}
         {initialTab === 'event' && <EventForm onDone={onClose} />}
-        {initialTab === 'project' && <ProjectForm onDone={onClose} />}
-        {initialTab === 'group' && <GroupForm onDone={onClose} />}
-        {initialTab === 'request' && <RequestForm onDone={onClose} />}
-        {initialTab === 'service' && <ServiceForm onDone={onClose} />}
+        {initialTab === 'project' && <ProjectForm onDone={onClose} prefill={prefill} />}
+        {initialTab === 'group' && <GroupForm onDone={onClose} prefill={prefill} />}
+        {initialTab === 'request' && <RequestForm onDone={onClose} prefill={prefill} />}
+        {initialTab === 'service' && <ServiceForm onDone={onClose} prefill={prefill} />}
       </div>
     </Modal>
   )
@@ -119,6 +144,9 @@ function PostForm({ onDone }: { onDone: () => void }) {
   const [images, setImages] = useState<string[]>([])
   const [hashtags, setHashtags] = useState<string[]>([])
   const [posting, setPosting] = useState(false)
+  const [showLinkModal, setShowLinkModal] = useState(false)
+  const [pendingLink, setPendingLink] = useState<{ type: string; id: string; title: string } | null>(null)
+  const mentionRef = useRef<MentionInputHandle>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -138,6 +166,20 @@ function PostForm({ onDone }: { onDone: () => void }) {
       if (res.ok) {
         const body = await res.json().catch(() => null)
         const id = extractCreatedId(body)
+        // Persist the linked listing backlink now that the post exists.
+        if (id && pendingLink) {
+          fetch('/api/reference', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sourceType: 'POST',
+              sourceId: id,
+              targetType: pendingLink.type,
+              targetId: pendingLink.id,
+              relationType: 'REFERENCES',
+            }),
+          }).catch(() => {})
+        }
         success('Post published!')
         onDone()
         if (id) router.push(`/posts/${id}`)
@@ -156,13 +198,13 @@ function PostForm({ onDone }: { onDone: () => void }) {
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
       <div className={styles.formGroup}>
-        <textarea
+        <MentionInput
+          ref={mentionRef}
           value={content}
-          onChange={e => setContent(e.target.value)}
+          onChange={setContent}
           placeholder="What's on your mind?"
           rows={4}
           className={styles.textarea}
-          autoFocus
         />
         <span className={styles.charCount}>{content.length}/2000</span>
       </div>
@@ -172,12 +214,41 @@ function PostForm({ onDone }: { onDone: () => void }) {
       <div className={styles.formGroup}>
         <HashtagInput value={hashtags} onChange={setHashtags} placeholder="Add hashtags..." />
       </div>
+      <div className={styles.formGroup}>
+        <div className={styles.formActions} style={{ justifyContent: 'flex-start' }}>
+          <button type="button" onClick={() => mentionRef.current?.insertAtCursor('@')} className="btn-ghost" title="Mention someone">
+            @
+          </button>
+          <button type="button" onClick={() => setShowLinkModal(true)} className="btn-ghost" title="Link a listing">
+            🔗 Link
+          </button>
+        </div>
+        {pendingLink && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', fontSize: '0.85rem' }}>
+            <span>🔗 {pendingLink.title}</span>
+            <button type="button" onClick={() => setPendingLink(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }} aria-label="Remove linked item">✕</button>
+          </div>
+        )}
+      </div>
       <div className={styles.formActions}>
         <button type="button" onClick={onDone} className="btn-ghost">Cancel</button>
         <button type="submit" disabled={posting || !content.trim()} className="btn-primary">
           {posting ? 'Posting...' : '✏️ Post'}
         </button>
       </div>
+
+      <LinkItemModal
+        isOpen={showLinkModal}
+        onClose={() => setShowLinkModal(false)}
+        sourceType="POST"
+        sourceId=""
+        onLinked={() => setShowLinkModal(false)}
+        deferCommit
+        onSelect={(target) => {
+          setPendingLink({ type: target.type, id: target.id, title: target.title })
+          setShowLinkModal(false)
+        }}
+      />
     </form>
   )
 }
@@ -320,16 +391,20 @@ function ContentForm({ onDone }: { onDone: () => void }) {
   )
 }
 
-function ProductForm({ onDone }: { onDone: () => void }) {
+function ProductForm({ onDone, prefill }: { onDone: () => void; prefill?: QuickCreatePrefill | null }) {
   const { success, error } = useToast()
   const router = useRouter()
   const userDonationAddrs = useDonationAddresses()
 
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [price, setPrice] = useState('')
+  const [title, setTitle] = useState(() => prefill?.title || '')
+  const [description, setDescription] = useState(() => prefill?.description || '')
+  const [price, setPrice] = useState(() => prefill?.price || '')
   const [type, setType] = useState('PRODUCT')
-  const [category, setCategory] = useState('OTHER')
+  const [category, setCategory] = useState<string>(() =>
+    prefill?.category && PRODUCT_CATEGORIES.some(c => c.value === prefill.category)
+      ? prefill.category as string
+      : 'OTHER'
+  )
   const [condition, setCondition] = useState<string>(PRODUCT_CONDITIONS[0])
   const [isRemote, setIsRemote] = useState(false)
   const [images, setImages] = useState<string[]>([])
@@ -531,12 +606,12 @@ function EventForm({ onDone }: { onDone: () => void }) {
   )
 }
 
-function GroupForm({ onDone }: { onDone: () => void }) {
+function GroupForm({ onDone, prefill }: { onDone: () => void; prefill?: QuickCreatePrefill | null }) {
   const { success, error } = useToast()
   const router = useRouter()
   const userDonationAddrs = useDonationAddresses()
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
+  const [name, setName] = useState(() => prefill?.name || '')
+  const [description, setDescription] = useState(() => prefill?.description || '')
   const [isPrivate, setIsPrivate] = useState(false)
   const [category, setCategory] = useState('GENERAL')
   const [image, setImage] = useState<string[]>([])
@@ -666,17 +741,21 @@ function GroupForm({ onDone }: { onDone: () => void }) {
   )
 }
 
-function RequestForm({ onDone }: { onDone: () => void }) {
+function RequestForm({ onDone, prefill }: { onDone: () => void; prefill?: QuickCreatePrefill | null }) {
   const { success, error } = useToast()
   const router = useRouter()
   const userDonationAddrs = useDonationAddresses()
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [category, setCategory] = useState('GENERAL')
+  const [title, setTitle] = useState(() => prefill?.title || '')
+  const [description, setDescription] = useState(() => prefill?.description || '')
+  const [category, setCategory] = useState(() =>
+    prefill?.category && REQUEST_CATEGORIES.some(c => c.value === prefill.category)
+      ? prefill.category as string
+      : 'GENERAL'
+  )
   const [priority, setPriority] = useState('MEDIUM')
-  const [budget, setBudget] = useState('')
-  const [goalAmount, setGoalAmount] = useState('')
-  const [deadline, setDeadline] = useState('')
+  const [budget, setBudget] = useState(() => prefill?.budget || '')
+  const [goalAmount, setGoalAmount] = useState(() => prefill?.goalAmount || '')
+  const [deadline, setDeadline] = useState(() => prefill?.deadline || '')
   const [image, setImage] = useState<string[]>([])
   const [location, setLocation] = useState<{ text: string; latitude: number | null; longitude: number | null }>({ text: '', latitude: null, longitude: null })
   const [isPublic, setIsPublic] = useState(true)
@@ -838,16 +917,20 @@ function RequestForm({ onDone }: { onDone: () => void }) {
   )
 }
 
-function ServiceForm({ onDone }: { onDone: () => void }) {
+function ServiceForm({ onDone, prefill }: { onDone: () => void; prefill?: QuickCreatePrefill | null }) {
   const { success, error } = useToast()
   const router = useRouter()
   const userDonationAddrs = useDonationAddresses()
 
-  const [title, setTitle] = useState('')
-  const [category, setCategory] = useState('OTHER')
-  const [duration, setDuration] = useState('60')
-  const [price, setPrice] = useState('')
-  const [description, setDescription] = useState('')
+  const [title, setTitle] = useState(() => prefill?.title || '')
+  const [category, setCategory] = useState<string>(() =>
+    prefill?.category && (SERVICE_CATEGORIES as readonly string[]).includes(prefill.category)
+      ? prefill.category as string
+      : 'OTHER'
+  )
+  const [duration, setDuration] = useState(() => prefill?.duration || '60')
+  const [price, setPrice] = useState(() => prefill?.price || '')
+  const [description, setDescription] = useState(() => prefill?.description || '')
   const [coverImage, setCoverImage] = useState<string[]>([])
   const [location, setLocation] = useState<{ text: string; latitude: number | null; longitude: number | null }>({ text: '', latitude: null, longitude: null })
 
@@ -1064,21 +1147,25 @@ function ServiceForm({ onDone }: { onDone: () => void }) {
   )
 }
 
-function ProjectForm({ onDone }: { onDone: () => void }) {
+function ProjectForm({ onDone, prefill }: { onDone: () => void; prefill?: QuickCreatePrefill | null }) {
   const { success, error } = useToast()
   const router = useRouter()
   const userDonationAddrs = useDonationAddresses()
 
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
+  const [title, setTitle] = useState(() => prefill?.title || '')
+  const [description, setDescription] = useState(() => prefill?.description || '')
   const [status, setStatus] = useState('IDEA')
-  const [category, setCategory] = useState('')
+  const [category, setCategory] = useState<string>(() =>
+    prefill?.category && PROJECT_CATEGORIES.some(c => c.value === prefill.category)
+      ? prefill.category as string
+      : ''
+  )
   const [coverImage, setCoverImage] = useState<string[]>([])
-  const [lookingForCollaborators, setLookingForCollaborators] = useState(false)
-  const [needsVolunteers, setNeedsVolunteers] = useState(false)
-  const [volunteerRoles, setVolunteerRoles] = useState('')
+  const [lookingForCollaborators, setLookingForCollaborators] = useState(() => prefill?.lookingForCollaborators || false)
+  const [needsVolunteers, setNeedsVolunteers] = useState(() => prefill?.needsVolunteers || false)
+  const [volunteerRoles, setVolunteerRoles] = useState(() => prefill?.volunteerRoles || '')
   const [volunteerDescription, setVolunteerDescription] = useState('')
-  const [goalAmount, setGoalAmount] = useState('')
+  const [goalAmount, setGoalAmount] = useState(() => prefill?.goalAmount || '')
   const [acceptsDonations, setAcceptsDonations] = useState(false)
   const [selectedDonationAddrs, setSelectedDonationAddrs] = useState<DonationAddr[]>([])
   const [location, setLocation] = useState<{ text: string; latitude: number | null; longitude: number | null }>({ text: '', latitude: null, longitude: null })

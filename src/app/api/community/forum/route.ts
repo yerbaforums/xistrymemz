@@ -4,13 +4,15 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 const SEED_CATEGORIES = [
-  { name: 'General', slug: 'general', icon: '💬', sortOrder: 1 },
-  { name: 'Projects', slug: 'projects', icon: '🚀', sortOrder: 2 },
-  { name: 'Ideas', slug: 'ideas', icon: '💡', sortOrder: 3 },
-  { name: 'Debates', slug: 'debates', icon: '⚖️', sortOrder: 4 },
-  { name: 'Announcements', slug: 'announcements', icon: '📣', sortOrder: 5 },
-  { name: 'Help', slug: 'help', icon: '🆘', sortOrder: 6 },
-  { name: 'Development', slug: 'development', icon: '🔧', sortOrder: 7 }
+  { name: 'General Chat', slug: 'general-chat', icon: '🗣️', sortOrder: 1 },
+  { name: 'Introductions', slug: 'introductions', icon: '👋', sortOrder: 2 },
+  { name: 'Ask the Community', slug: 'ask-community', icon: '🤔', sortOrder: 3 },
+  { name: 'Projects', slug: 'projects', icon: '🚀', sortOrder: 4 },
+  { name: 'Ideas', slug: 'ideas', icon: '💡', sortOrder: 5 },
+  { name: 'Debates', slug: 'debates', icon: '⚖️', sortOrder: 6 },
+  { name: 'Announcements', slug: 'announcements', icon: '📣', sortOrder: 7 },
+  { name: 'Help', slug: 'help', icon: '🆘', sortOrder: 8 },
+  { name: 'Development', slug: 'development', icon: '🔧', sortOrder: 9 }
 ]
 
 const SITE_UPDATE_CONTENT = `
@@ -89,10 +91,24 @@ export async function GET() {
     }
 
     const categories = await prisma.forumCategory.findMany({
-      orderBy: { sortOrder: 'asc' },
+      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
       include: {
-        _count: { select: { posts: true } }
-      }
+        parent: { select: { id: true, name: true, slug: true, icon: true } },
+        children: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            icon: true,
+            description: true,
+            status: true,
+            _count: { select: { posts: true } },
+          },
+          orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+        },
+        createdBy: { select: { id: true, name: true, username: true } },
+        _count: { select: { posts: true } },
+      },
     })
 
     const posts = await prisma.forumPost.findMany({
@@ -122,6 +138,7 @@ export async function GET() {
     }
 
     return apiSuccess({
+      isAdmin: session.user.role === 'ADMIN',
       categories: categories.map(c => ({
         ...c,
         _count: { posts: c._count?.posts || 0 }

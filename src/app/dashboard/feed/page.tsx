@@ -7,6 +7,7 @@ import Link from 'next/link'
 import FeedItem from '@/components/FeedItem'
 import MentionInput, { type MentionInputHandle } from '@/components/MentionInput'
 import ImageUploader from '@/components/ImageUploader'
+import LinkItemModal from '@/components/LinkItemModal'
 import dynamic from 'next/dynamic'
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false })
 import { useTranslations } from 'next-intl'
@@ -38,6 +39,12 @@ interface TrendingTag {
   count: number
 }
 
+interface PendingLink {
+  type: string
+  id: string
+  title: string
+}
+
 const CONTEXT_LABELS: Record<string, string> = {
   WALL: '📝 Wall',
   SHOP: '🏪 Shop',
@@ -67,6 +74,8 @@ export default function DashboardFeed() {
   const [posting, setPosting] = useState(false)
   const [showEmoji, setShowEmoji] = useState(false)
   const [trendingTags, setTrendingTags] = useState<TrendingTag[]>([])
+  const [showLinkModal, setShowLinkModal] = useState(false)
+  const [pendingLink, setPendingLink] = useState<PendingLink | null>(null)
   const mentionRef = useRef<MentionInputHandle>(null)
 
   const handleCreatePost = async (e: React.FormEvent) => {
@@ -84,8 +93,28 @@ export default function DashboardFeed() {
         })
       })
       if (res.ok) {
+        // Persist the linked listing backlink now that the post exists.
+        const body = await res.json().catch(() => null)
+        const id =
+          body?.data?.id || body?.data?.data?.id ||
+          body?.post?.id || body?.post?.data?.id ||
+          body?.id || null
+        if (id && pendingLink) {
+          fetch('/api/reference', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sourceType: 'POST',
+              sourceId: id,
+              targetType: pendingLink.type,
+              targetId: pendingLink.id,
+              relationType: 'REFERENCES',
+            }),
+          }).catch(() => {})
+        }
         setPostContent('')
         setPostImages([])
+        setPendingLink(null)
         fetchFeed(true)
       }
     } catch {} finally {
@@ -159,6 +188,10 @@ export default function DashboardFeed() {
               className={styles.toolBtn}>
               😊
             </button>
+            <button type="button" onClick={() => setShowLinkModal(true)}
+              className={styles.toolBtn} title="Link a listing">
+              🔗
+            </button>
             <ImageUploader images={postImages} onChange={setPostImages} />
             {showEmoji && (
               <div className={styles.absoluteEmoji}>
@@ -166,6 +199,12 @@ export default function DashboardFeed() {
               </div>
             )}
           </div>
+          {pendingLink && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', fontSize: '0.85rem' }}>
+              <span>🔗 {pendingLink.title}</span>
+              <button type="button" onClick={() => setPendingLink(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }} aria-label="Remove linked item">✕</button>
+            </div>
+          )}
           <div className={`${styles.flexBetween} ${styles.mt8}`}>
             <span className={styles.metaText}>
               {postContent.length}/2000
@@ -257,6 +296,19 @@ export default function DashboardFeed() {
           </div>
         </div>
       )}
+
+      <LinkItemModal
+        isOpen={showLinkModal}
+        onClose={() => setShowLinkModal(false)}
+        sourceType="POST"
+        sourceId=""
+        onLinked={() => setShowLinkModal(false)}
+        deferCommit
+        onSelect={(target) => {
+          setPendingLink({ type: target.type, id: target.id, title: target.title })
+          setShowLinkModal(false)
+        }}
+      />
     </div>
   )
 }

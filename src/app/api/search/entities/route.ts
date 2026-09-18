@@ -7,6 +7,7 @@ const SEARCH_CONFIG: Record<string, {
   model: string
   titleField: string
   select: Record<string, boolean>
+  urlField?: string
   where: (q: string) => any
   url: (id: string) => string
 }> = {
@@ -93,6 +94,31 @@ const SEARCH_CONFIG: Record<string, {
     }),
     url: (id) => `/posts/${id}`,
   },
+  FORUMPOST: {
+    model: 'forumPost',
+    titleField: 'title',
+    select: { id: true, title: true, authorId: true },
+    where: (q) => ({
+      OR: [
+        { title: { contains: q, mode: 'insensitive' as const } },
+        { content: { contains: q, mode: 'insensitive' as const } },
+      ],
+    }),
+    url: (id) => `/community/forum/${id}`,
+  },
+  BOARD: {
+    model: 'bulletinBoard',
+    titleField: 'name',
+    select: { id: true, name: true, slug: true, ownerId: true },
+    urlField: 'slug',
+    where: (q) => ({
+      OR: [
+        { name: { contains: q, mode: 'insensitive' as const } },
+        { description: { contains: q, mode: 'insensitive' as const } },
+      ],
+    }),
+    url: (slug) => `/boards/${slug}`,
+  },
   SCHOOLCONTENT: {
     model: 'schoolContent',
     titleField: 'title',
@@ -160,7 +186,7 @@ export async function GET(request: Request) {
     const items = results.map((r: any) => ({
       id: r.id,
       title: r[config.titleField]?.slice(0, 100) || 'Untitled',
-      url: config.url(r.id),
+      url: config.url(r[(config as { urlField?: string }).urlField || 'id']),
       type,
     }))
 

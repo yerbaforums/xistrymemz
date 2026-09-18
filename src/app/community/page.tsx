@@ -147,7 +147,9 @@ export default function CommunityPage() {
 
       if (forumCatRes.ok) {
         const forumData = await forumCatRes.json()
-        setForumCategories(unwrap(forumData) || [])
+        const catData = unwrap<{ categories?: unknown[] }>(forumData)
+        const cats = Array.isArray(catData) ? catData : catData?.categories || []
+        setForumCategories(cats as typeof forumCategories)
       }
 
       if (forumPostsRes.ok) {

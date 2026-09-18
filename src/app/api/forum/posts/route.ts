@@ -10,6 +10,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const categoryId = searchParams.get('categoryId')
+    const categoryIds = searchParams.get('categoryIds')
     const authorId = searchParams.get('authorId')
     const postType = searchParams.get('postType')
     const status = searchParams.get('status')
@@ -20,6 +21,10 @@ export async function GET(request: Request) {
 
     const where: Record<string, unknown> = {}
     if (categoryId) where.categoryId = categoryId
+    else if (categoryIds) {
+      const ids = categoryIds.split(',').map(s => s.trim()).filter(Boolean)
+      if (ids.length > 0) where.categoryId = { in: ids }
+    }
     if (authorId) where.authorId = authorId
     if (postType) where.postType = postType
     if (status) where.status = status

@@ -429,3 +429,266 @@ export function getTemplatesByType(type: 'SHOP' | 'SCHOOL' | 'COURIER'): Busines
 export function getTemplateById(id: string): BusinessTemplate | undefined {
   return businessTemplates.find(t => t.id === id)
 }
+
+// --- Channel templates -----------------------------------------------------
+// These cover the Quick Create channels (product, service, project, group,
+// request). Selecting one opens Quick Create on the matching tab with the
+// suggested fields pre-filled, so users can turn a template into reality fast.
+
+export interface ChannelTemplate {
+  id: string
+  type: 'PRODUCT' | 'SERVICE' | 'PROJECT' | 'GROUP' | 'REQUEST'
+  tab: 'product' | 'service' | 'project' | 'group' | 'request'
+  category: string
+  name: string
+  description: string
+  icon: string
+  estimatedTime: string
+  data: {
+    title?: string
+    name?: string
+    description?: string
+    price?: string
+    category?: string
+    duration?: string
+    goalAmount?: string
+    budget?: string
+    deadline?: string
+    lookingForCollaborators?: boolean
+    needsVolunteers?: boolean
+    volunteerRoles?: string
+  }
+  sampleItems?: Array<{ label: string; value: string }>
+}
+
+export const channelTemplates: ChannelTemplate[] = [
+  // --- PRODUCTS ---
+  {
+    id: 'product-handmade',
+    type: 'PRODUCT',
+    tab: 'product',
+    category: 'Handmade & Crafts',
+    name: 'Handmade Goods',
+    description: 'Sell crafts, art, prints, and other things you make yourself',
+    icon: '🧶',
+    estimatedTime: '2 min',
+    data: {
+      title: 'Handmade [Your Craft]',
+      description: 'Made by hand with love. Tell your story, materials used, and why it is special.',
+      price: '45',
+      category: 'ART',
+    },
+    sampleItems: [
+      { label: 'Title', value: 'Handmade ceramic mug' },
+      { label: 'Price', value: '$45' },
+      { label: 'Category', value: 'Art' },
+      { label: 'Condition', value: 'New' },
+    ],
+  },
+  {
+    id: 'product-farmstand',
+    type: 'PRODUCT',
+    tab: 'product',
+    category: 'Food & Produce',
+    name: 'Farm Stand / Produce',
+    description: 'Sell fresh produce, eggs, honey, baked goods, and garden surplus',
+    icon: '🥕',
+    estimatedTime: '2 min',
+    data: {
+      title: 'Fresh [Produce] - Farm Stand',
+      description: 'Harvested this week from my garden. Pesticide-free and full of flavor.',
+      price: '8',
+      category: 'HOME',
+    },
+    sampleItems: [
+      { label: 'Title', value: 'Fresh eggs - dozen' },
+      { label: 'Price', value: '$8 / dozen' },
+      { label: 'Payment', value: 'Cash or barter' },
+    ],
+  },
+
+  // --- SERVICES ---
+  {
+    id: 'service-tutoring',
+    type: 'SERVICE',
+    tab: 'service',
+    category: 'Teaching & Tutoring',
+    name: 'Tutor / Mentor',
+    description: 'Offer lessons, tutoring, coaching, or mentorship in your area of expertise',
+    icon: '🧑‍🏫',
+    estimatedTime: '2 min',
+    data: {
+      title: 'Tutoring in [Subject]',
+      description: 'One-on-one tutoring sessions tailored to your level. I will help you reach your goals.',
+      price: '25',
+      category: 'LESSON_TUTORING',
+      duration: '60',
+    },
+    sampleItems: [
+      { label: 'Session length', value: '60 minutes' },
+      { label: 'Rate', value: '$25 / session' },
+      { label: 'Category', value: 'Lesson / Tutoring' },
+    ],
+  },
+  {
+    id: 'service-handy',
+    type: 'SERVICE',
+    tab: 'service',
+    category: 'Home & Repair',
+    name: 'Handyman / Repair',
+    description: 'Offer repairs, assembly, maintenance, and odd jobs in your neighborhood',
+    icon: '🛠️',
+    estimatedTime: '2 min',
+    data: {
+      title: 'Handyman Services - [Skill]',
+      description: 'Reliable help with repairs, furniture assembly, and small home projects.',
+      price: '40',
+      category: 'MAINTENANCE_REPAIR',
+      duration: '120',
+    },
+    sampleItems: [
+      { label: 'Hourly rate', value: '$40 / hour' },
+      { label: 'Category', value: 'Maintenance & Repair' },
+      { label: 'Booking', value: 'Availability + location' },
+    ],
+  },
+
+  // --- PROJECTS ---
+  {
+    id: 'project-community',
+    type: 'PROJECT',
+    tab: 'project',
+    category: 'Community Projects',
+    name: 'Community Project',
+    description: 'Launch a project that helps your neighborhood, school, or town',
+    icon: '🏘️',
+    estimatedTime: '3 min',
+    data: {
+      title: 'Community [Project Name]',
+      description: 'What is the problem you are solving, and how will the community benefit? Who can help?',
+      category: 'COMMUNITY',
+      lookingForCollaborators: true,
+      needsVolunteers: true,
+      volunteerRoles: 'Helpers, organizers, sponsors',
+      goalAmount: '500',
+    },
+    sampleItems: [
+      { label: 'Category', value: 'Community' },
+      { label: 'Looking for collaborators', value: 'Yes' },
+      { label: 'Needs volunteers', value: 'Yes' },
+      { label: 'Funding goal', value: '$500 (optional)' },
+    ],
+  },
+  {
+    id: 'project-create',
+    type: 'PROJECT',
+    tab: 'project',
+    category: 'Creative Projects',
+    name: 'Creative Project',
+    description: 'Music, art, writing, film, or design projects with milestones and goals',
+    icon: '🎨',
+    estimatedTime: '3 min',
+    data: {
+      title: '[Creative Project Title]',
+      description: 'The vision, what is done, and what comes next. Who would you like to collaborate with?',
+      category: 'CREATIVE',
+      lookingForCollaborators: true,
+      needsVolunteers: false,
+      goalAmount: '250',
+    },
+    sampleItems: [
+      { label: 'Category', value: 'Creative' },
+      { label: 'Collaborators wanted', value: 'Yes' },
+      { label: 'Milestones', value: 'Plan → Create → Share' },
+    ],
+  },
+
+  // --- GROUPS ---
+  {
+    id: 'group-community',
+    type: 'GROUP',
+    tab: 'group',
+    category: 'Community Groups',
+    name: 'Local Community Group',
+    description: 'Bring neighbors together around a shared interest, cause, or need',
+    icon: '🤝',
+    estimatedTime: '2 min',
+    data: {
+      name: 'Local [Interest] Club',
+      description: 'A friendly group for neighbors who care about [topic]. All are welcome!',
+      category: 'LOCAL',
+    },
+    sampleItems: [
+      { label: 'Group name', value: 'Local Book Club' },
+      { label: 'Privacy', value: 'Public (or Private)' },
+      { label: 'Focus', value: 'Regular meetups + chat' },
+    ],
+  },
+  {
+    id: 'group-trade',
+    type: 'GROUP',
+    tab: 'group',
+    category: 'Trade & Barter Groups',
+    name: 'Trade / Barter Circle',
+    description: 'Organize local trading, bartering, and skill-sharing circles',
+    icon: '🔄',
+    estimatedTime: '2 min',
+    data: {
+      name: 'Neighborhood Trade Circle',
+      description: 'Swap skills, tools, and goods with your neighbors. No money needed.',
+      category: 'BUSINESS',
+    },
+    sampleItems: [
+      { label: 'Group name', value: 'Neighborhood Trade Circle' },
+      { label: 'Members', value: 'Neighbors + friends' },
+      { label: 'Rules', value: 'Fair trades, no scams' },
+    ],
+  },
+
+  // --- REQUESTS ---
+  {
+    id: 'request-help',
+    type: 'REQUEST',
+    tab: 'request',
+    category: 'Help & Support',
+    name: 'Ask the Community',
+    description: 'Ask the community for help, support, feedback, or a hand with something',
+    icon: '🆘',
+    estimatedTime: '2 min',
+    data: {
+      title: 'Looking for help with [Need]',
+      description: 'Explain what you need, why it matters, and how people can help.',
+      category: 'HELP',
+    },
+    sampleItems: [
+      { label: 'Category', value: 'Help' },
+      { label: 'Priority', value: 'Medium' },
+      { label: 'Reward', value: 'Payment, barter, or gratitude' },
+    ],
+  },
+  {
+    id: 'request-raise',
+    type: 'REQUEST',
+    tab: 'request',
+    category: 'Funding & Resources',
+    name: 'Fund-a-Dream',
+    description: 'Raise funds or gather resources for a dream project, trip, or big goal',
+    icon: '💰',
+    estimatedTime: '2 min',
+    data: {
+      title: 'Help me fund [Dream Goal]',
+      description: 'What are you raising for, why does it matter, and how will the money be used?',
+      category: 'FUNDING',
+      goalAmount: '1000',
+    },
+    sampleItems: [
+      { label: 'Category', value: 'Funding' },
+      { label: 'Goal amount', value: '$1,000' },
+      { label: 'Updates', value: 'Share progress with supporters' },
+    ],
+  },
+]
+
+export function getChannelTemplatesByType(type: ChannelTemplate['type']): ChannelTemplate[] {
+  return channelTemplates.filter(t => t.type === type)
+}

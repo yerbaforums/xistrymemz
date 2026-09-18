@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 export type EntityType =
   | 'PROJECT' | 'PRODUCT' | 'POST' | 'EVENT' | 'SCHOOLCONTENT'
   | 'REQUEST' | 'SERVICE' | 'GROUP' | 'SHOP' | 'SCHOOL' | 'BOARD'
+  | 'FORUMPOST'
 
 export type RelationType = 'REFERENCES' | 'CONTAINS' | 'RELATES_TO' | 'PROMOTES'
 
@@ -168,6 +169,10 @@ async function resolveEntityTitle(type: EntityType, id: string): Promise<string 
       const p = await prisma.post.findUnique({ where: { id }, select: { content: true } })
       return p ? p.content.slice(0, 80) : null
     }
+    case 'FORUMPOST': {
+      const fp = await prisma.forumPost.findUnique({ where: { id }, select: { title: true } })
+      return fp?.title || null
+    }
     case 'SHOP': {
       const u = await prisma.user.findUnique({ where: { id }, select: { shopName: true } })
       return u?.shopName || null
@@ -194,6 +199,7 @@ function resolveEntityUrl(type: EntityType, id: string): string {
     case 'SERVICE': return `/services/${id}`
     case 'GROUP': return `/groups/${id}`
     case 'POST': return `/posts/${id}`
+    case 'FORUMPOST': return `/community/forum/${id}`
     case 'SCHOOLCONTENT': return `/school/content/${id}`
     case 'SHOP': return `/shop/${id}`
     case 'SCHOOL': return `/schools`
