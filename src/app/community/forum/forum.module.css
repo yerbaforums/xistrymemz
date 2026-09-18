@@ -2,6 +2,11 @@
   padding: 0;
 }
 
+.categoryParentField {
+  flex: 1;
+  min-width: 0;
+}
+
 .header {
   display: flex;
   justify-content: space-between;

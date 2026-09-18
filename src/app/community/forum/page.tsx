@@ -15,6 +15,11 @@ import Breadcrumbs from '@/components/Breadcrumbs'
 import Skeleton from '@/components/Skeleton'
 import Button from '@/components/ui/Button'
 import { useToast } from '@/context/ToastContext'
+import { useZodForm } from '@/hooks/useZodForm'
+import FormField from '@/components/ui/FormField'
+import FormInput from '@/components/ui/FormInput'
+import FormSelect from '@/components/ui/FormSelect'
+import { z } from 'zod'
 import styles from './forum.module.css'
 
 const POST_TYPES = [
@@ -72,16 +77,16 @@ const badgeBtnStyle = {
   padding: 0,
 } as const
 
-const inputStyle = {
-  padding: '10px 12px',
-  borderRadius: 8,
-  border: '1px solid var(--border-color)',
-  background: 'var(--bg-primary)',
-  color: 'var(--text-primary)',
-  fontSize: '0.9rem',
-  flex: 1,
-  minWidth: 0,
-} as const
+const categoryFormSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, 'Category name is required')
+    .max(40, 'Keep the name under 40 characters'),
+  description: z.string().max(120, 'Keep the description under 120 characters'),
+  icon: z.string().max(4, 'Keep the icon to 4 characters or fewer'),
+  parentId: z.string(),
+})
 
 interface Post {
   id: string
@@ -147,10 +152,12 @@ export default function ForumPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [isAdmin, setIsAdmin] = useState(false)
   const [showCategoryModal, setShowCategoryModal] = useState(false)
-  const [catName, setCatName] = useState('')
-  const [catDesc, setCatDesc] = useState('')
-  const [catIcon, setCatIcon] = useState('📁')
-  const [catParentId, setCatParentId] = useState('')
+  const categoryForm = useZodForm(categoryFormSchema, {
+    name: '',
+    description: '',
+    icon: '📁',
+    parentId: '',
+  })
   const [creatingCategory, setCreatingCategory] = useState(false)
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
@@ -360,28 +367,26 @@ export default function ForumPage() {
       .map(sub => ({ slug: sub.slug, name: `— ${sub.name}` })),
   ])
 
-  const handleCreateCategory = async (e: React.FormEvent) => {
+  const submitCategory = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!catName.trim()) return
+    if (!categoryForm.validate()) return
+    const data = categoryForm.values
     setCreatingCategory(true)
     try {
       const res = await fetch('/api/forum/categories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: catName,
-          description: catDesc,
-          icon: catIcon,
-          parentId: catParentId || undefined,
+          name: data.name,
+          description: data.description,
+          icon: data.icon,
+          parentId: data.parentId || undefined,
         }),
       })
       if (res.ok) {
         success(isAdmin ? 'Category created!' : 'Category submitted for review — it will appear once approved.')
         setShowCategoryModal(false)
-        setCatName('')
-        setCatDesc('')
-        setCatIcon('📁')
-        setCatParentId('')
+        categoryForm.reset()
         fetchForumData()
       } else {
         const d = await res.json()
@@ -838,53 +843,63 @@ export default function ForumPage() {
       />
 
       <Modal open={showCategoryModal} onClose={() => setShowCategoryModal(false)}>
-        <form onSubmit={handleCreateCategory} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <form onSubmit={submitCategory} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <h3 style={{ margin: 0 }}>Create a category</h3>
           <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
             Start a <strong>main category</strong> or a <strong>subcategory</strong> under an existing one.
             {!isAdmin && ' Your submission will appear once an admin approves it.'}
           </p>
-          <input
-            type="text"
-            placeholder="Category name (e.g. Gardening)"
-            value={catName}
-            onChange={e => setCatName(e.target.value)}
-            maxLength={40}
-            style={inputStyle}
-            required
-          />
-          <input
-            type="text"
-            placeholder="Short description (optional)"
-            value={catDesc}
-            onChange={e => setCatDesc(e.target.value)}
-            maxLength={120}
-            style={inputStyle}
-          />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <input
+          <FormField label="Category name" htmlFor="cat-name" error={categoryForm.errors.name} required>
+            <FormInput
+              id="cat-name"
               type="text"
-              placeholder="Icon emoji"
-              value={catIcon}
-              onChange={e => setCatIcon(e.target.value)}
-              maxLength={4}
-              style={{ ...inputStyle, width: 90 }}
-              aria-label="Category icon emoji"
+              placeholder="Category name (e.g. Gardening)"
+              value={categoryForm.values.name}
+              error={categoryForm.errors.name}
+              onChange={e => categoryForm.setValue('name', e.target.value)}
+              maxLength={40}
             />
-            <select
-              value={catParentId}
-              onChange={e => setCatParentId(e.target.value)}
-              style={inputStyle}
-            >
-              <option value="">— Main category —</option>
-              {mainCats.map(m => (
-                <option key={m.id} value={m.id}>{m.icon} {m.name}</option>
-              ))}
-            </select>
+          </FormField>
+          <FormField label="Description" htmlFor="cat-desc" error={categoryForm.errors.description}>
+            <FormInput
+              id="cat-desc"
+              type="text"
+              placeholder="Short description (optional)"
+              value={categoryForm.values.description}
+              error={categoryForm.errors.description}
+              onChange={e => categoryForm.setValue('description', e.target.value)}
+              maxLength={120}
+            />
+          </FormField>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+            <FormField label="Icon" htmlFor="cat-icon" error={categoryForm.errors.icon}>
+              <FormInput
+                id="cat-icon"
+                type="text"
+                placeholder="Icon emoji"
+                value={categoryForm.values.icon}
+                error={categoryForm.errors.icon}
+                onChange={e => categoryForm.setValue('icon', e.target.value)}
+                maxLength={4}
+                style={{ width: 90 }}
+              />
+            </FormField>
+            <FormField label="Parent category" htmlFor="cat-parent" className={styles.categoryParentField}>
+              <FormSelect
+                id="cat-parent"
+                value={categoryForm.values.parentId}
+                onChange={e => categoryForm.setValue('parentId', e.target.value)}
+              >
+                <option value="">— Main category —</option>
+                {mainCats.map(m => (
+                  <option key={m.id} value={m.id}>{m.icon} {m.name}</option>
+                ))}
+              </FormSelect>
+            </FormField>
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 4 }}>
             <Button type="button" variant="ghost" onClick={() => setShowCategoryModal(false)}>Cancel</Button>
-            <Button type="submit" variant="primary" disabled={creatingCategory || !catName.trim()}>
+            <Button type="submit" variant="primary" disabled={creatingCategory}>
               {creatingCategory ? 'Creating...' : 'Create category'}
             </Button>
           </div>
