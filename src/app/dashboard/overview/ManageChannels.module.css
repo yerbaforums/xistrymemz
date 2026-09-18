@@ -1,0 +1,110 @@
+.wrap {
+  margin-top: 24px;
+}
+
+.header {
+  margin-bottom: 12px;
+}
+
+.header h3 {
+  font-size: 1.1rem;
+  margin: 0 0 4px;
+}
+
+.header p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
+}
+
+.card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.card:hover {
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+}
+
+.icon {
+  font-size: 1.35rem;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+.body {
+  min-width: 0;
+  flex: 1;
+}
+
+.title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.title:hover {
+  color: var(--accent-primary);
+}
+
+.desc {
+  margin: 2px 0 10px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.manageBtn,
+.newBtn {
+  font-size: 0.75rem;
+  padding: 4px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s;
+  border: none;
+}
+
+.manageBtn {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.manageBtn:hover {
+  color: var(--accent-primary);
+}
+
+.newBtn {
+  background: rgba(0, 217, 255, 0.12);
+  color: var(--accent-primary);
+}
+
+.newBtn:hover {
+  background: rgba(0, 217, 255, 0.2);
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

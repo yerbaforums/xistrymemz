@@ -201,10 +201,6 @@ export default function ForumPage() {
       setPosts(pagePosts)
       setHasMore(incoming.length === PAGE_SIZE)
       setOffset(pagePosts.length)
-
-      if (cats.length === 0) {
-        await seedCategories()
-      }
     } catch {
       setErrorMsg('Failed to load forum. Please try again.')
     } finally {
@@ -212,17 +208,20 @@ export default function ForumPage() {
     }
   }, [])
 
-  const seedCategories = async () => {
-    try {
-      await fetch('/api/forum/categories/seed', { method: 'POST' })
-      await fetchForumData()
-    } catch {
-      // Silently fail
-    }
-  }
+  // Seed default categories once per mount (idempotent; admin-only endpoint).
+  // Kept out of fetchForumData so the fetch callback stays stable.
+  const seededRef = useRef(false)
 
   useEffect(() => {
+    let cancelled = false
     fetchForumData()
+    if (!seededRef.current) {
+      seededRef.current = true
+      fetch('/api/forum/categories/seed', { method: 'POST' })
+        .then(() => { if (!cancelled) fetchForumData() })
+        .catch(() => {})
+    }
+    return () => { cancelled = true }
   }, [fetchForumData, categorySlug, sortBy, typeParam, activeSearch])
 
   const handleSearch = (e: React.FormEvent) => {

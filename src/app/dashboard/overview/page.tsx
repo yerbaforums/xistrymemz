@@ -13,6 +13,7 @@ import overviewStyles from './OverviewCards.module.css'
 import TipCard from './TipCard'
 import ChecklistCard from './ChecklistCard'
 import FeatureBanner from './FeatureBanner'
+import ManageChannels from './ManageChannels'
 import StreakCard from './StreakCard'
 import DashboardWidgets from '@/components/DashboardWidgets'
 import AchievementCard from './AchievementCard'
@@ -409,6 +410,7 @@ export default async function DashboardOverview({
               </div>
             )}
           </div>
+          <ManageChannels />
           <DashboardTodo />
         </>
       ) : (
@@ -457,6 +459,8 @@ export default async function DashboardOverview({
               </div>
             )}
           </div>
+
+          <ManageChannels />
 
           <div className={overviewStyles.overviewList}>
             <DashboardSection id="projects" title={t('projects')} icon="📦" action={<Link href="/dashboard/projects" className={styles.viewAll}>View all →</Link>}>

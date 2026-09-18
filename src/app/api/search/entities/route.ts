@@ -134,7 +134,8 @@ const SEARCH_CONFIG: Record<string, {
   SHOP: {
     model: 'user',
     titleField: 'name',
-    select: { id: true, name: true },
+    select: { id: true, name: true, shopSlug: true },
+    urlField: 'shopSlug',
     where: (q) => ({
       showShop: true,
       OR: [
@@ -142,12 +143,13 @@ const SEARCH_CONFIG: Record<string, {
         { shopName: { contains: q, mode: 'insensitive' as const } },
       ],
     }),
-    url: (id) => `/shop/${id}`,
+    url: (slug) => `/shop/${slug}`,
   },
   SCHOOL: {
     model: 'user',
     titleField: 'name',
-    select: { id: true, name: true },
+    select: { id: true, name: true, schoolSlug: true },
+    urlField: 'schoolSlug',
     where: (q) => ({
       showSchool: true,
       OR: [
@@ -155,7 +157,7 @@ const SEARCH_CONFIG: Record<string, {
         { schoolName: { contains: q, mode: 'insensitive' as const } },
       ],
     }),
-    url: (id) => `/school/${id}`,
+    url: (slug) => `/school/${slug}`,
   },
 }
 

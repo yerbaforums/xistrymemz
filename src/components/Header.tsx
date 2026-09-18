@@ -37,6 +37,50 @@ const LOCALES = [
   { code: 'tr', label: 'TR' },
 ]
 
+// Grouped "Create" channels shown in the header dropdown. `tab` opens the
+// Quick Create modal on that channel; `href` navigates to a dedicated flow
+// (forum composer, board creation, or full setup pages).
+const CREATE_GROUPS: Array<{
+  label: string
+  items: Array<{ label: string; icon: string; tab?: string; href?: string }>
+}> = [
+  {
+    label: 'Share & Discuss',
+    items: [
+      { label: 'Post', icon: '✏️', tab: 'post' },
+      { label: 'Forum Post', icon: '💬', href: '/community/forum' },
+      { label: 'Content', icon: '📖', tab: 'content' },
+      { label: 'Board', icon: '📌', href: '/boards' },
+    ],
+  },
+  {
+    label: 'Marketplace',
+    items: [
+      { label: 'Product', icon: '🛒', tab: 'product' },
+      { label: 'Rental', icon: '🏠', href: '/products/new?type=rental' },
+      { label: 'Service', icon: '🔧', tab: 'service' },
+      { label: 'Start a Shop', icon: '🏪', href: '/shop/setup' },
+    ],
+  },
+  {
+    label: 'Community',
+    items: [
+      { label: 'Project', icon: '🚀', tab: 'project' },
+      { label: 'Group', icon: '👥', tab: 'group' },
+      { label: 'Request', icon: '📝', tab: 'request' },
+      { label: 'Event', icon: '📅', tab: 'event' },
+    ],
+  },
+  {
+    label: 'Teach & Grow',
+    items: [
+      { label: 'Start a School', icon: '🏫', href: '/school/setup' },
+      { label: 'Courier Service', icon: '📦', href: '/courier/setup' },
+      { label: 'Browse Templates', icon: '⚡', href: '/templates' },
+    ],
+  },
+]
+
 export default function Header() {
   const t = useTranslations('header')
   const currentLocale = useLocale()
@@ -248,13 +292,47 @@ export default function Header() {
         {/* Desktop Navigation */}
         <nav className={styles.nav}>
           {isAuthenticated && (
-            <button
-              className={`${styles.navToggle} ${styles.createBtn}`}
-              onClick={() => quickCreate.open()}
-              aria-label="Quick Create"
-            >
-              <span aria-hidden="true">➕</span> Create
-            </button>
+            <div className={`${styles.navItem} ${openDropdown === 'create' ? styles.dropdownVisible : ''}`}>
+              <button
+                className={`${styles.navToggle} ${styles.createBtn}`}
+                onClick={() => toggleDropdown('create')}
+                onKeyDown={e => handleDropdownKeyDown(e, 'create')}
+                aria-expanded={openDropdown === 'create'}
+                aria-controls="nav-dropdown-create"
+                aria-label="Create"
+              >
+                <span aria-hidden="true">➕</span> Create
+              </button>
+              <div className={styles.navDropdown} id="nav-dropdown-create" role="menu" style={{ minWidth: 250 }}>
+                {CREATE_GROUPS.map(group => (
+                  <div key={group.label}>
+                    <div style={{ padding: '6px 14px', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{group.label}</div>
+                    {group.items.map(item => (
+                      item.href ? (
+                        <Link
+                          key={item.label}
+                          href={item.href}
+                          className={styles.navLink}
+                          onClick={() => { setMenuOpen(false); closeDropdown() }}
+                          role="menuitem"
+                        >
+                          <span aria-hidden="true">{item.icon}</span> {item.label}
+                        </Link>
+                      ) : (
+                        <button
+                          key={item.label}
+                          className={`${styles.navLink} ${styles.navBtn}`}
+                          onClick={() => { closeDropdown(); if (item.tab) quickCreate.open(item.tab) }}
+                          role="menuitem"
+                        >
+                          <span aria-hidden="true">{item.icon}</span> {item.label}
+                        </button>
+                      )
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
           <div className={`${styles.navItem} ${openDropdown === 'explore' ? styles.dropdownVisible : ''}`}>

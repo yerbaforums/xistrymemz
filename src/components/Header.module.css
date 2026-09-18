@@ -176,6 +176,17 @@
   background: transparent;
 }
 
+.navBtn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  margin: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
 /* Right Section */
 .rightSection {
   display: flex;
