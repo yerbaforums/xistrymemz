@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { apiSuccess, apiError, NextResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { barterOfferUpdateSchema, validateBody } from '@/lib/schemas'
 import { createNotification } from '@/services/notificationService'

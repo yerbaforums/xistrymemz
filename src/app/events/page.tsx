@@ -8,7 +8,7 @@ import { calculateDistance, geocodeLocation } from '@/lib/geocoding'
 import { useToast } from '@/context/ToastContext'
 import { usePassportLocation } from '@/hooks/usePassportLocation'
 import type { Event } from '@/types/event'
-import Skeleton, { SkeletonCard, SkeletonList } from '@/components/Skeleton'
+import { SkeletonCard } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
@@ -20,11 +20,11 @@ import EntityMarker from '@/components/EntityMarker'
 
 const QRCodeModal = dynamic(() => import('@/components/QRCodeModal').then(mod => mod.QRCodeModal), { ssr: false })
 
-let L: any
+let L: typeof import('leaflet')
 
 if (typeof window !== 'undefined') {
   L = require('leaflet')
-  delete L.Icon.Default.prototype._getIconUrl
+  delete (L.Icon.Default.prototype as { _getIconUrl?: string })._getIconUrl
   L.Icon.Default.mergeOptions({
     iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
     iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -55,7 +55,6 @@ export default function EventsPage() {
   const [joining, setJoining] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'map'>('list')
   const [currentMonth, setCurrentMonth] = useState(new Date())
-  const [mapExpanded, setMapExpanded] = useState(false)
   const [qrOpen, setQrOpen] = useState<string | null>(null)
   const mapRef = useRef<L.Map | null>(null)
   const { location: passportLocation } = usePassportLocation()

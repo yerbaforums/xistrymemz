@@ -1,6 +1,6 @@
 'use client'
 
-import type { FormFieldType, FormField } from '@/types/service'
+import type { FormField } from '@/types/service'
 
 interface FormFieldInputProps {
   field: FormField

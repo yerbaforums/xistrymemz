@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
+import { apiSuccess, apiError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -41,7 +41,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (stopId) {
     const stop = await prisma.tripStop.findFirst({ where: { id: stopId, tripId } })
     if (stop) {
-      const linkedRequests = (stop.linkedRequests as any[]) || []
+      const linkedRequests = (stop.linkedRequests as Array<{ id: string; title: string }>) || []
       linkedRequests.push({ id: request_record.id, title: request_record.title })
       await prisma.tripStop.update({
         where: { id: stopId },

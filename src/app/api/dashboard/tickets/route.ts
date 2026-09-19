@@ -2,6 +2,7 @@ import { apiSuccess, apiError, apiUnauthorized } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions)
@@ -20,7 +21,7 @@ export async function GET(request: Request) {
     })
     const eventIds = organizedEventIds.map(e => e.id)
 
-    const ticketWhere: Record<string, unknown> = {
+    const ticketWhere: Prisma.EventTicketWhereInput = {
       eventId: eventId ? eventId : { in: eventIds },
     }
     if (status) {
@@ -28,7 +29,7 @@ export async function GET(request: Request) {
     }
 
     const tickets = await prisma.eventTicket.findMany({
-      where: ticketWhere as any,
+      where: ticketWhere,
       include: {
         user: { select: { id: true, name: true, image: true, username: true } },
         event: { select: { id: true, title: true, eventDate: true, ticketPrice: true, currency: true } },

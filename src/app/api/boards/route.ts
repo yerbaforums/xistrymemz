@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
+import { apiSuccess, apiError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -96,7 +96,17 @@ export async function POST(request: Request) {
     } catch {
       return apiError("Invalid JSON body", 400)
     }
-    const { name, location, latitude, longitude, city, region, country, description, isSystem } = body as any
+    const { name, location, latitude, longitude, city, region, country, description, isSystem } = body as {
+      name?: string
+      location?: string
+      latitude?: number | null
+      longitude?: number | null
+      city?: string | null
+      region?: string | null
+      country?: string | null
+      description?: string | null
+      isSystem?: boolean
+    }
 
     if (!name || !location) {
       return apiError("Name and location are required", 400)
@@ -151,7 +161,17 @@ export async function PUT(request: Request) {
     } catch {
       return apiError("Invalid JSON body", 400)
     }
-    const { id, name, description, location, latitude, longitude, city, region, country } = body as any
+    const { id, name, description, location, latitude, longitude, city, region, country } = body as {
+      id?: string
+      name?: string
+      description?: string | null
+      location?: string
+      latitude?: number | null
+      longitude?: number | null
+      city?: string | null
+      region?: string | null
+      country?: string | null
+    }
 
     if (!id) {
       return apiError("Board ID is required", 400)

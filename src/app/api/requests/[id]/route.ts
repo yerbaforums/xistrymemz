@@ -1,8 +1,31 @@
-import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
+import { apiSuccess, apiError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { extractAndLinkHashtags, linkHashtags } from '@/services/hashtagService'
+
+interface RequestUpdateBody {
+  status?: string
+  title?: string
+  description?: string
+  imageUrl?: string | null
+  category?: string
+  priority?: string
+  budget?: number
+  goalAmount?: number
+  currentFunding?: number
+  payoutAddress?: string | null
+  payoutCurrency?: string | null
+  location?: string | null
+  deadline?: string
+  isPublic?: boolean
+  allowFulfillments?: boolean
+  showDonationAddress?: boolean
+  projectId?: string | null
+  customFields?: Array<Record<string, unknown>>
+  statusReason?: string
+  hashtags?: string[]
+}
 
 async function canAccessRequest(userId: string, roleId: string, requestId: string) {
   const req = await prisma.request.findFirst({
@@ -108,7 +131,7 @@ export async function PUT(
     } catch {
       return apiError("Invalid JSON body", 400)
     }
-    const body: any = parsedBody
+    const body = parsedBody as RequestUpdateBody
     const existingRequest = await prisma.request.findUnique({ where: { id } })
     if (!existingRequest) {
       return apiError("Request not found", 404)
@@ -138,10 +161,10 @@ export async function PUT(
         projectId: body.projectId !== undefined ? body.projectId : existingRequest.projectId,
         customFields: body.customFields !== undefined && Array.isArray(body.customFields)
           ? body.customFields
-              .filter((f: any) => f && typeof f === 'object' && typeof f.label === 'string' && f.label.trim())
-              .map((f: any) => ({
-                label: f.label.trim(),
-                type: f.type ?? 'text',
+              .filter(f => f && typeof f === 'object' && typeof f.label === 'string' && f.label.trim())
+              .map(f => ({
+                label: String(f.label).trim(),
+                type: typeof f.type === 'string' ? f.type : 'text',
                 required: !!f.required,
                 options: Array.isArray(f.options) ? f.options.filter((o: unknown) => typeof o === 'string') : null,
                 defaultValue: typeof f.defaultValue === 'string' ? f.defaultValue : null,
@@ -223,7 +246,7 @@ export async function PATCH(
     } catch {
       return apiError("Invalid JSON body", 400)
     }
-    const body: any = parsedBody
+    const body = parsedBody as RequestUpdateBody
     const existingRequest = await prisma.request.findUnique({ where: { id } })
     if (!existingRequest) {
       return apiError("Request not found", 404)

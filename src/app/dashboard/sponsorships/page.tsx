@@ -115,7 +115,7 @@ function SponsorshipsContent() {
       <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Dashboard', href: '/dashboard/overview' }, { label: 'Sponsorships' }]} />
       <h1>🤝 Sponsorships</h1>
       <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-        Monthly pledges paid manually to the owner's donation address. Complete a month when you've sent it — or skip, no questions asked.
+        Monthly pledges paid manually to the owner&apos;s donation address. Complete a month when you&apos;ve sent it — or skip, no questions asked.
       </p>
 
       <div style={{ display: 'flex', gap: 8, margin: '16px 0' }}>
@@ -204,7 +204,7 @@ function SponsorshipsContent() {
           <div style={{ background: 'var(--bg-primary)', borderRadius: 12, padding: 20, maxWidth: 440, width: '90%' }} onClick={e => e.stopPropagation()}>
             <h3>✅ Complete this month</h3>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              Send <strong>{completeTarget.amount} {completeTarget.currency}</strong> to the owner's donation address, then confirm below.
+              Send <strong>{completeTarget.amount} {completeTarget.currency}</strong> to the owner&apos;s donation address, then confirm below.
             </p>
             <input value={txHash} onChange={e => setTxHash(e.target.value)} placeholder="Transaction hash (optional)" aria-label="Transaction hash" style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid var(--border-color)', marginBottom: 8 }} />
             <input value={note} onChange={e => setNote(e.target.value)} placeholder="Note (optional)" aria-label="Note" style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid var(--border-color)', marginBottom: 12 }} />

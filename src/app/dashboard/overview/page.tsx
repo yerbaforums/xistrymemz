@@ -6,8 +6,6 @@ import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import FeedItem from '@/components/FeedItem'
 import DashboardTodo from '@/components/DashboardTodo'
-import { getClassGuides } from '@/lib/classOnboarding'
-import type { ClassSetupStep } from '@/lib/classOnboarding'
 import styles from '../page.module.css'
 import overviewStyles from './OverviewCards.module.css'
 import TipCard from './TipCard'
@@ -186,13 +184,8 @@ export default async function DashboardOverview({
   })
 
   const userClasses = (user?.userClass || '').split(',').map(c => c.trim()).filter(Boolean)
-  const guides = getClassGuides(userClasses)
-  const allSteps = guides.flatMap(g => g.steps)
 
-  const [serviceCount, eventCount] = await Promise.all([
-    prisma.serviceOffering.count({ where: { userId } }),
-    prisma.event.count({ where: { organizerId: userId } }),
-  ])
+  const serviceCount = await prisma.serviceOffering.count({ where: { userId } })
 
   // Attention queue: things waiting on this user
   const [pendingConnections, dueSponsorships, pendingTickets] = await Promise.all([
@@ -210,22 +203,6 @@ export default async function DashboardOverview({
     dueSponsorships > 0 ? { icon: '💝', label: `${dueSponsorships} sponsorship${dueSponsorships === 1 ? '' : 's'} due`, href: '/dashboard/sponsorships' } : null,
     pendingTickets > 0 ? { icon: '🎟️', label: `${pendingTickets} ticket${pendingTickets === 1 ? '' : 's'} to verify`, href: '/dashboard/events' } : null,
   ].filter(Boolean) as { icon: string; label: string; href: string }[]
-
-  const productTypeCounts: Record<string, number> = {}
-  for (const p of products) {
-    productTypeCounts[p.type] = (productTypeCounts[p.type] || 0) + 1
-  }
-
-  const featureCounts = {
-    product: (productTypeCounts['PRODUCT'] || 0),
-    rental: (productTypeCounts['RENTAL'] || 0),
-    service: serviceCount,
-    event: eventCount,
-    shop: user?.shopSlug ? 1 : 0,
-    school: user?.schoolSlug ? 1 : 0,
-  }
-
-  const incompleteSteps = allSteps.filter(step => featureCounts[step.feature] === 0)
 
   const allStats = await Promise.all([
     prisma.project.count({ where: { userId } }),
@@ -255,21 +232,6 @@ export default async function DashboardOverview({
   const [offersSent, offersReceived] = await Promise.all([
     prisma.barterOffer.count({ where: { makerId: userId } }),
     prisma.barterOffer.count({ where: { receiverId: userId } }),
-  ])
-
-  const [trendingPlans, recentListings] = await Promise.all([
-    prisma.project.findMany({
-      where: { published: true, status: { not: 'ARCHIVED' } },
-      select: { id: true, title: true, user: { select: { name: true } }, createdAt: true },
-      orderBy: { createdAt: 'desc' },
-      take: 4
-    }),
-    prisma.product.findMany({
-      where: { published: true },
-      select: { id: true, title: true, price: true, user: { select: { name: true, shopSlug: true } }, createdAt: true },
-      orderBy: { createdAt: 'desc' },
-      take: 4
-    }),
   ])
 
   const projects = _projects
@@ -507,7 +469,7 @@ export default async function DashboardOverview({
               const studioItems = [
                 ..._projects.map(p => ({ type: '🚀', label: 'Project', title: p.title, date: p.createdAt, href: `/projects/${p.id}` })),
                 ...products.map(p => ({ type: '🛒', label: 'Product', title: p.title, date: p.createdAt, href: `/products/${p.id}` })),
-                ...recentSchoolContent.map((c: any) => ({ type: c.contentType === 'course' ? '🎓' : '📖', label: c.contentType || 'Content', title: c.title, date: c.createdAt, href: '#' })),
+                ...recentSchoolContent.map(c => ({ type: c.contentType === 'course' ? '🎓' : '📖', label: c.contentType || 'Content', title: c.title, date: c.createdAt, href: '#' })),
               ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5)
               if (studioItems.length === 0) {
                 return (
@@ -516,7 +478,7 @@ export default async function DashboardOverview({
               }
               return (
                 <div className={styles.activityList}>
-                  {studioItems.map((item, i) => (
+                  {studioItems.map(item => (
                     <Link key={item.href} href={item.href} className={styles.activityItem}>
                       <div className={styles.activityIcon}>{item.type}</div>
                       <div className={styles.activityInfo}>

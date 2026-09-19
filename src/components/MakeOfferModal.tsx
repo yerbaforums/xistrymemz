@@ -16,7 +16,7 @@ interface MakeOfferModalProps {
 }
 
 export function MakeOfferModal({ isOpen, onClose, listingId, listingTitle, listingType, listingOwnerName }: MakeOfferModalProps) {
-  const { success, error, info } = useToast()
+  const { success, error } = useToast()
   const modalRef = useFocusTrap(isOpen, onClose)
   const [offeredItem, setOfferedItem] = useState('')
   const [offeredValue, setOfferedValue] = useState('')

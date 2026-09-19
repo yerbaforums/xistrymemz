@@ -1,6 +1,5 @@
 import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import crypto from 'crypto'
 
 export async function POST(request: Request) {
   try {
@@ -43,7 +42,6 @@ export async function POST(request: Request) {
       }
     } else {
       // Generate verification challenge
-      const challenge = crypto.randomUUID()
       const domainSlug = domain.replace(/[^a-z0-9]/g, '-').slice(0, 20)
       const localUsername = `${username.toLowerCase()}_${domainSlug}`.replace(/[^a-z0-9_]/g, '')
 

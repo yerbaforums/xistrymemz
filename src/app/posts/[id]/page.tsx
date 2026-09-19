@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -49,7 +49,7 @@ export default function PostPage() {
   const [liked, setLiked] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [expandReply, setExpandReply] = useState(false)
+  const [expandReply] = useState(false)
 
   useEffect(() => {
     if (!postId) return

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
@@ -13,7 +13,7 @@ import { useToast } from '@/context/ToastContext'
 import { calculateDistance, geocodeLocation } from '@/lib/geocoding'
 import { usePassportLocation } from '@/hooks/usePassportLocation'
 import HashtagInput from '@/components/HashtagInput'
-import { REQUEST_CATEGORIES, REQUEST_PRIORITIES, PRIORITY_COLORS } from '@/lib/request-categories'
+import { REQUEST_CATEGORIES, PRIORITY_COLORS } from '@/lib/request-categories'
 import { EmptyState } from '@/components/EmptyState'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
@@ -82,7 +82,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
   const searchParams = useSearchParams()
   const { success, error: toastError, warning } = useToast()
   const [requests, setRequests] = useState(initialRequests)
-  const [tab, setTab] = useState<'active' | 'mine'>((searchParams.get('tab') as any) || 'active')
+  const [tab, setTab] = useState<'active' | 'mine'>((searchParams.get('tab') as 'active' | 'mine') || 'active')
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '')
   const [categoryFilter, setCategoryFilter] = useState(searchParams.get('category') || 'ALL')
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'newest')
@@ -96,16 +96,13 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
     images: [] as string[], hashtags: [] as string[]
   })
   const [creating, setCreating] = useState(false)
-  const [selectedDonation, setSelectedDonation] = useState<DonationAddr | null>(null)
   const [qrModal, setQrModal] = useState<{ open: boolean; currency: string; address: string }>({ open: false, currency: '', address: '' })
   const [supportModal, setSupportModal] = useState<{ open: boolean; reqId: string }>({ open: false, reqId: '' })
   const [supportMessage, setSupportMessage] = useState('')
   const [supporting, setSupporting] = useState(false)
   const [supportingIds, setSupportingIds] = useState<Set<string>>(new Set())
-  const [donationSelector, setDonationSelector] = useState<{ open: boolean; mode: 'create' | 'edit'; selectedIds: string[] }>({ open: false, mode: 'create', selectedIds: [] })
   const [userDonationAddrs, setUserDonationAddrs] = useState<DonationAddr[]>([])
-  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>((searchParams.get('view') as any) || 'grid')
-  const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>((searchParams.get('view') as 'grid' | 'list' | 'map') || 'grid')
 
   const isAdmin = userRole === 'ADMIN'
   const { location: passportLocation } = usePassportLocation()
@@ -329,17 +326,6 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
       setSupporting(false)
       setSupportModal({ open: false, reqId: '' })
     }
-  }
-
-  const handleDragStart = (index: number) => setDraggedIdx(index)
-  const handleDragOver = (e: React.DragEvent) => e.preventDefault()
-  const handleDrop = (targetIndex: number) => {
-    if (draggedIdx === null || draggedIdx === targetIndex) { setDraggedIdx(null); return }
-    const arr = [...donationSelector.selectedIds]
-    const [moved] = arr.splice(draggedIdx, 1)
-    arr.splice(targetIndex, 0, moved)
-    setDonationSelector(prev => ({ ...prev, selectedIds: arr }))
-    setDraggedIdx(null)
   }
 
   const filtered = filteredRequests()
@@ -670,7 +656,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
 
                       <div className={styles.cardActions}>
                         {canManage && (
-                          <button onClick={() => { setEditingRequest(req); setEditForm({ title: req.title, description: req.description || '', category: req.category, priority: req.priority, budget: req.budget?.toString() || '', goalAmount: req.goalAmount?.toString() || '', location: req.location || '', isPublic: req.isPublic, allowFulfillments: req.allowFulfillments, showDonationAddress: req.showDonationAddress, images: (req as any).imageUrl ? [(req as any).imageUrl] : [], hashtags: (req as any).hashtags || [] }) }} className={styles.editBtn}>Edit</button>
+                          <button onClick={() => { setEditingRequest(req); setEditForm({ title: req.title, description: req.description || '', category: req.category, priority: req.priority, budget: req.budget?.toString() || '', goalAmount: req.goalAmount?.toString() || '', location: req.location || '', isPublic: req.isPublic, allowFulfillments: req.allowFulfillments, showDonationAddress: req.showDonationAddress, images: req.imageUrl ? [req.imageUrl] : [], hashtags: [] }) }} className={styles.editBtn}>Edit</button>
                         )}
                         {canManage && <button onClick={() => setDeleteTarget(req.id)} className={styles.deleteBtn}>Delete</button>}
                         <Link href={`/requests/${req.id}`} className={styles.viewDetailsBtn}>View Details →</Link>

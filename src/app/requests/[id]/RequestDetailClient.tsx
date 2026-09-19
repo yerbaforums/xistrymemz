@@ -232,7 +232,6 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
   const isOwnRequest = request.user.id === userId
   const isOwner = isOwnRequest || isPlanOwner
   const canHelpComplete = request.status === 'PENDING' && isOwner && !request.product
-  const isOwnerCompleting = isOwner
   const canContact = !isOwnRequest
   const canEdit = isOwnRequest && request.status === 'PENDING'
   const canRollback = (isOwnRequest || isPlanOwner || userRole === 'ADMIN') && request.status !== 'PENDING'
@@ -292,7 +291,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
         const d = await res.json()
         toastError(d.error || 'Failed to mark in progress')
       }
-    } catch (err) {
+    } catch {
       toastError('Failed to mark in progress')
     } finally {
       setLoading(false)
@@ -304,7 +303,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
       .then(r => r.json())
       .then(data => {
         const items = data?.items || data?.data?.items || data?.data || []
-        setMyProjects(Array.isArray(items) ? items.map((p: any) => ({ id: p.id, title: p.title })) : [])
+        setMyProjects(Array.isArray(items) ? items.map((p) => ({ id: p.id, title: p.title })) : [])
       })
       .catch(() => setMyProjects([]))
     setShowLinkModal(true)
@@ -320,14 +319,14 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
         body: JSON.stringify({ projectId: selectedProjectId }),
       })
       if (res.ok) {
-        const updated = await res.json()
+        await res.json()
         setRequest({ ...request, projectId: selectedProjectId })
         setShowLinkModal(false)
         success('Linked to project')
       } else {
         toastError('Failed to link project')
       }
-    } catch (err) {
+    } catch {
       toastError('Failed to link project')
     } finally {
       setLoading(false)
@@ -828,7 +827,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
 
             {request.hashtags && request.hashtags.length > 0 && (
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 12 }}>
-                {request.hashtags.map((h: any) => (
+                {request.hashtags.map((h: { id: string; tag?: string; hashtag?: { id: string; tag: string } }) => (
                   <Link key={h.hashtag?.id || h.id} href={`/hashtag/${h.hashtag?.tag || h.tag}`} className="hashtag-link" style={{ fontSize: '0.85rem' }}>#{h.hashtag?.tag || h.tag}</Link>
                 ))}
               </div>

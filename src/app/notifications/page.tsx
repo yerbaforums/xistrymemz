@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import styles from './page.module.css'
-import Skeleton, { SkeletonCard, SkeletonList } from '@/components/Skeleton'
+import { SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import Breadcrumbs from '@/components/Breadcrumbs'
 

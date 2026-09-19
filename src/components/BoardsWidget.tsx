@@ -6,7 +6,7 @@ import Skeleton from '@/components/Skeleton'
 import styles from './BoardsWidget.module.css'
 
 export default function BoardsWidget() {
-  const [boards, setBoards] = useState<any[]>([])
+  const [boards, setBoards] = useState<Array<{ id: string; slug: string; name: string; location: string | null; pinCount: number }>>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export default function BoardsWidget() {
         <Link href="/boards" className={styles.viewAll}>View All →</Link>
       </div>
       <div className={styles.list}>
-        {boards.map((b: any) => (
+        {boards.map(b => (
           <Link key={b.id} href={`/boards/${b.slug}`} className={styles.item}>
             <div className={styles.dot} />
             <div className={styles.info}>

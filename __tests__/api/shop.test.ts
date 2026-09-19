@@ -1,8 +1,9 @@
 /// <reference types="jest" />
 import { prisma } from '@/lib/prisma'
+import type { User } from '@prisma/client'
 
 describe('/api/shop', () => {
-  let testUser: any
+  let testUser: User
 
   beforeEach(async () => {
     // Create test user

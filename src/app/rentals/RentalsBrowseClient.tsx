@@ -5,7 +5,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import styles from './rentals-browse.module.css'
-import { getUserProfileUrl } from '@/lib/utils'
 import { useSession } from 'next-auth/react'
 import { EmptyState } from '@/components/EmptyState'
 import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
@@ -55,7 +54,7 @@ export default function RentalsBrowseClient({ initialRentals, categories, locati
   const [locationFilter, setLocationFilter] = useState(searchParams.get('location') || 'ALL')
   const [sort, setSort] = useState(searchParams.get('sort') || 'newest')
   const [showAvailable, setShowAvailable] = useState(searchParams.get('available') === 'true')
-  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>((searchParams.get('view') as any) || 'grid')
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>((searchParams.get('view') as 'grid' | 'list' | 'map') || 'grid')
 
   useEffect(() => {
     const params = new URLSearchParams()

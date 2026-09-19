@@ -7,6 +7,7 @@ import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import { getEntityIcon } from '@/lib/entity-icons'
 import EntityActions from '@/components/EntityActions'
+import type { ActionEntityType } from '@/hooks/useEntityActions'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import Skeleton from '@/components/Skeleton'
 import AddToCalendar from '@/components/AddToCalendar'
@@ -15,6 +16,16 @@ const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContai
 const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
 const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false })
 const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false })
+
+interface PinEventData {
+  title?: string | null
+  eventDate?: string | null
+  endDate?: string | null
+  location?: string | null
+  description?: string | null
+  _count?: { eventJoiners?: number }
+  joiners?: unknown[] | null
+}
 
 interface PinDetail {
   id: string
@@ -56,8 +67,8 @@ export default function PinDetailPage() {
   const [loading, setLoading] = useState(true)
   const [imgIdx, setImgIdx] = useState(0)
   const [fullImg, setFullImg] = useState<string | null>(null)
-  const [eventData, setEventData] = useState<any>(null)
-  const [L, setL] = useState<any>(null)
+  const [eventData, setEventData] = useState<PinEventData | null>(null)
+  const [L, setL] = useState<typeof import('leaflet') | null>(null)
 
   useEffect(() => {
     if (typeof window !== 'undefined') import('leaflet').then(mod => setL(mod))
@@ -159,7 +170,7 @@ export default function PinDetailPage() {
               <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>👥 {eventData._count?.eventJoiners || eventData.joiners?.length || 0} attending</span>
               {eventData.eventDate && (
                 <AddToCalendar params={{
-                  title: eventData.title,
+                  title: eventData.title ?? '',
                   description: eventData.description || undefined,
                   location: eventData.location || undefined,
                   startTime: eventData.eventDate,
@@ -191,7 +202,7 @@ export default function PinDetailPage() {
         )}
 
         <EntityActions
-          entityType={pin.entityType && ['PRODUCT','EVENT','SERVICE','PROJECT','GROUP','REQUEST','SHOP'].includes(pin.entityType) ? pin.entityType as any : 'PRODUCT'}
+          entityType={pin.entityType && ['PRODUCT','EVENT','SERVICE','PROJECT','GROUP','REQUEST','SHOP'].includes(pin.entityType) ? pin.entityType as ActionEntityType : 'PRODUCT'}
           entityId={pin.entityId || pin.id}
           title={pin.title || 'Pin'}
           authorId={pin.user.id}

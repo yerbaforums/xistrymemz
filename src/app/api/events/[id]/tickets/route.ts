@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { apiSuccess, apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -66,7 +66,13 @@ export async function POST(
       }
     }
 
-    let body: any
+    let body: {
+      quantity?: number
+      txHash?: string | null
+      paymentNote?: string | null
+      selectedCurrency?: string | null
+      selectedAddress?: string | null
+    }
     try { body = await request.json() } catch { return apiError("Invalid JSON body", 400) }
     const {
       quantity = 1,
@@ -111,7 +117,7 @@ export async function POST(
         userId: event.organizerId,
         message: `${session.user.name || 'Someone'} requested ${quantity} ticket(s) for "${event.title}"`,
         link: `/events/${event.id}`,
-      } as any)
+      })
     } catch (e) {
       console.error('Failed to send ticket notification:', e)
     }

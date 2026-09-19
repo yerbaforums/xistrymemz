@@ -1,7 +1,8 @@
-import { apiSuccess, apiError, apiUnauthorized, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { apiSuccess, apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,7 +20,7 @@ export async function GET(request: Request) {
   const limit = parseInt(searchParams.get('limit') || '50')
   const skip = (page - 1) * limit
 
-  const where: any = {}
+  const where: Prisma.UserWhereInput = {}
 
   if (role !== 'ALL') {
     where.role = role

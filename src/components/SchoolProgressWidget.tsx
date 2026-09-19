@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
-import Skeleton from '@/components/Skeleton'
 import styles from './SchoolProgressWidget.module.css'
 
 export default function SchoolProgressWidget() {
@@ -24,11 +23,11 @@ export default function SchoolProgressWidget() {
       fetch(`/api/school/enrollments?userId=${session.user.id}`).then(r => r.ok ? r.json() : null).catch(() => null),
     ]).then(([shopData, enrollData]) => {
       setSchoolData({
-        hasSchool: !!(shopData as any)?.schoolSlug,
-        schoolSlug: (shopData as any)?.schoolSlug || null,
-        studentCount: (enrollData as any)?.total || 0,
-        enrollmentCount: (enrollData as any)?.enrollments?.length || 0,
-        progress: (enrollData as any)?.progress || null,
+        hasSchool: !!shopData?.schoolSlug,
+        schoolSlug: shopData?.schoolSlug || null,
+        studentCount: enrollData?.total || 0,
+        enrollmentCount: enrollData?.enrollments?.length || 0,
+        progress: enrollData?.progress || null,
       })
       setLoading(false)
     })

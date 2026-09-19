@@ -48,7 +48,7 @@ function QuizSection({ content }: { content: string }) {
 
   const [answers, setAnswers] = useState<Record<number, string>>({})
   const [submitted, setSubmitted] = useState(false)
-  const [showResults, setShowResults] = useState(false)
+  const [, setShowResults] = useState(false)
 
   if (questions.length === 0) return <p>No quiz questions found.</p>
 
@@ -168,12 +168,6 @@ export default function SchoolContentDetailPage() {
     }
   }
 
-  if (loading) return <Skeleton width="100%" height="2rem" />
-  if (fetchError) return <div className={styles.error}>Failed to load content</div>
-  if (!content) return <div className={styles.error}>Content not found</div>
-
-  const images: string[] = content.images ? JSON.parse(content.images) : []
-  const isHtml = content.content.startsWith('<')
   const [completed, setCompleted] = useState(false)
   const [completing, setCompleting] = useState(false)
 
@@ -182,14 +176,21 @@ export default function SchoolContentDetailPage() {
     fetch(`/api/school/progress?schoolId=${content.user.id}`)
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        const progress = data?.data?.progress || data?.progress
+        const progress: Array<{ contentId: string; completed: boolean }> | null = data?.data?.progress || data?.progress || null
         if (progress) {
-          const found = progress.find((p: any) => p.contentId === content.id)
+          const found = progress.find((p: { contentId?: string; completed?: boolean }) => p.contentId === content.id)
           if (found) setCompleted(found.completed)
         }
       })
       .catch(() => {})
   }, [session, slug, content?.id, content?.user?.id])
+
+  if (loading) return <Skeleton width="100%" height="2rem" />
+  if (fetchError) return <div className={styles.error}>Failed to load content</div>
+  if (!content) return <div className={styles.error}>Content not found</div>
+
+  const images: string[] = content.images ? JSON.parse(content.images) : []
+  const isHtml = content.content.startsWith('<')
 
   const handleToggleComplete = async () => {
     if (!content?.id || completing) return

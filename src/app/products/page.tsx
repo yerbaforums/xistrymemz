@@ -5,9 +5,7 @@ import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import styles from './page.module.css'
 import { calculateDistance, reverseGeocodeLocation, shortenLocation } from '@/lib/geocoding'
-import { useCart } from '@/context/CartContext'
 import { useToast } from '@/context/ToastContext'
-import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
 import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
@@ -21,19 +19,17 @@ import ProductMapView from '@/components/ProductMapView'
 import LocationCard from '@/components/LocationCard'
 import type { Product } from '@/types/product'
 import ImageUploader from '@/components/ImageUploader'
-import Skeleton, { SkeletonCard, SkeletonList } from '@/components/Skeleton'
+import { SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import Button from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 export default function ProductsPage() {
   const { data: session } = useSession()
-  const { warning, error, success } = useToast()
-  const { settings } = useSiteSettings()
+  const { error, success } = useToast()
   const { location: passportLocation } = usePassportLocation()
-  const { addItem } = useCart()
 
-  const mapRef = useRef<any>(null)
+  const mapRef = useRef<import('leaflet').Map | null>(null)
   const [settingLocation, setSettingLocation] = useState(false)
 
   const handleDetectLocation = useCallback(async () => {
@@ -84,7 +80,7 @@ export default function ProductsPage() {
   }, [success, error])
 
   const handleFlyHome = useCallback(() => {
-    const coords = passportLocation?.latitude
+    const coords: [number, number] | null = passportLocation?.latitude != null && passportLocation.longitude != null
       ? [passportLocation.latitude, passportLocation.longitude]
       : null
     if (coords && mapRef.current) {

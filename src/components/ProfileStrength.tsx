@@ -3,12 +3,22 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
-import Skeleton from '@/components/Skeleton'
 import styles from './ProfileStrength.module.css'
+
+interface ProfileUser {
+  name?: string | null
+  bio?: string | null
+  image?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  userClass?: string | null
+  shopSlug?: string | null
+  schoolSlug?: string | null
+}
 
 export default function ProfileStrength() {
   const { data: session } = useSession()
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<ProfileUser | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {

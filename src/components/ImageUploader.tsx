@@ -40,7 +40,7 @@ export default function ImageUploader({ images, onChange, maxImages = 6, maxSize
       const res = await fetch('/api/upload', { method: 'POST', body: formData })
       if (!res.ok) throw new Error('Upload failed')
       const data = await res.json()
-      const newUrls = Array.isArray(data.uploads) ? data.uploads.map((u: any) => u.url) : [data.url]
+      const newUrls = Array.isArray(data.uploads) ? (data.uploads as Array<{ url: string }>).map((u) => u.url) : [data.url]
       onChange([...images, ...newUrls])
     } catch {
       toastError('Failed to upload images')

@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiUnauthorized, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { writeFile, mkdir } from 'fs/promises'
@@ -132,8 +132,6 @@ export async function POST(request: Request) {
       }
 
       const compressed = await compressImage(buffer, mimeType)
-      const compressedSize = compressed.length
-      const compressionRatio = ((1 - compressedSize / fileSize) * 100).toFixed(1)
 
       const safeFilename = `${randomUUID()}.${TYPE_EXTENSIONS[mimeType as keyof typeof TYPE_EXTENSIONS]}`
 

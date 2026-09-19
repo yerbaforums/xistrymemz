@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
+import { apiSuccess, apiError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -33,9 +33,6 @@ export async function DELETE(request: Request) {
 
   const { searchParams } = new URL(request.url)
   const id = searchParams.get('id')
-  const page = parseInt(searchParams.get("page") || "1")
-  const limit = parseInt(searchParams.get("limit") || "20")
-  const skip = (page - 1) * limit
 
   if (id) {
     await prisma.emailSubscriber.delete({ where: { id } })

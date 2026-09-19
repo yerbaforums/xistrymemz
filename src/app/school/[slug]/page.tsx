@@ -186,9 +186,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
   const [contentFilter, setContentFilter] = useState<string>('all')
   const [deletingContent, setDeletingContent] = useState<string | null>(null)
   const [enrolled, setEnrolled] = useState(false)
-  const [enrollmentCount, setEnrollmentCount] = useState(0)
   const [enrolling, setEnrolling] = useState(false)
-  const [myProgress, setMyProgress] = useState<any>(null)
   const [resolvedSlug, setResolvedSlug] = useState<string | null>(null)
 
   useEffect(() => {
@@ -307,10 +305,10 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
       isPaid: item.isPaid,
       images: item.images ? JSON.parse(item.images) : [],
       videoUrl: item.videoUrl || '',
-      section: (item as any).contentSection || '',
-      sortOrder: (item as any).sortOrder || 0
+      section: (item as { contentSection?: string }).contentSection || '',
+      sortOrder: (item as { sortOrder?: number }).sortOrder || 0
     })
-    setContentHashtags(item.hashtags?.map((h: any) => h.tag || h.hashtag?.tag).filter(Boolean) || [])
+    setContentHashtags(item.hashtags?.map((h: { id: string; tag?: string; hashtag?: { tag: string } }) => h.tag || h.hashtag?.tag || '').filter(Boolean) || [])
     setEditingContentId(item.id)
     setShowContentForm(true)
   }
@@ -663,7 +661,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                   const sections = new Map<string, typeof filtered>()
                   const uncategorized: typeof filtered = []
                   for (const item of filtered) {
-                    const section = (item as any).contentSection || ''
+                    const section = (item as { contentSection?: string }).contentSection || ''
                     if (section) {
                       if (!sections.has(section)) sections.set(section, [])
                       sections.get(section)!.push(item)
@@ -672,7 +670,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                     }
                   }
                   const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').trim()
-                  const renderCard = (item: any) => {
+                  const renderCard = (item: SchoolContent & { author?: { name?: string | null } }) => {
                     const itemImages: string[] = item.images ? (() => { try { return JSON.parse(item.images) } catch { return [] } })() : []
                     return (
                     <div key={item.id} className={`${styles.contentCard} ${item.pinned ? styles.pinnedCard : ''}`}>
@@ -705,7 +703,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                       <EntityActions entityType="SCHOOLCONTENT" entityId={item.id} title={item.title} authorId={school.user.id} variant="bar" />
                       {item.hashtags && item.hashtags.length > 0 && (
                         <div className={styles.hashtagRow}>
-                          {item.hashtags.map((h: any) => (
+                          {item.hashtags.map((h) => (
                             <Link key={h.id} href={`/hashtag/${h.tag}`} className={styles.hashtagPill} onClick={(e) => e.stopPropagation()}>
                               #{h.tag}
                             </Link>

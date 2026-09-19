@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Skeleton from '@/components/Skeleton'
-import { getEntityIcon } from '@/lib/entity-icons'
 import styles from './LinkedEntityDetail.module.css'
 
 interface EntityDetail {
@@ -76,7 +75,6 @@ export default function LinkedEntityDetail({ entityType, entityId, initialTitle,
   }, [entityType, entityId])
 
   if (loading && initialTitle) {
-    const icon = getEntityIcon?.(entityType) || '📎'
     return (
       <div className={styles.card} style={{ pointerEvents: 'none', opacity: 0.7 }}>
         {initialImage && <img src={initialImage} alt="" className={styles.image} />}

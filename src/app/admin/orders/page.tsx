@@ -61,7 +61,7 @@ export default function AdminOrdersPage() {
         const data = await res.json()
         setOrders(data?.orders || [])
       }
-    } catch (error) {
+    } catch {
     } finally {
       setLoading(false)
     }
@@ -83,7 +83,7 @@ export default function AdminOrdersPage() {
         const err = await res.json()
         error(err.error || 'Failed to update order')
       }
-    } catch (error) {
+    } catch {
     } finally {
       setUpdating(false)
     }

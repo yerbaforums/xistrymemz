@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Skeleton, { SkeletonCard } from '@/components/Skeleton'
+import { SkeletonCard } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import Loading from '@/components/Loading'
@@ -30,6 +30,7 @@ interface SearchResults {
   hashtags: { tag: string; postCount: number; type: string; url: string }[]
   schoolContent: SearchResult[]
   forumPosts: SearchResult[]
+  blogPosts: (SearchResult & { blogName?: string | null })[]
 }
 
 export default function SearchResultsClient() {
@@ -55,10 +56,11 @@ export default function SearchResultsClient() {
     if (!current) return incoming
     const merged: SearchResults = {} as SearchResults
     for (const key of Object.keys(incoming) as (keyof SearchResults)[]) {
-      const existing = current[key] || []
-      const incomingArr = incoming[key] || []
-      const existingIds = new Set(existing.map((i: any) => i.id))
-      merged[key] = [...existing, ...incomingArr.filter((i: any) => !existingIds.has(i.id))] as any
+      const existing = current[key]
+      const incomingArr = incoming[key]
+      const idOf = (item: SearchResult | { tag: string; postCount: number; type: string; url: string }): string => ('id' in item ? item.id : '') || ''
+      const existingIds = new Set(existing.map(idOf))
+      Object.assign(merged, { [key]: [...existing, ...incomingArr.filter((i) => !existingIds.has(idOf(i)))] })
     }
     return merged
   }
@@ -114,6 +116,7 @@ export default function SearchResultsClient() {
         ...(results.hashtags || []).map(h => ({ id: h.tag, title: `#${h.tag} (${h.postCount} posts)`, type: 'hashtag', url: h.url, section: '# Hashtags' })),
         ...results.schoolContent.map(r => ({ ...r, section: '🎓 School' })),
         ...(results.forumPosts || []).map(r => ({ ...r, section: '💬 Forum Posts', title: r.title || r.content?.slice(0, 100) || 'Untitled' })),
+        ...(results.blogPosts || []).map(r => ({ ...r, section: '📝 Blog Posts' })),
       ]
     }
     if (filter === 'hashtags') {
@@ -131,6 +134,7 @@ export default function SearchResultsClient() {
       requests: '📝 Requests',
       schoolContent: '🎓 School',
       forumPosts: '💬 Forum Posts',
+      blogPosts: '📝 Blog Posts',
     }
     return ((results[filter as keyof SearchResults] || []) as SearchResult[]).map(r => ({
       ...r,
@@ -155,6 +159,7 @@ export default function SearchResultsClient() {
     { key: 'requests', label: 'Requests', count: results?.requests?.length || 0 },
     { key: 'schoolContent', label: 'School', count: results?.schoolContent?.length || 0 },
     { key: 'forumPosts', label: 'Forum', count: results?.forumPosts?.length || 0 },
+    { key: 'blogPosts', label: 'Blog', count: results?.blogPosts?.length || 0 },
   ].filter(c => c.count > 0 || c.key === 'all')
 
   let currentSection = ''

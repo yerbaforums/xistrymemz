@@ -1,12 +1,52 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { getProductById, updateProduct, deleteProduct } from '@/services/productService'
-import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { apiError, NextResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { validateBody, productSchema } from '@/lib/schemas'
 import { geocodeLocation } from '@/lib/geocoding'
 import { extractHashtags, linkHashtags, removeHashtags } from '@/services/hashtagService'
 import { hasVerifiedEmail } from '@/lib/verified-email'
+import type { Prisma } from '@prisma/client'
+
+interface ProductUpdateBody {
+  title?: string
+  description?: string
+  price?: string | number
+  type?: string
+  category?: string
+  condition?: string
+  location?: string
+  locationDetails?: string | null
+  imageUrl?: string | null
+  isGlobal?: boolean
+  published?: boolean
+  paymentMethods?: string | string[]
+  paymentType?: string
+  acceptsRequests?: boolean
+  acceptsOffers?: boolean
+  requestPrice?: string | number
+  acceptsDonations?: boolean
+  donationAddress?: string | null
+  donationCurrency?: string
+  donationAddresses?: string | null
+  sellerPayoutAddress?: string | null
+  sellerCryptoCurrency?: string
+  rentalDaily?: string | number
+  rentalWeekly?: string | number
+  rentalMonthly?: string | number
+  rentalDeposit?: string | number
+  rentalMinDays?: string | number
+  rentalMaxDays?: string | number
+  rentalAvailable?: boolean
+  hashtags?: string[]
+  acceptsAppointments?: boolean
+  appointmentDuration?: string | number
+  appointmentLeadTime?: string | number
+  appointmentLocation?: string | null
+  appointmentMeetingLink?: string | null
+  appointmentFormFields?: Prisma.InputJsonValue | null
+  customizationFields?: Prisma.InputJsonValue | null
+}
 
 export async function GET(
   request: Request,
@@ -51,7 +91,7 @@ export async function PUT(
     } catch {
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
     }
-    const body: any = parsedBody
+    const body: ProductUpdateBody = parsedBody as ProductUpdateBody
 
     const validation = validateBody(productSchema.partial(), body)
     if (!validation.success) {
@@ -96,7 +136,7 @@ export async function PUT(
       data: {
         title: title ?? existing.title,
         description: description ?? existing.description,
-        price: price != null ? parseFloat(price) : existing.price,
+        price: price != null ? parseFloat(String(price)) : existing.price,
         type: type ?? existing.type,
         category: category ?? existing.category,
         condition: condition ?? existing.condition,
@@ -111,27 +151,27 @@ export async function PUT(
         paymentType: paymentType ?? existing.paymentType,
         acceptsRequests: acceptsRequests ?? existing.acceptsRequests,
         acceptsOffers: acceptsOffers ?? existing.acceptsOffers,
-        requestPrice: requestPrice != null ? parseFloat(requestPrice) : existing.requestPrice,
+        requestPrice: requestPrice != null ? parseFloat(String(requestPrice)) : existing.requestPrice,
         acceptsDonations: acceptsDonations ?? existing.acceptsDonations,
         donationAddress: donationAddress ?? existing.donationAddress,
         donationCurrency: donationCurrency ?? existing.donationCurrency,
         donationAddresses: donationAddresses !== undefined ? (donationAddresses || null) : existing.donationAddresses,
         sellerPayoutAddress: sellerPayoutAddress ?? existing.sellerPayoutAddress,
         sellerCryptoCurrency: sellerCryptoCurrency ?? existing.sellerCryptoCurrency,
-        rentalDaily: rentalDaily != null ? parseFloat(rentalDaily) : existing.rentalDaily,
-        rentalWeekly: rentalWeekly != null ? parseFloat(rentalWeekly) : existing.rentalWeekly,
-        rentalMonthly: rentalMonthly != null ? parseFloat(rentalMonthly) : existing.rentalMonthly,
-        rentalDeposit: rentalDeposit != null ? parseFloat(rentalDeposit) : existing.rentalDeposit,
-        rentalMinDays: rentalMinDays != null ? parseInt(rentalMinDays) : existing.rentalMinDays,
-        rentalMaxDays: rentalMaxDays != null ? parseInt(rentalMaxDays) : existing.rentalMaxDays,
+        rentalDaily: rentalDaily != null ? parseFloat(String(rentalDaily)) : existing.rentalDaily,
+        rentalWeekly: rentalWeekly != null ? parseFloat(String(rentalWeekly)) : existing.rentalWeekly,
+        rentalMonthly: rentalMonthly != null ? parseFloat(String(rentalMonthly)) : existing.rentalMonthly,
+        rentalDeposit: rentalDeposit != null ? parseFloat(String(rentalDeposit)) : existing.rentalDeposit,
+        rentalMinDays: rentalMinDays != null ? parseInt(String(rentalMinDays)) : existing.rentalMinDays,
+        rentalMaxDays: rentalMaxDays != null ? parseInt(String(rentalMaxDays)) : existing.rentalMaxDays,
         rentalAvailable: rentalAvailable ?? existing.rentalAvailable,
         acceptsAppointments: acceptsAppointments ?? existing.acceptsAppointments,
-        appointmentDuration: appointmentDuration != null ? parseInt(appointmentDuration) : existing.appointmentDuration,
-        appointmentLeadTime: appointmentLeadTime != null ? parseInt(appointmentLeadTime) : existing.appointmentLeadTime,
+        appointmentDuration: appointmentDuration != null ? parseInt(String(appointmentDuration)) : existing.appointmentDuration,
+        appointmentLeadTime: appointmentLeadTime != null ? parseInt(String(appointmentLeadTime)) : existing.appointmentLeadTime,
         appointmentLocation: appointmentLocation ?? existing.appointmentLocation,
         appointmentMeetingLink: appointmentMeetingLink ?? existing.appointmentMeetingLink,
-        appointmentFormFields: appointmentFormFields ?? existing.appointmentFormFields,
-        customizationFields: customizationFields ?? existing.customizationFields
+        appointmentFormFields: (appointmentFormFields ?? existing.appointmentFormFields) as Prisma.NullableJsonNullValueInput | Prisma.InputJsonValue,
+        customizationFields: (customizationFields ?? existing.customizationFields) as Prisma.NullableJsonNullValueInput | Prisma.InputJsonValue
       }
     })
 

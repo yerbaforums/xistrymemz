@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import RequestDetailClient from './RequestDetailClient'
+import type { FormField } from '@/types/service'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
 export const dynamic = 'force-dynamic'
@@ -111,7 +112,7 @@ export default async function RequestDetailPage({
     completedBy: request.completedBy,
     completedAt: request.completedAt?.toISOString() || null,
     allowFulfillments: request.allowFulfillments,
-    imageUrl: (request as any).imageUrl || null,
+    imageUrl: request.imageUrl || null,
     assigneeId: request.assigneeId,
     projectId: request.projectId,
     project: request.project ? {
@@ -129,7 +130,7 @@ export default async function RequestDetailPage({
       name: request.user.name,
       username: request.user.username,
       shopSlug: request.user.shopSlug,
-      donationAddresses: (request.user as any).donationAddresses?.map((da: any) => ({
+      donationAddresses: request.user.donationAddresses?.map(da => ({
         id: da.id,
         currency: da.currency,
         address: da.address,
@@ -170,7 +171,7 @@ export default async function RequestDetailPage({
       title: f.title,
       content: f.content,
       status: f.status,
-      answers: (f as any).answers || null,
+      answers: (f.answers || null) as { label: string; value: string }[] | null,
       createdAt: f.createdAt.toISOString(),
       user: {
         id: f.user.id,
@@ -179,8 +180,8 @@ export default async function RequestDetailPage({
         shopSlug: f.user.shopSlug,
       },
     })),
-    customFields: (request as any).customFields || null,
-    supportCount: (request as any)._count?.supports || 0,
+    customFields: (request.customFields || null) as FormField[] | null,
+    supportCount: request._count?.supports || 0,
   }
 
   return (

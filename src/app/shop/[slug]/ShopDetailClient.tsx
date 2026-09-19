@@ -24,7 +24,6 @@ import Loading from '@/components/Loading'
 import HashtagText from '@/components/HashtagText'
 import LinkPreview from '@/components/LinkPreview'
 import { SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service'
-import dynamic from 'next/dynamic'
 import Button from '@/components/ui/Button'
 import PinToBoardButton from '@/components/PinToBoardButton'
 import Breadcrumbs from '@/components/Breadcrumbs'
@@ -192,7 +191,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
   const [newPost, setNewPost] = useState('')
   const [newPostImages, setNewPostImages] = useState<string[]>([])
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
-  const [showShareModal, setShowShareModal] = useState(false)
+  const [, setShowShareModal] = useState(false)
   const [posting, setPosting] = useState(false)
   const [resolvedSlug, setResolvedSlug] = useState<string | null>(null)
   const [qrDonation, setQrDonation] = useState<DonationAddr | null>(null)

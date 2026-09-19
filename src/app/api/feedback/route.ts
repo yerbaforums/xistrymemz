@@ -53,7 +53,7 @@ export async function GET(req: Request) {
 
     const entries = await listUserFeedback(session.user.id)
     return apiSuccess(entries)
-  } catch (err) {
+  } catch {
     return apiError('Failed to fetch feedback', 500)
   }
 }

@@ -18,7 +18,6 @@ export default function NewGroupPage() {
   const [category, setCategory] = useState('GENERAL')
   const [image, setImage] = useState<string[]>([])
   const [creating, setCreating] = useState(false)
-  const [slugPreview, setSlugPreview] = useState('')
   const [authenticated, setAuthenticated] = useState(false)
 
   useEffect(() => {
@@ -26,10 +25,6 @@ export default function NewGroupPage() {
       .then(res => res.ok ? res.json() : null)
       .then(data => { if (data?.user?.id) setAuthenticated(true); else router.push('/auth/login') })
   }, [router])
-
-  useEffect(() => {
-    setSlugPreview(name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''))
-  }, [name])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

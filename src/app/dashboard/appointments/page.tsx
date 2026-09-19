@@ -57,6 +57,10 @@ interface EventItem {
 
 type PlannerItem = AppointmentItem | EventItem
 
+type ApiAppointment = Omit<AppointmentItem, '_type' | '_role'> & { buyerId: string; sellerId: string }
+
+type ApiEvent = Omit<EventItem, '_type'>
+
 const STATUS_CONFIG: Record<string, { icon: string; label: string; color: string }> = {
   PENDING: { icon: '⏳', label: 'Pending', color: '#f59e0b' },
   CONFIRMED: { icon: '✅', label: 'Confirmed', color: '#22c55e' },
@@ -129,7 +133,7 @@ export default function DashboardAppointments() {
       ])
       if (apptRes.ok) {
         const data = await apptRes.json()
-        setAppointments((data?.data?.appointments || data?.appointments || []).map((a: any) => ({
+        setAppointments((data?.data?.appointments || data?.appointments || []).map((a: ApiAppointment) => ({
           ...a,
           _type: 'appointment' as const,
           _role: a.buyerId === session?.user?.id ? ('buyer' as const) : ('seller' as const)
@@ -137,7 +141,7 @@ export default function DashboardAppointments() {
       }
       if (evtRes.ok) {
         const data = await evtRes.json()
-        setEvents((data || []).map((e: any) => ({ ...e, _type: 'event' })))
+        setEvents((data || []).map((e: ApiEvent) => ({ ...e, _type: 'event' })))
       }
     } catch { /* ignore */ }
     setLoading(false)
@@ -477,9 +481,9 @@ export default function DashboardAppointments() {
                         <div className={styles.cardMeta}>
                           {evt.eventDate && <span className={styles.metaItem}>📅 {formatDate(evt.eventDate)}</span>}
                           {evt.location && <span className={styles.metaItem}>📍 {evt.location}</span>}
-                          {evt.isTicketed && (evt as any).myTicket && (
-                            <span className={styles.metaItem} style={{ color: (evt as any).myTicket.paymentStatus === 'PAID' ? '#22c55e' : '#f59e0b', fontWeight: 600 }}>
-                              🎫 {(evt as any).myTicket.paymentStatus}
+                          {evt.isTicketed && evt.myTicket && (
+                            <span className={styles.metaItem} style={{ color: evt.myTicket.paymentStatus === 'PAID' ? '#22c55e' : '#f59e0b', fontWeight: 600 }}>
+                              🎫 {evt.myTicket.paymentStatus}
                             </span>
                           )}
                           {evt.joinerCount > 0 && <span className={styles.metaItem}>👥 {evt.joinerCount} attending</span>}
@@ -489,12 +493,12 @@ export default function DashboardAppointments() {
                         <div className={styles.cardFooter}>
                           <span className={styles.cardDate}>{formatRelativeDate(evt.createdAt)}</span>
                           <div className={styles.cardActions}>
-                            {(evt as any).meetingLink && evt.eventDate && (
+                            {evt.meetingLink && evt.eventDate && (
                               <AddToCalendar params={{
                                 title: evt.title,
                                 description: evt.description || undefined,
                                 location: evt.location || undefined,
-                                meetingLink: (evt as any).meetingLink || undefined,
+                                meetingLink: evt.meetingLink || undefined,
                                 startTime: evt.eventDate,
                                 endTime: evt.endDate || evt.eventDate,
                               }} variant="link" />
@@ -729,7 +733,7 @@ export default function DashboardAppointments() {
             </div>
             <div className={styles.modalBody}>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: 0 }}>
-                For "{paymentAppt.title}". Send the amount to your host's payout address, then share the transaction hash.
+                For &quot;{paymentAppt.title}&quot;. Send the amount to your host&apos;s payout address, then share the transaction hash.
               </p>
               <label className={styles.modalLabel}>
                 Transaction Hash (optional)

@@ -1,6 +1,4 @@
-import { apiSuccess, apiError, apiServerError, NextResponse } from '@/lib/api-helpers'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { apiError, NextResponse } from '@/lib/api-helpers'
 import { getBoardBySlug, getPins } from '@/lib/boardService'
 
 export async function GET(

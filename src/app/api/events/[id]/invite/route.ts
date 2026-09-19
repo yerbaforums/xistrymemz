@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { apiSuccess, apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -46,9 +46,9 @@ export async function POST(
       return apiError("Only the organizer can send invites", 403)
     }
 
-    let body: any
+    let body: unknown
     try { body = await request.json() } catch { return apiError("Invalid JSON body", 400) }
-    const { userIds, message } = body
+    const { userIds, message } = body as { userIds?: unknown; message?: string | null }
 
     if (!Array.isArray(userIds) || userIds.length === 0) {
       return apiError("User IDs required", 400)
@@ -87,11 +87,11 @@ export async function PUT(
   }
 
   try {
-    let body: any
+    let body: unknown
     try { body = await request.json() } catch { return apiError("Invalid JSON body", 400) }
-    const { status: newStatus } = body
+    const { status: newStatus } = body as { status?: string }
 
-    if (!['ACCEPTED', 'DECLINED'].includes(newStatus)) {
+    if (typeof newStatus !== 'string' || !['ACCEPTED', 'DECLINED'].includes(newStatus)) {
       return apiError("Invalid status", 400)
     }
 

@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import type { Backlink } from '@prisma/client'
 
 export type EntityType =
   | 'PROJECT' | 'PRODUCT' | 'POST' | 'EVENT' | 'SCHOOLCONTENT'
@@ -59,7 +60,7 @@ export async function removeBacklink(
 export async function getIncomingBacklinks(
   targetType: EntityType,
   targetId: string,
-): Promise<any[]> {
+): Promise<Backlink[]> {
   return prisma.backlink.findMany({
     where: { targetType, targetId },
     orderBy: { createdAt: 'desc' },
@@ -69,7 +70,7 @@ export async function getIncomingBacklinks(
 export async function getOutgoingBacklinks(
   sourceType: EntityType,
   sourceId: string,
-): Promise<any[]> {
+): Promise<Backlink[]> {
   return prisma.backlink.findMany({
     where: { sourceType, sourceId },
     orderBy: { createdAt: 'desc' },
@@ -79,7 +80,7 @@ export async function getOutgoingBacklinks(
 export async function getRelatedItems(
   entityType: EntityType,
   entityId: string,
-): Promise<{ incoming: any[]; outgoing: any[] }> {
+): Promise<{ incoming: Backlink[]; outgoing: Backlink[] }> {
   const [incoming, outgoing] = await Promise.all([
     getIncomingBacklinks(entityType, entityId),
     getOutgoingBacklinks(entityType, entityId),
@@ -110,8 +111,8 @@ export async function getRelatedEntitiesData(
   const results: { type: string; id: string; title: string; url: string }[] = []
 
   const allLinks = [
-    ...incoming.map((b: any) => ({ type: b.sourceType, id: b.sourceId, dir: 'in' as const })),
-    ...outgoing.map((b: any) => ({ type: b.targetType, id: b.targetId, dir: 'out' as const })),
+    ...incoming.map(b => ({ type: b.sourceType, id: b.sourceId, dir: 'in' as const })),
+    ...outgoing.map(b => ({ type: b.targetType, id: b.targetId, dir: 'out' as const })),
   ]
 
   const unique = allLinks.filter(

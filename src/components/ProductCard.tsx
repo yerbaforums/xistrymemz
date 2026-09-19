@@ -36,7 +36,6 @@ const ProductCard = memo(function ProductCard({
   onEdit,
   onTogglePublish,
   onDelete,
-  onPin,
 }: ProductCardProps) {
   const { data: session } = useSession()
   const { addItem } = useCart()

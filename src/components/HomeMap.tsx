@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
-import dynamic from 'next/dynamic'
 import styles from './HomeMap.module.css'
 import { useTheme } from '@/context/ThemeContext'
 import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'

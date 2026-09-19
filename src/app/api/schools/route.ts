@@ -1,4 +1,4 @@
-import { apiSuccess, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { NextResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: Request) {

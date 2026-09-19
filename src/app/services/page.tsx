@@ -3,8 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
-import { useSearchParams, useRouter } from 'next/navigation'
-import dynamic from 'next/dynamic'
+import { useSearchParams } from 'next/navigation'
 import Modal from '@/components/ui/Modal'
 import ServiceFilters from '@/components/ServiceFilters'
 import ServiceCard from '@/components/ServiceCard'
@@ -24,11 +23,18 @@ import { usePassportLocation } from '@/hooks/usePassportLocation'
 import { calculateDistance } from '@/lib/geocoding'
 
 
-let L: any
+interface LeafletIconInit {
+  Icon: {
+    Default: {
+      prototype: { _getIconUrl?: string }
+      mergeOptions(options: Record<string, string>): void
+    }
+  }
+}
 if (typeof window !== 'undefined') {
-  L = require('leaflet')
-  delete L.Icon.Default.prototype._getIconUrl
-  L.Icon.Default.mergeOptions({
+  const leaflet = require('leaflet') as LeafletIconInit
+  delete leaflet.Icon.Default.prototype._getIconUrl
+  leaflet.Icon.Default.mergeOptions({
     iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
     iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
     shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
@@ -45,7 +51,6 @@ function safeNum(v: unknown): number | null {
 export default function ServicesPage() {
   const { data: session } = useSession()
   const searchParams = useSearchParams()
-  const router = useRouter()
   const quickCreate = useQuickCreate()
   const { location: passportLocation } = usePassportLocation()
   const [services, setServices] = useState<ServiceOffering[]>([])
@@ -59,15 +64,16 @@ export default function ServicesPage() {
   const [priceMax, setPriceMax] = useState('')
   const [selectedService, setSelectedService] = useState<ServiceOffering | null>(null)
   const [showBooking, setShowBooking] = useState(false)
-  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>((searchParams.get('view') as any) || 'grid')
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>((searchParams.get('view') as 'grid' | 'list' | 'map') || 'grid')
   const PAGE_SIZE = 20
 
   const fetchServices = async (pageNum: number, append: boolean) => {
     const res = await fetch(`/api/services?page=${pageNum}&pageSize=${PAGE_SIZE}`)
     const data = await res.json()
-    const raw = data?.data?.services || data?.services || []
-    const cleaned = raw.map((s: any) => {
+    const raw = (data?.data?.services || data?.services || []) as Array<Record<string, unknown>>
+    const cleaned = raw.map((s: Record<string, unknown>) => {
       if (!s || typeof s !== 'object') return null
+      const su = typeof s.user === 'object' && s.user !== null ? (s.user as Record<string, unknown>) : null
       return {
         id: String(s.id ?? ''),
         title: typeof s.title === 'string' ? s.title : 'Untitled',
@@ -88,20 +94,20 @@ export default function ServicesPage() {
         appointmentMeetingLink: typeof s.appointmentMeetingLink === 'string' ? s.appointmentMeetingLink : null,
         appointmentFormFields: Array.isArray(s.appointmentFormFields)
           ? s.appointmentFormFields
-              .filter((f: any) => f && typeof f === 'object' && typeof f.label === 'string')
-              .map((f: any) => ({ label: String(f.label), type: String(f.type ?? 'text'), required: f.required === true }))
+              .filter((f: { label?: unknown }) => f && typeof f === 'object' && typeof f.label === 'string')
+              .map((f: { label?: unknown; type?: unknown; required?: unknown }): { label: string; type: string; required: boolean } => ({ label: String(f.label), type: String(f.type ?? 'text'), required: f.required === true }))
           : null,
         userId: String(s.userId ?? ''),
-        user: s.user && typeof s.user === 'object' ? {
-          id: String(s.user.id ?? ''),
-          name: typeof s.user.name === 'string' ? s.user.name : null,
-          image: typeof s.user.image === 'string' ? s.user.image : null,
-          username: typeof s.user.username === 'string' ? s.user.username : null,
+        user: su ? {
+          id: String(su.id ?? ''),
+          name: typeof su.name === 'string' ? su.name : null,
+          image: typeof su.image === 'string' ? su.image : null,
+          username: typeof su.username === 'string' ? su.username : null,
         } : { id: '', name: null, image: null, username: null },
         viewCount: typeof s.viewCount === 'number' ? s.viewCount : 0,
-      }
-    }).filter(Boolean)
-    setServices(prev => append ? [...prev, ...cleaned] : cleaned as ServiceOffering[])
+      } as ServiceOffering
+    }).filter((x): x is ServiceOffering => x !== null)
+    setServices(prev => append ? [...prev, ...cleaned] : cleaned)
     setTotalServices(data?.data?.total || data?.total || 0)
     setPage(pageNum)
     setLoading(false)
@@ -192,8 +198,8 @@ export default function ServicesPage() {
   const selCategory = sel ? (typeof sel.category === 'string' ? sel.category as ServiceCategory : 'OTHER' as ServiceCategory) : 'OTHER' as ServiceCategory
   const selFormFields = sel && Array.isArray(sel.appointmentFormFields)
     ? sel.appointmentFormFields
-        .filter((f: any) => f && typeof f === 'object' && typeof f.label === 'string')
-        .map((f: any) => ({ label: String(f.label), type: f.type === 'textarea' ? 'textarea' as const : 'text' as const, required: f.required === true }))
+        .filter((f) => f && typeof f === 'object' && typeof f.label === 'string')
+        .map((f) => ({ label: String(f.label), type: f.type === 'textarea' ? 'textarea' as const : 'text' as const, required: f.required === true }))
     : null
 
   return (

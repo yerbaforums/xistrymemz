@@ -26,6 +26,12 @@ interface UseEntityActionsOptions {
   replyCount?: number
 }
 
+interface EntityReply {
+  id: string
+  content: string
+  user: { name: string | null; image: string | null }
+}
+
 export function useEntityActions({
   entityType,
   entityId,
@@ -41,7 +47,7 @@ export function useEntityActions({
   const [saved, setSaved] = useState(initialSaved)
   const [viewCount, setViewCount] = useState(initialViewCount)
   const [replyCount, setReplyCount] = useState(initialReplyCount)
-  const [replies, setReplies] = useState<any[]>([])
+  const [replies, setReplies] = useState<EntityReply[]>([])
   const [showReplies, setShowReplies] = useState(false)
   const [authorSettings, setAuthorSettings] = useState<AuthorSettings | null>(null)
   const [tipTotal, setTipTotal] = useState(0)
@@ -127,7 +133,7 @@ export function useEntityActions({
 
   const addReply = useCallback(async (content: string) => {
     try {
-      const { reply } = await fetchApi<any>('/api/actions/reply', {
+      const { reply } = await fetchApi<{ reply: EntityReply }>('/api/actions/reply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ entityType, entityId, content }),
@@ -140,7 +146,7 @@ export function useEntityActions({
 
   const loadReplies = useCallback(async () => {
     try {
-      const { replies } = await fetchApi<any>(`/api/actions/replies?entityType=${entityType}&entityId=${entityId}`)
+      const { replies } = await fetchApi<{ replies: EntityReply[] }>(`/api/actions/replies?entityType=${entityType}&entityId=${entityId}`)
       setReplies(replies || [])
     } catch {}
   }, [entityType, entityId])

@@ -31,6 +31,15 @@ interface EventJoinerResponse {
   }
 }
 
+interface CalendarTrip {
+  id: string
+  title: string
+  startDate?: string
+  endDate?: string
+  userId?: string
+  isPublic?: boolean
+}
+
 export default function CalendarWidget() {
   const { warning } = useToast()
   const [events, setEvents] = useState<CalendarEvent[]>([])
@@ -44,7 +53,7 @@ export default function CalendarWidget() {
     planEvents: true,
     connections: false
   })
-  const [trips, setTrips] = useState<any[]>([])
+  const [trips, setTrips] = useState<CalendarTrip[]>([])
   const [newEvent, setNewEvent] = useState({
     title: '',
     description: '',
@@ -161,7 +170,7 @@ export default function CalendarWidget() {
           endDate: t.endDate,
           allDay: true,
           color: '#f59e0b',
-          userId: t.userId,
+          userId: t.userId ?? '',
           visibility: t.isPublic ? 'PUBLIC' : 'PRIVATE'
         })
       }

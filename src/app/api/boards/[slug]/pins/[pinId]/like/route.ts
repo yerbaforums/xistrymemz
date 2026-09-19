@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -12,7 +12,7 @@ export async function POST(
     return apiError("Unauthorized", 401)
   }
 
-  const { slug, pinId } = await params
+  const { pinId } = await params
 
   try {
     const pin = await prisma.bulletinPin.findUnique({ where: { id: pinId } })
@@ -46,7 +46,7 @@ export async function GET(
   { params }: { params: Promise<{ slug: string; pinId: string }> }
 ) {
   const session = await getServerSession(authOptions)
-  const { slug, pinId } = await params
+  const { pinId } = await params
 
   try {
     const [count, userLiked] = await Promise.all([

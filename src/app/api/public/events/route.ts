@@ -1,4 +1,4 @@
-import { apiSuccess, apiServerError } from '@/lib/api-helpers'
+import { apiSuccess } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { geocodeLocation } from '@/lib/geocoding'
 import { getServerSession } from 'next-auth'

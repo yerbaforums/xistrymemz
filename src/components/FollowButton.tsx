@@ -12,7 +12,7 @@ export default function FollowButton({ userId, className }: FollowButtonProps) {
   const { data: session } = useSession()
   const [following, setFollowing] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [count, setCount] = useState(0)
+  const [, setCount] = useState(0)
 
   useEffect(() => {
     if (!session?.user?.id || !userId) return

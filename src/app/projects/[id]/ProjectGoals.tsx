@@ -50,7 +50,6 @@ export default function ProjectGoals({ goals, isOwner, onChange }: ProjectGoalsP
   }
 
   const completedCount = goals.filter(g => g.status === 'completed').length
-  const activeCount = goals.length - completedCount
 
   return (
     <div>

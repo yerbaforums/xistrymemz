@@ -1,10 +1,14 @@
-import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
+import { apiSuccess, apiError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { headers } from 'next/headers'
 
 const VIEW_COOLDOWN_MS = 5 * 60 * 1000 // 5 min
+
+interface ViewCountUpdatable {
+  update(args: { where: { id: string }; data: { viewCount: { increment: number } } }): Promise<unknown>
+}
 
 async function hashIP(ip: string): Promise<string> {
   const encoder = new TextEncoder()
@@ -30,7 +34,7 @@ export async function POST(request: Request) {
     const ipHash = await hashIP((await headers()).get('x-forwarded-for') || 'unknown')
     const userAgent = (await headers()).get('user-agent') || null
 
-    const modelMap: Record<string, { model: any; viewCountField: string; relationName: string }> = {
+    const modelMap: Record<string, { model: ViewCountUpdatable; viewCountField: string; relationName: string }> = {
       post: {
         model: prisma.post,
         viewCountField: 'viewCount',
@@ -74,15 +78,15 @@ export async function POST(request: Request) {
     }
 
     // Record the view
-    const data: Record<string, any> = {
+    const data = {
       userId: session?.user?.id || null,
       ipHash: session?.user?.id ? null : ipHash,
       userAgent,
+      ...(contentType === 'post' ? { postId: contentId } : {}),
+      ...(contentType === 'product' ? { productId: contentId } : {}),
+      ...(contentType === 'service' ? { serviceOfferingId: contentId } : {}),
+      ...(contentType === 'request' ? { requestId: contentId } : {}),
     }
-    if (contentType === 'post') data.postId = contentId
-    else if (contentType === 'product') data.productId = contentId
-    else if (contentType === 'service') data.serviceOfferingId = contentId
-    else if (contentType === 'request') data.requestId = contentId
 
     await Promise.all([
       prisma.contentView.create({ data }),

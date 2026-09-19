@@ -103,10 +103,6 @@ export default function TicketQRModal({ ticketCode, onClose }: TicketQRModalProp
     }
   }
 
-  const copyLink = (link: string) => {
-    navigator.clipboard.writeText(link)
-  }
-
   if (loading) {
     return (
       <div className={styles.overlay} onClick={onClose}>

@@ -1,4 +1,4 @@
-import { apiSuccess, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { apiSuccess, NextResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: Request) {
@@ -13,7 +13,7 @@ export async function GET(request: Request) {
 
   const hashtagQuery = query.startsWith('#') ? query.slice(1).toLowerCase() : ''
 
-  const [plans, products, services, users, groups, events, requests, schoolContent, forumPosts, hashtags] = await Promise.all([
+  const [plans, products, services, users, groups, events, requests, schoolContent, forumPosts, blogPosts, hashtags] = await Promise.all([
     prisma.project.findMany({
       where: {
         OR: [
@@ -118,6 +118,19 @@ export async function GET(request: Request) {
       skip: offset,
       take: limit
     }),
+    prisma.blogPost.findMany({
+      where: {
+        status: 'PUBLISHED',
+        OR: [
+          { title: { contains: query } },
+          { excerpt: { contains: query } },
+          { content: { contains: query } },
+        ],
+      },
+      select: { id: true, title: true, slug: true, excerpt: true, blog: { select: { blogSlug: true, blogName: true } } },
+      skip: offset,
+      take: limit
+    }),
     hashtagQuery ? prisma.hashtag.findMany({
       where: { tag: { contains: hashtagQuery } },
       orderBy: { postCount: 'desc' },
@@ -136,6 +149,7 @@ export async function GET(request: Request) {
     requests: requests.map(r => ({ ...r, type: 'request', url: `/requests/${r.id}` })),
     schoolContent: schoolContent.map(s => ({ ...s, type: 'school', url: `/schools` })),
     forumPosts: forumPosts.map(p => ({ ...p, type: 'forumPost', url: `/community/forum/${p.id}` })),
+    blogPosts: blogPosts.map(p => ({ ...p, type: 'blogPost', url: p.blog.blogSlug ? `/blog/${p.blog.blogSlug}/${p.slug}` : `/blog/posts/${p.id}`, blogName: p.blog.blogName })),
     hashtags: hashtags.map(h => ({ tag: h.tag, postCount: h.postCount, type: 'hashtag', url: `/hashtag/${h.tag}` }))
   }
 

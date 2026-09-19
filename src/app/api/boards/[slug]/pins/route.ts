@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -27,7 +27,23 @@ export async function POST(
     } catch {
       return apiError("Invalid JSON body", 400)
     }
-    const { title, content, images, entityType, entityId, entityTitle, entityImage, contactName, contactEmail, contactPhone, category, expiresAt, latitude, longitude } = body as any
+    const data = body as {
+      title?: string
+      content?: string
+      images?: string[]
+      entityType?: string
+      entityId?: string
+      entityTitle?: string
+      entityImage?: string
+      contactName?: string
+      contactEmail?: string
+      contactPhone?: string
+      category?: string
+      expiresAt?: string
+      latitude?: number
+      longitude?: number
+    }
+    const { title, content, images, entityType, entityId, entityTitle, entityImage, contactName, contactEmail, contactPhone, category, expiresAt, latitude, longitude } = data
 
     if (!content) {
       return apiError("Content is required", 400)

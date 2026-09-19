@@ -38,7 +38,7 @@ export default function CourierSetupPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { success, error } = useToast()
+  const { error } = useToast()
   
   const templateId = searchParams.get('template')
   const [selectedTemplate, setSelectedTemplate] = useState<BusinessTemplate | null>(null)
@@ -183,14 +183,6 @@ export default function CourierSetupPage() {
       if (res.ok) fetchServices()
     } catch (err) {
       console.error(err)
-    }
-  }
-
-  const handleNext = () => {
-    if (wizard.currentStep === 'details' && !editingService) {
-      handleSubmit(new Event('submit') as any)
-    } else {
-      wizard.goNext()
     }
   }
 

@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import type { BulletinBoard, BulletinPin } from '@prisma/client'
+import type { BulletinBoard, Prisma } from '@prisma/client'
 
 function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 3959
@@ -34,7 +34,7 @@ export async function findNearbyBoards(params: {
   const { lat, lng, radius = 50, city, q, page = 1, limit = 20, north, south, east, west } = params
   const offset = (page - 1) * limit
 
-  let where: Record<string, unknown> = { isPublic: true }
+  let where: Prisma.BulletinBoardWhereInput = { isPublic: true }
 
   if (city) {
     where.city = { contains: city, mode: 'insensitive' }
@@ -56,7 +56,7 @@ export async function findNearbyBoards(params: {
 
   if (lat !== undefined && lng !== undefined) {
     const rows = await prisma.bulletinBoard.findMany({
-      where: where as any,
+      where,
       include: { _count: { select: { pins: { where: { OR: [{ expiresAt: null }, { expiresAt: { gte: new Date() } }] } }, members: true } } },
       orderBy: { createdAt: 'desc' },
     })
@@ -86,13 +86,13 @@ export async function findNearbyBoards(params: {
 
   const [rows, total] = await Promise.all([
     prisma.bulletinBoard.findMany({
-      where: where as any,
+      where,
       include: { _count: { select: { pins: { where: { OR: [{ expiresAt: null }, { expiresAt: { gte: new Date() } }] } }, members: true } } },
       orderBy: { createdAt: 'desc' },
       skip: offset,
       take: limit,
     }),
-    prisma.bulletinBoard.count({ where: where as any }),
+    prisma.bulletinBoard.count({ where }),
   ])
 
   const boards: BoardWithDistance[] = rows.map(r => ({
@@ -236,7 +236,7 @@ export async function getPins(params: {
   const { boardId, includeExpired = false, page = 1, limit = 20 } = params
   const offset = (page - 1) * limit
 
-  const where: Record<string, unknown> = { boardId }
+  const where: Prisma.BulletinPinWhereInput = { boardId }
   if (!includeExpired) {
     where.OR = [
       { expiresAt: null },
@@ -246,7 +246,7 @@ export async function getPins(params: {
 
   const [pins, total] = await Promise.all([
     prisma.bulletinPin.findMany({
-      where: where as any,
+      where,
       include: {
         user: { select: { id: true, name: true, image: true } },
         _count: { select: { likes: true, comments: true } },
@@ -255,7 +255,7 @@ export async function getPins(params: {
       skip: offset,
       take: limit,
     }),
-    prisma.bulletinPin.count({ where: where as any }),
+    prisma.bulletinPin.count({ where }),
   ])
 
   const eventIds = pins.filter(p => p.entityType === 'EVENT' && p.entityId).map(p => p.entityId as string)

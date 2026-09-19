@@ -29,6 +29,14 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 type SortOption = 'newest' | 'oldest' | 'soonest' | 'mostAttendees'
 
+interface DashboardTicket {
+  id: string
+  user: { name: string | null }
+  paymentStatus: string
+  quantity: number
+  txHash: string | null
+}
+
 export default function DashboardEvents() {
   const { success, error } = useToast()
   const router = useRouter()
@@ -44,8 +52,8 @@ export default function DashboardEvents() {
   const [saving, setSaving] = useState(false)
   const [editFormData, setEditFormData] = useState<EventFormData>(() => getDefaultEventFormData())
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; type: string } | null>(null)
-  const [ticketData, setTicketData] = useState<Record<string, any>>({})
-  const [ticketLoading, setTicketLoading] = useState(false)
+  const [ticketData, setTicketData] = useState<Record<string, { tickets: DashboardTicket[] }>>({})
+  const [, setTicketLoading] = useState(false)
   const [selectedTicketAction, setSelectedTicketAction] = useState<string | null>(null)
 
   useEffect(() => {
@@ -108,7 +116,7 @@ export default function DashboardEvents() {
         error('Failed to delete')
         setDeleteTarget(null)
       }
-    } catch (err) {
+    } catch {
       error('Failed to delete')
       setDeleteTarget(null)
     }
@@ -124,12 +132,12 @@ export default function DashboardEvents() {
       })
       if (res.ok) {
         const newStatus = action === 'mark-paid' ? 'PAID' : action === 'approve' ? 'APPROVED' : 'CANCELLED'
-        setTicketData((prev: Record<string, any>) => {
+        setTicketData((prev: Record<string, { tickets: DashboardTicket[] }>) => {
           const updated = { ...prev }
           if (updated[eventId]) {
             updated[eventId] = {
               ...updated[eventId],
-              tickets: updated[eventId].tickets.map((t: any) =>
+              tickets: updated[eventId].tickets.map(t =>
                 t.id === ticketId ? { ...t, paymentStatus: newStatus } : t
               ),
             }
@@ -198,7 +206,7 @@ export default function DashboardEvents() {
       } else {
         error('Failed to update')
       }
-    } catch (err) {
+    } catch {
       error('Failed to update')
     } finally {
       setSaving(false)
@@ -213,18 +221,6 @@ export default function DashboardEvents() {
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }
-
-  const loadDashboardTickets = () => {
-    setTicketLoading(true)
-    fetch('/api/dashboard/tickets')
-      .then(res => res.json())
-      .then(data => {
-        const grouped = data?.data?.grouped || data?.grouped || {}
-        setTicketData(grouped)
-      })
-      .catch(() => {})
-      .finally(() => setTicketLoading(false))
   }
 
   useEffect(() => {
@@ -283,11 +279,6 @@ export default function DashboardEvents() {
     JOINED_PLAN: events.filter(e => e.type === 'JOINED_PLAN').length,
     JOINED_GROUP: events.filter(e => e.type === 'JOINED_GROUP').length,
     PERSONAL: events.filter(e => e.type === 'PERSONAL').length
-  }
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
   }
 
   const formatRelativeDate = (dateString: string) => {
@@ -454,7 +445,7 @@ export default function DashboardEvents() {
                   )}
                   {event.isTicketed && event.type === 'ORGANIZED' && ticketData[event.id] && (
                     <span className={styles.metaItem} style={{ color: 'var(--accent-primary)', fontWeight: 600 }}>
-                      🎫 {ticketData[event.id].tickets.filter((t: any) => t.paymentStatus === 'PENDING').length} pending
+                      🎫 {ticketData[event.id].tickets.filter(t => t.paymentStatus === 'PENDING').length} pending
                     </span>
                   )}
                 </div>
@@ -605,7 +596,7 @@ export default function DashboardEvents() {
                   <div className={styles.eventDetailRow} style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8 }}>
                     <span className={styles.eventLabel}>🎫 Ticket Requests</span>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      {ticketData[selectedEvent.id].tickets.map((t: any) => {
+                      {ticketData[selectedEvent.id].tickets.map(t => {
                         const statusColors: Record<string, string> = {
                           PENDING: '#f59e0b', PAID: '#22c55e', APPROVED: '#ef4444',
                           CANCELLED: '#ef4444',

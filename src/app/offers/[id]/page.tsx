@@ -2,7 +2,6 @@
 
 import { useState, useEffect, use } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
@@ -58,7 +57,6 @@ export default function OfferDetailPage({
 }) {
   const resolvedParams = use(params)
   const { data: session } = useSession()
-  const router = useRouter()
   const { success, error } = useToast()
   const [offer, setOffer] = useState<BarterOffer | null>(null)
   const [counterOffers, setCounterOffers] = useState<BarterOffer[]>([])
@@ -126,7 +124,7 @@ export default function OfferDetailPage({
         const err = await res.json()
         error(err.error || 'Failed to update offer')
       }
-    } catch (err) {
+    } catch {
       error('Failed to update offer')
     } finally {
       setActionLoading(false)
@@ -142,7 +140,6 @@ export default function OfferDetailPage({
   }
 
   const statusInfo = STATUS_LABELS[offer.status] || { label: offer.status, color: '#888' }
-  const otherUser = isMaker ? offer.receiver : offer.maker
   const messageUser = isMaker ? offer.receiver : offer.maker
 
   const submitReview = async (rating: number, comment: string) => {

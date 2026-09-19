@@ -67,7 +67,7 @@ export default function OrdersPage() {
         const data = await res.json()
         setOrders(data?.orders || [])
       }
-    } catch (err) {
+    } catch {
     } finally {
       setLoading(false)
     }
@@ -90,7 +90,7 @@ export default function OrdersPage() {
         const err = await res.json()
         error(err.error || 'Failed to update order')
       }
-    } catch (err) {
+    } catch {
     } finally {
       setUpdating(false)
     }
@@ -116,7 +116,7 @@ export default function OrdersPage() {
         const err = await res.json()
         error(err.error || 'Failed to send message')
       }
-    } catch (err) {
+    } catch {
     } finally {
       setSendingMessage(false)
     }

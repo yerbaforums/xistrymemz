@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
+import type { RefObject } from 'react'
+import type { Map as LeafletMap } from 'leaflet'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSession } from 'next-auth/react'
-import dynamic from 'next/dynamic'
 import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import Button from '@/components/ui/Button'
@@ -58,7 +59,7 @@ interface DiscoverItem {
   createdAt: string
 }
 
-function EntityCard({ item, mapRef, setMapVisible, onHover, onLeave, selected }: { item: DiscoverItem; mapRef: any; setMapVisible: (v: boolean) => void; onHover?: (id: string | null) => void; onLeave?: () => void; selected?: boolean }) {
+function EntityCard({ item, mapRef, setMapVisible, onHover, onLeave }: { item: DiscoverItem; mapRef: RefObject<LeafletMap | null>; setMapVisible: (v: boolean) => void; onHover?: (id: string | null) => void; onLeave?: () => void; selected?: boolean }) {
   const href =
     item.type === 'PRODUCT' ? `/products/${item.id}` :
     item.type === 'SERVICE' ? `/services/${item.id}` :
@@ -132,9 +133,9 @@ export default function DiscoverPage() {
   const [homeCoords, setHomeCoords] = useState<[number, number] | null>(null)
   const [mapVisible, setMapVisible] = useState(true)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [L, setL] = useState<any>(null)
-  const mapRef = useRef<any>(null)
+  const [selectedId] = useState<string | null>(null)
+  const [L, setL] = useState<typeof import('leaflet') | null>(null)
+  const mapRef = useRef<LeafletMap | null>(null)
 
   const fetchResults = useCallback(async (p = 1, append = false) => {
     setLoading(true)
@@ -183,7 +184,7 @@ export default function DiscoverPage() {
 
   useEffect(() => {
     if (!L) return
-    delete L.Icon.Default.prototype._getIconUrl
+    delete (L.Icon.Default.prototype as { _getIconUrl?: string })._getIconUrl
     L.Icon.Default.mergeOptions({
       iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
       iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',

@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import type { Prisma } from '@prisma/client'
 
 export interface DiscoverParams {
   q?: string
@@ -69,7 +70,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
   if (types.includes('PRODUCT')) {
     queries.push(
       (async () => {
-        const where: Record<string, unknown> = { published: true }
+        const where: Prisma.ProductWhereInput = { published: true }
         if (q) {
           where.OR = [
             { title: { contains: q, mode: 'insensitive' } },
@@ -86,7 +87,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           }
         }
         const rows = await prisma.product.findMany({
-          where: where as any,
+          where: where,
           select: {
             id: true, title: true, description: true, imageUrl: true,
             location: true, latitude: true, longitude: true, price: true,
@@ -125,7 +126,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
   if (types.includes('SERVICE')) {
     queries.push(
       (async () => {
-        const where: Record<string, unknown> = { isActive: true }
+        const where: Prisma.ServiceOfferingWhereInput = { isActive: true }
         if (q) {
           where.OR = [
             { title: { contains: q, mode: 'insensitive' } },
@@ -139,7 +140,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           }
         }
         const rows = await prisma.serviceOffering.findMany({
-          where: where as any,
+          where: where,
           select: {
             id: true, title: true, description: true, imageUrl: true,
             location: true, latitude: true, longitude: true, price: true, category: true, userId: true, createdAt: true,
@@ -177,7 +178,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
   if (types.includes('GROUP')) {
     queries.push(
       (async () => {
-        const where: Record<string, unknown> = {}
+        const where: Prisma.GroupWhereInput = {}
         if (q) {
           where.OR = [
             { name: { contains: q, mode: 'insensitive' } },
@@ -191,7 +192,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           }
         }
         const rows = await prisma.group.findMany({
-          where: where as any,
+          where: where,
           select: {
             id: true, name: true, description: true, imageUrl: true,
             location: true, latitude: true, longitude: true, category: true,
@@ -230,7 +231,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
   if (types.includes('EVENT')) {
     queries.push(
       (async () => {
-        const where: Record<string, unknown> = { eventDate: { gte: new Date() } }
+        const where: Prisma.EventWhereInput = { eventDate: { gte: new Date() } }
         if (q) {
           where.OR = [
             { title: { contains: q, mode: 'insensitive' } },
@@ -244,7 +245,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           }
         }
         const rows = await prisma.event.findMany({
-          where: where as any,
+          where: where,
           select: {
             id: true, title: true, description: true, imageUrl: true,
             location: true, latitude: true, longitude: true,
@@ -283,7 +284,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
   if (types.includes('PROJECT')) {
     queries.push(
       (async () => {
-        const where: Record<string, unknown> = { published: true }
+        const where: Prisma.ProjectWhereInput = { published: true }
         if (q) {
           where.OR = [
             { title: { contains: q, mode: 'insensitive' } },
@@ -300,7 +301,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           }
         }
         const rows = await prisma.project.findMany({
-          where: where as any,
+          where: where,
           select: {
             id: true, title: true, description: true, imageUrl: true,
             location: true, latitude: true, longitude: true, category: true,
@@ -339,7 +340,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
   if (types.includes('MEMBER')) {
     queries.push(
       (async () => {
-        const where: Record<string, unknown> = {}
+        const where: Prisma.UserWhereInput = {}
         if (q) {
           where.OR = [
             { name: { contains: q, mode: 'insensitive' } },
@@ -350,7 +351,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           where.lookingForCollaborators = true
         }
         const rows = await prisma.user.findMany({
-          where: where as any,
+          where: where,
           select: {
             id: true, name: true, bio: true, image: true, username: true,
             location: true, latitude: true, longitude: true,
@@ -387,7 +388,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
   if (types.includes('BOARD')) {
     queries.push(
       (async () => {
-        const where: Record<string, unknown> = { isPublic: true }
+        const where: Prisma.BulletinBoardWhereInput = { isPublic: true }
         if (q) {
           where.OR = [
             { name: { contains: q, mode: 'insensitive' } },
@@ -396,7 +397,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           ]
         }
         const rows = await prisma.bulletinBoard.findMany({
-          where: where as any,
+          where: where,
           select: {
             id: true, name: true, slug: true, description: true,
             location: true, latitude: true, longitude: true,
@@ -434,7 +435,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
   if (types.includes('RENTAL')) {
     queries.push(
       (async () => {
-        const where: Record<string, unknown> = { published: true, type: 'RENTAL' }
+        const where: Prisma.ProductWhereInput = { published: true, type: 'RENTAL' }
         if (q) {
           where.OR = [
             { title: { contains: q, mode: 'insensitive' } },
@@ -442,7 +443,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           ]
         }
         const rows = await prisma.product.findMany({
-          where: where as any,
+          where: where,
           select: {
             id: true, title: true, description: true, imageUrl: true,
             location: true, latitude: true, longitude: true, price: true,
@@ -480,7 +481,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
   if (types.includes('REQUEST')) {
     queries.push(
       (async () => {
-        const where: Record<string, unknown> = { isPublic: true }
+        const where: Prisma.RequestWhereInput = { isPublic: true }
         if (q) {
           where.OR = [
             { title: { contains: q, mode: 'insensitive' } },
@@ -488,7 +489,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           ]
         }
         const rows = await prisma.request.findMany({
-          where: where as any,
+          where: where,
           select: {
             id: true, title: true, description: true,
             location: true, latitude: true, longitude: true,
@@ -527,7 +528,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
   if (types.includes('SHOP')) {
     queries.push(
       (async () => {
-        const where: Record<string, unknown> = { shopSlug: { not: null } }
+        const where: Prisma.UserWhereInput = { shopSlug: { not: null } }
         if (q) {
           where.OR = [
             { shopName: { contains: q, mode: 'insensitive' } },
@@ -535,7 +536,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           ]
         }
         const rows = await prisma.user.findMany({
-          where: where as any,
+          where: where,
           select: {
             id: true, shopName: true, shopSlug: true, shopImage: true,
             location: true, latitude: true, longitude: true,

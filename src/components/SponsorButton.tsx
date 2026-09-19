@@ -64,7 +64,7 @@ export default function SponsorButton({ entityType, entityId, isOwner, compact }
           <form onSubmit={submit} style={{ background: 'var(--bg-primary)', borderRadius: 12, padding: 20, maxWidth: 400, width: '90%' }} onClick={e => e.stopPropagation()}>
             <h3>💝 Sponsor monthly</h3>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              You'll get a monthly reminder showing the owner's donation address. Complete it when you've sent it — or skip any month.
+              You&apos;ll get a monthly reminder showing the owner&apos;s donation address. Complete it when you&apos;ve sent it — or skip any month.
             </p>
             <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
               <input

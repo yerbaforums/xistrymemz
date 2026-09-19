@@ -1,0 +1,166 @@
+.page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 16px 20px 64px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin: 16px 0 24px;
+  flex-wrap: wrap;
+}
+
+.header h1 {
+  margin: 0 0 4px;
+  font-size: 1.7rem;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--text-muted, #9aa0b5);
+  font-size: 0.9rem;
+}
+
+.headerActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.formCard {
+  background: var(--bg-card, #16162a);
+  border: 1px solid var(--border-color, #2a2a4a);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.formCard h2 {
+  margin: 0 0 18px;
+}
+
+.tiersBlock {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-color, #2a2a4a);
+}
+
+.tiersHeader h3 {
+  margin: 0 0 4px;
+}
+
+.tiersHeader p {
+  margin: 0 0 14px;
+  color: var(--text-muted, #9aa0b5);
+  font-size: 0.85rem;
+}
+
+.emptyTiers {
+  color: var(--text-muted, #9aa0b5);
+  font-size: 0.85rem;
+}
+
+.tierRow {
+  display: grid;
+  grid-template-columns: 1fr 90px 100px 36px;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.tierRow input,
+.tierRow select {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #2a2a4a);
+  background: #10101f;
+  color: inherit;
+  font-size: 0.88rem;
+}
+
+.tierDescInput {
+  grid-column: 1 / -1;
+}
+
+.removeTier {
+  background: none;
+  border: 1px solid var(--border-color, #2a2a4a);
+  border-radius: 8px;
+  color: var(--text-muted, #9aa0b5);
+  cursor: pointer;
+  height: 34px;
+}
+
+.removeTier:hover {
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.addTier {
+  background: none;
+  border: 1px dashed var(--border-color, #2a2a4a);
+  color: var(--accent, #06b6d4);
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  margin-top: 4px;
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.formActions {
+  margin-top: 18px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.dangerZone {
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 14px;
+  padding: 20px 24px;
+}
+
+.dangerZone h3 {
+  margin: 0 0 4px;
+  color: #ef4444;
+}
+
+.dangerZone p {
+  margin: 0 0 14px;
+  color: var(--text-muted, #9aa0b5);
+  font-size: 0.88rem;
+}
+
+.dangerActions {
+  display: flex;
+  gap: 10px;
+}
+
+.unpublishBtn {
+  background: none;
+  border: 1px solid var(--border-color, #2a2a4a);
+  color: inherit;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.deleteBtn {
+  background: none;
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}

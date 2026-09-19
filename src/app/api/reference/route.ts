@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { apiSuccess, apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -7,7 +7,12 @@ import {
   createBacklink,
   removeBacklink,
   EntityType,
+  RelationType,
 } from '@/services/backlinkService'
+
+const prismaDynamic = prisma as unknown as Record<string, {
+  findUnique(args: { where: { id: string }; select: Record<string, boolean> }): Promise<Record<string, unknown> | null>
+}>
 
 const OWNER_FIELDS: Record<string, { field: string; relation: string }> = {
   PLAN: { field: 'userId', relation: 'user' },
@@ -52,18 +57,18 @@ async function getEntityOwner(
   const modelName = ENTITY_MODELS[type]
   if (!modelName) return null
 
-  const entity = await (prisma as any)[modelName].findUnique({
+  const entity = await prismaDynamic[modelName].findUnique({
     where: { id },
     select: { [OWNER_FIELDS[type].field]: true },
   })
 
-  return entity?.[OWNER_FIELDS[type].field] || null
+  return (entity?.[OWNER_FIELDS[type].field] as string) || null
 }
 
 async function entityExists(type: string, id: string): Promise<boolean> {
   const modelName = ENTITY_MODELS[type]
   if (!modelName) return false
-  const entity = await (prisma as any)[modelName].findUnique({
+  const entity = await prismaDynamic[modelName].findUnique({
     where: { id },
     select: { id: true },
   })
@@ -143,7 +148,7 @@ export async function POST(request: Request) {
       sourceId,
       targetType: targetType as EntityType,
       targetId,
-      relationType: (relationType as any) || 'REFERENCES',
+      relationType: (relationType as RelationType) || 'REFERENCES',
     })
 
     return NextResponse.json({ success: true, link }, { status: 201 })

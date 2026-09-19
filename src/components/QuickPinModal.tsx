@@ -40,7 +40,6 @@ export default function QuickPinModal({ entityType, entityId, entityTitle, entit
   const [category, setCategory] = useState('PROMOTION')
   const [submitting, setSubmitting] = useState(false)
   const [search, setSearch] = useState('')
-  const [creatingBoard, setCreatingBoard] = useState(false)
 
   useEffect(() => {
     const fetchBoards = async () => {
@@ -141,7 +140,7 @@ export default function QuickPinModal({ entityType, entityId, entityTitle, entit
             {loadingBoards ? (
               <Loading size="small" message="Loading..." />
             ) : filteredBoards.length === 0 ? (
-              <EmptyState icon="📌" title="No boards found nearby" description="Create a new board to pin this item." action={{ label: 'Create Board', onClick: async () => { setCreatingBoard(true); try { const pos = await new Promise<GeolocationPosition>((resolve, reject) => navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })); const res = await fetch('/api/boards', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: `${entityTitle} Board`, location: `${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`, latitude: pos.coords.latitude, longitude: pos.coords.longitude }) }); if (res.ok) { const data = await res.json(); const newBoard = { id: data.id, name: data.name, slug: data.slug, location: data.location, pinCount: 0, distance: null }; setBoards(prev => [newBoard, ...prev]); setSelectedBoard(newBoard); } } catch {} setCreatingBoard(false); } }} />
+              <EmptyState icon="📌" title="No boards found nearby" description="Create a new board to pin this item." action={{ label: 'Create Board', onClick: async () => { try { const pos = await new Promise<GeolocationPosition>((resolve, reject) => navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })); const res = await fetch('/api/boards', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: `${entityTitle} Board`, location: `${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`, latitude: pos.coords.latitude, longitude: pos.coords.longitude }) }); if (res.ok) { const data = await res.json(); const newBoard = { id: data.id, name: data.name, slug: data.slug, location: data.location, pinCount: 0, distance: null }; setBoards(prev => [newBoard, ...prev]); setSelectedBoard(newBoard); } } catch {} } }} />
             ) : (
               filteredBoards.map(board => (
                 <div

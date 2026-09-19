@@ -22,7 +22,6 @@ interface Props {
 }
 
 export default function ProjectUpdates({ projectId, isOwner, isEditor }: Props) {
-  const { data: session } = useSession()
   const [updates, setUpdates] = useState<ProjectUpdate[]>([])
   const [content, setContent] = useState('')
   const [posting, setPosting] = useState(false)
@@ -198,7 +197,7 @@ export default function ProjectUpdates({ projectId, isOwner, isEditor }: Props) 
 
 function CommentsList({ updateId, projectId }: { updateId: string; projectId: string }) {
   const { data: session } = useSession()
-  const [comments, setComments] = useState<any[]>([])
+  const [comments, setComments] = useState<Array<{ id: string; content: string; user?: { name?: string | null } | null }>>([])
   const [text, setText] = useState('')
   const [posting, setPosting] = useState(false)
 

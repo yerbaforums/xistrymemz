@@ -1,11 +1,12 @@
 import { geocodeLocation } from '@/lib/geocoding'
-import { apiSuccess, apiError, apiUnauthorized, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { apiSuccess, apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { groupSchema, validateBody } from '@/lib/schemas'
 import { extractAndLinkHashtags, linkHashtags } from '@/services/hashtagService'
 import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
+import type { DonationAddr } from '@/types/product'
 
 export async function GET(request: Request) {
   try {
@@ -84,6 +85,16 @@ export async function POST(request: Request) {
       } catch {} 
     }
 
+    const donationAddrs: DonationAddr[] = (acceptsDonations ? selectedDonationAddrs || [] : []).map(a => ({
+      id: a.id,
+      currency: a.currency,
+      address: a.address,
+      label: a.label ?? null,
+      qrCodeUrl: a.qrCodeUrl ?? null,
+      showQR: a.showQR ?? true,
+      sortOrder: a.sortOrder ?? 0,
+    }))
+
     const group = await prisma.group.create({
       data: {
         name: name.trim(),
@@ -95,8 +106,8 @@ export async function POST(request: Request) {
         longitude: longitude || null,
         isLocationBased: isLocationBased || false,
         acceptsDonations: acceptsDonations ?? false,
-        ...donationAddressesToLegacy((acceptsDonations ? (selectedDonationAddrs || []) : []) as any),
-        donationAddresses: serializeDonationAddresses((acceptsDonations ? selectedDonationAddrs || [] : []) as any) as any,
+        ...donationAddressesToLegacy(donationAddrs),
+        donationAddresses: serializeDonationAddresses(donationAddrs),
         userId: session.user.id,
         members: {
           create: {

@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { apiSuccess, apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -7,6 +7,7 @@ import { geocodeLocation } from '@/lib/geocoding'
 import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import { extractHashtags, linkHashtags, removeHashtags } from '@/services/hashtagService'
 import { hasVerifiedEmail } from '@/lib/verified-email'
+import type { DonationAddr } from '@/types/product'
 
 export async function GET(
   request: Request,
@@ -47,7 +48,7 @@ export async function GET(
       appointmentLocation: service.appointmentLocation ?? null,
       appointmentMeetingLink: service.appointmentMeetingLink ?? null,
       appointmentFormFields: Array.isArray(service.appointmentFormFields)
-        ? (service.appointmentFormFields as any[]).filter(f => f && typeof f === 'object' && typeof f.label === 'string').map(f => ({ label: String(f.label), type: String(f.type || 'text'), required: Boolean(f.required) }))
+        ? (service.appointmentFormFields as Array<{ label: string; type?: string; required?: boolean }>).filter(f => f && typeof f === 'object' && typeof f.label === 'string').map(f => ({ label: String(f.label), type: String(f.type || 'text'), required: Boolean(f.required) }))
         : null,
       hashtags: Array.isArray(service.hashtags)
         ? service.hashtags.filter(h => h?.hashtag?.tag).map(h => ({ id: h.id, hashtag: { id: h.hashtag.id, tag: h.hashtag.tag } }))
@@ -118,10 +119,10 @@ export async function PUT(
     }
     if (d.acceptsDonations !== undefined) updateData.acceptsDonations = d.acceptsDonations
     if (d.acceptsDonations && d.selectedDonationAddrs) {
-      const legacy = donationAddressesToLegacy(d.selectedDonationAddrs as any)
+      const legacy = donationAddressesToLegacy(d.selectedDonationAddrs as DonationAddr[])
       updateData.donationAddress = legacy.donationAddress
       updateData.donationCurrency = legacy.donationCurrency
-      updateData.donationAddresses = serializeDonationAddresses(d.selectedDonationAddrs as any) as any
+      updateData.donationAddresses = serializeDonationAddresses(d.selectedDonationAddrs as DonationAddr[])
     } else if (d.acceptsDonations === false) {
       updateData.donationAddress = null
       updateData.donationCurrency = null

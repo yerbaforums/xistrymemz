@@ -32,7 +32,6 @@ export default function TicketPaymentModal({
   eventTitle,
   organizerId,
   ticketPrice,
-  currency,
   quantity,
   onClose,
   onPurchased,

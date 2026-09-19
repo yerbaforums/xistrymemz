@@ -9,7 +9,6 @@ import Button from '@/components/ui/Button'
 
 import { EmptyState } from '@/components/EmptyState'
 import Loading from '@/components/Loading'
-import Skeleton from '@/components/Skeleton'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 interface SchoolInfo {
@@ -212,7 +211,7 @@ export default function TeachingPage() {
                 <div className={styles.contentActions}>
                   <button onClick={() => {
                     setEditingContent(c)
-                    setContentForm({ title: c.title, content: (c as any).content || '', contentType: c.contentType, price: c.price.toString(), isPaid: c.isPaid, images: (c as any).images || '', videoUrl: (c as any).videoUrl || '' })
+                    setContentForm({ title: c.title, content: c.content || '', contentType: c.contentType, price: c.price.toString(), isPaid: c.isPaid, images: c.images || '', videoUrl: c.videoUrl || '' })
                     setShowContentForm(true)
                   }} className={styles.smallBtn}>✏️</button>
                   <button onClick={() => setDeleteTarget({ id: c.id, title: c.title })} className={styles.smallBtnDanger}>🗑️</button>

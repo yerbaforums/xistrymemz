@@ -83,7 +83,6 @@ export default function ProjectSupport({
 
   const volunteers = joiners.filter(j => j.role === 'VOLUNTEER')
   const isVolunteer = volunteers.some(v => v.userId === userId)
-  const currentUser = joiners.find(j => j.userId === userId)
 
   const handleContribute = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -381,18 +380,18 @@ export default function ProjectSupport({
                     <div key={v.id} className={styles.volunteerCard}>
                       <span className={styles.volunteerName}>{v.user.name || v.user.email}</span>
                       {v.message && <p className={styles.volunteerMessage}>{v.message}</p>}
-                      {(v as any).user?.skills || (v as any).user?.interests ? (
+                      {v.user.skills || v.user.interests ? (
                         <div className={styles.volunteerTags}>
-                          {(v as any).user?.skills && (() => {
+                          {v.user.skills && (() => {
                             try {
-                              const skills = JSON.parse((v as any).user.skills)
+                              const skills = JSON.parse(v.user.skills)
                               if (!Array.isArray(skills)) return null
                               return skills.map((s: string, i: number) => <span key={i} className={styles.volunteerTag}>#{s}</span>)
                             } catch { return null }
                           })()}
-                          {(v as any).user?.interests && (() => {
+                          {v.user.interests && (() => {
                             try {
-                              const interests = JSON.parse((v as any).user.interests)
+                              const interests = JSON.parse(v.user.interests)
                               if (!Array.isArray(interests)) return null
                               return interests.map((s: string, i: number) => <span key={i} className={styles.volunteerTag}>#{s}</span>)
                             } catch { return null }

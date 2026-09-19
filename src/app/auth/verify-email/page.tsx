@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import styles from '../login/page.module.css'
@@ -9,7 +9,6 @@ import Loading from '@/components/Loading'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
 function VerifyEmailContent() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
 

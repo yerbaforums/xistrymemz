@@ -39,8 +39,8 @@ export async function POST(request: Request) {
     const quantity = typeof body.quantity === 'number' && body.quantity > 0 ? Math.floor(body.quantity) : 1
     const customizationAnswers = Array.isArray(body.customizationAnswers)
       ? body.customizationAnswers
-          .filter((a: any) => a && typeof a === 'object' && typeof a.label === 'string')
-          .map((a: any) => ({ label: String(a.label), value: String(a.value ?? '') }))
+          .filter((a) => a && typeof a === 'object' && typeof a.label === 'string')
+          .map((a) => ({ label: String(a.label), value: String(a.value ?? '') }))
       : undefined
     let rentalStart: Date | undefined
     let rentalEnd: Date | undefined

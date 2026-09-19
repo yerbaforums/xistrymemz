@@ -211,7 +211,7 @@ export default function TourOverlay({ tourKey, steps }: TourOverlayProps) {
               onChange={(e) => setDontShowAgain(e.target.checked)}
               className={styles.dismissCheckbox}
             />
-            Don't show again
+            Don&apos;t show again
           </label>
         </div>
 

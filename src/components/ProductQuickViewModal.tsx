@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { useCart } from '@/context/CartContext'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
-import { useFocusTrap } from '@/hooks/useFocusTrap'
 import type { Product } from '@/types/product'
 import styles from './ProductQuickViewModal.module.css'
 
@@ -21,7 +20,6 @@ export default function ProductQuickViewModal({ product, onClose, onFund }: Quic
   const { addItem } = useCart()
   const { settings } = useSiteSettings()
   const isCartDisabled = !settings.enableCheckout
-  const modalRef = useFocusTrap(!!product, onClose)
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') onClose()

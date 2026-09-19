@@ -97,8 +97,8 @@ export default function EntityActions({
   const [replying, setReplying] = useState(false)
 
   const isOwner = session?.user?.id === authorId
-  const hasShop = !!(session?.user as any)?.shopSlug
-  const hasSchool = !!(session?.user as any)?.schoolSlug
+  const hasShop = !!(session?.user as { shopSlug?: string | null })?.shopSlug
+  const hasSchool = !!(session?.user as { schoolSlug?: string | null })?.schoolSlug
 
   useEffect(() => {
     if (!session?.user?.id) return
@@ -240,7 +240,7 @@ export default function EntityActions({
         <div className={styles.overlay} onClick={() => setShowTipModal(false)} role="dialog" aria-modal="true" aria-label="Send donation">
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
             <h3 className={styles.modalTitle}>💎 Send Donation</h3>
-            <p className={styles.modalDesc}>Send a donation directly to one of the author's addresses below.</p>
+            <p className={styles.modalDesc}>Send a donation directly to one of the author&apos;s addresses below.</p>
             {loadingDonations ? (
               <p className={styles.modalDesc}>Loading donation addresses...</p>
             ) : activeDonations.length > 0 ? (

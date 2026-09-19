@@ -21,7 +21,7 @@ interface CounterOfferModalProps {
   offerId: string
 }
 
-export function CounterOfferModal({ isOpen, onClose, originalOffer, listingTitle, listingId, offerId }: CounterOfferModalProps) {
+export function CounterOfferModal({ isOpen, onClose, originalOffer, listingTitle, offerId }: CounterOfferModalProps) {
   const { success, error } = useToast()
   const router = useRouter()
   const modalRef = useFocusTrap(isOpen, onClose)

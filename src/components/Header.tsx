@@ -75,6 +75,7 @@ const CREATE_GROUPS: Array<{
     label: 'Teach & Grow',
     items: [
       { label: 'Start a School', icon: '🏫', href: '/school/setup' },
+      { label: 'Start a Blog', icon: '📝', href: '/blog/setup' },
       { label: 'Courier Service', icon: '📦', href: '/courier/setup' },
       { label: 'Browse Templates', icon: '⚡', href: '/templates' },
     ],
@@ -106,6 +107,7 @@ export default function Header() {
     requests: { id: string; title: string; type: string; url: string }[]
     hashtags: { tag: string; postCount: number; type: string; url: string }[]
     schoolContent: { id: string; title: string; type: string; url: string }[]
+    blogPosts: { id: string; title: string; type: string; url: string; blogName: string | null }[]
   } | null>(null)
   const [searching, setSearching] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -154,7 +156,7 @@ export default function Header() {
           const inboxData = await inboxRes.json()
           setMessagesUnread(inboxData?.data?.unreadCount ?? inboxData?.unreadCount ?? 0)
         }
-      } catch (error) {
+      } catch {
       }
     }
     load()
@@ -190,7 +192,6 @@ export default function Header() {
 
   // Close menus on route change
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMenuOpen(false)
     setOpenDropdown(null)
   }, [pathname])
@@ -262,7 +263,7 @@ export default function Header() {
       const res = await fetch(`/api/search?q=${encodeURIComponent(query)}&limit=5`)
       const data = await res.json()
       setSearchResults(data.results)
-    } catch (error) {
+    } catch {
     } finally {
       setSearching(false)
     }
@@ -354,6 +355,7 @@ export default function Header() {
               <Link href="/services" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🔧</span> Services</Link>
               <Link href="/shops" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🏪</span> Shops</Link>
               <Link href="/schools" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🏫</span> Schools</Link>
+              <Link href="/blogs" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📝</span> Blogs</Link>
               <Link href="/requests" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📝</span> Requests</Link>
               <Link href="/events" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📅</span> Events</Link>
               <Link href="/rentals" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🏠</span> Rentals</Link>
@@ -533,7 +535,18 @@ export default function Header() {
                                 ))}
                               </div>
                             )}
-                            {(!searchResults.projects?.length && !searchResults.products?.length && !searchResults.services?.length && !searchResults.users?.length && !searchResults.events?.length && !searchResults.requests?.length && !searchResults.groups?.length && !searchResults.hashtags?.length && !searchResults.schoolContent?.length) && (
+                            {searchResults.blogPosts?.length > 0 && (
+                              <div className={styles.searchSection}>
+                                <div className={styles.searchSectionTitle}><span aria-hidden="true">📝</span> Blog Posts</div>
+                                {searchResults.blogPosts.map(bp => (
+                                  <Link key={bp.id} href={bp.url} className={styles.searchResult} onClick={() => setSearchOpen(false)}>
+                                    {bp.title}
+                                    {bp.blogName && <span style={{ color: 'var(--text-tertiary)', fontSize: '0.75rem' }}> · {bp.blogName}</span>}
+                                  </Link>
+                                ))}
+                              </div>
+                            )}
+                            {(!searchResults.projects?.length && !searchResults.products?.length && !searchResults.services?.length && !searchResults.users?.length && !searchResults.events?.length && !searchResults.requests?.length && !searchResults.groups?.length && !searchResults.hashtags?.length && !searchResults.schoolContent?.length && !searchResults.blogPosts?.length) && (
                               <EmptyState icon="🔍" title="No results found" description={`No results for "${searchQuery}"`} />
                             )}
                             <Link href={`/search?q=${encodeURIComponent(searchQuery)}`} className={styles.seeAllResults} onClick={() => setSearchOpen(false)}>

@@ -1,10 +1,11 @@
-import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { apiSuccess, apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { requestSchema, validateBody } from '@/lib/schemas'
 import { extractAndLinkHashtags, linkHashtags } from '@/services/hashtagService'
 import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
+import type { DonationAddr } from '@/types/product'
 
 export async function GET(request: Request) {
   try {
@@ -177,6 +178,16 @@ export async function POST(request: Request) {
       }
     }
 
+    const selectedAddrList: DonationAddr[] = (acceptsDonations ? selectedDonationAddrs || [] : []).map(a => ({
+      id: a.id,
+      currency: a.currency,
+      address: a.address,
+      label: a.label ?? null,
+      qrCodeUrl: a.qrCodeUrl ?? null,
+      showQR: a.showQR ?? true,
+      sortOrder: a.sortOrder ?? 0,
+    }))
+
     const req = await prisma.request.create({
       data: {
         title,
@@ -198,8 +209,8 @@ export async function POST(request: Request) {
         allowFulfillments: body.allowFulfillments !== undefined ? body.allowFulfillments : true,
         showDonationAddress: body.showDonationAddress !== undefined ? body.showDonationAddress : true,
         acceptsDonations: acceptsDonations ?? false,
-        ...donationAddressesToLegacy((acceptsDonations ? (selectedDonationAddrs || []) : []) as any),
-        donationAddresses: serializeDonationAddresses((acceptsDonations ? selectedDonationAddrs || [] : []) as any) as any,
+        ...donationAddressesToLegacy(selectedAddrList),
+        donationAddresses: serializeDonationAddresses(selectedAddrList),
         status: 'PENDING',
         customFields: customFields != null
           ? customFields.filter(f => f && typeof f === 'object' && typeof f.label === 'string' && f.label.trim())
@@ -209,7 +220,7 @@ export async function POST(request: Request) {
               required: !!f.required,
               options: Array.isArray(f.options) ? f.options.filter((o: unknown) => typeof o === 'string') : null,
               defaultValue: typeof f.defaultValue === 'string' ? f.defaultValue : null,
-            })) as any
+            }))
           : undefined,
       },
       include: {

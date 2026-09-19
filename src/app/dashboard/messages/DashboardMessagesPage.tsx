@@ -8,7 +8,7 @@ import Image from 'next/image'
 import styles from '../../messages/messages.module.css'
 import { getUserProfileUrl } from '@/lib/utils'
 import TranslateButton from '@/components/TranslateButton'
-import Skeleton, { SkeletonList } from '@/components/Skeleton'
+import { SkeletonList } from '@/components/Skeleton'
 import Loading from '@/components/Loading'
 import { EmptyState } from '@/components/EmptyState'
 

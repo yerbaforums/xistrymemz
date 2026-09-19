@@ -40,7 +40,6 @@ interface LinkedItemsSectionProps {
 export default function LinkedItemsSection({
   entityType,
   entityId,
-  currentUserId,
 }: LinkedItemsSectionProps) {
   const [items, setItems] = useState<LinkedItem[]>([])
   const [backlinks, setBacklinks] = useState<BacklinkRecord[]>([])

@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
+import { apiSuccess, apiError } from '@/lib/api-helpers'
 import { discover } from '@/lib/discover'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'

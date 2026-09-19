@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
+import { apiSuccess, apiError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -6,7 +6,6 @@ import { prisma } from '@/lib/prisma'
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
-    const type = searchParams.get('type')
     const groupId = searchParams.get('groupId')
     const schoolId = searchParams.get('schoolId')
     const shopId = searchParams.get('shopId')

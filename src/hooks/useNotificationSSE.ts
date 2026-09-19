@@ -4,7 +4,7 @@ import { useEffect, useRef, useCallback } from 'react'
 
 interface SSEEvent {
   type: string
-  notification?: any
+  notification?: unknown
   unreadCount?: number
 }
 

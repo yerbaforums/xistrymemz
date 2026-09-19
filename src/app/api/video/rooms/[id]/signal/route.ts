@@ -1,10 +1,10 @@
-import { apiSuccess, apiError, apiUnauthorized, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { apiSuccess, apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 // In-memory signaling store. For multi-process/serverless, replace with Redis.
-const signalStore = new Map<string, { fromUserId: string; toUserId: string; type: string; data: any; timestamp: number }[]>()
+const signalStore = new Map<string, { fromUserId: string; toUserId: string; type: string; data: unknown; timestamp: number }[]>()
 
 function getSignals(roomId: string) {
   if (!signalStore.has(roomId)) signalStore.set(roomId, [])

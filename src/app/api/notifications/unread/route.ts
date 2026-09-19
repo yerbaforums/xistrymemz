@@ -1,7 +1,7 @@
-import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
+import { apiSuccess, apiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   try {
     const { getServerSession } = await import('next-auth')
     const { authOptions } = await import('@/lib/auth')

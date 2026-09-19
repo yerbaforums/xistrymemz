@@ -41,7 +41,7 @@ export async function POST(
         userId: j.userId,
         message: `${message.trim()} — "${event.title}"`,
         link: `/events/${event.id}`,
-      } as any)
+      })
     )
 
     await Promise.allSettled(notifications)

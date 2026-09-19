@@ -2,8 +2,8 @@
 
 import { useRef, useEffect, useState } from 'react'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
 import type { Product } from '@/types/product'
+import type { Map as LeafletMap, LeafletMouseEvent } from 'leaflet'
 import styles from './ProductMapView.module.css'
 import { EmptyState } from '@/components/EmptyState'
 import { useTheme } from '@/context/ThemeContext'
@@ -19,7 +19,7 @@ let L: typeof import('leaflet') | null = null
 if (typeof window !== 'undefined') {
   import('leaflet').then(mod => {
     L = mod
-    delete (L.Icon.Default.prototype as any)._getIconUrl
+    delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl
     L.Icon.Default.mergeOptions({
       iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
       iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -31,14 +31,14 @@ if (typeof window !== 'undefined') {
 interface ProductMapViewProps {
   products: Product[]
   userLocation: { lat: number; lon: number } | null
-  mapRef?: React.MutableRefObject<any>
+  mapRef?: React.MutableRefObject<LeafletMap | null>
   settingLocation?: boolean
   onMapClickSetLocation?: (lat: number, lng: number) => void
 }
 
 export default function ProductMapView({ products, userLocation, mapRef: externalMapRef, settingLocation, onMapClickSetLocation }: ProductMapViewProps) {
   const { mode } = useTheme()
-  const internalMapRef = useRef<any>(null)
+  const internalMapRef = useRef<LeafletMap | null>(null)
   const mapRef = externalMapRef || internalMapRef
   const [globalExpanded, setGlobalExpanded] = useState(false)
 
@@ -83,7 +83,7 @@ export default function ProductMapView({ products, userLocation, mapRef: externa
   useEffect(() => {
     const map = mapRef.current
     if (!map || !settingLocation || !onMapClickSetLocation) return
-    const handler = (e: any) => {
+    const handler = (e: LeafletMouseEvent) => {
       onMapClickSetLocation(e.latlng.lat, e.latlng.lng)
     }
     map.on('click', handler)

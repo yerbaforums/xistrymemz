@@ -8,7 +8,7 @@ import styles from './TravelingModeBanner.module.css'
 
 export default function TravelingModeBanner() {
   const { location: passport } = usePassportLocation()
-  const [boards, setBoards] = useState<any[]>([])
+  const [boards, setBoards] = useState<Array<{ id: string; slug: string; name: string; location: string | null; pinCount: number }>>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export default function TravelingModeBanner() {
         <div className={styles.loading}><Skeleton width="100%" height="2rem" /></div>
       ) : boards.length > 0 && (
         <div className={styles.boards}>
-          {boards.map((b: any) => (
+          {boards.map(b => (
             <Link key={b.id} href={`/boards/${b.slug}`} className={styles.boardCard}>
               <div className={styles.boardName}>📌 {b.name}</div>
               <div className={styles.boardMeta}>{b.location} · {b.pinCount} pins</div>

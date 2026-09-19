@@ -1,4 +1,4 @@
-import { NextRequest, apiSuccess, apiError, apiUnauthorized, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { NextRequest, apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -191,7 +191,7 @@ export async function POST(request: NextRequest) {
               type: 'MENTION',
               title: 'New Mention',
               message: `${session.user.name || 'Someone'} mentioned you in a post`,
-              link: `/profile/${(session.user as any).username || session.user.id}`,
+              link: `/profile/${session.user.username || session.user.id}`,
               relatedId: post.id
             }))
         })

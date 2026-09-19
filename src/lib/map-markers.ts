@@ -2,7 +2,7 @@
 
 import { ENTITY_ICONS } from '@/lib/entity-icons'
 
-export function getMapMarkerIcon(L: any, type: string, opts?: { size?: number; highlighted?: boolean }): any {
+export function getMapMarkerIcon(L: typeof import('leaflet') | null, type: string, opts?: { size?: number; highlighted?: boolean }) {
   if (!L) return undefined
   const key = type.toUpperCase()
   const info = ENTITY_ICONS[key] || { emoji: '📍', color: '#6b7280' }
@@ -17,10 +17,9 @@ export function getMapMarkerIcon(L: any, type: string, opts?: { size?: number; h
   })
 }
 
-export function getBoardMarkerIcon(L: any, isOwner?: boolean, highlighted?: boolean): any {
+export function getBoardMarkerIcon(L: typeof import('leaflet') | null, isOwner?: boolean, highlighted?: boolean) {
   if (!L) return undefined
   const plankColor = isOwner ? '#6b8e23' : '#8B6914'
-  const pinColor = isOwner ? '#00d9ff' : '#ef4444'
   const glow = highlighted ? '0 0 0 3px rgba(0,217,255,0.4),' : ''
   return L.divIcon({
     className: '',

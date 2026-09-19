@@ -14,6 +14,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/boards`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
     { url: `${baseUrl}/discover`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.7 },
     { url: `${baseUrl}/shops`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.8 },
+    { url: `${baseUrl}/blogs`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.8 },
     { url: `${baseUrl}/products`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.8 },
     { url: `${baseUrl}/services`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.7 },
     { url: `${baseUrl}/events`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.8 },
@@ -28,7 +29,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]
 
   try {
-    const [boards, products, events, services, projects, requests, groups, shops, forumPosts, trips, posts] = await Promise.all([
+    const [boards, products, events, services, projects, requests, groups, shops, forumPosts, trips, posts, blogs, blogPosts] = await Promise.all([
       prisma.bulletinBoard.findMany({ select: { slug: true, updatedAt: true }, where: { isPublic: true }, take: 500 }),
       prisma.product.findMany({ select: { id: true, updatedAt: true }, where: { published: true }, take: 1000 }),
       prisma.event.findMany({ select: { id: true, updatedAt: true }, take: 500 }),
@@ -40,6 +41,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       prisma.forumPost.findMany({ select: { id: true, updatedAt: true }, take: 500, orderBy: { updatedAt: 'desc' } }),
       prisma.trip.findMany({ select: { id: true, updatedAt: true }, take: 200, orderBy: { updatedAt: 'desc' } }),
       prisma.post.findMany({ select: { id: true, updatedAt: true }, take: 500, orderBy: { updatedAt: 'desc' } }),
+      prisma.user.findMany({ select: { blogSlug: true, updatedAt: true }, where: { blogSlug: { not: null }, showBlog: true }, take: 500 }),
+      prisma.blogPost.findMany({ select: { id: true, slug: true, updatedAt: true, blog: { select: { blogSlug: true } } }, where: { status: 'PUBLISHED' }, take: 500, orderBy: { updatedAt: 'desc' } }),
     ])
 
     const dynamicPages: MetadataRoute.Sitemap = [
@@ -54,6 +57,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ...forumPosts.map(p => ({ url: `${baseUrl}/community/forum/${p.id}`, lastModified: p.updatedAt, changeFrequency: 'daily' as const, priority: 0.6 })),
       ...trips.map(t => ({ url: `${baseUrl}/trips/${t.id}`, lastModified: t.updatedAt, changeFrequency: 'weekly' as const, priority: 0.5 })),
       ...posts.map(p => ({ url: `${baseUrl}/posts/${p.id}`, lastModified: p.updatedAt, changeFrequency: 'weekly' as const, priority: 0.5 })),
+      ...blogs.filter(b => b.blogSlug).map(b => ({ url: `${baseUrl}/blog/${b.blogSlug}`, lastModified: b.updatedAt, changeFrequency: 'daily' as const, priority: 0.7 })),
+      ...blogPosts.filter(bp => bp.blog.blogSlug).map(bp => ({ url: `${baseUrl}/blog/${bp.blog.blogSlug}/${bp.slug}`, lastModified: bp.updatedAt, changeFrequency: 'weekly' as const, priority: 0.6 })),
     ]
 
     return [...staticPages, ...dynamicPages]

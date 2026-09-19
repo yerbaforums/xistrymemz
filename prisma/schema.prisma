@@ -38,6 +38,16 @@ model User {
   schoolCoverImage String?
   schoolCoverStyle String  @default("cover")
   schoolSlug       String? @unique
+  // Blog (Substack-style long-form publishing)
+  blogName         String?
+  blogAbout        String?
+  blogImage        String?
+  blogCoverImage   String?
+  blogCoverStyle   String  @default("cover")
+  blogSlug         String? @unique
+  blogTagline      String?
+  blogTiers        String? // JSON array of subscription tiers: [{id,name,price,currency,description}]
+  showBlog         Boolean @default(true)
   timeZone         String? // IANA timezone, e.g. "America/New_York". Anchors booking availability & busy-time boundaries.
 
   // Passport & Identity
@@ -201,6 +211,109 @@ model User {
   bulletinPins           BulletinPin[]
   pinLikes               PinLike[]
   pinComments            PinComment[]
+
+  // Blog (Substack-style long-form publishing)
+  blogPosts                BlogPost[]           @relation("BlogOwner")
+  blogSubscriptions        BlogSubscription[]   @relation("BlogSubsOwner")
+  blogSubscriptionsAsSub   BlogSubscription[]   @relation("BlogSubscriber")
+  blogPostPurchases        BlogPostPurchase[]
+  blogPostLikes            BlogPostLike[]
+  blogPostTips             BlogPostTip[]
+}
+
+// Substack-style blog: one per user, mirroring the shop/school model.
+// Long-form posts live here; short-form posts stay on /profile pages.
+model BlogPost {
+  id          String   @id @default(cuid())
+  blogId      String
+  blog        User     @relation("BlogOwner", fields: [blogId], references: [id], onDelete: Cascade)
+  slug        String
+  title       String
+  excerpt     String?
+  content     String // HTML body
+  coverImage  String?
+  status      String   @default("DRAFT") // DRAFT | PUBLISHED
+  visibility  String   @default("FREE") // FREE | SUBSCRIBERS | PAID
+  tier        String? // required tier/slug when visibility = SUBSCRIBERS or PAID
+  price       Float    @default(0) // per-post price when visibility = PAID
+  currency    String   @default("USD")
+  tags        String? // JSON array
+  viewCount   Int      @default(0)
+  likeCount   Int      @default(0)
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  purchases   BlogPostPurchase[]
+  likes       BlogPostLike[]
+  tips        BlogPostTip[]
+
+  @@unique([blogId, slug])
+  @@index([blogId, status, publishedAt])
+  @@index([blogId, visibility])
+}
+
+model BlogPostPurchase {
+  id        String    @id @default(cuid())
+  postId    String
+  post      BlogPost  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Float
+  currency  String    @default("USD")
+  status    String    @default("PENDING") // PENDING | COMPLETED | REFUNDED
+  txHash    String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([postId, userId])
+  @@index([userId])
+}
+
+model BlogPostLike {
+  id        String   @id @default(cuid())
+  postId    String
+  post      BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+  @@index([userId])
+}
+
+model BlogPostTip {
+  id        String   @id @default(cuid())
+  postId    String
+  post      BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Float
+  currency  String   @default("XTM")
+  createdAt DateTime @default(now())
+
+  @@index([postId])
+  @@index([userId])
+}
+
+model BlogSubscription {
+  id           String    @id @default(cuid())
+  blogId       String
+  blog         User      @relation("BlogSubsOwner", fields: [blogId], references: [id], onDelete: Cascade)
+  subscriberId String
+  subscriber   User      @relation("BlogSubscriber", fields: [subscriberId], references: [id], onDelete: Cascade)
+  tier         String    @default("FREE") // FREE | paid tier id from blogTiers
+  price        Float     @default(0)
+  currency     String    @default("USD")
+  status       String    @default("ACTIVE") // ACTIVE | PENDING | CANCELLED | EXPIRED
+  txHash       String?
+  startedAt    DateTime  @default(now())
+  expiresAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([blogId, subscriberId])
+  @@index([subscriberId])
+  @@index([blogId, status])
 }
 
 // User-defined locations for filtering content

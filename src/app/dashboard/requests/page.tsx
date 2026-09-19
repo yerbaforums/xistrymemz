@@ -69,8 +69,8 @@ export default async function DashboardRequests() {
       name: req.user.name,
       email: req.user.email,
       image: req.user.image,
-      shopSlug: (req.user as any).shopSlug,
-      donationAddresses: ((req.user as any).donationAddresses || []).map((da: any) => ({
+      shopSlug: req.user.shopSlug,
+      donationAddresses: (req.user.donationAddresses || []).map(da => ({
         id: da.id,
         currency: da.currency,
         address: da.address,

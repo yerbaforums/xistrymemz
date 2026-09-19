@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
+import { apiSuccess, apiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 

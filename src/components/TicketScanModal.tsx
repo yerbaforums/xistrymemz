@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useToast } from '@/context/ToastContext'
+import type { Html5Qrcode } from 'html5-qrcode'
 import styles from './TicketScanModal.module.css'
 
 interface ScannedTicket {
@@ -24,7 +25,7 @@ export default function TicketScanModal({ eventId, onClose }: TicketScanModalPro
   const [scannedTicket, setScannedTicket] = useState<ScannedTicket | null>(null)
   const [scanning, setScanning] = useState(false)
   const [scannerLoading, setScannerLoading] = useState(false)
-  const scannerRef = useRef<any>(null)
+  const scannerRef = useRef<Html5Qrcode | null>(null)
   const scannerContainerRef = useRef<HTMLDivElement>(null)
 
   const loadHtml5Qrcode = useCallback(async () => {

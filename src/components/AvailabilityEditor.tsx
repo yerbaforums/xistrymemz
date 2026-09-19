@@ -49,8 +49,8 @@ export default function AvailabilityEditor({ userId }: AvailabilityEditorProps) 
       const { slot } = await res.json()
       setSlots(prev => [...prev.filter(s => s.id !== slot.id), slot].sort((a, b) => a.dayOfWeek - b.dayOfWeek || a.startTime.localeCompare(b.startTime)))
       toast.success('Availability slot added')
-    } catch (e: any) {
-      toast.error(e.message || 'Failed to add slot')
+    } catch (e) {
+      toast.error((e as Error).message || 'Failed to add slot')
     } finally {
       setSaving(false)
     }

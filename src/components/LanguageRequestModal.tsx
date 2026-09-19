@@ -60,7 +60,7 @@ export default function LanguageRequestModal({ open, onClose }: Props) {
         </div>
         <form onSubmit={handleSubmit} className={styles.form}>
           <p className={styles.description}>
-            Want to use XistrYmemZ in a language we don't support yet? Let us know!
+            Want to use XistrYmemZ in a language we don&apos;t support yet? Let us know!
           </p>
           <div className={styles.field}>
             <label className={styles.label} htmlFor="lang-request-language">Language *</label>

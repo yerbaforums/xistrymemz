@@ -1,6 +1,5 @@
-import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
+import { apiSuccess } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { getBaseUrl } from '@/lib/federation'
 import crypto from 'crypto'
 
 async function fetchActor(url: string): Promise<Record<string, unknown> | null> {
@@ -26,7 +25,6 @@ async function handleFollow(actorUrl: string, objectId: string) {
       where: { followerId_followedId: { followerId: sender.id, followedId: followedUser.id } }
     })
     if (!existing) {
-      const domain = new URL(actorUrl).hostname
       await prisma.follow.create({
         data: {
           followerId: sender.id, followedId: followedUser.id,

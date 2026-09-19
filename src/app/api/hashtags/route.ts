@@ -1,6 +1,6 @@
-import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
+import { apiSuccess, apiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { getTrendingHashtags } from '@/services/hashtagService'
+import { getTrendingHashtags, type HashtagEntityType } from '@/services/hashtagService'
 
 export async function GET(request: Request) {
   try {
@@ -21,9 +21,9 @@ export async function GET(request: Request) {
     }
 
     if (mode === 'trending') {
-      const enriched = await getTrendingHashtags(7, limit, entity as any || undefined)
+      const enriched = await getTrendingHashtags(7, limit, (entity as HashtagEntityType) || undefined)
       if (entity) {
-        return apiSuccess({ hashtags: enriched.filter((h: any) => (h.entities as any)[entity] > 0) })
+        return apiSuccess({ hashtags: enriched.filter(h => (h.entities as Record<string, number>)[entity] > 0) })
       }
       return apiSuccess({ hashtags: enriched })
     }

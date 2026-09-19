@@ -16,6 +16,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog'
 import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import { MapContainer, TileLayer, Marker, Popup, Tooltip } from '@/components/LeafletComponents'
+import type { LeafletMouseEvent } from 'leaflet'
 import { getBoardMarkerIcon } from '@/lib/map-markers'
 import LocationCard from '@/components/LocationCard'
 
@@ -73,8 +74,8 @@ export default function BoardsPage() {
   const initialFitDone = useRef(false)
   const [homeName, setHomeName] = useState('')
   const [mapReady, setMapReady] = useState(false)
-  const [L, setL] = useState<any>(null)
-  const mapRef = useRef<any>(null)
+  const [L, setL] = useState<typeof import('leaflet') | null>(null)
+  const mapRef = useRef<import('leaflet').Map | null>(null)
   const [mapVisible, setMapVisible] = useState(true)
   const [calVisible, setCalVisible] = useState(false)
   const [currentMonth, setCurrentMonth] = useState(new Date())
@@ -255,18 +256,20 @@ export default function BoardsPage() {
   const handleFlyToBoard = (e: React.MouseEvent, board: Board) => {
     e.stopPropagation()
     e.preventDefault()
-      if (board.latitude && board.longitude && mapRef.current) {
-      setMapVisible(true)
-      setSelectedBoardId(board.id)
-      setTimeout(() => mapRef.current?.flyTo([board.latitude, board.longitude], 14, { duration: 0.8 }), 100)
-    }
+      if (board.latitude != null && board.longitude != null && mapRef.current) {
+        const lat = board.latitude
+        const lng = board.longitude
+        setMapVisible(true)
+        setSelectedBoardId(board.id)
+        setTimeout(() => mapRef.current?.flyTo([lat, lng], 14, { duration: 0.8 }), 100)
+      }
   }
 
   const handleCardHover = (boardId: string | null) => {
     setHoveredBoardId(boardId)
   }
 
-  const handleMapClickSetLocation = useCallback(async (e: any) => {
+  const handleMapClickSetLocation = useCallback(async (e: LeafletMouseEvent) => {
     if (!settingLocation) return
     const { lat, lng } = e.latlng
     setSettingLocation(false)

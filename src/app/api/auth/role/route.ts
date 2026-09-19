@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -10,9 +10,8 @@ export async function GET() {
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id && !session?.user?.email) {
-      const sessionId = (session?.user as any)?.id
+      const sessionId = session?.user?.id
       const sessionEmail = session?.user?.email
-      const sessionRole = (session?.user as any)?.role
 
       if (sessionId) {
         try {
@@ -55,8 +54,8 @@ export async function GET() {
       return NextResponse.json({ role: 'USER', source: 'no-session' })
     }
 
-    const userId = (session.user as any).id as string
-    const sessionRole = (session.user as any).role as string
+    const userId = session.user.id
+    const sessionRole = session.user.role
 
     try {
       const dbUser = await prisma.user.findUnique({

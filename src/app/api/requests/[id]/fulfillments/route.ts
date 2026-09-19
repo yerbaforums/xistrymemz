@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { apiSuccess, apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -77,12 +77,12 @@ export async function POST(
       return apiError("Title and content are required", 400)
     }
 
-    const fields: any[] = Array.isArray(req.customFields) ? req.customFields : []
-    const submitted = Array.isArray(body.answers) ? body.answers : []
+    const fields = (Array.isArray(req.customFields) ? req.customFields : []) as Array<{ label: string; required?: boolean }>
+    const submitted = (Array.isArray(body.answers) ? body.answers : []) as Array<{ label: unknown; value: unknown }>
     const errors: string[] = []
     for (const field of fields) {
       if (!field || typeof field !== 'object' || typeof field.label !== 'string') continue
-      const value = submitted.find((a: any) => a && typeof a === 'object' && a.label === field.label)?.value
+      const value = submitted.find((a) => a && typeof a === 'object' && a.label === field.label)?.value
       if (field.required && (value == null || String(value).trim() === '')) {
         errors.push(field.label)
       }
@@ -93,8 +93,8 @@ export async function POST(
 
     const answers = fields.length > 0
       ? fields
-          .map((f: any) => {
-            const value = submitted.find((a: any) => a && typeof a === 'object' && a.label === f.label)?.value
+          .map((f) => {
+            const value = submitted.find((a) => a && typeof a === 'object' && a.label === f.label)?.value
             return value == null || String(value).trim() === ''
               ? null
               : { label: f.label, value: String(value) }
@@ -116,7 +116,7 @@ export async function POST(
         userId: session.user.id,
         title: body.title.trim(),
         content: body.content.trim(),
-        answers: answers as any
+        answers: answers
       },
       include: {
         user: { select: { id: true, name: true, username: true, email: true, image: true, shopSlug: true } }

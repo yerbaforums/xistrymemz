@@ -76,7 +76,7 @@ export default function CommunityManagement() {
   const [acceptedConnections, setAcceptedConnections] = useState<Connection[]>([])
   const [forumPosts, setForumPosts] = useState<ForumPost[]>([])
   const [groups, setGroups] = useState<Group[]>([])
-  const [loading, setLoading] = useState(true)
+  const [, setLoading] = useState(true)
   const [updating, setUpdating] = useState<string | null>(null)
   const [deletingGroup, setDeletingGroup] = useState<string | null>(null)
   const [deleteGroupTarget, setDeleteGroupTarget] = useState<string | null>(null)
@@ -165,7 +165,6 @@ export default function CommunityManagement() {
   const otherUser = (c: Connection) =>
     c.requester.id === session?.user?.id ? c.receiver : c.requester
 
-  const isAdmin = (g: Group) => g.members.some(m => m.userId === session?.user?.id && m.role === 'ADMIN')
   const isOwner = (g: Group) => g.user.id === session?.user?.id
 
   const ownerGroups = groups.filter(g => isOwner(g))

@@ -5,12 +5,12 @@ import { headers } from 'next/headers'
 export default getRequestConfig(async ({ requestLocale }) => {
   let locale = await requestLocale
 
-  if (!locale || !routing.locales.includes(locale as any)) {
+  if (typeof locale !== 'string' || !routing.locales.includes(locale as (typeof routing.locales)[number])) {
     const h = await headers()
     locale = h.get('x-next-intl-locale') || routing.defaultLocale
   }
 
-  if (!locale || !routing.locales.includes(locale as any)) {
+  if (typeof locale !== 'string' || !routing.locales.includes(locale as (typeof routing.locales)[number])) {
     locale = routing.defaultLocale
   }
 

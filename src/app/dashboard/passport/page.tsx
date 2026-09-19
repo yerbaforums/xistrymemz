@@ -1,13 +1,12 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
 import dynamic from 'next/dynamic'
 
 import Loading from '@/components/Loading'
-import Skeleton from '@/components/Skeleton'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { geocodeLocation, reverseGeocodeLocation } from '@/lib/geocoding'
 import styles from './passport.module.css'
@@ -44,7 +43,6 @@ export default function PassportPage() {
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [userData, setUserData] = useState<any>(null)
 
   // Earth Passport fields
   const [location, setLocation] = useState('')
@@ -93,7 +91,7 @@ export default function PassportPage() {
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget>(null)
   const stampsPerPage = 8
 
-  const [L, setL] = useState<any>(null)
+  const [L, setL] = useState<typeof import('leaflet') | null>(null)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -117,7 +115,6 @@ export default function PassportPage() {
       if (!userRes.ok) throw new Error('Failed to fetch')
       const data = await userRes.json()
       const user = data.user
-      setUserData(user)
       setLocation(user.location || '')
       setNeighborhood(user.neighborhood || '')
       setSearchRadius(user.searchRadius || 50)
@@ -594,13 +591,13 @@ export default function PassportPage() {
         <div className={styles.mb12}>
           <label className={styles.label}>Search Radius ({searchRadius}km)</label>
           <input type="range" min="1" max="500" value={searchRadius} onChange={e => setSearchRadius(Number(e.target.value))} className={styles.rangeInput} />
-          <p className={styles.rangeDesc}>Shows listings within this radius when using "Near Me" filters.</p>
+          <p className={styles.rangeDesc}>Shows listings within this radius when using &quot;Near Me&quot; filters.</p>
         </div>
 
         <div className={styles.mb12}>
           <label className={styles.checkboxLabel} style={{ color: traveling ? 'var(--accent-warning)' : 'var(--text-secondary)' }}>
             <input type="checkbox" checked={traveling} onChange={handleTravelToggle} className={styles.checkbox} />
-            <span className={styles.checkboxText}>I'm currently traveling</span>
+            <span className={styles.checkboxText}>I&apos;m currently traveling</span>
           </label>
           <p className={styles.rangeDesc}>
             {traveling ? 'Your profile shows you as traveling. Community members will see you\'re on the move.' : 'Your profile shows your home location. Toggle this on when traveling.'}
@@ -758,7 +755,7 @@ export default function PassportPage() {
                   <select value={loc.categoryId || ''} onChange={e => {
                     const categoryId = e.target.value || null
                     fetch(`/api/users/locations/${loc.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ categoryId }) })
-                      .then(r => { if (r.ok) r.json().then(u => setSavedLocations(prev => prev.map(l => l.id === loc.id ? { ...l, categoryId, category: categories.find(c => c.id === categoryId) || null } : l))); else toastError('Failed') }).catch(() => {})
+                      .then(r => { if (r.ok) r.json().then(_u => setSavedLocations(prev => prev.map(l => l.id === loc.id ? { ...l, categoryId, category: categories.find(c => c.id === categoryId) || null } : l))); else toastError('Failed') }).catch(() => {})
                   }} className={styles.catSelect}>
                     <option value="">Category</option>
                     {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>)}

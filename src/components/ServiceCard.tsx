@@ -35,7 +35,7 @@ const ServiceCard = memo(function ServiceCard({ service, onClick, style }: Servi
   const viewCount = typeof service.viewCount === 'number' ? service.viewCount : 0
   const userName = typeof service.user?.name === 'string' ? service.user.name : null
   const userImage = typeof service.user?.image === 'string' ? service.user.image : null
-  const hashtags: { hashtag: { tag: string } }[] = Array.isArray((service as any).hashtags) ? (service as any).hashtags : []
+  const hashtags: { hashtag: { tag: string } }[] = Array.isArray(service.hashtags) ? service.hashtags : []
 
   return (
     <div onClick={onClick} className={styles.card} style={style}>

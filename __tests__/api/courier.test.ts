@@ -1,7 +1,8 @@
 import { prisma } from '@/lib/prisma'
+import type { User } from '@prisma/client'
 
 describe('/api/courier', () => {
-  let testUser: any
+  let testUser: User
 
   beforeEach(async () => {
     testUser = await prisma.user.create({

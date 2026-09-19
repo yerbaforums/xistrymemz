@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import styles from './TripView.module.css'
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from '@/components/LeafletComponents'
@@ -28,7 +27,7 @@ export default function TripView({ trip, sessionUserId }: { trip: Trip; sessionU
     if (typeof window !== 'undefined') {
       if (typeof document !== 'undefined') {
         import('leaflet').then(mod => {
-          delete (mod.Icon.Default.prototype as any)._getIconUrl
+          delete (mod.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl
           mod.Icon.Default.mergeOptions({
             iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
             iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',

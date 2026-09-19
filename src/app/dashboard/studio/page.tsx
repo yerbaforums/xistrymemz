@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useQuickCreate } from '@/components/QuickCreateModal'
 import { CONTENT_TYPE_MAP } from '@/lib/content-templates'
 
@@ -34,7 +33,6 @@ const TYPE_CONFIG: Record<string, { icon: string; label: string }> = {
 
 export default function StudioPage() {
   const { data: session, status } = useSession()
-  const router = useRouter()
   const quickCreate = useQuickCreate()
   const [items, setItems] = useState<UnifiedItem[]>([])
   const [loading, setLoading] = useState(true)

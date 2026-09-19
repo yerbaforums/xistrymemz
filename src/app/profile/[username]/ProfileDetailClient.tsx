@@ -29,7 +29,6 @@ import ReplySection from '@/components/ReplySection'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { useToast } from '@/context/ToastContext'
-import dynamic from 'next/dynamic'
 import Button from '@/components/ui/Button'
 import { EmptyState } from '@/components/EmptyState'
 import Skeleton from '@/components/Skeleton'
@@ -367,7 +366,7 @@ export default function ProfilePage() {
   const [coverUploading, setCoverUploading] = useState(false)
   const avatarInputRef = useRef<HTMLInputElement>(null)
   const coverInputRef = useRef<HTMLInputElement>(null)
-  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set())
+  const [likedPosts] = useState<Set<string>>(new Set())
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
   const [confirmDeletePost, setConfirmDeletePost] = useState<string | null>(null)
   const [confirmDisconnect, setConfirmDisconnect] = useState(false)
@@ -628,15 +627,6 @@ export default function ProfilePage() {
     } catch {
       toastError('Failed to delete post')
     }
-  }
-
-  const handleToggleLike = (postId: string, liked: boolean) => {
-    setLikedPosts(prev => {
-      const next = new Set(prev)
-      if (liked) next.add(postId)
-      else next.delete(postId)
-      return next
-    })
   }
 
   const handleLoadMorePosts = async () => {
@@ -1321,7 +1311,7 @@ export default function ProfilePage() {
                                 {post.pinned && <span className={styles.pinnedBadge}>📌</span>}
                                 {post.user.name || 'Anonymous'}
                               </Link>
-                              {isWallPost && <span className={styles.wallPostBadge}> posted on {user.name || 'this user'}'s wall</span>}
+                              {isWallPost && <span className={styles.wallPostBadge}> posted on {user.name || 'this user'}&apos;s wall</span>}
                               <span className={styles.postDate}>
                                 {new Date(post.createdAt).toLocaleDateString()}
                               </span>

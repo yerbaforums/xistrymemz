@@ -96,7 +96,7 @@ export function withValidation<T>(
   schema: { parse: (data: unknown) => T },
   handler: (data: T, req: Request, session: Session) => Promise<NextResponse<unknown>>
 ) {
-  return async (req: Request, context?: unknown) => {
+  return async (req: Request, _context?: unknown) => {
     try {
       const session = await getAuthSession()
       if (!session?.user?.id) return apiUnauthorized()

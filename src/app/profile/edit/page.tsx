@@ -25,20 +25,6 @@ interface UserLink {
   sortOrder: number
 }
 
-interface UserLocation {
-  id: string
-  name: string
-  location: string
-  latitude: number | null
-  longitude: number | null
-  isPrimary: boolean
-  categoryId: string | null
-  tags: string | null
-  notes: string | null
-  imageUrl: string | null
-  category: { id: string; name: string; icon: string; color: string } | null
-}
-
 interface DonationAddr {
   id: string
   currency: string
@@ -90,7 +76,6 @@ export default function ProfileEditPage() {
   const [longitude, setLongitude] = useState<number | null>(null)
   const [traveling, setTraveling] = useState(false)
   const [lookingForCollaborators, setLookingForCollaborators] = useState(false)
-  const [geoLoading, setGeoLoading] = useState(false) // kept for passport link
 
   // Donation fields
   const [donationAddresses, setDonationAddresses] = useState<DonationAddr[]>([])
@@ -441,7 +426,7 @@ export default function ProfileEditPage() {
                 <span>🤝 Looking for collaborators</span>
               </label>
               <p className={styles.mutedText}>
-                Show a badge on your profile and member cards indicating you're open to collaboration.
+                Show a badge on your profile and member cards indicating you&apos;re open to collaboration.
               </p>
             </div>
           </div>

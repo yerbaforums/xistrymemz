@@ -14,7 +14,7 @@ function detectLocale(pathname: string): string {
 export default function LocaleProvider({ children, initialLocale, initialMessages }: {
   children: React.ReactNode
   initialLocale: string
-  initialMessages: any
+  initialMessages: Record<string, unknown>
 }) {
   const pathname = usePathname()
   const [locale, setLocale] = useState(initialLocale)

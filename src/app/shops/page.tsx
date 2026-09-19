@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import Link from 'next/link'
 import styles from './page.module.css'
 import { ShopsClient } from './ShopsClient'
 import { SkeletonCard } from '@/components/Skeleton'

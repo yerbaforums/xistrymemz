@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
+import { apiSuccess, apiError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -24,9 +24,9 @@ export async function PUT(
       return apiError("Only the organizer can manage tickets", 403)
     }
 
-    let body: any
+    let body: unknown
     try { body = await request.json() } catch { return apiError("Invalid JSON body", 400) }
-    const { action } = body
+    const { action } = body as { action?: string }
 
     const ticket = await prisma.eventTicket.findUnique({
       where: { id: ticketId },
@@ -47,7 +47,7 @@ export async function PUT(
               userId: ticket.userId,
               message: `Your ticket for "${event.title}" is confirmed! Meeting link: ${event.meetingLink}`,
               link: `/events/${event.id}`,
-            } as any)
+            })
           } catch (e) { console.error('Failed to send meeting link notification:', e) }
         } else if (event.gateLocation) {
           try {
@@ -56,7 +56,7 @@ export async function PUT(
               userId: ticket.userId,
               message: `Your ticket for "${event.title}" is confirmed! The exact location is now unlocked.`,
               link: `/events/${event.id}`,
-            } as any)
+            })
           } catch (e) { console.error('Failed to send location unlock notification:', e) }
         }
         break

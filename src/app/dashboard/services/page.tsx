@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
-import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
+import { hydrateDonationAddresses } from '@/lib/donations'
 import type { DonationAddr } from '@/types/product'
 import ImageUploader from '@/components/ImageUploader'
 import Skeleton from '@/components/Skeleton'
@@ -26,6 +26,13 @@ interface ShopSettings {
   shopSlug: string | null
   email: string | null
   name: string | null
+}
+
+interface EditableServiceOffering extends ServiceOffering {
+  acceptsDonations?: boolean
+  donationAddress?: string | null
+  donationCurrency?: string | null
+  donationAddresses?: string | null
 }
 
 function formatDuration(mins: number) {
@@ -112,7 +119,7 @@ export default function DashboardServices() {
     setShowForm(false)
   }
 
-  const startEdit = (s: ServiceOffering) => {
+  const startEdit = (s: EditableServiceOffering) => {
     setForm({
       title: s.title,
       description: s.description || '',
@@ -120,28 +127,28 @@ export default function DashboardServices() {
       duration: s.duration,
       price: s.price?.toString() || '',
       location: s.location || '',
-      latitude: (s as any).latitude || null,
-      longitude: (s as any).longitude || null,
+      latitude: s.latitude || null,
+      longitude: s.longitude || null,
 
       meetingLink: s.meetingLink || '',
       imageUrl: s.imageUrl || '',
       imageUrls: s.imageUrl ? [s.imageUrl] : [],
       isActive: s.isActive,
-      acceptsDonations: (s as any).acceptsDonations || false,
+      acceptsDonations: s.acceptsDonations || false,
       selectedDonationAddrs: hydrateDonationAddresses(
-        (s as any).donationAddress,
-        (s as any).donationCurrency,
-        (s as any).donationAddresses
+        s.donationAddress,
+        s.donationCurrency,
+        s.donationAddresses
       ),
-      acceptsAppointments: (s as any).acceptsAppointments || false,
-      appointmentDuration: (s as any).appointmentDuration?.toString() || '',
-      appointmentLeadTime: (s as any).appointmentLeadTime?.toString() || '',
-      appointmentLocation: (s as any).appointmentLocation || '',
-      appointmentMeetingLink: (s as any).appointmentMeetingLink || '',
-      appointmentFormFields: Array.isArray((s as any).appointmentFormFields)
-        ? (s as any).appointmentFormFields.map((f: any) => ({ label: String(f.label), type: f.type || 'text', required: f.required === true, options: Array.isArray(f.options) && f.options.length > 0 ? f.options : null }))
+      acceptsAppointments: s.acceptsAppointments || false,
+      appointmentDuration: s.appointmentDuration?.toString() || '',
+      appointmentLeadTime: s.appointmentLeadTime?.toString() || '',
+      appointmentLocation: s.appointmentLocation || '',
+      appointmentMeetingLink: s.appointmentMeetingLink || '',
+      appointmentFormFields: Array.isArray(s.appointmentFormFields)
+        ? s.appointmentFormFields.map((f: { label?: unknown; type?: unknown; required?: unknown; options?: unknown }): AppointmentField => ({ label: String(f.label), type: (f.type ? String(f.type) : 'text') as AppointmentField['type'], required: f.required === true, options: Array.isArray(f.options) && f.options.length > 0 ? (f.options as string[]) : null }))
         : [],
-      hashtags: (s as any).hashtags?.map((h: any) => h.hashtag?.tag).filter(Boolean) || [],
+      hashtags: s.hashtags?.map(h => h.hashtag?.tag ?? '').filter(Boolean) || [],
     })
     setEditingId(s.id)
     setShowForm(true)

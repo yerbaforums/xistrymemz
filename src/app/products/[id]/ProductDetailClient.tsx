@@ -2,13 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import styles from './page.module.css'
 import CollaborateButton from '@/components/CollaborateButton'
 import PinToBoardButton from '@/components/PinToBoardButton'
-import { useCart } from '@/context/CartContext'
 import Button from '@/components/ui/Button'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { useToast } from '@/context/ToastContext'
@@ -34,7 +32,6 @@ import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
 import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import type { DonationAddr } from '@/types/product'
-import dynamic from 'next/dynamic'
 
 import TranslateButton from '@/components/TranslateButton'
 import Skeleton from '@/components/Skeleton'
@@ -133,7 +130,6 @@ function computeRentalPrice(p: { rentalDaily: number | null; rentalWeekly: numbe
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { data: session } = useSession()
-  const { addItem } = useCart()
   const { settings } = useSiteSettings()
   const { success, error, warning, info } = useToast()
   const router = useRouter()
@@ -199,7 +195,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [fundAmount, setFundAmount] = useState('')
   const [fundingLoading, setFundingLoading] = useState(false)
   const [currentFunding, setCurrentFunding] = useState(0)
-  const [copiedPayout, setCopiedPayout] = useState(false)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [showOfferModal, setShowOfferModal] = useState(false)
   const [showCartModal, setShowCartModal] = useState(false)
@@ -211,7 +206,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [mapExpanded, setMapExpanded] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [cryptoPrices, setCryptoPrices] = useState<Record<string, number>>({})
-  const [copiedShare, setCopiedShare] = useState(false)
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
   const [relatedLoading, setRelatedLoading] = useState(false)
 
@@ -816,7 +810,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 {userDonationAddrs.length === 0 ? (
                       <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                         No addresses saved.{' '}
-                        <a href="/profile/edit" style={{ color: 'var(--accent-primary)' }}>Add one in profile settings</a>
+                        <Link href="/profile/edit" style={{ color: 'var(--accent-primary)' }}>Add one in profile settings</Link>
                       </p>
                     ) : (
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
@@ -916,7 +910,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 <div className={styles.hashtags}>
                   <h3>Tags</h3>
                   <div className={styles.hashtagList}>
-                    {product.hashtags.map((h: any) => (
+                    {product.hashtags.map(h => (
                       <Link key={h.hashtag?.id || h.id} href={`/hashtag/${h.hashtag?.tag || h.tag}`} className={styles.hashtag}>#{h.hashtag?.tag || h.tag}</Link>
                     ))}
                   </div>

@@ -1,7 +1,8 @@
-import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
+import { apiSuccess, apiError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import type { Prisma } from '@prisma/client'
 
 export async function DELETE(
   request: Request,
@@ -84,7 +85,7 @@ export async function PUT(
   const body = await request.json()
   const { name, location, latitude, longitude, categoryId, tags, notes, imageUrl, lastVisitedAt, isPrimary } = body
 
-  const updateData: any = {
+  const updateData: Prisma.UserLocationUncheckedUpdateInput = {
     name: name || existingLocation.name,
     location: location || existingLocation.location,
     latitude: latitude !== undefined ? latitude : existingLocation.latitude,

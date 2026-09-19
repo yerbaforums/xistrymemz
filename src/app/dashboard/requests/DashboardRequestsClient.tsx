@@ -8,7 +8,7 @@ import { getUserProfileUrl } from '@/lib/utils'
 import { getCryptoIcon, getCryptoColor } from '@/lib/crypto-icons'
 import { useToast } from '@/context/ToastContext'
 import styles from './requests.module.css'
-import { REQUEST_CATEGORIES, REQUEST_PRIORITIES, PRIORITY_COLORS } from '@/lib/request-categories'
+import { REQUEST_CATEGORIES, PRIORITY_COLORS } from '@/lib/request-categories'
 
 import { EmptyState } from '@/components/EmptyState'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
@@ -263,11 +263,6 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
       setSupporting(false)
       setSupportModal({ open: false, reqId: '' })
     }
-  }
-
-  const truncateAddr = (addr: string, len = 8) => {
-    if (addr.length <= len * 2 + 3) return addr
-    return `${addr.slice(0, len)}...${addr.slice(-len)}`
   }
 
   const getLinkInfo = (req: Request) => {

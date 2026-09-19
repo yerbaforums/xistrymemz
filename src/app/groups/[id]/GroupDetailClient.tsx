@@ -126,7 +126,7 @@ interface Group {
   _count: { members: number; posts: number }
   isMember: boolean
   isAdmin: boolean
-  hashtags?: Array<{ id: string; hashtag: { id: string; tag: string } }>
+  hashtags?: Array<{ id: string; tag?: string; hashtag?: { id: string; tag: string } }>
 }
 
 function GroupDetailContent() {
@@ -543,8 +543,6 @@ function GroupDetailContent() {
     return Math.max(supporterPct, pricePct)
   }
 
-  const isBuyComplete = (buy: GroupBuy) => buy.currentSupporters >= buy.minSupporters && buy.currentPrice >= buy.targetPrice
-
   const myUserId = session?.user?.id || null
   const isPostOwner = (post: GroupPost) => myUserId === post.user.id
   const isBuyOwner = (buy: GroupBuy) => myUserId === buy.organizer.id
@@ -588,7 +586,7 @@ function GroupDetailContent() {
             )}
             {group.hashtags && group.hashtags.length > 0 && (
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
-                {group.hashtags.map((h: any) => (
+                {group.hashtags.map(h => (
                   <Link key={h.hashtag?.id || h.id} href={`/hashtag/${h.hashtag?.tag || h.tag}`} className="hashtag-link" style={{ fontSize: '0.85rem' }}>#{h.hashtag?.tag || h.tag}</Link>
                 ))}
               </div>

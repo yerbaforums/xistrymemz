@@ -1,14 +1,16 @@
-import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { apiSuccess } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+
+interface SearchableDelegate {
+  findMany: (args: unknown) => Promise<Array<Record<string, unknown>>>
+}
 
 const SEARCH_CONFIG: Record<string, {
   model: string
   titleField: string
   select: Record<string, boolean>
   urlField?: string
-  where: (q: string) => any
+  where: (q: string) => object
   url: (id: string) => string
 }> = {
   PLAN: {
@@ -159,11 +161,38 @@ const SEARCH_CONFIG: Record<string, {
     }),
     url: (slug) => `/school/${slug}`,
   },
+  BLOG: {
+    model: 'user',
+    titleField: 'name',
+    select: { id: true, name: true, blogSlug: true },
+    urlField: 'blogSlug',
+    where: (q) => ({
+      showBlog: true,
+      blogSlug: { not: null },
+      OR: [
+        { name: { contains: q, mode: 'insensitive' as const } },
+        { blogName: { contains: q, mode: 'insensitive' as const } },
+        { blogTagline: { contains: q, mode: 'insensitive' as const } },
+      ],
+    }),
+    url: (slug) => `/blog/${slug}`,
+  },
+  BLOGPOST: {
+    model: 'blogPost',
+    titleField: 'title',
+    select: { id: true, title: true, slug: true, blogId: true },
+    where: (q) => ({
+      status: 'PUBLISHED',
+      OR: [
+        { title: { contains: q, mode: 'insensitive' as const } },
+        { excerpt: { contains: q, mode: 'insensitive' as const } },
+      ],
+    }),
+    url: (id) => `/blog/posts/${id}`,
+  },
 }
 
 export async function GET(request: Request) {
-  const session = await getServerSession(authOptions)
-
   try {
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type')
@@ -178,17 +207,17 @@ export async function GET(request: Request) {
       return apiSuccess({ items: [] })
     }
 
-    const results = await (prisma as any)[config.model].findMany({
+    const results = await (prisma as unknown as Record<string, SearchableDelegate>)[config.model].findMany({
       where: config.where(q),
       select: config.select,
       take: 20,
       orderBy: { createdAt: 'desc' },
     })
 
-    const items = results.map((r: any) => ({
+    const items = results.map((r) => ({
       id: r.id,
-      title: r[config.titleField]?.slice(0, 100) || 'Untitled',
-      url: config.url(r[(config as { urlField?: string }).urlField || 'id']),
+      title: String(r[config.titleField] ?? '').slice(0, 100) || 'Untitled',
+      url: config.url(String(r[(config as { urlField?: string }).urlField || 'id'])),
       type,
     }))
 

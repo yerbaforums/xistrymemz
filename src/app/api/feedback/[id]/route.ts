@@ -1,4 +1,4 @@
-import { apiSuccess, handleApi, requireAdmin } from '@/lib/api-helpers'
+import { handleApi, requireAdmin } from '@/lib/api-helpers'
 import { markReviewed } from '@/services/feedbackService'
 
 export async function PATCH(

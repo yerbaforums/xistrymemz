@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useMap } from 'react-leaflet'
 import type { MutableRefObject } from 'react'
+import type { Map as LeafletMap } from 'leaflet'
 
 export function MapEvents({ onMove }: { onMove: (bounds: { north: number; south: number; east: number; west: number }) => void }) {
   const map = useMap()
@@ -25,7 +26,7 @@ export function MapEvents({ onMove }: { onMove: (bounds: { north: number; south:
   return null
 }
 
-export function MapController({ mapRef, onReady }: { mapRef: MutableRefObject<any>; onReady?: () => void }) {
+export function MapController({ mapRef, onReady }: { mapRef: MutableRefObject<LeafletMap | null>; onReady?: () => void }) {
   const map = useMap()
   useEffect(() => {
     mapRef.current = map

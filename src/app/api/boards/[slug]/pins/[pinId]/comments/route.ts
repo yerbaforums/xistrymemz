@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiUnauthorized, apiServerError } from '@/lib/api-helpers'
+import { apiSuccess, apiError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -7,7 +7,7 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ slug: string; pinId: string }> }
 ) {
-  const { slug, pinId } = await params
+  const { pinId } = await params
   try {
     const comments = await prisma.pinComment.findMany({
       where: { pinId },
@@ -31,7 +31,7 @@ export async function POST(
   if (!session?.user?.id) {
     return apiError("Unauthorized", 401)
   }
-  const { slug, pinId } = await params
+  const { pinId } = await params
   try {
     const body = await request.json()
     const content = body.content?.trim()

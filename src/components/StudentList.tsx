@@ -9,13 +9,22 @@ interface StudentListProps {
   userId: string
 }
 
+interface Student {
+  id: string
+  name: string | null
+  username: string | null
+  enrolledAt: string
+  completedLessons: number
+  totalProgress: number
+}
+
 export default function StudentList({ resolvedSlug, userId }: StudentListProps) {
-  const [students, setStudents] = useState<any[]>([])
+  const [students, setStudents] = useState<Student[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!resolvedSlug) return
-    fetchApi<{ students: any[] }>(`/api/school/students?schoolId=${userId}`)
+    fetchApi<{ students: Student[] }>(`/api/school/students?schoolId=${userId}`)
       .then(({ students: s }) => { setStudents(s || []); setLoading(false) })
       .catch(() => setLoading(false))
   }, [resolvedSlug, userId])

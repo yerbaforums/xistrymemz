@@ -4,6 +4,7 @@ import { signOut } from 'next-auth/react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import type { Session } from 'next-auth'
 import { NAV } from '@/lib/navigation'
 import { useTheme, type ThemeAccent } from '@/context/ThemeContext'
 import { getUserProfileUrl } from '@/lib/utils'
@@ -11,14 +12,14 @@ import { useUserPreferences } from '@/hooks/useUserPreferences'
 import styles from './Header.module.css'
 
 interface UserDropdownProps {
-  session: any
+  session: Session | null
   open: boolean
   onClose: () => void
   traveling: boolean
 }
 
-export default function UserDropdown({ session, open, onClose, traveling }: UserDropdownProps) {
-  const { mode, accent, setAccent, toggleMode } = useTheme()
+export default function UserDropdown({ session, open, onClose }: UserDropdownProps) {
+  const { accent, setAccent } = useTheme()
   const { isToolVisible } = useUserPreferences()
   const router = useRouter()
 
@@ -27,14 +28,14 @@ export default function UserDropdown({ session, open, onClose, traveling }: User
   return (
     <div className={styles.userDropdown} id="user-menu-dropdown" role="menu">
       <div className={styles.userInfo}>
-        {session.user?.image ? (
+        {session?.user?.image ? (
           <div style={{ width: 36, height: 36, position: 'relative', borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
-            <Image src={session.user.image} alt={session.user?.name || ''} fill className={styles.userAvatar} />
+            <Image src={session.user.image} alt={session?.user?.name || ''} fill className={styles.userAvatar} />
           </div>
         ) : (
-          <span className={styles.userInitial}>{(session.user?.name || 'U')[0].toUpperCase()}</span>
+          <span className={styles.userInitial}>{(session?.user?.name || 'U')[0].toUpperCase()}</span>
         )}
-        <strong>{session.user?.name || 'User'}</strong>
+        <strong>{session?.user?.name || 'User'}</strong>
       </div>
       <div className={styles.themeAccentPicker}>
         {(['cyan', 'purple', 'green', 'orange', 'pink', 'blue'] as ThemeAccent[]).map(c => (

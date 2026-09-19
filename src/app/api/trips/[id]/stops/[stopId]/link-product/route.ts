@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
+import { apiSuccess, apiError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -43,7 +43,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return apiError("Stop not found", 404)
   }
 
-  const linkedProducts = (stop.linkedProducts as any[]) || []
+  const linkedProducts: Array<{ id: string; title: string }> = Array.isArray(stop.linkedProducts) ? (stop.linkedProducts as Array<{ id: string; title: string }>) : []
   linkedProducts.push({ id: product.id, title: product.title })
 
   const updated = await prisma.tripStop.update({

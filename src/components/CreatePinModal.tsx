@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import ImageUploader from '@/components/ImageUploader'
 import AssetPicker from '@/components/AssetPicker'
@@ -14,11 +13,6 @@ const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContai
 const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
 const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false })
 const MapClickHandler = dynamic(() => import('@/components/MapClickHandler').then(m => m.default), { ssr: false })
-
-const ASSET_ICONS: Record<string, string> = {
-  PRODUCT: '🛒', SERVICE: '🔧', EVENT: '📅', GROUP: '👥',
-  PLAN: '🚀', REQUEST: '📝', SCHOOL_CONTENT: '📚', POST: '✏️', SHOP: '🏪', USER: '👤',
-}
 
 interface CreatePinModalProps {
   boardSlug: string
@@ -70,10 +64,9 @@ export default function CreatePinModal({ boardSlug, boardName, onClose, onCreate
     finally { setGeoLoading(false) }
   }
 
-  const handleMapClick = async (e: any) => {
+  const handleMapClick = async (lat: number, lng: number) => {
     if (!settingLocation) return
     setSettingLocation(false)
-    const { lat, lng } = e.latlng
     setPinLat(lat.toFixed(6))
     setPinLng(lng.toFixed(6))
     try {

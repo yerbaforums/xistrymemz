@@ -1,8 +1,42 @@
-import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
+import { apiSuccess, apiError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { extractAndLinkHashtags, linkHashtags } from '@/services/hashtagService'
+
+interface ProjectUpdateBody {
+  title?: string
+  description?: string | null
+  imageUrl?: string | null
+  status?: string
+  goals?: string | null
+  mileposts?: string | null
+  milepostStatus?: string | null
+  published?: boolean
+  resources?: string | null
+  schoolId?: string | null
+  shopId?: string | null
+  lookingForCollaborators?: boolean
+  acceptsDonations?: boolean
+  donationAddress?: string | null
+  donationCurrency?: string
+  donationDescription?: string | null
+  donationAddresses?: string | null
+  category?: string | null
+  location?: string | null
+  locationDetails?: string | null
+  images?: string | null
+  goalAmount?: number | null
+  needsVolunteers?: boolean
+  volunteerRoles?: string | null
+  volunteerDescription?: string | null
+  videoUrl?: string | null
+  pinned?: boolean
+  latitude?: number | null
+  longitude?: number | null
+  phases?: string | null
+  hashtags?: string[]
+}
 
 export async function GET(
   request: Request,
@@ -60,13 +94,13 @@ export async function PUT(
     }
 
     const { id } = await params
-    let parsedBody: any
+    let parsedBody: unknown
     try {
       parsedBody = await request.json()
     } catch {
       return apiError("Invalid JSON body", 400)
     }
-    const body = parsedBody
+    const body = parsedBody as ProjectUpdateBody
 
     const existingProject = await prisma.project.findUnique({
       where: { id }
@@ -90,7 +124,7 @@ export async function PUT(
     const project = await prisma.project.update({
       where: { id },
       data: {
-        title: (body as any).title ?? existingProject.title,
+        title: body.title ?? existingProject.title,
         description: body.description ?? existingProject.description,
         imageUrl: body.imageUrl !== undefined ? body.imageUrl : existingProject.imageUrl,
         status: body.status ?? existingProject.status,

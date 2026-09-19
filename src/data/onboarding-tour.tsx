@@ -48,7 +48,7 @@ export const POST_ONBOARDING_TOUR: TourStep[] = [
         </p>
         <p style={{ opacity: 0.8, fontSize: '0.85rem' }}>
           Toggle <strong>Traveling mode</strong> to explore other areas. Your search radius
-          controls how far "nearby" reaches.
+          controls how far &quot;nearby&quot; reaches.
         </p>
       </div>
     ),
@@ -139,7 +139,7 @@ export const POST_ONBOARDING_TOUR: TourStep[] = [
         </p>
         <p style={{ opacity: 0.8, fontSize: '0.85rem' }}>
           Click any gauge to dive deeper. The Feature Banner above rotates tips and new
-          features — dismiss the ones you've seen. Your Quick Actions below give you one-click
+          features — dismiss the ones you&apos;ve seen. Your Quick Actions below give you one-click
           access to create anything.
         </p>
       </div>

@@ -1,4 +1,4 @@
-import { NextRequest, apiSuccess, apiError, apiUnauthorized, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { NextRequest, apiSuccess, apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -7,6 +7,7 @@ import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/don
 import { extractHashtags, linkHashtags } from '@/services/hashtagService'
 import { geocodeLocation } from '@/lib/geocoding'
 import { hasVerifiedEmail } from '@/lib/verified-email'
+import type { DonationAddr } from '@/types/product'
 
 export const dynamic = 'force-dynamic'
 
@@ -129,6 +130,16 @@ export async function POST(request: NextRequest) {
     const wantsPublish = parsed.data.isActive ?? true
     const needsEmailVerification = wantsPublish && !verifiedPublish
 
+    const selectedAddrList: DonationAddr[] = (parsed.data.acceptsDonations ? parsed.data.selectedDonationAddrs || [] : []).map(a => ({
+      id: a.id,
+      currency: a.currency,
+      address: a.address,
+      label: a.label ?? null,
+      qrCodeUrl: a.qrCodeUrl ?? null,
+      showQR: a.showQR ?? true,
+      sortOrder: a.sortOrder ?? 0,
+    }))
+
     const service = await prisma.serviceOffering.create({
       data: {
         title: parsed.data.title.trim(),
@@ -143,8 +154,8 @@ export async function POST(request: NextRequest) {
         imageUrl: parsed.data.imageUrl || null,
         isActive: wantsPublish && verifiedPublish,
         acceptsDonations: parsed.data.acceptsDonations ?? false,
-        ...donationAddressesToLegacy((parsed.data.acceptsDonations ? (parsed.data.selectedDonationAddrs || []) : []) as any),
-        donationAddresses: serializeDonationAddresses((parsed.data.acceptsDonations ? parsed.data.selectedDonationAddrs || [] : []) as any) as any,
+        ...donationAddressesToLegacy(selectedAddrList),
+        donationAddresses: serializeDonationAddresses(selectedAddrList),
         acceptsAppointments: parsed.data.acceptsAppointments ?? false,
         appointmentDuration: parsed.data.appointmentDuration || null,
         appointmentLeadTime: parsed.data.appointmentLeadTime || null,

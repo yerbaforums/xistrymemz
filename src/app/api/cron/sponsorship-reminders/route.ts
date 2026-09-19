@@ -25,7 +25,6 @@ export async function GET(request: Request) {
   let reminded = 0
   for (const s of due) {
     let title = 'a request'
-    let linkEntity: { type: string; id: string } | null = null
     try {
       if (s.entityType === 'REQUEST') {
         const r = await prisma.request.findUnique({ where: { id: s.entityId }, select: { title: true } })

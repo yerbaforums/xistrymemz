@@ -1,7 +1,8 @@
-import { apiSuccess, apiError, apiUnauthorized, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 
 export async function GET(request: Request) {
   try {
@@ -35,24 +36,23 @@ export async function GET(request: Request) {
     })
     connectedUserIds.add(userId)
 
-    const wherePosts: Record<string, unknown> = {
+    const wherePosts: Prisma.PostWhereInput = {
       userId: { in: Array.from(connectedUserIds) }
     }
     if (context && ['PROFILE', 'SHOP', 'SCHOOL', 'WALL'].includes(context)) {
       wherePosts.context = context
     }
 
-    const [posts, totalPosts] = await Promise.all([
+    const [posts] = await Promise.all([
       prisma.post.findMany({
-        where: wherePosts as any,
+        where: wherePosts,
         include: {
           user: { select: { id: true, name: true, image: true, username: true } }
         },
         orderBy: { createdAt: 'desc' },
         take: limit,
         skip: offset
-      }),
-      prisma.post.count({ where: wherePosts as any })
+      })
     ])
 
     const postIds = posts.map(p => p.id)

@@ -5,10 +5,11 @@
 const BASE_URL = process.env.TEST_BASE_URL || 'http://localhost:3000'
 
 import { prisma } from '@/lib/prisma'
+import type { Product, User } from '@prisma/client'
 
 describe('/api/products', () => {
-  let testUser: any
-  let testProduct: any
+  let testUser: User
+  let testProduct: Product
 
   beforeEach(async () => {
     testUser = await prisma.user.create({

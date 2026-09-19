@@ -5,9 +5,15 @@ import { fetchApi } from '@/lib/fetch-api'
 
 const STUN_SERVERS = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] }
 
+interface SimplePeerInstance {
+  _pc?: RTCPeerConnection | null
+  signal(data: unknown): void
+  destroy(): void
+}
+
 interface Peer {
   userId: string
-  peer: any
+  peer: SimplePeerInstance
   stream?: MediaStream
   connected: boolean
 }
@@ -23,7 +29,7 @@ interface RoomInfo {
 interface SignalData {
   fromUserId: string
   type: string
-  data: any
+  data: unknown
 }
 
 export function useVideoChat(initialRoomId?: string, currentUserId?: string) {
@@ -61,13 +67,14 @@ export function useVideoChat(initialRoomId?: string, currentUserId?: string) {
       originalVideoTrackRef.current = stream.getVideoTracks()[0] || null
       setLocalStream(stream)
       return stream
-    } catch (err: any) {
-      if (err.name === 'NotAllowedError') {
+    } catch (err: unknown) {
+      const e = err as { name?: string; message?: string }
+      if (e.name === 'NotAllowedError') {
         setError('Camera/microphone access denied. Please allow permissions in your browser.')
-      } else if (err.name === 'NotFoundError') {
+      } else if (e.name === 'NotFoundError') {
         setError('No camera or microphone found.')
       } else {
-        setError('Failed to access camera/microphone: ' + (err.message || 'Unknown error'))
+        setError('Failed to access camera/microphone: ' + (e.message || 'Unknown error'))
       }
       return null
     }
@@ -76,8 +83,7 @@ export function useVideoChat(initialRoomId?: string, currentUserId?: string) {
   const replaceVideoTrackForAllPeers = useCallback((newTrack: MediaStreamTrack) => {
     for (const [, entry] of peersRef.current) {
       try {
-        const senders = entry.peer?.senders || []
-        const sender = entry.peer._pc?.getSenders?.()?.find((s: any) => s.track?.kind === 'video')
+        const sender = entry.peer._pc?.getSenders?.()?.find((s) => s.track?.kind === 'video')
         if (sender) sender.replaceTrack(newTrack)
       } catch {}
     }
@@ -178,7 +184,7 @@ export function useVideoChat(initialRoomId?: string, currentUserId?: string) {
     }
   }, [])
 
-  const sendSignal = useCallback(async (toUserId: string, type: string, data: any) => {
+  const sendSignal = useCallback(async (toUserId: string, type: string, data: unknown) => {
     const rid = getEffectiveRoomId()
     if (!rid) return
     try {
@@ -198,7 +204,7 @@ export function useVideoChat(initialRoomId?: string, currentUserId?: string) {
     peersRef.current.set(userId, entry)
     setPeers(Array.from(peersRef.current.values()))
 
-    peer.on('signal', (data: any) => {
+    peer.on('signal', (data: { type?: string }) => {
       const type = data.type === 'offer' ? 'offer' : data.type === 'answer' ? 'answer' : 'ice'
       sendSignal(userId, type, data)
     })
@@ -227,41 +233,41 @@ export function useVideoChat(initialRoomId?: string, currentUserId?: string) {
 
   const createRoom = useCallback(async (name?: string) => {
     try {
-      const { room } = await fetchApi<any>('/api/video/rooms', {
+      const { room } = await fetchApi<{ room: RoomInfo }>('/api/video/rooms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name }),
       })
       setRoom(room)
       return room
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to create room')
       return null
     }
   }, [])
 
   const joinRoom = useCallback(async (inviteCode: string) => {
     try {
-      const { room } = await fetchApi<any>('/api/video/rooms/join', {
+      const { room } = await fetchApi<{ room: RoomInfo }>('/api/video/rooms/join', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ inviteCode }),
       })
       setRoom(room)
       return room
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to join room')
       return null
     }
   }, [])
 
   const fetchRoom = useCallback(async (roomId: string) => {
     try {
-      const { room } = await fetchApi<any>(`/api/video/rooms/${roomId}`)
+      const { room } = await fetchApi<{ room: RoomInfo }>(`/api/video/rooms/${roomId}`)
       setRoom(room)
       return room
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch room')
       return null
     }
   }, [])

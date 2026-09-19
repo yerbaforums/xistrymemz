@@ -33,7 +33,6 @@ export interface MentionInputHandle {
 }
 
 const HASHES_REGEX = /#([\w]{1,30})$/g
-const MENTION_REGEX = /@(\w{2,50})$/g
 
 const MentionInput = forwardRef<MentionInputHandle, MentionInputProps>(function MentionInput({
   value,
@@ -111,7 +110,7 @@ const MentionInput = forwardRef<MentionInputHandle, MentionInputProps>(function 
       return
     }
     try {
-        const { hashtags } = await fetchApi<{ hashtags: any[] }>(`/api/hashtags/search?q=${encodeURIComponent(query)}`)
+        const { hashtags } = await fetchApi<{ hashtags: HashtagResult[] }>(`/api/hashtags/search?q=${encodeURIComponent(query)}`)
         setSuggestions(hashtags || [])
         setShowSuggestions((hashtags || []).length > 0)
     } catch {
@@ -126,7 +125,6 @@ const MentionInput = forwardRef<MentionInputHandle, MentionInputProps>(function 
       if (el && mentionStart !== null) {
         const pos = el.selectionStart
         const textBefore = value.slice(0, pos)
-        const char = textBefore[mentionStart - 2]
         const query = textBefore.slice(mentionStart - 1, pos)
         if (query.includes(' ')) {
           setShowSuggestions(false)

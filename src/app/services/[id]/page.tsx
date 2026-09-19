@@ -41,53 +41,56 @@ function safeBool(v: unknown): boolean {
   return v === true
 }
 
-function sanitizeService(raw: any): ServiceOffering | null {
+function sanitizeService(raw: unknown): ServiceOffering | null {
   if (!raw || typeof raw !== 'object') return null
+  const src = raw as Record<string, unknown>
   try {
-    const h = Array.isArray(raw.hashtags)
-      ? raw.hashtags.filter((x: any) => x?.hashtag?.tag && typeof x.hashtag.tag === 'string').map((x: any) => ({
+    const h = Array.isArray(src.hashtags)
+      ? src.hashtags.filter((x) => x?.hashtag?.tag && typeof x.hashtag.tag === 'string').map((x) => ({
           id: String(x.id ?? ''),
           hashtag: { id: String(x.hashtag.id ?? ''), tag: String(x.hashtag.tag) }
         }))
       : []
 
-    const ff: { label: string; type: string; required: boolean; options?: string[] | null }[] = Array.isArray(raw.appointmentFormFields)
-      ? raw.appointmentFormFields.filter((f: any) => f && typeof f === 'object' && typeof f.label === 'string').map((f: any) => ({
+    const ff: { label: string; type: string; required: boolean; options?: string[] | null }[] = Array.isArray(src.appointmentFormFields)
+      ? src.appointmentFormFields.filter((f) => f && typeof f === 'object' && typeof f.label === 'string').map((f) => ({
           label: String(f.label),
           type: ['text', 'textarea', 'select', 'number', 'date', 'checkbox'].includes(String(f.type ?? 'text')) ? String(f.type) : 'text',
           required: safeBool(f.required),
-          options: Array.isArray(f.options) ? f.options.map((o: any) => String(o)) : null,
+          options: Array.isArray(f.options) ? f.options.map((o: unknown) => String(o)) : null,
         }))
       : []
 
+    const usr = src.user && typeof src.user === 'object' ? (src.user as Record<string, unknown>) : null
+
     return {
-      id: String(raw.id ?? ''),
-      title: String(raw.title ?? 'Untitled'),
-      description: safeStr(raw.description),
-      category: typeof raw.category === 'string' ? raw.category : 'OTHER',
-      duration: typeof raw.duration === 'number' ? raw.duration : 60,
-      price: safeNum(raw.price),
-      location: safeStr(raw.location),
-      latitude: safeNum(raw.latitude),
-      longitude: safeNum(raw.longitude),
-      meetingLink: safeStr(raw.meetingLink),
-      imageUrl: safeStr(raw.imageUrl),
-      isActive: safeBool(raw.isActive),
-      userId: String(raw.userId ?? ''),
-      user: raw.user && typeof raw.user === 'object' ? {
-        id: String(raw.user.id ?? ''),
-        name: safeStr(raw.user.name),
-        image: safeStr(raw.user.image),
-        username: safeStr(raw.user.username),
+      id: String(src.id ?? ''),
+      title: String(src.title ?? 'Untitled'),
+      description: safeStr(src.description),
+      category: typeof src.category === 'string' ? (src.category as ServiceCategory) : 'OTHER',
+      duration: typeof src.duration === 'number' ? src.duration : 60,
+      price: safeNum(src.price),
+      location: safeStr(src.location),
+      latitude: safeNum(src.latitude),
+      longitude: safeNum(src.longitude),
+      meetingLink: safeStr(src.meetingLink),
+      imageUrl: safeStr(src.imageUrl),
+      isActive: safeBool(src.isActive),
+      userId: String(src.userId ?? ''),
+      user: usr ? {
+        id: String(usr.id ?? ''),
+        name: safeStr(usr.name),
+        image: safeStr(usr.image),
+        username: safeStr(usr.username),
       } : { id: '', name: null, image: null, username: null },
-      createdAt: String(raw.createdAt ?? ''),
-      updatedAt: String(raw.updatedAt ?? ''),
-      viewCount: typeof raw.viewCount === 'number' ? raw.viewCount : 0,
-      acceptsAppointments: safeBool(raw.acceptsAppointments),
-      appointmentDuration: safeNum(raw.appointmentDuration),
-      appointmentLeadTime: safeNum(raw.appointmentLeadTime),
-      appointmentLocation: safeStr(raw.appointmentLocation),
-      appointmentMeetingLink: safeStr(raw.appointmentMeetingLink),
+      createdAt: String(src.createdAt ?? ''),
+      updatedAt: String(src.updatedAt ?? ''),
+      viewCount: typeof src.viewCount === 'number' ? src.viewCount : 0,
+      acceptsAppointments: safeBool(src.acceptsAppointments),
+      appointmentDuration: safeNum(src.appointmentDuration),
+      appointmentLeadTime: safeNum(src.appointmentLeadTime),
+      appointmentLocation: safeStr(src.appointmentLocation),
+      appointmentMeetingLink: safeStr(src.appointmentMeetingLink),
       appointmentFormFields: ff.length > 0 ? ff : null,
       hashtags: h,
     }
@@ -102,9 +105,9 @@ interface FormField {
   required: boolean
 }
 
-class ErrorBoundary extends Component<{ children: React.ReactNode }, { hasError: boolean; error: any }> {
-  state = { hasError: false, error: null as any }
-  static getDerivedStateFromError(error: any) {
+class ErrorBoundary extends Component<{ children: React.ReactNode }, { hasError: boolean; error: unknown }> {
+  state = { hasError: false, error: null }
+  static getDerivedStateFromError(error: unknown) {
     return { hasError: true, error }
   }
   render() {
@@ -183,8 +186,8 @@ export default function ServiceDetailPage() {
   const acceptsAppointments = service.acceptsAppointments === true
   const formFields: FormField[] = Array.isArray(service.appointmentFormFields)
     ? service.appointmentFormFields
-        .filter((f: any) => f && typeof f === 'object' && typeof f.label === 'string')
-        .map((f: any) => ({ label: String(f.label), type: String(f.type ?? 'text') === 'textarea' ? 'textarea' as const : 'text' as const, required: f.required === true }))
+        .filter((f) => f && typeof f === 'object' && typeof f.label === 'string')
+        .map((f) => ({ label: String(f.label), type: String(f.type ?? 'text') === 'textarea' ? 'textarea' as const : 'text' as const, required: f.required === true }))
     : []
   const duration = typeof service.duration === 'number' ? service.duration : 60
   const price = typeof service.price === 'number' ? service.price : null

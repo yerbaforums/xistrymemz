@@ -20,7 +20,7 @@ interface ReplySectionProps {
   expandReply?: boolean
 }
 
-export default function ReplySection({ postId, postAuthorId, expandReply }: ReplySectionProps) {
+export default function ReplySection({ postId, postAuthorId: _postAuthorId, expandReply }: ReplySectionProps) {
   const { data: session } = useSession()
   const { success, error: toastError } = useToast()
   const [replies, setReplies] = useState<Reply[]>([])

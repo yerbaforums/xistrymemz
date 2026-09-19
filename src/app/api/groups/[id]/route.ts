@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { apiSuccess, apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -68,7 +68,8 @@ export async function GET(
       user: gp.product.user
     }))
 
-    const { groupProducts, ...rest } = group
+    const rest = { ...group }
+    delete (rest as { groupProducts?: unknown }).groupProducts
 
     return NextResponse.json({ ...rest, marketplaceProducts, isMember, isAdmin })
   } catch (error) {
@@ -95,7 +96,7 @@ export async function PUT(
     } catch {
       return apiError("Invalid JSON body", 400)
     }
-    const { name, description, imageUrl, coverImage, bannerColor, isPrivate, hashtags } = body as any
+    const { name, description, imageUrl, coverImage, bannerColor, isPrivate, hashtags } = body as Record<string, unknown>
 
     const member = await prisma.groupMember.findFirst({
       where: { groupId: id, userId: session.user.id, role: 'ADMIN' }

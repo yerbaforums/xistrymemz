@@ -2,15 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
-import { useRouter } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
 import ImageUploader from '@/components/ImageUploader'
 import { SHOP_CATEGORIES } from '@/lib/shop-categories'
 
 import styles from './shop.module.css'
 import Loading from '@/components/Loading'
-import Skeleton from '@/components/Skeleton'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 interface ShopData {
@@ -29,7 +26,6 @@ type DeleteAction = 'unpublish' | 'delete'
 
 export default function ShopDashboard() {
   const { success, error } = useToast()
-  const router = useRouter()
   const [shop, setShop] = useState<ShopData | null>(null)
   const [stats, setStats] = useState({ products: 0, services: 0, rentals: 0 })
   const [loading, setLoading] = useState(true)
@@ -68,12 +64,12 @@ export default function ShopDashboard() {
         email: shopData.email || '',
         name: shopData.name || ''
       })
-      const products = Array.isArray(productsData) ? productsData : productsData?.items || productsData?.products || []
+      const products = (Array.isArray(productsData) ? productsData : productsData?.items || productsData?.products || []) as Array<{ type: string }>
       const services = servicesData?.data?.services || servicesData?.services || []
       setStats({
-        products: products.filter((p: any) => p.type === 'PRODUCT').length,
+        products: products.filter((p) => p.type === 'PRODUCT').length,
         services: services.length,
-        rentals: products.filter((p: any) => p.type === 'RENTAL').length,
+        rentals: products.filter((p) => p.type === 'RENTAL').length,
       })
     } catch { /* ignore */ }
     setLoading(false)
@@ -127,7 +123,7 @@ export default function ShopDashboard() {
 
       {!shop?.shopSlug && !editing && (
         <div className={styles.prompt}>
-          <h3>You don't have a published shop yet</h3>
+          <h3>You don&apos;t have a published shop yet</h3>
           <p>Create a shop to showcase all your products, services, and rentals in one place.</p>
           <button onClick={() => setEditing(true)} className="btn-primary">➕ Create Shop</button>
         </div>

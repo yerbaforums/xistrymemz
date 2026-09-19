@@ -27,6 +27,33 @@ const ENTITY_RELATIONS: Record<HashtagEntityType, { model: string; idField: stri
   GROUP: { model: 'groupHashtag', idField: 'groupId', table: 'GroupHashtag' },
 }
 
+interface HashtagJunctionModel {
+  create(args: { data: Record<string, unknown> }): Promise<unknown>
+  deleteMany(args: { where: Record<string, unknown> }): Promise<unknown>
+  findMany<T>(args: unknown): Promise<T[]>
+}
+
+interface TrendingHashtag {
+  tag: string
+  postCount: number
+  entities: {
+    posts: number
+    products: number
+    events: number
+    services: number
+    schoolContents: number
+    projects: number
+    requests: number
+    groups: number
+    forumPosts: number
+    groupPosts: number
+  }
+}
+
+function junctionModel(model: string): HashtagJunctionModel {
+  return (prisma as unknown as Record<string, HashtagJunctionModel>)[model]
+}
+
 export function extractHashtags(text: string): string[] {
   const tags: string[] = []
   const seen = new Set<string>()
@@ -62,10 +89,10 @@ export async function linkHashtags(entityType: HashtagEntityType, entityId: stri
 
   const deleteWhere: Record<string, string> = {}
   deleteWhere[rel.idField] = entityId
-  await (prisma as any)[rel.model].deleteMany({ where: deleteWhere })
+  await junctionModel(rel.model).deleteMany({ where: deleteWhere })
 
   for (const [, hashtagId] of tagIdMap) {
-    const data: Record<string, any> = {
+    const data: Record<string, unknown> = {
       [rel.idField]: entityId,
       hashtagId,
     }
@@ -75,7 +102,7 @@ export async function linkHashtags(entityType: HashtagEntityType, entityId: stri
     if (['PRODUCT', 'SERVICE'].includes(entityType)) {
       data.sourceType = entityType
     }
-    await (prisma as any)[rel.model].create({ data })
+    await junctionModel(rel.model).create({ data })
   }
 }
 
@@ -84,7 +111,7 @@ export async function removeHashtags(entityType: HashtagEntityType, entityId: st
   if (!rel) return
   const where: Record<string, string> = {}
   where[rel.idField] = entityId
-  await (prisma as any)[rel.model].deleteMany({ where })
+  await junctionModel(rel.model).deleteMany({ where })
 }
 
 export async function extractAndLinkHashtags(
@@ -110,28 +137,28 @@ export async function getHashtagsForEntity(
   const where: Record<string, string> = {}
   where[rel.idField] = entityId
 
-  const junctions = await (prisma as any)[rel.model].findMany({
+  const junctions = await junctionModel(rel.model).findMany<{ id: string; hashtag: { id: string; tag: string } }>({
     where,
     include: { hashtag: { select: { id: true, tag: true } } },
   })
-  return junctions.map((j: any) => j.hashtag)
+  return junctions.map(j => j.hashtag)
 }
 
 export async function getTrendingHashtags(
   days = 7,
   limit = 20,
   entityFilter?: HashtagEntityType,
-): Promise<any[]> {
+): Promise<TrendingHashtag[]> {
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 
   if (entityFilter) {
     const rel = ENTITY_RELATIONS[entityFilter]
     if (!rel) return []
 
-    const recent = await (prisma as any)[rel.model].findMany({
+    const recent = await junctionModel(rel.model).findMany<{ hashtagId: string }>({
       where: { createdAt: { gte: since } },
       select: { hashtagId: true },
-    }) as { hashtagId: string }[]
+    })
     const ids = [...new Set(recent.map(r => r.hashtagId))]
     if (ids.length === 0) return []
 
@@ -148,11 +175,11 @@ export async function getTrendingHashtags(
   const allTables = Object.values(ENTITY_RELATIONS)
   for (const rel of allTables) {
     try {
-      const items = await (prisma as any)[rel.model].findMany({
+      const items = await junctionModel(rel.model).findMany<{ hashtagId: string }>({
         where: { createdAt: { gte: since } },
         select: { hashtagId: true },
       })
-      items.forEach((i: any) => idSet.add(i.hashtagId))
+      items.forEach(i => idSet.add(i.hashtagId))
     } catch { }
   }
 

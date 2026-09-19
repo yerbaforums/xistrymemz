@@ -328,7 +328,7 @@ export default function DashboardProjectsClient({ initialProjects }: DashboardPr
                       <div className={styles.resources}>
                         <strong>Resources</strong>
                         <div className={styles.resourceList}>
-                          {resources.slice(0, 4).map((r: any, i: number) => (
+                          {resources.slice(0, 4).map((r, i: number) => (
                             <a key={i} href={r.url || '#'} target="_blank" rel="noopener noreferrer" className={styles.resourceItem}>
                               {r.type === 'DOC' ? '📄' : r.type === 'CHECKLIST' ? '✅' : r.type === 'REFERENCE' ? '📚' : r.type === 'FILE' ? '📎' : '🔗'}
                               {r.title || 'Resource'}

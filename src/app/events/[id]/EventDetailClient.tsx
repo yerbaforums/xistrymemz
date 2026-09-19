@@ -50,21 +50,20 @@ function EventDetailContent() {
   const [bulkMessage, setBulkMessage] = useState('')
   const [sendingBulk, setSendingBulk] = useState(false)
   const [bulkSuccess, setBulkSuccess] = useState('')
-  const [joinRole, setJoinRole] = useState<'ATTENDEE' | 'VOLUNTEER'>('ATTENDEE')
+  const [joinRole] = useState<'ATTENDEE' | 'VOLUNTEER'>('ATTENDEE')
   const [copiedDonation, setCopiedDonation] = useState(false)
   const [qrOpen, setQrOpen] = useState<string | null>(null)
   const [ticketQuantity, setTicketQuantity] = useState(1)
-  const [purchasing, setPurchasing] = useState(false)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [showTicketQR, setShowTicketQR] = useState(false)
   const [showTicketScan, setShowTicketScan] = useState(false)
-  const [myTicket, setMyTicket] = useState<any>(null)
+  const [myTicket, setMyTicket] = useState<{ paymentStatus: string; ticketCode: string } | null>(null)
   const [showInviteModal, setShowInviteModal] = useState(false)
   const [inviteSearch, setInviteSearch] = useState('')
   const [inviteResults, setInviteResults] = useState<Array<{ id: string; name: string | null; image: string | null }>>([])
   const [selectedUsers, setSelectedUsers] = useState<Array<{ id: string; name: string | null }>>([])
   const [searchingUsers, setSearchingUsers] = useState(false)
-  const [invitations, setInvitations] = useState<Array<{ id: string; user: { id: string; name: string | null; image: string | null }; status: string }>>([])
+  const [, setInvitations] = useState<Array<{ id: string; user: { id: string; name: string | null; image: string | null }; status: string }>>([])
   const [tickets, setTickets] = useState<Array<{
     id: string
     user: { id: string; name: string | null; image: string | null }
@@ -78,7 +77,7 @@ function EventDetailContent() {
   }>>([])
   const [showTicketModal, setShowTicketModal] = useState(false)
   const [updatingTicket, setUpdatingTicket] = useState<string | null>(null)
-  const userDonationAddrs = useDonationAddresses()
+  useDonationAddresses()
   const [isEditing, setIsEditing] = useState(false)
   const [editFormData, setEditFormData] = useState<EventFormData>(() => getDefaultEventFormData())
   const [saving, setSaving] = useState(false)
@@ -443,23 +442,6 @@ function EventDetailContent() {
     }
   }
 
-  const handleRespondInvite = async (status: 'ACCEPTED' | 'DECLINED') => {
-    if (!event) return
-    try {
-      const res = await fetch(`/api/events/${event.id}/invite`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status })
-      })
-      if (res.ok) {
-        if (status === 'ACCEPTED') {
-          setEvent(prev => prev ? { ...prev, joined: true } : prev)
-        }
-        loadInvitations()
-      }
-    } catch {}
-  }
-
   const handleTicketAction = async (ticketId: string, action: string) => {
     if (!event) return
     setUpdatingTicket(ticketId)
@@ -518,7 +500,7 @@ function EventDetailContent() {
       } else {
         error(data.error || 'Failed to send message')
       }
-    } catch (err) {
+    } catch {
       error('Failed to send message')
     } finally {
       setSendingBulk(false)
@@ -530,7 +512,7 @@ function EventDetailContent() {
     <div className={styles.page}>
       <div className={styles.notFound}>
         <h2>Event not found</h2>
-        <p>This event may have been deleted or doesn't exist.</p>
+        <p>This event may have been deleted or doesn&apos;t exist.</p>
         <Link href="/events" className="btn-primary">Browse Events</Link>
       </div>
     </div>

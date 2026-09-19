@@ -328,7 +328,7 @@ export default function BookAppointmentModal({
             </div>
           ) : !hasAvailability ? (
             <div className={styles.statusMsg}>
-              <p className={styles.m004}>Seller hasn't set their availability yet.</p>
+              <p className={styles.m004}>Seller hasn&apos;t set their availability yet.</p>
               <p className={styles.m0}>Please check back later or contact the seller directly.</p>
             </div>
           ) : (

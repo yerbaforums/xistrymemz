@@ -26,11 +26,12 @@ const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), 
 const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false })
 const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false })
 
-let L: any
+let L: typeof import('leaflet') | null = null
 if (typeof window !== 'undefined') {
-  L = require('leaflet')
-  delete L.Icon.Default.prototype._getIconUrl
-  L.Icon.Default.mergeOptions({
+  const leaflet = require('leaflet') as typeof import('leaflet')
+  L = leaflet
+  delete (leaflet.Icon.Default.prototype as { _getIconUrl?: string })._getIconUrl
+  leaflet.Icon.Default.mergeOptions({
     iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
     iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
     shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
@@ -106,7 +107,7 @@ export default function BoardDetailPage() {
   const [editing, setEditing] = useState(false)
   const [carouselIndex, setCarouselIndex] = useState<number | null>(null)
   const [carouselAutoPlay, setCarouselAutoPlay] = useState(false)
-  const mapRef = useRef<any>(null)
+  const mapRef = useRef<import('leaflet').Map | null>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'map' | 'calendar'>('grid')
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [editingPin, setEditingPin] = useState<Pin | null>(null)
@@ -142,8 +143,8 @@ export default function BoardDetailPage() {
       setBoard(data.board)
       setPins(data.pins || [])
       setTotal(data.total || 0)
-    } catch (e: any) {
-      if (e?.name === 'AbortError') { console.error('Board fetch timed out'); toastError('Request timed out') }
+    } catch (e: unknown) {
+      if ((e as { name?: string })?.name === 'AbortError') { console.error('Board fetch timed out'); toastError('Request timed out') }
       else { console.error('Fetch board error:', e); toastError('Failed to load board') }
     }
     finally { setLoading(false) }

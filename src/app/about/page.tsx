@@ -74,11 +74,11 @@ export default function About() {
             </div>
             <div className={styles.feature}>
               <h3>👁️ No Shadowbanning</h3>
-              <p>We don't secretly suppress your reach. If there's an issue with your content, you'll know. No invisible penalties, no reduced visibility without explanation. Full transparency.</p>
+              <p>We don&apos;t secretly suppress your reach. If there&apos;s an issue with your content, you&apos;ll know. No invisible penalties, no reduced visibility without explanation. Full transparency.</p>
             </div>
             <div className={styles.feature}>
               <h3>✊ No Censorship</h3>
-              <p>Your voice matters. We don't censor legal content or suppress viewpoints. The community sets its own norms through groups and forums. Content is only removed for illegal material or clear violations of our terms.</p>
+              <p>Your voice matters. We don&apos;t censor legal content or suppress viewpoints. The community sets its own norms through groups and forums. Content is only removed for illegal material or clear violations of our terms.</p>
             </div>
           </div>
         </div>

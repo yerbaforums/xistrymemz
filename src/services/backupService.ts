@@ -63,7 +63,7 @@ async function prismaDump(): Promise<string> {
   const data: Record<string, unknown[]> = {}
   for (const name of modelNames) {
     try {
-      const model = (prisma as any)[name.toLowerCase()]
+      const model = (prisma as unknown as Record<string, { findMany?: () => Promise<unknown[]> }>)[name.toLowerCase()]
       if (model?.findMany) {
         data[name] = await model.findMany()
       }

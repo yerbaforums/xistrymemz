@@ -1,8 +1,23 @@
-import { NextRequest, apiSuccess, apiError, apiUnauthorized, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { NextRequest, apiSuccess, apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { createNotification } from '@/services/notificationService'
+
+interface AppointmentBookingBody {
+  title?: string
+  description?: string
+  startTime?: string
+  endTime?: string
+  duration?: number | null
+  location?: string | null
+  meetingLink?: string | null
+  sellerId?: string
+  productId?: string | null
+  formResponses?: Array<{ label?: unknown; value?: unknown }>
+  category?: string | null
+  serviceOfferingId?: string | null
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -52,7 +67,7 @@ export async function POST(request: NextRequest) {
     } catch {
       return apiError("Invalid JSON body", 400)
     }
-    const { title, description, startTime, endTime, duration, location, meetingLink, sellerId, productId, formResponses, category, serviceOfferingId } = body as any
+    const { title, description, startTime, endTime, duration, location, meetingLink, sellerId, productId, formResponses, category, serviceOfferingId } = body as AppointmentBookingBody
 
     if (!title || !startTime || !endTime || !sellerId) {
       return apiError("Missing required fields", 400)
@@ -105,8 +120,8 @@ export async function POST(request: NextRequest) {
 
     const normalizedResponses = Array.isArray(formResponses)
       ? formResponses
-          .filter((r: any) => r && typeof r === 'object' && typeof r.label === 'string')
-          .map((r: any) => ({ label: String(r.label), value: String(r.value ?? '') }))
+          .filter((r) => r && typeof r === 'object' && typeof r.label === 'string')
+          .map((r) => ({ label: String(r.label), value: String(r.value ?? '') }))
       : undefined
 
     const appointment = await prisma.appointment.create({

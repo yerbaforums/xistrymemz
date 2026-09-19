@@ -93,7 +93,7 @@ function MarketplaceContent() {
   const [confirmTitle, setConfirmTitle] = useState('')
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const userDonationAddrs = useDonationAddresses()
-  const { settings } = useSiteSettings()
+  useSiteSettings()
 
   const [productForm, setProductForm] = useState({
     title: '',
@@ -300,7 +300,7 @@ function MarketplaceContent() {
         const err = await res.json()
         error(err.error || 'Failed to save')
       }
-    } catch (err) {
+    } catch {
       error('Failed to save')
     } finally {
       setSaving(false)
@@ -317,7 +317,7 @@ function MarketplaceContent() {
       } else {
         error('Failed to delete')
       }
-    } catch (err) {
+    } catch {
       error('Failed to delete')
     }
   }
@@ -335,7 +335,7 @@ function MarketplaceContent() {
       } else {
         error('Failed to update')
       }
-    } catch (err) {
+    } catch {
       error('Failed to update')
     }
   }
@@ -428,7 +428,7 @@ function MarketplaceContent() {
         const err = await res.json()
         error(err.error || 'Failed to save')
       }
-    } catch (err) {
+    } catch {
       error('Failed to save')
     } finally {
       setSaving(false)

@@ -9,7 +9,7 @@ import SharedItemCard from '@/components/SharedItemCard'
 import ReplySection from '@/components/ReplySection'
 import TranslateButton from '@/components/TranslateButton'
 import ViewCount from '@/components/ViewCount'
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { getUserProfileUrl } from '@/lib/utils'
 import styles from './FeedItem.module.css'
@@ -62,10 +62,10 @@ function getImages(images: string | null): string[] {
 }
 
 export default function FeedItem({ post }: { post: FeedPost }) {
-  const [showReplies, setShowReplies] = useState(false)
+  const [showReplies] = useState(false)
   const [editing, setEditing] = useState(false)
   const [editContent, setEditContent] = useState(post.content)
-  const { data: session } = useSession()
+  useSession()
   const imageList = getImages(post.images)
   const displayContent = post.content ? post.content.replace(URL_REGEX, '').trim() : ''
   const contextKey = post.context || post.sourceType || 'PROFILE'

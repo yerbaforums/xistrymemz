@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import dynamic from 'next/dynamic'
 import styles from './page.module.css'
 import ProjectGoals from './ProjectGoals'
 import ProjectMilestones from './ProjectMilestones'
@@ -83,7 +82,6 @@ interface ProjectData {
 
 interface Product { id: string; title: string; price: number | null; imageUrl: string | null; type: string }
 
-interface MilepostStatus { id: string; completed: boolean }
 
 interface StatusHistoryEntry { id: string; fromStatus: string | null; toStatus: string; reason: string | null; createdAt: string }
 
@@ -122,7 +120,7 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
   })
   const [projectHashtags, setProjectHashtags] = useState<string[]>(() => {
     if (!Array.isArray(project.hashtags)) return []
-    return project.hashtags.map((h: any) => h.hashtag?.tag).filter(Boolean)
+    return project.hashtags.map(h => h.hashtag?.tag ?? '').filter(Boolean)
   })
   const [editedVideoUrl, setEditedVideoUrl] = useState(project.videoUrl || '')
   const [editedNeedsVolunteers, setEditedNeedsVolunteers] = useState(project.needsVolunteers)
@@ -131,7 +129,7 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
   const [editedGoalAmount, setEditedGoalAmount] = useState(project.goalAmount?.toString() || '')
   const [editedStatus, setEditedStatus] = useState(project.status)
   const [editedPhases, setEditedPhases] = useState<string[]>(() => {
-    try { const p = (project as any).phases ? JSON.parse((project as any).phases) : []; return Array.isArray(p) ? p : [] } catch { return [] }
+    try { const phasesJson = (project as { phases?: string | null }).phases; const p = phasesJson ? JSON.parse(phasesJson) : []; return Array.isArray(p) ? p : [] } catch { return [] }
   })
   const [editingOverview, setEditingOverview] = useState(false)
   const [mapExpanded, setMapExpanded] = useState(false)
@@ -323,7 +321,7 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
       })
       setProject({ ...project, ...updated })
       if (updated?.hashtags) {
-        setProjectHashtags(updated.hashtags.map((h: any) => h.hashtag?.tag).filter(Boolean))
+        setProjectHashtags(updated.hashtags.map((h: { hashtag?: { tag?: string } }) => h.hashtag?.tag ?? '').filter(Boolean))
       }
       setEditingOverview(false)
     } catch (err) {
@@ -786,14 +784,14 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
                       {project.description && <TranslateButton text={project.description} />}
                       {project.hashtags && project.hashtags.length > 0 && (
                         <div className={styles.flexWrap}>
-                          {project.hashtags.map((h: any) => (
+                          {project.hashtags.map((h: { id: string; tag?: string; hashtag?: { id: string; tag: string } }) => (
                             <Link key={h.hashtag?.id || h.id} href={`/hashtag/${h.hashtag?.tag || h.tag}`} className={styles.hashtag}>#{h.hashtag?.tag || h.tag}</Link>
                           ))}
                         </div>
                       )}
-                      {(project as any).phases && (() => {
+                      {(project as { phases?: string | null }).phases && (() => {
                         let parsed: string[] = []
-                        try { parsed = JSON.parse((project as any).phases); if (!Array.isArray(parsed)) parsed = [] } catch {}
+                        try { const phasesJson = (project as { phases?: string | null }).phases; parsed = phasesJson ? JSON.parse(phasesJson) : []; if (!Array.isArray(parsed)) parsed = [] } catch {}
                         if (parsed.length === 0) return null
                         return (
                           <div className={styles.phasesSection}>
@@ -1152,8 +1150,8 @@ donationDescription={project.donationDescription}
           ) : (
             <div className={styles.requestList}>
               {project.requests.map(req => {
-                const goal = (req as any).goalAmount || 0
-                const funding = (req as any).currentFunding || 0
+                const goal = req.goalAmount ?? 0
+                const funding = req.currentFunding ?? 0
                 const pct = goal > 0 ? Math.min(Math.round((funding / goal) * 100), 100) : 0
                 return (
                   <Link key={req.id} href={`/requests/${req.id}`} className={styles.requestItem}>

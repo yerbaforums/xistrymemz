@@ -67,7 +67,7 @@ export default function AdminBadgesPage() {
         const data = await res.json()
         setBadges(data.data.badges)
       }
-    } catch (err) {
+    } catch {
     } finally {
       setLoading(false)
     }

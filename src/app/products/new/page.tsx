@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { useToast } from '@/context/ToastContext'
 import { extractHashtags } from '@/services/hashtagService'
@@ -172,7 +173,7 @@ export default function NewProductPage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               content: `Just listed: ${form.title}`,
-              context: session?.user && (session.user as any).shopSlug ? 'SHOP' : 'PROFILE',
+              context: session?.user && (session.user as { shopSlug?: string }).shopSlug ? 'SHOP' : 'PROFILE',
               referenceType: 'PRODUCT',
               referenceId: product.id,
               referenceTitle: form.title
@@ -404,7 +405,7 @@ export default function NewProductPage() {
                 {userDonationAddrs.length === 0 ? (
                   <p className={styles.noAddrs}>
                     No addresses saved.{' '}
-                    <a href="/profile/edit" style={{ color: 'var(--accent-primary)' }}>Add one in profile settings</a>
+                    <Link href="/profile/edit" style={{ color: 'var(--accent-primary)' }}>Add one in profile settings</Link>
                   </p>
                 ) : (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>

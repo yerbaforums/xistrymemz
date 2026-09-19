@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSession } from 'next-auth/react'
+import type { Session } from 'next-auth'
 import dynamic from 'next/dynamic'
 import styles from './planning.module.css'
 import { geocodeLocation, reverseGeocodeLocation } from '@/lib/geocoding'
@@ -15,12 +16,13 @@ const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLaye
 const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false })
 const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false })
 const Polyline = dynamic(() => import('react-leaflet').then(mod => mod.Polyline), { ssr: false })
+import type { Map as LeafletMap } from 'leaflet'
 
-let L: any
+let L: typeof import('leaflet')
 if (typeof window !== 'undefined') {
   import('leaflet').then(mod => {
     L = mod
-    delete (L.Icon.Default.prototype as any)._getIconUrl
+    delete (L.Icon.Default.prototype as { _getIconUrl?: string })._getIconUrl
     L.Icon.Default.mergeOptions({
       iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
       iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -61,6 +63,17 @@ interface TripStop {
 interface TripCollab {
   id: string; userId: string; role: string; status: string
   user: { id: string; name: string | null; image: string | null }
+}
+
+interface LinkResult {
+  id: string; title: string
+}
+
+interface InviteResult {
+  id: string
+  name: string | null
+  username: string | null
+  image: string | null
 }
 
 interface Trip {
@@ -214,10 +227,10 @@ export default function PlanningPage() {
   )
 }
 
-function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, setActiveTab, session, mapReady, onUpdate, showAddStop, setShowAddStop }: {
+function TripDetail({ trip: initialTrip, savedLocations, categories: _categories, activeTab, setActiveTab, session, mapReady, onUpdate, showAddStop: _showAddStop, setShowAddStop: _setShowAddStop }: {
   trip: Trip; savedLocations: UserLocation[]; categories: LocationCategory[]
   activeTab: string; setActiveTab: (t: string) => void
-  session: any; mapReady: boolean; onUpdate: () => void
+  session: Session | null; mapReady: boolean; onUpdate: () => void
   showAddStop: boolean; setShowAddStop: (v: boolean) => void
 }) {
   const { success, error: toastError } = useToast()
@@ -225,12 +238,12 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
   const [editing, setEditing] = useState(false)
   const [editTitle, setEditTitle] = useState(trip.title)
   const [editDesc, setEditDesc] = useState(trip.description || '')
-  const [editNotes, setEditNotes] = useState((trip as any).notes || '')
+  const [editNotes, setEditNotes] = useState(trip.notes || '')
   const [editStart, setEditStart] = useState(trip.startDate?.split('T')[0] || '')
   const [editEnd, setEditEnd] = useState(trip.endDate?.split('T')[0] || '')
   const [editPublic, setEditPublic] = useState(trip.isPublic)
   const [inviteUsername, setInviteUsername] = useState('')
-  const [inviteResults, setInviteResults] = useState<any[]>([])
+  const [inviteResults, setInviteResults] = useState<InviteResult[]>([])
   const [inviteSearching, setInviteSearching] = useState(false)
   const [addingCustomStop, setAddingCustomStop] = useState(false)
   const [removeStopTarget, setRemoveStopTarget] = useState<string | null>(null)
@@ -256,13 +269,13 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
   const [linkingStopId, setLinkingStopId] = useState<string | null>(null)
   const [linkType, setLinkType] = useState<'request' | 'event' | 'product' | null>(null)
   const [linkSearch, setLinkSearch] = useState('')
-  const [linkResults, setLinkResults] = useState<any[]>([])
+  const [linkResults, setLinkResults] = useState<LinkResult[]>([])
   const [linkSearching, setLinkSearching] = useState(false)
   const [newRequestTitle, setNewRequestTitle] = useState('')
   const [newRequestDesc, setNewRequestDesc] = useState('')
   const [newEventTitle, setNewEventTitle] = useState('')
   const [newEventDate, setNewEventDate] = useState('')
-  const mapRef = useRef<any>(null)
+  const mapRef = useRef<LeafletMap | null>(null)
 
   useEffect(() => { setTrip(initialTrip); setEditTitle(initialTrip.title); setEditDesc(initialTrip.description || ''); setEditNotes(initialTrip.notes || ''); setEditStart(initialTrip.startDate?.split('T')[0] || ''); setEditEnd(initialTrip.endDate?.split('T')[0] || ''); setEditPublic(initialTrip.isPublic) }, [initialTrip])
 
@@ -399,7 +412,7 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
     if (res.ok) { const updated = await res.json(); setTrip(prev => ({ ...prev, stops: (prev.stops || []).map(s => s.id === stopId ? updated : s) })); onUpdate() }
   }
 
-  const handleUpdateStopField = async (stopId: string, data: Record<string, any>) => {
+  const handleUpdateStopField = async (stopId: string, data: Record<string, unknown>) => {
     const res = await fetch(`/api/trips/${trip.id}/stops/${stopId}`, {
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -883,7 +896,7 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
                                 <button className={`${styles.btn} ${styles.btnSmall}`} onClick={() => { setLinkingStopId(null); setLinkType(null) }}>✕</button>
                               </div>
                               {linkSearching && <p className={`${styles.fs08} ${styles.textMuted}`}>Searching...</p>}
-                              {linkResults.map((item: any) => (
+                              {linkResults.map((item) => (
                                 <div key={item.id} className={`${styles.flexBetween} ${styles.py5} ${styles.bBottom}`}>
                                   <span className={styles.fs085}>{item.title}</span>
                                   <button className={`${styles.btn} ${styles.btnPrimary} ${styles.btnSmall}`} onClick={() => handleLinkItem(stop.id, linkType, { id: item.id, title: item.title })}>
@@ -1066,7 +1079,7 @@ function TripDetail({ trip: initialTrip, savedLocations, categories, activeTab, 
               </div>
               {inviteResults.length > 0 && (
                 <div className={styles.inviteDropdown}>
-                  {inviteResults.map((u: any) => (
+                  {inviteResults.map((u) => (
                     <div key={u.id} className={`${styles.flexCenter} ${styles.gap8} ${styles.cursorPointer} ${styles.bBottom} ${styles.px075}`}
                       onClick={() => handleInviteUser(u.id)}>
                       {u.image ? <img src={u.image} alt="" className={`${styles.w24} ${styles.h24} ${styles.rounded50} ${styles.objectCover}`} />

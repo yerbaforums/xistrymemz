@@ -168,7 +168,7 @@ export default function VideoChatModal({ roomId: initialRoomId, inviteCode, onCl
   )
 }
 
-function PeerVideo({ peer }: { peer: any }) {
+function PeerVideo({ peer }: { peer: { userId: string; stream?: MediaStream | null } }) {
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {

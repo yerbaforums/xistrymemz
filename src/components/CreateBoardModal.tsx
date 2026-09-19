@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import { EmptyState } from '@/components/EmptyState'
 import styles from './CreateBoardModal.module.css'
 import { MapContainer as BoardMapContainer, TileLayer as BoardTileLayer, Marker as BoardMarker } from '@/components/LeafletComponents'
+import type { LeafletMouseEvent } from 'leaflet'
 
 const BoardClickHandler = dynamic(() => import('./BoardMapClickHandler').then(m => m.BoardMapClickHandler), { ssr: false })
 
@@ -93,7 +94,7 @@ export default function CreateBoardModal({ onClose, onCreated, initialCity, init
     fetchLocations()
   }, [initialLat])
 
-  const handleMapClick = (e: any) => {
+  const handleMapClick = (e: LeafletMouseEvent) => {
     const { lat, lng } = e.latlng
     setMapMarker([lat, lng])
     setLatitude(lat.toFixed(6))

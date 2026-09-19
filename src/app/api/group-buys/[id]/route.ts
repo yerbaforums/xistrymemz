@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiUnauthorized, apiNotFound, apiServerError } from '@/lib/api-helpers'
+import { apiSuccess, apiError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -6,7 +6,6 @@ import { prisma } from '@/lib/prisma'
 export async function GET(request: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
     const params = await ctx.params
-    const session = await getServerSession(authOptions)
 
     const groupBuy = await prisma.groupBuy.findUnique({
       where: { id: params.id },

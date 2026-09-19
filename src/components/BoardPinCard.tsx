@@ -7,7 +7,7 @@ import { getUserProfileUrl } from '@/lib/utils'
 import LinkedEntityDetail from '@/components/LinkedEntityDetail'
 import LinkPreview from '@/components/LinkPreview'
 import EntityActions from '@/components/EntityActions'
-import { useToast } from '@/context/ToastContext'
+import type { ActionEntityType } from '@/hooks/useEntityActions'
 import styles from './BoardPinCard.module.css'
 
 interface PinUser {
@@ -53,39 +53,6 @@ interface BoardPinCardProps {
   onView?: (pinId: string) => void
 }
 
-function getEntityHref(type: string | null, id: string | null): string {
-  if (!type || !id) return '#'
-  switch (type) {
-    case 'USER': return `/profile/${id}`
-    case 'PRODUCT': return `/products/${id}`
-    case 'SERVICE': return `/services/${id}`
-    case 'SHOP': return `/shop/${id}`
-    case 'EVENT': return `/events/${id}`
-    case 'GROUP': return `/groups/${id}`
-    case 'PROJECT': return `/projects/${id}`
-    case 'REQUEST': return `/requests/${id}`
-    case 'POST': return `/posts/${id}`
-    case 'SCHOOL_CONTENT': return `/school/content/${id}`
-    default: return '#'
-  }
-}
-
-function getEntityIcon(type: string | null): string {
-  switch (type) {
-    case 'USER': return '👤'
-    case 'PRODUCT': return '🛒'
-    case 'SERVICE': return '🔧'
-    case 'SHOP': return '🏪'
-    case 'EVENT': return '📅'
-    case 'GROUP': return '👥'
-    case 'PROJECT': return '🚀'
-    case 'REQUEST': return '📝'
-    case 'POST': return '✏️'
-    case 'SCHOOL_CONTENT': return '📚'
-    default: return '📌'
-  }
-}
-
 function getCategoryLabel(category: string | null): string {
   switch (category) {
     case 'LOST_FOUND': return 'Lost & Found'
@@ -128,9 +95,9 @@ function timeUntilExpires(expiresAt: string | null): string | null {
 function ImageCarousel({ images }: { images: string[] }) {
   const [current, setCurrent] = useState(0)
   const len = images.length
-  if (len === 0) return null
   const prev = useCallback(() => setCurrent(c => (c - 1 + len) % len), [len])
   const next = useCallback(() => setCurrent(c => (c + 1) % len), [len])
+  if (len === 0) return null
   return (
     <div className={styles.carousel}>
       <div className={styles.carouselInner}>
@@ -156,7 +123,6 @@ function ImageCarousel({ images }: { images: string[] }) {
 }
 
 const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, boardSlug, onDelete, onFlyTo, onView, onEdit }: BoardPinCardProps) {
-  const { success: toastSuccess } = useToast()
   const [minimized, setMinimized] = useState(false)
   const parsedImages = pin.images ? JSON.parse(pin.images) as string[] : []
   const expirationText = timeUntilExpires(pin.expiresAt)
@@ -290,7 +256,7 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
       </div>
 
       <EntityActions
-        entityType={pin.entityType && ['PRODUCT','EVENT','SERVICE','PROJECT','GROUP','REQUEST','SHOP'].includes(pin.entityType) ? pin.entityType as any : 'PIN'}
+        entityType={pin.entityType && ['PRODUCT','EVENT','SERVICE','PROJECT','GROUP','REQUEST','SHOP'].includes(pin.entityType) ? pin.entityType as ActionEntityType : 'PIN'}
         entityId={pin.entityId || pin.id}
         title={pin.entityTitle || pin.title || 'Pin'}
         authorId={pin.userId}

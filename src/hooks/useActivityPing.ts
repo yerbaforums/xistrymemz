@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react'
 const PING_INTERVAL = 5 * 60 * 1000
 
 export function useActivityPing() {
-  const { data: session, status } = useSession()
+  const { status } = useSession()
 
   useEffect(() => {
     if (status !== 'authenticated') return

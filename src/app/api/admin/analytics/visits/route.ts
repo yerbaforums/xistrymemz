@@ -1,4 +1,4 @@
-import { apiSuccess, apiError, apiUnauthorized, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     const pageFilter = url.searchParams.get('pagePath') || null
     const countryFilter = url.searchParams.get('country') || null
 
-    const where: Record<string, any> = {}
+    const where: Record<string, unknown> = {}
     if (ipFilter) where.ipHash = { contains: ipFilter, mode: 'insensitive' }
     if (pageFilter) where.landingPage = { contains: pageFilter, mode: 'insensitive' }
     if (countryFilter) where.country = { contains: countryFilter, mode: 'insensitive' }

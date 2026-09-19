@@ -17,7 +17,7 @@ export default async function DashboardOffers() {
 
   const userId = session.user.id
 
-  const [sentOffers, receivedOffers, offerStats] = await Promise.all([
+  const [sentOffers, receivedOffers] = await Promise.all([
     prisma.barterOffer.findMany({
       where: { makerId: userId },
       include: {
@@ -35,17 +35,8 @@ export default async function DashboardOffers() {
       },
       orderBy: { createdAt: 'desc' },
       take: 20
-    }),
-    prisma.barterOffer.groupBy({
-      by: ['status'],
-      where: { OR: [{ makerId: userId }, { receiverId: userId }] },
-      _count: true
     })
   ])
-
-  const statsMap = Object.fromEntries(
-    offerStats.map(s => [s.status, s._count])
-  )
 
   const pendingCount = (sentOffers.filter(o => o.status === 'PENDING').length) + (receivedOffers.filter(o => o.status === 'PENDING').length)
   const acceptedCount = (sentOffers.filter(o => o.status === 'ACCEPTED').length) + (receivedOffers.filter(o => o.status === 'ACCEPTED').length)

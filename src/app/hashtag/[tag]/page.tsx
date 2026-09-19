@@ -8,6 +8,7 @@ import ProductCard from '@/components/ProductCard'
 import ServiceCard from '@/components/ServiceCard'
 import Button from '@/components/ui/Button'
 import type { Product } from '@/types/product'
+import type { ServiceOffering } from '@/types/service'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import styles from './page.module.css'
@@ -25,6 +26,81 @@ interface Totals {
   groups: number
   forumPosts: number
   groupPosts: number
+}
+
+interface TagPost {
+  id: string
+  content: string
+  images: string | null
+  likes?: number
+  liked?: boolean
+  replyCount?: number
+  userId?: string
+  createdAt: string
+  user?: { id: string; name: string | null; image: string | null; username?: string | null } | null
+  sourceType?: 'POST' | 'GROUPPOST' | 'FORUMPOST'
+  _sourceType?: string
+  context?: string | null
+  groupName?: string
+  groupId?: string
+  referenceType?: string | null
+  referenceId?: string | null
+  referenceTitle?: string | null
+  viewCount?: number
+  repostCount?: number
+  reposted?: boolean
+}
+
+interface TagEvent {
+  id: string
+  title: string
+  eventDate?: string | null
+  location?: string | null
+  description?: string | null
+  _count?: { eventJoiners?: number }
+  organizer?: { name?: string | null } | null
+}
+
+interface TagSchoolContent {
+  id: string
+  slug: string
+  contentType?: string
+  isPaid?: boolean
+  price?: number | null
+  title: string
+  content?: string | null
+  author?: { name?: string | null } | null
+  user?: { schoolSlug?: string | null; schoolName?: string | null } | null
+}
+
+interface TagProject {
+  id: string
+  title: string
+  description?: string | null
+  status?: string
+  _count?: { requests?: number; joiners?: number }
+  user?: { name?: string | null } | null
+}
+
+interface TagRequest {
+  id: string
+  title: string
+  description?: string | null
+  status?: string
+  category?: string
+  _count?: { comments?: number }
+  user?: { name?: string | null } | null
+}
+
+interface TagGroup {
+  id: string
+  name: string
+  description?: string | null
+  category?: string
+  imageUrl?: string | null
+  isPrivate?: boolean
+  _count?: { members?: number; posts?: number }
+  user?: { name?: string | null } | null
 }
 
 const TABS: { key: TabType; label: string; icon: string }[] = [
@@ -50,14 +126,14 @@ function HashtagPage() {
   const tag = typeof params.tag === 'string' ? params.tag.toLowerCase() : ''
   const [activeTab, setActiveTab] = useState<TabType>('all')
   const [totals, setTotals] = useState<Totals | null>(null)
-  const [posts, setPosts] = useState<any[]>([])
+  const [posts, setPosts] = useState<TagPost[]>([])
   const [products, setProducts] = useState<Product[]>([])
-  const [events, setEvents] = useState<any[]>([])
-  const [services, setServices] = useState<any[]>([])
-  const [schoolContents, setSchoolContents] = useState<any[]>([])
-  const [projects, setProjects] = useState<any[]>([])
-  const [requests, setRequests] = useState<any[]>([])
-  const [groups, setGroups] = useState<any[]>([])
+  const [events, setEvents] = useState<TagEvent[]>([])
+  const [services, setServices] = useState<ServiceOffering[]>([])
+  const [schoolContents, setSchoolContents] = useState<TagSchoolContent[]>([])
+  const [projects, setProjects] = useState<TagProject[]>([])
+  const [requests, setRequests] = useState<TagRequest[]>([])
+  const [groups, setGroups] = useState<TagGroup[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -106,7 +182,7 @@ function HashtagPage() {
 
   const groupedPosts = useMemo(() => {
     if (!posts.length) return []
-    const groupsMap: Record<string, any[]> = {}
+    const groupsMap: Record<string, TagPost[]> = {}
     for (const post of posts) {
       const key = post._sourceType || 'post'
       if (!groupsMap[key]) groupsMap[key] = []
@@ -178,7 +254,7 @@ function HashtagPage() {
             <section>
               {activeTab === 'all' && <h2 className={styles.sectionTitle}>Products</h2>}
               <div className={styles.productGrid}>
-                {products.map((product: any) => (
+                {products.map(product => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>
@@ -196,7 +272,7 @@ function HashtagPage() {
             <section>
               {activeTab === 'all' && <h2 className={styles.sectionTitle}>Events</h2>}
               <div className={styles.eventList}>
-                {events.map((event: any) => (
+                {events.map(event => (
                   <Link key={event.id} href={`/events/${event.id}`} className={styles.eventCard}>
                     <div className={styles.eventCardBody}>
                       <h3 className={styles.eventCardTitle}>{event.title}</h3>
@@ -233,7 +309,7 @@ function HashtagPage() {
             <section>
               {activeTab === 'all' && <h2 className={styles.sectionTitle}>Services</h2>}
               <div className={styles.serviceGrid}>
-                {services.map((service: any) => (
+                {services.map(service => (
                   <ServiceCard key={service.id} service={service} />
                 ))}
               </div>
@@ -251,7 +327,7 @@ function HashtagPage() {
             <section>
               {activeTab === 'all' && <h2 className={styles.sectionTitle}>School Content</h2>}
               <div className={styles.schoolContentList}>
-                {schoolContents.map((item: any) => (
+                {schoolContents.map(item => (
                   <Link key={item.id} href={`/school/${item.user?.schoolSlug || item.slug}`} className={styles.schoolContentCard}>
                     <div className={styles.schoolContentHeader}>
                       <span className={styles.schoolContentType}>{item.contentType}</span>
@@ -263,7 +339,7 @@ function HashtagPage() {
                       by {item.author?.name || 'Unknown'} · {item.user?.schoolName || ''}
                     </p>
                     <p className={styles.schoolContentDesc}>
-                      {item.content?.slice(0, 120)}{item.content?.length > 120 ? '...' : ''}
+                      {item.content?.slice(0, 120)}{(item.content?.length ?? 0) > 120 ? '...' : ''}
                     </p>
                   </Link>
                 ))}
@@ -282,7 +358,7 @@ function HashtagPage() {
             <section>
               {activeTab === 'all' && <h2 className={styles.sectionTitle}>Projects</h2>}
               <div className={styles.projectList}>
-                {projects.map((project: any) => (
+                {projects.map(project => (
                   <Link key={project.id} href={`/plans/${project.id}`} className={styles.projectCard}>
                     <h3 className={styles.projectCardTitle}>{project.title}</h3>
                     {project.description && (
@@ -313,7 +389,7 @@ function HashtagPage() {
             <section>
               {activeTab === 'all' && <h2 className={styles.sectionTitle}>Requests</h2>}
               <div className={styles.requestList}>
-                {requests.map((req: any) => (
+                {requests.map(req => (
                   <Link key={req.id} href={`/requests/${req.id}`} className={styles.requestCard}>
                     <div className={styles.requestCardHeader}>
                       <span className={`badge ${req.status === 'APPROVED' ? 'badge-completed' : req.status === 'REJECTED' ? 'badge-archived' : 'badge-active'}`}>
@@ -346,7 +422,7 @@ function HashtagPage() {
             <section>
               {activeTab === 'all' && <h2 className={styles.sectionTitle}>Groups</h2>}
               <div className={styles.groupList}>
-                {groups.map((group: any) => (
+                {groups.map(group => (
                   <Link key={group.id} href={`/groups/${group.id}`} className={styles.groupCard}>
                     <div className={styles.groupCardHeader}>
                       {group.imageUrl && (
@@ -417,7 +493,7 @@ function HashtagPage() {
                   </h3>
                 )}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {items.map((post: any) => {
+                  {items.map(post => {
                     const sourceType = key === 'FORUMPOST' ? 'FORUMPOST' : key === 'GROUPPOST' ? 'GROUPPOST' : 'POST'
                     return (
                       <FeedItem

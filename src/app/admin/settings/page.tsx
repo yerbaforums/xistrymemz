@@ -39,7 +39,7 @@ export default function AdminSettingsPage() {
   const [qrAddress, setQrAddress] = useState<string | null>(null)
   const [qrDonationCurrency, setQrDonationCurrency] = useState<string | null>(null)
   const { error: toastError } = useToast()
-  const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
+  const [, setDraggedIdx] = useState<number | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
   const allCryptos = getAllCryptos()
@@ -58,7 +58,7 @@ export default function AdminSettingsPage() {
           donationAddresses: data.donationAddresses || []
         })
       }
-    } catch (error) {
+    } catch {
     } finally {
       setLoading(false)
     }
@@ -80,7 +80,7 @@ export default function AdminSettingsPage() {
         setSaved(true)
         setTimeout(() => setSaved(false), 2000)
       }
-    } catch (error) {
+    } catch {
       setSettings(prev => ({ ...prev, [key]: !newValue }))
     } finally {
       setSaving(false)

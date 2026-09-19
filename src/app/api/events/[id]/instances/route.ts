@@ -1,4 +1,4 @@
-import { NextRequest, apiSuccess, apiError, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { NextRequest, apiSuccess, apiError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -37,11 +37,6 @@ export async function GET(
 
     if (event.recurrenceRule && event.eventDate) {
       const allDates = parseRRule(event.recurrenceRule, event.eventDate)
-      const persistedDates = new Set(
-        childEvents
-          .map(e => e.eventDate?.toISOString().slice(0, 10))
-          .filter(Boolean)
-      )
 
       for (const d of allDates) {
         const dateStr = d.toISOString().slice(0, 10)

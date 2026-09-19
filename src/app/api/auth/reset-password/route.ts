@@ -1,4 +1,4 @@
-import { NextRequest, apiSuccess, apiError, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { NextRequest, apiError, NextResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { resetPasswordSchema } from '@/lib/validation'

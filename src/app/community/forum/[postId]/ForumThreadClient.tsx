@@ -129,7 +129,7 @@ export default function ForumThreadPage() {
       if (res.ok) {
         setPost({ ...post, pinned: !post.pinned })
       }
-    } catch (e) {
+    } catch {
     }
   }
 
@@ -144,7 +144,7 @@ export default function ForumThreadPage() {
       if (res.ok) {
         setPost({ ...post, locked: !post.locked })
       }
-    } catch (e) {
+    } catch {
     }
   }
 
@@ -169,7 +169,7 @@ export default function ForumThreadPage() {
         setPost({ ...post, ...updated })
         setEditingPost(false)
       }
-    } catch (e) {
+    } catch {
     } finally {
       setSubmitting(false)
     }
@@ -182,7 +182,7 @@ export default function ForumThreadPage() {
       if (res.ok) {
         router.push('/community/forum')
       }
-    } catch (e) {
+    } catch {
     } finally {
       setDeleting(false)
     }
@@ -207,7 +207,7 @@ export default function ForumThreadPage() {
         setReplies(replies.map(r => r.id === replyId ? { ...r, content: updated.content } : r))
         setEditingReply(null)
       }
-    } catch (e) {
+    } catch {
     } finally {
       setSubmitting(false)
     }
@@ -223,7 +223,7 @@ export default function ForumThreadPage() {
         setReplies(replies.filter(r => r.id !== replyDeleteTarget))
         if (post) setPost({ ...post, replyCount: post.replyCount - 1 })
       }
-    } catch (e) {
+    } catch {
     } finally {
       setSubmitting(false)
     }
@@ -259,7 +259,7 @@ export default function ForumThreadPage() {
           })))
         }
       }
-    } catch (err) {
+    } catch {
     } finally {
       setLoading(false)
     }
@@ -274,7 +274,7 @@ export default function ForumThreadPage() {
         const data = await res.json()
         setReplies(data?.data || data || [])
       }
-    } catch (err) {
+    } catch {
     }
   }
 
@@ -372,7 +372,7 @@ export default function ForumThreadPage() {
         const data = await res.json()
         setTipOptions(data.tipOptions || [])
       }
-    } catch (err) {
+    } catch {
     }
   }
 
@@ -395,7 +395,7 @@ export default function ForumThreadPage() {
         fetchReplies()
         fetchPost()
       }
-    } catch (err) {
+    } catch {
     } finally {
       setSubmitting(false)
     }
@@ -417,7 +417,7 @@ export default function ForumThreadPage() {
         setUserVoted(true)
         setUserVotes([optionId])
       }
-    } catch (err) {
+    } catch {
     } finally {
       setVoting(false)
     }
@@ -451,7 +451,7 @@ export default function ForumThreadPage() {
         const data = await res.json()
         error(data.error || 'Failed to send tip')
       }
-    } catch (err) {
+    } catch {
     }
   }
 

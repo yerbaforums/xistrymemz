@@ -80,7 +80,7 @@ export default function OrderDetailPage() {
       } else {
         router.push('/orders')
       }
-    } catch (err) {
+    } catch {
       router.push('/orders')
     } finally {
       setLoading(false)
@@ -106,7 +106,7 @@ export default function OrderDetailPage() {
         const err = await res.json()
         error(err.error || 'Failed to update order')
       }
-    } catch (err) {
+    } catch {
     } finally {
       setUpdating(false)
     }
@@ -127,7 +127,7 @@ export default function OrderDetailPage() {
         const err = await res.json()
         error(err.error || 'Failed to save notes')
       }
-    } catch (err) {
+    } catch {
     } finally {
       setSavingNotes(false)
     }
@@ -153,7 +153,7 @@ export default function OrderDetailPage() {
         const err = await res.json()
         error(err.error || 'Failed to send message')
       }
-    } catch (err) {
+    } catch {
     } finally {
       setSendingMessage(false)
     }

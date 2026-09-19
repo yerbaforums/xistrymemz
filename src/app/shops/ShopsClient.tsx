@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef, useMemo, useCallback, useEffect } from 'react'
-import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import styles from './page.module.css'
@@ -10,6 +9,7 @@ import { SHOP_CATEGORIES } from '@/lib/shop-categories'
 import { EmptyState } from '@/components/EmptyState'
 import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
 import EntityMarker from '@/components/EntityMarker'
+import type { Map as LeafletMap } from 'leaflet'
 
 
 interface Shop {
@@ -42,7 +42,7 @@ export function ShopsClient({ initialShops }: ShopsClientProps) {
   const [selectedShop, setSelectedShop] = useState<string | null>(null)
   const [search, setSearch] = useState(searchParams.get('q') || '')
   const [categoryFilter, setCategoryFilter] = useState(searchParams.get('category') || 'all')
-  const mapRef = useRef<any>(null)
+  const mapRef = useRef<LeafletMap | null>(null)
 
   useEffect(() => {
     const params = new URLSearchParams()

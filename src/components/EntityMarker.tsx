@@ -1,13 +1,14 @@
 'use client'
 
 import dynamic from 'next/dynamic'
+import type { MarkerProps } from 'react-leaflet'
 import { ENTITY_ICONS } from '@/lib/entity-icons'
 
 const CustomMarker = dynamic(() =>
   import('react-leaflet').then(({ Marker }) =>
     import('leaflet').then(L => {
-      function EntityMarkerInner({ type, position, size, highlighted, children, ...props }: any) {
-        const info = ENTITY_ICONS[type?.toUpperCase()] || { emoji: '📍', color: '#6b7280' }
+      function EntityMarkerInner({ type, position, size, highlighted, children, ...props }: MarkerProps & { type?: string; size?: number; highlighted?: boolean }) {
+        const info = ENTITY_ICONS[(type ?? '').toUpperCase()] || { emoji: '📍', color: '#6b7280' }
         const s = size || 28
         const glow = highlighted ? `inset 0 0 0 3px ${info.color},0 0 8px ${info.color}80` : '0 1px 4px rgba(0,0,0,0.3)'
         const icon = L.divIcon({
@@ -25,6 +26,6 @@ const CustomMarker = dynamic(() =>
   { ssr: false }
 )
 
-export default function CustomEntityMarker(props: any) {
+export default function CustomEntityMarker(props: MarkerProps & { type?: string; size?: number; highlighted?: boolean }) {
   return <CustomMarker {...props} />
 }

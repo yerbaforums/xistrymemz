@@ -1,4 +1,4 @@
-import { NextRequest, apiSuccess, apiError, apiServerError, NextResponse } from '@/lib/api-helpers'
+import { NextRequest, apiError, NextResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(
@@ -41,7 +41,7 @@ export async function GET(
 
     const totals = { posts: postCount, products: productCount, events: eventCount, services: serviceCount, schoolContents: schoolContentCount, projects: planCount, requests: requestCount, groups: groupCount, forumPosts: forumPostCount, groupPosts: groupPostCount }
 
-    const data: Record<string, any> = {}
+    const data: Record<string, unknown[]> = {}
 
     if (type === 'all' || type === 'posts') {
       const postHashtags = await prisma.postHashtag.findMany({

@@ -179,15 +179,6 @@ function pRequests(d: ContentDay) {
   return total > 0 ? (d.requests / total) * 100 : 0
 }
 
-const MAX_CLASSES = 14
-
-const REFERRER_COLORS: Record<string, string> = {
-  direct: '#8B5CF6',
-  search: '#10B981',
-  social: '#3B82F6',
-  other: '#F59E0B',
-}
-
 function formatTime(iso: string): string {
   const d = new Date(iso)
   const now = Date.now()
