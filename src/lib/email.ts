@@ -22,6 +22,14 @@ function getResend(): Resend | null {
   return resend
 }
 
+function esc(s: string | null | undefined): string {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
 function wrapHtml(body: string): string {
   return `<!DOCTYPE html>
 <html>
@@ -142,6 +150,56 @@ export async function sendWelcomeEmail(email: string, name: string): Promise<voi
     from: `${APP_NAME} <${FROM_EMAIL}>`,
     to: email,
     subject: 'Welcome to XistrYmemZ!',
+    html: wrapHtml(body),
+  })
+}
+
+export interface BookingRequestEmailDetails {
+  buyerName: string
+  title: string
+  startTime: Date | string
+  endTime?: Date | string | null
+  location?: string | null
+  meetingLink?: string | null
+  appointmentId: string
+}
+
+export async function sendBookingRequestEmail(email: string, details: BookingRequestEmailDetails): Promise<void> {
+  const client = getResend()
+  if (!client) {
+    return
+  }
+
+  const start = new Date(details.startTime)
+  const when = Number.isNaN(start.getTime())
+    ? String(details.startTime)
+    : start.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+  const manageUrl = `${BASE_URL}/dashboard/appointments`
+
+  const body = `
+    <h2 style="color:#00d9ff;font-size:20px;margin:0 0 16px">📅 New Booking Request</h2>
+    <p style="margin:0 0 16px"><strong style="color:#ffffff">${esc(details.buyerName)}</strong> wants to book <strong style="color:#ffffff">${esc(details.title)}</strong> with you.</p>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px;background:#14142b;border-radius:8px;width:100%">
+      <tr><td style="padding:12px 16px;color:#c0c0c0;font-size:14px">🕒 <strong>When:</strong> ${esc(when)}</td></tr>
+      ${details.location ? `<tr><td style="padding:0 16px 12px;color:#c0c0c0;font-size:14px">📍 <strong>Where:</strong> ${esc(details.location)}</td></tr>` : ''}
+      ${details.meetingLink ? `<tr><td style="padding:0 16px 12px;color:#c0c0c0;font-size:14px">🔗 <a href="${details.meetingLink}" style="color:#00d9ff">Join meeting link</a></td></tr>` : ''}
+    </table>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px">
+      <tr>
+        <td align="center" style="background:#00d9ff;border-radius:8px;padding:14px 32px">
+          <a href="${manageUrl}" style="color:#0d0d0d;text-decoration:none;font-weight:600;font-size:15px;display:inline-block">
+            Review Booking
+          </a>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0;font-size:13px;color:#888">Manage email alerts anytime in <a href="${BASE_URL}/settings/notifications" style="color:#00d9ff">Settings → Notifications</a>.</p>
+  `
+
+  await client.emails.send({
+    from: `${APP_NAME} <${FROM_EMAIL}>`,
+    to: email,
+    subject: `New booking request: ${details.title.replace(/[\r\n]+/g, ' ').slice(0, 120)}`,
     html: wrapHtml(body),
   })
 }

@@ -19,7 +19,7 @@ const NOTIFICATION_TYPES = [
 
 const PUSH_TYPES = [
   { id: 'in_app', label: 'In-App', description: 'Show notifications inside the app', icon: '💻' },
-  { id: 'email', label: 'Email', description: 'Send notification emails', icon: '📧' },
+  { id: 'email', label: 'Email', description: 'Send booking-request emails to your inbox', icon: '📧' },
   { id: 'push', label: 'Push', description: 'Send push notifications to your device', icon: '📱' },
 ]
 

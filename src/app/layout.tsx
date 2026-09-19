@@ -12,6 +12,7 @@ import CreateFAB from "@/components/CreateFAB";
 import CommandPalette from "@/components/CommandPalette";
 import { QuickCreateProvider } from "@/components/QuickCreateModal";
 import BottomNav from "@/components/BottomNav";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import LocaleProvider from "@/components/LocaleProvider";
 import { WebSiteLD, OrganizationLD } from "@/components/JSONLD";
 import { Analytics } from "@vercel/analytics/next";
@@ -93,11 +94,13 @@ export default async function RootLayout({
         <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
         <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
         <link rel="alternate" type="application/rss+xml" title="XistrYmemZ Feed" href="/feed.xml" />
+        <link rel="sitemap" href="/sitemap.xml" />
         <WebSiteLD />
         <OrganizationLD />
       </head>
       <body>
         <Analytics />
+        <ServiceWorkerRegister />
         <LocaleProvider initialLocale={locale} initialMessages={messages}>
           <a href="#main-content" className="sr-only focus:not-sr-only">
             {messages.layout?.skipToContent || "Skip to main content"}

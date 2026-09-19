@@ -190,6 +190,22 @@ const SEARCH_CONFIG: Record<string, {
     }),
     url: (id) => `/blog/posts/${id}`,
   },
+  PODCAST: {
+    model: 'user',
+    titleField: 'name',
+    select: { id: true, name: true, podcastSlug: true },
+    urlField: 'podcastSlug',
+    where: (q) => ({
+      showPodcast: true,
+      podcastSlug: { not: null },
+      OR: [
+        { name: { contains: q, mode: 'insensitive' as const } },
+        { podcastName: { contains: q, mode: 'insensitive' as const } },
+        { podcastAbout: { contains: q, mode: 'insensitive' as const } },
+      ],
+    }),
+    url: (slug) => `/podcast/${slug}`,
+  },
 }
 
 export async function GET(request: Request) {

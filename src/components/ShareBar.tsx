@@ -9,7 +9,7 @@ import styles from './ShareBar.module.css'
 export type ShareEntityType =
   | 'POST' | 'PRODUCT' | 'SERVICE' | 'EVENT' | 'PROJECT'
   | 'REQUEST' | 'SCHOOLCONTENT' | 'GROUP' | 'SHOP' | 'SCHOOL'
-  | 'FORUMPOST' | 'PROFILE'
+  | 'FORUMPOST' | 'PROFILE' | 'BLOG' | 'PODCAST'
 
 interface ShareBarProps {
   entityType: ShareEntityType

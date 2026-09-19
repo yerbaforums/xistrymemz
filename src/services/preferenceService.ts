@@ -106,3 +106,19 @@ export async function shouldNotify(userId: string, notifType: string): Promise<b
   }
   return true
 }
+
+/**
+ * Whether a notification type should ALSO be delivered by email.
+ * Gated by BOTH the global Email delivery toggle (Settings → Notifications →
+ * Delivery Methods → Email) and the per-category toggle (e.g. Appointments).
+ */
+export async function shouldEmail(userId: string, notifType: string): Promise<boolean> {
+  const prefs = await getUserPreferences(userId)
+  if (prefs.delivery && prefs.delivery.email === false) return false
+  const prefKey = TYPE_TO_PREF_KEY[notifType]
+  if (!prefKey) return true
+  if (prefs.notifications && prefKey in prefs.notifications) {
+    return prefs.notifications[prefKey] !== false
+  }
+  return true
+}

@@ -10,9 +10,13 @@ interface VideoChatModalProps {
   inviteCode?: string
   onClose: () => void
   mode?: 'modal' | 'inline'
+  /** Mic-first room used for podcast live broadcasts (camera starts off). */
+  audioOnly?: boolean
+  /** Extra metadata stamped on newly created rooms (name + podcast link). */
+  roomMeta?: { name?: string; podcastSlug?: string }
 }
 
-export default function VideoChatModal({ roomId: initialRoomId, inviteCode, onClose, mode = 'modal' }: VideoChatModalProps) {
+export default function VideoChatModal({ roomId: initialRoomId, inviteCode, onClose, mode = 'modal', audioOnly = false, roomMeta }: VideoChatModalProps) {
   const { data: session } = useSession()
   const {
     room, localStream, peers, error, connecting,
@@ -38,9 +42,12 @@ export default function VideoChatModal({ roomId: initialRoomId, inviteCode, onCl
       fetchRoom(initialRoomId)
     } else if (!inviteCode && !initialRoomId) {
       joinPhaseRef.current = 'joining'
-      createRoom()
+      createRoom(roomMeta?.name, {
+        mode: audioOnly ? 'AUDIO' : 'VIDEO',
+        podcastSlug: audioOnly ? roomMeta?.podcastSlug : undefined,
+      })
     }
-  }, [inviteCode, initialRoomId, joinRoom, createRoom, fetchRoom])
+  }, [inviteCode, initialRoomId, joinRoom, createRoom, fetchRoom, audioOnly, roomMeta])
 
   // Phase 2: Start call once room is available (separate effect so we always have latest room state)
   useEffect(() => {
@@ -50,6 +57,13 @@ export default function VideoChatModal({ roomId: initialRoomId, inviteCode, onCl
     const timer = setTimeout(() => startCall(), 600)
     return () => clearTimeout(timer)
   }, [room, startCall])
+
+  // Mic-first rooms start with the camera off.
+  useEffect(() => {
+    if (audioOnly && room && videoEnabled && joinPhaseRef.current === 'started') {
+      toggleVideo()
+    }
+  }, [audioOnly, room, videoEnabled, toggleVideo])
 
   useEffect(() => {
     if (localVideoRef.current && localStream) {
@@ -110,16 +124,16 @@ export default function VideoChatModal({ roomId: initialRoomId, inviteCode, onCl
                 className={`${styles.video} ${!videoEnabled && !isScreenSharing ? styles.videoOff : ''}`}
                 style={{ transform: isScreenSharing ? 'none' : 'scaleX(-1)' }} />
               {!videoEnabled && !isScreenSharing && (
-                <div className={styles.videoPlaceholder}>📹 Camera Off</div>
+                <div className={styles.videoPlaceholder}>{audioOnly ? '🎙️ Live (audio)' : '📹 Camera Off'}</div>
               )}
               <span className={styles.videoLabel}>
-                {isScreenSharing ? '🖥️ Screen' : 'You'}
+                {isScreenSharing ? '🖥️ Screen' : audioOnly ? '🎙️ You' : 'You'}
                 {!audioEnabled && ' 🔇'}
               </span>
             </div>
           )}
           {peers.filter(p => p.connected).map(p => (
-            <PeerVideo key={p.userId} peer={p} />
+            <PeerVideo key={p.userId} peer={p} audioOnly={audioOnly} />
           ))}
           {connecting && (
             <div className={styles.connectingTile}>Connecting...</div>
@@ -168,7 +182,7 @@ export default function VideoChatModal({ roomId: initialRoomId, inviteCode, onCl
   )
 }
 
-function PeerVideo({ peer }: { peer: { userId: string; stream?: MediaStream | null } }) {
+function PeerVideo({ peer, audioOnly }: { peer: { userId: string; stream?: MediaStream | null }; audioOnly?: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
@@ -179,12 +193,12 @@ function PeerVideo({ peer }: { peer: { userId: string; stream?: MediaStream | nu
 
   return (
     <div className={styles.videoTile}>
-      {peer.stream ? (
+      {peer.stream && !audioOnly ? (
         <video ref={videoRef} autoPlay playsInline className={styles.video} />
       ) : (
-        <div className={styles.videoPlaceholder}>Connecting...</div>
+        <div className={styles.videoPlaceholder}>{audioOnly ? '🎙️' : 'Connecting...'}</div>
       )}
-      <span className={styles.videoLabel}>{peer.userId.slice(0, 8)}</span>
+      <span className={styles.videoLabel}>{audioOnly ? 'Guest' : peer.userId.slice(0, 8)}</span>
     </div>
   )
 }

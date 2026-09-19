@@ -67,6 +67,34 @@ export interface FeaturedBoard {
   pinCount: number
 }
 
+export interface FeaturedBlog {
+  id: string
+  blogName: string | null
+  blogSlug: string
+  blogImage: string | null
+  blogTagline: string | null
+  name: string | null
+  _count?: { blogPosts: number }
+}
+
+export interface FeaturedPodcast {
+  id: string
+  podcastName: string | null
+  podcastSlug: string
+  podcastImage: string | null
+  name: string | null
+  isLive: boolean
+  _count?: { podcastEpisodes: number }
+}
+
+export interface FeaturedService {
+  id: string
+  title: string
+  price: number | null
+  category: string | null
+  user: { name: string | null }
+}
+
 export interface RecentMember {
   id: string
   name: string | null

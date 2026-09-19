@@ -1,0 +1,202 @@
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 20px 64px;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.header h1 {
+  margin: 8px 0 4px;
+  font-size: 2rem;
+}
+
+.header p {
+  margin: 0;
+  color: var(--text-muted, #9aa0b5);
+}
+
+.podcastGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.podcastCard {
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--bg-card, #16162a);
+  border: 1px solid var(--border-color, #2a2a4a);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.podcastCard:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent, #06b6d4);
+}
+
+.cardCover {
+  height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #10101f;
+}
+
+.cardCover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.coverGradient {
+  background: linear-gradient(135deg, #7c3aed33, #06b6d433);
+}
+
+.coverInitial {
+  font-size: 3rem;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.cardBody {
+  padding: 14px 16px 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.cardAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border-color, #2a2a4a);
+}
+
+.cardAvatarPlaceholder {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7c3aed, #06b6d4);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.cardTitleWrap {
+  min-width: 0;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 1.05rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardLocation {
+  font-size: 0.76rem;
+  color: var(--text-muted, #9aa0b5);
+}
+
+.cardDesc {
+  margin: 0 0 10px;
+  color: var(--text-muted, #9aa0b5);
+  font-size: 0.86rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.latestEpisode {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #10101f;
+  border: 1px solid var(--border-color, #2a2a4a);
+  margin-bottom: 10px;
+  font-size: 0.82rem;
+  min-width: 0;
+}
+
+.latestLabel {
+  color: var(--accent, #06b6d4);
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.latestTitle {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+
+.episodeCount {
+  font-size: 0.8rem;
+  color: var(--text-muted, #9aa0b5);
+}
+
+.listenNow {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent, #06b6d4);
+}
+
+.clearFilter {
+  background: none;
+  border: 1px solid var(--border-color, #2a2a4a);
+  color: var(--text-muted, #9aa0b5);
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  margin-bottom: 14px;
+}
+.liveBadge {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}

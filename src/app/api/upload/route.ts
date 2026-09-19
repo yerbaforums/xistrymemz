@@ -11,10 +11,12 @@ import sharp from 'sharp'
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm']
-const ALLOWED_TYPES = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_VIDEO_TYPES]
+const ALLOWED_AUDIO_TYPES = ['audio/mpeg', 'audio/mp4', 'audio/webm', 'audio/ogg', 'audio/wav']
+const ALLOWED_TYPES = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_VIDEO_TYPES, ...ALLOWED_AUDIO_TYPES]
 
 const IMAGE_MAX_SIZE = 20 * 1024 * 1024
-const VIDEO_MAX_SIZE = 100 * 1024 * 1024
+const VIDEO_MAX_SIZE = 200 * 1024 * 1024
+const AUDIO_MAX_SIZE = 150 * 1024 * 1024
 const COMPRESS_QUALITY = 80
 const MAX_DIMENSION = 1920
 
@@ -35,7 +37,11 @@ const MAGIC_BYTES: Record<string, number[]> = {
   'image/webp': [0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50],
   'image/gif': [0x47, 0x49, 0x46, 0x38],
   'video/mp4': [0x00, 0x00, 0x00],
-  'video/webm': [0x1A, 0x45, 0xDF, 0xA3]
+  'video/webm': [0x1A, 0x45, 0xDF, 0xA3],
+  'audio/mpeg': [0x49, 0x44, 0x33],
+  'audio/mp4': [0x00, 0x00, 0x00],
+  'audio/ogg': [0x4F, 0x67, 0x67, 0x53],
+  'audio/wav': [0x52, 0x49, 0x46, 0x46],
 }
 
 const TYPE_EXTENSIONS = {
@@ -44,7 +50,11 @@ const TYPE_EXTENSIONS = {
   'image/webp': 'webp',
   'image/gif': 'gif',
   'video/mp4': 'mp4',
-  'video/webm': 'webm'
+  'video/webm': 'webm',
+  'audio/mpeg': 'mp3',
+  'audio/mp4': 'm4a',
+  'audio/ogg': 'ogg',
+  'audio/wav': 'wav',
 } as const
 
 function isValidMimeType(mimeType: string): mimeType is typeof ALLOWED_TYPES[number] {
@@ -62,9 +72,8 @@ function validateMagicBytes(buffer: Buffer, mimeType: string): boolean {
 }
 
 function getMaxSize(mimeType: string): number {
-  if (ALLOWED_VIDEO_TYPES.includes(mimeType)) {
-    return VIDEO_MAX_SIZE
-  }
+  if (ALLOWED_VIDEO_TYPES.includes(mimeType)) return VIDEO_MAX_SIZE
+  if (ALLOWED_AUDIO_TYPES.includes(mimeType)) return AUDIO_MAX_SIZE
   return IMAGE_MAX_SIZE
 }
 

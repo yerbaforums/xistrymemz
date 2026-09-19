@@ -231,12 +231,12 @@ export function useVideoChat(initialRoomId?: string, currentUserId?: string) {
     return peer
   }, [sendSignal])
 
-  const createRoom = useCallback(async (name?: string) => {
+  const createRoom = useCallback(async (name?: string, opts?: { mode?: 'VIDEO' | 'AUDIO'; podcastSlug?: string }) => {
     try {
       const { room } = await fetchApi<{ room: RoomInfo }>('/api/video/rooms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ name, mode: opts?.mode, podcastSlug: opts?.podcastSlug }),
       })
       setRoom(room)
       return room

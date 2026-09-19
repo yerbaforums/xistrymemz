@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { createNotification } from '@/services/notificationService'
+import { shouldEmail } from '@/services/preferenceService'
+import { sendBookingRequestEmail } from '@/lib/email'
 
 interface AppointmentBookingBody {
   title?: string
@@ -142,7 +144,7 @@ export async function POST(request: NextRequest) {
       },
       include: {
         buyer: { select: { id: true, name: true, image: true, username: true } },
-        seller: { select: { id: true, name: true, image: true, username: true } },
+        seller: { select: { id: true, name: true, image: true, username: true, email: true } },
         product: { select: { id: true, title: true, imageUrl: true } }
       }
     })
@@ -161,6 +163,25 @@ export async function POST(request: NextRequest) {
         message: `${buyerName} wants to book "${title}" with you`,
         link: `/dashboard/appointments`,
       })
+    } catch {
+      // silent — appointment was already created
+    }
+
+    // Email-gated: Settings → Notifications → Delivery Methods → Email (+ Appointments).
+    // Never fail the booking.
+    try {
+      const sellerEmail = appointment.seller?.email || null
+      if (sellerEmail && await shouldEmail(sellerId, 'APPOINTMENT_REQUEST')) {
+        await sendBookingRequestEmail(sellerEmail, {
+          buyerName,
+          title: title.trim(),
+          startTime: appointment.startTime,
+          endTime: appointment.endTime,
+          location: appointment.location,
+          meetingLink: appointment.meetingLink,
+          appointmentId: appointment.id,
+        })
+      }
     } catch {
       // silent — appointment was already created
     }

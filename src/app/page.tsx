@@ -16,7 +16,7 @@ import FeedbackSection from '@/components/home/FeedbackSection'
 import MemberSpotlightSection from '@/components/home/MemberSpotlightSection'
 import HomeFooterSection from '@/components/home/HomeFooterSection'
 import HomeTourWrapper from '@/components/HomeTourWrapper'
-import type { PlatformStats, FeaturedShop, FeaturedProduct, PublicRequest, FeaturedEvent, PublicProject, FeaturedBoard, RecentMember } from '@/components/home/types'
+import type { PlatformStats, FeaturedShop, FeaturedProduct, PublicRequest, FeaturedEvent, PublicProject, FeaturedBoard, FeaturedBlog, FeaturedPodcast, FeaturedService, RecentMember } from '@/components/home/types'
 
 const ZERO_STATS: PlatformStats = {
   members: 0, shops: 0, schools: 0, products: 0, services: 0,
@@ -71,12 +71,18 @@ export default function Home() {
   const [events, setEvents] = useState<FeaturedEvent[]>([])
   const [projects, setProjects] = useState<PublicProject[]>([])
   const [boards, setBoards] = useState<FeaturedBoard[]>([])
+  const [blogs, setBlogs] = useState<FeaturedBlog[]>([])
+  const [podcasts, setPodcasts] = useState<FeaturedPodcast[]>([])
+  const [services, setServices] = useState<FeaturedService[]>([])
   const [loadingShops, setLoadingShops] = useState(true)
   const [loadingProducts, setLoadingProducts] = useState(true)
   const [loadingRequests, setLoadingRequests] = useState(true)
   const [loadingEvents, setLoadingEvents] = useState(true)
   const [loadingPlans, setLoadingPlans] = useState(true)
   const [loadingBoards, setLoadingBoards] = useState(true)
+  const [loadingBlogs, setLoadingBlogs] = useState(true)
+  const [loadingPodcasts, setLoadingPodcasts] = useState(true)
+  const [loadingServices, setLoadingServices] = useState(true)
   const [members, setMembers] = useState<RecentMember[]>([])
   const [loadingMembers, setLoadingMembers] = useState(true)
   const [trendingTags, setTrendingTags] = useState<{ tag: string; postCount: number; entities: { posts: number; products: number; events: number; forumPosts: number; groupPosts: number } }[]>([])
@@ -139,6 +145,21 @@ export default function Home() {
       .then(data => { setBoards(data?.data?.boards || data?.boards || []); setLoadingBoards(false) })
       .catch(() => setLoadingBoards(false))
 
+    fetch('/api/blogs')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { const list = d?.data?.blogs || []; setBlogs(list.slice(0, 4)); setLoadingBlogs(false) })
+      .catch(() => setLoadingBlogs(false))
+
+    fetch('/api/podcasts')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { const list = d?.data?.podcasts || []; setPodcasts(list.slice(0, 4)); setLoadingPodcasts(false) })
+      .catch(() => setLoadingPodcasts(false))
+
+    fetch('/api/services?pageSize=4')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { const list = d?.data?.services || []; setServices(list.slice(0, 4)); setLoadingServices(false) })
+      .catch(() => setLoadingServices(false))
+
     fetch('/api/users/recent?take=6')
       .then(r => r.ok ? r.json() : { data: { members: [] } })
       .then(d => {
@@ -161,12 +182,18 @@ export default function Home() {
         events={events}
         projects={projects}
         boards={boards}
+        blogs={blogs}
+        podcasts={podcasts}
+        services={services}
         loadingShops={loadingShops}
         loadingProducts={loadingProducts}
         loadingRequests={loadingRequests}
         loadingEvents={loadingEvents}
         loadingPlans={loadingPlans}
         loadingBoards={loadingBoards}
+        loadingBlogs={loadingBlogs}
+        loadingPodcasts={loadingPodcasts}
+        loadingServices={loadingServices}
       />
       <HashtagSection tags={trendingTags} />
       <StepsSection />

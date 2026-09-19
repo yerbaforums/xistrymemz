@@ -11,11 +11,20 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { name } = body
+    const { name, mode, podcastSlug } = body
+
+    const allowedMode = mode === 'AUDIO' ? 'AUDIO' : 'VIDEO'
+    const label = name?.trim()
+      ? name.trim()
+      : allowedMode === 'AUDIO'
+        ? `Live Podcast${podcastSlug ? `: ${podcastSlug}` : ''}`
+        : `${session.user.name || 'User'}'s Room`
 
     const room = await prisma.videoRoom.create({
       data: {
-        name: name || `${session.user.name || 'User'}'s Room`,
+        name: label,
+        mode: allowedMode,
+        podcastSlug: allowedMode === 'AUDIO' ? (podcastSlug || null) : null,
         createdById: session.user.id,
         participants: {
           create: { userId: session.user.id },

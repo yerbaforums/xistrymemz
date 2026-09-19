@@ -48,6 +48,13 @@ model User {
   blogTagline      String?
   blogTiers        String? // JSON array of subscription tiers: [{id,name,price,currency,description}]
   showBlog         Boolean @default(true)
+  // Podcast (self-hosted audio shows with live broadcasts)
+  podcastName        String?
+  podcastAbout       String?
+  podcastImage       String?
+  podcastCoverImage  String?
+  podcastSlug        String? @unique
+  showPodcast        Boolean @default(true)
   timeZone         String? // IANA timezone, e.g. "America/New_York". Anchors booking availability & busy-time boundaries.
 
   // Passport & Identity
@@ -219,6 +226,30 @@ model User {
   blogPostPurchases        BlogPostPurchase[]
   blogPostLikes            BlogPostLike[]
   blogPostTips             BlogPostTip[]
+
+  // Podcast (self-hosted audio shows)
+  podcastEpisodes          PodcastEpisode[]     @relation("PodcastOwner")
+}
+
+// Self-hosted podcast: audio episodes published under a user's own feed URL,
+// plus optional live broadcasts reusing the WebRTC room infra (mode A/B).
+model PodcastEpisode {
+  id            String   @id @default(cuid())
+  podcastId     String
+  podcast       User     @relation("PodcastOwner", fields: [podcastId], references: [id], onDelete: Cascade)
+  title         String
+  description   String   @default("")
+  audioUrl      String
+  durationSec   Int      @default(0)
+  episodeNumber Int?
+  isExplicit    Boolean  @default(false)
+  published     Boolean  @default(true)
+  publishedAt   DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([podcastId])
+  @@index([publishedAt])
 }
 
 // Substack-style blog: one per user, mirroring the shop/school model.
@@ -2300,6 +2331,9 @@ model Backlink {
 model VideoRoom {
   id           String                 @id @default(cuid())
   name         String?
+  // VIDEO = full video chat, AUDIO = podcast/live radio (mic-first, camera off)
+  mode         String                 @default("VIDEO") // VIDEO | AUDIO
+  podcastSlug  String? // When set, this room is the live broadcast for that podcast
   createdById  String
   createdBy    User                   @relation(fields: [createdById], references: [id], onDelete: Cascade)
   inviteCode   String                 @unique @default(cuid())

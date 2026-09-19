@@ -3,13 +3,14 @@
 import { useState, useRef } from 'react'
 import Image from 'next/image'
 import { useToast } from '@/context/ToastContext'
+import { probeMediaDuration, formatDuration, compressVideo, MAX_VIDEO_DURATION_SEC, MAX_VIDEO_SIZE_MB, shouldCompressVideo } from '@/lib/media'
 
 interface ImageUploaderProps {
   images: string[]
   onChange: (urls: string[]) => void
   maxImages?: number
   maxSizeMB?: number
-  /** Optional single video attachment (mp4/webm, up to 100MB). Pass handlers to enable video upload. */
+  /** Optional single video attachment (mp4/webm, up to 15 min / 200MB). Pass handlers to enable video upload. */
   videoUrl?: string | null
   onVideoUrlChange?: (url: string | null) => void
   videoMaxSizeMB?: number
@@ -23,11 +24,13 @@ export default function ImageUploader({
   maxSizeMB = 20,
   videoUrl,
   onVideoUrlChange,
-  videoMaxSizeMB = 100,
-  videoLabel = 'Add a short video',
+  videoMaxSizeMB = MAX_VIDEO_SIZE_MB,
+  videoLabel = 'Add a video',
 }: ImageUploaderProps) {
   const [uploading, setUploading] = useState(false)
   const [videoUploading, setVideoUploading] = useState(false)
+  const [videoOptimizing, setVideoOptimizing] = useState(false)
+  const [videoDuration, setVideoDuration] = useState<number | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
   const { error: toastError } = useToast()
@@ -84,8 +87,27 @@ export default function ImageUploader({
 
     setVideoUploading(true)
     try {
+      const duration = await probeMediaDuration(file, 'video')
+      if (duration !== null && duration > MAX_VIDEO_DURATION_SEC) {
+        toastError(`Video is ${formatDuration(duration)}. Maximum length is ${formatDuration(MAX_VIDEO_DURATION_SEC)}.`)
+        if (videoInputRef.current) videoInputRef.current.value = ''
+        return
+      }
+      setVideoDuration(duration)
+
+      // Re-encode large clips in-browser so uploads stay small and fast.
+      let uploadFile = file
+      if (shouldCompressVideo(file.size)) {
+        setVideoOptimizing(true)
+        uploadFile = await compressVideo(file)
+        if (uploadFile.size < file.size) {
+          const compressedDuration = await probeMediaDuration(uploadFile, 'video')
+          if (compressedDuration !== null) setVideoDuration(compressedDuration)
+        }
+      }
+
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('file', uploadFile)
       const res = await fetch('/api/upload', { method: 'POST', body: formData })
       if (!res.ok) throw new Error('Upload failed')
       const data = await res.json()
@@ -96,6 +118,7 @@ export default function ImageUploader({
       toastError('Failed to upload video')
     } finally {
       setVideoUploading(false)
+      setVideoOptimizing(false)
       if (videoInputRef.current) videoInputRef.current.value = ''
     }
   }
@@ -132,22 +155,24 @@ export default function ImageUploader({
               <video src={videoUrl} muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               <button
                 type="button"
-                onClick={() => onVideoUrlChange!(null)}
+                onClick={() => { onVideoUrlChange!(null); setVideoDuration(null) }}
                 aria-label="Remove video"
                 style={{ position: 'absolute', top: 2, right: 2, width: 20, height: 20, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.6)', color: '#fff', cursor: 'pointer', fontSize: '12px', lineHeight: '20px', textAlign: 'center', padding: 0 }}
               >×</button>
-              <span style={{ position: 'absolute', bottom: 2, left: 4, fontSize: '10px', color: '#fff', background: 'rgba(0,0,0,0.55)', borderRadius: 4, padding: '0 4px' }}>▶ Video</span>
+              <span style={{ position: 'absolute', bottom: 2, left: 4, fontSize: '10px', color: '#fff', background: 'rgba(0,0,0,0.55)', borderRadius: 4, padding: '0 4px' }}>
+                ▶ {videoDuration ? formatDuration(videoDuration) : 'Video'}
+              </span>
             </div>
           ) : (
             <button
               type="button"
               onClick={handleVideoSelect}
-              disabled={videoUploading}
+              disabled={videoUploading || videoOptimizing}
               title={videoLabel}
-              style={{ width: 96, height: 72, borderRadius: '8px', border: '2px dashed var(--border-color)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 2, fontSize: '0.7rem', color: 'var(--text-secondary)' }}
+              style={{ width: 104, height: 72, borderRadius: '8px', border: '2px dashed var(--border-color)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 2, fontSize: '0.7rem', color: 'var(--text-secondary)' }}
             >
-              {videoUploading ? <span style={{ fontSize: '1.2rem' }}>...</span> : <span style={{ fontSize: '1.3rem' }}>🎬</span>}
-              <span>Video</span>
+              {videoOptimizing ? <span style={{ fontSize: '1.1rem' }}>⚙️</span> : videoUploading ? <span style={{ fontSize: '1.2rem' }}>...</span> : <span style={{ fontSize: '1.3rem' }}>🎬</span>}
+              <span>{videoOptimizing ? 'Optimizing…' : videoUploading ? 'Uploading…' : 'Video'}</span>
             </button>
           )
         )}

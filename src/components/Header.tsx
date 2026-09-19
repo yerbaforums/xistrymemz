@@ -75,7 +75,8 @@ const CREATE_GROUPS: Array<{
     label: 'Teach & Grow',
     items: [
       { label: 'Start a School', icon: '🏫', href: '/school/setup' },
-      { label: 'Start a Blog', icon: '📝', href: '/blog/setup' },
+      { label: 'Start a Blog', icon: '✍️', href: '/blog/setup' },
+      { label: 'Start a Podcast', icon: '🎙️', href: '/podcast/setup' },
       { label: 'Courier Service', icon: '📦', href: '/courier/setup' },
       { label: 'Browse Templates', icon: '⚡', href: '/templates' },
     ],
@@ -355,7 +356,8 @@ export default function Header() {
               <Link href="/services" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🔧</span> Services</Link>
               <Link href="/shops" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🏪</span> Shops</Link>
               <Link href="/schools" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🏫</span> Schools</Link>
-              <Link href="/blogs" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📝</span> Blogs</Link>
+              <Link href="/blogs" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">✍️</span> Blogs</Link>
+              <Link href="/podcasts" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🎙️</span> Podcasts</Link>
               <Link href="/requests" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📝</span> Requests</Link>
               <Link href="/events" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📅</span> Events</Link>
               <Link href="/rentals" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🏠</span> Rentals</Link>
