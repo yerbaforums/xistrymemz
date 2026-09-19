@@ -142,6 +142,7 @@ function PostForm({ onDone }: { onDone: () => void }) {
   const { success, error } = useToast()
   const [content, setContent] = useState('')
   const [images, setImages] = useState<string[]>([])
+  const [videoUrl, setVideoUrl] = useState<string | null>(null)
   const [hashtags, setHashtags] = useState<string[]>([])
   const [posting, setPosting] = useState(false)
   const [showLinkModal, setShowLinkModal] = useState(false)
@@ -159,6 +160,7 @@ function PostForm({ onDone }: { onDone: () => void }) {
         body: JSON.stringify({
           content: content.trim(),
           images: images.length > 0 ? JSON.stringify(images) : null,
+          videoUrl: videoUrl || null,
           context: 'PROFILE',
           hashtags: hashtags.length > 0 ? hashtags : undefined,
         }),
@@ -209,7 +211,7 @@ function PostForm({ onDone }: { onDone: () => void }) {
         <span className={styles.charCount}>{content.length}/2000</span>
       </div>
       <div className={styles.formGroup}>
-        <ImageUploader images={images} onChange={setImages} maxImages={6} />
+        <ImageUploader images={images} onChange={setImages} maxImages={6} videoUrl={videoUrl} onVideoUrlChange={setVideoUrl} />
       </div>
       <div className={styles.formGroup}>
         <HashtagInput value={hashtags} onChange={setHashtags} placeholder="Add hashtags..." />

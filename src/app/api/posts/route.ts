@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { content, imageUrl, images, targetUserId, context, parentId, referenceType, referenceId, referenceTitle } = validation.data
+    const { content, imageUrl, videoUrl, images, targetUserId, context, parentId, referenceType, referenceId, referenceTitle } = validation.data
 
     if (!content?.trim() && !referenceType && !parentId) {
       return apiError("Content is required", 400)
@@ -147,6 +147,7 @@ export async function POST(request: NextRequest) {
       data: {
         content: content.trim(),
         imageUrl: resolvedImageUrl,
+        videoUrl: videoUrl || null,
         images: images && images.length > 0 ? JSON.stringify(images) : null,
         userId: session.user.id,
         targetUserId: isWallPost ? targetUserId : null,

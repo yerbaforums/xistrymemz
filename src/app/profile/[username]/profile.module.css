@@ -810,6 +810,44 @@
   word-break: break-word;
 }
 
+.postMedia {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.postImageGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+}
+
+.postImageSingle {
+  grid-template-columns: 1fr;
+  max-width: 560px;
+}
+
+.postImage {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+}
+
+.postVideo {
+  display: block;
+  width: 100%;
+  max-height: 480px;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  border-radius: 10px;
+  background: #000;
+  border: 1px solid var(--border-color);
+}
+
 .postFooter {
   margin-top: 12px;
   padding-top: 12px;

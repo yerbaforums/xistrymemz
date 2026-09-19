@@ -127,6 +127,7 @@ export async function GET(request: Request) {
         id: p.id,
         content: p.content,
         images: p.images,
+        videoUrl: p.videoUrl,
         createdAt: p.createdAt.toISOString(),
         userId: p.userId,
         likes: p.likes,

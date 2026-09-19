@@ -135,6 +135,7 @@ interface Post {
   content: string
   imageUrl: string | null
   images: string | null
+  videoUrl?: string | null
   pinned: boolean
   userId: string
   targetUserId: string | null
@@ -357,6 +358,7 @@ export default function ProfilePage() {
   })
   const [newPost, setNewPost] = useState('')
   const [newPostImages, setNewPostImages] = useState<string[]>([])
+  const [newPostVideo, setNewPostVideo] = useState<string | null>(null)
   const [posting, setPosting] = useState(false)
   const [showConnectModal, setShowConnectModal] = useState(false)
   const [connectMessage, setConnectMessage] = useState('')
@@ -597,13 +599,15 @@ export default function ProfilePage() {
         body: JSON.stringify({
           content: newPost,
           targetUserId: isOwnProfile ? undefined : user.id,
-          images: newPostImages.length > 0 ? newPostImages : undefined
+          images: newPostImages.length > 0 ? newPostImages : undefined,
+          videoUrl: newPostVideo || null
         })
       })
 
       if (res.ok) {
         setNewPost('')
         setNewPostImages([])
+        setNewPostVideo(null)
         fetchProfile(getTargetId())
       } else {
         const err = await res.json()
@@ -1279,7 +1283,7 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div style={{ marginTop: '8px' }}>
-                  <ImageUploader images={newPostImages} onChange={setNewPostImages} />
+                  <ImageUploader images={newPostImages} onChange={setNewPostImages} videoUrl={newPostVideo} onVideoUrlChange={setNewPostVideo} />
                 </div>
                 <div className={styles.formPostActions}>
                   <span className={styles.charCount}>{newPost.length}/2000</span>
@@ -1334,6 +1338,24 @@ export default function ProfilePage() {
                         </div>
 <p className={styles.postContent}><HashtagText text={post.content} mentionLinks /></p>
                     <LinkPreview text={post.content} />
+
+                        {(() => {
+                          const imgs = getPostImages(post.images || null)
+                          return imgs.length > 0 || post.videoUrl ? (
+                            <div className={styles.postMedia}>
+                              {imgs.length > 0 && (
+                                <div className={`${styles.postImageGrid} ${imgs.length === 1 ? styles.postImageSingle : ''}`}>
+                                  {imgs.map((url, i) => (
+                                    <img key={i} src={url} alt="" loading="lazy" className={styles.postImage} />
+                                  ))}
+                                </div>
+                              )}
+                              {post.videoUrl && (
+                                <video src={post.videoUrl} controls preload="metadata" poster={imgs[0] || undefined} className={styles.postVideo} />
+                              )}
+                            </div>
+                          ) : null
+                        })()}
 
                         {post.referenceType && post.referenceId && (
                           <SharedItemCard

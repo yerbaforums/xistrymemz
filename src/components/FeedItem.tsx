@@ -18,6 +18,7 @@ interface FeedPost {
   id: string
   content: string
   images: string | null
+  videoUrl?: string | null
   likes?: number
   liked?: boolean
   replyCount?: number
@@ -184,6 +185,11 @@ export default function FeedItem({ post }: { post: FeedPost }) {
               />
             </div>
           ))}
+        </div>
+      )}
+      {post.videoUrl && (
+        <div className={styles.videoWrap}>
+          <video src={post.videoUrl} controls preload="metadata" poster={imageList[0] || undefined} className={styles.video} />
         </div>
       )}
       {post.referenceType && post.referenceId && (

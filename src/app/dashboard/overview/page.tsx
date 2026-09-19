@@ -218,6 +218,11 @@ export default async function DashboardOverview({
     where: { ownerId: userId },
   })
 
+  const [blogPostCount, blogSubscriberCount] = await Promise.all([
+    prisma.blogPost.count({ where: { blogId: userId } }),
+    prisma.blogSubscription.count({ where: { blogId: userId, status: 'ACTIVE' } }),
+  ])
+
   // Analytics: total views across all content
   const [postViews, productViews, serviceViews, requestViews] = await Promise.all([
     prisma.post.aggregate({ where: { userId }, _sum: { viewCount: true } }),
@@ -261,12 +266,15 @@ export default async function DashboardOverview({
     { label: 'Total Views', value: totalViews, max: Math.max(totalViews, 100), color: '#06B6D4', icon: '👁️', href: '' },
     { label: 'Listings', value: totalListings, max: Math.max(totalListings, 20), color: '#84CC16', icon: '📋', href: '/dashboard/marketplace' },
     { label: 'Boards', value: boardCount, max: Math.max(boardCount, 5), color: '#00D9FF', icon: '📌', href: '/boards' },
+    { label: 'Blog Posts', value: blogPostCount, max: Math.max(blogPostCount, 10), color: '#A855F7', icon: '✍️', href: '/dashboard/blog' },
+    { label: 'Blog Subscribers', value: blogSubscriberCount, max: Math.max(blogSubscriberCount, 10), color: '#D946EF', icon: '🔔', href: '/dashboard/blog' },
     { label: 'Invites', value: user?.inviteCount || 0, max: Math.max(user?.inviteCount || 0, 10), color: '#F59E0B', icon: '📨', href: '' },
   ]
 
   const quickActions = [
     { label: 'My Deals', icon: '🤝', href: '/dashboard/deals' },
     { label: 'Creative Studio', icon: '🎨', href: '/dashboard/studio' },
+    { label: 'Blog Dashboard', icon: '✍️', href: '/dashboard/blog' },
     { label: 'New Project', icon: '🚀', href: '/dashboard/projects' },
     { label: 'New Product', icon: '🛒', href: '/products/new' },
     { label: 'New Service', icon: '🔧', href: '/dashboard/services' },

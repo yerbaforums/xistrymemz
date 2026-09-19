@@ -23,6 +23,7 @@ interface PostData {
   content: string
   imageUrl: string | null
   images: string | null
+  videoUrl?: string | null
   createdAt: string
   userId: string
   likes: number
@@ -140,6 +141,12 @@ export default function PostPage() {
               {imageList.map((url, i) => (
                 <img key={i} src={url} alt="" loading="lazy" />
               ))}
+            </div>
+          )}
+
+          {post.videoUrl && (
+            <div className={styles.videoWrap} style={{ marginTop: 12, borderRadius: 12, overflow: 'hidden', background: '#000' }}>
+              <video src={post.videoUrl} controls preload="metadata" poster={imageList[0] || undefined} style={{ display: 'block', width: '100%', maxHeight: 560, aspectRatio: '16/9', objectFit: 'contain', background: '#000' }} />
             </div>
           )}
 

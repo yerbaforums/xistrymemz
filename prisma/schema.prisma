@@ -1144,6 +1144,7 @@ model Post {
   id              String        @id @default(cuid())
   content         String
   imageUrl        String?
+  videoUrl        String?
   pinned          Boolean       @default(false)
   context         String        @default("PROFILE") // PROFILE | SHOP | SCHOOL | GROUP | WALL
   images          String? // JSON array of URLs
