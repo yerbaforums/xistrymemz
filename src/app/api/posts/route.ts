@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { postSchema, validateBody } from '@/lib/schemas'
+import { isAllowedMediaUrl, POST_VIDEO_KINDS } from '@/lib/media-links'
 import { parseMentions } from '@/lib/mentions'
 import { extractHashtags, linkHashtags } from '@/services/hashtagService'
 import { sseManager } from '@/lib/sse'
@@ -137,6 +138,10 @@ export async function POST(request: NextRequest) {
 
     if (!content?.trim() && !referenceType && !parentId) {
       return apiError("Content is required", 400)
+    }
+
+    if (videoUrl && !isAllowedMediaUrl(videoUrl, POST_VIDEO_KINDS)) {
+      return apiError("Video must be a YouTube, Vimeo, or direct mp4/webm link", 400)
     }
 
     const resolvedImageUrl = imageUrl || (images && images.length > 0 ? images[0] : null)

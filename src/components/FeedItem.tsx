@@ -5,6 +5,7 @@ import Image from 'next/image'
 import HashtagText from '@/components/HashtagText'
 import LinkPreview, { URL_REGEX } from '@/components/LinkPreview'
 import EntityActions from '@/components/EntityActions'
+import MediaPlayer from '@/components/MediaPlayer'
 import SharedItemCard from '@/components/SharedItemCard'
 import ReplySection from '@/components/ReplySection'
 import TranslateButton from '@/components/TranslateButton'
@@ -189,7 +190,7 @@ export default function FeedItem({ post }: { post: FeedPost }) {
       )}
       {post.videoUrl && (
         <div className={styles.videoWrap}>
-          <video src={post.videoUrl} controls preload="metadata" poster={imageList[0] || undefined} className={styles.video} />
+          <MediaPlayer url={post.videoUrl} poster={imageList[0] || undefined} />
         </div>
       )}
       {post.referenceType && post.referenceId && (

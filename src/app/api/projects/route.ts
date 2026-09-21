@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { apiSuccess, apiError, withValidation } from '@/lib/api-helpers'
 import { projectSchema } from '@/lib/schemas'
+import { isAllowedMediaUrl, POST_VIDEO_KINDS } from '@/lib/media-links'
 import { extractAndLinkHashtags, linkHashtags } from '@/services/hashtagService'
 import { getPublicProjects, getProjectsByUser, createProject } from '@/services/projectService'
 
@@ -37,6 +38,10 @@ export const POST = withValidation(projectSchema, async (data, req, session) => 
       goalAmount, acceptsDonations, donationAddress, donationCurrency, donationDescription, donationAddresses,
       images, videoUrl, phases, hashtags,
     } = data
+
+    if (videoUrl && !isAllowedMediaUrl(videoUrl, POST_VIDEO_KINDS)) {
+      return apiError("Video must be a YouTube, Vimeo, or direct mp4/webm link", 400)
+    }
 
     const project = await createProject({
       title,

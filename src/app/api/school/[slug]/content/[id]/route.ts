@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { extractAndLinkHashtags, linkHashtags } from '@/services/hashtagService'
+import { isAllowedMediaUrl, POST_VIDEO_KINDS } from '@/lib/media-links'
 
 export async function GET(request: Request, { params }: { params: Promise<{ slug: string; id: string }> }) {
   const { id } = await params
@@ -66,7 +67,12 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
   if (body.isPaid !== undefined) data.isPaid = body.isPaid
   if (body.pinned !== undefined) data.pinned = body.pinned
   if (body.images !== undefined) data.images = body.images
-  if (body.videoUrl !== undefined) data.videoUrl = body.videoUrl
+  if (body.videoUrl !== undefined) {
+    if (body.videoUrl && !isAllowedMediaUrl(body.videoUrl, POST_VIDEO_KINDS)) {
+      return apiError("Video must be a YouTube, Vimeo, or direct mp4/webm link", 400)
+    }
+    data.videoUrl = body.videoUrl
+  }
   if (body.section !== undefined) data.contentSection = body.section
   if (body.sortOrder !== undefined) data.sortOrder = body.sortOrder
 

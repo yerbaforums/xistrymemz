@@ -2,6 +2,7 @@ import { NextRequest, apiSuccess, apiError, NextResponse } from '@/lib/api-helpe
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { unpinGatewayUrl } from '@/lib/ipfs'
 
 export async function GET(
   request: NextRequest,
@@ -154,9 +155,29 @@ export async function DELETE(
       return apiError("Forbidden", 403)
     }
 
+    // Free-tier stewardship: unpin deleted media + drop File rows so the
+    // 500-file Pinata quota is reclaimed. Best-effort, never fails delete.
+    const mediaUrls: string[] = []
+    try {
+      const parsed = JSON.parse((post as { images?: string | null }).images || 'null')
+      if (Array.isArray(parsed)) mediaUrls.push(...parsed.filter((u) => typeof u === 'string'))
+    } catch {}
+    for (const key of ['imageUrl', 'videoUrl'] as const) {
+      const u = (post as Record<string, unknown>)[key]
+      if (typeof u === 'string' && u) mediaUrls.push(u)
+    }
+    const ownedUrls = [...new Set(mediaUrls)]
+
     await prisma.post.delete({
       where: { id }
     })
+
+    if (ownedUrls.length > 0) {
+      await prisma.file.deleteMany({
+        where: { userId: post.userId, gatewayUrl: { in: ownedUrls } },
+      }).catch(() => {})
+      await Promise.all(ownedUrls.map((u) => unpinGatewayUrl(u)))
+    }
 
     return apiSuccess({ message: 'Post deleted' })
   } catch (error) {

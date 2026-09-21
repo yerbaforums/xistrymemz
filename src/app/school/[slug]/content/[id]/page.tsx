@@ -10,6 +10,7 @@ import styles from './page.module.css'
 import Skeleton from '@/components/Skeleton'
 import PinToBoardButton from '@/components/PinToBoardButton'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import MediaPlayer from '@/components/MediaPlayer'
 
 interface ContentData {
   id: string
@@ -292,7 +293,7 @@ export default function SchoolContentDetailPage() {
 
       {!locked && content.videoUrl && (
         <div className={styles.videoWrap}>
-          <video src={content.videoUrl} controls className={styles.video} />
+          <MediaPlayer url={content.videoUrl} />
         </div>
       )}
 

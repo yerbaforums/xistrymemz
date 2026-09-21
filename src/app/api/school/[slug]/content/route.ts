@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { extractAndLinkHashtags, linkHashtags } from '@/services/hashtagService'
+import { isAllowedMediaUrl, POST_VIDEO_KINDS } from '@/lib/media-links'
 
 export async function GET(request: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -69,6 +70,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
 
   if (!title || !content) {
     return apiError("Title and content required", 400)
+  }
+
+  if (videoUrl && !isAllowedMediaUrl(videoUrl, POST_VIDEO_KINDS)) {
+    return apiError("Video must be a YouTube, Vimeo, or direct mp4/webm link", 400)
   }
 
   const schoolContent = await prisma.schoolContent.create({

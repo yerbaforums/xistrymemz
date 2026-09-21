@@ -36,6 +36,7 @@ export const NAV: NavConfig = {
 
   explore: [
     { href: '/discover', icon: '🌐', label: 'Discover' },
+    { href: '/photos', icon: '📸', label: 'Photos' },
     { href: '/boards', icon: '📌', label: 'Boards' },
     { href: '/projects', icon: '🚀', label: 'Projects' },
     { href: '/products', icon: '🛒', label: 'Products' },

@@ -258,3 +258,54 @@ export async function compressAudio(file: File, targetBitrate = AUDIO_COMPRESS_B
     return file
   }
 }
+/** Client-side photo shrink: downscale to fit 1600px, output WebP (JPEG fallback). */
+export const IMAGE_SHRINK_MAX_DIM = 1600
+export const IMAGE_SHRINK_QUALITY = 0.75
+
+export async function shrinkImage(
+  file: File,
+  maxDim = IMAGE_SHRINK_MAX_DIM,
+  quality = IMAGE_SHRINK_QUALITY,
+): Promise<File> {
+  try {
+    if (typeof document === 'undefined' || typeof createImageBitmap === 'undefined') return file
+    // Keep GIFs intact (resizing would kill animation); server compresses them.
+    if (file.type === 'image/gif') return file
+    if (!file.type.startsWith('image/')) return file
+
+    const bitmap = await createImageBitmap(file)
+    const { width, height } = bitmap
+    if (!width || !height) {
+      bitmap.close()
+      return file
+    }
+    const scale = Math.min(1, maxDim / Math.max(width, height))
+    // Already small enough and already efficient — skip re-encode.
+    if (scale >= 1 && (file.type === 'image/webp' || file.type === 'image/jpeg')) {
+      bitmap.close()
+      return file
+    }
+
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.max(1, Math.round(width * scale))
+    canvas.height = Math.max(1, Math.round(height * scale))
+    const ctx = canvas.getContext('2d')
+    if (!ctx) {
+      bitmap.close()
+      return file
+    }
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
+    bitmap.close()
+
+    const webpOk = canvas.toDataURL('image/webp').startsWith('data:image/webp')
+    const outType = webpOk ? 'image/webp' : 'image/jpeg'
+    const blob: Blob | null = await new Promise((resolve) =>
+      canvas.toBlob(resolve, outType, quality),
+    )
+    if (!blob || blob.size >= file.size) return file
+    const ext = outType === 'image/webp' ? 'webp' : 'jpg'
+    return new File([blob], file.name.replace(/\.[^.]+$/, '') + `.${ext}`, { type: outType })
+  } catch {
+    return file
+  }
+}

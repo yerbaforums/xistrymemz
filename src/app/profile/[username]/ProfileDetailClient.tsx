@@ -25,6 +25,7 @@ import FollowButton from '@/components/FollowButton'
 import ShareBar from '@/components/ShareBar'
 import EntityActions from '@/components/EntityActions'
 import SharedItemCard from '@/components/SharedItemCard'
+import MediaPlayer from '@/components/MediaPlayer'
 import ReplySection from '@/components/ReplySection'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
@@ -1294,6 +1295,28 @@ export default function ProfilePage() {
               </form>
             )}
 
+            {(() => {
+              const photos = posts.flatMap((p) => {
+                try {
+                  const arr = JSON.parse(p.images || 'null')
+                  const first = Array.isArray(arr) ? arr[0] : (typeof p.imageUrl === 'string' ? p.imageUrl : null)
+                  return typeof first === 'string' && first ? [{ id: p.id, url: first }] : []
+                } catch {
+                  return typeof p.imageUrl === 'string' && p.imageUrl ? [{ id: p.id, url: p.imageUrl }] : []
+                }
+              }).slice(0, 8)
+              if (photos.length === 0) return null
+              return (
+                <div className={styles.photoStrip}>
+                  {photos.map((ph) => (
+                    <Link key={ph.id} href={`/posts/${ph.id}`} className={styles.photoThumb}>
+                      <img src={ph.url} alt="" loading="lazy" />
+                    </Link>
+                  ))}
+                </div>
+              )
+            })()}
+
             {posts.length > 0 ? (
               <>
                 <div className={styles.postsList}>
@@ -1351,7 +1374,7 @@ export default function ProfilePage() {
                                 </div>
                               )}
                               {post.videoUrl && (
-                                <video src={post.videoUrl} controls preload="metadata" poster={imgs[0] || undefined} className={styles.postVideo} />
+                                <MediaPlayer url={post.videoUrl} poster={imgs[0] || undefined} />
                               )}
                             </div>
                           ) : null

@@ -15,6 +15,7 @@ import { useRecordView } from '@/hooks/useRecordView'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import PinToBoardButton from '@/components/PinToBoardButton'
+import MediaPlayer from '@/components/MediaPlayer'
 import Loading from '@/components/Loading'
 import styles from '../page.module.css'
 
@@ -146,7 +147,7 @@ export default function PostPage() {
 
           {post.videoUrl && (
             <div className={styles.videoWrap} style={{ marginTop: 12, borderRadius: 12, overflow: 'hidden', background: '#000' }}>
-              <video src={post.videoUrl} controls preload="metadata" poster={imageList[0] || undefined} style={{ display: 'block', width: '100%', maxHeight: 560, aspectRatio: '16/9', objectFit: 'contain', background: '#000' }} />
+              <MediaPlayer url={post.videoUrl} poster={imageList[0] || undefined} />
             </div>
           )}
 

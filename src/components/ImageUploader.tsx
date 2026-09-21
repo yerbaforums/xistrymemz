@@ -3,7 +3,8 @@
 import { useState, useRef } from 'react'
 import Image from 'next/image'
 import { useToast } from '@/context/ToastContext'
-import { probeMediaDuration, formatDuration, compressVideo, MAX_VIDEO_DURATION_SEC, MAX_VIDEO_SIZE_MB, shouldCompressVideo } from '@/lib/media'
+import { probeMediaDuration, formatDuration, compressVideo, shrinkImage, MAX_VIDEO_DURATION_SEC, MAX_VIDEO_SIZE_MB, shouldCompressVideo } from '@/lib/media'
+import { normalizeVideoUrl, POST_VIDEO_KINDS, MEDIA_LINK_HINT } from '@/lib/media-links'
 
 interface ImageUploaderProps {
   images: string[]
@@ -31,6 +32,8 @@ export default function ImageUploader({
   const [videoUploading, setVideoUploading] = useState(false)
   const [videoOptimizing, setVideoOptimizing] = useState(false)
   const [videoDuration, setVideoDuration] = useState<number | null>(null)
+  const [videoLinkMode, setVideoLinkMode] = useState(false)
+  const [videoLink, setVideoLink] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
   const { error: toastError } = useToast()
@@ -51,12 +54,16 @@ export default function ImageUploader({
     try {
       const formData = new FormData()
       for (const file of files) {
-        if (file.size > maxSizeMB * 1024 * 1024) {
+        // Shrink photos in-browser first (1600px WebP): beats the 4.5MB
+        // serverless body wall and keeps free-tier storage tiny.
+        const processed = await shrinkImage(file)
+        if (processed.size > maxSizeMB * 1024 * 1024) {
           toastError(`File too large: ${file.name}. Max ${maxSizeMB}MB`)
           continue
         }
-        formData.append('file', file)
+        formData.append('file', processed, processed.name)
       }
+      if (![...formData.keys()].length) return
 
       const res = await fetch('/api/upload', { method: 'POST', body: formData })
       if (!res.ok) throw new Error('Upload failed')
@@ -69,6 +76,17 @@ export default function ImageUploader({
       setUploading(false)
       if (inputRef.current) inputRef.current.value = ''
     }
+  }
+
+  const handleVideoLink = () => {
+    const norm = normalizeVideoUrl(videoLink)
+    if (!norm || !POST_VIDEO_KINDS.includes(norm.kind)) {
+      toastError(MEDIA_LINK_HINT)
+      return
+    }
+    onVideoUrlChange!(norm.original)
+    setVideoLink('')
+    setVideoLinkMode(false)
   }
 
   const handleVideoFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -152,7 +170,11 @@ export default function ImageUploader({
         {supportsVideo && (
           videoUrl ? (
             <div style={{ position: 'relative', width: 128, height: 72, borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', background: '#000' }}>
-              <video src={videoUrl} muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              {(() => { const k = normalizeVideoUrl(videoUrl)?.kind; return k === 'direct-video' ? (
+                <video src={videoUrl} muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', fontSize: '1.4rem' }}>🔗</span>
+              ) })()}
               <button
                 type="button"
                 onClick={() => { onVideoUrlChange!(null); setVideoDuration(null) }}
@@ -163,7 +185,21 @@ export default function ImageUploader({
                 ▶ {videoDuration ? formatDuration(videoDuration) : 'Video'}
               </span>
             </div>
+          ) : videoLinkMode ? (
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center', flex: 1, minWidth: 220 }}>
+              <input
+                type="url"
+                value={videoLink}
+                onChange={e => setVideoLink(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleVideoLink() } }}
+                placeholder="https://youtube.com/watch?v=…"
+                style={{ flex: 1, padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: '0.8rem' }}
+              />
+              <button type="button" onClick={handleVideoLink} style={{ padding: '8px 12px', borderRadius: 8, border: 'none', background: 'var(--accent-primary)', color: '#fff', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>Add</button>
+              <button type="button" onClick={() => { setVideoLinkMode(false); setVideoLink('') }} style={{ padding: '8px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.8rem' }} title="Back to upload">✕</button>
+            </div>
           ) : (
+            <div style={{ display: 'flex', gap: 6 }}>
             <button
               type="button"
               onClick={handleVideoSelect}
@@ -174,6 +210,16 @@ export default function ImageUploader({
               {videoOptimizing ? <span style={{ fontSize: '1.1rem' }}>⚙️</span> : videoUploading ? <span style={{ fontSize: '1.2rem' }}>...</span> : <span style={{ fontSize: '1.3rem' }}>🎬</span>}
               <span>{videoOptimizing ? 'Optimizing…' : videoUploading ? 'Uploading…' : 'Video'}</span>
             </button>
+              <button
+                type="button"
+                onClick={() => setVideoLinkMode(true)}
+                title="Paste a video link instead (YouTube, Vimeo, mp4)"
+                style={{ height: 72, padding: '0 12px', borderRadius: '8px', border: '2px dashed var(--border-color)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 2, fontSize: '0.7rem', color: 'var(--text-secondary)' }}
+              >
+                <span style={{ fontSize: '1.3rem' }}>🔗</span>
+                <span>Link</span>
+              </button>
+            </div>
           )
         )}
       </div>

@@ -19,6 +19,8 @@ const VIDEO_MAX_SIZE = 200 * 1024 * 1024
 const AUDIO_MAX_SIZE = 150 * 1024 * 1024
 const COMPRESS_QUALITY = 80
 const MAX_DIMENSION = 1920
+// Free-tier stewardship (Pinata free = 500 files account-wide).
+export const MAX_IMAGES_PER_USER = 60
 
 const DANGEROUS_EXTENSIONS = [
   'php', 'phtml', 'php3', 'php4', 'php5', 'phar',
@@ -122,6 +124,17 @@ export async function POST(request: Request) {
     }
 
     const toUpload = files.length > 0 ? files : (file ? [file] : [])
+
+    // Per-user image quota: images are the only uploads enabled by default.
+    const incomingImages = toUpload.filter((f) => (f.type || '').toLowerCase().startsWith('image/')).length
+    if (incomingImages > 0) {
+      const used = await prisma.file.count({
+        where: { userId: session.user.id, mimeType: { startsWith: 'image/' } },
+      })
+      if (used + incomingImages > MAX_IMAGES_PER_USER) {
+        return apiError(`Image upload limit reached (${MAX_IMAGES_PER_USER} per user on the free tier)`, 429)
+      }
+    }
 
     const uploads = await Promise.all(toUpload.map(async (f) => {
       const mimeType = f.type.toLowerCase()

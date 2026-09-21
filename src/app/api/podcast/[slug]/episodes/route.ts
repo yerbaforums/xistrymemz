@@ -2,6 +2,7 @@ import { apiSuccess, apiError, apiUnauthorized, apiNotFound } from '@/lib/api-he
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { isAllowedMediaUrl, EPISODE_AUDIO_KINDS } from '@/lib/media-links'
 
 // POST create an episode (owner only); GET public list of published episodes.
 export async function POST(request: Request, context: { params: Promise<{ slug: string }> }) {
@@ -26,6 +27,9 @@ export async function POST(request: Request, context: { params: Promise<{ slug: 
 
   if (!title?.trim()) return apiError('Title is required', 400)
   if (!audioUrl?.trim()) return apiError('Audio file is required', 400)
+  if (!isAllowedMediaUrl(audioUrl, EPISODE_AUDIO_KINDS)) {
+    return apiError("Episode audio must be an uploaded file or a direct audio link (mp3, m4a, ogg, wav)", 400)
+  }
 
   const episode = await prisma.podcastEpisode.create({
     data: {

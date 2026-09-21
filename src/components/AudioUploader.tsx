@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import { useToast } from '@/context/ToastContext'
 import { probeMediaDuration, formatDuration, compressAudio, MAX_AUDIO_SIZE_MB } from '@/lib/media'
+import { normalizeAudioUrl, EPISODE_AUDIO_KINDS, AUDIO_LINK_HINT } from '@/lib/media-links'
 
 interface AudioUploaderProps {
   value: string | null
@@ -24,8 +25,24 @@ export default function AudioUploader({
   const [uploading, setUploading] = useState(false)
   const [optimizing, setOptimizing] = useState(false)
   const [duration, setDuration] = useState<number | null>(null)
+  const [linkMode, setLinkMode] = useState(false)
+  const [link, setLink] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const { error: toastError } = useToast()
+
+  const handleLink = () => {
+    const norm = normalizeAudioUrl(link)
+    if (!norm || !EPISODE_AUDIO_KINDS.includes(norm.kind)) {
+      toastError(AUDIO_LINK_HINT)
+      return
+    }
+    // Linked files were not probed locally; duration stays 0 (unknown).
+    setDuration(null)
+    onDuration?.(0)
+    onChange(norm.original)
+    setLink('')
+    setLinkMode(false)
+  }
 
   const handleSelect = () => inputRef.current?.click()
 
@@ -90,7 +107,21 @@ export default function AudioUploader({
             ✕ Remove
           </button>
         </div>
+      ) : linkMode ? (
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+          <input
+            type="url"
+            value={link}
+            onChange={e => setLink(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleLink() } }}
+            placeholder="https://example.com/episode.mp3"
+            style={{ flex: 1, minWidth: 200, padding: '10px 12px', borderRadius: 10, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
+          />
+          <button type="button" onClick={handleLink} style={{ padding: '10px 14px', borderRadius: 10, border: 'none', background: 'var(--accent-primary)', color: '#fff', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>Add</button>
+          <button type="button" onClick={() => { setLinkMode(false); setLink('') }} style={{ padding: '10px', borderRadius: 10, border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.85rem' }} title="Back to upload">\u2715</button>
+        </div>
       ) : (
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <button
           type="button"
           onClick={handleSelect}
@@ -101,6 +132,15 @@ export default function AudioUploader({
           <span style={{ fontSize: '1.2rem' }}>{optimizing ? '⚙️' : uploading ? '⏳' : '🎙️'}</span>
           {optimizing ? 'Optimizing audio…' : uploading ? 'Uploading…' : label}
         </button>
+          <button
+            type="button"
+            onClick={() => setLinkMode(true)}
+            title="Paste a direct audio link instead (mp3, m4a, ogg — keeps your RSS feed valid)"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderRadius: 10, border: '2px dashed var(--border-color)', background: 'transparent', cursor: 'pointer', color: 'var(--text-secondary)', fontSize: '0.9rem' }}
+          >
+            <span style={{ fontSize: '1.2rem' }}>🔗</span> Link
+          </button>
+        </div>
       )}
       <input ref={inputRef} type="file" accept={ACCEPT} onChange={handleFile} style={{ display: 'none' }} />
     </div>

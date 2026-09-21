@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { extractAndLinkHashtags, linkHashtags } from '@/services/hashtagService'
+import { isAllowedMediaUrl, POST_VIDEO_KINDS } from '@/lib/media-links'
 
 interface ProjectUpdateBody {
   title?: string
@@ -119,6 +120,10 @@ export async function PUT(
 
     if (!isOwner && !isEditor && !isAdmin) {
       return apiError("Forbidden", 403)
+    }
+
+    if (body.videoUrl && !isAllowedMediaUrl(body.videoUrl, POST_VIDEO_KINDS)) {
+      return apiError("Video must be a YouTube, Vimeo, or direct mp4/webm link", 400)
     }
 
     const project = await prisma.project.update({

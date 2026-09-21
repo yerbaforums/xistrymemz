@@ -1,7 +1,8 @@
-import { apiSuccess, apiUnauthorized, apiNotFound } from '@/lib/api-helpers'
+import { apiSuccess, apiError, apiUnauthorized, apiNotFound } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { isAllowedMediaUrl, EPISODE_AUDIO_KINDS } from '@/lib/media-links'
 
 // PATCH edit an episode or DELETE it. Owner only.
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
@@ -17,6 +18,12 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   if (episode.podcastId !== session.user.id) return apiUnauthorized()
 
   const body = await request.json().catch(() => ({}) as Record<string, unknown>)
+  if (typeof (body as Record<string, unknown>).audioUrl === 'string') {
+    const u = ((body as Record<string, unknown>).audioUrl as string).trim()
+    if (u && !isAllowedMediaUrl(u, EPISODE_AUDIO_KINDS)) {
+      return apiError('Episode audio must be an uploaded file or a direct audio link (mp3, m4a, ogg, wav)', 400)
+    }
+  }
   const {
     title, description, audioUrl, durationSec, episodeNumber, isExplicit, published,
   } = body as {
