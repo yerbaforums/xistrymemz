@@ -237,7 +237,8 @@ export const forumReplyVoteDeleteSchema = z.object({
 export const replySchema = z.object({
   content: z.string().min(1, 'Content is required').max(10000),
   postId: z.string().min(1, 'Valid post ID is required'),
-  side: z.enum(['PRO', 'CON', 'NEUTRAL']).optional()
+  side: z.enum(['PRO', 'CON', 'NEUTRAL']).optional(),
+  images: z.array(z.string().max(2000)).max(3).optional().nullable()
 })
 
 export const eventSchema = z.object({
@@ -349,7 +350,7 @@ export const postSchema = z.object({
   targetUserId: z.string().min(1).optional().nullable(),
   context: z.enum(['PROFILE', 'SHOP', 'SCHOOL', 'WALL', 'REPOST']).optional(),
   parentId: z.string().min(1).optional().nullable(),
-  referenceType: z.enum(['PRODUCT', 'SERVICE', 'EVENT', 'REQUEST', 'PROJECT', 'PLAN', 'POST', 'PIN']).optional().nullable(),
+  referenceType: z.enum(['PRODUCT', 'SERVICE', 'EVENT', 'REQUEST', 'PROJECT', 'PLAN', 'POST', 'PIN', 'FORUMPOST', 'SCHOOLCONTENT', 'GROUP', 'SHOP', 'SCHOOL', 'BLOG', 'PODCAST']).optional().nullable(),
   referenceId: z.string().min(1).optional().nullable(),
   referenceTitle: z.string().max(500).optional().nullable()
 })

@@ -94,6 +94,11 @@ export default function FeedItem({ post }: { post: FeedPost }) {
               {post.user.username && <span style={{ color: 'var(--text-muted)' }}> @{post.user.username}</span>}
             </span>
           </div>
+          {post.content?.trim() && (
+            <div style={{ margin: '4px 0 8px' }}>
+              <HashtagText text={post.content} mentionLinks />
+            </div>
+          )}
           {post.referenceType && post.referenceId && (
             <SharedItemCard
               referenceType={post.referenceType}

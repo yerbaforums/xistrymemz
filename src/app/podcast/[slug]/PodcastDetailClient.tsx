@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import ShareBar from '@/components/ShareBar'
+import EntityActions from '@/components/EntityActions'
 import Loading from '@/components/Loading'
 import { EmptyState } from '@/components/EmptyState'
 import Breadcrumbs from '@/components/Breadcrumbs'
@@ -137,6 +138,18 @@ export default function PodcastDetailClient({ params }: { params: Promise<{ slug
               )}
             </div>
             <ShareBar entityType="PODCAST" url={typeof window !== 'undefined' ? window.location.href : ''} title={p.podcastName || ''} />
+            {p.podcastSlug && (
+              <div style={{ marginTop: 8 }}>
+                <EntityActions
+                  entityType="PODCAST"
+                  entityId={p.podcastSlug}
+                  title={p.podcastName || p.name || 'Podcast'}
+                  authorId={p.id}
+                  image={p.podcastImage}
+                  variant="bar"
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -13,6 +13,12 @@ import styles from '../../community.module.css'
 import { useToast } from '@/context/ToastContext'
 import { getUserProfileUrl } from '@/lib/utils'
 import TranslateButton from '@/components/TranslateButton'
+import MediaPlayer from '@/components/MediaPlayer'
+import LinkPreview, { URL_REGEX } from '@/components/LinkPreview'
+import ShareBar from '@/components/ShareBar'
+import EntityActions from '@/components/EntityActions'
+import ImageUploader from '@/components/ImageUploader'
+import { normalizeVideoUrl, normalizeAudioUrl, POST_VIDEO_KINDS, GENERAL_AUDIO_KINDS } from '@/lib/media-links'
 import Button from '@/components/ui/Button'
 import { EmptyState } from '@/components/EmptyState'
 import Skeleton from '@/components/Skeleton'
@@ -55,6 +61,7 @@ interface Post {
 interface Reply {
   id: string
   content: string
+  images: string | null
   side: string
   score: number
   myVote?: number
@@ -83,6 +90,7 @@ export default function ForumThreadPage() {
   const [replies, setReplies] = useState<Reply[]>([])
   const [loading, setLoading] = useState(true)
   const [replyContent, setReplyContent] = useState('')
+  const [replyImages, setReplyImages] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [tipTarget, setTipTarget] = useState<{type: 'post' | 'reply', id: string, authorId: string} | null>(null)
   const [tipAmount, setTipAmount] = useState('')
@@ -380,7 +388,7 @@ export default function ForumThreadPage() {
     if (!replyContent.trim()) return
     setSubmitting(true)
     try {
-      const body: Record<string, unknown> = { content: replyContent, postId }
+      const body: Record<string, unknown> = { content: replyContent, postId, images: replyImages.length > 0 ? replyImages : undefined }
       if (post?.postType === 'DEBATE') {
         body.side = replySide
       }
@@ -391,6 +399,7 @@ export default function ForumThreadPage() {
       })
       if (res.ok) {
         setReplyContent('')
+        setReplyImages([])
         setReplySide('NEUTRAL')
         fetchReplies()
         fetchPost()
@@ -556,6 +565,20 @@ export default function ForumThreadPage() {
             <>
               <div><HashtagText text={post.content} mentionLinks /></div>
               <TranslateButton text={post.content} />
+              <LinkPreview text={post.content} />
+              {(() => {
+                const found = (post.content.match(URL_REGEX) || []).find((u: string) => {
+                  const v = normalizeVideoUrl(u)
+                  if (v && POST_VIDEO_KINDS.includes(v.kind)) return true
+                  const a = normalizeAudioUrl(u)
+                  return !!a && GENERAL_AUDIO_KINDS.includes(a.kind)
+                })
+                return found ? (
+                  <div style={{ marginTop: 10 }}>
+                    <MediaPlayer url={found} />
+                  </div>
+                ) : null
+              })()}
             </>
           )}
         </div>
@@ -623,6 +646,14 @@ export default function ForumThreadPage() {
           >
             📤 Share
           </Button>
+          <ShareBar entityType="FORUMPOST" title={post.title} description={post.content?.slice(0, 140)} variant="compact" />
+          <EntityActions
+            entityType="FORUMPOST"
+            entityId={post.id}
+            title={post.title}
+            authorId={post.author.id}
+            variant="bar"
+          />
           <Button
             variant="ghost"
             onClick={() => setTipTarget({ type: 'post', id: post.id, authorId: post.author.id })}
@@ -735,6 +766,23 @@ export default function ForumThreadPage() {
                     <>
                       <div><HashtagText text={reply.content} mentionLinks /></div>
                       <TranslateButton text={reply.content} />
+                      {(() => {
+                        try {
+                          const arr = JSON.parse(reply.images || 'null')
+                          if (!Array.isArray(arr) || arr.length === 0) return null
+                          return (
+                            <div style={{ display: 'grid', gridTemplateColumns: arr.length === 1 ? '1fr' : '1fr 1fr', gap: 6, marginTop: 8 }}>
+                              {arr.filter((u): u is string => typeof u === 'string').map((url, i) => (
+                                <div key={i} style={{ borderRadius: 8, overflow: 'hidden', aspectRatio: arr.length === 1 ? '16/9' : '1' }}>
+                                  <img src={url} alt="" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                </div>
+                              ))}
+                            </div>
+                          )
+                        } catch {
+                          return null
+                        }
+                      })()}
                     </>
                   )}
                 </div>
@@ -823,6 +871,9 @@ export default function ForumThreadPage() {
           >
             @
           </Button>
+        </div>
+        <div style={{ margin: '8px 0' }}>
+          <ImageUploader images={replyImages} onChange={setReplyImages} maxImages={3} />
         </div>
         <Button
           variant="primary"

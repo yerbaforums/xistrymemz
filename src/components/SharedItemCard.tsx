@@ -59,6 +59,7 @@ const SharedItemCard = memo(function SharedItemCard({ referenceType, referenceId
     PRODUCT: 'products', SERVICE: 'services', EVENT: 'events',
     REQUEST: 'requests', PROJECT: 'projects', SCHOOLCONTENT: 'school',
     FORUMPOST: 'community/forum', GROUP: 'groups',
+    BLOG: 'blog', PODCAST: 'podcast',
   }
 
   const route = typeToRoute[referenceType]

@@ -17,6 +17,8 @@ import { EmptyState } from '@/components/EmptyState'
 import MobileNav from './MobileNav'
 import UserDropdown from './UserDropdown'
 import LanguageRequestModal from './LanguageRequestModal'
+import { NAV } from '@/lib/navigation'
+import { useUserPreferences } from '@/hooks/useUserPreferences'
 
 const LOCALES = [
   { code: 'en', label: 'EN' },
@@ -115,6 +117,7 @@ export default function Header() {
 
   useSiteSettings()
   const { mode, toggleMode } = useTheme()
+  const { isToolVisible } = useUserPreferences()
   const isAuthenticated = status === 'authenticated'
   const isAuthPage = pathname?.startsWith('/auth')
 
@@ -349,27 +352,14 @@ export default function Header() {
             </button>
             <div className={styles.navDropdown} id="nav-dropdown-explore" role="menu" style={{ minWidth: 200 }}>
               <div style={{ padding: '6px 14px', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('browse')}</div>
-              <Link href="/discover" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🌐</span> Discover</Link>
-              <Link href="/photos" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📸</span> Photos</Link>
-              <Link href="/projects" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🚀</span> Projects</Link>
-              <Link href="/boards" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📌</span> Boards</Link>
-              <Link href="/products" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🛒</span> Products</Link>
-              <Link href="/services" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🔧</span> Services</Link>
-              <Link href="/shops" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🏪</span> Shops</Link>
-              <Link href="/schools" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🏫</span> Schools</Link>
-              <Link href="/blogs" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">✍️</span> Blogs</Link>
-              <Link href="/podcasts" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🎙️</span> Podcasts</Link>
-              <Link href="/requests" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📝</span> Requests</Link>
-              <Link href="/events" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📅</span> Events</Link>
-              <Link href="/rentals" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🏠</span> Rentals</Link>
-              <Link href="/directory" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">📋</span> Directory</Link>
-              <Link href="/hashtags" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"># Hashtags</Link>
+              {NAV.explore.filter(item => isToolVisible(item.href)).map(item => (
+                <Link key={item.href} href={item.href} className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">{item.icon}</span> {item.label}</Link>
+              ))}
               <div style={{ borderTop: '1px solid var(--border-color)', margin: '4px 0' }} />
               <div style={{ padding: '6px 14px', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('community')}</div>
-              <Link href="/community" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">👤</span> Members</Link>
-              <Link href="/community/forum" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">💬</span> Forum</Link>
-              <Link href="/community/groups" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">👥</span> Groups</Link>
-              <Link href="/connections" className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">🔗</span> Connections</Link>
+              {NAV.community.filter(item => isToolVisible(item.href)).map(item => (
+                <Link key={item.href} href={item.href} className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">{item.icon}</span> {item.label}</Link>
+              ))}
             </div>
           </div>
         </nav>

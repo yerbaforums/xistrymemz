@@ -79,6 +79,16 @@ export async function GET(
         if (schoolUser) item = { id: id, title: schoolUser.schoolName || 'School', image: schoolUser.schoolImage }
         break
       }
+      case 'BLOG': {
+        const blogUser = await prisma.user.findFirst({ where: { blogSlug: id } })
+        if (blogUser) item = { id: id, title: blogUser.blogName || 'Blog', image: blogUser.blogImage }
+        break
+      }
+      case 'PODCAST': {
+        const podUser = await prisma.user.findFirst({ where: { podcastSlug: id } })
+        if (podUser) item = { id: id, title: podUser.podcastName || 'Podcast', image: podUser.podcastImage }
+        break
+      }
     }
 
     if (!item) {

@@ -75,7 +75,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { content, postId, side } = validation.data
+    const { content, postId, side, images } = validation.data
 
     const post = await prisma.forumPost.findUnique({
       where: { id: postId },
@@ -92,6 +92,7 @@ export async function POST(req: Request) {
     const reply = await prisma.forumReply.create({
       data: {
         content,
+        images: images && images.length > 0 ? JSON.stringify(images) : null,
         postId,
         authorId: session.user.id,
         side: post.postType === 'DEBATE' ? (side || 'NEUTRAL') : 'NEUTRAL'

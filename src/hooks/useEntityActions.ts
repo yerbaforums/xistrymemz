@@ -6,7 +6,7 @@ import { fetchApi } from '@/lib/fetch-api'
 export type ActionEntityType =
   | 'POST' | 'PRODUCT' | 'SERVICE' | 'EVENT' | 'PROJECT'
   | 'REQUEST' | 'SCHOOLCONTENT' | 'GROUP' | 'SHOP' | 'SCHOOL'
-  | 'FORUMPOST' | 'PROFILE' | 'PIN'
+  | 'FORUMPOST' | 'PROFILE' | 'PIN' | 'BLOG' | 'PODCAST'
 
 interface AuthorSettings {
   enableTips: boolean

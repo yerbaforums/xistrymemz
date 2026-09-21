@@ -4,7 +4,7 @@ import type { Backlink } from '@prisma/client'
 export type EntityType =
   | 'PROJECT' | 'PRODUCT' | 'POST' | 'EVENT' | 'SCHOOLCONTENT'
   | 'REQUEST' | 'SERVICE' | 'GROUP' | 'SHOP' | 'SCHOOL' | 'BOARD'
-  | 'FORUMPOST'
+  | 'FORUMPOST' | 'BLOG' | 'PODCAST'
 
 export type RelationType = 'REFERENCES' | 'CONTAINS' | 'RELATES_TO' | 'PROMOTES'
 

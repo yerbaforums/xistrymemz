@@ -1872,6 +1872,7 @@ model ForumReplyVote {
 model ForumReply {
   id        String          @id @default(cuid())
   content   String
+  images    String?
   postId    String
   post      ForumPost       @relation(fields: [postId], references: [id], onDelete: Cascade)
   authorId  String

@@ -5,13 +5,23 @@ import { useRouter } from 'next/navigation'
 import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { useQuickCreate } from '@/components/QuickCreateModal'
+import { useUserPreferences } from '@/hooks/useUserPreferences'
 import styles from './BottomNav.module.css'
+
+interface NavItem {
+  href: string | null
+  label: string
+  icon: string
+  isFab?: boolean
+  action?: () => void
+}
 
 export default function BottomNav() {
   const pathname = usePathname()
   const router = useRouter()
   const { data: session, status } = useSession()
   const quickCreate = useQuickCreate()
+  const { isToolVisible } = useUserPreferences()
   const isAuthenticated = status === 'authenticated'
 
   if (pathname?.startsWith('/auth')) return null
@@ -24,19 +34,21 @@ export default function BottomNav() {
     }
   }
 
-  const navItems = isAuthenticated ? [
+  const allItems: NavItem[] = isAuthenticated ? [
     { href: '/', label: 'Home', icon: '🏠' },
-    { href: '/discover', label: 'Discover', icon: '🌐' },
+    { href: '/photos', label: 'Photos', icon: '📸' },
     { href: null, label: 'Create', icon: '+', isFab: true, action: handleCreate },
-    { href: '/dashboard/deals', label: 'Deals', icon: '🤝' },
+    { href: '/discover', label: 'Discover', icon: '🌐' },
     { href: session?.user?.username ? `/profile/${session.user.username}` : '/profile', label: 'Profile', icon: '👤' },
   ] : [
     { href: '/', label: 'Home', icon: '🏠' },
-    { href: '/discover', label: 'Discover', icon: '🌐' },
+    { href: '/photos', label: 'Photos', icon: '📸' },
     { href: null, label: 'Create', icon: '+', isFab: true, action: handleCreate },
-    { href: '/community', label: 'Community', icon: '👥' },
+    { href: '/discover', label: 'Discover', icon: '🌐' },
     { href: '/auth/login', label: 'Sign In', icon: '🔑' },
   ]
+  // Hidden tools disappear from the bottom bar too (except Home + Create).
+  const navItems = allItems.filter(item => !item.href || item.href === '/' || isToolVisible(item.href))
 
   return (
     <nav className={styles.bottomNav} aria-label="Mobile navigation">
@@ -55,7 +67,6 @@ export default function BottomNav() {
         }
         const getIsActive = () => {
           if (item.href === '/') return pathname === '/' || pathname === '/dashboard/overview'
-          if (item.label === 'Deals') return pathname?.startsWith('/dashboard') && pathname !== '/dashboard/overview'
           if (item.label === 'Profile') return pathname?.startsWith('/profile') || pathname?.startsWith('/settings')
           if (!item.href) return false
           return pathname === item.href || pathname?.startsWith(item.href + '/')

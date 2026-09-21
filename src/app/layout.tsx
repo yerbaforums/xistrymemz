@@ -12,6 +12,7 @@ import CreateFAB from "@/components/CreateFAB";
 import CommandPalette from "@/components/CommandPalette";
 import { QuickCreateProvider } from "@/components/QuickCreateModal";
 import BottomNav from "@/components/BottomNav";
+import FeedPrefsManager from "@/components/FeedPrefsManager";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import LocaleProvider from "@/components/LocaleProvider";
 import { WebSiteLD, OrganizationLD } from "@/components/JSONLD";
@@ -111,6 +112,7 @@ export default async function RootLayout({
                 <AppShell>
                   {children}
                   <ToastContainer />
+                  <FeedPrefsManager />
                   <CreateFAB />
                   <CommandPalette />
                   <BackToTop />

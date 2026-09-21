@@ -52,3 +52,13 @@
   font-size: 0.9rem;
   word-break: break-all;
 }
+
+/* Compact feed density: shorter previews. */
+:global(html[data-feed-density="compact"]) .frame {
+  aspect-ratio: 21 / 9;
+  max-height: 240px;
+}
+
+:global(html[data-feed-density="compact"]) .video {
+  max-height: 240px;
+}

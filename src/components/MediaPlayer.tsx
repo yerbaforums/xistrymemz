@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { normalizeVideoUrl, normalizeAudioUrl } from '@/lib/media-links'
 import styles from './MediaPlayer.module.css'
 
@@ -17,12 +18,23 @@ export default function MediaPlayer({
   poster?: string
   title?: string
 }) {
+  const [autoplay, setAutoplay] = useState(false)
+  useEffect(() => {
+    try {
+      setAutoplay(document.documentElement.dataset.feedAutoplay !== 'off')
+    } catch {}
+  }, [])
+
   const video = normalizeVideoUrl(url)
   if (video && (video.kind === 'youtube' || video.kind === 'vimeo')) {
+    const sep = video.url.includes('?') ? '&' : '?'
+    const src = autoplay
+      ? `${video.url}${sep}${video.kind === 'youtube' ? 'autoplay=1&mute=1' : 'autoplay=1&muted=1'}`
+      : video.url
     return (
       <div className={styles.frame}>
         <iframe
-          src={video.url}
+          src={src}
           title={title || 'Embedded video'}
           className={styles.iframe}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -49,7 +61,14 @@ export default function MediaPlayer({
   if (video && video.kind === 'direct-video') {
     return (
       <div className={styles.frame}>
-        <video src={video.url} controls preload="metadata" poster={poster} className={styles.video} />
+        <video
+          src={video.url}
+          controls
+          preload="metadata"
+          poster={poster}
+          className={styles.video}
+          {...(autoplay ? { autoPlay: true, muted: true, loop: true, playsInline: true } : {})}
+        />
       </div>
     )
   }

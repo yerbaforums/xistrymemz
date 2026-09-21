@@ -39,10 +39,11 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { postId } = await request.json()
+    const { postId, content } = await request.json()
     if (!postId) {
       return apiError("postId is required", 400)
     }
+    const quote = typeof content === 'string' ? content.trim().slice(0, 500) : ''
 
     const original = await prisma.post.findUnique({
       where: { id: postId },
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
     const post = await prisma.$transaction(async (tx) => {
       const p = await tx.post.create({
         data: {
-          content: '',
+          content: quote,
           userId: session.user.id,
           context: 'REPOST',
           referenceType: 'POST',

@@ -71,6 +71,7 @@ export default function EntityActions({
 
   const [showShareModal, setShowShareModal] = useState(false)
   const [showFeedModal, setShowFeedModal] = useState(false)
+  const [quoting, setQuoting] = useState(false)
   const [showTipModal, setShowTipModal] = useState(false)
 
   const activeDonations = (donationAddresses || fetchedDonations).filter(
@@ -193,6 +194,7 @@ export default function EntityActions({
   const closeFeedModal = () => {
     setShowFeedModal(false)
     setFeedContent('')
+    setQuoting(false)
     profilePrefilled.current = false
   }
 
@@ -200,6 +202,24 @@ export default function EntityActions({
     if (!session || posting) return
     setPosting(true)
     try {
+      if (quoting && entityType === 'POST') {
+        const res = await fetch('/api/posts/repost', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ postId: entityId, content: feedContent.trim() }),
+        })
+        if (res.ok) {
+          setReposted(true)
+          setRepostCount(c => c + 1)
+          success('Quoted!')
+          closeFeedModal()
+          setShowShareModal(false)
+        } else {
+          const err = await res.json()
+          error(err.error || 'Failed to quote')
+        }
+        return
+      }
       const isProfile = entityType === 'PROFILE'
       const body = isProfile
         ? { content: feedContent.trim() || `@${description || 'user'}`, context: 'PROFILE' }
@@ -299,7 +319,7 @@ export default function EntityActions({
       {showFeedModal && (
         <div className={styles.overlay} onClick={closeFeedModal} style={{ zIndex: 1001 }} role="dialog" aria-modal="true" aria-label="Share to feed">
           <div className={styles.feedModal} onClick={e => e.stopPropagation()}>
-            <h4 className={styles.feedTitle}>{entityType === 'PROFILE' ? 'Mention in a Post' : 'Share to Post'}</h4>
+            <h4 className={styles.feedTitle}>{quoting ? 'Quote post' : entityType === 'PROFILE' ? 'Mention in a Post' : 'Share to Post'}</h4>
             <textarea value={feedContent} onChange={e => setFeedContent(e.target.value)} placeholder={entityType === 'PROFILE' ? 'Add a comment about this profile (optional)...' : 'Add a comment (optional)...'} rows={3} className={styles.feedTextarea} />
             {entityType !== 'PROFILE' && (
               <div className={styles.destRow}>
@@ -396,7 +416,13 @@ export default function EntityActions({
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
                 Share to...
               </button>
-              <button onClick={() => { setShowFeedModal(true); setShowMore(false) }} className={styles.menuItem}>
+              {entityType === 'POST' && session && !reposted && (
+                <button onClick={() => { setQuoting(true); setShowFeedModal(true); setShowMore(false) }} className={styles.menuItem}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>
+                  Quote post
+                </button>
+              )}
+              <button onClick={() => { setQuoting(false); setShowFeedModal(true); setShowMore(false) }} className={styles.menuItem}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                 Share to Feed
               </button>

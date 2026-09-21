@@ -8,6 +8,7 @@ import Skeleton from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import Button from '@/components/ui/Button'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import EntityActions from '@/components/EntityActions'
 import { useToast } from '@/context/ToastContext'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { CRYPTO_LOGOS } from '@/lib/constants'
@@ -417,6 +418,17 @@ export default function BlogDetailClient({ params }: { params: Promise<{ slug: s
           </div>
         </div>
       </div>
+
+      {blog.blogSlug && (
+        <EntityActions
+          entityType="BLOG"
+          entityId={blog.blogSlug}
+          title={blog.blogName || blog.name || 'Blog'}
+          authorId={blog.id}
+          image={blog.blogImage}
+          variant="bar"
+        />
+      )}
 
       <div className={styles.tabs} role="tablist">
         <button className={`${styles.tab} ${activeTab === 'posts' ? styles.active : ''}`} onClick={() => setActiveTab('posts')}>

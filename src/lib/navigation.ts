@@ -54,6 +54,7 @@ export const NAV: NavConfig = {
 
   community: [
     { href: '/community', icon: '👤', label: 'Members' },
+    { href: '/photos', icon: '📸', label: 'Photos' },
     { href: '/community/forum', icon: '💬', label: 'Forum' },
     { href: '/community/groups', icon: '👥', label: 'Groups' },
     { href: '/connections', icon: '🔗', label: 'Connections' },

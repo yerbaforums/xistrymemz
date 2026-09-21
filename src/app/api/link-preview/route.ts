@@ -1,4 +1,5 @@
 import { NextRequest, apiError, NextResponse } from '@/lib/api-helpers'
+import { normalizeVideoUrl, normalizeAudioUrl } from '@/lib/media-links'
 
 export async function GET(request: NextRequest) {
   const url = request.nextUrl.searchParams.get('url')
@@ -14,6 +15,11 @@ export async function GET(request: NextRequest) {
     if (['http:', 'https:'].indexOf(parsed.protocol) === -1) {
       return apiError("Invalid protocol", 400)
     }
+    // oEmbed first: YouTube/Vimeo/SoundCloud block scraping but expose
+    // first-party oEmbed (title, author, thumbnail) with no key.
+    const oembed = await tryOEmbed(url)
+    if (oembed) return NextResponse.json(oembed)
+
     const res = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; LinkPreviewBot/1.0)',
@@ -65,4 +71,29 @@ function extractMeta(html: string, property: string): string | null {
 
 function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+async function tryOEmbed(url: string): Promise<{ title: string | null; description: string | null; image: string | null; domain: string } | null> {
+  const domain = new URL(url).hostname
+  const video = normalizeVideoUrl(url)
+  const audio = video?.kind === 'unsupported' || !video ? normalizeAudioUrl(url) : null
+  let endpoint: string | null = null
+  if (video?.kind === 'youtube') endpoint = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`
+  else if (video?.kind === 'vimeo') endpoint = `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(url)}`
+  else if (audio?.kind === 'soundcloud') endpoint = `https://soundcloud.com/oembed?format=json&url=${encodeURIComponent(url)}`
+  if (!endpoint) return null
+  try {
+    const res = await fetch(endpoint, { signal: AbortSignal.timeout(5000) })
+    if (!res.ok) return null
+    const data = await res.json()
+    if (!data?.title) return null
+    return {
+      title: String(data.title),
+      description: data.author_name ? `by ${String(data.author_name)}` : null,
+      image: typeof data.thumbnail_url === 'string' ? data.thumbnail_url : null,
+      domain,
+    }
+  } catch {
+    return null
+  }
 }
