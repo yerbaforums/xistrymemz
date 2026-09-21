@@ -25,6 +25,7 @@ import { apiGet } from '@/lib/api-helpers'
 import FormFieldInput, { fieldDefaultValue, isFieldAnswered } from '@/components/listings/FormFieldInput'
 import { FieldListEditor } from '@/components/listings/FieldListEditor'
 import type { FormField } from '@/types/service'
+import WorkTogether from '@/components/WorkTogether'
 
 const PRIORITIES = [
   { value: 'LOW', label: 'Low', color: '#888' },
@@ -1217,6 +1218,12 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               variant="bar"
             />
           </div>
+          <WorkTogether
+            user={{ id: request.user.id, name: request.user.name, username: request.user.username, image: null }}
+            entityType="REQUEST"
+            entityId={request.id}
+            entityTitle={request.title}
+          />
 
           {userId && (
             <div className={styles.quickActions} style={{ marginTop: 8 }}>

@@ -11,6 +11,7 @@ import Skeleton from '@/components/Skeleton'
 import PinToBoardButton from '@/components/PinToBoardButton'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import MediaPlayer from '@/components/MediaPlayer'
+import WorkTogether from '@/components/WorkTogether'
 
 interface ContentData {
   id: string
@@ -309,6 +310,12 @@ export default function SchoolContentDetailPage() {
 
       <div className={styles.actions}>
         <EntityActions entityType="SCHOOLCONTENT" entityId={content.id} title={content.title} authorId={content.author.id} variant="bar" />
+        <WorkTogether
+          user={{ id: content.author.id, name: content.author.name, username: null, image: content.author.image }}
+          entityType="SCHOOLCONTENT"
+          entityId={content.id}
+          entityTitle={content.title}
+        />
       </div>
 
       {session?.user && (

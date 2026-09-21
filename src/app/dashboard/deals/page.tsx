@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { EmptyState } from '@/components/EmptyState'
 import DealRow from './DealRow'
+import ConnectNudge from '@/components/ConnectNudge'
 import styles from './deals.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -38,8 +39,8 @@ export default async function DashboardDeals() {
       },
       include: {
         product: { select: { title: true } },
-        buyer: { select: { name: true } },
-        seller: { select: { name: true } }
+        buyer: { select: { id: true, name: true } },
+        seller: { select: { id: true, name: true } }
       },
       orderBy: { updatedAt: 'desc' },
       take: 30
@@ -143,6 +144,23 @@ export default async function DashboardDeals() {
 
   deals.sort((a, b) => (b.updatedAt?.getTime() || 0) - (a.updatedAt?.getTime() || 0))
 
+  // Nudge: follow the counterparty of the most recent finished order/booking.
+  const finishedOrder = orders.find((o) => ['DELIVERED', 'COMPLETED'].includes(o.status))
+  const finishedAppt = appointments.find((a) => ['COMPLETED'].includes(a.status))
+  const nudge = finishedOrder
+    ? {
+        userId: finishedOrder.buyerId === userId ? finishedOrder.seller.id : finishedOrder.buyer.id,
+        name: finishedOrder.buyerId === userId ? (finishedOrder.seller.name || 'Seller') : (finishedOrder.buyer.name || 'Buyer'),
+        context: `your order “${(finishedOrder.product?.title || 'order').slice(0, 40)}”`,
+      }
+    : finishedAppt
+      ? {
+          userId: finishedAppt.buyerId === userId ? finishedAppt.seller.id : finishedAppt.buyer.id,
+          name: finishedAppt.buyerId === userId ? (finishedAppt.seller.name || 'Host') : (finishedAppt.buyer.name || 'Guest'),
+          context: `your booking “${finishedAppt.title.slice(0, 40)}”`,
+        }
+      : null
+
   const active = deals.filter(d => !['COMPLETED', 'CANCELLED', 'REJECTED', 'WITHDRAWN', 'DELIVERED'].includes(d.status))
   const actionCount = deals.filter(d => d.actionNeeded).length
   const completed = deals.length - active.length
@@ -151,6 +169,8 @@ export default async function DashboardDeals() {
     <div className={styles.container}>
       <h1>🤝 My Deals</h1>
       <p style={{ color: 'var(--text-secondary)' }}>Your active orders, requests, offers, and bookings — all in one place.</p>
+
+      {nudge && <ConnectNudge userId={nudge.userId} name={nudge.name} context={nudge.context} />}
 
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>

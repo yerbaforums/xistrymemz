@@ -25,6 +25,11 @@ import Skeleton from '@/components/Skeleton'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 
+/** Rich-text posts (from the composer's rich mode) render as HTML, like blogs. */
+function isHtml(text: string): boolean {
+  return /<[a-z][\s\S]*>/i.test(text)
+}
+
 interface Author {
   id: string
   name: string | null
@@ -563,7 +568,11 @@ export default function ForumThreadPage() {
             </div>
           ) : (
             <>
-              <div><HashtagText text={post.content} mentionLinks /></div>
+              {isHtml(post.content) ? (
+                <div dangerouslySetInnerHTML={{ __html: post.content }} />
+              ) : (
+                <div><HashtagText text={post.content} mentionLinks /></div>
+              )}
               <TranslateButton text={post.content} />
               <LinkPreview text={post.content} />
               {(() => {

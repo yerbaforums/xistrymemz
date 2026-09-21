@@ -14,6 +14,7 @@ import Button from '@/components/ui/Button'
 import { getUserProfileUrl } from '@/lib/utils'
 import { formatDuration } from '@/lib/media'
 import styles from './page.module.css'
+import WorkTogether from '@/components/WorkTogether'
 
 interface Episode {
   id: string
@@ -150,6 +151,12 @@ export default function PodcastDetailClient({ params }: { params: Promise<{ slug
                 />
               </div>
             )}
+            <WorkTogether
+              user={{ id: p.id, name: p.name, username: p.username, image: p.image }}
+              entityType="PODCAST"
+              entityId={p.podcastSlug || p.id}
+              entityTitle={p.podcastName || p.name || 'Podcast'}
+            />
           </div>
         </div>
       </div>

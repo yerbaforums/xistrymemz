@@ -1,7 +1,7 @@
 .button {
   position: fixed;
-  bottom: calc(var(--bottom-nav-height, 64px) + env(safe-area-inset-bottom, 0px) + 16px);
-  left: 24px;
+  right: 24px;
+  bottom: 96px;
   width: 44px;
   height: 44px;
   border-radius: 50%;
@@ -30,4 +30,12 @@
 .button:hover {
   transform: scale(1.1);
   box-shadow: 0 4px 24px rgba(0, 217, 255, 0.5);
+}
+
+/* Mobile: float above the bottom nav bar instead of the sidebar/FAB zone. */
+@media (max-width: 768px) {
+  .button {
+    right: 16px;
+    bottom: calc(var(--bottom-nav-height, 64px) + env(safe-area-inset-bottom, 0px) + 84px);
+  }
 }

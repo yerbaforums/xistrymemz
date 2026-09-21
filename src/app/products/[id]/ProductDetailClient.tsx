@@ -617,11 +617,19 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   return (
     <ErrorBoundary>
       <div className={styles.page}>
-      <Breadcrumbs items={[
-        { label: 'Home', href: '/' },
-        { label: 'Marketplace', href: '/products' },
-        { label: product.title }
-      ]} />
+      <Breadcrumbs items={
+        product.type === 'RENTAL'
+          ? [
+              { label: 'Home', href: '/' },
+              { label: 'Rentals', href: '/rentals' },
+              { label: product.title },
+            ]
+          : [
+              { label: 'Home', href: '/' },
+              { label: 'Marketplace', href: '/products' },
+              { label: product.title },
+            ]
+      } />
       <ShareBar entityType="PRODUCT" title={product.title} description={product.description} image={product.imageUrl} variant="compact" />
 
       <div className={styles.content}>

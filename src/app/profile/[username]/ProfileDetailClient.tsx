@@ -996,7 +996,7 @@ export default function ProfilePage() {
               )
             )             : status === 'authenticated' ? (
               <>
-                <Link href={`/messages?user=${user.id}`} className={styles.messageBtn}>Message</Link>
+                <Link href={`/dashboard/messages?user=${user.id}`} className={styles.messageBtn}>Message</Link>
                 <Button onClick={() => setShowAppointmentModal(true)} className={styles.messageBtn}>📅 Book</Button>
                 <Button
                   onClick={async () => {

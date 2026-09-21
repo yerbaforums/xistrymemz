@@ -35,6 +35,7 @@ import { EmptyState } from '@/components/EmptyState'
 import { MapContainer as ProjectMapContainer, TileLayer as ProjectTileLayer, Marker as ProjectMarker, Popup as ProjectPopup } from '@/components/LeafletComponents'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { useToast } from '@/context/ToastContext'
+import WorkTogether from '@/components/WorkTogether'
 
 interface Request {
   id: string; title: string; description: string | null; status: string
@@ -613,6 +614,12 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
             <span className={styles.creatorName}>{project.user.name || 'Anonymous'}</span>
           </Link>
         </div>
+        <WorkTogether
+          user={{ id: project.user.id, name: project.user.name, username: project.user.username, image: project.user.image }}
+          entityType="PROJECT"
+          entityId={project.id}
+          entityTitle={project.title}
+        />
 
         <div className={styles.content}>
         <div className={styles.mainSection}>

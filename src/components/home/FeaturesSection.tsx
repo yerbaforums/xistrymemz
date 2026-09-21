@@ -21,6 +21,8 @@ export default function FeaturesSection() {
         { icon: '💎', title: 'Donations & Tips', desc: 'Receive donations and tips in open-source, auditable, secure private money for projects, requests, and content.', href: '/requests' },
         { icon: '🤝', title: 'Offers & Barter', desc: 'Exchange items or services directly through barter. Make offers, negotiate, and close arrangements — the platform never takes a cut or holds your money.', href: '/dashboard/offers' },
         { icon: '📁', title: 'My Deals', desc: 'Track every active order, request, offer, and booking — with clear flags when something needs your action.', href: '/dashboard/deals' },
+        { icon: '🗓️', title: 'Bookings', desc: 'Clients book your time with email alerts, lead times, and meeting links built in.', href: '/dashboard/appointments' },
+        { icon: '🎨', title: 'Customize', desc: 'Themes, accent colors, compact feeds, and a navigation that shows only your tools.', href: '/settings/preferences' },
       ]
     },
     {
@@ -35,6 +37,10 @@ export default function FeaturesSection() {
         { icon: '📹', title: 'Video Chat', desc: 'Start or join video rooms for collaboration, lessons, consultations, or social calls.', href: '/dashboard/video' },
         { icon: '#️⃣', title: 'Hashtags', desc: 'Follow hashtags to discover trending content across projects, services, and posts.', href: '/hashtags' },
         { icon: '🔄', title: 'Share & Repost', desc: 'Share any project, service, or event to your feed or social media.', href: '/dashboard/feed' },
+        { icon: '📸', title: 'Photos', desc: 'Share photos with the community — a lightweight Instagram-style grid with likes and comments.', href: '/photos' },
+        { icon: '🎙️', title: 'Podcasts', desc: 'Host your own show with episodes, a personal RSS feed, and live audio broadcasts.', href: '/podcasts' },
+        { icon: '✍️', title: 'Blogs', desc: 'Publish long-form writing with paid tiers, subscriptions, and per-article unlocks.', href: '/blogs' },
+        { icon: '🔗', title: 'Link Embeds', desc: 'Paste a YouTube, Vimeo, or media link anywhere — it plays inline, no upload needed.', href: '/dashboard/feed' },
         { icon: '📌', title: 'Boards', desc: 'Pin announcements, listings, and cards to location-based community bulletin boards.', href: '/boards' },
         { icon: '🌐', title: 'Discover', desc: 'Browse an interactive map of everything near you — people, products, events, and projects.', href: '/discover' },
         { icon: '📬', title: 'Inbox', desc: 'Unified inbox for messages, connection requests, offers, collaboration invites — and direct inquiries about your services.', href: '/dashboard/messages' },

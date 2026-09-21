@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import MentionInput, { type MentionInputHandle } from '@/components/MentionInput'
+import RichEditor from '@/components/RichEditor'
 import { getUserProfileUrl } from '@/lib/utils'
 import HashtagText from '@/components/HashtagText'
 import ImageUploader from '@/components/ImageUploader'
@@ -171,6 +172,7 @@ export default function ForumPage() {
   const [pollOptions, setPollOptions] = useState(['', '', '', ''])
   const [posting, setPosting] = useState(false)
   const [postImages, setPostImages] = useState<string[]>([])
+  const [richText, setRichText] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('newest')
@@ -574,23 +576,29 @@ export default function ForumPage() {
               className={styles.postInput}
             />
             <div className={styles.mentionInputWrapper}>
-              <MentionInput
-                ref={mentionRef}
-                value={newPostContent}
-                onChange={setNewPostContent}
-                placeholder="What's on your mind?"
-                rows={isPoll ? 2 : 3}
-                className={styles.postTextarea}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => mentionRef.current?.insertAtCursor('@')}
-                className={styles.mentionBtn}
-                title="Mention someone"
-              >
-                @
-              </Button>
+              {richText ? (
+                <RichEditor value={newPostContent} onChange={setNewPostContent} placeholder="Write with formatting, images, video and audio embeds..." />
+              ) : (
+                <>
+                  <MentionInput
+                    ref={mentionRef}
+                    value={newPostContent}
+                    onChange={setNewPostContent}
+                    placeholder="What's on your mind?"
+                    rows={isPoll ? 2 : 3}
+                    className={styles.postTextarea}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => mentionRef.current?.insertAtCursor('@')}
+                    className={styles.mentionBtn}
+                    title="Mention someone"
+                  >
+                    @
+                  </Button>
+                </>
+              )}
             </div>
             
             <div className={styles.postActions}>
@@ -678,7 +686,16 @@ export default function ForumPage() {
               </div>
             )}
 
-            <AdvancedSection label="Poll & photos">
+            <AdvancedSection label="Format, poll & photos">
+              <label className={styles.pollToggle}>
+                <input
+                  type="checkbox"
+                  checked={richText}
+                  onChange={e => setRichText(e.target.checked)}
+                />
+                Rich text (headings, images, video & audio embeds)
+              </label>
+
               <label className={styles.pollToggle}>
                 <input
                   type="checkbox"

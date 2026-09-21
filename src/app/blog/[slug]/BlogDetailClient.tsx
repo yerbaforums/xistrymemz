@@ -12,6 +12,7 @@ import EntityActions from '@/components/EntityActions'
 import { useToast } from '@/context/ToastContext'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { CRYPTO_LOGOS } from '@/lib/constants'
+import WorkTogether from '@/components/WorkTogether'
 
 interface UserLink {
   id: string
@@ -429,6 +430,12 @@ export default function BlogDetailClient({ params }: { params: Promise<{ slug: s
           variant="bar"
         />
       )}
+      <WorkTogether
+        user={{ id: blog.id, name: blog.name, username: blog.username, image: blog.image }}
+        entityType="BLOG"
+        entityId={blog.blogSlug || blog.id}
+        entityTitle={blog.blogName || blog.name || 'Blog'}
+      />
 
       <div className={styles.tabs} role="tablist">
         <button className={`${styles.tab} ${activeTab === 'posts' ? styles.active : ''}`} onClick={() => setActiveTab('posts')}>

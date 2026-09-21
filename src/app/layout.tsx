@@ -43,8 +43,8 @@ export async function generateMetadata() {
 
   return {
     metadataBase: new URL('https://xistrymemz.xyz'),
-    title: messages.layout?.title || "XistrYmemZ - Plan. Request. Complete.",
-    description: messages.layout?.description || "Collaborative planning platform.",
+    title: messages.layout?.title || "XistrYmemZ - Promote Your Work, Book & Sell | Community Directory",
+    description: messages.layout?.description || "A community directory to promote your work: share photos, blogs and podcasts, book appointments, take orders, sell event tickets and get paid directly. No platform cuts.",
     icons: [
       { rel: "icon", url: "/favicon.ico" },
       { rel: "icon", type: "image/png", url: "/favicon.png" },
@@ -56,8 +56,8 @@ export async function generateMetadata() {
     },
     manifest: "/manifest.json",
     openGraph: {
-      title: messages.layout?.title || "XistrYmemZ - Plan. Request. Complete.",
-      description: messages.layout?.description || "Collaborative planning platform.",
+      title: messages.layout?.title || "XistrYmemZ - Promote Your Work, Book & Sell | Community Directory",
+      description: messages.layout?.description || "A community directory to promote your work: share photos, blogs and podcasts, book appointments, take orders, sell event tickets and get paid directly. No platform cuts.",
       type: "website",
       siteName: "XistrYmemZ",
       locale: OG_LOCALE_MAP[locale] || "en_US",
@@ -65,8 +65,8 @@ export async function generateMetadata() {
     },
     twitter: {
       card: "summary_large_image",
-      title: messages.layout?.title || "XistrYmemZ - Plan. Request. Complete.",
-      description: messages.layout?.description || "Collaborative planning platform.",
+      title: messages.layout?.title || "XistrYmemZ - Promote Your Work, Book & Sell | Community Directory",
+      description: messages.layout?.description || "A community directory to promote your work: share photos, blogs and podcasts, book appointments, take orders, sell event tickets and get paid directly. No platform cuts.",
       images: ["/logo.png"],
     },
     keywords: ["collaborative planning", "community platform", "project management", "private money payments", "business platform", "local marketplace", "community boards"],

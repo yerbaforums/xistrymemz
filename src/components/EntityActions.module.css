@@ -7,14 +7,17 @@
 .bar {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  gap: 5px;
+  flex-shrink: 0;
+  min-height: 32px;
   padding: 6px 10px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -604,4 +607,19 @@
 .donationAddrBtn:hover {
   border-color: var(--accent-primary);
   color: var(--accent-primary);
+}
+
+/* Narrow cards/phones: tighter action buttons, icons never shrink away. */
+.btn svg {
+  flex-shrink: 0;
+}
+
+@media (max-width: 420px) {
+  .bar {
+    gap: 4px;
+  }
+  .btn {
+    padding: 6px 8px;
+    font-size: 0.75rem;
+  }
 }
