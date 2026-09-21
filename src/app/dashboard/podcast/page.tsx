@@ -229,7 +229,7 @@ export default function PodcastDashboardPage() {
             {episodes.map((ep, i) => (
               <div key={ep.id} className={styles.episodeCard}>
                 <div className={styles.episodeMain}>
-                  <div className={styles.episodeNum}>{(String(episodes.length - i)).padStart(2, '0')}</div>
+                  <div className={styles.episodeNum}>{String(ep.episodeNumber ?? (episodes.length - i)).padStart(2, '0')}</div>
                   <div className={styles.episodeInfo}>
                     <strong>{ep.title}</strong>
                     <span className={styles.episodeMeta}>

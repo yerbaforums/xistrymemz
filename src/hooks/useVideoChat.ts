@@ -22,6 +22,8 @@ interface RoomInfo {
   id: string
   inviteCode: string
   name: string
+  mode?: 'VIDEO' | 'AUDIO' | string | null
+  podcastSlug?: string | null
   createdBy: { id: string; name: string | null; image: string | null }
   participants: { userId: string; user: { id: string; name: string | null; image: string | null } }[]
 }
@@ -32,7 +34,7 @@ interface SignalData {
   data: unknown
 }
 
-export function useVideoChat(initialRoomId?: string, currentUserId?: string) {
+export function useVideoChat(initialRoomId?: string, currentUserId?: string, initialAudioOnly = false) {
   const [room, setRoom] = useState<RoomInfo | null>(null)
   const [localStream, setLocalStream] = useState<MediaStream | null>(null)
   const [peers, setPeers] = useState<Peer[]>([])
@@ -49,10 +51,17 @@ export function useVideoChat(initialRoomId?: string, currentUserId?: string) {
   const screenStreamRef = useRef<MediaStream | null>(null)
   const roomRef = useRef<RoomInfo | null>(null)
   const currentUserIdRef = useRef<string | undefined>(currentUserId)
+  const audioOnlyRef = useRef(initialAudioOnly)
+  const roomRefreshTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   // Keep refs in sync with state/props
   useEffect(() => { roomRef.current = room }, [room])
   useEffect(() => { currentUserIdRef.current = currentUserId }, [currentUserId])
+  useEffect(() => { audioOnlyRef.current = initialAudioOnly }, [initialAudioOnly])
+
+  function isAudioOnlyRoom(): boolean {
+    return audioOnlyRef.current || roomRef.current?.mode === 'AUDIO'
+  }
 
   // Derive the effective room ID from room state or fallback to prop
   const getEffectiveRoomId = useCallback(() => {
@@ -61,20 +70,23 @@ export function useVideoChat(initialRoomId?: string, currentUserId?: string) {
 
   const getLocalStream = useCallback(async () => {
     if (localStreamRef.current) return localStreamRef.current
+    // Audio-only (podcast live) rooms must not prompt for a camera.
+    const audioOnly = isAudioOnlyRoom()
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      const stream = await navigator.mediaDevices.getUserMedia(audioOnly ? { video: false, audio: true } : { video: true, audio: true })
       localStreamRef.current = stream
       originalVideoTrackRef.current = stream.getVideoTracks()[0] || null
       setLocalStream(stream)
       return stream
     } catch (err: unknown) {
       const e = err as { name?: string; message?: string }
+      const micOnly = isAudioOnlyRoom()
       if (e.name === 'NotAllowedError') {
-        setError('Camera/microphone access denied. Please allow permissions in your browser.')
+        setError(micOnly ? 'Microphone access denied. Please allow microphone permissions in your browser.' : 'Camera/microphone access denied. Please allow permissions in your browser.')
       } else if (e.name === 'NotFoundError') {
-        setError('No camera or microphone found.')
+        setError(micOnly ? 'No microphone found.' : 'No camera or microphone found.')
       } else {
-        setError('Failed to access camera/microphone: ' + (e.message || 'Unknown error'))
+        setError('Failed to access ' + (micOnly ? 'microphone' : 'camera/microphone') + ': ' + (e.message || 'Unknown error'))
       }
       return null
     }
@@ -303,6 +315,32 @@ export function useVideoChat(initialRoomId?: string, currentUserId?: string) {
     }
     poll()
 
+    // Room membership refresh: peers only connect when BOTH sides hold a
+    // SimplePeer for each other. The host created its peers at startCall
+    // time, so anyone joining later would wait forever for an offer. Poll
+    // the room and create missing peers so late joiners connect.
+    const syncPeers = async () => {
+      const rid = getEffectiveRoomId()
+      const self = currentUserIdRef.current
+      const local = localStreamRef.current
+      if (!rid || !local) return
+      try {
+        const { room: updated } = await fetchApi<{ room: RoomInfo }>(`/api/video/rooms/${rid}`)
+        if (!updated) return
+        setRoom(updated)
+        for (const p of updated.participants) {
+          if (p.userId === self) continue
+          if (peersRef.current.has(p.userId)) continue
+          const isInitiator = self === updated.createdBy.id
+          try {
+            createPeer(p.userId, isInitiator, local)
+          } catch {}
+        }
+      } catch {}
+    }
+    if (roomRefreshTimerRef.current) clearInterval(roomRefreshTimerRef.current)
+    roomRefreshTimerRef.current = setInterval(syncPeers, 3000)
+
     setConnecting(false)
   }, [getLocalStream, createPeer, pollSignals])
 
@@ -310,6 +348,10 @@ export function useVideoChat(initialRoomId?: string, currentUserId?: string) {
     if (signalTimerRef.current) {
       clearTimeout(signalTimerRef.current)
       signalTimerRef.current = null
+    }
+    if (roomRefreshTimerRef.current) {
+      clearInterval(roomRefreshTimerRef.current)
+      roomRefreshTimerRef.current = null
     }
 
     for (const [, entry] of peersRef.current) {
@@ -347,6 +389,7 @@ export function useVideoChat(initialRoomId?: string, currentUserId?: string) {
   useEffect(() => {
     return () => {
       if (signalTimerRef.current) clearTimeout(signalTimerRef.current)
+      if (roomRefreshTimerRef.current) clearInterval(roomRefreshTimerRef.current)
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach(t => t.stop())
       }

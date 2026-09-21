@@ -101,9 +101,19 @@ export async function compressVideo(file: File, targetBitrate = VIDEO_COMPRESS_B
       return file
     }
 
-    await video.play().catch(() => {})
-    // Seek slightly ahead so a real frame is available for capture.
+    await video.play().then(() => true).catch(() => false).then((played) => {
+      if (!played) throw new Error('Autoplay blocked')
+    })
+    // Seek slightly ahead so a real frame is available for capture, and wait
+    // for the seek to land — capturing before this yields black frames.
     video.currentTime = Math.min(video.duration / 2, 1)
+    await new Promise<void>((resolve) => {
+      const to = setTimeout(resolve, 2000)
+      video.onseeked = () => { clearTimeout(to); resolve() }
+    })
+    if (video.readyState < 2) {
+      throw new Error('Video not decodable')
+    }
 
     const stream = (video as HTMLVideoElement & { captureStream?: () => MediaStream }).captureStream?.()
     if (!stream) {
@@ -120,8 +130,12 @@ export async function compressVideo(file: File, targetBitrate = VIDEO_COMPRESS_B
     const done = new Promise<Blob>((resolve, reject) => {
       recorder.onstop = () => {
         const blob = new Blob(chunks, { type: mime.split(';')[0] })
-        if (blob.size > 0 && blob.size < file.size) resolve(blob)
-        else reject(new Error('Compression did not shrink the file'))
+        // Sanity floor (~1 KB/s of source duration): a blob smaller than this
+        // is almost certainly empty/black frames (e.g. autoplay was blocked),
+        // and must never replace the user's original.
+        const minBytes = Math.max(10 * 1024, Math.floor(duration) * 1024)
+        if (blob.size >= minBytes && blob.size < file.size) resolve(blob)
+        else reject(new Error('Compression produced an unusable file'))
       }
       recorder.onerror = () => reject(new Error('Recorder error'))
     })
@@ -181,6 +195,18 @@ export async function compressAudio(file: File, targetBitrate = AUDIO_COMPRESS_B
 
     const mrMime = mimeSupported(['audio/mp4', 'audio/webm', 'audio/ogg'])
     if (!mrMime) {
+      URL.revokeObjectURL(url)
+      return file
+    }
+    // Skip when re-encoding couldn't shrink the file, and bail on huge
+    // buffers before wiring the recorder (decode of a long episode can
+    // otherwise OOM the tab — decodeAudioData failure is not catchable).
+    const pcmBytes = decoded.length * decoded.numberOfChannels * 4
+    if (pcmBytes > 500 * 1024 * 1024) {
+      URL.revokeObjectURL(url)
+      return file
+    }
+    if ((decoded.duration * targetBitrate) / 8 >= file.size * 0.95) {
       URL.revokeObjectURL(url)
       return file
     }

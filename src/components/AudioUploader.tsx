@@ -47,8 +47,11 @@ export default function AudioUploader({
       }
 
       let uploadFile = file
-      // Re-encode big files in-browser to keep storage/transit small.
-      if (file.size > 25 * 1024 * 1024 && (file.type === 'audio/wav' || file.size > 45 * 1024 * 1024)) {
+      // Re-encode big WAV files in-browser to keep storage/transit small.
+      // Already-compressed formats (mp3/m4a/ogg/opus) gain nothing from a
+      // decode → re-encode round-trip and risk OOMing the tab, so skip them.
+      const isWav = file.type === 'audio/wav' || file.type === 'audio/x-wav' || file.name.toLowerCase().endsWith('.wav')
+      if (file.size > 25 * 1024 * 1024 && isWav) {
         setOptimizing(true)
         uploadFile = await compressAudio(file)
       }

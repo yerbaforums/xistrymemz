@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import PodcastDetailClient from './PodcastDetailClient'
 
 export const dynamic = 'force-dynamic'
@@ -22,6 +23,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 }
 
-export default function PodcastDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function PodcastDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const exists = await prisma.user.findFirst({
+    where: { podcastSlug: slug, showPodcast: true },
+    select: { id: true },
+  })
+  if (!exists) notFound()
   return <PodcastDetailClient params={params} />
 }

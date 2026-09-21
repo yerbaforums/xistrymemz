@@ -4,7 +4,7 @@ const STATIC_CACHE = CACHE_VERSION + '-static';
 const PAGE_CACHE = CACHE_VERSION + '-pages';
 const IMAGE_CACHE = CACHE_VERSION + '-images';
 
-const PRECACHE_URLS = ['/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon-512-maskable.png', '/icons/apple-touch-icon.png'];
+const PRECACHE_URLS = ['/', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon-512-maskable.png', '/icons/apple-touch-icon.png'];
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

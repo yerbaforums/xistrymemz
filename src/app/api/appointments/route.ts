@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
       },
       include: {
         buyer: { select: { id: true, name: true, image: true, username: true } },
-        seller: { select: { id: true, name: true, image: true, username: true, email: true } },
+        seller: { select: { id: true, name: true, image: true, username: true } },
         product: { select: { id: true, title: true, imageUrl: true } }
       }
     })
@@ -168,9 +168,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Email-gated: Settings → Notifications → Delivery Methods → Email (+ Appointments).
-    // Never fail the booking.
+    // Never fail the booking. Seller email is fetched separately so it never
+    // leaks into the API response returned to the buyer.
     try {
-      const sellerEmail = appointment.seller?.email || null
+      const seller = await prisma.user.findUnique({ where: { id: sellerId }, select: { email: true } })
+      const sellerEmail = seller?.email || null
       if (sellerEmail && await shouldEmail(sellerId, 'APPOINTMENT_REQUEST')) {
         await sendBookingRequestEmail(sellerEmail, {
           buyerName,

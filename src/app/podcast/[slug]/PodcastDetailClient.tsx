@@ -148,11 +148,11 @@ export default function PodcastDetailClient({ params }: { params: Promise<{ slug
           <div className={styles.episodeList}>
             {data.episodes.map((ep, i) => (
               <div key={ep.id} className={styles.episodeCard}>
-                <div className={styles.episodeNum}>{(String(data.episodes.length - i)).padStart(2, '0')}</div>
+                <div className={styles.episodeNum}>{String(ep.episodeNumber ?? (data.episodes.length - i)).padStart(2, '0')}</div>
                 <div className={styles.episodeBody}>
                   <div className={styles.episodeHead}>
                     <div>
-                      <h3>{ep.episodeNumber ? `#${ep.episodeNumber} · ` : ''}{ep.title}</h3>
+                      <h3>{ep.title}</h3>
                       <span className={styles.episodeMeta}>
                         {ep.durationSec > 0 ? formatDuration(ep.durationSec) : ''}
                         {ep.durationSec > 0 && ' · '}

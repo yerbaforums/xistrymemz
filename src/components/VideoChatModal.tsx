@@ -23,7 +23,7 @@ export default function VideoChatModal({ roomId: initialRoomId, inviteCode, onCl
     audioEnabled, videoEnabled, isScreenSharing,
     createRoom, joinRoom, fetchRoom, startCall, leaveRoom,
     toggleAudio, toggleVideo, toggleScreenShare
-  } = useVideoChat(initialRoomId, session?.user?.id)
+  } = useVideoChat(initialRoomId, session?.user?.id, audioOnly)
 
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const joinPhaseRef = useRef<'idle' | 'joining' | 'started'>('idle')
@@ -58,12 +58,14 @@ export default function VideoChatModal({ roomId: initialRoomId, inviteCode, onCl
     return () => clearTimeout(timer)
   }, [room, startCall])
 
-  // Mic-first rooms start with the camera off.
+  // Mic-first rooms start with the camera off. Joining an AUDIO room via an
+  // invite link also counts, even when the `audioOnly` prop wasn't passed.
+  const effectiveAudioOnly = audioOnly || room?.mode === 'AUDIO'
   useEffect(() => {
-    if (audioOnly && room && videoEnabled && joinPhaseRef.current === 'started') {
+    if (effectiveAudioOnly && room && videoEnabled && joinPhaseRef.current === 'started') {
       toggleVideo()
     }
-  }, [audioOnly, room, videoEnabled, toggleVideo])
+  }, [effectiveAudioOnly, room, videoEnabled, toggleVideo])
 
   useEffect(() => {
     if (localVideoRef.current && localStream) {
@@ -124,16 +126,16 @@ export default function VideoChatModal({ roomId: initialRoomId, inviteCode, onCl
                 className={`${styles.video} ${!videoEnabled && !isScreenSharing ? styles.videoOff : ''}`}
                 style={{ transform: isScreenSharing ? 'none' : 'scaleX(-1)' }} />
               {!videoEnabled && !isScreenSharing && (
-                <div className={styles.videoPlaceholder}>{audioOnly ? '🎙️ Live (audio)' : '📹 Camera Off'}</div>
+                <div className={styles.videoPlaceholder}>{effectiveAudioOnly ? '🎙️ Live (audio)' : '📹 Camera Off'}</div>
               )}
               <span className={styles.videoLabel}>
-                {isScreenSharing ? '🖥️ Screen' : audioOnly ? '🎙️ You' : 'You'}
+                {isScreenSharing ? '🖥️ Screen' : effectiveAudioOnly ? '🎙️ You' : 'You'}
                 {!audioEnabled && ' 🔇'}
               </span>
             </div>
           )}
           {peers.filter(p => p.connected).map(p => (
-            <PeerVideo key={p.userId} peer={p} audioOnly={audioOnly} />
+            <PeerVideo key={p.userId} peer={p} audioOnly={effectiveAudioOnly} />
           ))}
           {connecting && (
             <div className={styles.connectingTile}>Connecting...</div>
@@ -152,8 +154,8 @@ export default function VideoChatModal({ roomId: initialRoomId, inviteCode, onCl
         <button
           onClick={toggleVideo}
           className={`${styles.controlBtn} ${!videoEnabled ? styles.controlOff : ''}`}
-          title={videoEnabled ? 'Turn off camera' : 'Turn on camera'}
-          disabled={isScreenSharing}
+          title={effectiveAudioOnly ? 'Camera is off in audio rooms' : videoEnabled ? 'Turn off camera' : 'Turn on camera'}
+          disabled={isScreenSharing || effectiveAudioOnly}
         >
           {videoEnabled ? '📹' : '📷'}
         </button>

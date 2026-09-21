@@ -66,6 +66,14 @@ function isDangerousExtension(ext: string): boolean {
 }
 
 function validateMagicBytes(buffer: Buffer, mimeType: string): boolean {
+  // Raw MPEG frames start with an 11-bit sync (0xFF Ex), not an ID3 tag —
+  // accept both so tagless MP3s (common from encoders) pass.
+  if (mimeType === 'audio/mpeg') {
+    if (buffer.length < 2) return false
+    const isId3 = buffer[0] === 0x49 && buffer[1] === 0x44 && buffer[2] === 0x33
+    const isFrameSync = buffer[0] === 0xFF && (buffer[1] & 0xE0) === 0xE0
+    return isId3 || isFrameSync
+  }
   const magic = MAGIC_BYTES[mimeType]
   if (!magic) return false
   return magic.every((byte, i) => buffer[i] === byte)
