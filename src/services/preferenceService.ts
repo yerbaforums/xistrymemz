@@ -24,6 +24,8 @@ export const PREF_DEFAULTS: UserPreferences = {
     comments: true,
     mentions: true,
     follows: true,
+    blogs: true,
+    school: true,
     system: true,
   },
   delivery: {
@@ -58,6 +60,8 @@ const TYPE_TO_PREF_KEY: Record<string, string | null> = {
   OFFER_WITHDRAWN: 'offers',
   OFFER_COUNTERED: 'offers',
   OFFER_COMPLETED: 'offers',
+  BLOG_PUBLISHED: 'blogs',
+  SCHOOL_PUBLISHED: 'school',
 }
 
 function deepMerge<T extends Record<string, unknown>>(base: T, patch: Partial<T>): T {

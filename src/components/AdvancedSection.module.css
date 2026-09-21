@@ -1,0 +1,34 @@
+.wrap {
+  border: 1px dashed var(--border-color, #2a2a4a);
+  border-radius: 10px;
+  padding: 4px 10px 10px;
+  margin: 12px 0;
+}
+
+.toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary, #c0c0c0);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toggle:hover {
+  color: var(--accent-primary, #00d9ff);
+}
+
+.caret {
+  font-size: 0.7rem;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 4px;
+}

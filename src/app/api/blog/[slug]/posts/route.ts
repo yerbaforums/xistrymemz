@@ -2,6 +2,20 @@ import { apiError, apiSuccess, apiUnauthorized } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { linkHashtags } from '@/services/hashtagService'
+import { createNotification } from '@/services/notificationService'
+function blogTagSet(title: string, excerpt: string | undefined, content: string | undefined, tags: unknown): string[] {
+  const explicit: string[] = Array.isArray(tags)
+    ? (tags as unknown[]).map((t) => String(t).replace(/^#/, '').trim().toLowerCase()).filter(Boolean)
+    : []
+  const text = `${title || ''} ${excerpt || ''} ${(content || '').replace(/<[^>]*>/g, ' ')}`
+  const found = new Set<string>()
+  const re = /(?:^|\s)#([a-zA-Z0-9_]{2,})/g
+  let m: RegExpExecArray | null
+  while ((m = re.exec(text)) !== null) found.add(m[1].toLowerCase())
+  return [...new Set([...explicit, ...found])]
+}
+
 
 const slugify = (s: string) =>
   s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80)
@@ -15,7 +29,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
   const { slug } = await params
   const user = await prisma.user.findFirst({
     where: { blogSlug: slug },
-    select: { id: true },
+    select: { id: true, name: true, blogName: true },
   })
   if (!user) return apiError('Blog not found', 404)
   if (user.id !== userId) return apiError('You can only post to your own blog', 403)
@@ -71,6 +85,39 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
       publishedAt: isPublished ? new Date() : null,
     },
   })
+
+  try {
+    const merged = blogTagSet(title, excerpt, content, tags)
+    if (merged.length > 0) await linkHashtags('BLOGPOST', post.id, merged)
+  } catch { /* hashtags never fail publishing */ }
+
+  // New articles notify ACTIVE subscribers (pref-gated inside).
+  if (isPublished) {
+    try {
+      const subs = await prisma.blogSubscription.findMany({
+        where: { blogId: user.id, status: 'ACTIVE' },
+        select: { subscriberId: true },
+        take: 500,
+      })
+      const authorName = user.blogName || user.name || 'A blog you follow'
+      await Promise.all(
+        subs
+          .filter((s) => s.subscriberId !== user.id)
+          .map((s) =>
+            createNotification({
+              type: 'BLOG_PUBLISHED',
+              userId: s.subscriberId,
+              actorId: user.id,
+              entityId: post.id,
+              entityType: 'BLOGPOST',
+              title: 'New article published',
+              message: `${authorName} published "${title.trim().slice(0, 80)}"`,
+              link: `/blog/${slug}/${post.slug}`,
+            }).catch(() => null),
+          ),
+      )
+    } catch { /* notifications never fail publishing */ }
+  }
 
   return apiSuccess(post)
 }

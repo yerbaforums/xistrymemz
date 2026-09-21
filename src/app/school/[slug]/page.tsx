@@ -11,6 +11,8 @@ import { QRCodeModal } from '@/components/QRCodeModal'
 import SponsorButton from '@/components/SponsorButton'
 import { DonationActions } from '@/components/DonationActions'
 import ImageUploader from '@/components/ImageUploader'
+import MediaLinkInput from '@/components/MediaLinkInput'
+import AdvancedSection from '@/components/AdvancedSection'
 import MentionInput from '@/components/MentionInput'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
 import ShareBar from '@/components/ShareBar'
@@ -182,6 +184,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
   const [contentForm, setContentForm] = useState({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: [] as string[], videoUrl: '', section: '', sortOrder: 0 })
   const [contentHashtags, setContentHashtags] = useState<string[]>([])
   const [creatingContent, setCreatingContent] = useState(false)
+  const [shareLessonToFeed, setShareLessonToFeed] = useState(true)
   const [editingContentId, setEditingContentId] = useState<string | null>(null)
   const [contentFilter, setContentFilter] = useState<string>('all')
   const [deletingContent, setDeletingContent] = useState<string | null>(null)
@@ -278,8 +281,22 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
         hashtags: contentHashtags
       }
       const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      const saved = await res.json().catch(() => null)
       if (res.ok) {
         success(isEdit ? 'Content updated!' : 'Content published!')
+        const newId = saved?.data?.id || saved?.id
+        if (!isEdit && shareLessonToFeed && newId) {
+          fetch('/api/posts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              content: `New lesson: ${contentForm.title}`,
+              referenceType: 'SCHOOLCONTENT',
+              referenceId: newId,
+              referenceTitle: contentForm.title,
+            }),
+          }).catch(() => {})
+        }
         setShowContentForm(false)
         setEditingContentId(null)
         setContentForm({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: [], videoUrl: '', section: '', sortOrder: 0 })
@@ -598,8 +615,9 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                 </div>
                 <div className={styles.formGroup}>
                   <label>Video URL (optional)</label>
-                  <input type="url" value={contentForm.videoUrl} onChange={e => setContentForm({ ...contentForm, videoUrl: e.target.value })} placeholder="https://youtube.com/watch?v=..." />
+                  <MediaLinkInput value={contentForm.videoUrl} onChange={(url) => setContentForm({ ...contentForm, videoUrl: url })} />
                 </div>
+                <AdvancedSection label="Organization & monetization">
                 <div className={styles.formRow}>
                   <div className={styles.formGroup} style={{ flex: 1 }}>
                     <label>Course Section (optional)</label>
@@ -623,6 +641,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                     <input type="number" value={contentForm.price} onChange={e => setContentForm({ ...contentForm, price: e.target.value })} placeholder="Price ($)" step="0.01" className={styles.priceInput} />
                   )}
                 </div>
+                </AdvancedSection>
                 {contentForm.contentType === 'quiz' && (
                   <div className={styles.formGroup}>
                     <label>Quiz Questions (one per line: Question|Option1|Option2|Option3|Option4|CorrectAnswer)</label>
@@ -635,7 +654,13 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                     <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>Format: Question|Option1|Option2|Option3|Option4|CorrectAnswer (one per line)</p>
                   </div>
                 )}
-                <div className={styles.formActions}>
+                <div className={styles.formActions} style={{ alignItems: 'center' }}>
+                  {!editingContentId && (
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', color: 'var(--text-secondary)', marginRight: 'auto' }}>
+                      <input type="checkbox" checked={shareLessonToFeed} onChange={(e) => setShareLessonToFeed(e.target.checked)} />
+                      Share to feed
+                    </label>
+                  )}
                   <Button type="submit" variant="primary" disabled={creatingContent}>{creatingContent ? 'Saving...' : (editingContentId ? 'Update' : 'Publish')}</Button>
                   <Button type="button" variant="ghost" onClick={() => { setShowContentForm(false); setEditingContentId(null); setContentForm({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: [], videoUrl: '', section: '', sortOrder: 0 }); setContentHashtags([]) }}>Cancel</Button>
                 </div>

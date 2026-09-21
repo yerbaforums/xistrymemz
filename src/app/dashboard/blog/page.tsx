@@ -7,6 +7,7 @@ import { useToast } from '@/context/ToastContext'
 import Loading from '@/components/Loading'
 import Button from '@/components/ui/Button'
 import RichEditor from '@/components/RichEditor'
+import AdvancedSection from '@/components/AdvancedSection'
 import ImageUploader from '@/components/ImageUploader'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { EmptyState } from '@/components/EmptyState'
@@ -107,6 +108,7 @@ export default function BlogDashboard() {
   const [form, setForm] = useState<PostForm>(EMPTY_FORM)
   const [coverImages, setCoverImages] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
+  const [shareToFeed, setShareToFeed] = useState(true)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const load = useCallback(async () => {
@@ -207,6 +209,20 @@ export default function BlogDashboard() {
       const data = await res.json().catch(() => null)
       if (res.ok) {
         success(editingId ? 'Post updated!' : (payload.status === 'PUBLISHED' ? 'Post published!' : 'Draft saved!'))
+        // New publications surface in the feed automatically (opt-out via checkbox).
+        const wasDraft = editingId ? (posts.find((p) => p.id === editingId)?.status !== 'PUBLISHED') : true
+        if (shareToFeed && payload.status === 'PUBLISHED' && wasDraft && blog?.blogSlug) {
+          fetch('/api/posts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              content: `New article: ${payload.title}`,
+              referenceType: 'BLOG',
+              referenceId: blog.blogSlug,
+              referenceTitle: payload.title,
+            }),
+          }).catch(() => {})
+        }
         setShowEditor(false)
         void load()
       } else {
@@ -452,6 +468,7 @@ export default function BlogDashboard() {
                       <option value="PUBLISHED">Publish now</option>
                     </select>
                   </div>
+                  <AdvancedSection label="Monetization & discovery">
                   <div className="form-group">
                     <label>Visibility</label>
                     <select value={form.visibility} onChange={(e) => setForm({ ...form, visibility: e.target.value as PostForm['visibility'] })}>
@@ -478,6 +495,7 @@ export default function BlogDashboard() {
                       )}
                     </>
                   )}
+                  </AdvancedSection>
                   <div className="form-group">
                     <label>Cover image</label>
                     <ImageUploader images={coverImages} onChange={(urls) => { setCoverImages(urls); setForm((f) => ({ ...f, coverImage: urls[0] || '' })) }} maxImages={1} />
@@ -488,7 +506,11 @@ export default function BlogDashboard() {
                   </div>
                 </div>
               </div>
-              <div className={styles.formActions}>
+              <div className={styles.formActions} style={{ alignItems: 'center' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', color: 'var(--text-secondary)', marginRight: 'auto' }}>
+                  <input type="checkbox" checked={shareToFeed} onChange={(e) => setShareToFeed(e.target.checked)} />
+                  Share to feed on publish
+                </label>
                 <Button type="submit" variant="primary" disabled={saving}>
                   {saving ? 'Saving…' : editingId ? 'Save changes' : form.status === 'PUBLISHED' ? 'Publish post' : 'Save draft'}
                 </Button>

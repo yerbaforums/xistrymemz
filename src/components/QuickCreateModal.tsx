@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useRef, type ReactNode } from 'rea
 import { useRouter } from 'next/navigation'
 import Modal from '@/components/ui/Modal'
 import ImageUploader from '@/components/ImageUploader'
+import MediaLinkInput from '@/components/MediaLinkInput'
 import HashtagInput from '@/components/HashtagInput'
 import MentionInput, { type MentionInputHandle } from '@/components/MentionInput'
 import LinkItemModal from '@/components/LinkItemModal'
@@ -347,7 +348,7 @@ function ContentForm({ onDone }: { onDone: () => void }) {
       <div className={styles.formRow}>
         <div className={styles.formGroup}>
           <label className={styles.label}>Video URL</label>
-          <input type="url" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} className={styles.input} placeholder="https://youtube.com/watch?v=..." />
+          <MediaLinkInput value={videoUrl} onChange={setVideoUrl} />
         </div>
         <div className={styles.formGroup}>
           <label className={styles.checkLabel} style={{ marginTop: 22 }}>

@@ -8,6 +8,7 @@ import MentionInput, { type MentionInputHandle } from '@/components/MentionInput
 import { getUserProfileUrl } from '@/lib/utils'
 import HashtagText from '@/components/HashtagText'
 import ImageUploader from '@/components/ImageUploader'
+import AdvancedSection from '@/components/AdvancedSection'
 import LinkItemModal from '@/components/LinkItemModal'
 import Modal from '@/components/ui/Modal'
 import { EmptyState } from '@/components/EmptyState'
@@ -677,6 +678,15 @@ export default function ForumPage() {
               </div>
             )}
 
+            <AdvancedSection label="Poll & photos">
+              <label className={styles.pollToggle}>
+                <input
+                  type="checkbox"
+                  checked={isPoll}
+                  onChange={e => setIsPoll(e.target.checked)}
+                />
+                Create Poll
+              </label>
             {isPoll && (
               <div className={styles.pollOptions}>
                 <div className={styles.pollTypeSelect}>
@@ -739,6 +749,8 @@ export default function ForumPage() {
                 )}
               </div>
             )}
+              <ImageUploader images={postImages} onChange={setPostImages} maxImages={6} />
+            </AdvancedSection>
           </div>
 
           {loading ? (

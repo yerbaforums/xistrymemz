@@ -13,6 +13,7 @@ export type HashtagEntityType =
   | 'PROJECT'
   | 'REQUEST'
   | 'GROUP'
+  | 'BLOGPOST'
 
 const ENTITY_RELATIONS: Record<HashtagEntityType, { model: string; idField: string; table: string }> = {
   POST: { model: 'postHashtag', idField: 'postId', table: 'PostHashtag' },
@@ -25,6 +26,7 @@ const ENTITY_RELATIONS: Record<HashtagEntityType, { model: string; idField: stri
   PROJECT: { model: 'projectHashtag', idField: 'projectId', table: 'ProjectHashtag' },
   REQUEST: { model: 'requestHashtag', idField: 'requestId', table: 'RequestHashtag' },
   GROUP: { model: 'groupHashtag', idField: 'groupId', table: 'GroupHashtag' },
+  BLOGPOST: { model: 'blogPostHashtag', idField: 'blogPostId', table: 'BlogPostHashtag' },
 }
 
 interface HashtagJunctionModel {

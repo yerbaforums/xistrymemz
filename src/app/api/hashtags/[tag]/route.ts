@@ -20,12 +20,12 @@ export async function GET(
     if (!hashtag) {
       return NextResponse.json({
         tag,
-        totals: { posts: 0, products: 0, events: 0, services: 0, schoolContents: 0, plans: 0, requests: 0, groups: 0, forumPosts: 0, groupPosts: 0 },
+        totals: { posts: 0, products: 0, events: 0, services: 0, schoolContents: 0, plans: 0, requests: 0, groups: 0, forumPosts: 0, groupPosts: 0, blogPosts: 0 },
         data: {}
       })
     }
 
-    const [postCount, productCount, eventCount, serviceCount, schoolContentCount, planCount, requestCount, groupCount, forumPostCount, groupPostCount] =
+    const [postCount, productCount, eventCount, serviceCount, schoolContentCount, planCount, requestCount, groupCount, forumPostCount, groupPostCount, blogPostCount] =
       await Promise.all([
         prisma.postHashtag.count({ where: { hashtagId: hashtag.id, sourceType: 'POST' } }),
         prisma.productHashtag.count({ where: { hashtagId: hashtag.id } }),
@@ -37,9 +37,10 @@ export async function GET(
         prisma.groupHashtag.count({ where: { hashtagId: hashtag.id } }),
         prisma.postHashtag.count({ where: { hashtagId: hashtag.id, sourceType: 'FORUMPOST' } }),
         prisma.postHashtag.count({ where: { hashtagId: hashtag.id, sourceType: 'GROUPPOST' } }),
+        prisma.blogPostHashtag.count({ where: { hashtagId: hashtag.id } }),
       ])
 
-    const totals = { posts: postCount, products: productCount, events: eventCount, services: serviceCount, schoolContents: schoolContentCount, projects: planCount, requests: requestCount, groups: groupCount, forumPosts: forumPostCount, groupPosts: groupPostCount }
+    const totals = { posts: postCount, products: productCount, events: eventCount, services: serviceCount, schoolContents: schoolContentCount, projects: planCount, requests: requestCount, groups: groupCount, forumPosts: forumPostCount, groupPosts: groupPostCount, blogPosts: blogPostCount }
 
     const data: Record<string, unknown[]> = {}
 
@@ -204,6 +205,23 @@ export async function GET(
         if (!data.posts) data.posts = []
         data.posts = [...data.posts, ...forumHashtags.map(ph => ({ ...ph.post, context: ph.post.context, _sourceType: 'FORUMPOST' }))]
       }
+    }
+
+    if (type === 'all' || type === 'blogPosts') {
+      const blogHashtags = await prisma.blogPostHashtag.findMany({
+        where: { hashtagId: hashtag.id, blogPost: { status: 'PUBLISHED' } },
+        include: {
+          blogPost: {
+            include: {
+              blog: { select: { blogSlug: true, blogName: true, name: true } },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: type === 'all' ? 4 : limit,
+        skip: type === 'all' ? 0 : skip,
+      })
+      data.blogPosts = blogHashtags.map(bh => bh.blogPost)
     }
 
     if (type === 'all' || type === 'groupPosts' || type === 'posts') {

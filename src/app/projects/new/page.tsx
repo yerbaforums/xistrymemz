@@ -7,6 +7,7 @@ import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import ImageUploader from '@/components/ImageUploader'
+import MediaLinkInput from '@/components/MediaLinkInput'
 import HashtagInput from '@/components/HashtagInput'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
 import LocationPicker from '@/components/LocationPicker'
@@ -400,8 +401,7 @@ export default function NewProjectPage() {
                   </div>
                   <div className={styles.field}>
                     <label>Video URL</label>
-                    <input type="url" value={videoUrl} onChange={e => setVideoUrl(e.target.value)}
-                      placeholder="https://youtube.com/watch?v=..." />
+                    <MediaLinkInput value={videoUrl} onChange={setVideoUrl} />
                   </div>
                 </div>
               </details>

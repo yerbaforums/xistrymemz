@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { extractAndLinkHashtags, linkHashtags } from '@/services/hashtagService'
+import { createNotification } from '@/services/notificationService'
 import { isAllowedMediaUrl, POST_VIDEO_KINDS } from '@/lib/media-links'
 
 export async function GET(request: Request, { params }: { params: Promise<{ slug: string }> }) {
@@ -91,6 +92,32 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
       authorId: session.user.id
     }
   })
+
+  // New lessons notify enrolled students (pref-gated inside).
+  try {
+    const enrollments = await prisma.schoolEnrollment.findMany({
+      where: { schoolId: user.id },
+      select: { studentId: true },
+      take: 500,
+    })
+    const schoolName = user.schoolName || user.name || 'A school you joined'
+    await Promise.all(
+      enrollments
+        .filter((e) => e.studentId !== user.id)
+        .map((e) =>
+          createNotification({
+            type: 'SCHOOL_PUBLISHED',
+            userId: e.studentId,
+            actorId: user.id,
+            entityId: schoolContent.id,
+            entityType: 'SCHOOLCONTENT',
+            title: 'New lesson published',
+            message: `${schoolName} published "${title.trim().slice(0, 80)}"`,
+            link: `/school/${slug}/content/${schoolContent.id}`,
+          }).catch(() => null),
+        ),
+    )
+  } catch { /* notifications never fail publishing */ }
 
   if (Array.isArray(explicitHashtags) && explicitHashtags.length > 0) {
     await linkHashtags('SCHOOLCONTENT', schoolContent.id, explicitHashtags)

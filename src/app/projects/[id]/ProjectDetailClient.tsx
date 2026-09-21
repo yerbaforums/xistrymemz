@@ -27,6 +27,7 @@ import type { ProjectGoal, ProjectMilestone, ProjectResource, ProjectContributio
 import type { EventFormData } from '@/components/EventFormFields'
 import TranslateButton from '@/components/TranslateButton'
 import ImageUploader from '@/components/ImageUploader'
+import MediaLinkInput from '@/components/MediaLinkInput'
 import HashtagInput from '@/components/HashtagInput'
 import LocationPicker from '@/components/LocationPicker'
 import { PROJECT_CATEGORIES } from '@/lib/project-categories'
@@ -724,7 +725,7 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
                       </div>
                       <div className={styles.formGroup}>
                         <label>Video URL</label>
-                        <input type="url" value={editedVideoUrl} onChange={e => setEditedVideoUrl(e.target.value)} placeholder="https://youtube.com/watch?v=..." className={styles.formInput} />
+                        <MediaLinkInput value={editedVideoUrl} onChange={setEditedVideoUrl} />
                       </div>
                     </div>
                   </details>

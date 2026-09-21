@@ -11,6 +11,7 @@ type NotificationType = 'CONNECTION_REQUEST' | 'CONNECTION_ACCEPTED' | 'NEW_MESS
   | 'OFFER_COUNTERED'
   | 'OFFER_COMPLETED' | 'ORDER_UPDATE'
   | 'SPONSORSHIP_REMINDER' | 'SPONSORSHIP_RECEIVED'
+  | 'BLOG_PUBLISHED' | 'SCHOOL_PUBLISHED'
 
 export async function createNotification(params: {
   type: NotificationType

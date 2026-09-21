@@ -13,7 +13,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import styles from './page.module.css'
 
-type TabType = 'all' | 'posts' | 'products' | 'events' | 'services' | 'schoolContents' | 'projects' | 'requests' | 'groups'
+type TabType = 'all' | 'posts' | 'products' | 'events' | 'services' | 'schoolContents' | 'projects' | 'requests' | 'groups' | 'blogPosts'
 
 interface Totals {
   posts: number
@@ -26,6 +26,7 @@ interface Totals {
   groups: number
   forumPosts: number
   groupPosts: number
+  blogPosts: number
 }
 
 interface TagPost {
@@ -92,6 +93,16 @@ interface TagRequest {
   user?: { name?: string | null } | null
 }
 
+interface TagBlogPost {
+  id: string
+  slug: string
+  title: string
+  excerpt?: string | null
+  coverImage?: string | null
+  publishedAt?: string | null
+  blog?: { blogSlug?: string | null; blogName?: string | null; name?: string | null } | null
+}
+
 interface TagGroup {
   id: string
   name: string
@@ -113,6 +124,7 @@ const TABS: { key: TabType; label: string; icon: string }[] = [
   { key: 'projects', label: 'Projects', icon: '📋' },
   { key: 'requests', label: 'Requests', icon: '🙋' },
   { key: 'groups', label: 'Groups', icon: '👥' },
+  { key: 'blogPosts', label: 'Blog', icon: '✍️' },
 ]
 
 const POST_SECTION_CONFIG: Record<string, { label: string; icon: string; order: number }> = {
@@ -134,6 +146,7 @@ function HashtagPage() {
   const [projects, setProjects] = useState<TagProject[]>([])
   const [requests, setRequests] = useState<TagRequest[]>([])
   const [groups, setGroups] = useState<TagGroup[]>([])
+  const [blogPosts, setBlogPosts] = useState<TagBlogPost[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -151,6 +164,7 @@ function HashtagPage() {
         setProjects(res.data?.projects || [])
         setRequests(res.data?.requests || [])
         setGroups(res.data?.groups || [])
+        setBlogPosts(res.data?.blogPosts || [])
       })
       .catch(() => {
         setTotals(null)
@@ -162,6 +176,7 @@ function HashtagPage() {
         setProjects([])
         setRequests([])
         setGroups([])
+        setBlogPosts([])
       })
       .finally(() => setLoading(false))
   }, [tag, activeTab])
@@ -169,7 +184,7 @@ function HashtagPage() {
   const totalCount = totals
     ? totals.posts + totals.products + totals.events + totals.services +
       totals.schoolContents + totals.projects + totals.requests + totals.groups +
-      totals.forumPosts + totals.groupPosts
+      totals.forumPosts + totals.groupPosts + (totals.blogPosts || 0)
     : 0
 
   const showProducts = activeTab === 'all' || activeTab === 'products'
@@ -179,6 +194,7 @@ function HashtagPage() {
   const showProjects = activeTab === 'all' || activeTab === 'projects'
   const showRequests = activeTab === 'all' || activeTab === 'requests'
   const showGroups = activeTab === 'all' || activeTab === 'groups'
+  const showBlogPosts = activeTab === 'all' || activeTab === 'blogPosts'
 
   const groupedPosts = useMemo(() => {
     if (!posts.length) return []
@@ -220,6 +236,7 @@ function HashtagPage() {
             {totals.groups > 0 && ` · ${totals.groups} group${totals.groups !== 1 ? 's' : ''}`}
             {totals.forumPosts > 0 && ` · ${totals.forumPosts} forum post${totals.forumPosts !== 1 ? 's' : ''}`}
             {totals.groupPosts > 0 && ` · ${totals.groupPosts} group post${totals.groupPosts !== 1 ? 's' : ''}`}
+            {(totals.blogPosts || 0) > 0 && ` · ${totals.blogPosts} blog post${totals.blogPosts !== 1 ? 's' : ''}`}
           </p>
         )}
       </div>
@@ -348,6 +365,38 @@ function HashtagPage() {
                 <div className={styles.viewAllRow}>
                   <Button variant="ghost" onClick={() => setActiveTab('schoolContents')} className={styles.viewAllBtn}>
                     View all {totals.schoolContents} lessons →
+                  </Button>
+                </div>
+              )}
+            </section>
+          )}
+
+          {showBlogPosts && blogPosts.length > 0 && (
+            <section>
+              {activeTab === 'all' && <h2 className={styles.sectionTitle}>Blog Posts</h2>}
+              <div className={styles.schoolContentList}>
+                {blogPosts.map(item => (
+                  <Link key={item.id} href={`/blog/${item.blog?.blogSlug || ''}/${item.slug}`} className={styles.schoolContentCard}>
+                    <div className={styles.schoolContentHeader}>
+                      <span className={styles.schoolContentType}>✍️ Article</span>
+                      <span className={styles.schoolContentFree}>Free</span>
+                    </div>
+                    <h3 className={styles.schoolContentTitle}>{item.title}</h3>
+                    <p className={styles.schoolContentMeta}>
+                      by {item.blog?.blogName || item.blog?.name || 'Unknown'}
+                    </p>
+                    {item.excerpt && (
+                      <p className={styles.schoolContentDesc}>
+                        {item.excerpt.slice(0, 120)}{item.excerpt.length > 120 ? '...' : ''}
+                      </p>
+                    )}
+                  </Link>
+                ))}
+              </div>
+              {activeTab === 'all' && totals && (totals.blogPosts || 0) > blogPosts.length && (
+                <div className={styles.viewAllRow}>
+                  <Button variant="ghost" onClick={() => setActiveTab('blogPosts')} className={styles.viewAllBtn}>
+                    View all {totals.blogPosts} articles →
                   </Button>
                 </div>
               )}

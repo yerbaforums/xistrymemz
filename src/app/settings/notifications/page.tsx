@@ -14,6 +14,8 @@ const NOTIFICATION_TYPES = [
   { id: 'comments', label: 'Comments & Replies', description: 'When someone replies to your content', icon: '💭' },
   { id: 'mentions', label: 'Mentions', description: 'When someone mentions you', icon: '@' },
   { id: 'follows', label: 'New Followers', description: 'When someone follows you', icon: '👤' },
+  { id: 'blogs', label: 'Blog Posts', description: 'When a blog you follow publishes', icon: '✍️' },
+  { id: 'school', label: 'School Lessons', description: 'When a school you joined publishes', icon: '🎓' },
   { id: 'system', label: 'System Updates', description: 'Platform announcements and updates', icon: '🔔' },
 ]
 

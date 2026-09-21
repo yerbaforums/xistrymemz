@@ -35,6 +35,15 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
     }
   }, [exec])
 
+  const handleInsertAudio = useCallback(() => {
+    const url = window.prompt('Enter audio URL (direct mp3, m4a, ogg, or wav link):')
+    if (!url) return
+    let audioUrl: URL
+    try { audioUrl = new URL(url) } catch { return }
+    if (audioUrl.protocol !== 'https:' || !audioUrl.pathname.match(/\.(mp3|m4a|aac|ogg|oga|wav|webm|opus|flac)(\?|#|$)/i)) return
+    exec('insertHTML', `<audio src="${url}" controls preload="none" style="width:100%;margin:12px 0;" />`)
+  }, [exec])
+
   const handleInsertVideo = useCallback(() => {
     const url = window.prompt('Enter video URL (YouTube, Vimeo, or direct video link):')
     if (!url) return
@@ -85,6 +94,7 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
         <button type="button" className={styles.toolBtn} onClick={() => exec('insertOrderedList')} title="Numbered List" aria-label="Numbered List">OL</button>
         <span className={styles.sep} />
         <button type="button" className={styles.toolBtn} onClick={handleInsertImage} title="Insert Image" aria-label="Insert Image">🖼️</button>
+        <button type="button" className={styles.toolBtn} onClick={handleInsertAudio} title="Insert Audio" aria-label="Insert Audio">🎙️</button>
         <button type="button" className={styles.toolBtn} onClick={handleInsertVideo} title="Insert Video" aria-label="Insert Video">🎬</button>
         <span className={styles.sep} />
         <button type="button" className={styles.toolBtn} onClick={toggleSource} title={showSource ? 'Visual' : 'Source'} aria-label="Toggle source">{showSource ? '👁️' : '&lt;/&gt;'}</button>

@@ -277,6 +277,7 @@ model BlogPost {
   purchases   BlogPostPurchase[]
   likes       BlogPostLike[]
   tips        BlogPostTip[]
+  hashtags    BlogPostHashtag[]
 
   @@unique([blogId, slug])
   @@index([blogId, status, publishedAt])
@@ -1263,6 +1264,7 @@ model Hashtag {
   events           EventHashtag[]
   serviceOfferings ServiceOfferingHashtag[]
   schoolContents   SchoolContentHashtag[]
+  blogPosts        BlogPostHashtag[]
   projects         ProjectHashtag[]
   requests         RequestHashtag[]
   groups           GroupHashtag[]
@@ -1294,6 +1296,18 @@ model SchoolContentHashtag {
   createdAt       DateTime      @default(now())
 
   @@unique([schoolContentId, hashtagId])
+  @@index([hashtagId])
+}
+
+model BlogPostHashtag {
+  id         String   @id @default(cuid())
+  blogPostId String
+  blogPost   BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  hashtagId  String
+  hashtag    Hashtag  @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([blogPostId, hashtagId])
   @@index([hashtagId])
 }
 

@@ -2,6 +2,19 @@ import { apiError, apiSuccess, apiUnauthorized } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { linkHashtags } from '@/services/hashtagService'
+function blogTagSet(title: string, excerpt: string | undefined, content: string | undefined, tags: unknown): string[] {
+  const explicit: string[] = Array.isArray(tags)
+    ? (tags as unknown[]).map((t) => String(t).replace(/^#/, '').trim().toLowerCase()).filter(Boolean)
+    : []
+  const text = `${title || ''} ${excerpt || ''} ${(content || '').replace(/<[^>]*>/g, ' ')}`
+  const found = new Set<string>()
+  const re = /(?:^|\s)#([a-zA-Z0-9_]{2,})/g
+  let m: RegExpExecArray | null
+  while ((m = re.exec(text)) !== null) found.add(m[1].toLowerCase())
+  return [...new Set([...explicit, ...found])]
+}
+
 
 // GET single post by id — paywalled content redacted for non-owners/outers
 export async function GET(request: Request, { params }: { params: Promise<{ postId: string }> }) {
@@ -111,6 +124,16 @@ export async function PUT(request: Request, { params }: { params: Promise<{ post
       publishedAt: goingLive ? new Date() : undefined,
     },
   })
+
+  try {
+    const merged = blogTagSet(
+      (title as string) || post.title,
+      (excerpt as string) ?? post.excerpt ?? undefined,
+      (content as string) ?? post.content,
+      tags,
+    )
+    if (merged.length > 0) await linkHashtags('BLOGPOST', post.id, merged)
+  } catch { /* hashtags never fail saving */ }
 
   return apiSuccess(post)
 }

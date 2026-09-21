@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { replySchema, validateBody } from '@/lib/schemas'
+import { extractHashtags, getHashtagsForEntity, linkHashtags } from '@/services/hashtagService'
 import { parseMentions } from '@/lib/mentions'
 
 export async function GET(request: Request) {
@@ -106,6 +107,16 @@ export async function POST(req: Request) {
       where: { id: postId },
       data: { replyCount: { increment: 1 } }
     })
+
+    // Reply hashtags merge into the parent thread's tag set (no wipe of OP tags).
+    try {
+      const replyTags = extractHashtags(content)
+      if (replyTags.length > 0) {
+        const existing = await getHashtagsForEntity('FORUMPOST', postId)
+        const merged = [...new Set([...existing.map((t) => t.tag), ...replyTags])]
+        await linkHashtags('FORUMPOST', postId, merged)
+      }
+    } catch { /* hashtags never fail replies */ }
 
     // Process mentions
     const mentionedUsernames = parseMentions(content)
