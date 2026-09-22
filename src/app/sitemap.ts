@@ -20,7 +20,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/products`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.8 },
     { url: `${baseUrl}/services`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.7 },
     { url: `${baseUrl}/events`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.8 },
-    { url: `${baseUrl}/community`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.6 },
+    // NOTE: bare /community requires auth (members hub) — only the public
+    // forum/groups surfaces are listed for crawlers.
     { url: `${baseUrl}/community/forum`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.6 },
     { url: `${baseUrl}/community/groups`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.6 },
     { url: `${baseUrl}/projects`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.7 },
