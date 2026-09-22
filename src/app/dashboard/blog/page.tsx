@@ -11,6 +11,9 @@ import AdvancedSection from '@/components/AdvancedSection'
 import ImageUploader from '@/components/ImageUploader'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { EmptyState } from '@/components/EmptyState'
+import ListingToolbar, { type PillOption } from '@/components/ListingToolbar'
+import { useManagedList } from '@/hooks/useManagedList'
+import { downloadCSV } from '@/lib/csv'
 
 interface BlogInfo {
   blogName: string | null
@@ -110,6 +113,7 @@ export default function BlogDashboard() {
   const [saving, setSaving] = useState(false)
   const [shareToFeed, setShareToFeed] = useState(true)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const managed = useManagedList()
 
   const load = useCallback(async () => {
     try {
@@ -295,6 +299,36 @@ export default function BlogDashboard() {
   const pendingSubs = subscriptions.filter((s) => s.status === 'PENDING')
   const pendingPurchases = purchases.filter((p) => p.status === 'PENDING')
 
+  const postQuery = managed.search.trim().toLowerCase()
+  const matchesPost = (p: PostItem) =>
+    !postQuery ||
+    p.title.toLowerCase().includes(postQuery) ||
+    (p.excerpt || '').toLowerCase().includes(postQuery) ||
+    (p.slug || '').toLowerCase().includes(postQuery)
+  const shownPublished = published.filter(p => matchesPost(p) && (managed.filter === 'all' || managed.filter === 'published'))
+  const shownDrafts = drafts.filter(p => matchesPost(p) && (managed.filter === 'all' || managed.filter === 'draft'))
+
+  const postPills: PillOption[] = [
+    { value: 'all', label: 'All', count: posts.length },
+    { value: 'published', label: '✓ Published', count: published.length },
+    { value: 'draft', label: 'Draft', count: drafts.length },
+  ]
+
+  const exportPostsCSV = () => {
+    downloadCSV(
+      `blog-posts-${new Date().toISOString().slice(0, 10)}.csv`,
+      ['Title', 'Status', 'Visibility', 'Price', 'Views', 'Likes'],
+      [...shownPublished, ...shownDrafts].map(p => [
+        p.title,
+        p.status === 'PUBLISHED' ? 'published' : 'draft',
+        VISIBILITY_LABELS[p.visibility] || p.visibility,
+        p.visibility !== 'FREE' ? `${p.price} ${p.currency}` : 'free',
+        p.viewCount,
+        p.likeCount,
+      ]),
+    )
+  }
+
   return (
     <div className={styles.page}>
       <div className={styles.header}>
@@ -379,8 +413,24 @@ export default function BlogDashboard() {
         {posts.length === 0 && (
           <EmptyState icon="✏️" title="No posts yet" description="Write your first post — it can start as a draft and go live whenever you're ready." />
         )}
+        {posts.length > 0 && (
+          <ListingToolbar
+            search={managed.search}
+            onSearch={managed.setSearch}
+            searchPlaceholder="Search posts by title or excerpt..."
+            pills={postPills}
+            activePill={managed.filter}
+            onPillChange={managed.setFilter}
+            count={shownPublished.length + shownDrafts.length}
+            countLabel="posts"
+            onExport={exportPostsCSV}
+          />
+        )}
+        {posts.length > 0 && shownPublished.length + shownDrafts.length === 0 && (
+          <p className={styles.emptyText}>No posts match your search or filter.</p>
+        )}
         <div className={styles.postList}>
-          {published.map((p) => (
+          {shownPublished.map((p) => (
             <div key={p.id} className={styles.postRow}>
               <div className={styles.postInfo}>
                 <Link href={`/blog/${blog.blogSlug}/${p.slug}`} className={styles.postTitleLink}>{p.title}</Link>
@@ -397,7 +447,7 @@ export default function BlogDashboard() {
               </div>
             </div>
           ))}
-          {drafts.map((p) => (
+          {shownDrafts.map((p) => (
             <div key={p.id} className={`${styles.postRow} ${styles.draftRow}`}>
               <div className={styles.postInfo}>
                 <span className={styles.postTitleLink}>{p.title} <span className={styles.draftBadge}>DRAFT</span></span>
