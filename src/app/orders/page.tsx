@@ -409,6 +409,9 @@ export default function OrdersPage() {
                   {selectedOrder.status === 'SHIPPED' && (
                     <Button className={styles.deliverBtn} disabled={updating} onClick={() => updateOrder('deliver')}>Confirm Receipt</Button>
                   )}
+                  {selectedOrder.status === 'ACTIVE' && selectedOrder.rentalStart && (
+                    <Button className={styles.deliverBtn} disabled={updating} onClick={() => updateOrder('return_item')}>Mark Returned</Button>
+                  )}
                 </>
               )}
 
@@ -420,8 +423,14 @@ export default function OrdersPage() {
                       <Button className={styles.cancelBtn} disabled={updating} onClick={() => updateOrder('decline_order')}>Decline</Button>
                     </>
                   )}
-                  {selectedOrder.status === 'PAID' && (
+                  {selectedOrder.status === 'PAID' && !selectedOrder.rentalStart && (
                     <Button className={styles.shipBtn} disabled={updating} onClick={() => updateOrder('ship')}>Mark Shipped</Button>
+                  )}
+                  {selectedOrder.status === 'PAID' && selectedOrder.rentalStart && (
+                    <Button className={styles.shipBtn} disabled={updating} onClick={() => updateOrder('handover')}>Confirm Handover</Button>
+                  )}
+                  {selectedOrder.status === 'RETURNED' && selectedOrder.rentalStart && (
+                    <Button className={styles.shipBtn} disabled={updating} onClick={() => updateOrder('complete_return')}>Complete Return</Button>
                   )}
                 </>
               )}

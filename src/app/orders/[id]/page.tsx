@@ -100,7 +100,7 @@ export default function OrderDetailPage() {
       if (res.ok) {
         success('Order updated')
         fetchOrder()
-        if (action === 'deliver' && session?.user?.id === order.buyer.id) {
+        if ((action === 'deliver' || action === 'return_item') && session?.user?.id === order.buyer.id) {
           setShowReviewPrompt(true)
         }
       } else {
@@ -431,6 +431,11 @@ export default function OrderDetailPage() {
                       Confirm Receipt
                     </Button>
                   )}
+                  {order.status === 'ACTIVE' && order.rentalStart && (
+                    <Button className={styles.deliverBtn} disabled={updating} onClick={() => updateOrder('return_item')}>
+                      Mark Returned
+                    </Button>
+                  )}
                 </>
               )}
 
@@ -446,9 +451,19 @@ export default function OrderDetailPage() {
                       </Button>
                     </>
                   )}
-                  {order.status === 'PAID' && (
+                  {order.status === 'PAID' && !order.rentalStart && (
                     <Button className={styles.shipBtn} disabled={updating} onClick={() => updateOrder('ship')}>
                       Mark Shipped
+                    </Button>
+                  )}
+                  {order.status === 'PAID' && order.rentalStart && (
+                    <Button className={styles.shipBtn} disabled={updating} onClick={() => updateOrder('handover')}>
+                      Confirm Handover
+                    </Button>
+                  )}
+                  {order.status === 'RETURNED' && order.rentalStart && (
+                    <Button className={styles.deliverBtn} disabled={updating} onClick={() => updateOrder('complete_return')}>
+                      Complete Return
                     </Button>
                   )}
                 </>

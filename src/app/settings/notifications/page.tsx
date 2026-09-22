@@ -11,6 +11,7 @@ const NOTIFICATION_TYPES = [
   { id: 'offers', label: 'Offers & Trades', description: 'When you receive an offer or trade request', icon: '🤝' },
   { id: 'appointments', label: 'Appointments', description: 'When someone books or cancels an appointment', icon: '📅' },
   { id: 'orders', label: 'Orders & Payments', description: 'When you receive an order or payment', icon: '📦' },
+  { id: 'requests', label: 'Requests & Fulfillments', description: 'When someone fulfills your request or responds to yours', icon: '📝' },
   { id: 'comments', label: 'Comments & Replies', description: 'When someone replies to your content', icon: '💭' },
   { id: 'mentions', label: 'Mentions', description: 'When someone mentions you', icon: '@' },
   { id: 'follows', label: 'New Followers', description: 'When someone follows you', icon: '👤' },

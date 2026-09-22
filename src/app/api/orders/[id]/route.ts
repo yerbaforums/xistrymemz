@@ -80,7 +80,49 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
     const updateData: Prisma.OrderUpdateInput = {}
 
+    const isRental = !!order.rentalStart
+
     switch (action) {
+      case 'handover': {
+        if (!isRental) {
+          return apiError('Handover is only for rental orders', 400)
+        }
+        if (order.sellerId !== session.user.id) {
+          return apiError('Only the seller can confirm handover', 400)
+        }
+        if (order.status !== 'PAID') {
+          return apiError('Order must be PAID to hand over', 400)
+        }
+        updateData.status = 'ACTIVE'
+        break
+      }
+      case 'return_item': {
+        if (!isRental) {
+          return apiError('Return is only for rental orders', 400)
+        }
+        if (order.buyerId !== session.user.id) {
+          return apiError('Only the renter can mark an item as returned', 400)
+        }
+        if (order.status !== 'ACTIVE') {
+          return apiError('Rental must be ACTIVE to return', 400)
+        }
+        updateData.status = 'RETURNED'
+        break
+      }
+      case 'complete_return': {
+        if (!isRental) {
+          return apiError('Return completion is only for rental orders', 400)
+        }
+        if (order.sellerId !== session.user.id) {
+          return apiError('Only the seller can complete a return', 400)
+        }
+        if (order.status !== 'RETURNED') {
+          return apiError('Rental must be RETURNED to complete', 400)
+        }
+        updateData.status = 'DELIVERED'
+        updateData.completedAt = new Date()
+        break
+      }
       case 'accept_order': {
         if (order.sellerId !== session.user.id) {
           return apiError('Only the seller can accept an order', 400)
@@ -113,6 +155,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         break
       }
       case 'ship': {
+        if (isRental) {
+          return apiError('Rental orders use handover instead of shipping', 400)
+        }
         if (order.sellerId !== session.user.id) {
           return apiError('Only the seller can ship an order', 400)
         }
@@ -123,6 +168,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         break
       }
       case 'deliver': {
+        if (isRental) {
+          return apiError('Rental orders use the return flow instead', 400)
+        }
         if (order.buyerId !== session.user.id) {
           return apiError('Only the buyer can confirm delivery', 400)
         }
@@ -289,6 +337,12 @@ function orderNotificationFor(
       return { title: 'Courier picked up', message: 'Your package was picked up and is in transit.' }
     case 'courier_delivered':
       return { title: 'Courier delivered', message: 'The courier marked your package as delivered.' }
+    case 'handover':
+      return { title: 'Rental handed over', message: 'The seller confirmed handover — enjoy your rental!' }
+    case 'return_item':
+      return { title: 'Rental returned', message: 'The renter marked the item as returned — please confirm its condition.' }
+    case 'complete_return':
+      return { title: 'Rental completed', message: 'The return was accepted. Consider leaving a review.' }
     default:
       return null
   }

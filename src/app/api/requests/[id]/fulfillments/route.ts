@@ -2,6 +2,7 @@ import { apiSuccess, apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { createNotification } from '@/services/notificationService'
 
 export async function GET(
   request: Request,
@@ -119,9 +120,23 @@ export async function POST(
         answers: answers
       },
       include: {
-        user: { select: { id: true, name: true, username: true, email: true, image: true, shopSlug: true } }
+        user: { select: { id: true, name: true, username: true, image: true, shopSlug: true } }
       }
     })
+
+    // New fulfillments notify the request owner (pref-gated; never fails).
+    try {
+      await createNotification({
+        type: 'REQUEST_UPDATE',
+        userId: req.userId,
+        actorId: session.user.id,
+        entityId: fulfillment.id,
+        entityType: 'REQUEST',
+        title: 'New fulfillment offer',
+        message: `${session.user.name || 'Someone'} offered to fulfill "${req.title.slice(0, 70)}"`,
+        link: `/requests/${id}`,
+      }).catch(() => null)
+    } catch { /* silent */ }
 
     return apiSuccess(fulfillment)
   } catch (error) {

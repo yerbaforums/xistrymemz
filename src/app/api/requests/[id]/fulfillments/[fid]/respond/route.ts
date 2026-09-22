@@ -2,6 +2,7 @@ import { apiSuccess, apiError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { createNotification } from '@/services/notificationService'
 
 export async function POST(
   request: Request,
@@ -63,9 +64,25 @@ export async function POST(
       where: { id: fid },
       data: { status: action },
       include: {
-        user: { select: { id: true, name: true, username: true, email: true, image: true, shopSlug: true } }
+        user: { select: { id: true, name: true, username: true, image: true, shopSlug: true } }
       }
     })
+
+    // Approve/decline notifies the fulfiller (pref-gated; never fails).
+    try {
+      await createNotification({
+        type: 'REQUEST_UPDATE',
+        userId: fulfillment.userId,
+        actorId: session.user.id,
+        entityId: fid,
+        entityType: 'REQUEST',
+        title: action === 'APPROVED' ? 'Fulfillment approved!' : 'Fulfillment declined',
+        message: action === 'APPROVED'
+          ? `Your offer for "${req.title.slice(0, 70)}" was approved`
+          : `Your offer for "${req.title.slice(0, 70)}" was declined`,
+        link: `/requests/${id}`,
+      }).catch(() => null)
+    } catch { /* silent */ }
 
     if (action === 'APPROVED' && body.autoComplete) {
       await prisma.request.update({
