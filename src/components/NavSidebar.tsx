@@ -162,7 +162,7 @@ export default function NavSidebar() {
             {profileOpen && !collapsed && (
               <div className={styles.profileDropdown}>
                 <Link href={profileHref} className={styles.profileDropdownLink} onClick={() => setProfileOpen(false)}>My Profile</Link>
-                <Link href="/dashboard/settings" className={styles.profileDropdownLink} onClick={() => setProfileOpen(false)}>Settings</Link>
+                <Link href="/profile/settings" className={styles.profileDropdownLink} onClick={() => setProfileOpen(false)}>Settings</Link>
                 <button className={styles.profileDropdownLink} onClick={() => { setProfileOpen(false); signOut({ callbackUrl: '/' }) }}>Sign Out</button>
               </div>
             )}

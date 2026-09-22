@@ -137,25 +137,15 @@ export default function Header() {
     if (!session?.user) return
     const load = async () => {
       try {
-        const [connRes, msgRes, notifRes, inboxRes] = await Promise.all([
-          fetch('/api/community/members'),
-          fetch('/api/messages/conversations'),
+        const [notifRes, inboxRes] = await Promise.all([
           fetch('/api/notifications/unread'),
           fetch('/api/inbox')
         ])
-        if (connRes.ok) {
-          const connData = await connRes.json()
-          setNotificationCount(connData?.data?.pendingRequests?.items?.length || connData?.pendingRequests?.items?.length || 0)
-        }
-        if (msgRes.ok) {
-          const msgData = await msgRes.json()
-          const conversations = msgData?.data?.conversations || msgData?.conversations || []
-          const unreadCount = conversations.reduce((sum: number, c: { unreadCount: number }) => sum + c.unreadCount, 0) || 0
-          setNotificationCount(prev => prev + unreadCount)
-        }
+        // Bell badge counts notifications only — connection requests and
+        // unread messages have their own surfaces (MobileNav badge, inbox).
         if (notifRes.ok) {
           const notifData = await notifRes.json()
-          setNotificationCount(prev => prev + (notifData?.data?.unreadCount ?? notifData?.unreadCount ?? 0))
+          setNotificationCount(notifData?.data?.unreadCount ?? notifData?.unreadCount ?? 0)
         }
         if (inboxRes.ok) {
           const inboxData = await inboxRes.json()
@@ -188,7 +178,8 @@ export default function Header() {
 
   useNotificationSSE(useCallback((event) => {
     if (event.type === 'unread-count' && event.unreadCount !== undefined) {
-      setNotificationCount(prev => prev + event.unreadCount!)
+      // Server sends the absolute unread total — replace, don't accumulate.
+      setNotificationCount(event.unreadCount!)
     }
     if (event.type === 'notification') {
       fetchNotificationCount()
@@ -613,6 +604,9 @@ export default function Header() {
 
           {!isAuthenticated && status !== 'loading' && (
             <>
+              <Link href="/search" className={styles.searchToggleBtn} aria-label="Search" title="Search">
+                <span aria-hidden="true">🔍</span>
+              </Link>
               <div className={`${styles.localeSwitcher} ${openDropdown === 'locale' ? styles.localeDropdownVisible : ''}`}>
                 <button className={styles.localeBtn} onClick={() => toggleDropdown('locale')} aria-label="Switch language" title="Switch language">
                   {currentLocale.toUpperCase()}

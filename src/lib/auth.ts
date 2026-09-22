@@ -14,28 +14,41 @@ if (!process.env.NEXTAUTH_SECRET) {
   throw new Error('NEXTAUTH_SECRET environment variable is not set')
 }
 
+function oauthEnv(name: string): string | undefined {
+  const v = (process.env[name] || '').trim()
+  return v ? v : undefined
+}
+
+const googleId = oauthEnv('GOOGLE_CLIENT_ID')
+const googleSecret = oauthEnv('GOOGLE_CLIENT_SECRET')
+const githubId = oauthEnv('GITHUB_CLIENT_ID')
+const githubSecret = oauthEnv('GITHUB_CLIENT_SECRET')
+const discordId = oauthEnv('DISCORD_CLIENT_ID')
+const discordSecret = oauthEnv('DISCORD_CLIENT_SECRET')
+const twitterId = oauthEnv('TWITTER_CLIENT_ID')
+const twitterSecret = oauthEnv('TWITTER_CLIENT_SECRET')
+const facebookId = oauthEnv('FACEBOOK_CLIENT_ID')
+const facebookSecret = oauthEnv('FACEBOOK_CLIENT_SECRET')
+
 export const authOptions: NextAuthOptions = {
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || '',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-    }),
-    GitHubProvider({
-      clientId: process.env.GITHUB_CLIENT_ID || '',
-      clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
-    }),
-    DiscordProvider({
-      clientId: process.env.DISCORD_CLIENT_ID || '',
-      clientSecret: process.env.DISCORD_CLIENT_SECRET || '',
-    }),
-    TwitterProvider({
-      clientId: process.env.TWITTER_CLIENT_ID || '',
-      clientSecret: process.env.TWITTER_CLIENT_SECRET || '',
-    }),
-    FacebookProvider({
-      clientId: process.env.FACEBOOK_CLIENT_ID || '',
-      clientSecret: process.env.FACEBOOK_CLIENT_SECRET || '',
-    }),
+    // Only register OAuth providers with real credentials. Registering with
+    // empty strings renders dead buttons that fail at the provider.
+    ...(googleId && googleSecret
+      ? [GoogleProvider({ clientId: googleId, clientSecret: googleSecret })]
+      : []),
+    ...(githubId && githubSecret
+      ? [GitHubProvider({ clientId: githubId, clientSecret: githubSecret })]
+      : []),
+    ...(discordId && discordSecret
+      ? [DiscordProvider({ clientId: discordId, clientSecret: discordSecret })]
+      : []),
+    ...(twitterId && twitterSecret
+      ? [TwitterProvider({ clientId: twitterId, clientSecret: twitterSecret })]
+      : []),
+    ...(facebookId && facebookSecret
+      ? [FacebookProvider({ clientId: facebookId, clientSecret: facebookSecret })]
+      : []),
     CredentialsProvider({
       name: 'credentials',
       credentials: {

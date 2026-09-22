@@ -85,10 +85,11 @@ export default function DashboardLayout({
   const segments = pathname.split('/').filter(Boolean)
   // Walk every segment past /dashboard so nested routes (e.g. /dashboard/projects/[id])
   // get correct crumbs instead of a flat second-level label. Object IDs are skipped.
+  // Hrefs keep the /dashboard prefix so crumbs stay inside the studio.
   const crumbs = segments.slice(1)
     .filter(seg => seg.length <= 20)
     .map((seg, i) => ({
-      href: `/${segments.slice(1, i + 2).join('/')}`,
+      href: `/dashboard/${segments.slice(1, i + 2).join('/')}`,
       label: BREADCRUMB_LABELS[seg] || seg.replace(/^./, c => c.toUpperCase()),
     }))
 
@@ -96,7 +97,7 @@ export default function DashboardLayout({
     <>
       <div className={styles.main}>
         <nav className={styles.breadcrumbs}>
-          <Link href="/dashboard" className={styles.breadcrumbLink}>Dashboard</Link>
+          <Link href="/dashboard/overview" className={styles.breadcrumbLink}>Dashboard</Link>
           {crumbs.map((crumb, i) => (
             <Fragment key={crumb.href}>
               <span className={styles.breadcrumbSep}> / </span>

@@ -1,8 +1,46 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { getToken } from 'next-auth/jwt'
 
 const LOCALES = ['en', 'es', 'fr', 'pt', 'it', 'ru', 'ar', 'de', 'hi', 'ja', 'zh', 'ko', 'nl', 'pl', 'sv', 'tr']
 const DEFAULT_LOCALE = 'en'
+
+// Pages that require authentication. Each is also guarded client-side or via
+// getServerSession; the middleware guard just makes the redirect server-side
+// (proper 307 + callbackUrl, no content flash, honest signals for crawlers).
+const PROTECTED_PREFIXES = [
+  '/dashboard',
+  '/onboarding',
+  '/settings',
+  '/profile/edit',
+  '/profile/settings',
+  '/orders',
+  '/checkout',
+  '/connections',
+  '/courier',
+  '/products/new',
+  '/groups/new',
+  '/notifications',
+  '/admin',
+]
+
+// Exact paths that require auth but whose sub-paths stay public
+// (e.g. /community is a private members hub; /community/forum is public).
+const PROTECTED_EXACT = [
+  '/profile',
+  '/community',
+]
+
+function stripLocalePrefix(path: string): { locale: string | null; stripped: string } {
+  const prefix = LOCALES.find(l => path === `/${l}` || path.startsWith(`/${l}/`))
+  if (!prefix) return { locale: null, stripped: path }
+  return { locale: prefix, stripped: path.slice(prefix.length + 1) || '/' }
+}
+
+function isProtectedPath(path: string): boolean {
+  if (PROTECTED_EXACT.includes(path)) return true
+  return PROTECTED_PREFIXES.some(p => path === p || path.startsWith(`${p}/`))
+}
 
 const ALLOWED_ORIGIN = process.env.NEXTAUTH_URL || 'http://localhost:3000'
 
@@ -128,6 +166,18 @@ export default async function middleware(request: NextRequest) {
   const method = request.method
 
   if (!path.startsWith('/api/')) {
+    const { stripped } = stripLocalePrefix(path)
+
+    // Server-side auth guard for private pages (before locale handling).
+    if (isProtectedPath(stripped) && !path.startsWith('/auth/')) {
+      const token = await getToken({ req: request }).catch(() => null)
+      if (!token) {
+        const loginUrl = new URL('/auth/login', request.url)
+        loginUrl.searchParams.set('callbackUrl', path + request.nextUrl.search)
+        return NextResponse.redirect(loginUrl)
+      }
+    }
+
     const detected = detectLocale(request)
 
     // If path starts with a locale prefix, rewrite it away (e.g., /es/about → /about)

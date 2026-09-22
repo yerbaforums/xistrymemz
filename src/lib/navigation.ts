@@ -183,4 +183,5 @@ export const BREADCRUMB_LABELS: Record<string, string> = {
   planning: 'Map Planning',
   passport: 'Passport',
   saved: 'Saved',
+  settings: 'Settings',
 }

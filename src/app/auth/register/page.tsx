@@ -1,23 +1,30 @@
 'use client'
 
-import { useState } from 'react'
-import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useEffect, useState } from 'react'
+import { getProviders, signIn } from 'next-auth/react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import styles from '../login/page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
-const OAUTH_PROVIDERS = [
-  { id: 'google', label: 'Google', icon: '/social-logos/google.svg' },
-  { id: 'github', label: 'GitHub', icon: '/social-logos/github.svg' },
-  { id: 'discord', label: 'Discord', icon: '/social-logos/discord.svg' },
-  { id: 'twitter', label: 'X (Twitter)', icon: '/social-logos/twitter.svg' },
-  { id: 'facebook', label: 'Facebook', icon: '/social-logos/facebook.svg' },
-] as const
+const OAUTH_META: Record<string, { label: string; icon: string }> = {
+  google: { label: 'Google', icon: '/social-logos/google.svg' },
+  github: { label: 'GitHub', icon: '/social-logos/github.svg' },
+  discord: { label: 'Discord', icon: '/social-logos/discord.svg' },
+  twitter: { label: 'X (Twitter)', icon: '/social-logos/twitter.svg' },
+  facebook: { label: 'Facebook', icon: '/social-logos/facebook.svg' },
+}
 
-export default function RegisterPage() {
+function safeCallbackUrl(raw: string | null): string | null {
+  if (raw && raw.startsWith('/') && !raw.startsWith('//')) return raw
+  return null
+}
+
+function RegisterForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const callbackUrl = safeCallbackUrl(searchParams.get('callbackUrl'))
   const [name, setName] = useState('')
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
@@ -28,14 +35,27 @@ export default function RegisterPage() {
   const [inviteValidating, setInviteValidating] = useState(false)
   const [inviteValid, setInviteValid] = useState<boolean | null>(null)
   const [subscribeNewsletter, setSubscribeNewsletter] = useState(true)
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [oauthLoading, setOauthLoading] = useState<string | null>(null)
+  const [oauthProviders, setOauthProviders] = useState<string[]>([])
+  const [providersLoading, setProvidersLoading] = useState(true)
+
+  useEffect(() => {
+    getProviders()
+      .then(all => {
+        const ids = Object.keys(all || {}).filter(id => id !== 'credentials' && OAUTH_META[id])
+        setOauthProviders(ids)
+      })
+      .catch(() => {})
+      .finally(() => setProvidersLoading(false))
+  }, [])
 
   const handleOAuthSignUp = async (provider: string) => {
     setOauthLoading(provider)
     try {
-      await signIn(provider, { callbackUrl: '/onboarding' })
+      await signIn(provider, { callbackUrl: callbackUrl || '/onboarding' })
     } catch {
       setError(`Failed to sign up with ${provider}. Please try again.`)
       setOauthLoading(null)
@@ -77,6 +97,10 @@ export default function RegisterPage() {
     if (password !== confirmPassword) {
       setPasswordError('Passwords do not match')
       setLoading(false)
+      return
+    }
+    if (!acceptedTerms) {
+      setError('Please accept the Terms and Privacy Policy to create an account.')
       return
     }
     setPasswordError('')
@@ -125,7 +149,7 @@ export default function RegisterPage() {
         return
       }
 
-      router.push('/onboarding')
+      router.push(callbackUrl || '/onboarding')
     } catch {
       setError('An error occurred. Please try again.')
       setLoading(false)
@@ -144,24 +168,28 @@ export default function RegisterPage() {
         <h1 className={styles.title}>Create account</h1>
         <p className={styles.subtitle}>Get started with XistrYmemZ</p>
 
-        <div className={styles.socialLogin}>
-          {OAUTH_PROVIDERS.map(p => (
-            <button
-              key={p.id}
-              type="button"
-              className={styles.socialBtn}
-              onClick={() => handleOAuthSignUp(p.id)}
-              disabled={oauthLoading === p.id}
-            >
-              <img src={p.icon} alt="" width={20} height={20} className={styles.socialIcon} />
-              {oauthLoading === p.id ? 'Connecting...' : `Sign up with ${p.label}`}
-            </button>
-          ))}
-        </div>
+        {!providersLoading && oauthProviders.length > 0 && (
+          <>
+            <div className={styles.socialLogin}>
+              {oauthProviders.map(id => (
+                <button
+                  key={id}
+                  type="button"
+                  className={styles.socialBtn}
+                  onClick={() => handleOAuthSignUp(id)}
+                  disabled={oauthLoading === id}
+                >
+                  <img src={OAUTH_META[id].icon} alt="" width={20} height={20} className={styles.socialIcon} />
+                  {oauthLoading === id ? 'Connecting...' : `Sign up with ${OAUTH_META[id].label}`}
+                </button>
+              ))}
+            </div>
 
-        <div className={styles.divider}>
-          <span>or continue with email</span>
-        </div>
+            <div className={styles.divider}>
+              <span>or continue with email</span>
+            </div>
+          </>
+        )}
 
         <form onSubmit={handleSubmit} className={styles.form}>
           {error && <div className={styles.error} role="alert">⚠️ {error}</div>}
@@ -263,6 +291,18 @@ export default function RegisterPage() {
             </label>
           </div>
 
+          <div className={styles.checkboxGroup}>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                required
+              />
+              <span>I agree to the <Link href="/terms">Terms</Link> and <Link href="/privacy">Privacy Policy</Link></span>
+            </label>
+          </div>
+
           <button type="submit" className={styles.submitBtn} disabled={loading}>
             {loading ? (
               <span className={styles.loadingContent}>
@@ -275,9 +315,17 @@ export default function RegisterPage() {
 
         <p className={styles.switchAuth}>
           Already have an account?{' '}
-          <Link href="/auth/login">Sign in</Link>
+          <Link href={callbackUrl ? `/auth/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : '/auth/login'}>Sign in</Link>
         </p>
       </div>
     </div>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense>
+      <RegisterForm />
+    </Suspense>
   )
 }
