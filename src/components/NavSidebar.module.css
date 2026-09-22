@@ -293,3 +293,33 @@
     display: none;
   }
 }
+
+.groupToggle {
+  composes: navItem;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 8px 16px 4px;
+}
+
+.groupToggle:hover {
+  color: var(--text-primary);
+}
+
+.groupToggle .caret {
+  font-size: 0.6rem;
+  width: 14px;
+  flex-shrink: 0;
+}
+
+.groupItems {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav.collapsed .groupToggle {
+  display: none;
+}

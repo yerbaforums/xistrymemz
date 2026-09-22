@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { NAV, DASHBOARD_SIDEBAR } from '@/lib/navigation'
+import { NAV, DASHBOARD_SIDEBAR, EXPLORE_GROUPS, STUDIO_GROUPS } from '@/lib/navigation'
 import { useQuickCreate } from '@/components/QuickCreateModal'
 import { useUserPreferences } from '@/hooks/useUserPreferences'
 import styles from './NavSidebar.module.css'
@@ -18,6 +18,8 @@ export default function NavSidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
+  const [groupsLoaded, setGroupsLoaded] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
   const profileRef = useRef<HTMLDivElement>(null)
@@ -44,6 +46,29 @@ export default function NavSidebar() {
     if (!mounted) return
     localStorage.setItem('navSidebarCollapsed', String(collapsed))
   }, [collapsed, mounted])
+
+  // Persisted per-group collapse; auto-open the group holding the active route.
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('navSidebarGroups') || '{}')
+      if (stored && typeof stored === 'object') setOpenGroups(stored)
+    } catch {}
+    setGroupsLoaded(true)
+  }, [])
+
+  useEffect(() => {
+    if (!groupsLoaded) return
+    localStorage.setItem('navSidebarGroups', JSON.stringify(openGroups))
+  }, [openGroups, groupsLoaded])
+
+  const toggleGroup = (key: string) => {
+    setOpenGroups(prev => ({ ...prev, [key]: !(prev[key] ?? true) }))
+  }
+
+  const isGroupOpen = (key: string, hrefs: string[]) => {
+    if (pathname && hrefs.some(h => pathname === h || pathname?.startsWith(h + '/'))) return true
+    return openGroups[key] ?? true
+  }
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -144,25 +169,44 @@ export default function NavSidebar() {
           </button>
           {moreOpen && (
             <div className={styles.moreSection}>
-              {DASHBOARD_SIDEBAR.filter(item => item.section === 'secondary' && isToolVisible(item.href)).map(item => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`${styles.navItem} ${isActive(item.href) ? styles.active : ''}`}
-                  aria-label={item.label}
-                  title={collapsed ? item.label : undefined}
-                >
-                  <span>{item.icon}</span>
-                  {!collapsed && (
-                    <span>
-                      {item.label}
-                      {item.label === 'Messages' && unreadCount > 0 && (
-                        <span className={styles.unreadBadge}>{unreadCount > 99 ? '99+' : unreadCount}</span>
-                      )}
-                    </span>
-                  )}
-                </Link>
-              ))}
+              {STUDIO_GROUPS.map(group => {
+                const items = DASHBOARD_SIDEBAR.filter(item => item.section === 'secondary' && group.hrefs.includes(item.href) && isToolVisible(item.href))
+                if (items.length === 0) return null
+                const open = collapsed || isGroupOpen(`studio:${group.label}`, group.hrefs)
+                return (
+                  <div key={group.label}>
+                    {!collapsed && (
+                      <button onClick={() => toggleGroup(`studio:${group.label}`)} className={styles.groupToggle} aria-expanded={open}>
+                        <span className={styles.caret}>{open ? '▼' : '▶'}</span>
+                        <span>{group.label}</span>
+                      </button>
+                    )}
+                    {open && (
+                      <div className={styles.groupItems}>
+                        {items.map(item => (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            className={`${styles.navItem} ${isActive(item.href) ? styles.active : ''}`}
+                            aria-label={item.label}
+                            title={collapsed ? item.label : undefined}
+                          >
+                            <span>{item.icon}</span>
+                            {!collapsed && (
+                              <span>
+                                {item.label}
+                                {item.label === 'Messages' && unreadCount > 0 && (
+                                  <span className={styles.unreadBadge}>{unreadCount > 99 ? '99+' : unreadCount}</span>
+                                )}
+                              </span>
+                            )}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           )}
           <div className={styles.divider} />
@@ -174,7 +218,38 @@ export default function NavSidebar() {
       ) : (
         <>
           {!collapsed && <div className={styles.sectionHeader}>Explore</div>}
-          {NAV.explore.filter(item => isToolVisible(item.href)).map(item => (
+          {EXPLORE_GROUPS.map(group => {
+            const items = NAV.explore.filter(item => group.hrefs.includes(item.href) && isToolVisible(item.href))
+            if (items.length === 0) return null
+            const open = collapsed || isGroupOpen(`explore:${group.label}`, group.hrefs)
+            return (
+              <div key={group.label}>
+                {!collapsed && (
+                  <button onClick={() => toggleGroup(`explore:${group.label}`)} className={styles.groupToggle} aria-expanded={open}>
+                    <span className={styles.caret}>{open ? '▼' : '▶'}</span>
+                    <span>{group.label}</span>
+                  </button>
+                )}
+                {open && (
+                  <div className={styles.groupItems}>
+                    {items.map(item => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`${styles.navItem} ${isActive(item.href) ? styles.active : ''}`}
+                        aria-label={item.label}
+                        title={collapsed ? item.label : undefined}
+                      >
+                        <span>{item.icon}</span>
+                        {!collapsed && <span>{item.label}</span>}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+          {NAV.explore.filter(item => !EXPLORE_GROUPS.some(g => g.hrefs.includes(item.href)) && isToolVisible(item.href)).map(item => (
             <Link
               key={item.href}
               href={item.href}

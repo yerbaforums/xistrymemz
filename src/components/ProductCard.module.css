@@ -341,3 +341,13 @@
     font-size: 0.9rem;
   }
 }
+
+/* Compact density: shorter card imagery. */
+:global(html[data-feed-density="compact"]) .imageWrap {
+  height: 104px;
+}
+
+:global(html[data-feed-density="compact"]) .card.list .imageWrap {
+  width: 150px;
+  height: 96px;
+}

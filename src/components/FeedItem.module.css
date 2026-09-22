@@ -174,3 +174,16 @@
     padding-top: 56%;
   }
 }
+/* Compact feed density: tighter cards, smaller previews. */
+:global(html[data-feed-density="compact"]) .item {
+  padding: 10px 12px;
+  gap: 6px;
+}
+
+:global(html[data-feed-density="compact"]) .imageGrid {
+  gap: 4px;
+}
+
+:global(html[data-feed-density="compact"]) .imageWrapper {
+  padding-top: 40%;
+}

@@ -17,7 +17,7 @@ import { EmptyState } from '@/components/EmptyState'
 import MobileNav from './MobileNav'
 import UserDropdown from './UserDropdown'
 import LanguageRequestModal from './LanguageRequestModal'
-import { NAV } from '@/lib/navigation'
+import { NAV, EXPLORE_GROUPS } from '@/lib/navigation'
 import { useUserPreferences } from '@/hooks/useUserPreferences'
 
 const LOCALES = [
@@ -352,7 +352,19 @@ export default function Header() {
             </button>
             <div className={styles.navDropdown} id="nav-dropdown-explore" role="menu" style={{ minWidth: 200 }}>
               <div style={{ padding: '6px 14px', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('browse')}</div>
-              {NAV.explore.filter(item => isToolVisible(item.href)).map(item => (
+              {EXPLORE_GROUPS.map(group => {
+                const items = NAV.explore.filter(item => group.hrefs.includes(item.href) && isToolVisible(item.href))
+                if (items.length === 0) return null
+                return (
+                  <div key={group.label}>
+                    <div style={{ padding: '6px 14px 2px', fontSize: '0.65rem', color: 'var(--text-muted)', letterSpacing: '0.05em' }}>{group.label}</div>
+                    {items.map(item => (
+                      <Link key={item.href} href={item.href} className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">{item.icon}</span> {item.label}</Link>
+                    ))}
+                  </div>
+                )
+              })}
+              {NAV.explore.filter(item => !EXPLORE_GROUPS.some(g => g.hrefs.includes(item.href)) && isToolVisible(item.href)).map(item => (
                 <Link key={item.href} href={item.href} className={styles.navLink} onClick={() => { setMenuOpen(false); closeDropdown() }} role="menuitem"><span aria-hidden="true">{item.icon}</span> {item.label}</Link>
               ))}
               <div style={{ borderTop: '1px solid var(--border-color)', margin: '4px 0' }} />

@@ -145,8 +145,8 @@ export default function ImageUploader({
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
         {images.map((url, i) => (
-          <div key={i} style={{ position: 'relative', width: 72, height: 72, borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', background: 'var(--bg-tertiary)' }}>
-            <Image src={url} alt="" width={72} height={72} style={{ objectFit: 'cover' }} />
+          <div key={i} style={{ position: 'relative', width: 56, height: 56, borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', background: 'var(--bg-tertiary)' }}>
+            <Image src={url} alt="" width={56} height={56} style={{ objectFit: 'cover' }} />
             <button
               type="button"
               onClick={() => onChange(images.filter((_, idx) => idx !== i))}
@@ -161,7 +161,7 @@ export default function ImageUploader({
             onClick={handleSelect}
             disabled={uploading}
             title="Upload images"
-            style={{ width: 72, height: 72, borderRadius: '8px', border: '2px dashed var(--border-color)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', color: 'var(--text-secondary)' }}
+            style={{ width: 56, height: 56, borderRadius: '8px', border: '2px dashed var(--border-color)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', color: 'var(--text-secondary)' }}
           >
             {uploading ? '...' : '🖼️'}
           </button>
@@ -169,7 +169,7 @@ export default function ImageUploader({
 
         {supportsVideo && (
           videoUrl ? (
-            <div style={{ position: 'relative', width: 128, height: 72, borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', background: '#000' }}>
+            <div style={{ position: 'relative', width: 104, height: 56, borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', background: '#000' }}>
               {(() => { const k = normalizeVideoUrl(videoUrl)?.kind; return k === 'direct-video' ? (
                 <video src={videoUrl} muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
@@ -205,7 +205,7 @@ export default function ImageUploader({
               onClick={handleVideoSelect}
               disabled={videoUploading || videoOptimizing}
               title={videoLabel}
-              style={{ width: 104, height: 72, borderRadius: '8px', border: '2px dashed var(--border-color)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 2, fontSize: '0.7rem', color: 'var(--text-secondary)' }}
+              style={{ width: 88, height: 56, borderRadius: '8px', border: '2px dashed var(--border-color)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 2, fontSize: '0.7rem', color: 'var(--text-secondary)' }}
             >
               {videoOptimizing ? <span style={{ fontSize: '1.1rem' }}>⚙️</span> : videoUploading ? <span style={{ fontSize: '1.2rem' }}>...</span> : <span style={{ fontSize: '1.3rem' }}>🎬</span>}
               <span>{videoOptimizing ? 'Optimizing…' : videoUploading ? 'Uploading…' : 'Video'}</span>
@@ -214,7 +214,7 @@ export default function ImageUploader({
                 type="button"
                 onClick={() => setVideoLinkMode(true)}
                 title="Paste a video link instead (YouTube, Vimeo, mp4)"
-                style={{ height: 72, padding: '0 12px', borderRadius: '8px', border: '2px dashed var(--border-color)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 2, fontSize: '0.7rem', color: 'var(--text-secondary)' }}
+                style={{ height: 56, padding: '0 12px', borderRadius: '8px', border: '2px dashed var(--border-color)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 2, fontSize: '0.7rem', color: 'var(--text-secondary)' }}
               >
                 <span style={{ fontSize: '1.3rem' }}>🔗</span>
                 <span>Link</span>

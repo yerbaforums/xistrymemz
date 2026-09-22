@@ -110,6 +110,21 @@ export const NAV: NavConfig = {
   ],
 }
 
+/** Browse-mode groupings for the explore list (sidebar + header dropdown). */
+export const EXPLORE_GROUPS: { label: string; hrefs: string[] }[] = [
+  { label: 'Discover', hrefs: ['/discover', '/directory', '/hashtags', '/boards', '/photos'] },
+  { label: 'Stories', hrefs: ['/blogs', '/podcasts', '/projects'] },
+  { label: 'Marketplace', hrefs: ['/products', '/services', '/shops', '/schools', '/rentals', '/requests', '/events'] },
+]
+
+/** Studio-mode groupings for secondary sidebar tools. */
+export const STUDIO_GROUPS: { label: string; hrefs: string[] }[] = [
+  { label: 'Create', hrefs: ['/dashboard/blog', '/dashboard/podcast', '/dashboard/shop', '/dashboard/teaching', '/dashboard/studio'] },
+  { label: 'Sell & Orders', hrefs: ['/dashboard/offers', '/dashboard/sponsorships', '/orders', '/courier/setup'] },
+  { label: 'Manage', hrefs: ['/dashboard/requests', '/dashboard/services', '/dashboard/rentals', '/dashboard/saved', '/templates'] },
+  { label: 'Connect', hrefs: ['/dashboard/community', '/dashboard/video', '/directory', '/connections', '/notifications'] },
+]
+
 export const DASHBOARD_SIDEBAR: SidebarNavItem[] = [
   { href: '/dashboard/overview', icon: '📊', label: 'Overview', section: 'primary' },
   { href: '/dashboard/feed', icon: '📡', label: 'Feed', section: 'primary' },
@@ -137,6 +152,11 @@ export const DASHBOARD_SIDEBAR: SidebarNavItem[] = [
   { href: '/dashboard/studio', icon: '🎨', label: 'Studio', section: 'secondary' },
   { href: '/directory', icon: '📋', label: 'Directory', section: 'secondary' },
   { href: '/dashboard/video', icon: '📹', label: 'Video Chat', section: 'secondary' },
+  { href: '/orders', icon: '📦', label: 'Orders', section: 'secondary' },
+  { href: '/notifications', icon: '🔔', label: 'Notifications', section: 'secondary' },
+  { href: '/connections', icon: '🔗', label: 'Connections', section: 'secondary' },
+  { href: '/courier/setup', icon: '🚚', label: 'Courier', section: 'secondary' },
+  { href: '/templates', icon: '📋', label: 'Templates', section: 'secondary' },
 ]
 
 export const BREADCRUMB_LABELS: Record<string, string> = {
