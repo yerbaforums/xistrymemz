@@ -36,7 +36,6 @@ export const NAV: NavConfig = {
 
   explore: [
     { href: '/discover', icon: '🌐', label: 'Discover' },
-    { href: '/photos', icon: '📸', label: 'Photos' },
     { href: '/boards', icon: '📌', label: 'Boards' },
     { href: '/projects', icon: '🚀', label: 'Projects' },
     { href: '/products', icon: '🛒', label: 'Products' },
@@ -112,7 +111,7 @@ export const NAV: NavConfig = {
 
 /** Browse-mode groupings for the explore list (sidebar + header dropdown). */
 export const EXPLORE_GROUPS: { label: string; hrefs: string[] }[] = [
-  { label: 'Discover', hrefs: ['/discover', '/directory', '/hashtags', '/boards', '/photos'] },
+  { label: 'Discover', hrefs: ['/discover', '/directory', '/hashtags', '/boards'] },
   { label: 'Stories', hrefs: ['/blogs', '/podcasts', '/projects'] },
   { label: 'Marketplace', hrefs: ['/products', '/services', '/shops', '/schools', '/rentals', '/requests', '/events'] },
 ]
