@@ -7,6 +7,7 @@ import { useToast } from '@/context/ToastContext'
 import styles from './projects.module.css'
 
 import { EmptyState } from '@/components/EmptyState'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 import Button from '@/components/ui/Button'
 import {
   PROJECT_CATEGORIES,
@@ -68,6 +69,81 @@ export default function DashboardProjectsClient({ initialProjects }: DashboardPr
   const [newGoals, setNewGoals] = useState('')
   const [newMileposts, setNewMileposts] = useState('')
   const [creating, setCreating] = useState(false)
+
+  const { success: toastSuccess, error: toastError } = useToast()
+
+  // Bulk selection (list view)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [bulkBusy, setBulkBusy] = useState(false)
+
+  const toggleSelect = (id: string) => {
+    setSelected(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleSelectFiltered = () => {
+    const ids = filteredProjects.map(p => p.id)
+    const allSelected = ids.length > 0 && ids.every(id => selected.has(id))
+    setSelected(prev => {
+      const next = new Set(prev)
+      if (allSelected) ids.forEach(id => next.delete(id))
+      else ids.forEach(id => next.add(id))
+      return next
+    })
+  }
+
+  const clearSelection = () => setSelected(new Set())
+
+  const handleBulkPublish = async (published: boolean) => {
+    const ids = [...selected]
+    if (!ids.length || bulkBusy) return
+    setBulkBusy(true)
+    let ok = 0
+    for (const id of ids) {
+      try {
+        const res = await fetch(`/api/projects/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ published }),
+        })
+        if (res.ok) ok++
+      } catch { /* keep going */ }
+    }
+    if (ok > 0) {
+      setProjects(prev => prev.map(p => selected.has(p.id) ? { ...p, published } : p))
+      toastSuccess(published ? `${ok} project${ok === 1 ? '' : 's'} published` : `${ok} project${ok === 1 ? '' : 's'} hidden`)
+    } else {
+      toastError('Failed to update projects')
+    }
+    setBulkBusy(false)
+    clearSelection()
+  }
+
+  const handleBulkDelete = async () => {
+    const ids = [...selected]
+    if (!ids.length || bulkBusy) return
+    setBulkBusy(true)
+    let ok = 0
+    for (const id of ids) {
+      try {
+        const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' })
+        if (res.ok) ok++
+      } catch { /* keep going */ }
+    }
+    if (ok > 0) {
+      setProjects(prev => prev.filter(p => !selected.has(p.id)))
+      toastSuccess(`Deleted ${ok} project${ok === 1 ? '' : 's'}`)
+    } else {
+      toastError('Failed to delete projects')
+    }
+    setBulkBusy(false)
+    clearSelection()
+  }
 
   const dragStart = (i: number) => { dragItem.current = i }
   const dragEnter = (i: number) => { dragOverItem.current = i }
@@ -135,8 +211,6 @@ export default function DashboardProjectsClient({ initialProjects }: DashboardPr
     if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
   }
-
-  const { success: toastSuccess, error: toastError } = useToast()
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -243,10 +317,34 @@ export default function DashboardProjectsClient({ initialProjects }: DashboardPr
       </div>
 
       <div className={styles.resultsInfo}>
-        Showing {filteredProjects.length} {filteredProjects.length === 1 ? 'project' : 'projects'}
-        {searchQuery && ` matching "${searchQuery}"`}
-        {statusFilter !== 'ALL' && ` (${statusFilter.toLowerCase()})`}
+        {viewMode === 'list' && filteredProjects.length > 0 && (
+          <label className={styles.selectAll}>
+            <input
+              type="checkbox"
+              checked={filteredProjects.length > 0 && filteredProjects.every(p => selected.has(p.id))}
+              onChange={toggleSelectFiltered}
+            />
+            Select all
+          </label>
+        )}
+        <span>
+          Showing {filteredProjects.length} {filteredProjects.length === 1 ? 'project' : 'projects'}
+          {searchQuery && ` matching "${searchQuery}"`}
+          {statusFilter !== 'ALL' && ` (${statusFilter.toLowerCase()})`}
+        </span>
       </div>
+
+      {selected.size > 0 && (
+        <div className={styles.bulkBar}>
+          <span className={styles.bulkCount}>{selected.size} selected</span>
+          <div className={styles.bulkActions}>
+            <button className={styles.bulkBtn} onClick={() => handleBulkPublish(true)} disabled={bulkBusy}>✓ Publish</button>
+            <button className={styles.bulkBtn} onClick={() => handleBulkPublish(false)} disabled={bulkBusy}>✕ Hide</button>
+            <button className={`${styles.bulkBtn} ${styles.bulkBtnDanger}`} onClick={() => setConfirmDelete(true)} disabled={bulkBusy}>🗑 Delete</button>
+            <button className={styles.bulkBtn} onClick={clearSelection} disabled={bulkBusy}>Deselect</button>
+          </div>
+        </div>
+      )}
 
       {filteredProjects.length === 0 ? (
         <EmptyState icon="📋" title="No projects found" description="Try adjusting your search or filters, or create a new project." action={{ label: 'Create Project', onClick: () => setShowCreateModal(true) }} />
@@ -378,19 +476,28 @@ export default function DashboardProjectsClient({ initialProjects }: DashboardPr
           {filteredProjects.map(project => {
             const status = STATUS_CONFIG[project.status] || STATUS_CONFIG.DRAFT
             return (
-              <Link key={project.id} href={`/projects/${project.id}`} className={styles.listItem}>
-                <span className={styles.statusBadge} style={{ backgroundColor: status.color + '20', color: status.color, borderColor: status.color + '40' }}>
-                  {status.icon} {status.label}
-                </span>
-                <div className={styles.listItemInfo}>
-                  <strong>{project.title}</strong>
-                  <span className={styles.listItemMeta}>
-                    {project.requestCount} requests · {project.joinerCount} members
-                    {project.location && ` · ${project.location}`}
+              <div key={project.id} className={styles.listRow}>
+                <label className={styles.listCheck} title="Select for bulk actions">
+                  <input
+                    type="checkbox"
+                    checked={selected.has(project.id)}
+                    onChange={() => toggleSelect(project.id)}
+                  />
+                </label>
+                <Link href={`/projects/${project.id}`} className={styles.listItem}>
+                  <span className={styles.statusBadge} style={{ backgroundColor: status.color + '20', color: status.color, borderColor: status.color + '40' }}>
+                    {status.icon} {status.label}
                   </span>
-                </div>
-                <span className={styles.listItemDate}>{formatDate(project.createdAt)}</span>
-              </Link>
+                  <div className={styles.listItemInfo}>
+                    <strong>{project.title}</strong>
+                    <span className={styles.listItemMeta}>
+                      {project.requestCount} requests · {project.joinerCount} members
+                      {project.location && ` · ${project.location}`}
+                    </span>
+                  </div>
+                  <span className={styles.listItemDate}>{formatDate(project.createdAt)}</span>
+                </Link>
+              </div>
             )
           })}
         </div>
@@ -430,6 +537,16 @@ export default function DashboardProjectsClient({ initialProjects }: DashboardPr
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        onConfirm={handleBulkDelete}
+        title={`Delete ${selected.size} project${selected.size === 1 ? '' : 's'}?`}
+        message="This permanently removes the selected projects and their associated content. This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   )
 }

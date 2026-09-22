@@ -26,6 +26,8 @@ interface ListingToolbarProps {
   }
   count: number
   countLabel?: string
+  /** When provided, shows a CSV export button wired to this callback. */
+  onExport?: () => void
 }
 
 /**
@@ -43,6 +45,7 @@ export default function ListingToolbar({
   view,
   count,
   countLabel = 'items',
+  onExport,
 }: ListingToolbarProps) {
   return (
     <div className={styles.toolbar}>
@@ -112,9 +115,16 @@ export default function ListingToolbar({
         </div>
       )}
 
-      <span className={styles.count}>
-        {count} {countLabel}
-      </span>
+      <div className={styles.right}>
+        {onExport && (
+          <button type="button" className={styles.exportBtn} onClick={onExport} title="Export as CSV">
+            ⬇ CSV
+          </button>
+        )}
+        <span className={styles.count}>
+          {count} {countLabel}
+        </span>
+      </div>
     </div>
   )
 }

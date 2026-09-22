@@ -8,6 +8,7 @@ import styles from './page.module.css'
 import Skeleton from '@/components/Skeleton'
 import ListingToolbar, { type PillOption } from '@/components/ListingToolbar'
 import { useManagedList } from '@/hooks/useManagedList'
+import { downloadCSV } from '@/lib/csv'
 
 interface SavedItem {
   id: string
@@ -78,6 +79,18 @@ export default function SavedPage() {
     })),
   ]
 
+  const exportCSV = () => {
+    downloadCSV(
+      `saved-${new Date().toISOString().slice(0, 10)}.csv`,
+      ['Type', 'Title', 'Saved At'],
+      filtered.map(item => [
+        TYPE_CONFIG[item.itemType]?.label || item.itemType,
+        item.title || 'Untitled',
+        new Date(item.createdAt).toLocaleDateString(),
+      ]),
+    )
+  }
+
   return (
     <div className={styles.page}>
       <div className={styles.container}>
@@ -109,6 +122,7 @@ export default function SavedPage() {
               view={{ mode: managed.view, onChange: managed.changeView }}
               count={filtered.length}
               countLabel="saved"
+              onExport={exportCSV}
             />
 
             <div className={managed.view === 'grid' ? styles.grid : styles.list}>

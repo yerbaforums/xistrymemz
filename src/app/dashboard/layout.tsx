@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { SkeletonCard } from '@/components/Skeleton'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import DashboardTourWrapper from '@/components/DashboardTourWrapper'
+import ShortcutHelp from '@/components/ShortcutHelp'
 import { BREADCRUMB_LABELS } from '@/lib/navigation'
 import { dashboardShortcuts } from '@/lib/shortcuts'
 import styles from './layout.module.css'
@@ -20,6 +21,7 @@ export default function DashboardLayout({
   const router = useRouter()
   const pathname = usePathname()
   const [onboardingChecked, setOnboardingChecked] = useState(false)
+  const [showShortcuts, setShowShortcuts] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -53,6 +55,19 @@ export default function DashboardLayout({
   useEffect(() => {
     return dashboardShortcuts((href) => router.push(href))
   }, [router])
+
+  // '?' opens the shortcut help dialog (ignored while typing in a field)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== '?' || e.metaKey || e.ctrlKey || e.altKey) return
+      const target = e.target as HTMLElement | null
+      if (target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return
+      e.preventDefault()
+      setShowShortcuts(prev => !prev)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   if (status === 'loading' || !onboardingChecked) {
     return (
@@ -92,10 +107,20 @@ export default function DashboardLayout({
               )}
             </Fragment>
           ))}
+          <button
+            type="button"
+            className={styles.shortcutBtn}
+            onClick={() => setShowShortcuts(prev => !prev)}
+            title="Keyboard shortcuts (?)"
+            aria-label="Keyboard shortcuts"
+          >
+            ⌨️
+          </button>
         </nav>
         <ErrorBoundary>{children}</ErrorBoundary>
       </div>
       <DashboardTourWrapper />
+      <ShortcutHelp open={showShortcuts} onClose={() => setShowShortcuts(false)} />
     </>
   )
 }
