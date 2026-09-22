@@ -61,6 +61,10 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: '*.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
         hostname: 'avatars.githubusercontent.com',
       },
       {
@@ -70,6 +74,34 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'pbs.twimg.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.gravatar.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.r2.dev',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.s3.amazonaws.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'storage.googleapis.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.arweave.net',
       },
       {
         protocol: 'https',

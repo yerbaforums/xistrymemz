@@ -123,6 +123,7 @@ export default function DashboardAppointments() {
   const [paymentNote, setPaymentNote] = useState('')
   const [showReviewPrompt, setShowReviewPrompt] = useState(false)
   const [reviewTarget, setReviewTarget] = useState<{ sellerId: string; sellerName: string; productId?: string } | null>(null)
+  const [highlightId, setHighlightId] = useState<string | null>(null)
 
   const fetchAll = async () => {
     setLoading(true)
@@ -148,6 +149,26 @@ export default function DashboardAppointments() {
   }
 
   useEffect(() => { fetchAll() }, [])
+
+  // Deep-link support: /dashboard/appointments?highlight=<id> (opened from My Deals).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const id = params.get('highlight')
+    if (id) setHighlightId(id)
+  }, [])
+
+  // Once data arrives, open the detail modal for the highlighted appointment
+  // and clear the query param so refresh doesn't re-open it.
+  useEffect(() => {
+    if (!highlightId || appointments.length === 0) return
+    const match = appointments.find(a => a.id === highlightId)
+    if (!match) return
+    setSelectedItem(match)
+    setHighlightId(null)
+    const url = new URL(window.location.href)
+    url.searchParams.delete('highlight')
+    window.history.replaceState({}, '', url.toString())
+  }, [highlightId, appointments])
 
   const handleAction = async (id: string, action: string, extra: Record<string, unknown> = {}) => {
     const res = await fetch(`/api/appointments/${id}`, {
@@ -329,14 +350,14 @@ export default function DashboardAppointments() {
         </div>
       </div>
 
-      <div className={styles.searchBar}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-        </svg>
-        <input type="text" placeholder="Search planner..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className={styles.searchInput} />
-      </div>
+      <div className={styles.toolbarRow}>
+        <div className={styles.searchBar}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input type="text" placeholder="Search planner..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className={styles.searchInput} />
+        </div>
 
-      <div className={styles.controls}>
         <div className={styles.filterPills}>
           {[
             { key: 'ALL', icon: '🌟', label: 'All' },

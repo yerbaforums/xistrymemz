@@ -7,12 +7,16 @@ import { EmptyState } from '@/components/EmptyState'
 import styles from './page.module.css'
 import AlphabeticalIndex from '@/components/AlphabeticalIndex'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import HashtagChips from '@/components/HashtagChips'
+import Avatar from '@/components/Avatar'
 import type { IndexItem } from '@/components/AlphabeticalIndex'
 
 interface DirItem {
   id: string; title: string; image: string | null
   url: string; meta?: string; type: string; category?: string
   extra?: string; location?: string; owner?: string
+  ownerImage?: string | null
+  hashtags?: string[]
   createdAt?: string
 }
 
@@ -82,6 +86,8 @@ export default function DirectoryPage() {
     return sorted
   }, [items, sortBy])
 
+  const totalCount = Object.values(counts).reduce((sum, n) => sum + n, 0)
+
   const indexItems: IndexItem[] = sortedItems.map(item => ({
     id: `${item.type}-${item.id}`,
     label: item.title,
@@ -92,7 +98,7 @@ export default function DirectoryPage() {
     return (
       <Link key={`${item.type}-${item.id}`} href={item.url} className={styles.card}>
         <div className={styles.cardImage}>
-          {item.image ? <img src={item.image} alt={item.title} /> : <span>{TYPE_ICONS[item.type] || '📌'}</span>}
+          {item.image ? <img src={item.image} alt={item.title} loading="lazy" /> : <span>{TYPE_ICONS[item.type] || '📌'}</span>}
         </div>
         <div className={styles.cardInfo}>
           <h3>{item.title}</h3>
@@ -102,7 +108,13 @@ export default function DirectoryPage() {
           </div>
           {item.meta && <div className={styles.cardMeta}>{item.meta}</div>}
           {item.extra && <div className={styles.cardExtra}>{item.extra}</div>}
-          {item.owner && <div className={styles.cardOwner}>by {item.owner}</div>}
+          <HashtagChips tags={item.hashtags} max={3} small />
+          {item.owner && (
+            <div className={styles.cardOwner}>
+              <Avatar src={item.ownerImage} name={item.owner} size={16} />
+              {item.owner}
+            </div>
+          )}
         </div>
       </Link>
     )
@@ -125,10 +137,27 @@ export default function DirectoryPage() {
         <p>Browse all public entities on the platform</p>
       </div>
 
-      <div className={styles.tabs}>
+      <div className={styles.toolbar}>
+        <form className={styles.searchWrap} onSubmit={handleSearch}>
+          <input className={styles.searchInput} placeholder="Search directory..." value={search} onChange={e => setSearch(e.target.value)} />
+        </form>
+        {typeCategories.length > 0 && (
+          <select className={styles.filterSelect} value={activeCategory} onChange={e => setActiveCategory(e.target.value)}>
+            <option value="">All categories</option>
+            {typeCategories.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        )}
+        <select className={styles.filterSelect} value={sortBy} onChange={e => setSortBy(e.target.value)}>
+          {SORT_OPTIONS.map(o => <option key={o.key} value={o.key}>{o.label}</option>)}
+        </select>
+      </div>
+
+      <div className={styles.tabs} role="tablist" aria-label="Directory types">
         {TYPE_TABS.map(t => (
           <button
             key={t.key}
+            role="tab"
+            aria-selected={activeType === t.key}
             className={`${styles.tab} ${activeType === t.key ? styles.tabActive : ''}`}
             onClick={() => { setActiveType(t.key); setActiveCategory('') }}
           >
@@ -137,27 +166,9 @@ export default function DirectoryPage() {
         ))}
       </div>
 
-      <div className={styles.controls}>
-        <form className={styles.searchWrap} onSubmit={handleSearch}>
-          <input className={styles.searchInput} placeholder="Search directory..." value={search} onChange={e => setSearch(e.target.value)} />
-        </form>
-
-        {typeCategories.length > 0 && (
-          <select className={styles.filterSelect} value={activeCategory} onChange={e => setActiveCategory(e.target.value)}>
-            <option value="">All categories</option>
-            {typeCategories.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-        )}
-
-        <select className={styles.filterSelect} value={sortBy} onChange={e => setSortBy(e.target.value)}>
-          {SORT_OPTIONS.map(o => <option key={o.key} value={o.key}>{o.label}</option>)}
-        </select>
-      </div>
-
-      <div className={styles.counts}>
-        {Object.entries(counts).map(([key, val]) => (
-          <span key={key} className={styles.countBadge}>{TYPE_ICONS[key] || '📌'} {key}: {val}</span>
-        ))}
+      <div className={styles.metaRow}>
+        <span>{sortedItems.length} result{sortedItems.length !== 1 ? 's' : ''}{activeType !== 'all' ? ` · ${activeType}` : ` · ${Object.keys(counts).length} types`}</span>
+        <span className={styles.metaTotal}>{totalCount} listed</span>
       </div>
 
       {loading ? (

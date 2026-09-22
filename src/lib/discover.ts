@@ -442,6 +442,12 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
             { description: { contains: q, mode: 'insensitive' } },
           ]
         }
+        if (hashtag) {
+          const tag = await prisma.hashtag.findUnique({ where: { tag: hashtag.toLowerCase() } })
+          if (tag) {
+            where.hashtags = { some: { hashtagId: tag.id } }
+          }
+        }
         const rows = await prisma.product.findMany({
           where: where,
           select: {
@@ -449,6 +455,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
             location: true, latitude: true, longitude: true, price: true,
             category: true, userId: true, createdAt: true,
             user: { select: { name: true, image: true, username: true } },
+            hashtags: { select: { hashtag: { select: { tag: true } } } },
           },
           take: perTypeLimit,
           orderBy: { createdAt: 'desc' },
@@ -470,7 +477,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           userName: r.user.name,
           userImage: r.user.image,
           username: r.user.username,
-          hashtags: [],
+          hashtags: r.hashtags.map(h => h.hashtag.tag),
           eventDate: null,
           createdAt: r.createdAt,
         }))
@@ -488,6 +495,12 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
             { description: { contains: q, mode: 'insensitive' } },
           ]
         }
+        if (hashtag) {
+          const tag = await prisma.hashtag.findUnique({ where: { tag: hashtag.toLowerCase() } })
+          if (tag) {
+            where.hashtags = { some: { hashtagId: tag.id } }
+          }
+        }
         const rows = await prisma.request.findMany({
           where: where,
           select: {
@@ -496,6 +509,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
             category: true, goalAmount: true, currentFunding: true,
             userId: true, createdAt: true,
             user: { select: { name: true, image: true, username: true } },
+            hashtags: { select: { hashtag: { select: { tag: true } } } },
           },
           take: perTypeLimit,
           orderBy: { createdAt: 'desc' },
@@ -517,7 +531,7 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           userName: r.user.name,
           userImage: r.user.image,
           username: r.user.username,
-          hashtags: [],
+          hashtags: r.hashtags.map(h => h.hashtag.tag),
           eventDate: null,
           createdAt: r.createdAt,
         }))

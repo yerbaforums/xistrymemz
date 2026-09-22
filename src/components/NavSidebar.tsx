@@ -4,10 +4,10 @@ import { useSession, signOut } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { NAV, DASHBOARD_SIDEBAR, EXPLORE_GROUPS, STUDIO_GROUPS } from '@/lib/navigation'
 import { useQuickCreate } from '@/components/QuickCreateModal'
 import { useUserPreferences } from '@/hooks/useUserPreferences'
+import Avatar from '@/components/Avatar'
 import styles from './NavSidebar.module.css'
 
 export default function NavSidebar() {
@@ -103,7 +103,6 @@ export default function NavSidebar() {
   }
 
   const user = session?.user
-  const userInitial = (user?.name || 'U')[0].toUpperCase()
   const profileHref = `/profile/${user?.username || ''}`
 
   const showShortcut = (i: number) => {
@@ -129,11 +128,7 @@ export default function NavSidebar() {
           <div className={styles.profileStripWrapper} ref={profileRef}>
             <button className={styles.profileStrip} onClick={() => setProfileOpen(!profileOpen)}>
               <div className={styles.profileAvatar}>
-                {user?.image ? (
-                  <Image src={user.image} alt={user.name || 'User'} width={36} height={36} className={styles.profileAvatarImg} />
-                ) : (
-                  <span className={styles.profileAvatarInitial}>{userInitial}</span>
-                )}
+                <Avatar src={user?.image} name={user?.name} size={36} />
               </div>
               {!collapsed && <span className={styles.profileName}>{user?.name || 'User'}</span>}
             </button>

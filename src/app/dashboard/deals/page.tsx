@@ -35,7 +35,7 @@ export default async function DashboardDeals() {
     prisma.order.findMany({
       where: {
         OR: [{ buyerId: userId }, { sellerId: userId }],
-        status: { in: ['PENDING', 'PAID', 'SHIPPED', 'DELIVERED'] }
+        status: { in: ['PENDING', 'PAID', 'SHIPPED', 'DELIVERED', 'COMPLETED'] }
       },
       include: {
         product: { select: { title: true } },
@@ -136,7 +136,7 @@ export default async function DashboardDeals() {
       counterpart: a.buyerId === userId ? (a.seller.name || 'Seller') : (a.buyer.name || 'Buyer'),
       status: a.status,
       role: a.buyerId === userId ? 'Buyer' : 'Host',
-      href: `/dashboard/appointments`,
+      href: `/dashboard/appointments?highlight=${a.id}`,
       actionNeeded: a.status === 'PENDING' && a.buyerId !== userId,
       updatedAt: a.updatedAt
     }))

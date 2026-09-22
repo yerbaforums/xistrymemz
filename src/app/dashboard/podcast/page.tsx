@@ -203,7 +203,7 @@ export default function PodcastDashboardPage() {
       </section>
 
       {/* New episode */}
-      <section className={styles.section}>
+      <section id="new-episode" className={styles.section}>
         <h2>📤 New episode</h2>
         <form onSubmit={handlePublish} className={styles.episodeForm}>
           <div className={styles.formRow}>
@@ -223,7 +223,12 @@ export default function PodcastDashboardPage() {
       <section className={styles.section}>
         <h2>📚 Episodes ({episodes.length})</h2>
         {episodes.length === 0 ? (
-          <EmptyState icon="🎧" title="No episodes yet" description="Publish your first episode to build your show." />
+          <EmptyState
+            icon="🎧"
+            title="No episodes yet"
+            description="Publish your first episode to build your show."
+            action={{ label: '📤 Write your first episode', onClick: () => document.getElementById('new-episode')?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }}
+          />
         ) : (
           <div className={styles.episodeList}>
             {episodes.map((ep, i) => (

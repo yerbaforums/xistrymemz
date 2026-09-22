@@ -54,6 +54,18 @@
   gap: 0.5rem;
 }
 
+.rowWithAvatar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rowWithAvatar .item {
+  flex: 1;
+  min-width: 0;
+  padding: 0.7rem 0.85rem;
+}
+
 .item {
   display: flex;
   justify-content: space-between;

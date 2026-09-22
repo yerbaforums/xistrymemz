@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import styles from './page.module.css'
 import Skeleton from '@/components/Skeleton'
+import ListingToolbar, { type PillOption } from '@/components/ListingToolbar'
+import { useManagedList } from '@/hooks/useManagedList'
 
 interface SavedItem {
   id: string
@@ -33,9 +35,7 @@ export default function SavedPage() {
   const router = useRouter()
   const [saved, setSaved] = useState<SavedItem[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<string>('all')
-  const [search, setSearch] = useState('')
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
+  const managed = useManagedList({ persistView: true })
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -65,9 +65,18 @@ export default function SavedPage() {
     counts[item.itemType] = (counts[item.itemType] || 0) + 1
   }
 
-  const filtered = (filter === 'all' ? saved : saved.filter(s => s.itemType === filter))
-    .filter(s => !search || s.title?.toLowerCase().includes(search.toLowerCase()) || (TYPE_CONFIG[s.itemType]?.label || s.itemType).toLowerCase().includes(search.toLowerCase()))
+  const filtered = (managed.filter === 'all' ? saved : saved.filter(s => s.itemType === managed.filter))
+    .filter(s => !managed.search || s.title?.toLowerCase().includes(managed.search.toLowerCase()) || (TYPE_CONFIG[s.itemType]?.label || s.itemType).toLowerCase().includes(managed.search.toLowerCase()))
   const typeKeys = Object.keys(counts).sort()
+
+  const pillOptions: PillOption[] = [
+    { value: 'all', label: 'All', count: saved.length },
+    ...typeKeys.map(type => ({
+      value: type,
+      label: `${TYPE_CONFIG[type]?.icon || '📌'} ${TYPE_CONFIG[type]?.label || type}`,
+      count: counts[type],
+    })),
+  ]
 
   return (
     <div className={styles.page}>
@@ -90,38 +99,19 @@ export default function SavedPage() {
           </div>
         ) : (
           <>
-            <div className={styles.filterRow}>
-              <input
-                type="text"
-                className={styles.searchInput}
-                placeholder="Search saved items..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
-              <button className={`${styles.filterBtn} ${filter === 'all' ? styles.filterActive : ''}`} onClick={() => setFilter('all')}>
-                All ({saved.length})
-              </button>
-              {typeKeys.map(type => {
-                const cfg = TYPE_CONFIG[type]
-                return (
-                  <button key={type} className={`${styles.filterBtn} ${filter === type ? styles.filterActive : ''}`} onClick={() => setFilter(type)}>
-                    {cfg?.icon || '📌'} {cfg?.label || type} ({counts[type]})
-                  </button>
-                )
-              })}
-              <div className={styles.viewToggle}>
-                <button
-                  className={`${styles.viewBtn} ${viewMode === 'list' ? styles.viewBtnActive : ''}`}
-                  onClick={() => setViewMode('list')}
-                >📋 List</button>
-                <button
-                  className={`${styles.viewBtn} ${viewMode === 'grid' ? styles.viewBtnActive : ''}`}
-                  onClick={() => setViewMode('grid')}
-                >📐 Grid</button>
-              </div>
-            </div>
+            <ListingToolbar
+              search={managed.search}
+              onSearch={managed.setSearch}
+              searchPlaceholder="Search saved items..."
+              pills={pillOptions}
+              activePill={managed.filter}
+              onPillChange={managed.setFilter}
+              view={{ mode: managed.view, onChange: managed.changeView }}
+              count={filtered.length}
+              countLabel="saved"
+            />
 
-            <div className={viewMode === 'grid' ? styles.grid : styles.list}>
+            <div className={managed.view === 'grid' ? styles.grid : styles.list}>
               {filtered.length === 0 && (
                 <div className={styles.emptySmall}>No saved items in this category</div>
               )}

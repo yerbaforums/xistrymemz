@@ -17,6 +17,7 @@ import DashboardWidgets from '@/components/DashboardWidgets'
 import AchievementCard from './AchievementCard'
 import DashboardSection from './DashboardSection'
 import { EmptyState } from '@/components/EmptyState'
+import ActionQueue, { type ActionQueueItem } from '@/components/ActionQueue'
 
 
 export const dynamic = 'force-dynamic'
@@ -26,7 +27,7 @@ function StatGauge({ value, max = 100, size = 80, color = 'var(--accent-primary)
   const r = 34
   const c = 2 * Math.PI * r
   const offset = c - pct * c
-  const fontSize = value >= 1000 ? 11 : value >= 100 ? 14 : 17
+  const fontSize = value >= 1000 ? 14 : value >= 100 ? 17 : 20
 
   return (
     <svg viewBox="0 0 80 80" width={size} height={size}>
@@ -54,7 +55,7 @@ interface StatDef {
 export default async function DashboardOverview({
   searchParams,
 }: {
-  searchParams?: { showAll?: string }
+  searchParams?: { showAll?: string; showAllStats?: string }
 }) {
   const session = await getServerSession(authOptions)
   
@@ -67,7 +68,6 @@ export default async function DashboardOverview({
 
   const [
     _projects,
-    _requests,
     products,
     connectionCount,
     connectionActivity,
@@ -80,12 +80,6 @@ export default async function DashboardOverview({
     prisma.project.findMany({ 
       where: { userId }, 
       select: { id: true, title: true, status: true, published: true, createdAt: true },
-      orderBy: { createdAt: 'desc' },
-      take: 5
-    }),
-    prisma.request.findMany({ 
-      where: { userId }, 
-      select: { id: true, title: true, status: true, createdAt: true },
       orderBy: { createdAt: 'desc' },
       take: 5
     }),
@@ -187,8 +181,8 @@ export default async function DashboardOverview({
 
   const serviceCount = await prisma.serviceOffering.count({ where: { userId } })
 
-  // Attention queue: things waiting on this user
-  const [pendingConnections, dueSponsorships, pendingTickets] = await Promise.all([
+  // Attention queue: things waiting on this user (counts only, capped queries)
+  const [pendingConnections, dueSponsorships, pendingTickets, pendingAppointments, pendingOffers, sellerPendingOrders, buyerShippedOrders, pendingRequests] = await Promise.all([
     prisma.connection.count({ where: { receiverId: userId, status: 'PENDING' } }),
     prisma.sponsorship.count({ where: { sponsorId: userId, status: 'ACTIVE', nextReminderAt: { lte: new Date() } } }),
     prisma.eventTicket.count({
@@ -197,12 +191,25 @@ export default async function DashboardOverview({
         event: { organizerId: userId, isTicketed: true },
       },
     }),
+    // Host must confirm/reject incoming appointment requests
+    prisma.appointment.count({ where: { sellerId: userId, status: 'PENDING' } }),
+    // Deals: seller must accept pending orders; buyer must confirm shipped delivery
+    prisma.barterOffer.count({ where: { receiverId: userId, status: 'PENDING' } }),
+    prisma.order.count({ where: { sellerId: userId, status: 'PENDING' } }),
+    prisma.order.count({ where: { buyerId: userId, status: 'SHIPPED' } }),
+    prisma.request.count({ where: { userId, status: 'PENDING' } }),
   ])
-  const attentionItems = [
-    pendingConnections > 0 ? { icon: '🔗', label: `${pendingConnections} connection request${pendingConnections === 1 ? '' : 's'}`, href: '/connections' } : null,
-    dueSponsorships > 0 ? { icon: '💝', label: `${dueSponsorships} sponsorship${dueSponsorships === 1 ? '' : 's'} due`, href: '/dashboard/sponsorships' } : null,
-    pendingTickets > 0 ? { icon: '🎟️', label: `${pendingTickets} ticket${pendingTickets === 1 ? '' : 's'} to verify`, href: '/dashboard/events' } : null,
-  ].filter(Boolean) as { icon: string; label: string; href: string }[]
+
+  const orderActions = sellerPendingOrders + buyerShippedOrders
+  const attentionItems: ActionQueueItem[] = [
+    pendingAppointments > 0 ? { icon: '🗓️', label: `${pendingAppointments} appointment request${pendingAppointments === 1 ? '' : 's'}`, href: '/dashboard/appointments', kind: 'appointment' } : null,
+    orderActions > 0 ? { icon: '📦', label: `${orderActions} order${orderActions === 1 ? '' : 's'} need action`, href: '/dashboard/deals', kind: 'order' } : null,
+    pendingOffers > 0 ? { icon: '🤝', label: `${pendingOffers} offer${pendingOffers === 1 ? '' : 's'} awaiting your reply`, href: '/dashboard/offers', kind: 'offer' } : null,
+    pendingRequests > 0 ? { icon: '📝', label: `${pendingRequests} pending request${pendingRequests === 1 ? '' : 's'}`, href: '/dashboard/requests', kind: 'request' } : null,
+    pendingConnections > 0 ? { icon: '🔗', label: `${pendingConnections} connection request${pendingConnections === 1 ? '' : 's'}`, href: '/connections', kind: 'connection' } : null,
+    pendingTickets > 0 ? { icon: '🎟️', label: `${pendingTickets} ticket${pendingTickets === 1 ? '' : 's'} to verify`, href: '/dashboard/events', kind: 'ticket' } : null,
+    dueSponsorships > 0 ? { icon: '💝', label: `${dueSponsorships} sponsorship${dueSponsorships === 1 ? '' : 's'} due`, href: '/dashboard/sponsorships', kind: 'sponsorship' } : null,
+  ].filter(Boolean) as ActionQueueItem[]
 
   const allStats = await Promise.all([
     prisma.project.count({ where: { userId } }),
@@ -240,9 +247,7 @@ export default async function DashboardOverview({
   ])
 
   const projects = _projects
-  const requests = _requests
-  
-  const pendingRequests = requests.filter((r: { status: string }) => r.status === 'PENDING').length
+
   const eventAttendeeCount = eventJoinerCounts.find(r => r.role === 'ATTENDEE')?._count ?? 0
   const eventVolunteerCount = eventJoinerCounts.find(r => r.role === 'VOLUNTEER')?._count ?? 0
   const totalEarnings = (sellerEarnings._sum.amount ?? 0) + (teachingEarnings._sum.amount ?? 0)
@@ -255,8 +260,7 @@ export default async function DashboardOverview({
     { label: t('services'), value: serviceCount, max: 20, color: '#14B8A6', icon: '🔧', href: '/dashboard/services' },
     { label: t('rentals'), value: rentalCount, max: 20, color: '#3B82F6', icon: '🏠', href: '/dashboard/rentals' },
     { label: t('teaching'), value: allStats[5], max: 20, color: '#EC4899', icon: '🏫', href: '/dashboard/teaching' },
-    { label: t('offers'), value: offersReceived, max: 20, color: '#F97316', icon: '🤝', href: '/dashboard/offers' },
-    { label: t('offers'), value: offersSent, max: 20, color: '#FB923C', icon: '📤', href: '/dashboard/offers' },
+    { label: t('offers'), value: offersReceived + offersSent, max: 40, color: '#F97316', icon: '🤝', href: '/dashboard/offers' },
     { label: t('events'), value: eventAttendeeCount, max: 20, color: '#6366F1', icon: '📅', href: '/dashboard/events' },
     { label: t('orders'), value: orderStats.length, max: 50, color: '#EF4444', icon: '📦', href: '/orders' },
     { label: 'Connections', value: connectionCount, max: 100, color: '#06B6D4', icon: '👥', href: '/community' },
@@ -294,6 +298,35 @@ export default async function DashboardOverview({
   const showAll = searchParams?.showAll === 'true'
   const coreQuickActions = showAll ? quickActions : quickActions.slice(0, 6)
 
+  // Keep the gauge dashboard scannable: show the 10 most actionable stats by
+  // default, the long tail collapses behind "Show All Stats".
+  const showAllStats = searchParams?.showAllStats === 'true'
+  const coreStats = showAllStats ? stats : stats.slice(0, 10)
+
+  /* Shared quick-actions block — used by both the new-user and active-user views. */
+  const renderQuickActions = () => (
+    <div className={styles.quickActions}>
+      <h3>Quick Actions</h3>
+      <div className={styles.actionButtons}>
+        {coreQuickActions.map(a => (
+          <Link key={a.label} href={a.href} className={styles.actionBtn}>
+            <span>{a.icon}</span> {a.label}
+          </Link>
+        ))}
+      </div>
+      {quickActions.length > 6 && (
+        <div className={overviewStyles.overviewSection}>
+          <Link
+            href={showAll ? '/dashboard/overview' : '/dashboard/overview?showAll=true'}
+            className={`${styles.actionBtn} ${overviewStyles.overviewBtn}`}
+          >
+            {showAll ? 'Show Less' : `Show All (${quickActions.length})`}
+          </Link>
+        </div>
+      )}
+    </div>
+  )
+
   return (
     <div className={styles.overview}>
 
@@ -304,20 +337,8 @@ export default async function DashboardOverview({
       </div>
 
       {attentionItems.length > 0 && (
-        <div className={styles.firstVisitBanner} role="status" aria-label="Needs your attention">
-          <div className={styles.firstVisitIcon}>⚡</div>
-          <div className={styles.firstVisitContent}>
-            <h3>Needs your attention</h3>
-            <div className={styles.firstVisitLinks}>
-              {attentionItems.map(a => (
-                <Link key={a.href + a.label} href={a.href} className={styles.firstVisitLink}>{a.icon} {a.label} →</Link>
-              ))}
-            </div>
-          </div>
-        </div>
+        <ActionQueue items={attentionItems} />
       )}
-
-      <DashboardWidgets />
 
       {/* Onboarding resume prompt for users who skipped before finishing */}
       {!user?.onboardingCompleted && !isNewUser && (
@@ -360,26 +381,8 @@ export default async function DashboardOverview({
             hasShop={!!user?.shopSlug}
             hasSchool={!!user?.schoolSlug}
           />
-          <div className={styles.quickActions}>
-            <h3>Quick Actions</h3>
-            <div className={styles.actionButtons}>
-              {coreQuickActions.map(a => (
-                <Link key={a.label} href={a.href} className={styles.actionBtn}>
-                  <span>{a.icon}</span> {a.label}
-                </Link>
-              ))}
-            </div>
-            {quickActions.length > 6 && (
-              <div className={overviewStyles.overviewSection}>
-                <Link
-                  href={showAll ? '/dashboard/overview' : '/dashboard/overview?showAll=true'}
-                  className={`${styles.actionBtn} ${overviewStyles.overviewBtn}`}
-                >
-                  {showAll ? 'Show Less' : `Show All (${quickActions.length})`}
-                </Link>
-              </div>
-            )}
-          </div>
+          {renderQuickActions()}
+          <DashboardWidgets />
           <ManageChannels />
           <DashboardTodo />
         </>
@@ -390,45 +393,38 @@ export default async function DashboardOverview({
           <TipCard />
 
           <div className={styles.overviewStats}>
-            {stats.map(stat => (
+            {coreStats.map(stat => (
               stat.href ? (
                 <Link key={stat.label} href={stat.href} className={styles.overviewStatCard}>
                   <div className={styles.statGauge}>
-                    <StatGauge value={stat.value} max={stat.max} color={stat.color} icon={stat.icon} size={80} />
+                    <StatGauge value={stat.value} max={stat.max} color={stat.color} icon={stat.icon} size={56} />
                   </div>
                   <span className={styles.overviewStatLabel}>{stat.label}</span>
                 </Link>
               ) : (
                 <div key={stat.label} className={`${styles.overviewStatCard} ${overviewStyles.overviewStatCard}`}>
                   <div className={styles.statGauge}>
-                    <StatGauge value={stat.value} max={stat.max} color={stat.color} icon={stat.icon} size={80} />
+                    <StatGauge value={stat.value} max={stat.max} color={stat.color} icon={stat.icon} size={56} />
                   </div>
                   <span className={styles.overviewStatLabel}>{stat.label}</span>
                 </div>
               )
             ))}
           </div>
-
-          <div className={styles.quickActions}>
-            <h3>Quick Actions</h3>
-            <div className={styles.actionButtons}>
-              {coreQuickActions.map(a => (
-                <Link key={a.label} href={a.href} className={styles.actionBtn}>
-                  <span>{a.icon}</span> {a.label}
-                </Link>
-              ))}
+          {stats.length > 10 && (
+            <div className={overviewStyles.overviewSection} style={{ marginBottom: 24, textAlign: 'center' }}>
+              <Link
+                href={showAllStats ? '/dashboard/overview' : '/dashboard/overview?showAllStats=true'}
+                className={`${styles.actionBtn} ${overviewStyles.overviewBtn}`}
+              >
+                {showAllStats ? 'Show Fewer Stats' : `Show All Stats (${stats.length})`}
+              </Link>
             </div>
-            {quickActions.length > 6 && (
-              <div className={overviewStyles.overviewSection}>
-                <Link
-                  href={showAll ? '/dashboard/overview' : '/dashboard/overview?showAll=true'}
-                  className={`${styles.actionBtn} ${overviewStyles.overviewBtn}`}
-                >
-                  {showAll ? 'Show Less' : `Show All (${quickActions.length})`}
-                </Link>
-              </div>
-            )}
-          </div>
+          )}
+
+          {renderQuickActions()}
+
+          <DashboardWidgets />
 
           <ManageChannels />
 

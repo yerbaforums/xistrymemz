@@ -207,6 +207,15 @@
   text-overflow: ellipsis;
 }
 
+.seller {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+  margin-left: auto;
+  max-width: 55%;
+}
+
 .catPill {
   font-size: 0.65rem;
   padding: 2px 6px;

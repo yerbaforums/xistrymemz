@@ -19,6 +19,7 @@ import UserDropdown from './UserDropdown'
 import LanguageRequestModal from './LanguageRequestModal'
 import { NAV, EXPLORE_GROUPS } from '@/lib/navigation'
 import { useUserPreferences } from '@/hooks/useUserPreferences'
+import Avatar from '@/components/Avatar'
 
 const LOCALES = [
   { code: 'en', label: 'EN' },
@@ -594,13 +595,7 @@ export default function Header() {
                     aria-expanded={openDropdown === 'user'}
                     aria-controls="user-menu-dropdown"
                   >
-                    {session.user.image ? (
-                      <Image src={session.user.image} alt={session.user.name || ''} fill className={styles.userAvatar} />
-                    ) : (
-                      <span className={styles.userInitial}>
-                        {(session.user.name || session.user.email || 'U')[0].toUpperCase()}
-                      </span>
-                    )}
+                    <Avatar src={session.user.image} name={session.user.name || session.user.email} size={32} className={styles.userAvatar} />
                   </button>
                   {isTraveling && (
                     <span style={{ position: 'absolute', bottom: -4, right: -4, fontSize: '11px', lineHeight: 1, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>✈️</span>

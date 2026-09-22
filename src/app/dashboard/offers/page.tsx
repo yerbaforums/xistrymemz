@@ -4,9 +4,38 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { EmptyState } from '@/components/EmptyState'
+import Avatar from '@/components/Avatar'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
+
+function OfferRow({ href, title, meta, status, counters }: {
+  href: string
+  title: string
+  meta: React.ReactNode
+  status: string
+  counters?: number
+}) {
+  const statusKey = status.toLowerCase()
+  return (
+    <Link href={href} className={styles.item}>
+      <div className={styles.itemMain}>
+        <span className={styles.itemTitle}>{title}</span>
+        <span className={styles.itemMeta}>
+          {meta}
+          {counters != null && counters > 0 && (
+            <span className={styles.counterBadge}>
+              ↩ {counters} counter{counters > 1 ? 's' : ''}
+            </span>
+          )}
+        </span>
+      </div>
+      <span className={`${styles.itemStatus} ${styles[statusKey] || ''}`}>
+        {status}
+      </span>
+    </Link>
+  )
+}
 
 export default async function DashboardOffers() {
   const session = await getServerSession(authOptions)
@@ -74,30 +103,20 @@ export default async function DashboardOffers() {
       <div className={styles.section}>
         <h2>Sent Offers</h2>
         {sentOffers.length === 0 ? (
-          <EmptyState icon="📤" title="No offers sent yet" description="Browse the marketplace to find items you'd like to trade for." action={{ label: 'Browse Marketplace', onClick: () => window.location.href = '/products' }} />
+          <EmptyState icon="📤" title="No offers sent yet" description="Browse the marketplace to find items you'd like to trade for." action={{ label: 'Browse Marketplace', href: '/products' }} />
         ) : (
           <div className={styles.list}>
             {sentOffers.map(offer => (
-              <Link 
-                key={offer.id} 
-                href={`/offers/${offer.id}`}
-                className={styles.item}
-              >
-                <div className={styles.itemMain}>
-                  <span className={styles.itemTitle}>{offer.listingTitle}</span>
-                  <span className={styles.itemMeta}>
-                    {offer.listingType} • You offered: {offer.offeredItem}
-                    {offer._count.counterOffers > 0 && (
-                      <span className={styles.counterBadge}>
-                        ↩ {offer._count.counterOffers} counter{offer._count.counterOffers > 1 ? 's' : ''}
-                      </span>
-                    )}
-                  </span>
-                </div>
-                <span className={`${styles.itemStatus} ${styles[offer.status.toLowerCase()]}`}>
-                  {offer.status}
-                </span>
-              </Link>
+              <div key={offer.id} className={styles.rowWithAvatar}>
+                <Avatar src={offer.receiver.image} name={offer.receiver.name} size={28} />
+                <OfferRow
+                  href={`/offers/${offer.id}`}
+                  title={offer.listingTitle}
+                  meta={<>{offer.listingType} • You offered: {offer.offeredItem}</>}
+                  status={offer.status}
+                  counters={offer._count.counterOffers}
+                />
+              </div>
             ))}
           </div>
         )}
@@ -106,25 +125,19 @@ export default async function DashboardOffers() {
       <div className={styles.section}>
         <h2>Received Offers</h2>
         {receivedOffers.length === 0 ? (
-          <EmptyState icon="📥" title="No offers received yet" description="Offers from other members will appear here when someone wants to trade with you." action={{ label: 'Browse Marketplace', onClick: () => window.location.href = '/products' }} />
+          <EmptyState icon="📥" title="No offers received yet" description="Offers from other members will appear here when someone wants to trade with you." action={{ label: 'Browse Marketplace', href: '/products' }} />
         ) : (
           <div className={styles.list}>
             {receivedOffers.map(offer => (
-              <Link 
-                key={offer.id} 
-                href={`/offers/${offer.id}`}
-                className={styles.item}
-              >
-                <div className={styles.itemMain}>
-                  <span className={styles.itemTitle}>{offer.listingTitle}</span>
-                  <span className={styles.itemMeta}>
-                    {offer.listingType} • They offered: {offer.offeredItem}
-                  </span>
-                </div>
-                <span className={`${styles.itemStatus} ${styles[offer.status.toLowerCase()]}`}>
-                  {offer.status}
-                </span>
-              </Link>
+              <div key={offer.id} className={styles.rowWithAvatar}>
+                <Avatar src={offer.maker.image} name={offer.maker.name} size={28} />
+                <OfferRow
+                  href={`/offers/${offer.id}`}
+                  title={offer.listingTitle}
+                  meta={<>{offer.listingType} • They offered: {offer.offeredItem}</>}
+                  status={offer.status}
+                />
+              </div>
             ))}
           </div>
         )}

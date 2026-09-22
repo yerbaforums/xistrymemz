@@ -17,6 +17,8 @@ import EntityMarker from '@/components/EntityMarker'
 import { getEntityIcon, getEntityColor } from '@/lib/entity-icons'
 import { usePassportLocation } from '@/hooks/usePassportLocation'
 import LocationCard from '@/components/LocationCard'
+import HashtagChips from '@/components/HashtagChips'
+import Avatar from '@/components/Avatar'
 
 const ENTITY_TYPES = [
   { key: '', label: 'All', icon: '🌐' },
@@ -98,16 +100,12 @@ function EntityCard({ item, mapRef, setMapVisible, onHover, onLeave }: { item: D
         <div className={styles.cardFooter}>
           {item.userName && (
             <span className={styles.userInfo}>
-              {item.userImage ? (
-                <Image src={item.userImage} alt="" width={18} height={18} className={styles.userAvatar} />
-              ) : null}
+              <Avatar src={item.userImage} name={item.userName} size={18} />
               {item.userName}
             </span>
           )}
           {item.lookingForCollaborators && <span className={styles.collabBadge}>🤝</span>}
-          {item.hashtags.slice(0, 3).map(t => (
-            <span key={t} className={styles.hashtag}>#{t}</span>
-          ))}
+          <HashtagChips tags={item.hashtags} max={3} small />
         </div>
       </div>
     </Link>
@@ -304,7 +302,7 @@ export default function DiscoverPage() {
         />
       )}
 
-      <div className={styles.searchRow} style={{ gap: 6, marginBottom: 8 }}>
+      <div className={styles.toolbar}>
         <input
           type="text"
           className={styles.searchInput}
@@ -312,9 +310,24 @@ export default function DiscoverPage() {
           value={query}
           onChange={e => setQuery(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && fetchResults(1, false)}
-          style={{ padding: '6px 10px', fontSize: '0.85rem', flex: 1, minWidth: 0 }}
         />
-        <button className={styles.searchBtn} onClick={() => fetchResults(1, false)} style={{ padding: '8px 12px', fontSize: '0.85rem', cursor: 'pointer', borderRadius: 6, background: 'var(--accent-primary)', color: 'var(--bg-primary)', border: 'none', fontWeight: 600 }} aria-label="Search">🔍</button>
+        <button className={styles.searchBtn} onClick={() => fetchResults(1, false)} aria-label="Search">🔍</button>
+        <select className={styles.sortSelect} value={sortBy} onChange={e => setSortBy(e.target.value)} aria-label="Sort results">
+          <option value="newest">🕐 Newest</option>
+          <option value="popular">🔥 Most Popular</option>
+          <option value="nearest">📍 Nearest</option>
+        </select>
+        <div className={styles.viewToggle}>
+          <Button variant="ghost" className={`${styles.viewBtn} ${mapVisible ? styles.viewBtnActive : ''}`} onClick={() => { setMapVisible(v => !v); setConstellationVisible(false) }}>
+            {mapVisible ? '🙈' : '🗺️'} {mapVisible ? 'Hide Map' : 'Map'}
+          </Button>
+          <Button variant="ghost" className={`${styles.viewBtn} ${calVisible ? styles.viewBtnActive : ''}`} onClick={() => { setCalVisible(v => !v); setConstellationVisible(false) }}>
+            📅 {calVisible ? 'Hide Calendar' : 'Calendar'}
+          </Button>
+          <Button variant="ghost" className={`${styles.viewBtn} ${constellationVisible ? styles.viewBtnActive : ''}`} onClick={() => setConstellationVisible(v => !v)}>
+            🌌 {constellationVisible ? 'Hide Stars' : 'Stars'}
+          </Button>
+        </div>
       </div>
 
       <div className={styles.filterRow}>
@@ -329,44 +342,25 @@ export default function DiscoverPage() {
               {t.icon} {t.label}
             </Button>
           ))}
+          {INTENT_FILTERS.filter(f => f.key).map(f => (
+            <Button
+              key={f.key}
+              variant="secondary"
+              className={`${styles.intentPill} ${intentFilter === f.key ? styles.intentPillActive : ''}`}
+              onClick={() => { setIntentFilter(f.key); setPage(1) }}
+            >
+              {f.label}
+            </Button>
+          ))}
         </div>
-      </div>
-
-      <div className={styles.filterRow}>
-        {INTENT_FILTERS.map(f => (
-          <Button
-            key={f.key}
-            variant="secondary"
-            className={`${styles.intentPill} ${intentFilter === f.key ? styles.intentPillActive : ''}`}
-            onClick={() => { setIntentFilter(f.key); setPage(1) }}
-          >
-            {f.label}
-          </Button>
-        ))}
         <input
           type="text"
           className={styles.hashtagInput}
-          placeholder="Filter by hashtag..."
+          placeholder="Filter by #hashtag..."
           value={hashtagFilter}
           onChange={e => setHashtagFilter(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && fetchResults(1)}
         />
-        <select className={styles.sortSelect} value={sortBy} onChange={e => setSortBy(e.target.value)}>
-          <option value="newest">🕐 Newest</option>
-          <option value="popular">🔥 Most Popular</option>
-          <option value="nearest">📍 Nearest</option>
-        </select>
-        <div className={styles.viewToggle}>
-          <Button variant="ghost" className={`${styles.viewBtn} ${mapVisible ? styles.viewBtnActive : ''}`} onClick={() => { setMapVisible(v => !v); setConstellationVisible(false) }}>
-            {mapVisible ? '🙈' : '🗺️'} {mapVisible ? 'Hide Map' : 'Show Map'}
-          </Button>
-          <Button variant="ghost" className={`${styles.viewBtn} ${calVisible ? styles.viewBtnActive : ''}`} onClick={() => { setCalVisible(v => !v); setConstellationVisible(false) }}>
-            {calVisible ? '📅' : '📅'} {calVisible ? 'Hide Calendar' : 'Show Calendar'}
-          </Button>
-          <Button variant="ghost" className={`${styles.viewBtn} ${constellationVisible ? styles.viewBtnActive : ''}`} onClick={() => setConstellationVisible(v => !v)}>
-            🌌 {constellationVisible ? 'Hide Constellation' : 'Constellation'}
-          </Button>
-        </div>
       </div>
 
       {constellationVisible && (

@@ -73,6 +73,17 @@ html {
 
   --space-7: 28px;
 
+  /* Control sizing — sleek compact lists & toolbars.
+     Use these tokens for all new dashboard controls:
+     --control-toolbar: full-height toolbar rows (search + controls)
+     --control-input:  text inputs / selects
+     --control-pill:   filter pills / small buttons
+     --control-gap:    horizontal rhythm between controls            */
+  --control-toolbar: 36px;
+  --control-input: 32px;
+  --control-pill: 28px;
+  --control-gap: 6px;
+
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-base: 1rem;

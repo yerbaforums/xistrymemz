@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react'
 import { usePathname, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Fragment } from 'react'
 import Link from 'next/link'
 import { SkeletonCard } from '@/components/Skeleton'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
@@ -68,19 +68,30 @@ export default function DashboardLayout({
   }
 
   const segments = pathname.split('/').filter(Boolean)
-  const pageLabel = BREADCRUMB_LABELS[segments[1]] || segments[1]?.replace(/^./, c => c.toUpperCase()) || 'Dashboard'
+  // Walk every segment past /dashboard so nested routes (e.g. /dashboard/projects/[id])
+  // get correct crumbs instead of a flat second-level label. Object IDs are skipped.
+  const crumbs = segments.slice(1)
+    .filter(seg => seg.length <= 20)
+    .map((seg, i) => ({
+      href: `/${segments.slice(1, i + 2).join('/')}`,
+      label: BREADCRUMB_LABELS[seg] || seg.replace(/^./, c => c.toUpperCase()),
+    }))
 
   return (
     <>
       <div className={styles.main}>
         <nav className={styles.breadcrumbs}>
           <Link href="/dashboard" className={styles.breadcrumbLink}>Dashboard</Link>
-          {pageLabel !== 'Dashboard' && (
-            <>
+          {crumbs.map((crumb, i) => (
+            <Fragment key={crumb.href}>
               <span className={styles.breadcrumbSep}> / </span>
-              <span className={styles.breadcrumbCurrent}>{pageLabel}</span>
-            </>
-          )}
+              {i === crumbs.length - 1 ? (
+                <span className={styles.breadcrumbCurrent}>{crumb.label}</span>
+              ) : (
+                <Link href={crumb.href} className={styles.breadcrumbLink}>{crumb.label}</Link>
+              )}
+            </Fragment>
+          ))}
         </nav>
         <ErrorBoundary>{children}</ErrorBoundary>
       </div>

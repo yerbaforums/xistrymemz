@@ -34,17 +34,20 @@ export default function BottomNav() {
     }
   }
 
+  // Five slots max: Home, Discover, Create (FAB), Community, Profile/Sign In.
+  // Photos lives in the sidebar/drawer under Community — it doesn't need its own
+  // slot on a mobile bottom bar, so we avoid the duplicate-tab feel.
   const allItems: NavItem[] = isAuthenticated ? [
     { href: '/', label: 'Home', icon: '🏠' },
-    { href: '/photos', label: 'Photos', icon: '📸' },
-    { href: null, label: 'Create', icon: '+', isFab: true, action: handleCreate },
     { href: '/discover', label: 'Discover', icon: '🌐' },
+    { href: null, label: 'Create', icon: '+', isFab: true, action: handleCreate },
+    { href: '/community', label: 'Members', icon: '👥' },
     { href: session?.user?.username ? `/profile/${session.user.username}` : '/profile', label: 'Profile', icon: '👤' },
   ] : [
     { href: '/', label: 'Home', icon: '🏠' },
-    { href: '/photos', label: 'Photos', icon: '📸' },
-    { href: null, label: 'Create', icon: '+', isFab: true, action: handleCreate },
     { href: '/discover', label: 'Discover', icon: '🌐' },
+    { href: null, label: 'Create', icon: '+', isFab: true, action: handleCreate },
+    { href: '/community', label: 'Members', icon: '👥' },
     { href: '/auth/login', label: 'Sign In', icon: '🔑' },
   ]
   // Hidden tools disappear from the bottom bar too (except Home + Create).
@@ -68,6 +71,7 @@ export default function BottomNav() {
         const getIsActive = () => {
           if (item.href === '/') return pathname === '/' || pathname === '/dashboard/overview'
           if (item.label === 'Profile') return pathname?.startsWith('/profile') || pathname?.startsWith('/settings')
+          if (item.label === 'Members') return pathname?.startsWith('/community') || pathname?.startsWith('/connections')
           if (!item.href) return false
           return pathname === item.href || pathname?.startsWith(item.href + '/')
         }

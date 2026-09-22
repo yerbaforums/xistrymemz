@@ -40,6 +40,17 @@ const ENTITY_FILTERS: { key: EntityFilter; label: string; icon: string }[] = [
   { key: 'groups', label: 'Groups', icon: '👥' },
 ]
 
+const ENTITY_SHORT: Record<string, string> = {
+  posts: 'post', products: 'prod', events: 'evt', services: 'svc',
+  schoolContents: 'sch', plans: 'plan', requests: 'req', groups: 'grp',
+  forumPosts: 'forum', groupPosts: 'grp', projects: 'proj',
+}
+
+const entityLabel = (key: string, count: number) => {
+  const label = ENTITY_SHORT[key]
+  return label ? `${count} ${label}` : ''
+}
+
 function HashtagsPage() {
   const [tags, setTags] = useState<HashtagItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -72,15 +83,6 @@ function HashtagsPage() {
 
   const totalEntities = (t: HashtagItem) =>
     Object.values(t.entities).reduce((sum, count) => sum + count, 0)
-
-  const entityLabel = (key: string, count: number) => {
-    const labels: Record<string, string> = {
-      products: 'pr', events: 'ev', posts: 'po',
-      services: 'sv', schoolContents: 'sc', projects: 'pr',
-      requests: 'rq', groups: 'gr',
-    }
-    return labels[key] ? `${count}${labels[key]}` : ''
-  }
 
   return (
     <div className={styles.page}>

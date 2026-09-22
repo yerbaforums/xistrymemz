@@ -18,50 +18,50 @@ export async function GET(request: Request) {
         case 'shop': {
           const rows = await prisma.user.findMany({
             where: { shopSlug: { not: null }, shopName: { not: '' }, ...(q ? { shopName: whereName } : {}), ...(cat ? { shopCategory: cat } : {}) },
-            select: { id: true, shopName: true, shopImage: true, shopSlug: true, shopCategory: true, location: true, createdAt: true, _count: { select: { products: true } } },
+            select: { id: true, shopName: true, shopImage: true, shopSlug: true, shopCategory: true, location: true, createdAt: true, name: true, image: true, _count: { select: { products: true } } },
             take, orderBy: { createdAt: 'desc' }
           })
-          return rows.map(s => ({ id: s.id, title: s.shopName || 'Shop', image: s.shopImage, url: `/shop/${s.shopSlug}`, meta: `📍 ${s.location || 'Location unknown'}`, type: 'shop', category: s.shopCategory, extra: `${s._count.products} products`, createdAt: s.createdAt.toISOString() }))
+          return rows.map(s => ({ id: s.id, title: s.shopName || 'Shop', image: s.shopImage, url: `/shop/${s.shopSlug}`, meta: `📍 ${s.location || 'Location unknown'}`, type: 'shop', category: s.shopCategory, extra: `${s._count.products} products`, owner: s.name || undefined, ownerImage: s.image, createdAt: s.createdAt.toISOString() }))
         }
         case 'product': {
           const rows = await prisma.product.findMany({
             where: { published: true, ...(q ? { title: whereName } : {}), ...(cat ? { category: cat } : {}) },
-            select: { id: true, title: true, imageUrl: true, price: true, category: true, condition: true, location: true, createdAt: true, user: { select: { name: true } } },
+            select: { id: true, title: true, imageUrl: true, price: true, category: true, condition: true, location: true, createdAt: true, user: { select: { name: true, image: true } }, hashtags: { select: { hashtag: { select: { tag: true } } } } },
             take, orderBy: { createdAt: 'desc' }
           })
-          return rows.map(p => ({ id: p.id, title: p.title, image: p.imageUrl, url: `/products/${p.id}`, meta: p.price ? `$${p.price}` : undefined, type: 'product', category: p.category, extra: p.condition || undefined, location: p.location || undefined, owner: p.user.name || undefined, createdAt: p.createdAt.toISOString() }))
+          return rows.map(p => ({ id: p.id, title: p.title, image: p.imageUrl, url: `/products/${p.id}`, meta: p.price ? `$${p.price}` : undefined, type: 'product', category: p.category, extra: p.condition || undefined, location: p.location || undefined, owner: p.user.name || undefined, ownerImage: p.user.image, hashtags: p.hashtags.map(h => h.hashtag.tag), createdAt: p.createdAt.toISOString() }))
         }
         case 'service': {
           const rows = await prisma.serviceOffering.findMany({
             where: { isActive: true, ...(q ? { title: whereName } : {}), ...(cat ? { category: cat } : {}) },
-            select: { id: true, title: true, imageUrl: true, price: true, category: true, duration: true, createdAt: true, user: { select: { name: true } } },
+            select: { id: true, title: true, imageUrl: true, price: true, category: true, duration: true, createdAt: true, user: { select: { name: true, image: true } }, hashtags: { select: { hashtag: { select: { tag: true } } } } },
             take, orderBy: { createdAt: 'desc' }
           })
-          return rows.map(s => ({ id: s.id, title: s.title, image: s.imageUrl, url: `/services/${s.id}`, meta: s.price ? `$${s.price}` : undefined, type: 'service', category: s.category, extra: `${s.duration} min`, owner: s.user.name || undefined, createdAt: s.createdAt.toISOString() }))
+          return rows.map(s => ({ id: s.id, title: s.title, image: s.imageUrl, url: `/services/${s.id}`, meta: s.price ? `$${s.price}` : undefined, type: 'service', category: s.category, extra: `${s.duration} min`, owner: s.user.name || undefined, ownerImage: s.user.image, hashtags: s.hashtags.map(h => h.hashtag.tag), createdAt: s.createdAt.toISOString() }))
         }
         case 'rental': {
           const rows = await prisma.product.findMany({
             where: { published: true, type: 'RENTAL', ...(q ? { title: whereName } : {}) },
-            select: { id: true, title: true, imageUrl: true, rentalDaily: true, rentalWeekly: true, rentalMonthly: true, rentalDeposit: true, category: true, location: true, createdAt: true },
+            select: { id: true, title: true, imageUrl: true, rentalDaily: true, rentalWeekly: true, rentalMonthly: true, rentalDeposit: true, category: true, location: true, createdAt: true, hashtags: { select: { hashtag: { select: { tag: true } } } } },
             take, orderBy: { createdAt: 'desc' }
           })
-          return rows.map(r => ({ id: r.id, title: r.title, image: r.imageUrl, url: `/products/${r.id}`, meta: r.rentalDaily ? `$${r.rentalDaily}/day` : undefined, type: 'rental', category: r.category || undefined, extra: r.rentalWeekly ? `$${r.rentalWeekly}/wk` : r.rentalMonthly ? `$${r.rentalMonthly}/mo` : undefined, location: r.location || undefined, createdAt: r.createdAt.toISOString() }))
+          return rows.map(r => ({ id: r.id, title: r.title, image: r.imageUrl, url: `/products/${r.id}`, meta: r.rentalDaily ? `$${r.rentalDaily}/day` : undefined, type: 'rental', category: r.category || undefined, extra: r.rentalWeekly ? `$${r.rentalWeekly}/wk` : r.rentalMonthly ? `$${r.rentalMonthly}/mo` : undefined, location: r.location || undefined, hashtags: r.hashtags.map(h => h.hashtag.tag), createdAt: r.createdAt.toISOString() }))
         }
         case 'event': {
           const rows = await prisma.event.findMany({
             where: { ...(q ? { title: whereName } : {}), ...(cat ? { eventCategory: cat } : {}) },
-            select: { id: true, title: true, eventDate: true, eventCategory: true, location: true, organizer: { select: { name: true } } },
+            select: { id: true, title: true, eventDate: true, eventCategory: true, location: true, organizer: { select: { name: true, image: true } }, eventHashtags: { select: { hashtag: { select: { tag: true } } } } },
             take, orderBy: { eventDate: 'desc' }
           })
-          return rows.map(e => ({ id: e.id, title: e.title, image: null, url: `/events/${e.id}`, meta: e.eventDate ? new Date(e.eventDate).toLocaleDateString() : undefined, type: 'event', category: e.eventCategory || undefined, extra: e.location || undefined, owner: e.organizer.name || undefined, createdAt: e.eventDate ? new Date(e.eventDate).toISOString() : undefined }))
+          return rows.map(e => ({ id: e.id, title: e.title, image: null, url: `/events/${e.id}`, meta: e.eventDate ? new Date(e.eventDate).toLocaleDateString() : undefined, type: 'event', category: e.eventCategory || undefined, extra: e.location || undefined, owner: e.organizer.name || undefined, ownerImage: e.organizer.image, hashtags: e.eventHashtags.map(h => h.hashtag.tag), createdAt: e.eventDate ? new Date(e.eventDate).toISOString() : undefined }))
         }
         case 'project': {
           const rows = await prisma.project.findMany({
             where: { published: true, ...(q ? { title: whereName } : {}) },
-            select: { id: true, title: true, imageUrl: true, description: true, goals: true, createdAt: true, user: { select: { name: true } } },
+            select: { id: true, title: true, imageUrl: true, description: true, goals: true, createdAt: true, user: { select: { name: true, image: true } }, hashtags: { select: { hashtag: { select: { tag: true } } } } },
             take, orderBy: { createdAt: 'desc' }
           })
-          return rows.map(p => ({ id: p.id, title: p.title, image: p.imageUrl, url: `/projects/${p.id}`, meta: p.description?.slice(0, 80) || undefined, type: 'project', category: undefined, owner: p.user.name || undefined, createdAt: p.createdAt.toISOString() }))
+          return rows.map(p => ({ id: p.id, title: p.title, image: p.imageUrl, url: `/projects/${p.id}`, meta: p.description?.slice(0, 80) || undefined, type: 'project', category: undefined, owner: p.user.name || undefined, ownerImage: p.user.image, hashtags: p.hashtags.map(h => h.hashtag.tag), createdAt: p.createdAt.toISOString() }))
         }
         case 'member': {
           const rows = await prisma.user.findMany({
@@ -69,15 +69,15 @@ export async function GET(request: Request) {
             select: { id: true, name: true, image: true, username: true, location: true, bio: true, userClass: true, createdAt: true },
             take, orderBy: { createdAt: 'desc' }
           })
-          return rows.map(u => ({ id: u.id, title: u.name || 'Unknown', image: u.image, url: u.username ? `/profile/${u.username}` : `/profile/${u.id}`, meta: u.location || undefined, type: 'member', category: u.userClass || undefined, extra: u.bio?.slice(0, 80) || undefined, createdAt: u.createdAt.toISOString() }))
+          return rows.map(u => ({ id: u.id, title: u.name || 'Unknown', image: u.image, url: u.username ? `/profile/${u.username}` : `/profile/${u.id}`, meta: u.location || undefined, type: 'member', category: u.userClass || undefined, extra: u.bio?.slice(0, 80) || undefined, owner: u.name || undefined, ownerImage: u.image, createdAt: u.createdAt.toISOString() }))
         }
         case 'request': {
           const rows = await prisma.request.findMany({
             where: { isPublic: true, ...(q ? { title: whereName } : {}) },
-            select: { id: true, title: true, goalAmount: true, currentFunding: true, category: true, createdAt: true, user: { select: { name: true } } },
+            select: { id: true, title: true, goalAmount: true, currentFunding: true, category: true, createdAt: true, user: { select: { name: true, image: true } }, hashtags: { select: { hashtag: { select: { tag: true } } } } },
             take, orderBy: { createdAt: 'desc' }
           })
-          return rows.map(r => ({ id: r.id, title: r.title, image: null, url: `/requests/${r.id}`, meta: r.goalAmount ? `$${r.currentFunding || 0} / $${r.goalAmount}` : undefined, type: 'request', category: r.category || undefined, owner: r.user.name || undefined, createdAt: r.createdAt.toISOString() }))
+          return rows.map(r => ({ id: r.id, title: r.title, image: null, url: `/requests/${r.id}`, meta: r.goalAmount ? `$${r.currentFunding || 0} / $${r.goalAmount}` : undefined, type: 'request', category: r.category || undefined, owner: r.user.name || undefined, ownerImage: r.user.image, hashtags: r.hashtags.map(h => h.hashtag.tag), createdAt: r.createdAt.toISOString() }))
         }
         default: return []
       }

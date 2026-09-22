@@ -13,6 +13,7 @@ export async function GET(request: Request) {
     const category = searchParams.get('category')
     const type = searchParams.get('type')
     const location = searchParams.get('location')
+    const q = searchParams.get('q')?.trim()
     const shopSlug = searchParams.get('shopSlug')
     const userId = searchParams.get('userId')
     const localOnly = searchParams.get('localOnly') === 'true'
@@ -64,6 +65,14 @@ export async function GET(request: Request) {
     if (location && location !== 'ALL') {
       where.location = location
     }
+    if (q) {
+      where.OR = [
+        { title: { contains: q, mode: 'insensitive' } },
+        { description: { contains: q, mode: 'insensitive' } },
+        { category: { contains: q, mode: 'insensitive' } },
+        { hashtags: { some: { hashtag: { tag: { contains: q, mode: 'insensitive' } } } } },
+      ]
+    }
     if (shopSlug) {
       where.user = { shopSlug }
     }
@@ -80,7 +89,7 @@ export async function GET(request: Request) {
         take: pageSize,
         skip,
         include: {
-          user: { select: { name: true, location: true, neighborhood: true, shopSlug: true } },
+          user: { select: { name: true, image: true, location: true, neighborhood: true, shopSlug: true } },
           hashtags: { include: { hashtag: { select: { id: true, tag: true } } } },
         },
         orderBy: [

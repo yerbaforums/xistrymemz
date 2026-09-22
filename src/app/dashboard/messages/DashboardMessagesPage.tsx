@@ -4,13 +4,13 @@ import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState, useRef, Suspense } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import styles from '../../messages/messages.module.css'
 import { getUserProfileUrl } from '@/lib/utils'
 import TranslateButton from '@/components/TranslateButton'
 import { SkeletonList } from '@/components/Skeleton'
 import Loading from '@/components/Loading'
 import { EmptyState } from '@/components/EmptyState'
+import Avatar from '@/components/Avatar'
 
 import InboxView from '@/components/InboxView'
 
@@ -247,11 +247,7 @@ function DashboardMessagesContent() {
                   }}
                 >
                   <div className={styles.conversationAvatar}>
-                    {conv.user.image ? (
-                      <Image src={conv.user.image} alt={conv.user.name || 'User'} width={40} height={40} />
-                    ) : (
-                      <span>{conv.user.name?.[0] || conv.user.email[0].toUpperCase()}</span>
-                    )}
+                    <Avatar src={conv.user.image} name={conv.user.name || conv.user.email} size={40} />
                   </div>
                   <div className={styles.conversationInfo}>
                     <div className={styles.conversationName}>
@@ -279,11 +275,7 @@ function DashboardMessagesContent() {
               <div className={styles.chatHeader}>
                 <div className={styles.chatUserInfo}>
                   <div className={styles.chatAvatar}>
-                    {selectedUser.image ? (
-                      <Image src={selectedUser.image} alt={selectedUser.name || 'User'} width={40} height={40} />
-                    ) : (
-                      <span>{selectedUser.name?.[0] || selectedUser.email[0].toUpperCase()}</span>
-                    )}
+                    <Avatar src={selectedUser.image} name={selectedUser.name || selectedUser.email} size={40} />
                   </div>
                   <div>
                     <h3>{selectedUser.name || 'Anonymous User'}</h3>
@@ -318,11 +310,7 @@ function DashboardMessagesContent() {
                     >
                       {!isOwn && (
                         <div className={styles.messageAvatar}>
-                          {message.sender?.image ? (
-                            <Image src={message.sender.image} alt="" width={24} height={24} />
-                          ) : (
-                            <span>{message.sender?.name?.[0] || '?'}</span>
-                          )}
+                          <Avatar src={message.sender?.image} name={message.sender?.name} size={24} />
                         </div>
                       )}
                       <div className={styles.messageBubble}>

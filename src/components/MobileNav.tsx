@@ -25,10 +25,10 @@ const BROWSE_PRIMARY = [
 ]
 
 const STUDIO_PRIMARY = [
+  { href: '/dashboard/overview', icon: '📊', label: 'Overview' },
   { href: '/dashboard/deals', icon: '🤝', label: 'My Deals' },
-  { href: '/dashboard/requests', icon: '📝', label: 'My Requests' },
+  { href: '/dashboard/appointments', icon: '🗓️', label: 'Appointments' },
   { href: '/dashboard/projects', icon: '🚀', label: 'My Projects' },
-  { href: '/dashboard/appointments', icon: '🗓️', label: 'Planner' },
   { href: '/dashboard/messages', icon: '💬', label: 'Messages' },
   { href: '/orders', icon: '📦', label: 'Orders' },
   { href: '/profile/settings', icon: '⚙️', label: 'Settings' },

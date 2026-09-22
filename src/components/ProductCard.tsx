@@ -9,6 +9,7 @@ import { useSiteSettings } from '@/hooks/useSiteSettings'
 import type { Product } from '@/types/product'
 import ViewCount from '@/components/ViewCount'
 import StarButton from '@/components/StarButton'
+import Avatar from '@/components/Avatar'
 import styles from './ProductCard.module.css'
 
 interface ProductCardProps {
@@ -164,7 +165,10 @@ const ProductCard = memo(function ProductCard({
 
         <div className={styles.meta}>
           <span>{product.isGlobal ? '🌍 Global' : `📍 ${product.location || 'Local'}`}</span>
-          <span>by {product.user.name || 'Unknown'}</span>
+          <span className={styles.seller}>
+            <Avatar src={product.user?.image} name={product.user?.name} size={16} />
+            {product.user?.name || 'Unknown'}
+          </span>
         </div>
 
         {product.hashtags && product.hashtags.length > 0 && (
