@@ -2,6 +2,19 @@ import { apiSuccess, apiError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { getTrendingHashtags, type HashtagEntityType } from '@/services/hashtagService'
 
+/** UI entity filter keys (hashtags page) → service entity types (uppercase). */
+const ENTITY_KEY_MAP: Record<string, HashtagEntityType> = {
+  posts: 'POST',
+  products: 'PRODUCT',
+  events: 'EVENT',
+  services: 'SERVICE',
+  schoolContents: 'SCHOOLCONTENT',
+  projects: 'PROJECT',
+  requests: 'REQUEST',
+  groups: 'GROUP',
+  blogPosts: 'BLOGPOST',
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -21,7 +34,8 @@ export async function GET(request: Request) {
     }
 
     if (mode === 'trending') {
-      const enriched = await getTrendingHashtags(7, limit, (entity as HashtagEntityType) || undefined)
+      const entityType = entity ? ENTITY_KEY_MAP[entity] : undefined
+      const enriched = await getTrendingHashtags(7, limit, entityType)
       if (entity) {
         return apiSuccess({ hashtags: enriched.filter(h => (h.entities as Record<string, number>)[entity] > 0) })
       }

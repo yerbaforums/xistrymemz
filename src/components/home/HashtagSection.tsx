@@ -25,7 +25,7 @@ export default function HashtagSection({ tags }: Props) {
 
   if (tags.length === 0) return null
 
-  const maxCount = Math.max(...tags.map(t => t.postCount))
+  const maxCount = Math.max(...tags.map(t => t.postCount)) || 1
   const totalEntities = (t: HashtagEntity) =>
     (t.entities?.posts || 0) + (t.entities?.products || 0) + (t.entities?.events || 0) +
     (t.entities?.forumPosts || 0) + (t.entities?.groupPosts || 0)

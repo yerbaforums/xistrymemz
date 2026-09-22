@@ -147,7 +147,7 @@ function HashtagsPage() {
       ) : sorted.length > 0 ? (
         <div className={styles.cloud}>
           {sorted.map(h => {
-            const maxCount = Math.max(...sorted.map(t => t.postCount))
+            const maxCount = Math.max(...sorted.map(t => t.postCount)) || 1
             const size = 0.8 + (h.postCount / maxCount) * 0.6
             return (
               <Link
