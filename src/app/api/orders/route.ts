@@ -2,6 +2,7 @@ import { apiError, apiServerError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { createNotification } from '@/services/notificationService'
 import { Prisma } from '@prisma/client'
 import { hasVerifiedEmail } from '@/lib/verified-email'
 
@@ -117,6 +118,20 @@ export async function POST(request: Request) {
         rentalEnd: rentalEnd ?? null,
       }
     })
+
+    // New orders notify the seller (pref-gated inside; never fails creation).
+    try {
+      await createNotification({
+        type: 'ORDER_CREATED',
+        userId: sellerId,
+        actorId: session.user.id,
+        entityId: order.id,
+        entityType: 'ORDER',
+        title: 'New order received',
+        message: `${session.user.name || 'A buyer'} placed an order for $${amount} ${currency}`,
+        link: `/orders/${order.id}`,
+      }).catch(() => null)
+    } catch { /* notifications never fail order creation */ }
 
     return NextResponse.json({ success: true, order }, { status: 201 })
   } catch (error) {

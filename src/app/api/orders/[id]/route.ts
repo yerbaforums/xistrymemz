@@ -2,13 +2,14 @@ import { apiError, apiServerError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { createNotification } from '@/services/notificationService'
 import { Prisma } from '@prisma/client'
 
 export const dynamic = 'force-dynamic'
 
 const orderInclude = {
-  buyer: { select: { id: true, name: true, username: true, image: true, email: true, donationAddress: true } },
-  seller: { select: { id: true, name: true, username: true, image: true, shopSlug: true, email: true, donationAddress: true } },
+  buyer: { select: { id: true, name: true, username: true, image: true, donationAddress: true } },
+  seller: { select: { id: true, name: true, username: true, image: true, shopSlug: true, donationAddress: true } },
   product: { select: { id: true, title: true, description: true, imageUrl: true, sellerPayoutAddress: true, sellerCryptoCurrency: true } },
   courierService: { select: { id: true, name: true, serviceType: true, basePrice: true, availableAreas: true } }
 } satisfies Prisma.OrderInclude
@@ -80,6 +81,27 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const updateData: Prisma.OrderUpdateInput = {}
 
     switch (action) {
+      case 'accept_order': {
+        if (order.sellerId !== session.user.id) {
+          return apiError('Only the seller can accept an order', 400)
+        }
+        if (order.status !== 'PENDING') {
+          return apiError('Order must be PENDING to accept', 400)
+        }
+        updateData.acceptedAt = new Date()
+        break
+      }
+      case 'decline_order': {
+        if (order.sellerId !== session.user.id) {
+          return apiError('Only the seller can decline an order', 400)
+        }
+        if (order.status !== 'PENDING') {
+          return apiError('Order must be PENDING to decline', 400)
+        }
+        updateData.status = 'CANCELLED'
+        if (notes) updateData.notes = notes
+        break
+      }
       case 'mark_paid': {
         if (order.buyerId !== session.user.id) {
           return apiError('Only the buyer can mark an order as paid', 400)
@@ -214,9 +236,60 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       include: orderInclude
     })
 
+    // Notify the counterparty (pref-gated inside; never fails the update).
+    try {
+      const actorId = session.user.id as string
+      const note = orderNotificationFor(action, updatedOrder.id, actorId === updatedOrder.buyerId ? 'buyer' : 'seller')
+      if (note) {
+        const targetId = actorId === updatedOrder.buyerId ? updatedOrder.sellerId : updatedOrder.buyerId
+        await createNotification({
+          type: 'ORDER_UPDATE',
+          userId: targetId,
+          actorId,
+          entityId: updatedOrder.id,
+          entityType: 'ORDER',
+          title: note.title,
+          message: note.message,
+          link: `/orders/${updatedOrder.id}`,
+        }).catch(() => null)
+      }
+    } catch { /* notifications never fail order updates */ }
+
     return NextResponse.json({ success: true, order: updatedOrder })
   } catch (error) {
     console.error('Error updating order:', error)
     return apiServerError(error)
+  }
+}
+function orderNotificationFor(
+  action: string,
+  orderId: string,
+  actorRole: 'buyer' | 'seller',
+): { title: string; message: string } | null {
+  const short = orderId.slice(0, 8)
+  switch (action) {
+    case 'mark_paid':
+      return { title: 'Order paid', message: `The buyer marked order #${short} as paid — please verify and ship.` }
+    case 'accept_order':
+      return { title: 'Order accepted', message: `Good news — the seller accepted your order. Please complete payment.` }
+    case 'decline_order':
+      return { title: 'Order declined', message: 'The seller declined this order. Your money was never moved — no action needed.' }
+    case 'ship':
+      return { title: 'Order shipped', message: 'Your order is on its way — confirm receipt when it arrives.' }
+    case 'deliver':
+      return { title: 'Order completed', message: 'The buyer confirmed delivery. Consider leaving a review.' }
+    case 'cancel':
+      return {
+        title: 'Order cancelled',
+        message: actorRole === 'buyer' ? 'The buyer cancelled this order.' : 'The seller cancelled this order.',
+      }
+    case 'courier_accept':
+      return { title: 'Courier accepted', message: 'The courier accepted your delivery.' }
+    case 'courier_pickup':
+      return { title: 'Courier picked up', message: 'Your package was picked up and is in transit.' }
+    case 'courier_delivered':
+      return { title: 'Courier delivered', message: 'The courier marked your package as delivered.' }
+    default:
+      return null
   }
 }

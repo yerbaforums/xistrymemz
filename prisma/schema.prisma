@@ -1709,6 +1709,7 @@ model Order {
   amount      Float
   currency    String  @default("USD")
   status      String  @default("PENDING") // PENDING, PAID, SHIPPED, DELIVERED, CANCELLED
+  acceptedAt  DateTime? // seller confirmed they will fulfill (before payment)
   description String?
   notes       String? // Order notes
   quantity    Int     @default(1)

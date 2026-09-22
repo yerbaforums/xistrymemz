@@ -22,6 +22,7 @@ interface Order {
   courierFee: number | null
   deliveryAddress: string | null
   trackingNumber: string | null
+  acceptedAt: string | null
   completedAt: string | null
   createdAt: string
   rentalStart: string | null
@@ -413,6 +414,12 @@ export default function OrdersPage() {
 
               {selectedOrder.seller.id === session?.user?.id && (
                 <>
+                  {selectedOrder.status === 'PENDING' && !selectedOrder.acceptedAt && (
+                    <>
+                      <Button className={styles.shipBtn} disabled={updating} onClick={() => updateOrder('accept_order')}>Accept Order</Button>
+                      <Button className={styles.cancelBtn} disabled={updating} onClick={() => updateOrder('decline_order')}>Decline</Button>
+                    </>
+                  )}
                   {selectedOrder.status === 'PAID' && (
                     <Button className={styles.shipBtn} disabled={updating} onClick={() => updateOrder('ship')}>Mark Shipped</Button>
                   )}

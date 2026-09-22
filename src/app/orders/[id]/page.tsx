@@ -28,12 +28,13 @@ interface Order {
   courierFee: number | null
   deliveryAddress: string | null
   trackingNumber: string | null
+  acceptedAt: string | null
   completedAt: string | null
   createdAt: string
   updatedAt: string
   product: { id: string; title: string; imageUrl: string | null; description: string | null } | null
-  buyer: { id: string; name: string | null; email: string }
-  seller: { id: string; name: string | null; email: string }
+  buyer: { id: string; name: string | null; email?: string }
+  seller: { id: string; name: string | null; email?: string }
   courier: { id: string; name: string | null } | null
   courierService: { id: string; name: string; serviceType: string; availableAreas: string[] } | null
 }
@@ -371,7 +372,6 @@ export default function OrderDetailPage() {
                 <span className={styles.partyRole}>Buyer</span>
                 <div className={styles.partyInfo}>
                   <span className={styles.partyName}>{order.buyer.name || 'Unknown'}</span>
-                  <span className={styles.partyEmail}>{order.buyer.email}</span>
                 </div>
                 {order.buyer.id !== session?.user?.id && (
                   <Button onClick={() => openMessageModal({ id: order.buyer.id, name: order.buyer.name })} className={styles.messageBtn}>
@@ -383,7 +383,6 @@ export default function OrderDetailPage() {
                 <span className={styles.partyRole}>Seller</span>
                 <div className={styles.partyInfo}>
                   <span className={styles.partyName}>{order.seller.name || 'Unknown'}</span>
-                  <span className={styles.partyEmail}>{order.seller.email}</span>
                 </div>
                 {order.seller.id !== session?.user?.id && (
                   <Button onClick={() => openMessageModal({ id: order.seller.id, name: order.seller.name })} className={styles.messageBtn}>
@@ -413,9 +412,19 @@ export default function OrderDetailPage() {
               {order.buyer.id === session?.user?.id && (
                 <>
                   {order.status === 'PENDING' && (
-                    <Button className={styles.fundBtn} disabled={updating} onClick={() => updateOrder('mark_paid')}>
-                      Mark as Paid
-                    </Button>
+                    <>
+                      {!order.acceptedAt && (
+                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
+                          Waiting for the seller to accept this order.
+                        </p>
+                      )}
+                      <Button className={styles.fundBtn} disabled={updating} onClick={() => updateOrder('mark_paid')}>
+                        Mark as Paid
+                      </Button>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
+                        Pay the seller directly, then mark paid. Paste your payment reference in the notes so they can verify.
+                      </p>
+                    </>
                   )}
                   {order.status === 'SHIPPED' && (
                     <Button className={styles.deliverBtn} disabled={updating} onClick={() => updateOrder('deliver')}>
@@ -427,6 +436,16 @@ export default function OrderDetailPage() {
 
               {order.seller.id === session?.user?.id && (
                 <>
+                  {order.status === 'PENDING' && !order.acceptedAt && (
+                    <>
+                      <Button className={styles.acceptBtn} disabled={updating} onClick={() => updateOrder('accept_order')}>
+                        Accept Order
+                      </Button>
+                      <Button className={styles.disputeBtn} disabled={updating} onClick={() => updateOrder('decline_order')}>
+                        Decline
+                      </Button>
+                    </>
+                  )}
                   {order.status === 'PAID' && (
                     <Button className={styles.shipBtn} disabled={updating} onClick={() => updateOrder('ship')}>
                       Mark Shipped

@@ -60,6 +60,8 @@ const TYPE_TO_PREF_KEY: Record<string, string | null> = {
   OFFER_WITHDRAWN: 'offers',
   OFFER_COUNTERED: 'offers',
   OFFER_COMPLETED: 'offers',
+  ORDER_UPDATE: 'orders',
+  ORDER_CREATED: 'orders',
   BLOG_PUBLISHED: 'blogs',
   SCHOOL_PUBLISHED: 'school',
 }
