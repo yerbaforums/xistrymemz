@@ -11,6 +11,7 @@ import AdvancedSection from '@/components/AdvancedSection'
 import ImageUploader from '@/components/ImageUploader'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { EmptyState } from '@/components/EmptyState'
+import BulkBar from '@/components/BulkBar'
 import ListingToolbar, { type PillOption } from '@/components/ListingToolbar'
 import { useManagedList } from '@/hooks/useManagedList'
 import { downloadCSV } from '@/lib/csv'
@@ -114,6 +115,80 @@ export default function BlogDashboard() {
   const [shareToFeed, setShareToFeed] = useState(true)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const managed = useManagedList()
+
+  // Bulk selection (published/draft toggle + delete)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [bulkBusy, setBulkBusy] = useState(false)
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
+
+  const toggleSelect = (id: string) => {
+    setSelected(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleSelectShown = () => {
+    const ids = [...shownPublished, ...shownDrafts].map(p => p.id)
+    const allSelected = ids.length > 0 && ids.every(id => selected.has(id))
+    setSelected(prev => {
+      const next = new Set(prev)
+      if (allSelected) ids.forEach(id => next.delete(id))
+      else ids.forEach(id => next.add(id))
+      return next
+    })
+  }
+
+  const clearSelection = () => setSelected(new Set())
+
+  const handleBulkStatus = async (status: 'PUBLISHED' | 'DRAFT') => {
+    const ids = [...selected]
+    if (!ids.length || bulkBusy) return
+    setBulkBusy(true)
+    let ok = 0
+    for (const id of ids) {
+      try {
+        const res = await fetch(`/api/blog/posts/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status }),
+        })
+        if (res.ok) ok++
+      } catch { /* keep going */ }
+    }
+    if (ok > 0) {
+      setPosts(prev => prev.map(p => selected.has(p.id) ? { ...p, status } : p))
+      success(status === 'PUBLISHED' ? `${ok} post${ok === 1 ? '' : 's'} published` : `${ok} post${ok === 1 ? '' : 's'} moved to draft`)
+    } else {
+      error('Failed to update posts')
+    }
+    setBulkBusy(false)
+    clearSelection()
+  }
+
+  const handleBulkDelete = async () => {
+    const ids = [...selected]
+    if (!ids.length || bulkBusy) return
+    setBulkBusy(true)
+    let ok = 0
+    for (const id of ids) {
+      try {
+        const res = await fetch(`/api/blog/posts/${id}`, { method: 'DELETE' })
+        if (res.ok) ok++
+      } catch { /* keep going */ }
+    }
+    if (ok > 0) {
+      setPosts(prev => prev.filter(p => !selected.has(p.id)))
+      success(`Deleted ${ok} post${ok === 1 ? '' : 's'}`)
+    } else {
+      error('Failed to delete posts')
+    }
+    setBulkBusy(false)
+    setConfirmBulkDelete(false)
+    clearSelection()
+  }
 
   const load = useCallback(async () => {
     try {
@@ -409,7 +484,19 @@ export default function BlogDashboard() {
       )}
 
       <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>📄 Posts</h2>
+        <div className={styles.sectionHead}>
+          <h2 className={styles.sectionTitle}>📄 Posts</h2>
+          {posts.length > 0 && (
+            <label className={styles.selectAll}>
+              <input
+                type="checkbox"
+                checked={shownPublished.length + shownDrafts.length > 0 && [...shownPublished, ...shownDrafts].every(p => selected.has(p.id))}
+                onChange={toggleSelectShown}
+              />
+              Select all
+            </label>
+          )}
+        </div>
         {posts.length === 0 && (
           <EmptyState icon="✏️" title="No posts yet" description="Write your first post — it can start as a draft and go live whenever you're ready." />
         )}
@@ -426,12 +513,28 @@ export default function BlogDashboard() {
             onExport={exportPostsCSV}
           />
         )}
+        <BulkBar
+          count={selected.size}
+          onClear={clearSelection}
+          actions={[
+            { label: 'Publish', icon: '✓', onClick: () => handleBulkStatus('PUBLISHED'), disabled: bulkBusy },
+            { label: 'Draft', icon: '✏️', onClick: () => handleBulkStatus('DRAFT'), disabled: bulkBusy },
+            { label: 'Delete', icon: '🗑', onClick: () => setConfirmBulkDelete(true), disabled: bulkBusy, danger: true, title: 'Delete selected posts' },
+          ]}
+        />
         {posts.length > 0 && shownPublished.length + shownDrafts.length === 0 && (
           <p className={styles.emptyText}>No posts match your search or filter.</p>
         )}
         <div className={styles.postList}>
           {shownPublished.map((p) => (
-            <div key={p.id} className={styles.postRow}>
+            <div key={p.id} className={`${styles.postRow} ${selected.has(p.id) ? styles.rowSelected : ''}`}>
+              <label className={styles.rowCheck} title="Select for bulk actions">
+                <input
+                  type="checkbox"
+                  checked={selected.has(p.id)}
+                  onChange={() => toggleSelect(p.id)}
+                />
+              </label>
               <div className={styles.postInfo}>
                 <Link href={`/blog/${blog.blogSlug}/${p.slug}`} className={styles.postTitleLink}>{p.title}</Link>
                 <span className={styles.postMeta}>
@@ -448,7 +551,14 @@ export default function BlogDashboard() {
             </div>
           ))}
           {shownDrafts.map((p) => (
-            <div key={p.id} className={`${styles.postRow} ${styles.draftRow}`}>
+            <div key={p.id} className={`${styles.postRow} ${styles.draftRow} ${selected.has(p.id) ? styles.rowSelected : ''}`}>
+              <label className={styles.rowCheck} title="Select for bulk actions">
+                <input
+                  type="checkbox"
+                  checked={selected.has(p.id)}
+                  onChange={() => toggleSelect(p.id)}
+                />
+              </label>
               <div className={styles.postInfo}>
                 <span className={styles.postTitleLink}>{p.title} <span className={styles.draftBadge}>DRAFT</span></span>
                 <span className={styles.postMeta}>
@@ -583,6 +693,15 @@ export default function BlogDashboard() {
           variant="danger"
         />
       )}
+      <ConfirmDialog
+        isOpen={confirmBulkDelete}
+        onClose={() => setConfirmBulkDelete(false)}
+        onConfirm={handleBulkDelete}
+        title={`Delete ${selected.size} post${selected.size === 1 ? '' : 's'}?`}
+        message="This permanently removes the selected posts and any purchases or tips associated with them. This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   )
 }

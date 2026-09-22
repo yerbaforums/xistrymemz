@@ -49,6 +49,7 @@ export default function PodcastDashboardPage() {
   const [showLive, setShowLive] = useState(false)
   const [copied, setCopied] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [epSearch, setEpSearch] = useState('')
 
   // Episode form
   const [title, setTitle] = useState('')
@@ -156,6 +157,11 @@ export default function PodcastDashboardPage() {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const shownEpisodes = episodes.filter(ep => {
+    const q = epSearch.trim().toLowerCase()
+    return !q || ep.title.toLowerCase().includes(q)
+  })
+
   if (loading) return <Loading />
 
   if (!podcast?.podcastSlug) {
@@ -221,7 +227,19 @@ export default function PodcastDashboardPage() {
 
       {/* Episodes */}
       <section className={styles.section}>
-        <h2>📚 Episodes ({episodes.length})</h2>
+        {episodes.length > 0 && (
+          <div className={styles.sectionHeader}>
+            <h2>📚 Episodes ({shownEpisodes.length}/{episodes.length})</h2>
+            <input
+              type="text"
+              value={epSearch}
+              onChange={e => setEpSearch(e.target.value)}
+              placeholder="Search episodes..."
+              className={styles.epSearch}
+              aria-label="Search episodes"
+            />
+          </div>
+        )}
         {episodes.length === 0 ? (
           <EmptyState
             icon="🎧"
@@ -229,9 +247,11 @@ export default function PodcastDashboardPage() {
             description="Publish your first episode to build your show."
             action={{ label: '📤 Write your first episode', onClick: () => document.getElementById('new-episode')?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }}
           />
+        ) : shownEpisodes.length === 0 ? (
+          <p className={styles.noMatches}>No episodes match your search.</p>
         ) : (
           <div className={styles.episodeList}>
-            {episodes.map((ep, i) => (
+            {shownEpisodes.map((ep, i) => (
               <div key={ep.id} className={styles.episodeCard}>
                 <div className={styles.episodeMain}>
                   <div className={styles.episodeNum}>{String(ep.episodeNumber ?? (episodes.length - i)).padStart(2, '0')}</div>

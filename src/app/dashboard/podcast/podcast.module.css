@@ -42,6 +42,34 @@
   gap: 10px;
 }
 
+.epSearch {
+  height: var(--control-input);
+  max-width: 220px;
+  padding: 0 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  outline: none;
+  transition: var(--transition);
+}
+
+.epSearch:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
+}
+
+.epSearch::placeholder {
+  color: var(--text-muted);
+}
+
+.noMatches {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  padding: 8px 0;
+}
+
 .liveBadge {
   background: rgba(239, 68, 68, 0.15);
   color: #ef4444;

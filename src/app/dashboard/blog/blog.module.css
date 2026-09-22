@@ -68,8 +68,49 @@
 }
 
 .sectionTitle {
-  margin: 0 0 14px;
+  margin: 0;
   font-size: 1.1rem;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.selectAll {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.selectAll input,
+.rowCheck input {
+  accent-color: var(--accent-primary);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.rowCheck {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.rowSelected {
+  background: color-mix(in srgb, var(--accent-primary) 6%, transparent);
+  border-radius: 8px;
+  padding-left: 8px;
+  padding-right: 8px;
 }
 
 .pendingRow {
