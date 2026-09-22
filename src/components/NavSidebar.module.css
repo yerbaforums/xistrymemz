@@ -42,6 +42,76 @@
   color: var(--text-primary);
 }
 
+/* Sidebar quick-search */
+.searchWrap {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  padding: 2px 10px 8px;
+  background: var(--bg-primary);
+}
+
+.searchInput {
+  width: 100%;
+  height: var(--control-input);
+  padding: 0 30px 0 32px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  outline: none;
+  transition: var(--transition);
+}
+
+.searchInput:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
+}
+
+.searchInput::placeholder {
+  color: var(--text-muted);
+}
+
+.searchIcon {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.75rem;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.searchClear {
+  position: absolute;
+  right: 19px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.7rem;
+  padding: 2px;
+}
+
+.searchClear:hover {
+  color: var(--text-primary);
+}
+
+.searchResults {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.noResults {
+  padding: 12px 16px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
 .profileStrip {
   display: flex;
   align-items: center;

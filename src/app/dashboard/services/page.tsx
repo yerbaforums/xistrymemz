@@ -14,6 +14,7 @@ import type { ServiceOffering, ServiceCategory } from '@/types/service'
 import { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service'
 import { EmptyState } from '@/components/EmptyState'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
+import BulkBar from '@/components/BulkBar'
 import LocationPicker from '@/components/LocationPicker'
 import HashtagInput from '@/components/HashtagInput'
 import { AppointmentSettings, type AppointmentField } from '@/components/listings/AppointmentSettings'
@@ -81,6 +82,80 @@ export default function DashboardServices() {
   const [search, setSearch] = useState('')
   const [confirmAction, setConfirmAction] = useState<'delete-service' | 'unpublish-shop' | 'delete-shop' | null>(null)
   const [confirmService, setConfirmService] = useState<ServiceOffering | null>(null)
+
+  // Bulk selection
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [bulkBusy, setBulkBusy] = useState(false)
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
+
+  const toggleSelect = (id: string) => {
+    setSelected(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleSelectFiltered = () => {
+    const ids = filteredServices.map(s => s.id)
+    const allSelected = ids.length > 0 && ids.every(id => selected.has(id))
+    setSelected(prev => {
+      const next = new Set(prev)
+      if (allSelected) ids.forEach(id => next.delete(id))
+      else ids.forEach(id => next.add(id))
+      return next
+    })
+  }
+
+  const clearSelection = () => setSelected(new Set())
+
+  const handleBulkToggleActive = async (isActive: boolean) => {
+    const ids = [...selected]
+    if (!ids.length || bulkBusy) return
+    setBulkBusy(true)
+    let ok = 0
+    for (const id of ids) {
+      try {
+        const res = await fetch(`/api/services/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isActive }),
+        })
+        if (res.ok) ok++
+      } catch { /* keep going */ }
+    }
+    if (ok > 0) {
+      setServices(prev => prev.map(s => selected.has(s.id) ? { ...s, isActive } : s))
+      success(isActive ? `${ok} service${ok === 1 ? '' : 's'} published` : `${ok} service${ok === 1 ? '' : 's'} hidden`)
+    } else {
+      toastError('Failed to update services')
+    }
+    setBulkBusy(false)
+    clearSelection()
+  }
+
+  const handleBulkDelete = async () => {
+    const ids = [...selected]
+    if (!ids.length || bulkBusy) return
+    setBulkBusy(true)
+    let ok = 0
+    for (const id of ids) {
+      try {
+        const res = await fetch(`/api/services/${id}`, { method: 'DELETE' })
+        if (res.ok) ok++
+      } catch { /* keep going */ }
+    }
+    if (ok > 0) {
+      setServices(prev => prev.filter(s => !selected.has(s.id)))
+      success(`Deleted ${ok} service${ok === 1 ? '' : 's'}`)
+    } else {
+      toastError('Failed to delete services')
+    }
+    setBulkBusy(false)
+    setConfirmBulkDelete(false)
+    clearSelection()
+  }
   const [shopSettings, setShopSettings] = useState<ShopSettings | null>(null)
   const [showShopModal, setShowShopModal] = useState(false)
   const [shopForm, setShopForm] = useState({
@@ -322,8 +397,28 @@ export default function DashboardServices() {
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
         </select>
+        {filteredServices.length > 0 && (
+          <label className={styles.selectAll}>
+            <input
+              type="checkbox"
+              checked={filteredServices.length > 0 && filteredServices.every(s => selected.has(s.id))}
+              onChange={toggleSelectFiltered}
+            />
+            Select all
+          </label>
+        )}
         <span className={styles.count}>{filteredServices.length} items</span>
       </div>
+
+      <BulkBar
+        count={selected.size}
+        onClear={clearSelection}
+        actions={[
+          { label: 'Publish', icon: '✓', onClick: () => handleBulkToggleActive(true), disabled: bulkBusy },
+          { label: 'Hide', icon: '✕', onClick: () => handleBulkToggleActive(false), disabled: bulkBusy },
+          { label: 'Delete', icon: '🗑', onClick: () => setConfirmBulkDelete(true), disabled: bulkBusy, danger: true, title: 'Delete selected services' },
+        ]}
+      />
 
       {loading ? (
         <Skeleton width="100%" height="2rem" />
@@ -334,7 +429,14 @@ export default function DashboardServices() {
           {filteredServices.map(s => {
             const cat = s.category as ServiceCategory
             return (
-              <div key={s.id} className={styles.item}>
+              <div key={s.id} className={`${styles.item} ${selected.has(s.id) ? styles.itemSelected : ''}`}>
+                <label className={styles.itemCheck} title="Select for bulk actions">
+                  <input
+                    type="checkbox"
+                    checked={selected.has(s.id)}
+                    onChange={() => toggleSelect(s.id)}
+                  />
+                </label>
                 <div className={styles.itemImage}>
                   {s.imageUrl ? (
                     <img src={s.imageUrl} alt={s.title} />
@@ -557,6 +659,15 @@ export default function DashboardServices() {
         title="Delete Shop"
         message="This permanently removes your shop name, description, and image. Your services will remain but will no longer be linked to a shop. This cannot be undone."
         confirmLabel="Delete Shop"
+        variant="danger"
+      />
+      <ConfirmDialog
+        isOpen={confirmBulkDelete}
+        onClose={() => setConfirmBulkDelete(false)}
+        onConfirm={handleBulkDelete}
+        title={`Delete ${selected.size} service${selected.size === 1 ? '' : 's'}?`}
+        message="This permanently removes the selected services and their associated data. This cannot be undone."
+        confirmLabel="Delete"
         variant="danger"
       />
     </div>

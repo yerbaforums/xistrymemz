@@ -131,6 +131,39 @@
   gap: 20px;
 }
 
+.selectAll {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+  margin-right: auto;
+}
+
+.selectAll input,
+.cardCheck input {
+  accent-color: var(--accent-primary);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.cardCheck {
+  display: inline-flex;
+  align-items: flex-start;
+  flex-shrink: 0;
+  cursor: pointer;
+  padding-top: 3px;
+}
+
+.cardSelected {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
+
 .card {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);

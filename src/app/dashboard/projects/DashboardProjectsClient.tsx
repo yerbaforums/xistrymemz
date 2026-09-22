@@ -8,6 +8,7 @@ import styles from './projects.module.css'
 
 import { EmptyState } from '@/components/EmptyState'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
+import BulkBar from '@/components/BulkBar'
 import Button from '@/components/ui/Button'
 import {
   PROJECT_CATEGORIES,
@@ -334,17 +335,15 @@ export default function DashboardProjectsClient({ initialProjects }: DashboardPr
         </span>
       </div>
 
-      {selected.size > 0 && (
-        <div className={styles.bulkBar}>
-          <span className={styles.bulkCount}>{selected.size} selected</span>
-          <div className={styles.bulkActions}>
-            <button className={styles.bulkBtn} onClick={() => handleBulkPublish(true)} disabled={bulkBusy}>✓ Publish</button>
-            <button className={styles.bulkBtn} onClick={() => handleBulkPublish(false)} disabled={bulkBusy}>✕ Hide</button>
-            <button className={`${styles.bulkBtn} ${styles.bulkBtnDanger}`} onClick={() => setConfirmDelete(true)} disabled={bulkBusy}>🗑 Delete</button>
-            <button className={styles.bulkBtn} onClick={clearSelection} disabled={bulkBusy}>Deselect</button>
-          </div>
-        </div>
-      )}
+      <BulkBar
+        count={selected.size}
+        onClear={clearSelection}
+        actions={[
+          { label: 'Publish', icon: '✓', onClick: () => handleBulkPublish(true), disabled: bulkBusy },
+          { label: 'Hide', icon: '✕', onClick: () => handleBulkPublish(false), disabled: bulkBusy },
+          { label: 'Delete', icon: '🗑', onClick: () => setConfirmDelete(true), disabled: bulkBusy, danger: true, title: 'Delete selected projects' },
+        ]}
+      />
 
       {filteredProjects.length === 0 ? (
         <EmptyState icon="📋" title="No projects found" description="Try adjusting your search or filters, or create a new project." action={{ label: 'Create Project', onClick: () => setShowCreateModal(true) }} />

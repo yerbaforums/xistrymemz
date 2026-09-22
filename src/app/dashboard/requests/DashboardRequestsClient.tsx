@@ -12,6 +12,7 @@ import { REQUEST_CATEGORIES, PRIORITY_COLORS } from '@/lib/request-categories'
 
 import { EmptyState } from '@/components/EmptyState'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
+import BulkBar from '@/components/BulkBar'
 
 interface DonationAddr {
   id: string
@@ -105,6 +106,55 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
   })
   const [creating, setCreating] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+
+  // Bulk selection (delete only — status flows stay per-item)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [bulkBusy, setBulkBusy] = useState(false)
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
+
+  const toggleSelect = (id: string) => {
+    setSelected(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleSelectFiltered = () => {
+    const ids = filteredRequests.map(r => r.id)
+    const allSelected = ids.length > 0 && ids.every(id => selected.has(id))
+    setSelected(prev => {
+      const next = new Set(prev)
+      if (allSelected) ids.forEach(id => next.delete(id))
+      else ids.forEach(id => next.add(id))
+      return next
+    })
+  }
+
+  const clearSelection = () => setSelected(new Set())
+
+  const handleBulkDelete = async () => {
+    const ids = [...selected]
+    if (!ids.length || bulkBusy) return
+    setBulkBusy(true)
+    let ok = 0
+    for (const id of ids) {
+      try {
+        const res = await fetch(`/api/requests/${id}`, { method: 'DELETE' })
+        if (res.ok) ok++
+      } catch { /* keep going */ }
+    }
+    if (ok > 0) {
+      setRequests(prev => prev.filter(r => !selected.has(r.id)))
+      success(`Deleted ${ok} request${ok === 1 ? '' : 's'}`)
+    } else {
+      toastError('Failed to delete requests')
+    }
+    setBulkBusy(false)
+    setConfirmBulkDelete(false)
+    clearSelection()
+  }
 
   const isAdmin = userRole === 'ADMIN'
 
@@ -429,6 +479,16 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
       </div>
 
       <div className={styles.controls}>
+        {filteredRequests.length > 0 && (
+          <label className={styles.selectAll}>
+            <input
+              type="checkbox"
+              checked={filteredRequests.length > 0 && filteredRequests.every(r => selected.has(r.id))}
+              onChange={toggleSelectFiltered}
+            />
+            Select all
+          </label>
+        )}
         <div className={styles.filterPills}>
           {(['ALL', 'PENDING', 'APPROVED', 'REJECTED', 'COMPLETED'] as const).map(f => (
             <button
@@ -464,6 +524,14 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
         </div>
       </div>
 
+      <BulkBar
+        count={selected.size}
+        onClear={clearSelection}
+        actions={[
+          { label: 'Delete', icon: '🗑', onClick: () => setConfirmBulkDelete(true), disabled: bulkBusy, danger: true, title: 'Delete selected requests' },
+        ]}
+      />
+
       {filteredRequests.length === 0 ? (
         <EmptyState icon="📝" title="No requests found" description="Try adjusting your filters, or create a new request." action={{ label: 'Create Request', onClick: () => setShowCreate(true) }} />
       ) : (
@@ -476,10 +544,17 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
             return (
               <div
                 key={req.id}
-                className={styles.card}
+                className={`${styles.card} ${selected.has(req.id) ? styles.cardSelected : ''}`}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 <div className={styles.cardHeader}>
+                  <label className={styles.cardCheck} title="Select for bulk delete">
+                    <input
+                      type="checkbox"
+                      checked={selected.has(req.id)}
+                      onChange={() => toggleSelect(req.id)}
+                    />
+                  </label>
                   <div className={styles.badgeRow}>
                     <span className={`badge badge-${req.status.toLowerCase()}`}>
                       {STATUS_ICONS[req.status] || ''} {req.status}
@@ -644,6 +719,15 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
         onConfirm={handleDelete}
         title="Delete Request"
         message="This will permanently delete this request. This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+      />
+      <ConfirmDialog
+        isOpen={confirmBulkDelete}
+        onClose={() => setConfirmBulkDelete(false)}
+        onConfirm={handleBulkDelete}
+        title={`Delete ${selected.size} request${selected.size === 1 ? '' : 's'}?`}
+        message="This permanently removes the selected requests and their associated data. This cannot be undone."
         confirmLabel="Delete"
         variant="danger"
       />

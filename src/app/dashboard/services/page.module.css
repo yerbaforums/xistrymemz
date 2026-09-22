@@ -13,6 +13,39 @@
 .empty h3 { margin-bottom: 8px; }
 .empty p { color: var(--text-secondary); margin-bottom: 20px; }
 .list { display: flex; flex-direction: column; gap: 16px; }
+
+.selectAll {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+  margin-left: auto;
+}
+
+.selectAll input,
+.itemCheck input {
+  accent-color: var(--accent-primary);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.itemCheck {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  padding-top: 2px;
+}
+
+.itemSelected {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 1px var(--accent-primary) inset;
+}
 .item { display: flex; gap: 16px; padding: 16px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; transition: all 0.2s; }
 .item:hover { border-color: var(--accent-primary); }
 .itemImage { width: 80px; height: 80px; border-radius: 6px; overflow: hidden; flex-shrink: 0; }

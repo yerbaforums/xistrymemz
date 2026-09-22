@@ -10,6 +10,7 @@ import styles from './rentals.module.css'
 import Skeleton from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
+import BulkBar from '@/components/BulkBar'
 import { FieldListEditor } from '@/components/listings/FieldListEditor'
 import type { FormField } from '@/types/service'
 
@@ -57,6 +58,80 @@ export default function RentalsPage() {
   const [showShopModal, setShowShopModal] = useState(false)
   const [confirmAction, setConfirmAction] = useState<'delete-item' | 'unpublish-shop' | 'delete-shop' | null>(null)
   const [confirmTitle, setConfirmTitle] = useState('')
+
+  // Bulk selection
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [bulkBusy, setBulkBusy] = useState(false)
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
+
+  const toggleSelect = (id: string) => {
+    setSelected(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleSelectFiltered = () => {
+    const ids = filtered.map(r => r.id)
+    const allSelected = ids.length > 0 && ids.every(id => selected.has(id))
+    setSelected(prev => {
+      const next = new Set(prev)
+      if (allSelected) ids.forEach(id => next.delete(id))
+      else ids.forEach(id => next.add(id))
+      return next
+    })
+  }
+
+  const clearSelection = () => setSelected(new Set())
+
+  const handleBulkPublish = async (published: boolean) => {
+    const ids = [...selected]
+    if (!ids.length || bulkBusy) return
+    setBulkBusy(true)
+    let ok = 0
+    for (const id of ids) {
+      try {
+        const res = await fetch(`/api/products/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ published }),
+        })
+        if (res.ok) ok++
+      } catch { /* keep going */ }
+    }
+    if (ok > 0) {
+      setRentals(prev => prev.map(r => selected.has(r.id) ? { ...r, published } : r))
+      success(published ? `${ok} rental${ok === 1 ? '' : 's'} published` : `${ok} rental${ok === 1 ? '' : 's'} hidden`)
+    } else {
+      error('Failed to update rentals')
+    }
+    setBulkBusy(false)
+    clearSelection()
+  }
+
+  const handleBulkDelete = async () => {
+    const ids = [...selected]
+    if (!ids.length || bulkBusy) return
+    setBulkBusy(true)
+    let ok = 0
+    for (const id of ids) {
+      try {
+        const res = await fetch(`/api/products/${id}`, { method: 'DELETE' })
+        if (res.ok) ok++
+      } catch { /* keep going */ }
+    }
+    if (ok > 0) {
+      setRentals(prev => prev.filter(r => !selected.has(r.id)))
+      success(`Deleted ${ok} rental${ok === 1 ? '' : 's'}`)
+    } else {
+      error('Failed to delete rentals')
+    }
+    setBulkBusy(false)
+    setConfirmBulkDelete(false)
+    clearSelection()
+  }
   const [shopForm, setShopForm] = useState({
     shopName: '', shopAbout: '', shopImage: '', shopImages: [] as string[],
     shopSlug: '', email: '', name: ''
@@ -275,8 +350,28 @@ export default function RentalsPage() {
           <option value="available">Available</option>
           <option value="unavailable">Unavailable</option>
         </select>
+        {filtered.length > 0 && (
+          <label className={styles.selectAll}>
+            <input
+              type="checkbox"
+              checked={filtered.length > 0 && filtered.every(r => selected.has(r.id))}
+              onChange={toggleSelectFiltered}
+            />
+            Select all
+          </label>
+        )}
         <span className={styles.count}>{filtered.length} items</span>
       </div>
+
+      <BulkBar
+        count={selected.size}
+        onClear={clearSelection}
+        actions={[
+          { label: 'Publish', icon: '✓', onClick: () => handleBulkPublish(true), disabled: bulkBusy },
+          { label: 'Hide', icon: '✕', onClick: () => handleBulkPublish(false), disabled: bulkBusy },
+          { label: 'Delete', icon: '🗑', onClick: () => setConfirmBulkDelete(true), disabled: bulkBusy, danger: true, title: 'Delete selected rentals' },
+        ]}
+      />
 
       {loading ? (
         <Skeleton width="100%" height="2rem" />
@@ -285,7 +380,14 @@ export default function RentalsPage() {
       ) : (
         <div className={styles.list}>
           {filtered.map(r => (
-            <div key={r.id} className={styles.item}>
+            <div key={r.id} className={`${styles.item} ${selected.has(r.id) ? styles.itemSelected : ''}`}>
+              <label className={styles.itemCheck} title="Select for bulk actions">
+                <input
+                  type="checkbox"
+                  checked={selected.has(r.id)}
+                  onChange={() => toggleSelect(r.id)}
+                />
+              </label>
               <div className={styles.itemImage}>
                 {r.imageUrl ? <img src={r.imageUrl} alt={r.title} /> : <div className={styles.imagePlaceholder}>🏠</div>}
               </div>
@@ -483,6 +585,15 @@ export default function RentalsPage() {
         title="Delete Shop"
         message="This permanently removes your shop name, description, and image. Your products will remain but will no longer be linked to a shop. This cannot be undone."
         confirmLabel="Delete Shop"
+        variant="danger"
+      />
+      <ConfirmDialog
+        isOpen={confirmBulkDelete}
+        onClose={() => setConfirmBulkDelete(false)}
+        onConfirm={handleBulkDelete}
+        title={`Delete ${selected.size} rental${selected.size === 1 ? '' : 's'}?`}
+        message="This permanently removes the selected rentals and their associated data. This cannot be undone."
+        confirmLabel="Delete"
         variant="danger"
       />
     </div>

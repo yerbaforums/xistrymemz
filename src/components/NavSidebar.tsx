@@ -22,6 +22,7 @@ export default function NavSidebar() {
   const [groupsLoaded, setGroupsLoaded] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
+  const [query, setQuery] = useState('')
   const profileRef = useRef<HTMLDivElement>(null)
 
   const toggleCollapsed = useCallback(() => {
@@ -105,6 +106,15 @@ export default function NavSidebar() {
   const user = session?.user
   const profileHref = `/profile/${user?.username || ''}`
 
+  // Sidebar quick-search ("Find a page") — filters every nav item flat.
+  const q = query.trim().toLowerCase()
+  const matchesNav = (label: string, href: string) =>
+    !q || label.toLowerCase().includes(q) || href.toLowerCase().includes(q)
+  const studioPrimary = DASHBOARD_SIDEBAR.filter(item => item.section === 'primary' && isToolVisible(item.href))
+  const studioMatches = DASHBOARD_SIDEBAR.filter(item => isToolVisible(item.href) && matchesNav(item.label, item.href))
+  const exploreList = [...NAV.explore, ...NAV.community]
+  const exploreMatches = exploreList.filter(item => isToolVisible(item.href) && matchesNav(item.label, item.href))
+
   const showShortcut = (i: number) => {
     if (collapsed) return null
     if (i < 9) return <span className={styles.shortcut}>Alt+{i + 1}</span>
@@ -122,6 +132,23 @@ export default function NavSidebar() {
       >
         {collapsed ? '▶' : '◀'}
       </button>
+
+      {!collapsed && (
+        <div className={styles.searchWrap}>
+          <span className={styles.searchIcon} aria-hidden="true">🔎</span>
+          <input
+            type="text"
+            className={styles.searchInput}
+            placeholder="Find a page..."
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            aria-label="Find a page"
+          />
+          {query && (
+            <button type="button" className={styles.searchClear} onClick={() => setQuery('')} aria-label="Clear search">✕</button>
+          )}
+        </div>
+      )}
 
       {isStudio && isAuthenticated ? (
         <>
@@ -141,37 +168,135 @@ export default function NavSidebar() {
             )}
           </div>
           <div className={styles.divider} />
-          {DASHBOARD_SIDEBAR.filter(item => item.section === 'primary' && isToolVisible(item.href)).map((item, i) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`${styles.navItem} ${isActive(item.href) ? styles.active : ''}`}
-              aria-label={item.label}
-              title={collapsed ? item.label : undefined}
-            >
-              <span>{item.icon}</span>
-              {!collapsed && <span>{item.label}</span>}
-              {showShortcut(i)}
-            </Link>
-          ))}
-          <button
-            onClick={() => setMoreOpen(!moreOpen)}
-            className={styles.moreToggle}
-            title={collapsed ? (moreOpen ? 'Collapse More' : 'Expand More') : undefined}
-          >
-            <span>{moreOpen ? '▼' : '▶'}</span>
-            {!collapsed && <span>More</span>}
-          </button>
-          {moreOpen && (
-            <div className={styles.moreSection}>
-              {STUDIO_GROUPS.map(group => {
-                const items = DASHBOARD_SIDEBAR.filter(item => item.section === 'secondary' && group.hrefs.includes(item.href) && isToolVisible(item.href))
+          {q ? (
+            <div className={styles.searchResults}>
+              {studioMatches.map(item => {
+                const pIdx = item.section === 'primary' ? studioPrimary.findIndex(p => p.href === item.href) : -1
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`${styles.navItem} ${isActive(item.href) ? styles.active : ''}`}
+                    aria-label={item.label}
+                  >
+                    <span>{item.icon}</span>
+                    <span>
+                      {item.label}
+                      {item.label === 'Messages' && unreadCount > 0 && (
+                        <span className={styles.unreadBadge}>{unreadCount > 99 ? '99+' : unreadCount}</span>
+                      )}
+                    </span>
+                    {pIdx >= 0 && showShortcut(pIdx)}
+                  </Link>
+                )
+              })}
+              {studioMatches.length === 0 && (
+                <div className={styles.noResults}>No pages match “{query.trim()}”</div>
+              )}
+            </div>
+          ) : (
+            <>
+              {studioPrimary.map((item, i) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`${styles.navItem} ${isActive(item.href) ? styles.active : ''}`}
+                  aria-label={item.label}
+                  title={collapsed ? item.label : undefined}
+                >
+                  <span>{item.icon}</span>
+                  {!collapsed && <span>{item.label}</span>}
+                  {showShortcut(i)}
+                </Link>
+              ))}
+              <button
+                onClick={() => setMoreOpen(!moreOpen)}
+                className={styles.moreToggle}
+                title={collapsed ? (moreOpen ? 'Collapse More' : 'Expand More') : undefined}
+              >
+                <span>{moreOpen ? '▼' : '▶'}</span>
+                {!collapsed && <span>More</span>}
+              </button>
+              {moreOpen && (
+                <div className={styles.moreSection}>
+                  {STUDIO_GROUPS.map(group => {
+                    const items = DASHBOARD_SIDEBAR.filter(item => item.section === 'secondary' && group.hrefs.includes(item.href) && isToolVisible(item.href))
+                    if (items.length === 0) return null
+                    const open = collapsed || isGroupOpen(`studio:${group.label}`, group.hrefs)
+                    return (
+                      <div key={group.label}>
+                        {!collapsed && (
+                          <button onClick={() => toggleGroup(`studio:${group.label}`)} className={styles.groupToggle} aria-expanded={open}>
+                            <span className={styles.caret}>{open ? '▼' : '▶'}</span>
+                            <span>{group.label}</span>
+                          </button>
+                        )}
+                        {open && (
+                          <div className={styles.groupItems}>
+                            {items.map(item => (
+                              <Link
+                                key={item.href}
+                                href={item.href}
+                                className={`${styles.navItem} ${isActive(item.href) ? styles.active : ''}`}
+                                aria-label={item.label}
+                                title={collapsed ? item.label : undefined}
+                              >
+                                <span>{item.icon}</span>
+                                {!collapsed && (
+                                  <span>
+                                    {item.label}
+                                    {item.label === 'Messages' && unreadCount > 0 && (
+                                      <span className={styles.unreadBadge}>{unreadCount > 99 ? '99+' : unreadCount}</span>
+                                    )}
+                                  </span>
+                                )}
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </>
+          )}
+          <div className={styles.divider} />
+          <Link href="/" className={styles.switchMode} title={collapsed ? 'Browse' : undefined}>
+            <span>🌐</span>
+            {!collapsed && <span>Browse</span>}
+          </Link>
+        </>
+      ) : (
+        <>
+          {q ? (
+            <div className={styles.searchResults}>
+              {exploreMatches.map(item => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`${styles.navItem} ${isActive(item.href) ? styles.active : ''}`}
+                  aria-label={item.label}
+                >
+                  <span>{item.icon}</span>
+                  <span>{item.label}</span>
+                </Link>
+              ))}
+              {exploreMatches.length === 0 && (
+                <div className={styles.noResults}>No pages match “{query.trim()}”</div>
+              )}
+            </div>
+          ) : (
+            <>
+              {!collapsed && <div className={styles.sectionHeader}>Explore</div>}
+              {EXPLORE_GROUPS.map(group => {
+                const items = NAV.explore.filter(item => group.hrefs.includes(item.href) && isToolVisible(item.href))
                 if (items.length === 0) return null
-                const open = collapsed || isGroupOpen(`studio:${group.label}`, group.hrefs)
+                const open = collapsed || isGroupOpen(`explore:${group.label}`, group.hrefs)
                 return (
                   <div key={group.label}>
                     {!collapsed && (
-                      <button onClick={() => toggleGroup(`studio:${group.label}`)} className={styles.groupToggle} aria-expanded={open}>
+                      <button onClick={() => toggleGroup(`explore:${group.label}`)} className={styles.groupToggle} aria-expanded={open}>
                         <span className={styles.caret}>{open ? '▼' : '▶'}</span>
                         <span>{group.label}</span>
                       </button>
@@ -187,14 +312,7 @@ export default function NavSidebar() {
                             title={collapsed ? item.label : undefined}
                           >
                             <span>{item.icon}</span>
-                            {!collapsed && (
-                              <span>
-                                {item.label}
-                                {item.label === 'Messages' && unreadCount > 0 && (
-                                  <span className={styles.unreadBadge}>{unreadCount > 99 ? '99+' : unreadCount}</span>
-                                )}
-                              </span>
-                            )}
+                            {!collapsed && <span>{item.label}</span>}
                           </Link>
                         ))}
                       </div>
@@ -202,73 +320,33 @@ export default function NavSidebar() {
                   </div>
                 )
               })}
-            </div>
+              {NAV.explore.filter(item => !EXPLORE_GROUPS.some(g => g.hrefs.includes(item.href)) && isToolVisible(item.href)).map(item => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`${styles.navItem} ${isActive(item.href) ? styles.active : ''}`}
+                  aria-label={item.label}
+                  title={collapsed ? item.label : undefined}
+                >
+                  <span>{item.icon}</span>
+                  {!collapsed && <span>{item.label}</span>}
+                </Link>
+              ))}
+              {!collapsed && <div className={styles.sectionHeader}>Community</div>}
+              {NAV.community.filter(item => isToolVisible(item.href)).map(item => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`${styles.navItem} ${isActive(item.href) ? styles.active : ''}`}
+                  aria-label={item.label}
+                  title={collapsed ? item.label : undefined}
+                >
+                  <span>{item.icon}</span>
+                  {!collapsed && <span>{item.label}</span>}
+                </Link>
+              ))}
+            </>
           )}
-          <div className={styles.divider} />
-          <Link href="/" className={styles.switchMode} title={collapsed ? 'Browse' : undefined}>
-            <span>🌐</span>
-            {!collapsed && <span>Browse</span>}
-          </Link>
-        </>
-      ) : (
-        <>
-          {!collapsed && <div className={styles.sectionHeader}>Explore</div>}
-          {EXPLORE_GROUPS.map(group => {
-            const items = NAV.explore.filter(item => group.hrefs.includes(item.href) && isToolVisible(item.href))
-            if (items.length === 0) return null
-            const open = collapsed || isGroupOpen(`explore:${group.label}`, group.hrefs)
-            return (
-              <div key={group.label}>
-                {!collapsed && (
-                  <button onClick={() => toggleGroup(`explore:${group.label}`)} className={styles.groupToggle} aria-expanded={open}>
-                    <span className={styles.caret}>{open ? '▼' : '▶'}</span>
-                    <span>{group.label}</span>
-                  </button>
-                )}
-                {open && (
-                  <div className={styles.groupItems}>
-                    {items.map(item => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className={`${styles.navItem} ${isActive(item.href) ? styles.active : ''}`}
-                        aria-label={item.label}
-                        title={collapsed ? item.label : undefined}
-                      >
-                        <span>{item.icon}</span>
-                        {!collapsed && <span>{item.label}</span>}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )
-          })}
-          {NAV.explore.filter(item => !EXPLORE_GROUPS.some(g => g.hrefs.includes(item.href)) && isToolVisible(item.href)).map(item => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`${styles.navItem} ${isActive(item.href) ? styles.active : ''}`}
-              aria-label={item.label}
-              title={collapsed ? item.label : undefined}
-            >
-              <span>{item.icon}</span>
-              {!collapsed && <span>{item.label}</span>}
-            </Link>
-          ))}
-          {!collapsed && <div className={styles.sectionHeader}>Community</div>}
-          {NAV.community.filter(item => isToolVisible(item.href)).map(item => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`${styles.navItem} ${isActive(item.href) ? styles.active : ''}`}
-              aria-label={item.label}
-              title={collapsed ? item.label : undefined}
-            >
-              <span>{item.icon}</span>
-              {!collapsed && <span>{item.label}</span>}
-            </Link>
-          ))}
           {isAuthenticated ? (
             <>
               <div className={styles.divider} />
