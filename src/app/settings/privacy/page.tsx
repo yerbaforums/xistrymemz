@@ -16,6 +16,8 @@ interface PrivacySettings {
   enableLikes: boolean
   showViewCount: boolean
   lookingForCollaborators: boolean
+  passportVisibility: 'public' | 'hidden'
+  showExactCoords: boolean
 }
 
 const PRIVACY_OPTIONS = [
@@ -40,6 +42,8 @@ export default function PrivacySettingsPage() {
     enableLikes: true,
     showViewCount: true,
     lookingForCollaborators: false,
+    passportVisibility: 'public',
+    showExactCoords: false,
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -49,7 +53,8 @@ export default function PrivacySettingsPage() {
       .then(res => res.json())
       .then(data => {
         if (data.user) {
-          setSettings({
+          setSettings(prev => ({
+            ...prev,
             showShop: data.user.showShop ?? true,
             showSchool: data.user.showSchool ?? true,
             enableTips: data.user.enableTips ?? true,
@@ -57,8 +62,20 @@ export default function PrivacySettingsPage() {
             enableLikes: data.user.enableLikes ?? true,
             showViewCount: data.user.showViewCount ?? true,
             lookingForCollaborators: data.user.lookingForCollaborators ?? false,
-          })
+          }))
         }
+      })
+      .catch(() => {})
+    fetch('/api/user/preferences')
+      .then(res => (res.ok ? res.json() : null))
+      .then(data => {
+        const privacy = data?.preferences?.privacy
+        if (!privacy) return
+        setSettings(prev => ({
+          ...prev,
+          passportVisibility: privacy.passportVisibility === 'hidden' ? 'hidden' : 'public',
+          showExactCoords: privacy.showExactCoords === true,
+        }))
       })
       .catch(() => {})
       .finally(() => setLoading(false))
@@ -70,9 +87,13 @@ export default function PrivacySettingsPage() {
   }
 
   const toggle = async (id: keyof PrivacySettings) => {
+    if (id === 'passportVisibility' || id === 'showExactCoords') return
     const next = { ...settings, [id]: !settings[id] }
     setSettings(next)
   }
+
+  const setPassportVisibility = (v: 'public' | 'hidden') => setSettings(prev => ({ ...prev, passportVisibility: v }))
+  const setExactCoords = (v: boolean) => setSettings(prev => ({ ...prev, showExactCoords: v }))
 
   const save = async () => {
     setSaving(true)
@@ -80,10 +101,29 @@ export default function PrivacySettingsPage() {
       const res = await fetch('/api/users/me', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings)
+        body: JSON.stringify({
+          showShop: settings.showShop,
+          showSchool: settings.showSchool,
+          enableTips: settings.enableTips,
+          enableReplies: settings.enableReplies,
+          enableLikes: settings.enableLikes,
+          showViewCount: settings.showViewCount,
+          lookingForCollaborators: settings.lookingForCollaborators,
+        })
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to save')
+      const prefRes = await fetch('/api/user/preferences', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          privacy: {
+            passportVisibility: settings.passportVisibility,
+            showExactCoords: settings.showExactCoords,
+          },
+        }),
+      })
+      if (!prefRes.ok) throw new Error('Failed to save passport visibility')
       addToast?.('Privacy settings saved', 'success')
     } catch (err) {
       addToast?.(err instanceof Error ? err.message : 'Failed to save', 'error')
@@ -131,6 +171,54 @@ export default function PrivacySettingsPage() {
               </button>
             </label>
           ))}
+        </div>
+        <div className={styles.list} style={{ marginTop: 16 }}>
+          <div className={styles.row}>
+            <div className={styles.rowInfo}>
+              <span className={styles.rowIcon}>🌍</span>
+              <div>
+                <strong>Passport location</strong>
+                <p>Hidden still powers your private discovery, radius and trip planning</p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                type="button"
+                className={`${styles.toggle} ${settings.passportVisibility === 'public' ? styles.toggleOn : ''}`}
+                onClick={() => setPassportVisibility('public')}
+                role="switch"
+                aria-checked={settings.passportVisibility === 'public'}
+                aria-label="Passport public"
+              >
+                <span className={styles.toggleKnob} />
+              </button>
+              <span style={{ fontSize: '0.8rem', alignSelf: 'center' }}>
+                {settings.passportVisibility === 'public' ? 'Public' : 'Hidden'}
+              </span>
+              <button type="button" onClick={() => setPassportVisibility(settings.passportVisibility === 'public' ? 'hidden' : 'public')} style={{ fontSize: '0.8rem' }}>
+                Toggle
+              </button>
+            </div>
+          </div>
+          <label className={styles.row} style={{ opacity: settings.passportVisibility === 'hidden' ? 0.5 : 1 }}>
+            <div className={styles.rowInfo}>
+              <span className={styles.rowIcon}>📍</span>
+              <div>
+                <strong>Show exact pin</strong>
+                <p>Public city-level by default; opt in to share coordinates</p>
+              </div>
+            </div>
+            <button
+              className={`${styles.toggle} ${settings.showExactCoords ? styles.toggleOn : ''}`}
+              onClick={() => setExactCoords(!settings.showExactCoords)}
+              disabled={settings.passportVisibility === 'hidden'}
+              role="switch"
+              aria-checked={settings.showExactCoords}
+              aria-label="Show exact pin"
+            >
+              <span className={styles.toggleKnob} />
+            </button>
+          </label>
         </div>
         <button className={styles.saveBtn} onClick={save} disabled={saving}>
           {saving ? 'Saving...' : 'Save Privacy Settings'}

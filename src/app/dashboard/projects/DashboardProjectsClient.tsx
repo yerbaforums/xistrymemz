@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
 import styles from './projects.module.css'
 
@@ -77,6 +79,26 @@ export default function DashboardProjectsClient({ initialProjects }: DashboardPr
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [bulkBusy, setBulkBusy] = useState(false)
+
+  // Golden path: start a project from one of my open requests (prefilled + auto-linked).
+  const { data: session } = useSession()
+  const router = useRouter()
+  const [openRequests, setOpenRequests] = useState<{ id: string; title: string }[]>([])
+  useEffect(() => {
+    const uid = session?.user?.id
+    if (!uid) return
+    fetch(`/api/requests?userId=${uid}&pageSize=20`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => {
+        const list = d?.items || []
+        setOpenRequests(
+          list
+            .filter((r: { status?: string }) => r.status !== 'COMPLETED' && r.status !== 'CANCELLED')
+            .map((r: { id: string; title: string }) => ({ id: r.id, title: r.title }))
+        )
+      })
+      .catch(() => {})
+  }, [session?.user?.id])
 
   const toggleSelect = (id: string) => {
     setSelected(prev => {
@@ -253,6 +275,19 @@ export default function DashboardProjectsClient({ initialProjects }: DashboardPr
         </div>
         <div className={styles.headerActions}>
           <Link href="/projects" ><Button variant="secondary">Explore Projects</Button></Link>
+          {openRequests.length > 0 ? (
+            <select
+              aria-label="Start project from a request"
+              defaultValue=""
+              onChange={e => { if (e.target.value) router.push(`/projects/new?fromRequest=${e.target.value}`) }}
+              style={{ height: 36, borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: '0.82rem', padding: '0 8px', cursor: 'pointer', maxWidth: 220 }}
+            >
+              <option value="">🚀 New from request ▾</option>
+              {openRequests.map(r => <option key={r.id} value={r.id}>{r.title}</option>)}
+            </select>
+          ) : (
+            <Link href="/dashboard/requests" ><Button variant="secondary">🚀 Start from a request</Button></Link>
+          )}
           <Button onClick={() => setShowCreateModal(true)} variant="primary">+ New Project</Button>
         </div>
       </div>

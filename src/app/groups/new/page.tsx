@@ -8,6 +8,7 @@ import { useToast } from '@/context/ToastContext'
 import Loading from '@/components/Loading'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import ImageUploader from '@/components/ImageUploader'
+import NextStepsSheet from '@/components/NextStepsSheet'
 
 export default function NewGroupPage() {
   const router = useRouter()
@@ -19,6 +20,7 @@ export default function NewGroupPage() {
   const [image, setImage] = useState<string[]>([])
   const [creating, setCreating] = useState(false)
   const [authenticated, setAuthenticated] = useState(false)
+  const [createdGroup, setCreatedGroup] = useState<{ id: string } | null>(null)
 
   useEffect(() => {
     fetch('/api/auth/session')
@@ -40,8 +42,10 @@ export default function NewGroupPage() {
 
       if (res.ok) {
         const group = await res.json()
+        const id = group?.id || group?.data?.id
         success('Group created!')
-        router.push(`/groups/${group.id}`)
+        if (id) setCreatedGroup({ id })
+        else router.push('/groups')
       } else {
         const err = await res.json()
         error(err.error || 'Failed to create group')
@@ -174,6 +178,19 @@ export default function NewGroupPage() {
           </div>
         </form>
       </div>
+      {createdGroup && (
+        <NextStepsSheet
+          open={true}
+          entityType="GROUP"
+          entityId={createdGroup.id}
+          title={name.trim() || 'Group'}
+          image={image[0] || null}
+          detailUrl={`/groups/${createdGroup.id}`}
+          extraAction={{ label: '🚀 Start a project with this group', href: `/projects/new?fromGroup=${createdGroup.id}` }}
+          onClose={() => setCreatedGroup(null)}
+          onView={() => router.push(`/groups/${createdGroup.id}`)}
+        />
+      )}
     </div>
   )
 }

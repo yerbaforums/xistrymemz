@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import styles from './page.module.css'
@@ -12,6 +12,7 @@ import HashtagInput from '@/components/HashtagInput'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
 import LocationPicker from '@/components/LocationPicker'
 import AssetPicker from '@/components/AssetPicker'
+import NextStepsSheet from '@/components/NextStepsSheet'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import { PROJECT_CATEGORIES } from '@/lib/project-categories'
 import type { UserAsset } from '@/components/AssetPicker'
@@ -124,6 +125,55 @@ export default function NewProjectPage() {
   const [published, setPublished] = useState(true)
 
   const [saving, setSaving] = useState(false)
+  const [createdProjectId, setCreatedProjectId] = useState<string | null>(null)
+  const [fromRequestId, setFromRequestId] = useState<string | null>(null)
+  const [fromRequestTitle, setFromRequestTitle] = useState('')
+  const [fromGroupId, setFromGroupId] = useState<string | null>(null)
+  const [fromGroupName, setFromGroupName] = useState('')
+
+  // Prefill from a request (?fromRequest=<id>) or group (?fromGroup=<id>):
+  // no Suspense-safe useSearchParams here, so read the query string on mount.
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search)
+      const reqId = params.get('fromRequest')
+      const grpId = params.get('fromGroup')
+      if (reqId) {
+        setFromRequestId(reqId)
+        fetch(`/api/requests/${reqId}`)
+          .then(r => (r.ok ? r.json() : null))
+          .then(d => {
+            const req = d?.data || d
+            if (!req || req.id !== reqId) return
+            if (req.title) setTitle(req.title)
+            if (req.description) setDescription(req.description)
+            if (req.category) setCategory(req.category)
+            if (req.location) setLocation({ text: req.location, latitude: req.latitude ?? null, longitude: req.longitude ?? null })
+            if (req.goalAmount) setGoalAmount(String(req.goalAmount))
+            const tags = req.hashtags?.map((h: { tag?: string; hashtag?: { tag?: string } }) => h.tag || h.hashtag?.tag).filter(Boolean)
+            if (tags?.length) setHashtags(tags)
+            setFromRequestTitle(req.title || '')
+            setTemplate('custom')
+          })
+          .catch(() => {})
+      } else if (grpId) {
+        setFromGroupId(grpId)
+        fetch(`/api/groups/${grpId}`)
+          .then(r => (r.ok ? r.json() : null))
+          .then(g => {
+            if (!g || g.id !== grpId) return
+            if (g.name) setTitle(`${g.name} Project`)
+            if (g.description) setDescription(g.description)
+            const tags = g.hashtags?.map((h: { tag?: string; hashtag?: { tag?: string } }) => h.tag || h.hashtag?.tag).filter(Boolean)
+            if (tags?.length) setHashtags(tags)
+            setFromGroupName(g.name || '')
+            setLookingForCollaborators(true)
+            setTemplate('custom')
+          })
+          .catch(() => {})
+      }
+    } catch {}
+  }, [])
 
   const applyTemplate = (tpl: typeof TEMPLATES[0]) => {
     setTemplate(tpl.id)
@@ -186,8 +236,20 @@ export default function NewProjectPage() {
       }
 
       const data = await res.json()
-      success('Project created!')
-      router.push(`/projects/${data.data.id}`)
+      const projectId = data?.data?.id
+      if (projectId && fromRequestId) {
+        // Auto-link the source request (best effort — never block nav).
+        fetch(`/api/requests/${fromRequestId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ projectId }),
+        }).catch(() => {})
+        success('Project created and linked to request!')
+      } else {
+        success('Project created!')
+      }
+      if (projectId) setCreatedProjectId(projectId)
+      else router.refresh()
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to create project'
       toastError(msg)
@@ -218,6 +280,19 @@ export default function NewProjectPage() {
         <h1>New Project</h1>
         <p>Start with a template or create from scratch</p>
       </div>
+
+      {fromRequestId && (
+        <div className={styles.banner} role="status">
+          <span>🚀</span>
+          <span>Starting from request{fromRequestTitle ? <>: <Link href={`/requests/${fromRequestId}`}>{fromRequestTitle}</Link></> : ''} — details prefilled, will auto-link on create.</span>
+        </div>
+      )}
+      {fromGroupId && (
+        <div className={styles.banner} role="status">
+          <span>👥</span>
+          <span>Starting with group{fromGroupName ? <>: <Link href={`/groups/${fromGroupId}`}>{fromGroupName}</Link></> : ''} — details prefilled for the team.</span>
+        </div>
+      )}
 
       {!template && (
         <div className={styles.templateGrid}>
@@ -564,6 +639,19 @@ export default function NewProjectPage() {
             </>
           )}
         </div>
+      )}
+      {createdProjectId && (
+        <NextStepsSheet
+          open={true}
+          entityType="PROJECT"
+          entityId={createdProjectId}
+          title={title.trim() || 'Untitled Project'}
+          image={coverImage[0] || null}
+          detailUrl={`/projects/${createdProjectId}`}
+          extraAction={{ label: '📝 Create a request for this project', href: `/requests/new?projectId=${createdProjectId}` }}
+          onClose={() => setCreatedProjectId(null)}
+          onView={() => router.push(`/projects/${createdProjectId}`)}
+        />
       )}
     </div>
   )

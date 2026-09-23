@@ -29,7 +29,7 @@ export default function StartHereSection() {
       title: t('startHereCollaborateTitle'),
       desc: t('startHereCollaborateDesc'),
       cta: t('startHereCollaborateCta'),
-      href: '/community',
+      href: '/directory?section=white',
     },
   ]
 

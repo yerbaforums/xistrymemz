@@ -52,6 +52,9 @@ export default function PassportPage() {
   const [longitude, setLongitude] = useState<number | null>(null)
   const [traveling, setTraveling] = useState(false)
   const [lookingForCollaborators, setLookingForCollaborators] = useState(false)
+  const [passportVisibility, setPassportVisibility] = useState<'public' | 'hidden'>('public')
+  const [showExactCoords, setShowExactCoords] = useState(false)
+  const [privacySaving, setPrivacySaving] = useState(false)
   const [geoLoading, setGeoLoading] = useState(false)
   const [geoSearchLoading, setGeoSearchLoading] = useState(false)
 
@@ -127,6 +130,15 @@ export default function PassportPage() {
     }
     try { const r = await fetch('/api/users/locations'); if (r.ok) { const d = await r.json(); setSavedLocations(d?.data || d || []) } } catch {}
     try { const r = await fetch('/api/locations/categories'); if (r.ok) { const d = await r.json(); setCategories(d?.data || d || []) } } catch {}
+    try {
+      const r = await fetch('/api/user/preferences')
+      if (r.ok) {
+        const d = await r.json()
+        const privacy = d?.preferences?.privacy
+        if (privacy?.passportVisibility === 'hidden') setPassportVisibility('hidden')
+        if (privacy?.showExactCoords === true) setShowExactCoords(true)
+      }
+    } catch {}
     setLoading(false)
   }
 
@@ -256,6 +268,22 @@ export default function PassportPage() {
       else toastError('Failed to update passport')
     } catch { toastError('Failed to update passport') }
     finally { setSaving(false) }
+  }
+
+  const handleSavePrivacy = async (nextVisibility: 'public' | 'hidden', nextExact: boolean) => {
+    setPassportVisibility(nextVisibility)
+    setShowExactCoords(nextExact)
+    setPrivacySaving(true)
+    try {
+      const res = await fetch('/api/user/preferences', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ privacy: { passportVisibility: nextVisibility, showExactCoords: nextExact } }),
+      })
+      if (res.ok) toastSuccess(nextVisibility === 'hidden' ? 'Passport location hidden from public' : 'Passport location visible to public')
+      else toastError('Failed to update visibility')
+    } catch { toastError('Failed to update visibility') }
+    finally { setPrivacySaving(false) }
   }
 
   const handleAddSearch = async () => {
@@ -475,6 +503,48 @@ export default function PassportPage() {
               Switch to {traveling ? '📍 Home' : '✈️ Traveling'}
             </button>
           </div>
+        </div>
+
+        <div className={styles.mb12} style={{ border: '1px solid var(--border-color)', borderRadius: 8, padding: 12 }}>
+          <label className={styles.label}>👁️ Public passport visibility</label>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 6 }}>
+            <button
+              type="button"
+              onClick={() => handleSavePrivacy('public', showExactCoords)}
+              disabled={privacySaving}
+              className={styles.geoBtn}
+              aria-pressed={passportVisibility === 'public'}
+              style={{ opacity: passportVisibility === 'public' ? 1 : 0.65 }}
+            >
+              🌍 Public
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSavePrivacy('hidden', showExactCoords)}
+              disabled={privacySaving}
+              className={styles.geoBtn}
+              aria-pressed={passportVisibility === 'hidden'}
+              style={{ opacity: passportVisibility === 'hidden' ? 1 : 0.65 }}
+            >
+              🔒 Hidden
+            </button>
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+              <input
+                type="checkbox"
+                checked={showExactCoords}
+                onChange={e => handleSavePrivacy(passportVisibility, e.target.checked)}
+                disabled={privacySaving || passportVisibility === 'hidden'}
+              />
+              Show exact pin to public
+            </label>
+          </div>
+          <p className={styles.rangeDesc} style={{ marginBottom: 0 }}>
+            {passportVisibility === 'hidden'
+              ? 'Hidden: your profile, directory cards and maps omit your city, area and pins. Your private discovery, radius filters and trip planning still use it.'
+              : showExactCoords
+                ? 'Public with exact pin: others see your city plus the map pin and coordinates.'
+                : 'Public city-level: others see your city only — no area, pins or coordinates.'}
+          </p>
         </div>
 
         <div className={styles.mb12}>

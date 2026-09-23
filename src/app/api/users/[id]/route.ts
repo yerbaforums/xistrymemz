@@ -2,6 +2,7 @@ import { apiSuccess, apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { sanitizePassportForPublic } from '@/lib/passport-privacy'
 
 export async function GET(
   request: Request,
@@ -28,6 +29,7 @@ export async function GET(
       website: true,
       userClass: true,
       role: true,
+      timeZone: true,
       shopName: true,
       shopSlug: true,
       schoolName: true,
@@ -264,7 +266,7 @@ export async function GET(
     })
 
     // Fetch user links, donation info, and badges
-    const [links, donationAddresses, badges] = await Promise.all([
+    const [links, donationAddresses, badges, prefRow] = await Promise.all([
       prisma.userLink.findMany({
         where: { userId: user.id },
         orderBy: { sortOrder: 'asc' }
@@ -277,12 +279,21 @@ export async function GET(
         where: { userId: user.id },
         orderBy: { createdAt: 'desc' },
         take: 20
-      })
+      }),
+      prisma.user.findUnique({ where: { id: userId }, select: { preferences: true } }),
     ])
+
+    const isOwner = session?.user?.id === userId
+    const sanitized = sanitizePassportForPublic(user, (prefRow?.preferences as { privacy?: { passportVisibility?: string; showExactCoords?: boolean } } | null) ?? null, isOwner)
+    const sanitizedLocations = isOwner
+      ? userLocations
+      : ((sanitized as { passportVisibility?: string }).passportVisibility === 'hidden'
+        ? []
+        : userLocations.map(loc => ({ ...loc, latitude: null, longitude: null })))
 
     return NextResponse.json({
       user: {
-        ...user,
+        ...sanitized,
         projectCount: user._count.projects,
         postCount: user._count.posts,
         productCount: user._count.products,
@@ -305,7 +316,7 @@ export async function GET(
         requestCount,
         groupCount: groupMemberships.length,
         badges,
-        userLocations: userLocations.map(loc => ({
+        userLocations: sanitizedLocations.map(loc => ({
           id: loc.id,
           name: loc.name,
           location: loc.location,

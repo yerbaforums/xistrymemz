@@ -1233,7 +1233,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                 entityId={request.id}
                 entityTitle={request.title}
                 entityImage={request.imageUrl || undefined}
-                variant="ghost"
+                variant="secondary"
                 label="Pin to Board"
               />
               {isOwner && (
@@ -1241,8 +1241,8 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                   🔗 Link to Project
                 </Button>
               )}
-              <Link href="/dashboard/projects" className={styles.createProjectBtn}>
-                Create Project
+              <Link href={`/projects/new?fromRequest=${request.id}`} className={styles.createProjectBtn}>
+                🚀 Start project from this request
               </Link>
             </div>
           )}

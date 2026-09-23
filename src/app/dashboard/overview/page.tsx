@@ -18,6 +18,7 @@ import AchievementCard from './AchievementCard'
 import DashboardSection from './DashboardSection'
 import { EmptyState } from '@/components/EmptyState'
 import ActionQueue, { type ActionQueueItem } from '@/components/ActionQueue'
+import OverviewCustomizer from '@/components/overview/OverviewCustomizer'
 
 
 export const dynamic = 'force-dynamic'
@@ -305,7 +306,7 @@ export default async function DashboardOverview({
 
   /* Shared quick-actions block — used by both the new-user and active-user views. */
   const renderQuickActions = () => (
-    <div className={styles.quickActions}>
+    <div className={styles.quickActions} data-module="quickActions">
       <h3>Quick Actions</h3>
       <div className={styles.actionButtons}>
         {coreQuickActions.map(a => (
@@ -328,7 +329,8 @@ export default async function DashboardOverview({
   )
 
   return (
-    <div className={styles.overview}>
+    <div className={styles.overview} id="overview-root">
+      <OverviewCustomizer />
 
 
       <div className={styles.welcomeHeader}>
@@ -337,7 +339,9 @@ export default async function DashboardOverview({
       </div>
 
       {attentionItems.length > 0 && (
-        <ActionQueue items={attentionItems} />
+        <div data-module="attention">
+          <ActionQueue items={attentionItems} />
+        </div>
       )}
 
       {/* Onboarding resume prompt for users who skipped before finishing */}
@@ -382,9 +386,15 @@ export default async function DashboardOverview({
             hasSchool={!!user?.schoolSlug}
           />
           {renderQuickActions()}
-          <DashboardWidgets />
+          <div data-module="widgets">
+            <div data-module="widgets">
+             <DashboardWidgets />
+           </div>
+          </div>
           <ManageChannels />
-          <DashboardTodo />
+          <div data-module="todo">
+            <DashboardTodo />
+          </div>
         </>
       ) : (
         <>
@@ -392,7 +402,7 @@ export default async function DashboardOverview({
           <FeatureBanner />
           <TipCard />
 
-          <div className={styles.overviewStats}>
+          <div className={styles.overviewStats} data-module="stats">
             {coreStats.map(stat => (
               stat.href ? (
                 <Link key={stat.label} href={stat.href} className={styles.overviewStatCard}>
@@ -429,7 +439,7 @@ export default async function DashboardOverview({
           <ManageChannels />
 
           <div className={overviewStyles.overviewList}>
-            <DashboardSection id="projects" title={t('projects')} icon="📦" action={<Link href="/dashboard/projects" className={styles.viewAll}>View all →</Link>}>
+            <div data-module="projects"><DashboardSection id="projects" title={t('projects')} icon="📦" action={<Link href="/dashboard/projects" className={styles.viewAll}>View all →</Link>}>
               {projects.length > 0 ? (
                 <div className={styles.activityList}>
                   {projects.map(project => (
@@ -446,9 +456,9 @@ export default async function DashboardOverview({
               ) : (
                 <EmptyState icon="🚀" title="No projects yet" description="Start your first project and track progress with milestones." action={{ label: 'Create Project', href: '/dashboard/projects' }} />
               )}
-            </DashboardSection>
+            </DashboardSection></div>
 
-            <DashboardSection id="feed" title={t('feed')} icon="📡" action={<Link href="/dashboard/feed" className={styles.viewAll}>View all →</Link>}>
+            <div data-module="feed"><DashboardSection id="feed" title={t('feed')} icon="📡" action={<Link href="/dashboard/feed" className={styles.viewAll}>View all →</Link>}>
               {recentFeedPosts.length > 0 ? (
                 <div className={styles.feedCompact}>
                   {recentFeedPosts.map(post => (
@@ -466,9 +476,9 @@ export default async function DashboardOverview({
               ) : (
                 <EmptyState icon="✏️" title="No recent posts" description="Connect with people or write your own post to get started." action={{ label: 'Write a Post', href: '/dashboard/feed' }} />
               )}
-            </DashboardSection>
+            </DashboardSection></div>
 
-            <DashboardSection id="studio" title="Recent Studio Items" icon="🎨" action={<Link href="/dashboard/studio" className={styles.viewAll}>Open Studio →</Link>}>
+            <div data-module="studio"><DashboardSection id="studio" title="Recent Studio Items" icon="🎨" action={<Link href="/dashboard/studio" className={styles.viewAll}>Open Studio →</Link>}>
             {(() => {
               const studioItems = [
                 ..._projects.map(p => ({ type: '🚀', label: 'Project', title: p.title, date: p.createdAt, href: `/projects/${p.id}` })),
@@ -494,10 +504,10 @@ export default async function DashboardOverview({
                 </div>
               )
             })()}
-            </DashboardSection>
+            </DashboardSection></div>
           </div>
 
-          <details className={styles.collapsibleSection}>
+          <details className={styles.collapsibleSection} data-module="more">
             <summary className={styles.collapsibleSummary}>📊 More Stats &amp; Tools</summary>
             <div className={overviewStyles.overviewGrid}>
               <ChecklistCard
@@ -580,7 +590,9 @@ export default async function DashboardOverview({
             )}
           </details>
 
-          <DashboardTodo />
+          <div data-module="todo">
+            <DashboardTodo />
+          </div>
         </>
       )}
     </div>

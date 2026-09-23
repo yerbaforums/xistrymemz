@@ -844,7 +844,7 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
                             entityImage={project.imageUrl || undefined}
                             entityLatitude={project.latitude || undefined}
                             entityLongitude={project.longitude || undefined}
-                            variant="ghost"
+                            variant="secondary"
                               label="Pin to Board"
                           />
                         </div>

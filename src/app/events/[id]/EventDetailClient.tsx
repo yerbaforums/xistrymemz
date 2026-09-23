@@ -59,6 +59,8 @@ function EventDetailContent() {
   const [showTicketScan, setShowTicketScan] = useState(false)
   const [myTicket, setMyTicket] = useState<{ paymentStatus: string; ticketCode: string } | null>(null)
   const [showInviteModal, setShowInviteModal] = useState(false)
+  const [savingToPlanner, setSavingToPlanner] = useState(false)
+  const [savedToPlanner, setSavedToPlanner] = useState(false)
   const [inviteSearch, setInviteSearch] = useState('')
   const [inviteResults, setInviteResults] = useState<Array<{ id: string; name: string | null; image: string | null }>>([])
   const [selectedUsers, setSelectedUsers] = useState<Array<{ id: string; name: string | null }>>([])
@@ -303,6 +305,18 @@ function EventDetailContent() {
       setNextDates([])
     }
   }, [event?.id, event?.recurrenceRule])
+
+  useEffect(() => {
+    if (event?.id && userId) {
+      fetch('/api/user/events')
+        .then(r => (r.ok ? r.json() : null))
+        .then(d => {
+          const items = d?.items || []
+          setSavedToPlanner(items.some((i: { description?: string | null }) => (i.description || '').includes(`[evtid:${event.id}]`)))
+        })
+        .catch(() => {})
+    }
+  }, [event?.id, userId])
 
   useEffect(() => {
     if (event?.isTicketed && userId === event.organizer?.id) {
@@ -773,6 +787,61 @@ function EventDetailContent() {
               </div>
             )}
 
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '8px 0' }}>
+              {event.eventDate && (
+                <AddToCalendar params={{
+                  title: event.title,
+                  description: event.description || undefined,
+                  location: event.location || undefined,
+                  startTime: event.eventDate!,
+                  endTime: event.endDate || event.eventDate!,
+                }} label="Add to Calendar" />
+              )}
+              {event.eventDate && userId && (
+                <Button
+                  variant="secondary"
+                  disabled={savingToPlanner}
+                  onClick={async () => {
+                    setSavingToPlanner(true)
+                    try {
+                      if (savedToPlanner) {
+                        const del = await fetch(`/api/user/events?sourceEventId=${event.id}`, { method: 'DELETE' })
+                        if (del.ok) {
+                          setSavedToPlanner(false)
+                          success('Removed from My Planner')
+                        } else { error('Failed to remove') }
+                      } else {
+                        const res = await fetch('/api/user/events', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            title: event.title,
+                            description: event.description || null,
+                            startDate: event.eventDate,
+                            endDate: event.endDate || event.eventDate,
+                            location: event.location || null,
+                            sourceEventId: event.id,
+                          }),
+                        })
+                        if (res.ok) {
+                          setSavedToPlanner(true)
+                          success('Saved to My Planner — see Planner + Trips can link it')
+                        } else {
+                          const d = await res.json().catch(() => ({}))
+                          error(d.error || 'Failed to save')
+                        }
+                      }
+                    } catch { error('Failed to save') }
+                    finally { setSavingToPlanner(false) }
+                  }}
+                >
+                  {savingToPlanner ? 'Saving...' : savedToPlanner ? '✓ In My Planner (tap to remove)' : '🗓️ Save to My Planner'}
+                </Button>
+              )}
+              <Link href="/dashboard/planning" className={styles.joinBtn} style={{ textDecoration: 'none', textAlign: 'center' }}>
+                🗺️ Plan a trip around this
+              </Link>
+            </div>
             <div className={styles.joinActions}>
               {!isOwner && !event.joined && (
                 <>
@@ -880,7 +949,7 @@ function EventDetailContent() {
                   entityImage={event.imageUrl || undefined}
                   entityLatitude={!event.isGated ? (event.latitude || undefined) : undefined}
                   entityLongitude={!event.isGated ? (event.longitude || undefined) : undefined}
-                  variant="ghost"
+                  variant="secondary"
                   label="Pin to Board"
                 />
               )}

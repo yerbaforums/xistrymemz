@@ -9,6 +9,8 @@ export interface UserPreferences {
   tools?: Record<string, boolean>
   notifications?: Record<string, boolean>
   delivery?: Record<string, boolean>
+  privacy?: { passportVisibility?: 'public' | 'hidden'; showExactCoords?: boolean }
+  dashboard?: { preset?: string; density?: 'comfortable' | 'compact'; modules?: Record<string, { visible?: boolean; order?: number }> }
 }
 
 export function useUserPreferences() {

@@ -122,7 +122,7 @@ export default function HeroSection() {
             placeholder={t('heroSearchPlaceholder')}
             onKeyDown={e => {
               if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
-                router.push(`/search?q=${encodeURIComponent((e.target as HTMLInputElement).value.trim())}`)
+                router.push(`/directory?q=${encodeURIComponent((e.target as HTMLInputElement).value.trim())}`)
               }
             }}
           />

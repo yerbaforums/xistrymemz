@@ -2019,3 +2019,8 @@
 .noUnderline { text-decoration: none; }
 .inlineFlex { display: inline-flex; align-items: center; }
 .flexWrap { display: flex; flex-wrap: wrap; }
+
+/* Overview custom density (OverviewCustomizer). */
+#overview-root[data-density="compact"] .overviewStats { gap: 8px; }
+#overview-root[data-density="compact"] .activityList { gap: 6px; }
+#overview-root[data-density="compact"] .quickActions { margin-bottom: 12px; }

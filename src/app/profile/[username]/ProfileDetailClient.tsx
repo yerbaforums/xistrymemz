@@ -77,6 +77,8 @@ interface ProfileUser {
   latitude: number | null
   longitude: number | null
   searchRadius: number
+  passportVisibility?: 'public' | 'hidden' | null
+  timeZone?: string | null
   website: string | null
   userClass: string | null
   role: string
@@ -812,11 +814,15 @@ export default function ProfilePage() {
               )}
              
              <div className={styles.meta}>
-               {user.location && (
+               {user.location ? (
                  <span className={styles.metaItem}>
                    <span>📍</span> {user.location}
                  </span>
-               )}
+               ) : user.passportVisibility === 'hidden' && !isOwnProfile ? (
+                 <span className={styles.metaItem} title="This user keeps their passport location private">
+                   <span>🔒</span> Location private
+                 </span>
+               ) : null}
                {user.website && (
                  <a href={user.website.startsWith('http') ? user.website : `https://${user.website}`} target="_blank" rel="noopener noreferrer" className={styles.metaItem}>
                    <span>🔗</span> {user.website.replace(/^https?:\/\//, '')}
@@ -875,6 +881,43 @@ export default function ProfilePage() {
                   {user.verifiedPhone && <span className={styles.compactVBadge} title="Verified phone">✓P</span>}
                   {user.verifiedIdentity && <span className={styles.compactVBadge} title="Verified ID">✓ID</span>}
                   {user.verifiedAddress && <span className={styles.compactVBadge} title="Verified address">✓A</span>}
+                </div>
+                {user.passportVisibility === 'hidden' && !isOwnProfile && (
+                  <div style={{ marginTop: 6, fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                    🔒 Passport location is private — scheduling and messaging still work.
+                  </div>
+                )}
+              </div>
+
+              <div className={styles.earthPassport} style={{ marginTop: 8 }}>
+                <div className={styles.passportTopRow}>
+                  <span className={styles.passportGlobe}>🗓️</span>
+                  <span className={styles.passportName}>Schedule & Navigate</span>
+                  {user.timeZone && <span className={styles.passportRadius}>{user.timeZone}</span>}
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
+                  {!isOwnProfile && status === 'authenticated' && (
+                    <Button onClick={() => setShowAppointmentModal(true)} className={styles.messageBtn}>📅 Book time</Button>
+                  )}
+                  <Link href={isOwnProfile ? '/dashboard/appointments' : `/dashboard/messages?user=${user.id}`} className={styles.messageBtn}>
+                    {isOwnProfile ? '📅 My Planner' : '💬 Plan via message'}
+                  </Link>
+                  <Link href="/dashboard/planning" className={styles.messageBtn}>🗺️ Trip planning</Link>
+                  {(user.latitude && user.longitude) || user.location ? (
+                    <a
+                      href={user.latitude && user.longitude
+                        ? `https://www.google.com/maps/dir/?api=1&destination=${user.latitude},${user.longitude}`
+                        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(user.location || '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.messageBtn}
+                    >
+                      🧭 Directions
+                    </a>
+                  ) : null}
+                </div>
+                <div style={{ fontSize: '0.76rem', color: 'var(--text-secondary)', marginTop: 6 }}>
+                  Bookings live in My Planner with your events. Trips stay separate — link stops to events from planning.
                 </div>
               </div>
 

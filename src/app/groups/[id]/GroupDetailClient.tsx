@@ -617,6 +617,9 @@ function GroupDetailContent() {
                 </>
               )
             )}
+            {group.isMember && (
+              <Link href={`/projects/new?fromGroup=${group.id}`} className={styles.editBtn}>🚀 Start group project</Link>
+            )}
             {group.isAdmin && (
               <>
                 <Button onClick={() => setShowEditModal(true)} className={styles.editBtn}>Edit</Button>
@@ -629,7 +632,7 @@ function GroupDetailContent() {
                 entityId={group.id}
                 entityTitle={group.name}
                 entityImage={group.imageUrl || undefined}
-                variant="ghost"
+                variant="secondary"
                 label="Pin to Board"
               />
             )}

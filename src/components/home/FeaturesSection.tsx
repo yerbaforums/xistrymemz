@@ -29,7 +29,7 @@ export default function FeaturesSection() {
       title: t('connectAndShare'),
       icon: '🌐',
       features: [
-        { icon: '👥', title: 'Members Directory', desc: 'Discover and connect with members in your community and beyond.', href: '/community' },
+        { icon: '👥', title: 'Members Directory', desc: 'Discover and connect with members in your community and beyond — also browsable as White Pages in the phonebook directory.', href: '/directory?section=white' },
         { icon: '🔗', title: 'Connections', desc: 'Build your network, follow activity, and collaborate with trusted peers.', href: '/connections' },
         { icon: '👥', title: 'Groups', desc: 'Find your people. Join or create groups around interests, locations, or projects.', href: '/community/groups' },
         { icon: '💬', title: 'Forum', desc: 'Discuss ideas, ask questions, and share knowledge with the community.', href: '/community/forum' },
@@ -43,6 +43,11 @@ export default function FeaturesSection() {
         { icon: '🔗', title: 'Link Embeds', desc: 'Paste a YouTube, Vimeo, or media link anywhere — it plays inline, no upload needed.', href: '/dashboard/feed' },
         { icon: '📌', title: 'Boards', desc: 'Pin announcements, listings, and cards to location-based community bulletin boards.', href: '/boards' },
         { icon: '🌐', title: 'Discover', desc: 'Browse an interactive map of everything near you — people, products, events, and projects.', href: '/discover' },
+        { icon: '📋', title: 'Phonebook Directory', desc: 'Master list plus old-school pages: White for members, Yellow for businesses, Blue for events, Green for requests, Violet for projects. Sort by name, newest, or nearest to your passport.', href: '/directory' },
+        { icon: '🔒', title: 'Passport privacy', desc: 'Hide your location from the public or share city-level only. Your private discovery, radius filters, and trip planning keep working.', href: '/dashboard/passport' },
+        { icon: '🗓️', title: 'Save to Planner', desc: 'One tap saves any event to your personal planner alongside appointments. Trips stay separate but link to the same events.', href: '/dashboard/appointments' },
+        { icon: '🛠️', title: 'Custom dashboard', desc: 'Organizer, Seller, Teacher, Minimal, or Full presets — hide, reopen, and drag modules into your own order.', href: '/dashboard/overview' },
+        { icon: '🚀', title: 'Request → Project → Boards', desc: 'Need help? Post a request, gather a group, start a project from it, and pin it to the boards.', href: '/requests' },
         { icon: '📬', title: 'Inbox', desc: 'Unified inbox for messages, connection requests, offers, collaboration invites — and direct inquiries about your services.', href: '/dashboard/messages' },
       ]
     },
