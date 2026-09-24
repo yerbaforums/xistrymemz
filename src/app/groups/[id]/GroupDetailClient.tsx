@@ -398,6 +398,72 @@ function GroupDetailContent() {
     }
   }
 
+  const [submittingBuyId, setSubmittingBuyId] = useState<string | null>(null)
+  const [linkedRequest, setLinkedRequest] = useState<{ id: string; title: string } | null>(null)
+
+  // Barter-friendly close-out: pledges/support pool first, then the organizer
+  // submits one supplier request. Trade offers run natively on that request
+  // (listingType REQUEST) — no schema change; linked via [groupbuy:<id>] tag.
+  const handleSubmitBuyToSupplier = async (buyId: string) => {
+    const buy = group?.groupBuys?.find(b => b.id === buyId)
+    if (!buy || !group) return
+    setSubmittingBuyId(buyId)
+    try {
+      const res = await fetch('/api/requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: `Group buy: ${buy.title}`,
+          description: `${buy.description || ''}\n\nPooled by ${group.name}: $${buy.currentPrice} pledged by ${buy.currentSupporters} supporter${buy.currentSupporters === 1 ? '' : 's'} toward $${buy.targetPrice}.${buy.productUrl ? `\nSupplier listing: ${buy.productUrl}` : ''}\n[groupbuy:${buy.id}]`,
+          groupId: group.id,
+          goalAmount: buy.targetPrice,
+        }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Failed to create supplier request')
+      }
+      const created = await res.json()
+      const req = created?.data || created
+      const reqId: string | undefined = req?.id || req?.request?.id
+      await fetch(`/api/group-buys/${buyId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'SUBMITTED' }),
+      })
+      if (group) {
+        fetch(`/api/groups/${params.id}/group-buys`)
+          .then(r => r.json())
+          .then(buys => {
+            setGroup(g => g ? { ...g, groupBuys: buys } : g)
+            const updated = (buys as typeof buy[]).find(b => b.id === buyId)
+            if (updated) setSelectedBuy(updated)
+          })
+          .catch(() => {})
+      }
+      if (reqId) setLinkedRequest({ id: reqId, title: `Group buy: ${buy.title}` })
+      success('Supplier request submitted — trade offers now run on that request!')
+    } catch (e) {
+      error(e instanceof Error ? e.message : 'Failed to submit')
+    } finally {
+      setSubmittingBuyId(null)
+    }
+  }
+
+  useEffect(() => {
+    setLinkedRequest(null)
+    if (!selectedBuy || selectedBuy.status === 'ACTIVE' || !group) return
+    fetch(`/api/requests?groupId=${group.id}&pageSize=50`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => {
+        const items = d?.items || d?.data?.items || []
+        const match = (Array.isArray(items) ? items : []).find((r: { description?: string }) =>
+          (r.description || '').includes(`[groupbuy:${selectedBuy.id}]`))
+        if (match) setLinkedRequest({ id: match.id, title: match.title })
+      })
+      .catch(() => {})
+  }, [selectedBuy?.id])
+
   const handleCreateRequest = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!requestForm.title.trim()) return
@@ -814,6 +880,28 @@ function GroupDetailContent() {
                         <Button className={styles.viewSupportersBtn} onClick={() => handleViewSupporters(selectedBuy.id)}>
                           View {selectedBuy.currentSupporters} supporter{selectedBuy.currentSupporters > 1 ? 's' : ''}
                         </Button>
+                      )}
+                      {isBuyOwner(selectedBuy) && selectedBuy.status === 'ACTIVE' && (
+                        selectedBuy.currentSupporters >= selectedBuy.minSupporters ? (
+                          <Button
+                            className={styles.viewSupportersBtn}
+                            onClick={() => handleSubmitBuyToSupplier(selectedBuy.id)}
+                            disabled={submittingBuyId === selectedBuy.id}
+                          >
+                            {submittingBuyId === selectedBuy.id ? 'Submitting...' : '📤 Submit supplier request'}
+                          </Button>
+                        ) : (
+                          <p className={styles.buyOrganizer}>
+                            Pledges first: {selectedBuy.currentSupporters}/{selectedBuy.minSupporters} supporters — submit to a supplier once the minimum is met. Members can also pledge trade offers after submit.
+                          </p>
+                        )
+                      )}
+                      {linkedRequest && (
+                        <div className={styles.buyOrganizer} style={{ marginTop: 8 }}>
+                          📦 Supplier request:{' '}
+                          <Link href={`/requests/${linkedRequest.id}`}>{linkedRequest.title}</Link>
+                          {' '}— submit trade offers there (barter-friendly 🤝).
+                        </div>
                       )}
                       <p className={styles.buyOrganizer}>
                         Organized by <Link href={getUserProfileUrl(selectedBuy.organizer)}>{selectedBuy.organizer.name || 'Unknown'}</Link>

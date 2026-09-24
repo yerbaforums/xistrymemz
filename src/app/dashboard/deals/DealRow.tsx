@@ -29,6 +29,10 @@ const STATUS_COLOR: Record<string, string> = {
   CANCELLED: '#6b7280',
   REJECTED: '#ef4444',
   WITHDRAWN: '#6b7280',
+  REQUESTED: '#f59e0b',
+  BOOKED: '#3b82f6',
+  IN_TRANSIT: '#3b82f6',
+  DECLINED: '#ef4444',
 }
 
 const KIND_ICON: Record<string, string> = {
@@ -56,9 +60,24 @@ export default function DealRow({ deal, styles }: { deal: DealItem; styles: Reco
     }
   }
 
+  const runOrderAction = async (action: 'courier_accept' | 'courier_decline' | 'courier_pickup' | 'courier_delivered') => {
+    setBusy(action)
+    try {
+      const res = await fetch(`/api/orders/${deal.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      })
+      if (res.ok) router.refresh()
+    } catch { /* row refresh covers */ } finally {
+      setBusy(null)
+    }
+  }
+
   const isAppointment = deal.kind === 'Appointment'
   const isHost = deal.role === 'Host'
-  const final = ['COMPLETED', 'CANCELLED', 'REJECTED'].includes(deal.status)
+  const isCourier = deal.kind === 'Order' && deal.role === 'Courier'
+  const final = ['COMPLETED', 'CANCELLED', 'REJECTED', 'DECLINED', 'DELIVERED'].includes(deal.status)
 
   return (
     <div className={styles.item}>
@@ -82,6 +101,30 @@ export default function DealRow({ deal, styles }: { deal: DealItem; styles: Reco
       >
         {deal.status}
       </span>
+      {isCourier && !final && (
+        <span style={{ display: 'flex', gap: 6 }}>
+          {deal.status === 'REQUESTED' && (
+            <>
+              <button disabled={!!busy} onClick={() => runOrderAction('courier_accept')} aria-label="Accept delivery" style={{ padding: '4px 10px', borderRadius: 6, border: 'none', background: '#22c55e', color: '#fff', cursor: 'pointer', fontSize: '0.75rem' }}>
+                {busy === 'courier_accept' ? '...' : 'Accept'}
+              </button>
+              <button disabled={!!busy} onClick={() => runOrderAction('courier_decline')} aria-label="Decline delivery" style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid var(--border-color)', background: 'transparent', cursor: 'pointer', fontSize: '0.75rem' }}>
+                {busy === 'courier_decline' ? '...' : 'Decline'}
+              </button>
+            </>
+          )}
+          {deal.status === 'BOOKED' && (
+            <button disabled={!!busy} onClick={() => runOrderAction('courier_pickup')} aria-label="Confirm pickup" style={{ padding: '4px 10px', borderRadius: 6, border: 'none', background: 'var(--accent-primary)', color: '#fff', cursor: 'pointer', fontSize: '0.75rem' }}>
+              {busy === 'courier_pickup' ? '...' : 'Picked up'}
+            </button>
+          )}
+          {deal.status === 'IN_TRANSIT' && (
+            <button disabled={!!busy} onClick={() => runOrderAction('courier_delivered')} aria-label="Confirm courier delivery" style={{ padding: '4px 10px', borderRadius: 6, border: 'none', background: '#10b981', color: '#fff', cursor: 'pointer', fontSize: '0.75rem' }}>
+              {busy === 'courier_delivered' ? '...' : 'Delivered'}
+            </button>
+          )}
+        </span>
+      )}
       {isAppointment && !final && (
         <span style={{ display: 'flex', gap: 6 }}>
           {isHost && deal.status === 'PENDING' && (

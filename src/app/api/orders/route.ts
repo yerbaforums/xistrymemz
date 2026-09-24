@@ -131,6 +131,19 @@ export async function POST(request: Request) {
         message: `${session.user.name || 'A buyer'} placed an order for $${amount} ${currency}`,
         link: `/orders/${order.id}`,
       }).catch(() => null)
+      // Auto-assigned courier gets a delivery request alongside the sale.
+      if (courierId) {
+        await createNotification({
+          type: 'ORDER_UPDATE',
+          userId: courierId,
+          actorId: session.user.id,
+          entityId: order.id,
+          entityType: 'ORDER',
+          title: 'New delivery request',
+          message: `A buyer requested delivery (fee $${courierFee ?? amount} ${currency}) — accept or decline from My Deals.`,
+          link: `/orders/${order.id}`,
+        }).catch(() => null)
+      }
     } catch { /* notifications never fail order creation */ }
 
     return NextResponse.json({ success: true, order }, { status: 201 })

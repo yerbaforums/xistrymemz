@@ -223,6 +223,16 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         updateData.courierStatus = 'DELIVERED'
         break
       }
+      case 'courier_decline': {
+        if (order.courierId !== session.user.id) {
+          return apiError('Only the assigned courier can decline a delivery', 400)
+        }
+        if (order.courierStatus !== 'REQUESTED') {
+          return apiError('Courier delivery must be REQUESTED to decline', 400)
+        }
+        updateData.courierStatus = 'DECLINED'
+        break
+      }
       case 'update_tracking': {
         const isCourier = order.courierId === session.user.id
         const isSeller = order.sellerId === session.user.id
@@ -284,22 +294,30 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       include: orderInclude
     })
 
-    // Notify the counterparty (pref-gated inside; never fails the update).
+    // Notify all other participants (pref-gated inside; never fails the update).
+    // Courier legs notify buyer + seller; trade legs include the courier when assigned.
     try {
       const actorId = session.user.id as string
       const note = orderNotificationFor(action, updatedOrder.id, actorId === updatedOrder.buyerId ? 'buyer' : 'seller')
       if (note) {
-        const targetId = actorId === updatedOrder.buyerId ? updatedOrder.sellerId : updatedOrder.buyerId
-        await createNotification({
-          type: 'ORDER_UPDATE',
-          userId: targetId,
-          actorId,
-          entityId: updatedOrder.id,
-          entityType: 'ORDER',
-          title: note.title,
-          message: note.message,
-          link: `/orders/${updatedOrder.id}`,
-        }).catch(() => null)
+        const targets = new Set<string>()
+        if (actorId !== updatedOrder.buyerId) targets.add(updatedOrder.buyerId)
+        if (actorId !== updatedOrder.sellerId) targets.add(updatedOrder.sellerId)
+        if (updatedOrder.courierId && actorId !== updatedOrder.courierId) targets.add(updatedOrder.courierId)
+        await Promise.all(
+          [...targets].map(targetId =>
+            createNotification({
+              type: 'ORDER_UPDATE',
+              userId: targetId,
+              actorId,
+              entityId: updatedOrder.id,
+              entityType: 'ORDER',
+              title: note.title,
+              message: note.message,
+              link: `/orders/${updatedOrder.id}`,
+            }).catch(() => null)
+          )
+        )
       }
     } catch { /* notifications never fail order updates */ }
 
@@ -337,6 +355,8 @@ function orderNotificationFor(
       return { title: 'Courier picked up', message: 'Your package was picked up and is in transit.' }
     case 'courier_delivered':
       return { title: 'Courier delivered', message: 'The courier marked your package as delivered.' }
+    case 'courier_decline':
+      return { title: 'Courier declined', message: 'The courier declined this delivery — the seller will arrange another option.' }
     case 'handover':
       return { title: 'Rental handed over', message: 'The seller confirmed handover — enjoy your rental!' }
     case 'return_item':

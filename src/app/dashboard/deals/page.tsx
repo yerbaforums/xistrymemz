@@ -34,13 +34,14 @@ export default async function DashboardDeals() {
   const [orders, requests, offers, appointments] = await Promise.all([
     prisma.order.findMany({
       where: {
-        OR: [{ buyerId: userId }, { sellerId: userId }],
+        OR: [{ buyerId: userId }, { sellerId: userId }, { courierId: userId }],
         status: { in: ['PENDING', 'PAID', 'SHIPPED', 'DELIVERED', 'COMPLETED'] }
       },
       include: {
         product: { select: { title: true } },
         buyer: { select: { id: true, name: true } },
-        seller: { select: { id: true, name: true } }
+        seller: { select: { id: true, name: true } },
+        courier: { select: { id: true, name: true } }
       },
       orderBy: { updatedAt: 'desc' },
       take: 30
@@ -89,23 +90,35 @@ export default async function DashboardDeals() {
   ])
 
   const deals: Deal[] = [
-    ...orders.map(o => ({
-      kind: 'Order' as const,
-      id: o.id,
-      title: o.product?.title || o.description || 'Order',
-      counterpart: o.buyerId === userId ? (o.seller.name || 'Seller') : (o.buyer.name || 'Buyer'),
-      status: o.status,
-      role: o.buyerId === userId ? 'Buyer' : 'Seller',
-      href: `/orders/${o.id}`,
-      // PENDING/PAID → seller acts (confirm/ship); SHIPPED → buyer confirms receipt
-      actionNeeded: o.status === 'PENDING' || o.status === 'PAID'
-        ? o.buyerId !== userId
-        : o.status === 'SHIPPED'
-          ? o.buyerId === userId
-          : false,
-      updatedAt: o.updatedAt,
-      amount: o.amount
-    })),
+    ...orders.map(o => {
+      const role = o.buyerId === userId ? 'Buyer' : o.sellerId === userId ? 'Seller' : 'Courier'
+      const counterpart = role === 'Buyer'
+        ? (o.seller.name || 'Seller')
+        : role === 'Seller'
+          ? (o.buyer.name || 'Buyer')
+          : `${o.seller.name || 'Seller'} → ${o.buyer.name || 'Buyer'}`
+      const courierLeg = (o as { courierStatus?: string | null }).courierStatus || null
+      // Couriers act on their leg (REQUESTED → BOOKED → IN_TRANSIT → DELIVERED).
+      const actionNeeded = role === 'Courier'
+        ? courierLeg === 'REQUESTED' || courierLeg === 'BOOKED' || courierLeg === 'IN_TRANSIT'
+        : o.status === 'PENDING' || o.status === 'PAID'
+          ? role !== 'Buyer'
+          : o.status === 'SHIPPED'
+            ? role === 'Buyer'
+            : false
+      return {
+        kind: 'Order' as const,
+        id: o.id,
+        title: o.product?.title || o.description || 'Order',
+        counterpart,
+        status: role === 'Courier' && courierLeg ? courierLeg : o.status,
+        role,
+        href: `/orders/${o.id}`,
+        actionNeeded,
+        updatedAt: o.updatedAt,
+        amount: o.amount
+      }
+    }),
     ...requests.map(r => ({
       kind: 'Request' as const,
       id: r.id,
