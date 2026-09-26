@@ -15,7 +15,9 @@ export default function Error({
         <span className={styles.icon}>💥</span>
         <h1 className={styles.heading}>Something went wrong</h1>
         <p className={styles.message}>
-          {error?.message || 'An unexpected error occurred'}
+          {process.env.NODE_ENV === 'development'
+            ? (error?.message || 'An unexpected error occurred')
+            : 'An unexpected error occurred. Please try again — if it keeps happening, let us know.'}
         </p>
         <button onClick={reset} className={styles.retryBtn}>
           Try Again

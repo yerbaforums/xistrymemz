@@ -17,16 +17,12 @@ type PrefsLike = {
   privacy?: { passportVisibility?: string; showExactCoords?: boolean } | null
 } | null | undefined
 
-export function getPassportPrivacy(prefs: PrefsLike): PassportPrivacy {
+function getPrivacy(prefs: PrefsLike): PassportPrivacy {
   const raw = prefs?.privacy
   return {
     passportVisibility: raw?.passportVisibility === 'hidden' ? 'hidden' : 'public',
     showExactCoords: raw?.showExactCoords === true,
   }
-}
-
-export function isPassportHidden(prefs: PrefsLike): boolean {
-  return getPassportPrivacy(prefs).passportVisibility === 'hidden'
 }
 
 interface PublicLoc {
@@ -43,7 +39,7 @@ export function sanitizePassportForPublic<T extends PublicLoc>(
   prefs: PrefsLike,
   isOwner: boolean
 ): T & { passportVisibility: PassportVisibility } {
-  const privacy = getPassportPrivacy(prefs)
+  const privacy = getPrivacy(prefs)
   if (isOwner) return { ...user, passportVisibility: privacy.passportVisibility }
   if (privacy.passportVisibility === 'hidden') {
     return {
@@ -66,12 +62,4 @@ export function sanitizePassportForPublic<T extends PublicLoc>(
     }
   }
   return { ...user, passportVisibility: privacy.passportVisibility }
-}
-
-export function directionsUrl(opts: { latitude?: number | null; longitude?: number | null; label?: string | null }): string {
-  if (opts.latitude != null && opts.longitude != null) {
-    return `https://www.google.com/maps/dir/?api=1&destination=${opts.latitude},${opts.longitude}`
-  }
-  const q = encodeURIComponent(opts.label || '')
-  return `https://www.google.com/maps/search/?api=1&query=${q}`
 }

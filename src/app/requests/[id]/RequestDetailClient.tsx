@@ -19,6 +19,7 @@ import Button from '@/components/ui/Button'
 import { EmptyState } from '@/components/EmptyState'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import PinToBoardButton from '@/components/PinToBoardButton'
+import NextStepsSheet from '@/components/NextStepsSheet'
 import CollaborateButton from '@/components/CollaborateButton'
 import { REQUEST_CATEGORIES } from '@/lib/request-categories'
 import { apiGet } from '@/lib/api-helpers'
@@ -182,6 +183,46 @@ interface RequestDetailClientProps {
 export default function RequestDetailClient({ request: initialRequest, userId, userRole = 'USER' }: RequestDetailClientProps) {
   const { success, error: toastError, warning } = useToast()
   const [request, setRequest] = useState(initialRequest)
+
+  // Post-create sheet for QuickCreate landings (?fresh=1): Pin / share /
+  // invite next steps without blocking the new detail page.
+  const [showFreshSheet, setShowFreshSheet] = useState(false)
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('fresh') === '1') {
+        setShowFreshSheet(true)
+        params.delete('fresh')
+        const url = new URL(window.location.href)
+        url.search = params.toString()
+        window.history.replaceState({}, '', url.toString())
+      }
+    } catch {}
+  }, [])
+  const dismissFreshSheet = () => setShowFreshSheet(false)
+
+  // Supplier-side polish: supplier requests born from a group buy carry a
+  // [groupbuy:<id>] tag — surface the pooled totals + a link back to the buy.
+  const groupBuyId = (() => {
+    try {
+      const m = (request.description || '').match(/\[groupbuy:([^\]]+)\]/)
+      return m ? m[1] : null
+    } catch { return null }
+  })()
+  const [pooledBuy, setPooledBuy] = useState<{
+    id: string; title: string; currentPrice: number; targetPrice: number;
+    currentSupporters: number; minSupporters: number; status: string;
+    group: { id: string; name: string };
+  } | null>(null)
+  useEffect(() => {
+    if (!groupBuyId) return
+    fetch(`/api/group-buys/${groupBuyId}`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => { if (d?.data) setPooledBuy(d.data) })
+      .catch(() => {})
+  }, [groupBuyId])
+  const cleanDescription = (request.description || '').replace(/\n?\[groupbuy:[^\]]+\]/g, '').trim()
+
 
   useRecordView('request', initialRequest?.id || '')
   const [comment, setComment] = useState('')
@@ -821,10 +862,19 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               </div>
             )}
 
-            {request.description && (
-              <p className={styles.description}>{request.description}</p>
+            {cleanDescription && (
+              <p className={styles.description}>{cleanDescription}</p>
             )}
-            {request.description && <TranslateButton text={request.description} />}
+            {pooledBuy && (
+              <div className={styles.metaItem} style={{ border: '1px solid var(--border-color)', borderRadius: 8, padding: '8px 12px', marginTop: 8 }}>
+                <span className={styles.metaLabel}>🛒 Pooled group buy</span>
+                <span className={styles.metaValue}>
+                  ${pooledBuy.currentPrice} by {pooledBuy.currentSupporters}/{pooledBuy.minSupporters} supporters toward ${pooledBuy.targetPrice} ({pooledBuy.status})
+                  {' '}— <Link href={`/groups/${pooledBuy.group.id}`}>{pooledBuy.group.name}</Link>
+                </span>
+              </div>
+            )}
+            {cleanDescription && <TranslateButton text={cleanDescription} />}
 
             {request.hashtags && request.hashtags.length > 0 && (
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 12 }}>
@@ -1782,6 +1832,20 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
           targetType={reviewTarget.label?.toLowerCase() || 'member'}
           targetLabel={reviewTarget.name}
           onSubmit={submitReview}
+        />
+      )}
+
+      {showFreshSheet && (
+        <NextStepsSheet
+          open
+          entityType="REQUEST"
+          entityId={request.id}
+          title={request.title || 'Request'}
+          image={request.imageUrl || null}
+          detailUrl={`/requests/${request.id}`}
+          extraAction={{ label: '🚀 Start a project from this request', href: `/projects/new?fromRequest=${request.id}` }}
+          onClose={dismissFreshSheet}
+          onView={dismissFreshSheet}
         />
       )}
 

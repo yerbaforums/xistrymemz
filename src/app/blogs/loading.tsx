@@ -1,6 +1,6 @@
 import Skeleton, { SkeletonList } from '@/components/Skeleton'
 
-export default function BoardsLoading() {
+export default function BlogsLoading() {
   return (
     <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
       <Skeleton width="30%" height="1.5rem" />

@@ -62,6 +62,21 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
     }
   }, [exec])
 
+  const handleInsertLink = useCallback(() => {
+    const url = window.prompt('Enter link URL (https://…):')
+    if (!url) return
+    let parsed: URL
+    try { parsed = new URL(url) } catch { return }
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return
+    // Link the current selection; fall back to inserting the URL as link text.
+    const sel = window.getSelection()
+    if (!sel || sel.toString().trim() === '') {
+      exec('insertHTML', `<a href="${parsed.toString()}" target="_blank" rel="noopener noreferrer">${parsed.toString()}</a>`)
+    } else {
+      exec('createLink', parsed.toString())
+    }
+  }, [exec])
+
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
     e.preventDefault()
     const text = e.clipboardData.getData('text/plain')
@@ -74,30 +89,36 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
       if (editorRef.current) {
         editorRef.current.innerHTML = sourceText
       }
+      onChange(sourceText)
       setShowSource(false)
     } else {
       setSourceText(editorRef.current?.innerHTML || '')
       setShowSource(true)
     }
-  }, [showSource, sourceText])
+  }, [showSource, sourceText, onChange])
 
   return (
     <div className={styles.wrapper}>
       <div className={styles.toolbar}>
         <button type="button" className={styles.toolBtn} onClick={() => exec('bold')} title="Bold" aria-label="Bold"><strong>B</strong></button>
         <button type="button" className={styles.toolBtn} onClick={() => exec('italic')} title="Italic" aria-label="Italic"><em>I</em></button>
+        <button type="button" className={styles.toolBtn} onClick={() => exec('underline')} title="Underline" aria-label="Underline"><u>U</u></button>
+        <button type="button" className={styles.toolBtn} onClick={() => exec('strikeThrough')} title="Strikethrough" aria-label="Strikethrough"><s>S</s></button>
         <span className={styles.sep} />
         <button type="button" className={styles.toolBtn} onClick={() => exec('formatBlock', 'h2')} title="Heading 2" aria-label="Heading 2">H2</button>
         <button type="button" className={styles.toolBtn} onClick={() => exec('formatBlock', 'h3')} title="Heading 3" aria-label="Heading 3">H3</button>
+        <button type="button" className={styles.toolBtn} onClick={() => exec('formatBlock', 'blockquote')} title="Quote" aria-label="Quote">❝</button>
         <span className={styles.sep} />
         <button type="button" className={styles.toolBtn} onClick={() => exec('insertUnorderedList')} title="Bullet List" aria-label="Bullet List">UL</button>
         <button type="button" className={styles.toolBtn} onClick={() => exec('insertOrderedList')} title="Numbered List" aria-label="Numbered List">OL</button>
+        <button type="button" className={styles.toolBtn} onClick={handleInsertLink} title="Insert Link" aria-label="Insert Link">🔗</button>
         <span className={styles.sep} />
         <button type="button" className={styles.toolBtn} onClick={handleInsertImage} title="Insert Image" aria-label="Insert Image">🖼️</button>
         <button type="button" className={styles.toolBtn} onClick={handleInsertAudio} title="Insert Audio" aria-label="Insert Audio">🎙️</button>
         <button type="button" className={styles.toolBtn} onClick={handleInsertVideo} title="Insert Video" aria-label="Insert Video">🎬</button>
         <span className={styles.sep} />
-        <button type="button" className={styles.toolBtn} onClick={toggleSource} title={showSource ? 'Visual' : 'Source'} aria-label="Toggle source">{showSource ? '👁️' : '&lt;/&gt;'}</button>
+        <button type="button" className={styles.toolBtn} onClick={() => exec('removeFormat')} title="Clear formatting" aria-label="Clear formatting">🧹</button>
+        <button type="button" className={styles.toolBtn} onClick={toggleSource} title={showSource ? 'Visual' : 'Source'} aria-label="Toggle source">{showSource ? '👁️' : '</>'}</button>
       </div>
       {showSource ? (
         <textarea

@@ -9,6 +9,7 @@ module.exports = {
     '\\.css$': '<rootDir>/__tests__/styleMock.js',
   },
   setupFilesAfterEnv: ['<rootDir>/__tests__/setup.ts'],
+  globalSetup: '<rootDir>/jest.globalSetup.js',
   transform: {
     '^.+\\.tsx?$': ['ts-jest', {
       tsconfig: '<rootDir>/__tests__/tsconfig.json',

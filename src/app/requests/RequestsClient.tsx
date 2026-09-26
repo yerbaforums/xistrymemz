@@ -490,7 +490,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
           )}
 
           {filtered.length === 0 ? (
-            <EmptyState icon="📝" title="No requests found" description="Try adjusting your filters or create a new request." action={{ label: 'Create Request', onClick: () => setShowCreate(true) }} />
+            <EmptyState icon="📝" title="No requests found" description="Try adjusting your filters — or post one: gather a group around it, then start a project and pin it to the boards." action={{ label: 'Create Request', onClick: () => setShowCreate(true) }} />
           ) : (
             <>
               <div className={styles.resultsHeader}>

@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
-const VALID_TYPES = ['PROJECT', 'PRODUCT', 'REQUEST', 'EVENT', 'FORUM_POST', 'POST', 'SERVICE', 'SCHOOLCONTENT', 'GROUP', 'SCHOOL', 'SHOP', 'PROFILE', 'PIN', 'BOARD']
+const VALID_TYPES = ['PROJECT', 'PRODUCT', 'REQUEST', 'EVENT', 'FORUM_POST', 'POST', 'SERVICE', 'SCHOOLCONTENT', 'GROUP', 'SCHOOL', 'SHOP', 'PROFILE', 'PIN', 'BOARD', 'BLOG']
 
 // EntityActions sends ActionEntityType values; normalize aliases to saved types
 export function normalizeSavedType(t: string): string {
@@ -37,6 +37,11 @@ export async function GET() {
   }
 
   const titles: Record<string, Record<string, string | null>> = {}
+  const urls: Record<string, Record<string, string | null>> = {}
+  const setUrl = (type: string, id: string, url: string | null) => {
+    if (!urls[type]) urls[type] = {}
+    urls[type][id] = url
+  }
   for (const [type, ids] of Object.entries(groups)) {
     titles[type] = {}
     switch (type) {
@@ -86,13 +91,57 @@ export async function GET() {
         break
       }
       case 'SCHOOL': {
-        const items = await prisma.user.findMany({ where: { id: { in: ids } }, select: { id: true, schoolName: true, name: true } })
-        items.forEach(i => { titles.SCHOOL[i.id] = i.schoolName || i.name })
+        const items = await prisma.user.findMany({ where: { id: { in: ids } }, select: { id: true, schoolName: true, name: true, schoolSlug: true } })
+        items.forEach(i => {
+          titles.SCHOOL[i.id] = i.schoolName || i.name
+          setUrl('SCHOOL', i.id, i.schoolSlug ? `/school/${i.schoolSlug}` : null)
+        })
         break
       }
       case 'SHOP': {
-        const items = await prisma.user.findMany({ where: { id: { in: ids } }, select: { id: true, shopName: true, name: true } })
-        items.forEach(i => { titles.SHOP[i.id] = (i as { shopName?: string | null }).shopName || i.name })
+        const items = await prisma.user.findMany({ where: { id: { in: ids } }, select: { id: true, shopName: true, name: true, shopSlug: true } })
+        items.forEach(i => {
+          titles.SHOP[i.id] = (i as { shopName?: string | null }).shopName || i.name
+          setUrl('SHOP', i.id, (i as { shopSlug?: string | null }).shopSlug ? `/shop/${(i as { shopSlug?: string | null }).shopSlug}` : null)
+        })
+        break
+      }
+      case 'PROFILE': {
+        const items = await prisma.user.findMany({ where: { id: { in: ids } }, select: { id: true, name: true } })
+        items.forEach(i => {
+          titles.PROFILE[i.id] = i.name
+          setUrl('PROFILE', i.id, `/profile/${i.id}`)
+        })
+        break
+      }
+      case 'BOARD': {
+        const items = await prisma.bulletinBoard.findMany({ where: { id: { in: ids } }, select: { id: true, name: true, slug: true } })
+        items.forEach(i => {
+          titles.BOARD[i.id] = i.name
+          setUrl('BOARD', i.id, `/boards/${i.slug}`)
+        })
+        break
+      }
+      case 'PIN': {
+        const items = await prisma.bulletinPin.findMany({
+          where: { id: { in: ids } },
+          select: { id: true, title: true, entityTitle: true, board: { select: { slug: true } } }
+        })
+        items.forEach(i => {
+          titles.PIN[i.id] = i.entityTitle || i.title
+          setUrl('PIN', i.id, i.board?.slug ? `/boards/${i.board.slug}/pins/${i.id}` : null)
+        })
+        break
+      }
+      case 'BLOG': {
+        const items = await prisma.blogPost.findMany({
+          where: { id: { in: ids } },
+          select: { id: true, title: true, slug: true, blog: { select: { blogSlug: true } } }
+        })
+        items.forEach(i => {
+          titles.BLOG[i.id] = i.title
+          setUrl('BLOG', i.id, i.blog?.blogSlug ? `/blog/${i.blog.blogSlug}/${i.slug}` : null)
+        })
         break
       }
     }
@@ -101,6 +150,7 @@ export async function GET() {
   const enriched = saved.map(item => ({
     ...item,
     title: titles[item.itemType]?.[item.itemId] || null,
+    url: urls[item.itemType]?.[item.itemId] || null,
   }))
 
   return apiSuccess({ saved: enriched })

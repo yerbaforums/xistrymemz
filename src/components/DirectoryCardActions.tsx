@@ -15,15 +15,24 @@ interface Props {
   startProjectUrl?: string | null
   location?: string | null
   eventDate?: string | null
+  userId?: string | null
 }
 
-// Lightweight list actions: Star (Saved) + Pin + Plan + Request + Project.
-// No EntityActions here (avoids view/count fan-out). Signed-out renders null.
-export default function DirectoryCardActions({ itemType, itemId, title, image, detailUrl, startProjectUrl, location, eventDate }: Props) {
+// Lightweight list actions: Star (Saved) + Pin + per-type functions.
+// Members: Connect + Message. Other types: Message the owner plus the
+// type action (Plan / Request / Project / Save). No EntityActions here
+// (avoids view/count fan-out). Signed-out renders null.
+export default function DirectoryCardActions({ itemType, itemId, title, image, detailUrl, startProjectUrl, location, eventDate, userId }: Props) {
   const { data: session } = useSession()
   const { success, error } = useToast()
   const [saving, setSaving] = useState(false)
+  const [connecting, setConnecting] = useState(false)
+  const [connectSent, setConnectSent] = useState(false)
   if (!session?.user) return null
+
+  const myId = (session.user as { id?: string }).id
+  const otherId = userId && userId !== myId ? userId : null
+  const isMember = itemType === 'PROFILE'
 
   const pinType =
     itemType === 'PROFILE' ? 'USER' :
@@ -57,6 +66,28 @@ export default function DirectoryCardActions({ itemType, itemId, title, image, d
     finally { setSaving(false) }
   }
 
+  const handleConnect = async () => {
+    if (!otherId || connecting || connectSent) return
+    setConnecting(true)
+    try {
+      const res = await fetch('/api/community/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receiverId: otherId }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.ok) {
+        setConnectSent(true)
+        success('Connection request sent!')
+      } else {
+        error(data.error || 'Failed to connect')
+      }
+    } catch { error('Failed to connect') }
+    finally { setConnecting(false) }
+  }
+
+  const linkStyle = { fontSize: '0.75rem', textDecoration: 'none' } as const
+
   return (
     <div
       style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 6, flexWrap: 'wrap' }}
@@ -73,28 +104,50 @@ export default function DirectoryCardActions({ itemType, itemId, title, image, d
         variant="secondary"
         label="Pin to Board"
       />
-      <a href={planHref} onClick={e => e.stopPropagation()} title="Add to plan" style={{ fontSize: '0.75rem', textDecoration: 'none' }}>
-        🗓️ Plan
-      </a>
-      {itemType === 'EVENT' && eventDate ? (
-        <button
-          type="button"
-          onClick={e => { e.stopPropagation(); saveEventToPlanner() }}
-          disabled={saving}
-          title="Save event to My Planner"
-          style={{ fontSize: '0.75rem', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-        >
-          {saving ? 'Saving...' : '📌 Save'}
-        </button>
-      ) : (
-        <a href={requestHref} onClick={e => e.stopPropagation()} title={itemType === 'REQUEST' ? 'View request' : 'Make a request'} style={{ fontSize: '0.75rem', textDecoration: 'none' }}>
-          📝 Request
-        </a>
+      {otherId && (
+        <>
+          {isMember && (
+            <button
+              type="button"
+              onClick={e => { e.stopPropagation(); handleConnect() }}
+              disabled={connecting || connectSent}
+              title="Connect with this member"
+              style={{ fontSize: '0.75rem', background: 'none', border: 'none', cursor: connectSent ? 'default' : 'pointer', padding: 0, opacity: connectSent ? 0.7 : 1 }}
+            >
+              {connecting ? '...' : connectSent ? '✓ Requested' : '🤝 Connect'}
+            </button>
+          )}
+          <a href={`/dashboard/messages?user=${otherId}`} onClick={e => e.stopPropagation()} title={isMember ? 'Send a message' : 'Message the owner'} style={linkStyle}>
+            💬 {isMember ? 'Message' : 'Owner'}
+          </a>
+        </>
       )}
-      {startProjectUrl && (
-        <a href={startProjectUrl} onClick={e => e.stopPropagation()} title="Start a project from this" style={{ fontSize: '0.75rem', textDecoration: 'none' }}>
-          🚀 Project
-        </a>
+      {!isMember && (
+        <>
+          <a href={planHref} onClick={e => e.stopPropagation()} title="Add to plan" style={linkStyle}>
+            🗓️ Plan
+          </a>
+          {itemType === 'EVENT' && eventDate ? (
+            <button
+              type="button"
+              onClick={e => { e.stopPropagation(); saveEventToPlanner() }}
+              disabled={saving}
+              title="Save event to My Planner"
+              style={{ fontSize: '0.75rem', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            >
+              {saving ? 'Saving...' : '📌 Save'}
+            </button>
+          ) : (
+            <a href={requestHref} onClick={e => e.stopPropagation()} title={itemType === 'REQUEST' ? 'View request' : 'Make a request'} style={linkStyle}>
+              📝 Request
+            </a>
+          )}
+          {startProjectUrl && (
+            <a href={startProjectUrl} onClick={e => e.stopPropagation()} title="Start a project from this" style={linkStyle}>
+              🚀 Project
+            </a>
+          )}
+        </>
       )}
     </div>
   )

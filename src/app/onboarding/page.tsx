@@ -30,6 +30,38 @@ const TOUR_OUTLETS = [
   { id: 'discover', icon: '🌐', name: 'Discover', description: 'Browse a map of everything near you — people, products, events, groups, and more.', url: '/discover' },
 ]
 
+// Golden-path-first onboarding: 3 paths instead of 13 scattered outlets.
+// Each path pre-selects its outlet bundle; the full grid stays below.
+const ONBOARDING_PATHS = [
+  {
+    id: 'find',
+    icon: '🛒',
+    name: 'Buy, sell & find',
+    description: 'Directory, marketplace, services, rentals & shops.',
+    outlets: ['marketplace', 'services', 'rentals', 'shops'],
+    href: '/directory',
+    cta: 'Browse directory →',
+  },
+  {
+    id: 'meet',
+    icon: '👥',
+    name: 'Meet people & go out',
+    description: 'Members, groups, events & discover.',
+    outlets: ['community', 'events', 'discover'],
+    href: '/directory?section=white',
+    cta: 'Find members →',
+  },
+  {
+    id: 'plan',
+    icon: '🗺️',
+    name: 'Plan something',
+    description: 'Need help? Post a request → gather a group → start a project → pin it on the boards.',
+    outlets: ['requests', 'projects', 'boards'],
+    href: '/dashboard/planning',
+    cta: 'Open planning →',
+  },
+]
+
 export default function OnboardingPage() {
   const router = useRouter()
   const { data: session, status, update: updateSession } = useSession()
@@ -108,6 +140,15 @@ export default function OnboardingPage() {
     setSelectedOutlets(prev =>
       prev.includes(id) ? prev.filter(o => o !== id) : [...prev, id]
     )
+  }
+
+  const togglePath = (outlets: string[]) => {
+    setSelectedOutlets(prev => {
+      const allIn = outlets.every(o => prev.includes(o))
+      return allIn
+        ? prev.filter(o => !outlets.includes(o))
+        : [...new Set([...prev, ...outlets])]
+    })
   }
 
   useEffect(() => {
@@ -712,7 +753,34 @@ export default function OnboardingPage() {
           {step === 'tour' && (
             <div className={styles.stepContent}>
               <h2>Explore XistrYmemZ</h2>
-              <p>Browse what you can do here. Select the ones you want to start right away.</p>
+              <p>Pick a path — or mix and match below. Your picks open first after setup.</p>
+
+              <div className={styles.tourOutletGrid}>
+                {ONBOARDING_PATHS.map(path => {
+                  const active = path.outlets.every(o => selectedOutlets.includes(o))
+                  return (
+                    <div key={path.id} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        aria-pressed={active}
+                        title={path.description}
+                        className={`${styles.tourOutletCard} ${active ? styles.tourOutletSelected : ''}`}
+                        onClick={() => togglePath(path.outlets)}
+                        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') togglePath(path.outlets) }}
+                      >
+                        <span className={styles.tourOutletIcon}>{path.icon}</span>
+                        <span className={styles.tourOutletName}>{path.name}</span>
+                        {active && <span className={styles.tourOutletCheck}>✓</span>}
+                      </div>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{path.description}</span>
+                      <Link href={path.href} style={{ fontSize: '0.75rem', color: 'var(--accent-primary)' }}>{path.cta}</Link>
+                    </div>
+                  )
+                })}
+              </div>
+
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 12 }}>…or pick individual outlets:</p>
 
               <div className={styles.tourOutletGrid}>
                 {TOUR_OUTLETS.map((outlet, i) => {

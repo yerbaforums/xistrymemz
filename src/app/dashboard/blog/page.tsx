@@ -414,7 +414,7 @@ export default function BlogDashboard() {
         <div className={styles.headerActions}>
           <Link href={`/blog/${blog.blogSlug}`} className="btn-secondary">🌐 View Blog</Link>
           <Link href="/blog/setup" className="btn-secondary">⚙️ Blog Settings</Link>
-          <Button variant="primary" onClick={openNew}>✏️ New Post</Button>
+          <Button variant="primary" onClick={openNew}>✏️ New Story</Button>
         </div>
       </div>
 
@@ -601,10 +601,13 @@ export default function BlogDashboard() {
         <div className={styles.modalOverlay} onClick={() => setShowEditor(false)}>
           <div className={styles.editorModal} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <h3>{editingId ? 'Edit post' : 'New post'}</h3>
+              <h3>{editingId ? 'Edit story' : 'New story'}</h3>
               <button className={styles.modalClose} onClick={() => setShowEditor(false)} aria-label="Close">✕</button>
             </div>
             <form onSubmit={savePost}>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0 0 12px' }}>
+                ✍️ Stories are for fiction and creative writing — shareable to the feed, pinnable to boards. Writing a categorized course or lesson? Use <Link href="/dashboard/teaching">Teaching</Link> instead.
+              </p>
               <div className={styles.editorGrid}>
                 <div className={styles.editorMain}>
                   <div className="form-group">

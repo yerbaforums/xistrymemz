@@ -97,7 +97,7 @@ function formatRelativeDate(dateString: string) {
 }
 
 export default function DashboardAppointments() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const { success, error: toastError } = useToast()
   const [appointments, setAppointments] = useState<AppointmentItem[]>([])
   const [events, setEvents] = useState<EventItem[]>([])
@@ -148,7 +148,13 @@ export default function DashboardAppointments() {
     setLoading(false)
   }
 
-  useEffect(() => { fetchAll() }, [])
+  useEffect(() => {
+    // Wait for auth: fetching before the session resolves returns 401/empty
+    // and mislabels Buyer/Seller roles.
+    if (status === 'loading') return
+    fetchAll()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status])
 
   // Deep-link support: /dashboard/appointments?highlight=<id> (opened from My Deals).
   useEffect(() => {

@@ -13,7 +13,9 @@
   align-items: center;
   justify-content: center;
   font-size: 1.25rem;
-  z-index: var(--z-sticky, 200);
+  /* Below the Create FAB menu (z 50) so the open + menu paints over this
+     button; still above page content and the sticky side rails. */
+  z-index: 40;
   opacity: 0;
   visibility: hidden;
   transform: translateY(12px);

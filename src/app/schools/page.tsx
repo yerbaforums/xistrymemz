@@ -113,7 +113,7 @@ export default function SchoolsPage() {
       ]} />
       <div className={styles.header}>
         <h1>Learning Center</h1>
-        <p className={styles.subtitle}>Browse schools and educational content</p>
+        <p className={styles.subtitle}>Categorized courses and lessons with sections and progression — structured learning, not freeform posts. Writing fiction or essays? Head to <Link href="/blogs">Stories & Blogs</Link>.</p>
         <Link href="/school/setup" className={styles.createBtn}>+ Create School</Link>
       </div>
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
+import Link from 'next/link'
 import styles from './page.module.css'
 import { BlogsClient } from './BlogsClient'
 import { SkeletonCard } from '@/components/Skeleton'
@@ -48,8 +49,11 @@ export default function BlogsPage() {
     <div className={styles.page}>
       <div className={styles.header}>
         <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Blogs' }]} />
-        <h1>Blogs</h1>
-        <p>Long-form writing from community members — subscribe and support your favorite authors</p>
+        <h1>✍️ Stories & Blogs</h1>
+        <p>Fiction, serials, essays, and long-form writing from community members — subscribe and support your favorite authors. Writing a course or lesson instead? Head to <Link href="/schools">Schools</Link>.</p>
+        <div style={{ marginTop: 8 }}>
+          <Link href="/dashboard/blog" className="btn-primary" style={{ textDecoration: 'none' }}>✏️ New story</Link>
+        </div>
       </div>
 
       {loading ? (

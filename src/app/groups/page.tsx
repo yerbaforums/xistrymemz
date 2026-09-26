@@ -273,7 +273,7 @@ export default function GroupsPage() {
           )}
         </div>
       ) : filteredGroups.length === 0 ? (
-        <EmptyState icon="👥" title="No groups found" description={filter === 'my' ? "You haven't joined any groups yet" : "Be the first to create a group!"} />
+        <EmptyState icon="👥" title="No groups found" description={filter === 'my' ? "You haven't joined any groups yet — gather yours here, then start a project together." : "Be the first to create a group — then post a request and start a project from it!"} action={{ label: '+ Create Group', href: '/groups/new' }} />
       ) : (
         <AlphabeticalIndex
           items={indexItems}

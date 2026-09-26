@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 export interface DealItem {
-  kind: 'Order' | 'Request' | 'Offer' | 'Appointment'
+  kind: 'Order' | 'Request' | 'Offer' | 'Appointment' | 'GroupBuy'
   id: string
   title: string
   counterpart: string
@@ -30,6 +30,8 @@ const STATUS_COLOR: Record<string, string> = {
   REJECTED: '#ef4444',
   WITHDRAWN: '#6b7280',
   REQUESTED: '#f59e0b',
+  READY: '#22c55e',
+  SUBMITTED: '#3b82f6',
   BOOKED: '#3b82f6',
   IN_TRANSIT: '#3b82f6',
   DECLINED: '#ef4444',
@@ -40,6 +42,7 @@ const KIND_ICON: Record<string, string> = {
   Request: '📝',
   Offer: '💼',
   Appointment: '🗓️',
+  GroupBuy: '🛒',
 }
 
 export default function DealRow({ deal, styles }: { deal: DealItem; styles: Record<string, string> }) {

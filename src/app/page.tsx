@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import styles from './page.module.css'
 import HomeMap from '@/components/HomeMap'
 import HeroSection from '@/components/home/HeroSection'
@@ -74,101 +74,43 @@ export default function Home() {
   const [blogs, setBlogs] = useState<FeaturedBlog[]>([])
   const [podcasts, setPodcasts] = useState<FeaturedPodcast[]>([])
   const [services, setServices] = useState<FeaturedService[]>([])
-  const [loadingShops, setLoadingShops] = useState(true)
-  const [loadingProducts, setLoadingProducts] = useState(true)
-  const [loadingRequests, setLoadingRequests] = useState(true)
-  const [loadingEvents, setLoadingEvents] = useState(true)
-  const [loadingPlans, setLoadingPlans] = useState(true)
-  const [loadingBoards, setLoadingBoards] = useState(true)
-  const [loadingBlogs, setLoadingBlogs] = useState(true)
-  const [loadingPodcasts, setLoadingPodcasts] = useState(true)
-  const [loadingServices, setLoadingServices] = useState(true)
+  const [pulseLoading, setPulseLoading] = useState(true)
   const [members, setMembers] = useState<RecentMember[]>([])
-  const [loadingMembers, setLoadingMembers] = useState(true)
   const [trendingTags, setTrendingTags] = useState<{ tag: string; postCount: number; entities: { posts: number; products: number; events: number; forumPosts: number; groupPosts: number } }[]>([])
   const animatedStats = useCountUp(stats)
 
-  const fetchProducts = useCallback(async (type?: string) => {
-    setLoadingProducts(true)
-    try {
-      const params = !type || type === 'all' ? 'limit=6' : `limit=6&type=${type}`
-      const res = await fetch(`/api/products?${params}`)
-      if (res.ok) {
-        const data = await res.json()
-        if (data?.items) setProducts(data.items)
-      }
-    } catch { } finally { setLoadingProducts(false) }
-  }, [])
-
   useEffect(() => {
-    fetch('/api/stats')
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.data) setStats(d.data) })
-      .catch(() => {})
-
-    fetch('/api/shops')
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.data?.shops) setShops(d.data.shops.slice(0, 4)); setLoadingShops(false) })
-      .catch(() => setLoadingShops(false))
-
-    fetchProducts('all')
-
-    fetch('/api/requests?isPublic=true&take=4')
-      .then(r => r.ok ? r.json() : null)
+    // Single home-pulse call replaces ~12 parallel fetches (same payloads).
+    fetch('/api/home-pulse')
+      .then(r => (r.ok ? r.json() : null))
       .then(d => {
-        const list = d?.items || d?.data?.items || (Array.isArray(d) ? d : [])
-        if (Array.isArray(list)) setRequests(list.slice(0, 4))
-        setLoadingRequests(false)
+        if (!d) return
+        if (d.stats?.data) setStats(d.stats.data)
+        const shops = d.shops?.data?.shops
+        if (shops) setShops(shops.slice(0, 4))
+        if (d.products?.items) setProducts(d.products.items)
+        const reqList = d.requests?.items || d.requests?.data?.items || (Array.isArray(d.requests) ? d.requests : [])
+        if (Array.isArray(reqList)) setRequests(reqList.slice(0, 4))
+        if (d.hashtags?.data?.hashtags) setTrendingTags(d.hashtags.data.hashtags)
+        const ev = d.events
+        setEvents(Array.isArray(ev?.data) ? ev.data.slice(0, 4) : Array.isArray(ev) ? ev.slice(0, 4) : [])
+        const proj = d.projects
+        setProjects((Array.isArray(proj) ? proj : (proj?.data?.items || [])).slice(0, 4))
+        const bo = d.boards
+        setBoards(bo?.data?.boards || bo?.boards || [])
+        const bl = d.blogs
+        setBlogs((bl?.data?.blogs || []).slice(0, 4))
+        const po = d.podcasts
+        setPodcasts((po?.data?.podcasts || []).slice(0, 4))
+        const se = d.services
+        setServices((se?.data?.services || []).slice(0, 4))
+        const me = d.members
+        const mList = me?.data?.members || (Array.isArray(me) ? me : [])
+        if (Array.isArray(mList)) setMembers(mList.slice(0, 6))
       })
-      .catch(() => setLoadingRequests(false))
-
-    fetch('/api/hashtags?mode=trending&limit=20')
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.data?.hashtags) setTrendingTags(d.data.hashtags) })
       .catch(() => {})
-
-    fetch('/api/public/events')
-      .then(r => r.ok ? r.json() : [])
-      .then(data => { setEvents(Array.isArray(data?.data) ? data.data.slice(0, 4) : Array.isArray(data) ? data.slice(0, 4) : []); setLoadingEvents(false) })
-      .catch(() => setLoadingEvents(false))
-
-    fetch('/api/projects?public=true')
-      .then(r => r.ok ? r.json() : [])
-      .then(data => {
-        const list = Array.isArray(data) ? data : (data?.data?.items || [])
-        setProjects(list.slice(0, 4)); setLoadingPlans(false)
-      })
-      .catch(() => setLoadingPlans(false))
-
-    fetch('/api/boards?limit=4')
-      .then(r => r.ok ? r.json() : { boards: [] })
-      .then(data => { setBoards(data?.data?.boards || data?.boards || []); setLoadingBoards(false) })
-      .catch(() => setLoadingBoards(false))
-
-    fetch('/api/blogs')
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { const list = d?.data?.blogs || []; setBlogs(list.slice(0, 4)); setLoadingBlogs(false) })
-      .catch(() => setLoadingBlogs(false))
-
-    fetch('/api/podcasts')
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { const list = d?.data?.podcasts || []; setPodcasts(list.slice(0, 4)); setLoadingPodcasts(false) })
-      .catch(() => setLoadingPodcasts(false))
-
-    fetch('/api/services?pageSize=4')
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { const list = d?.data?.services || []; setServices(list.slice(0, 4)); setLoadingServices(false) })
-      .catch(() => setLoadingServices(false))
-
-    fetch('/api/users/recent?take=6')
-      .then(r => r.ok ? r.json() : { data: { members: [] } })
-      .then(d => {
-        const list = d?.data?.members || (Array.isArray(d) ? d : [])
-        if (Array.isArray(list)) setMembers(list.slice(0, 6))
-        setLoadingMembers(false)
-      })
-      .catch(() => setLoadingMembers(false))
-  }, [fetchProducts])
+      .finally(() => setPulseLoading(false))
+  }, [])
 
   return (
     <div className={`${styles.landing} page-enter`}>
@@ -185,22 +127,22 @@ export default function Home() {
         blogs={blogs}
         podcasts={podcasts}
         services={services}
-        loadingShops={loadingShops}
-        loadingProducts={loadingProducts}
-        loadingRequests={loadingRequests}
-        loadingEvents={loadingEvents}
-        loadingPlans={loadingPlans}
-        loadingBoards={loadingBoards}
-        loadingBlogs={loadingBlogs}
-        loadingPodcasts={loadingPodcasts}
-        loadingServices={loadingServices}
+        loadingShops={pulseLoading}
+        loadingProducts={pulseLoading}
+        loadingRequests={pulseLoading}
+        loadingEvents={pulseLoading}
+        loadingPlans={pulseLoading}
+        loadingBoards={pulseLoading}
+        loadingBlogs={pulseLoading}
+        loadingPodcasts={pulseLoading}
+        loadingServices={pulseLoading}
       />
       <HashtagSection tags={trendingTags} />
       <StepsSection />
       <FeaturesSection />
       <PassportSection />
       <HomeMap />
-      <MemberSpotlightSection members={members} loading={loadingMembers} stats={animatedStats} />
+      <MemberSpotlightSection members={members} loading={pulseLoading} stats={animatedStats} />
       <CTASection memberCount={animatedStats.members} />
       <FeedbackSection />
       <HomeFooterSection />

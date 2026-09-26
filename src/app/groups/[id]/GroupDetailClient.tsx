@@ -21,6 +21,7 @@ import Loading from '@/components/Loading'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import CollaborateButton from '@/components/CollaborateButton'
 import PinToBoardButton from '@/components/PinToBoardButton'
+import NextStepsSheet from '@/components/NextStepsSheet'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 interface Member {
@@ -135,6 +136,23 @@ function GroupDetailContent() {
   const router = useRouter()
   const { success, error, warning } = useToast()
   const [group, setGroup] = useState<Group | null>(null)
+
+  // Post-create sheet for QuickCreate landings (?fresh=1).
+  const [showFreshSheet, setShowFreshSheet] = useState(false)
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('fresh') === '1') {
+        setShowFreshSheet(true)
+        params.delete('fresh')
+        const url = new URL(window.location.href)
+        url.search = params.toString()
+        window.history.replaceState({}, '', url.toString())
+      }
+    } catch {}
+  }, [])
+  const dismissFreshSheet = () => setShowFreshSheet(false)
+
   const [loading, setLoading] = useState(true)
   const [joining, setJoining] = useState(false)
   const [postContent, setPostContent] = useState('')
@@ -1358,6 +1376,19 @@ function GroupDetailContent() {
         confirmLabel="Delete Group"
         variant="danger"
       />
+      {showFreshSheet && group && (
+        <NextStepsSheet
+          open
+          entityType="GROUP"
+          entityId={group.id}
+          title={group.name || 'Group'}
+          image={group.imageUrl || null}
+          detailUrl={`/groups/${group.id}`}
+          extraAction={{ label: '🚀 Start a project with this group', href: `/projects/new?fromGroup=${group.id}` }}
+          onClose={dismissFreshSheet}
+          onView={dismissFreshSheet}
+        />
+      )}
     </ErrorBoundary>
   )
 }

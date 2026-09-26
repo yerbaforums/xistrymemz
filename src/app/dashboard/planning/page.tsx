@@ -968,8 +968,45 @@ function TripDetail({ trip: initialTrip, savedLocations, categories: _categories
         </>
       )}
 
-      {activeTab === 'calendar' && trip.startDate && (
-        <TripCalendar trip={trip} />
+      {activeTab === 'calendar' && (
+        trip.startDate ? (
+          <TripCalendar trip={trip} />
+        ) : (
+          <div className={styles.card} style={{ padding: 24, textAlign: 'center' }}>
+            <div style={{ fontSize: '2rem' }}>📅</div>
+            <h4 style={{ margin: '8px 0 4px' }}>No trip dates yet</h4>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 12px' }}>
+              Set a start{!trip.endDate ? ' (and end) date' : ' date'} to see this trip on the calendar.
+            </p>
+            {canEdit ? (
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+                <label style={{ fontSize: '0.8rem' }}>
+                  Start{' '}
+                  <input
+                    type="date"
+                    value={editStart}
+                    onChange={e => setEditStart(e.target.value)}
+                    className={styles.formInput}
+                  />
+                </label>
+                <label style={{ fontSize: '0.8rem' }}>
+                  End{' '}
+                  <input
+                    type="date"
+                    value={editEnd}
+                    onChange={e => setEditEnd(e.target.value)}
+                    className={styles.formInput}
+                  />
+                </label>
+                <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleSaveInfo}>
+                  Save dates
+                </button>
+              </div>
+            ) : (
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Ask the trip owner to add dates.</p>
+            )}
+          </div>
+        )
       )}
 
       {activeTab === 'map' && mapReady && (

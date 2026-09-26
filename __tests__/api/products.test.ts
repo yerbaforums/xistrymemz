@@ -6,8 +6,9 @@ const BASE_URL = process.env.TEST_BASE_URL || 'http://localhost:3000'
 
 import { prisma } from '@/lib/prisma'
 import type { Product, User } from '@prisma/client'
+import { describeIfServer } from '../helpers/describeIfServer'
 
-describe('/api/products', () => {
+describeIfServer('/api/products', () => {
   let testUser: User
   let testProduct: Product
 

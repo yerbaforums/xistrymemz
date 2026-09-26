@@ -381,7 +381,7 @@ export default function DashboardProjectsClient({ initialProjects }: DashboardPr
       />
 
       {filteredProjects.length === 0 ? (
-        <EmptyState icon="📋" title="No projects found" description="Try adjusting your search or filters, or create a new project." action={{ label: 'Create Project', onClick: () => setShowCreateModal(true) }} />
+        <EmptyState icon="📋" title="No projects found" description="Try adjusting your search or filters, start fresh — or pick an open request above to prefill one." action={{ label: 'Create Project', onClick: () => setShowCreateModal(true) }} />
       ) : viewMode === 'grid' ? (
         <div className={styles.cardGrid}>
           {filteredProjects.map((project, index) => {

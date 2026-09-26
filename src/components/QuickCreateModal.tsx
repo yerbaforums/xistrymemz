@@ -651,7 +651,7 @@ function GroupForm({ onDone, prefill }: { onDone: () => void; prefill?: QuickCre
         const id = extractCreatedId(body)
         success('Group created!')
         onDone()
-        if (id) router.push(`/groups/${id}`)
+        if (id) router.push(`/groups/${id}?fresh=1`)
         else router.refresh()
       } else {
         const err = await res.json()
@@ -802,7 +802,7 @@ function RequestForm({ onDone, prefill }: { onDone: () => void; prefill?: QuickC
         const id = extractCreatedId(body)
         success('Request created!')
         onDone()
-        if (id) router.push(`/requests/${id}`)
+        if (id) router.push(`/requests/${id}?fresh=1`)
         else router.refresh()
       } else {
         const err = await res.json()
@@ -1223,7 +1223,7 @@ function ProjectForm({ onDone, prefill }: { onDone: () => void; prefill?: QuickC
         const id = extractCreatedId(body)
         success('Project created!')
         onDone()
-        if (id) router.push(`/projects/${id}`)
+        if (id) router.push(`/projects/${id}?fresh=1`)
         else router.refresh()
       } else {
         const err = await res.json()

@@ -39,15 +39,15 @@ export default function BottomNav() {
   // slot on a mobile bottom bar, so we avoid the duplicate-tab feel.
   const allItems: NavItem[] = isAuthenticated ? [
     { href: '/', label: 'Home', icon: '🏠' },
-    { href: '/discover', label: 'Discover', icon: '🌐' },
+    { href: '/directory', label: 'Directory', icon: '📋' },
     { href: null, label: 'Create', icon: '+', isFab: true, action: handleCreate },
-    { href: '/community', label: 'Members', icon: '👥' },
+    { href: '/discover', label: 'Discover', icon: '🌐' },
     { href: session?.user?.username ? `/profile/${session.user.username}` : '/profile', label: 'Profile', icon: '👤' },
   ] : [
     { href: '/', label: 'Home', icon: '🏠' },
-    { href: '/discover', label: 'Discover', icon: '🌐' },
+    { href: '/directory', label: 'Directory', icon: '📋' },
     { href: null, label: 'Create', icon: '+', isFab: true, action: handleCreate },
-    { href: '/community', label: 'Members', icon: '👥' },
+    { href: '/discover', label: 'Discover', icon: '🌐' },
     { href: '/auth/login', label: 'Sign In', icon: '🔑' },
   ]
   // Hidden tools disappear from the bottom bar too (except Home + Create).

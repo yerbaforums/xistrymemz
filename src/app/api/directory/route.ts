@@ -75,6 +75,22 @@ export async function GET(request: Request) {
             return { id: u.id, title: u.name || 'Unknown', image: u.image, url: u.username ? `/profile/${u.username}` : `/profile/${u.id}`, meta: hidden ? undefined : (u.location || undefined), type: 'member', itemType: 'PROFILE', userId: u.id, category: u.userClass || undefined, extra: u.bio?.slice(0, 80) || undefined, owner: u.name || undefined, ownerImage: u.image, createdAt: u.createdAt.toISOString() }
           })
         }
+        case 'group': {
+          const rows = await prisma.group.findMany({
+            where: { isPrivate: false, ...(q ? { name: whereName } : {}), ...(cat ? { category: cat } : {}) },
+            select: { id: true, name: true, description: true, imageUrl: true, category: true, location: true, latitude: true, longitude: true, createdAt: true, userId: true, _count: { select: { members: true } } },
+            take, orderBy: { createdAt: 'desc' }
+          })
+          return rows.map(g => ({ id: g.id, title: g.name, image: g.imageUrl, url: `/groups/${g.id}`, meta: `${g._count.members} member${g._count.members === 1 ? '' : 's'}`, type: 'group', itemType: 'GROUP', userId: g.userId, category: g.category || undefined, extra: g.description?.slice(0, 80) || undefined, location: g.location || undefined, latitude: g.latitude ?? null, longitude: g.longitude ?? null, createdAt: g.createdAt.toISOString() }))
+        }
+        case 'board': {
+          const rows = await prisma.bulletinBoard.findMany({
+            where: { isPublic: true, ...(q ? { name: whereName } : {}) },
+            select: { id: true, name: true, slug: true, latitude: true, longitude: true, location: true, createdAt: true, ownerId: true, _count: { select: { pins: true } } },
+            take, orderBy: { createdAt: 'desc' }
+          })
+          return rows.map(b => ({ id: b.id, title: b.name, image: null, url: `/boards/${b.slug}`, meta: `${b._count.pins} pin${b._count.pins === 1 ? '' : 's'}`, type: 'board', itemType: 'BOARD', userId: b.ownerId || undefined, category: undefined, extra: b.location || undefined, location: b.location || undefined, latitude: b.latitude ?? null, longitude: b.longitude ?? null, createdAt: b.createdAt.toISOString() }))
+        }
         case 'request': {
           const rows = await prisma.request.findMany({
             where: { isPublic: true, ...(q ? { title: whereName } : {}) },
@@ -100,12 +116,13 @@ export async function GET(request: Request) {
       return NextResponse.json({ items, total: items.length, categories, counts: { [type + 's']: items.length } })
     }
 
-    const [shops, products, services, rentals, events, projects, requests, members] = await Promise.all([
+    const [shops, products, services, rentals, events, projects, requests, members, groups, boards] = await Promise.all([
       fetchByType('shop'), fetchByType('product'), fetchByType('service'),
-      fetchByType('rental'), fetchByType('event'), fetchByType('project'), fetchByType('request'), fetchByType('member')
+      fetchByType('rental'), fetchByType('event'), fetchByType('project'), fetchByType('request'), fetchByType('member'),
+      fetchByType('group'), fetchByType('board')
     ])
 
-    const allItems = [...shops, ...products, ...services, ...rentals, ...events, ...projects, ...requests, ...members]
+    const allItems = [...shops, ...products, ...services, ...rentals, ...events, ...projects, ...requests, ...members, ...groups, ...boards]
 
     const categories: Record<string, string[]> = {}
     for (const item of allItems) {
@@ -118,7 +135,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       items: allItems,
       categories,
-      counts: { shops: shops.length, products: products.length, services: services.length, rentals: rentals.length, events: events.length, projects: projects.length, requests: requests.length, members: members.length }
+      counts: { shops: shops.length, products: products.length, services: services.length, rentals: rentals.length, events: events.length, projects: projects.length, requests: requests.length, members: members.length, groups: groups.length, boards: boards.length }
     })
   } catch (error) {
     console.error('Directory error:', error)

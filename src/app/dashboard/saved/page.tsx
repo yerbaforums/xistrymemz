@@ -16,6 +16,7 @@ interface SavedItem {
   itemId: string
   createdAt: string
   title: string | null
+  url?: string | null
 }
 
 const TYPE_CONFIG: Record<string, { icon: string; label: string; href: string }> = {
@@ -29,6 +30,12 @@ const TYPE_CONFIG: Record<string, { icon: string; label: string; href: string }>
   FORUM_POST: { icon: '💬', label: 'Forum Post', href: '/community/forum' },
   SCHOOLCONTENT: { icon: '📖', label: 'Content', href: '/school' },
   GROUP: { icon: '👥', label: 'Group', href: '/community/groups' },
+  SCHOOL: { icon: '🏫', label: 'School', href: '/schools' },
+  SHOP: { icon: '🏪', label: 'Shop', href: '/shops' },
+  PROFILE: { icon: '👤', label: 'Member', href: '/community' },
+  BOARD: { icon: '📌', label: 'Board', href: '/boards' },
+  PIN: { icon: '📍', label: 'Pin', href: '/boards' },
+  BLOG: { icon: '✍️', label: 'Story', href: '/blogs' },
 }
 
 export default function SavedPage() {
@@ -131,8 +138,9 @@ export default function SavedPage() {
               )}
               {filtered.map(item => {
                 const cfg = TYPE_CONFIG[item.itemType] || { icon: '📌', label: item.itemType, href: '/' }
+                const href = item.url || `${cfg.href}/${item.itemId}`
                 return (
-                  <Link key={item.id} href={`${cfg.href}/${item.itemId}`} className={styles.card}>
+                  <Link key={item.id} href={href} className={styles.card}>
                     <div className={styles.cardIcon}>{cfg.icon}</div>
                     <div className={styles.cardBody}>
                       <div className={styles.cardTitle}>{item.title || 'Untitled'}</div>

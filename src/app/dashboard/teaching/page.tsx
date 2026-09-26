@@ -147,7 +147,7 @@ export default function TeachingPage() {
         </div>
         <div className={styles.headerActions}>
           <Button onClick={() => setShowSchoolForm(true)} variant="secondary">⚙️ School Settings</Button>
-          <Button onClick={() => { setEditingContent(null); setContentForm({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: '', videoUrl: '' }); setShowContentForm(true) }} variant="primary">➕ New Content</Button>
+          <Button onClick={() => { setEditingContent(null); setContentForm({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: '', videoUrl: '' }); setShowContentForm(true) }} variant="primary">➕ New Lesson</Button>
         </div>
       </div>
 
@@ -275,8 +275,11 @@ export default function TeachingPage() {
       {showContentForm && (
         <div className="modal-overlay" onClick={() => { setShowContentForm(false); setEditingContent(null) }}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <h2>{editingContent ? '✏️ Edit Content' : '➕ New Content'}</h2>
+            <h2>{editingContent ? '✏️ Edit Lesson' : '➕ New Lesson'}</h2>
             <form onSubmit={handleContentSubmit}>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0 0 12px' }}>
+                📚 Lessons are categorized, sectioned course content with progression. Writing fiction or a personal essay? Use <Link href="/dashboard/blog">Blog Stories</Link> instead.
+              </p>
               <div className="form-group">
                 <label>Title</label>
                 <input type="text" value={contentForm.title} onChange={e => setContentForm({...contentForm, title: e.target.value})} required />

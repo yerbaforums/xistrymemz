@@ -17,6 +17,7 @@ import EntityActions from '@/components/EntityActions'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import CollaborateButton from '@/components/CollaborateButton'
 import PinToBoardButton from '@/components/PinToBoardButton'
+import NextStepsSheet from '@/components/NextStepsSheet'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
 
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
@@ -102,6 +103,24 @@ const TABS: { key: TabKey; label: string; icon: string }[] = [
 
 export default function ProjectDetailClient({ project: initialProject, userId, isOwner: propIsOwner }: ProjectDetailClientProps) {
   const [project, setProject] = useState(initialProject)
+
+  // Post-create sheet for QuickCreate landings (?fresh=1): Pin / share /
+  // invite next steps without blocking the new detail page.
+  const [showFreshSheet, setShowFreshSheet] = useState(false)
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('fresh') === '1') {
+        setShowFreshSheet(true)
+        params.delete('fresh')
+        const url = new URL(window.location.href)
+        url.search = params.toString()
+        window.history.replaceState({}, '', url.toString())
+      }
+    } catch {}
+  }, [])
+  const dismissFreshSheet = () => setShowFreshSheet(false)
+
   const isOwner = propIsOwner ?? project.isOwner
   const [activeTab, setActiveTab] = useState<TabKey>('overview')
 
@@ -1321,6 +1340,19 @@ donationDescription={project.donationDescription}
         confirmLabel={deletingProject ? 'Deleting...' : 'Delete'}
         variant="danger"
       />
+      {showFreshSheet && (
+        <NextStepsSheet
+          open
+          entityType="PROJECT"
+          entityId={project.id}
+          title={project.title || 'Untitled Project'}
+          image={project.imageUrl || null}
+          detailUrl={`/projects/${project.id}`}
+          extraAction={{ label: '📝 Create a request for this project', href: `/requests/new?projectId=${project.id}` }}
+          onClose={dismissFreshSheet}
+          onView={dismissFreshSheet}
+        />
+      )}
       </div>
   )
 }

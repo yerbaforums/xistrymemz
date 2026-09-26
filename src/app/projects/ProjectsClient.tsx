@@ -497,10 +497,13 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
                 </svg>
               </div>
               <h3>No projects found</h3>
-              <p>Try adjusting your search or filters</p>
+              <p>Try adjusting your search or filters — or start one from scratch or from an open request.</p>
               <button className={styles.emptyReset} onClick={() => { setFilter('ALL'); setCategory('ALL'); setShowPinned(null); setSearchQuery(''); setNearbyMode('ALL'); setUserLocation(null) }}>
                 Clear all filters
               </button>
+              <Link href="/projects/new" className={styles.emptyReset} style={{ textDecoration: 'none', textAlign: 'center' }}>
+                🚀 Start a project
+              </Link>
             </div>
           ) : (
             <div className={styles.publicGrid}>

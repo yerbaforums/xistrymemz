@@ -10,7 +10,7 @@ import styles from './deals.module.css'
 export const dynamic = 'force-dynamic'
 
 interface Deal {
-  kind: 'Order' | 'Request' | 'Offer' | 'Appointment'
+  kind: 'Order' | 'Request' | 'Offer' | 'Appointment' | 'GroupBuy'
   id: string
   title: string
   counterpart: string
@@ -31,7 +31,7 @@ export default async function DashboardDeals() {
 
   const userId = session.user.id
 
-  const [orders, requests, offers, appointments] = await Promise.all([
+  const [orders, requests, offers, appointments, myBuys, myPledges, supplierRequests] = await Promise.all([
     prisma.order.findMany({
       where: {
         OR: [{ buyerId: userId }, { sellerId: userId }, { courierId: userId }],
@@ -86,8 +86,54 @@ export default async function DashboardDeals() {
       },
       orderBy: { updatedAt: 'desc' },
       take: 30
+    }),
+    // Group buys I organize (threshold watch + submit).
+    prisma.groupBuy.findMany({
+      where: { organizerId: userId, status: { in: ['ACTIVE', 'SUBMITTED'] } },
+      select: {
+        id: true, title: true, status: true, updatedAt: true,
+        targetPrice: true, currentPrice: true,
+        minSupporters: true, currentSupporters: true,
+        groupId: true
+      },
+      orderBy: { updatedAt: 'desc' },
+      take: 20
+    }),
+    // Buys I pledged to (supplier-request-live watch).
+    prisma.groupBuySupporter.findMany({
+      where: { userId },
+      include: {
+        groupBuy: {
+          select: {
+            id: true, title: true, status: true, updatedAt: true,
+            targetPrice: true, groupId: true, organizerId: true
+          }
+        }
+      },
+      orderBy: { joinedAt: 'desc' },
+      take: 20
+    }),
+    // My supplier requests (from group buys) with pending trade offers.
+    prisma.request.findMany({
+      where: { userId, description: { contains: '[groupbuy:' } },
+      select: { id: true, title: true, description: true }
     })
   ])
+
+  const supplierRequestIds = supplierRequests.map(r => r.id)
+  const pendingOfferCounts = supplierRequestIds.length > 0
+    ? await prisma.barterOffer.groupBy({
+        by: ['listingId'],
+        where: {
+          listingId: { in: supplierRequestIds },
+          listingType: 'REQUEST',
+          receiverId: userId,
+          status: { in: ['PENDING', 'COUNTERED'] }
+        },
+        _count: true
+      })
+    : []
+  const pendingOffersByRequest = new Map(pendingOfferCounts.map(o => [o.listingId, o._count]))
 
   const deals: Deal[] = [
     ...orders.map(o => {
@@ -152,7 +198,43 @@ export default async function DashboardDeals() {
       href: `/dashboard/appointments?highlight=${a.id}`,
       actionNeeded: a.status === 'PENDING' && a.buyerId !== userId,
       updatedAt: a.updatedAt
-    }))
+    })),
+    // Group buys I organize: threshold met → submit to supplier; pending trade
+    // offers on my supplier requests need review.
+    ...myBuys.map(b => {
+      const met = b.currentSupporters >= b.minSupporters
+      const pendingOffers = supplierRequests
+        .filter(r => (r as { description?: string | null }).description?.includes(`[groupbuy:${b.id}]`))
+        .reduce((sum, r) => sum + (pendingOffersByRequest.get(r.id) || 0), 0)
+      return {
+        kind: 'GroupBuy' as const,
+        id: b.id,
+        title: b.title,
+        counterpart: `${b.currentSupporters}/${b.minSupporters} supporters`,
+        status: b.status === 'ACTIVE' && met ? 'READY' : b.status,
+        role: 'Organizer',
+        href: `/groups/${b.groupId}`,
+        actionNeeded: (b.status === 'ACTIVE' && met) || pendingOffers > 0,
+        updatedAt: b.updatedAt,
+        amount: b.targetPrice
+      }
+    }),
+    // Buys I pledged to that went to a supplier: trade offers are open.
+    // (Own buys are covered by the Organizer rows above.)
+    ...myPledges
+      .filter(p => p.groupBuy.status === 'SUBMITTED' && p.groupBuy.organizerId !== userId)
+      .map(p => ({
+        kind: 'GroupBuy' as const,
+        id: p.groupBuy.id,
+        title: p.groupBuy.title,
+        counterpart: 'Pledged — supplier request live',
+        status: 'SUBMITTED',
+        role: 'Supporter',
+        href: `/groups/${p.groupBuy.groupId}`,
+        actionNeeded: false,
+        updatedAt: p.groupBuy.updatedAt,
+        amount: p.groupBuy.targetPrice
+      }))
   ]
 
   deals.sort((a, b) => (b.updatedAt?.getTime() || 0) - (a.updatedAt?.getTime() || 0))
@@ -181,7 +263,7 @@ export default async function DashboardDeals() {
   return (
     <div className={styles.container}>
       <h1>🤝 My Deals</h1>
-      <p style={{ color: 'var(--text-secondary)' }}>Your active orders, requests, offers, and bookings — all in one place.</p>
+      <p style={{ color: 'var(--text-secondary)' }}>Your active orders, requests, offers, bookings, and group buys — all in one place.</p>
 
       {nudge && <ConnectNudge userId={nudge.userId} name={nudge.name} context={nudge.context} />}
 

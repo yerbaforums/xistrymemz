@@ -1,7 +1,11 @@
+/**
+ * @jest-environment node
+ */
 /// <reference types="jest" />
 import { NextRequest } from 'next/server'
 import { POST as login } from '@/app/api/auth/[...nextauth]/route'
 import { prisma } from '@/lib/prisma'
+import { describeIfServer } from '../helpers/describeIfServer'
 
 // Mock NextAuth
 jest.mock('next-auth', () => ({
@@ -14,7 +18,7 @@ jest.mock('next-auth', () => ({
   getServerSession: jest.fn(() => null)
 }))
 
-describe('/api/auth', () => {
+describeIfServer('/api/auth', () => {
   beforeEach(async () => {
     // Clean up test data
     await prisma.user.deleteMany({

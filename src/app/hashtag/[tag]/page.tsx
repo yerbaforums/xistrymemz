@@ -408,7 +408,7 @@ function HashtagPage() {
               {activeTab === 'all' && <h2 className={styles.sectionTitle}>Projects</h2>}
               <div className={styles.projectList}>
                 {projects.map(project => (
-                  <Link key={project.id} href={`/plans/${project.id}`} className={styles.projectCard}>
+                  <Link key={project.id} href={`/projects/${project.id}`} className={styles.projectCard}>
                     <h3 className={styles.projectCardTitle}>{project.title}</h3>
                     {project.description && (
                       <p className={styles.projectCardDesc}>{project.description.slice(0, 120)}{project.description.length > 120 ? '...' : ''}</p>

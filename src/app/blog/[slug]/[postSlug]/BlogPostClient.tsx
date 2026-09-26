@@ -8,6 +8,8 @@ import styles from './page.module.css'
 import Skeleton from '@/components/Skeleton'
 import Button from '@/components/ui/Button'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import EntityActions from '@/components/EntityActions'
+import PinToBoardButton from '@/components/PinToBoardButton'
 import { useToast } from '@/context/ToastContext'
 
 interface PostData {
@@ -296,6 +298,26 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
           <span className={styles.viewCount}>👁 {post.viewCount}</span>
           <a className={styles.rssLink} href={`/blog/${post.blog.blogSlug}/feed.xml`} target="_blank" rel="noopener noreferrer">📡 RSS</a>
         </footer>
+
+        <EntityActions
+          entityType="BLOG"
+          entityId={post.id}
+          title={post.title}
+          authorId={post.blog.id}
+          description={post.excerpt}
+          image={post.coverImage}
+          variant="bar"
+        />
+        <div style={{ marginTop: 8 }}>
+          <PinToBoardButton
+            entityType="BLOG"
+            entityId={post.id}
+            entityTitle={post.title}
+            entityImage={post.coverImage || undefined}
+            variant="secondary"
+            label="Pin to Board"
+          />
+        </div>
 
         <div className={styles.authorBox}>
           <Link href={`/blog/${post.blog.blogSlug}`} className={styles.authorBoxLink}>

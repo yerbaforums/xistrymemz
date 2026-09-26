@@ -1,7 +1,13 @@
+import type { Metadata } from 'next'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import styles from './layout.module.css'
+
+export const metadata: Metadata = {
+  title: 'Groups — XistrYmemZ',
+  description: 'Find your people — join community groups, gather around a request, start a project.',
+}
 
 export default async function GroupsLayout({
   children,

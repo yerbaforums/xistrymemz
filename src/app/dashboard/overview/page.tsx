@@ -305,6 +305,41 @@ export default async function DashboardOverview({
   const coreStats = showAllStats ? stats : stats.slice(0, 10)
 
   /* Shared quick-actions block — used by both the new-user and active-user views. */
+  /* Stats gauges — rendered at the top for new + active users alike. */
+  const renderStats = () => (
+    <>
+      <div className={styles.overviewStats} data-module="stats">
+        {coreStats.map(stat => (
+          stat.href ? (
+            <Link key={stat.label} href={stat.href} className={styles.overviewStatCard}>
+              <div className={styles.statGauge}>
+                <StatGauge value={stat.value} max={stat.max} color={stat.color} icon={stat.icon} size={56} />
+              </div>
+              <span className={styles.overviewStatLabel}>{stat.label}</span>
+            </Link>
+          ) : (
+            <div key={stat.label} className={`${styles.overviewStatCard} ${overviewStyles.overviewStatCard}`}>
+              <div className={styles.statGauge}>
+                <StatGauge value={stat.value} max={stat.max} color={stat.color} icon={stat.icon} size={56} />
+              </div>
+              <span className={styles.overviewStatLabel}>{stat.label}</span>
+            </div>
+          )
+        ))}
+      </div>
+      {stats.length > 10 && (
+        <div className={overviewStyles.overviewSection} style={{ marginBottom: 24, textAlign: 'center' }}>
+          <Link
+            href={showAllStats ? '/dashboard/overview' : '/dashboard/overview?showAllStats=true'}
+            className={`${styles.actionBtn} ${overviewStyles.overviewBtn}`}
+          >
+            {showAllStats ? 'Show Fewer Stats' : `Show All Stats (${stats.length})`}
+          </Link>
+        </div>
+      )}
+    </>
+  )
+
   const renderQuickActions = () => (
     <div className={styles.quickActions} data-module="quickActions">
       <h3>Quick Actions</h3>
@@ -337,6 +372,8 @@ export default async function DashboardOverview({
         <h2>Welcome back, {session.user.name?.split(' ')[0] || 'User'}! 👋</h2>
         <p>{isNewUser ? 'Let&apos;s get started — here are your first steps.' : `${allStats[6]} posts · ${connectionCount} connections${totalViews > 0 ? ` · ${totalViews} views` : ''}${totalEarnings > 0 ? ` · $${totalEarnings.toFixed(0)} earned` : ''}`}</p>
       </div>
+
+      {renderStats()}
 
       {attentionItems.length > 0 && (
         <div data-module="attention">
@@ -387,9 +424,7 @@ export default async function DashboardOverview({
           />
           {renderQuickActions()}
           <div data-module="widgets">
-            <div data-module="widgets">
-             <DashboardWidgets />
-           </div>
+            <DashboardWidgets />
           </div>
           <ManageChannels />
           <div data-module="todo">
@@ -402,39 +437,11 @@ export default async function DashboardOverview({
           <FeatureBanner />
           <TipCard />
 
-          <div className={styles.overviewStats} data-module="stats">
-            {coreStats.map(stat => (
-              stat.href ? (
-                <Link key={stat.label} href={stat.href} className={styles.overviewStatCard}>
-                  <div className={styles.statGauge}>
-                    <StatGauge value={stat.value} max={stat.max} color={stat.color} icon={stat.icon} size={56} />
-                  </div>
-                  <span className={styles.overviewStatLabel}>{stat.label}</span>
-                </Link>
-              ) : (
-                <div key={stat.label} className={`${styles.overviewStatCard} ${overviewStyles.overviewStatCard}`}>
-                  <div className={styles.statGauge}>
-                    <StatGauge value={stat.value} max={stat.max} color={stat.color} icon={stat.icon} size={56} />
-                  </div>
-                  <span className={styles.overviewStatLabel}>{stat.label}</span>
-                </div>
-              )
-            ))}
-          </div>
-          {stats.length > 10 && (
-            <div className={overviewStyles.overviewSection} style={{ marginBottom: 24, textAlign: 'center' }}>
-              <Link
-                href={showAllStats ? '/dashboard/overview' : '/dashboard/overview?showAllStats=true'}
-                className={`${styles.actionBtn} ${overviewStyles.overviewBtn}`}
-              >
-                {showAllStats ? 'Show Fewer Stats' : `Show All Stats (${stats.length})`}
-              </Link>
-            </div>
-          )}
-
           {renderQuickActions()}
 
-          <DashboardWidgets />
+          <div data-module="widgets">
+            <DashboardWidgets />
+          </div>
 
           <ManageChannels />
 

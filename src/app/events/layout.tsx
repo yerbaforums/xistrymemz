@@ -1,4 +1,10 @@
+import type { Metadata } from 'next'
 import styles from './layout.module.css'
+
+export const metadata: Metadata = {
+  title: 'Events — XistrYmemZ',
+  description: 'Discover community events near you — join, get tickets, or host your own.',
+}
 
 export default async function EventsLayout({
   children,

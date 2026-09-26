@@ -10,7 +10,7 @@ import styles from './studio.module.css'
 
 interface UnifiedItem {
   id: string
-  type: 'post' | 'schoolContent' | 'product' | 'project' | 'event'
+  type: 'post' | 'schoolContent' | 'product' | 'project' | 'event' | 'blog' | 'service'
   icon: string
   typeLabel: string
   title: string
@@ -29,6 +29,8 @@ const TYPE_CONFIG: Record<string, { icon: string; label: string }> = {
   product: { icon: '🛒', label: 'Product' },
   project: { icon: '🚀', label: 'Project' },
   event: { icon: '📅', label: 'Event' },
+  blog: { icon: '✍️', label: 'Story' },
+  service: { icon: '🔧', label: 'Service' },
 }
 
 export default function StudioPage() {
@@ -60,12 +62,14 @@ export default function StudioPage() {
       } catch {}
 
       // Parallel fetches
-      const [postsRes, productsRes, projectsRes, eventsRes, schoolContentRes] = await Promise.all([
+      const [postsRes, productsRes, projectsRes, eventsRes, schoolContentRes, blogRes, servicesRes] = await Promise.all([
         fetch(`/api/posts?userId=${userId}&limit=50`),
         fetch(`/api/products?userId=${userId}`),
         fetch('/api/projects'),
         fetch(`/api/events?organizerId=${userId}`),
         schoolSlug ? fetch(`/api/school/${schoolSlug}/content`) : Promise.resolve(null),
+        fetch('/api/blog/manage').catch(() => null),
+        fetch('/api/services/user?limit=50').catch(() => null),
       ])
 
       // Posts
@@ -160,14 +164,51 @@ export default function StudioPage() {
         } catch {}
       }
 
+      // Blog stories (fiction hub — complements structured school content)
+      try {
+        const blogData = blogRes ? await blogRes.json().catch(() => null) : null
+        const bSlug = blogData?.data?.blog?.blogSlug || blogData?.blog?.blogSlug
+        const bPosts = blogData?.data?.posts || blogData?.posts || []
+        for (const b of (Array.isArray(bPosts) ? bPosts : [])) {
+          all.push({
+            id: `blog-${b.id}`,
+            type: 'blog', icon: '✍️', typeLabel: 'Story',
+            title: b.title || 'Untitled',
+            createdAt: b.publishedAt || b.createdAt,
+            views: b.viewCount || 0,
+            likes: b._count?.likes || 0,
+            status: (b.status || 'DRAFT').toLowerCase(),
+            price: b.visibility === 'PAID' ? (b.price || 0) : undefined,
+            href: bSlug && b.slug ? `/blog/${bSlug}/${b.slug}` : '/dashboard/blog',
+          })
+        }
+      } catch {}
+
+      // Services (bookable — complements product listings)
+      try {
+        const svcData = servicesRes ? await servicesRes.json().catch(() => null) : null
+        const svcs = svcData?.data?.services || svcData?.services || []
+        for (const s of (Array.isArray(svcs) ? svcs : [])) {
+          all.push({
+            id: `service-${s.id}`,
+            type: 'service', icon: '🔧', typeLabel: 'Service',
+            title: s.title || 'Untitled',
+            createdAt: s.createdAt,
+            price: s.price || 0,
+            status: s.isActive === false ? 'paused' : 'active',
+            href: `/services/${s.id}`,
+          })
+        }
+      } catch {}
+
       all.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       setItems(all)
 
       const totalViews = all.reduce((sum, i) => sum + (i.views || 0), 0)
       const totalEarnings = all.reduce((sum, i) => sum + (i.price || 0), 0)
       setStats({ total: all.length, totalViews, totalEarnings })
-    } catch (e) {
-      console.error('Studio load error:', e)
+    } catch {
+      // Row-level guards above already cover partial failures
     } finally {
       setLoading(false)
     }

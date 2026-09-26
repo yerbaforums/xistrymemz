@@ -544,7 +544,7 @@ export default function EventsPage() {
                 {loading ? (
                   <SkeletonCard />
                 ) : filteredEvents.length === 0 ? (
-                  <EmptyState icon="📅" title="No events found" description="Try adjusting your filters or create a new event." />
+                  <EmptyState icon="📅" title="No events found" description="Try adjusting your filters — or create one and invite the community." action={{ label: '+ Create Event', href: '/events/new' }} />
                 ) : (
                   filteredEvents.map(event => (
                     <div key={event.id} className={`${styles.eventCard} ${selectedEvent?.id === event.id ? styles.selected : ''}`} onClick={() => { setSelectedEvent(event); if (event.latitude && event.longitude && mapRef.current) { mapRef.current.setView([event.latitude, event.longitude], 15, { animate: true }) } }}>

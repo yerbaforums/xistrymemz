@@ -15,7 +15,7 @@ export default function NotFound() {
         </form>
         <div className={styles.actions}>
           <Link href="/" className={styles.primaryBtn}>Go Home</Link>
-          <Link href="/dashboard" className={styles.secondaryBtn}>Dashboard</Link>
+          <Link href="/directory" className={styles.secondaryBtn}>📋 Browse Directory</Link>
         </div>
       </div>
     </div>

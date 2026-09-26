@@ -13,6 +13,8 @@ import HashtagChips from '@/components/HashtagChips'
 import Avatar from '@/components/Avatar'
 import DirectoryCardActions from '@/components/DirectoryCardActions'
 import { haversineKm, formatDistance } from '@/lib/geo'
+import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
+import EntityMarker from '@/components/EntityMarker'
 import type { IndexItem } from '@/components/AlphabeticalIndex'
 
 interface DirItem {
@@ -36,7 +38,7 @@ const PHONEBOOK_SECTIONS = [
   { key: 'yellow', label: 'Yellow Pages', icon: '🟨', types: ['shop', 'product', 'service', 'rental'], blurb: 'Businesses — shops, products, services, rentals.', accent: '#f59e0b' },
   { key: 'blue', label: 'Blue Pages', icon: '🟦', types: ['event'], blurb: 'Events — go out.', accent: '#3b82f6' },
   { key: 'green', label: 'Green Pages', icon: '🟩', types: ['request'], blurb: 'Requests — ask, fund, fulfill.', accent: '#22c55e' },
-  { key: 'violet', label: 'Violet Pages', icon: '🟪', types: ['project'], blurb: 'Projects — build together.', accent: '#8b5cf6' },
+  { key: 'violet', label: 'Violet Pages', icon: '🟪', types: ['project', 'group', 'board'], blurb: 'Projects, groups & boards — build together.', accent: '#8b5cf6' },
 ] as const
 
 type SectionKey = typeof PHONEBOOK_SECTIONS[number]['key']
@@ -51,11 +53,13 @@ const TYPE_TABS = [
   { key: 'event', label: 'Events', icon: '📅' },
   { key: 'project', label: 'Projects', icon: '🚀' },
   { key: 'request', label: 'Requests', icon: '📝' },
+  { key: 'group', label: 'Groups', icon: '👥' },
+  { key: 'board', label: 'Boards', icon: '📌' },
 ]
 
 const TYPE_ICONS: Record<string, string> = {
   member: '👤', shop: '🛍️', product: '📦', service: '🔧', rental: '🏠',
-  event: '📅', project: '🚀', request: '📝'
+  event: '📅', project: '🚀', request: '📝', group: '👥', board: '📌'
 }
 
 const SORT_OPTIONS = [
@@ -83,6 +87,19 @@ export default function DirectoryPage() {
   const [passportRadius, setPassportRadius] = useState(50)
   const [passportHidden, setPassportHidden] = useState(false)
   const [nearMe, setNearMe] = useState(false)
+  const [view, setView] = useState<'list' | 'map' | 'calendar'>('list')
+  const [mapReady, setMapReady] = useState(false)
+  const [calMonth, setCalMonth] = useState(() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() } })
+  const [calDay, setCalDay] = useState<number | null>(null)
+
+  // Leaflet assets load lazily for the map toggle (A-Z list needs none).
+  useEffect(() => {
+    if (view !== 'map' || mapReady) return
+    if (typeof window !== 'undefined') {
+      import('leaflet/dist/leaflet.css').catch(() => {})
+      setMapReady(true)
+    }
+  }, [view, mapReady])
 
   // Deep-link ?section= + ?q=
   useEffect(() => {
@@ -234,12 +251,38 @@ export default function DirectoryPage() {
 
   function startProjectUrl(item: DirItem): string | null {
     if (item.type === 'request') return `/projects/new?fromRequest=${item.id}`
-    if (item.type === 'member') return null
+    if (item.type === 'group') return `/projects/new?fromGroup=${item.id}`
     return null
   }
 
   const activeSection = PHONEBOOK_SECTIONS.find(s => s.key === section)!
   const localeReady = passportLat != null && passportLng != null && !passportHidden
+  const geoItems = useMemo(
+    () => sortedItems.filter(i => i.latitude != null && i.longitude != null).slice(0, 100),
+    [sortedItems]
+  )
+  const mapCenter: [number, number] = passportLat != null && passportLng != null
+    ? [passportLat, passportLng]
+    : geoItems.length > 0
+      ? [geoItems[0].latitude!, geoItems[0].longitude!]
+      : [20, 0]
+
+  // Calendar view: events in the current result set by month.
+  const calEvents = useMemo(
+    () => sortedItems.filter(i => i.type === 'event' && i.createdAt),
+    [sortedItems]
+  )
+  const calCells = useMemo(() => {
+    const first = new Date(calMonth.y, calMonth.m, 1)
+    const startDay = first.getDay()
+    const days = new Date(calMonth.y, calMonth.m + 1, 0).getDate()
+    const cells: (number | null)[] = [...Array(startDay).fill(null), ...Array.from({ length: days }, (_, i) => i + 1)]
+    while (cells.length % 7 !== 0) cells.push(null)
+    return cells
+  }, [calMonth])
+  const calKey = (day: number) => `${calMonth.y}-${String(calMonth.m + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+  const calDayEvents = (day: number) => calEvents.filter(e => (e.createdAt || '').startsWith(calKey(day)))
+  const calSelected = calDay != null ? calDayEvents(calDay) : []
 
   function renderCard(item: DirItem) {
     const accent = PHONEBOOK_SECTIONS.find(s => (s.types as readonly string[]).includes(item.type))?.accent
@@ -281,6 +324,7 @@ export default function DirectoryPage() {
               startProjectUrl={startProjectUrl(item)}
               location={item.location}
               eventDate={item.type === 'event' ? (item.createdAt || null) : null}
+              userId={item.userId}
             />
           </div>
         )}
@@ -341,6 +385,25 @@ export default function DirectoryPage() {
             {nearMe ? '📍 Near Me ✓' : '📍 Near Me'}
           </button>
         )}
+        <div role="group" aria-label="Directory view" style={{ display: 'flex', gap: 4 }}>
+          {([
+            { key: 'list', label: '📋 List', title: 'A-Z list' },
+            { key: 'map', label: '🗺️ Map', title: 'See located results on a map' },
+            { key: 'calendar', label: '📅 Cal', title: 'Events by date' },
+          ] as const).map(v => (
+            <button
+              key={v.key}
+              type="button"
+              className={styles.filterSelect}
+              onClick={() => setView(v.key)}
+              aria-pressed={view === v.key}
+              title={v.title}
+              style={view === v.key ? { borderColor: 'var(--accent-primary)' } : undefined}
+            >
+              {v.label}
+            </button>
+          ))}
+        </div>
       </div>
       {session?.user && !localeReady && (
         <div className={styles.metaRow}>
@@ -373,6 +436,96 @@ export default function DirectoryPage() {
         </div>
       ) : sortedItems.length === 0 ? (
         <EmptyState icon="📋" title="No results found" description="Try a different page, filter or search term" />
+      ) : view === 'map' ? (
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          {geoItems.length === 0 ? (
+            <EmptyState icon="🗺️" title="Nothing mappable here" description="These results have no locations yet — switch back to the list." />
+          ) : (
+            <div style={{ height: 440, borderRadius: 10, overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+              <MapContainer
+                key={`${mapCenter[0]},${mapCenter[1]},${geoItems.length}`}
+                center={mapCenter}
+                zoom={passportLat != null || geoItems.length > 0 ? 5 : 2}
+                style={{ height: '100%', width: '100%' }}
+              >
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                {passportLat != null && passportLng != null && !passportHidden && (
+                  <EntityMarker type="MEMBER" highlighted position={[passportLat, passportLng]}>
+                    <Popup>📍 Your passport</Popup>
+                  </EntityMarker>
+                )}
+                {geoItems.map(item => (
+                  <EntityMarker
+                    key={`${item.type}-${item.id}`}
+                    type={item.itemType === 'PROFILE' ? 'MEMBER' : (item.itemType || item.type.toUpperCase())}
+                    position={[item.latitude!, item.longitude!]}
+                  >
+                    <Popup>
+                      <Link href={item.url} style={{ fontWeight: 600 }}>{item.title}</Link>
+                      <br />
+                      <span style={{ fontSize: '0.75rem' }}>{TYPE_ICONS[item.type]} {item.type}{item.location ? ` · ${item.location}` : ''}</span>
+                    </Popup>
+                  </EntityMarker>
+                ))}
+              </MapContainer>
+            </div>
+          )}
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 8 }}>
+            Showing up to {geoItems.length} located result{geoItems.length !== 1 ? 's' : ''} · hidden passports never appear as pins.
+          </p>
+        </div>
+      ) : view === 'calendar' ? (
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          {calEvents.length === 0 ? (
+            <EmptyState icon="📅" title="No dated events here" description="Try another page or search — or switch back to the list." />
+          ) : (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <button type="button" className={styles.filterSelect} onClick={() => { setCalMonth(v => ({ y: v.m === 0 ? v.y - 1 : v.y, m: v.m === 0 ? 11 : v.m - 1 })); setCalDay(null) }} aria-label="Previous month">←</button>
+                <strong style={{ fontSize: '0.9rem' }}>{new Date(calMonth.y, calMonth.m, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</strong>
+                <button type="button" className={styles.filterSelect} onClick={() => { setCalMonth(v => ({ y: v.m === 11 ? v.y + 1 : v.y, m: v.m === 11 ? 0 : v.m + 1 })); setCalDay(null) }} aria-label="Next month">→</button>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{calEvents.length} event{calEvents.length !== 1 ? 's' : ''} in results</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
+                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+                  <div key={i} style={{ textAlign: 'center', fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700 }}>{d}</div>
+                ))}
+                {calCells.map((day, i) => {
+                  const n = day != null ? calDayEvents(day).length : 0
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      disabled={day == null}
+                      onClick={() => setCalDay(day === calDay ? null : day)}
+                      aria-label={day != null ? `${calKey(day)}: ${n} events` : undefined}
+                      style={{
+                        aspectRatio: '1', borderRadius: 8, cursor: day == null ? 'default' : 'pointer',
+                        border: day === calDay ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
+                        background: n > 0 ? 'var(--bg-secondary)' : 'transparent',
+                        color: 'var(--text-primary)', fontSize: '0.78rem', opacity: day == null ? 0 : 1,
+                      }}
+                    >
+                      {day}
+                      {n > 0 && <span style={{ display: 'block', fontSize: '0.65rem', color: 'var(--accent-primary)' }}>•{n}</span>}
+                    </button>
+                  )
+                })}
+              </div>
+              {calDay != null && (
+                <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {calSelected.length === 0 && <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>No events on {calKey(calDay)}.</p>}
+                  {calSelected.map(e => (
+                    <Link key={e.id} href={e.url} style={{ textDecoration: 'none', color: 'inherit', border: '1px solid var(--border-color)', borderRadius: 8, padding: '8px 12px' }}>
+                      <strong style={{ fontSize: '0.85rem' }}>📅 {e.title}</strong>
+                      {e.extra && <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginLeft: 8 }}>{e.extra}</span>}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       ) : (
         <AlphabeticalIndex
           items={indexItems}

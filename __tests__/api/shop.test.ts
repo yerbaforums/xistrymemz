@@ -1,8 +1,9 @@
 /// <reference types="jest" />
 import { prisma } from '@/lib/prisma'
 import type { User } from '@prisma/client'
+import { describeIfServer } from '../helpers/describeIfServer'
 
-describe('/api/shop', () => {
+describeIfServer('/api/shop', () => {
   let testUser: User
 
   beforeEach(async () => {
