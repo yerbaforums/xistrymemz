@@ -47,6 +47,12 @@
   line-height: 1.7;
   color: var(--text-primary);
   min-height: 200px;
+  /* Per-paragraph direction from the first strong character typed, so every
+     language (incl. RTL locales like Arabic) flows correctly while authoring.
+     Works with dir="auto" on the surface; explicit per-block dir attributes
+     (set by the ⇄ toggle) still win. text-align: start follows each block. */
+  unicode-bidi: plaintext;
+  text-align: start;
 }
 
 .editor:empty:before {

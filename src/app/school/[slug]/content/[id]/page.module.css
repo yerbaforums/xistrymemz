@@ -58,12 +58,81 @@
   border-radius: var(--radius-lg);
   padding: 24px;
   margin-bottom: 24px;
+  /* Render-side match for the editor: direction follows each paragraph's
+     first strong character so lessons in any language read correctly. */
+  unicode-bidi: plaintext;
+  text-align: start;
 }
 
 .body p {
   line-height: 1.8;
   margin-bottom: 12px;
   color: var(--text-primary);
+}
+
+.body ul, .body ol {
+  margin: 0 0 12px;
+  padding-left: 1.6em;
+  line-height: 1.8;
+}
+
+.body li {
+  margin: 0.25em 0;
+}
+
+.body li::marker {
+  color: var(--accent, #06b6d4);
+}
+
+.body blockquote {
+  border-left: 3px solid var(--accent, #06b6d4);
+  margin: 1em 0;
+  padding: 4px 16px;
+  opacity: 0.85;
+}
+
+.body code {
+  background: rgba(6, 182, 212, 0.12);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.9em;
+}
+
+.body pre {
+  background: #10101f;
+  border: 1px solid var(--border-color, #2a2a4a);
+  border-radius: 8px;
+  padding: 12px;
+  overflow-x: auto;
+}
+
+.body a {
+  color: var(--accent, #06b6d4);
+}
+
+.body img {
+  max-width: 100%;
+  border-radius: 10px;
+  margin: 12px 0;
+}
+
+.body hr {
+  border: none;
+  border-top: 1px solid var(--border-color, #2a2a4a);
+  margin: 1.6em 0;
+}
+
+.body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 12px;
+  font-size: 0.92rem;
+}
+
+.body th, .body td {
+  border: 1px solid var(--border-color, #2a2a4a);
+  padding: 6px 10px;
+  text-align: left;
 }
 
 .imageGrid {

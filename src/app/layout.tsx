@@ -88,7 +88,13 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale}>
+    // NOTE: dir is pinned to LTR. The CSS is LTR-only, so letting the browser
+    // infer direction from `lang` (e.g. ar) flips the whole document and breaks
+    // authoring surfaces. Arabic (and future RTL-locale) *content* still renders
+    // correctly via the Unicode bidi algorithm; the editor and rich-text bodies
+    // use dir="auto" / plaintext so authored text flows per-language.
+    // A full mirrored-RTL chrome is a separate future pass.
+    <html lang={locale} dir="ltr">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)" />

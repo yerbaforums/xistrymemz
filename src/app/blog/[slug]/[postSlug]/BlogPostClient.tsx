@@ -10,6 +10,7 @@ import Button from '@/components/ui/Button'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import EntityActions from '@/components/EntityActions'
 import PinToBoardButton from '@/components/PinToBoardButton'
+import TipAuthorButton from '@/components/TipAuthorButton'
 import { useToast } from '@/context/ToastContext'
 
 interface PostData {
@@ -297,6 +298,7 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
           </button>
           <span className={styles.viewCount}>👁 {post.viewCount}</span>
           <a className={styles.rssLink} href={`/blog/${post.blog.blogSlug}/feed.xml`} target="_blank" rel="noopener noreferrer">📡 RSS</a>
+          <TipAuthorButton authorId={post.blog.id} />
         </footer>
 
         <EntityActions

@@ -255,6 +255,28 @@ export default function DirectoryPage() {
     return null
   }
 
+  // Golden-path prompts for empty types: a blank section reads as "your turn",
+  // not a dead site. Only shown when the user isn't filtering/searching.
+  const EMPTY_PATHS: Record<string, { title: string; description: string; action?: { label: string; href: string } }> = {
+    product: { title: 'No products yet', description: 'Be the first to list one — sell direct, no platform cuts.', action: { label: '+ List a product', href: '/products/new' } },
+    service: { title: 'No services yet', description: 'Offer your skills here — locals book you and pay direct.', action: { label: '+ Offer a service', href: '/services/new' } },
+    rental: { title: 'No rentals yet', description: 'List a space, gear, or anything rentable in the community.', action: { label: '+ List a rental', href: '/rentals/new' } },
+    event: { title: 'No events yet', description: 'Host one and invite the community — gatherings start here.', action: { label: '+ Create event', href: '/events/new' } },
+    project: { title: 'No projects yet', description: 'Start from scratch — or pick an open request to prefill one.', action: { label: '🚀 Start a project', href: '/projects/new' } },
+    request: { title: 'No requests yet', description: 'Post one: gather a group around it, then start a project and pin it to the boards.', action: { label: '+ Post a request', href: '/requests/new' } },
+    group: { title: 'No groups yet', description: 'Gather yours here, then start a project together.', action: { label: '+ Create group', href: '/groups/new' } },
+    board: { title: 'No boards yet', description: 'Start a bulletin board and pin the community\'s work to it.', action: { label: '+ Create board', href: '/boards' } },
+    shop: { title: 'No shops yet', description: 'Open a shop and sell direct to the community.', action: { label: '+ Open a shop', href: '/shop/setup' } },
+    member: { title: 'No members here yet', description: 'Invite someone — the directory grows person by person.' },
+  }
+
+  function emptyStateFor(): { title: string; description: string; action?: { label: string; href: string } } {
+    if (search.trim() || activeCategory || nearMe) {
+      return { title: 'No results found', description: 'Try a different page, filter or search term' }
+    }
+    return EMPTY_PATHS[activeType] || EMPTY_PATHS[fetchType] || { title: 'Nothing here yet', description: 'Be the first to add something.' }
+  }
+
   const activeSection = PHONEBOOK_SECTIONS.find(s => s.key === section)!
   const localeReady = passportLat != null && passportLng != null && !passportHidden
   const geoItems = useMemo(
@@ -435,7 +457,7 @@ export default function DirectoryPage() {
           {[1, 2, 3, 4].map(i => <SkeletonCard key={i} />)}
         </div>
       ) : sortedItems.length === 0 ? (
-        <EmptyState icon="📋" title="No results found" description="Try a different page, filter or search term" />
+        (() => { const e = emptyStateFor(); return <EmptyState icon="📋" title={e.title} description={e.description} action={e.action} /> })()
       ) : view === 'map' ? (
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           {geoItems.length === 0 ? (

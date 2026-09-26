@@ -32,18 +32,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]
 
   try {
-    const [boards, products, events, services, projects, requests, groups, shops, forumPosts, trips, posts, blogs, blogPosts, podcasts] = await Promise.all([
+    const [boards, products, events, services, projects, requests, shops, forumPosts, trips, posts, blogs, blogPosts, podcasts] = await Promise.all([
       prisma.bulletinBoard.findMany({ select: { slug: true, updatedAt: true }, where: { isPublic: true }, take: 500 }),
       prisma.product.findMany({ select: { id: true, updatedAt: true }, where: { published: true }, take: 1000 }),
       prisma.event.findMany({ select: { id: true, updatedAt: true }, take: 500 }),
       prisma.serviceOffering.findMany({ select: { id: true, updatedAt: true }, take: 500 }),
       prisma.project.findMany({ select: { id: true, updatedAt: true }, where: { published: true }, take: 500 }),
       prisma.request.findMany({ select: { id: true, updatedAt: true }, take: 500 }),
-      prisma.group.findMany({ select: { id: true, updatedAt: true }, take: 500 }),
+      // NOTE: /groups is login-gated — group detail URLs are intentionally
+      // omitted so crawlers don't index login walls.
       prisma.user.findMany({ select: { shopSlug: true, updatedAt: true }, where: { shopSlug: { not: null } }, take: 500 }),
       prisma.forumPost.findMany({ select: { id: true, updatedAt: true }, take: 500, orderBy: { updatedAt: 'desc' } }),
       prisma.trip.findMany({ select: { id: true, updatedAt: true }, take: 200, orderBy: { updatedAt: 'desc' } }),
-      prisma.post.findMany({ select: { id: true, updatedAt: true }, take: 500, orderBy: { updatedAt: 'desc' } }),
+      // NOTE: /posts/* capped at 100 so high-volume feed posts don't crowd
+      // out the landing pages that matter for discovery.
+      prisma.post.findMany({ select: { id: true, updatedAt: true }, take: 100, orderBy: { updatedAt: 'desc' } }),
       prisma.user.findMany({ select: { blogSlug: true, updatedAt: true }, where: { blogSlug: { not: null }, showBlog: true }, take: 500 }),
       prisma.blogPost.findMany({ select: { id: true, slug: true, updatedAt: true, blog: { select: { blogSlug: true } } }, where: { status: 'PUBLISHED' }, take: 500, orderBy: { updatedAt: 'desc' } }),
       prisma.user.findMany({ select: { podcastSlug: true, updatedAt: true }, where: { podcastSlug: { not: null }, showPodcast: true }, take: 500 }),
@@ -56,7 +59,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ...services.map(s => ({ url: `${baseUrl}/services/${s.id}`, lastModified: s.updatedAt, changeFrequency: 'weekly' as const, priority: 0.6 })),
       ...projects.map(p => ({ url: `${baseUrl}/projects/${p.id}`, lastModified: p.updatedAt, changeFrequency: 'weekly' as const, priority: 0.7 })),
       ...requests.map(r => ({ url: `${baseUrl}/requests/${r.id}`, lastModified: r.updatedAt, changeFrequency: 'weekly' as const, priority: 0.6 })),
-      ...groups.map(g => ({ url: `${baseUrl}/groups/${g.id}`, lastModified: g.updatedAt, changeFrequency: 'weekly' as const, priority: 0.6 })),
       ...shops.filter(s => s.shopSlug).map(s => ({ url: `${baseUrl}/shop/${s.shopSlug}`, lastModified: s.updatedAt, changeFrequency: 'daily' as const, priority: 0.7 })),
       ...forumPosts.map(p => ({ url: `${baseUrl}/community/forum/${p.id}`, lastModified: p.updatedAt, changeFrequency: 'daily' as const, priority: 0.6 })),
       ...trips.map(t => ({ url: `${baseUrl}/trips/${t.id}`, lastModified: t.updatedAt, changeFrequency: 'weekly' as const, priority: 0.5 })),

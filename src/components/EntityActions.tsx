@@ -74,8 +74,10 @@ export default function EntityActions({
   const [quoting, setQuoting] = useState(false)
   const [showTipModal, setShowTipModal] = useState(false)
 
+  // Never hide a valid address: currencies without a logo file fall back to a
+  // generic badge in the modal (the filter below used to drop them silently).
   const activeDonations = (donationAddresses || fetchedDonations).filter(
-    (da: DonationAddr) => Boolean(CRYPTO_LOGOS[da.currency])
+    (da: DonationAddr) => Boolean(da?.address)
   )
 
   useEffect(() => {
@@ -268,7 +270,7 @@ export default function EntityActions({
                 <div className={styles.donationAddrList}>
                   {activeDonations.map(da => (
                     <div key={da.id} className={styles.donationAddrRow}>
-                      {CRYPTO_LOGOS[da.currency] && <Image src={`/crypto-logos/${CRYPTO_LOGOS[da.currency]}`} alt="" width={16} height={16} style={{borderRadius:'50%'}} />}
+                      {CRYPTO_LOGOS[da.currency] ? <Image src={`/crypto-logos/${CRYPTO_LOGOS[da.currency]}`} alt="" width={16} height={16} style={{borderRadius:'50%'}} /> : <span aria-hidden="true" style={{width:16,height:16,borderRadius:'50%',background:'linear-gradient(135deg,#06b6d4,#8b5cf6)',display:'inline-flex',alignItems:'center',justifyContent:'center',fontSize:10}}>💎</span>}
                       <span className={styles.donationAddrCurrency}>{da.currency}</span>
                       <code className={styles.donationAddrCode}>{da.address.length > 20 ? da.address.slice(0, 10) + '...' + da.address.slice(-6) : da.address}</code>
                       <button onClick={() => { navigator.clipboard.writeText(da.address); success('Address copied!') }} className={styles.copyBtn} style={{padding:'4px 10px',fontSize:'0.75rem'}}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy</button>

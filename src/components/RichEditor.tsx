@@ -77,6 +77,30 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
     }
   }, [exec])
 
+  // Force paragraph direction for the current selection, overriding the
+  // per-paragraph auto-detect (unicode-bidi: plaintext). Useful when the
+  // first strong character misleads, e.g. a Latin product name in Arabic text.
+  const toggleDirection = useCallback(() => {
+    const root = editorRef.current
+    if (!root) return
+    root.focus()
+    const sel = window.getSelection()
+    let block: HTMLElement | null = null
+    if (sel && sel.anchorNode) {
+      const node = sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentElement : (sel.anchorNode as HTMLElement)
+      block = node?.closest?.('p, div, li, h1, h2, h3, blockquote') as HTMLElement | null
+    }
+    if (!block || !root.contains(block) || block === root) {
+      // No specific block: flip the whole surface explicitly.
+      root.setAttribute('dir', root.getAttribute('dir') === 'rtl' ? 'ltr' : 'rtl')
+    } else if (block.getAttribute('dir') === 'rtl') {
+      block.setAttribute('dir', 'ltr')
+    } else {
+      block.setAttribute('dir', 'rtl')
+    }
+    onChange(root.innerHTML)
+  }, [onChange])
+
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
     e.preventDefault()
     const text = e.clipboardData.getData('text/plain')
@@ -111,6 +135,15 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
         <span className={styles.sep} />
         <button type="button" className={styles.toolBtn} onClick={() => exec('insertUnorderedList')} title="Bullet List" aria-label="Bullet List">UL</button>
         <button type="button" className={styles.toolBtn} onClick={() => exec('insertOrderedList')} title="Numbered List" aria-label="Numbered List">OL</button>
+        <button type="button" className={styles.toolBtn} onClick={() => exec('outdent')} title="Decrease indent" aria-label="Decrease indent">⇤</button>
+        <button type="button" className={styles.toolBtn} onClick={() => exec('indent')} title="Increase indent" aria-label="Increase indent">⇥</button>
+        <span className={styles.sep} />
+        <button type="button" className={styles.toolBtn} onClick={() => exec('justifyLeft')} title="Align left" aria-label="Align left">⭰</button>
+        <button type="button" className={styles.toolBtn} onClick={() => exec('justifyCenter')} title="Align center" aria-label="Align center">⭲</button>
+        <button type="button" className={styles.toolBtn} onClick={() => exec('justifyRight')} title="Align right" aria-label="Align right">⭱</button>
+        <button type="button" className={styles.toolBtn} onClick={() => exec('justifyFull')} title="Justify" aria-label="Justify">☰</button>
+        <button type="button" className={styles.toolBtn} onClick={toggleDirection} title="Toggle text direction (LTR/RTL)" aria-label="Toggle text direction">⇄</button>
+        <span className={styles.sep} />
         <button type="button" className={styles.toolBtn} onClick={handleInsertLink} title="Insert Link" aria-label="Insert Link">🔗</button>
         <span className={styles.sep} />
         <button type="button" className={styles.toolBtn} onClick={handleInsertImage} title="Insert Image" aria-label="Insert Image">🖼️</button>
@@ -123,6 +156,7 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
       {showSource ? (
         <textarea
           className={styles.sourceArea}
+          dir="auto"
           value={sourceText}
           onChange={e => { setSourceText(e.target.value); onChange(e.target.value) }}
           style={{ minHeight }}
@@ -133,6 +167,7 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
           className={styles.editor}
           contentEditable
           suppressContentEditableWarning
+          dir="auto"
           onInput={() => { if (editorRef.current) onChange(editorRef.current.innerHTML) }}
           onPaste={handlePaste}
           style={{ minHeight }}
