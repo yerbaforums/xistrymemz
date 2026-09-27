@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { useSession } from 'next-auth/react'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { useToast } from '@/context/ToastContext'
@@ -18,6 +19,7 @@ interface DonationAddr {
 // donation addresses (copy + QR) in one tap. Manual-crypto norm applies —
 // readers send off-platform and self-report; nothing auto-charges.
 export default function TipAuthorButton({ authorId }: { authorId: string }) {
+  const { data: session } = useSession()
   const [open, setOpen] = useState(false)
   const [addresses, setAddresses] = useState<DonationAddr[]>([])
   const [loading, setLoading] = useState(false)
@@ -38,6 +40,9 @@ export default function TipAuthorButton({ authorId }: { authorId: string }) {
     navigator.clipboard.writeText(addr)
     success('Address copied!')
   }
+
+  // No self-tips: matches EntityActions' !isOwner guard.
+  if (session?.user?.id === authorId) return null
 
   return (
     <>

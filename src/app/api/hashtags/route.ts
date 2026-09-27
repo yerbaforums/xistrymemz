@@ -37,9 +37,24 @@ export async function GET(request: Request) {
       const entityType = entity ? ENTITY_KEY_MAP[entity] : undefined
       const enriched = await getTrendingHashtags(7, limit, entityType)
       if (entity) {
-        return apiSuccess({ hashtags: enriched.filter(h => (h.entities as Record<string, number>)[entity] > 0) })
+        const filtered = enriched.filter(h => (h.entities as Record<string, number>)[entity] > 0)
+        if (filtered.length > 0) return apiSuccess({ hashtags: filtered })
+      } else if (enriched.length > 0) {
+        return apiSuccess({ hashtags: enriched })
       }
-      return apiSuccess({ hashtags: enriched })
+      // Nothing tagged in the last 7 days: fall back to all-time so the page
+      // and home section render instead of going empty. `fallback: true` lets
+      // the UI say so honestly instead of claiming nothing exists.
+      const hashtags = await prisma.hashtag.findMany({
+        where: { postCount: { gt: 0 } },
+        orderBy: { postCount: 'desc' },
+        take: limit
+      })
+      const allTime = await enrichWithCounts(hashtags)
+      if (entity) {
+        return apiSuccess({ hashtags: allTime.filter(h => (h.entities as Record<string, number>)[entity] > 0), fallback: true })
+      }
+      return apiSuccess({ hashtags: allTime, fallback: true })
     }
 
     const hashtags = await prisma.hashtag.findMany({

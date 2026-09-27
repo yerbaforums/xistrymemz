@@ -907,7 +907,7 @@ export default function ProfilePage() {
                 <div style={{ fontSize: '0.76rem', color: 'var(--text-secondary)', marginTop: 6 }}>
                   Bookings live in My Planner with your events. Trips stay separate — link stops to events from planning.
                   {((user.latitude && user.longitude) || user.location) && !isOwnProfile ? (
-                    <> Planning a visit? <Link href="/dashboard/planning">Add a trip stop</Link> and navigate from there.</>
+                    <> Planning a visit? <Link href={`/dashboard/planning?stopName=${encodeURIComponent(user.name || user.username || 'Visit')}${user.location ? `&stopLoc=${encodeURIComponent(user.location)}` : ''}${user.latitude && user.longitude ? `&lat=${user.latitude}&lng=${user.longitude}` : ''}`}>Add a trip stop</Link> and navigate from there.</>
                   ) : null}
                 </div>
               </div>

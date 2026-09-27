@@ -57,6 +57,7 @@ function HashtagsPage() {
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<SortMode>('trending')
   const [entityFilter, setEntityFilter] = useState<EntityFilter>('all')
+  const [isFallback, setIsFallback] = useState(false)
 
   useEffect(() => {
     setLoading(true)
@@ -70,8 +71,9 @@ function HashtagsPage() {
       .then(r => r.json())
       .then(data => {
         setTags(data?.data?.hashtags || data?.hashtags || [])
+        setIsFallback(Boolean(data?.data?.fallback))
       })
-      .catch(() => setTags([]))
+      .catch(() => { setTags([]); setIsFallback(false) })
       .finally(() => setLoading(false))
   }, [search, sort, entityFilter])
 
@@ -145,6 +147,12 @@ function HashtagsPage() {
           ))}
         </div>
       ) : sorted.length > 0 ? (
+        <>
+          {sort === 'trending' && isFallback && (
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 12px' }}>
+              Nothing tagged in the last 7 days — showing all-time tags. Add #tags to posts, products, or events to start a trend.
+            </p>
+          )}
         <div className={styles.cloud}>
           {sorted.map(h => {
             const maxCount = Math.max(...sorted.map(t => t.postCount)) || 1
@@ -169,12 +177,15 @@ function HashtagsPage() {
             )
           })}
         </div>
+        </>
       ) : (
         <div className={styles.empty}>
           <div className={styles.emptyIcon}>🏷️</div>
           <p className={styles.emptyTitle}>No hashtags found</p>
           <p className={styles.emptyDesc}>
-            {search ? 'Try a different search term.' : 'No hashtags have been created yet.'}
+            {search
+              ? 'Try a different search term.'
+              : 'No hashtags have been created yet. Add #tags to posts, products, or events and they will show up here.'}
           </p>
         </div>
       )}

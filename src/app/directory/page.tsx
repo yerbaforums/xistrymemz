@@ -260,7 +260,7 @@ export default function DirectoryPage() {
   const EMPTY_PATHS: Record<string, { title: string; description: string; action?: { label: string; href: string } }> = {
     product: { title: 'No products yet', description: 'Be the first to list one — sell direct, no platform cuts.', action: { label: '+ List a product', href: '/products/new' } },
     service: { title: 'No services yet', description: 'Offer your skills here — locals book you and pay direct.', action: { label: '+ Offer a service', href: '/services/new' } },
-    rental: { title: 'No rentals yet', description: 'List a space, gear, or anything rentable in the community.', action: { label: '+ List a rental', href: '/rentals/new' } },
+    rental: { title: 'No rentals yet', description: 'List a space, gear, or anything rentable in the community.', action: { label: '+ List a rental', href: '/products/new?type=rental' } },
     event: { title: 'No events yet', description: 'Host one and invite the community — gatherings start here.', action: { label: '+ Create event', href: '/events/new' } },
     project: { title: 'No projects yet', description: 'Start from scratch — or pick an open request to prefill one.', action: { label: '🚀 Start a project', href: '/projects/new' } },
     request: { title: 'No requests yet', description: 'Post one: gather a group around it, then start a project and pin it to the boards.', action: { label: '+ Post a request', href: '/requests/new' } },

@@ -76,6 +76,17 @@ interface InviteResult {
   image: string | null
 }
 
+// A stop pre-seeded from a profile's "Add a trip stop" link
+// (/dashboard/planning?stopName=…&stopLoc=…&lat=…&lng=…). Consumed once by
+// TripDetail into the custom-stop form; coords are only ever passed when the
+// profile already displays them publicly.
+export interface PendingStop {
+  name: string
+  loc: string | null
+  lat: number | null
+  lng: number | null
+}
+
 interface Trip {
   id: string; title: string; description: string | null; notes: string | null; coverImage: string | null
   startDate: string | null; endDate: string | null; isPublic: boolean
@@ -112,11 +123,28 @@ export default function PlanningPage() {
   const [mapReady, setMapReady] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [showAddStop, setShowAddStop] = useState(false)
+  const [pendingStop, setPendingStop] = useState<PendingStop | null>(null)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setTimeout(() => setMapReady(true), 100)
     }
+    // Consume a profile "Add a trip stop" deep link (?stopName=…). Read via
+    // window.location instead of useSearchParams to avoid a Suspense boundary.
+    try {
+      const sp = new URLSearchParams(window.location.search)
+      const name = (sp.get('stopName') || '').trim().slice(0, 120)
+      if (name) {
+        const la = parseFloat(sp.get('lat') || '')
+        const ln = parseFloat(sp.get('lng') || '')
+        setPendingStop({
+          name,
+          loc: (sp.get('stopLoc') || '').trim().slice(0, 200) || null,
+          lat: Number.isFinite(la) ? la : null,
+          lng: Number.isFinite(ln) ? ln : null,
+        })
+      }
+    } catch {}
   }, [])
 
   const fetchTrips = useCallback(async () => {
@@ -214,6 +242,8 @@ export default function PlanningPage() {
           onUpdate={fetchTrips}
           showAddStop={showAddStop}
           setShowAddStop={setShowAddStop}
+          pendingStop={pendingStop}
+          onConsumePendingStop={() => setPendingStop(null)}
         /> : (
           <EmptyState icon="🗺️" title="Select a trip" description="Select a trip or create a new one to get started." />
         )}
@@ -227,11 +257,12 @@ export default function PlanningPage() {
   )
 }
 
-function TripDetail({ trip: initialTrip, savedLocations, categories: _categories, activeTab, setActiveTab, session, mapReady, onUpdate, showAddStop: _showAddStop, setShowAddStop: _setShowAddStop }: {
+function TripDetail({ trip: initialTrip, savedLocations, categories: _categories, activeTab, setActiveTab, session, mapReady, onUpdate, showAddStop: _showAddStop, setShowAddStop: _setShowAddStop, pendingStop, onConsumePendingStop }: {
   trip: Trip; savedLocations: UserLocation[]; categories: LocationCategory[]
   activeTab: string; setActiveTab: (t: string) => void
   session: Session | null; mapReady: boolean; onUpdate: () => void
   showAddStop: boolean; setShowAddStop: (v: boolean) => void
+  pendingStop: PendingStop | null; onConsumePendingStop: () => void
 }) {
   const { success, error: toastError } = useToast()
   const [trip, setTrip] = useState(initialTrip)
@@ -314,8 +345,28 @@ function TripDetail({ trip: initialTrip, savedLocations, categories: _categories
     else { toastError('Failed to save trip') }
   }
 
-  const handleAddStop = async (location: UserLocation) => {
-    const lastStop = trip.stops?.length ? trip.stops[trip.stops.length - 1] : null
+  // One-shot: seed the custom-stop form from a profile deep link (?stopName=…).
+  // Fires for whichever trip is selected; survives "no trip selected yet"
+  // because pendingStop stays set until a TripDetail mounts and consumes it.
+  const pendingApplied = useRef(false)
+  useEffect(() => {
+    if (!pendingStop || pendingApplied.current) return
+    pendingApplied.current = true
+    setCustomStopName(pendingStop.name)
+    if (pendingStop.loc) {
+      setCustomStopLoc(pendingStop.loc)
+      setCustomStopSearch(pendingStop.loc)
+    }
+    if (pendingStop.lat != null && pendingStop.lng != null) {
+      setCustomStopLat(pendingStop.lat)
+      setCustomStopLng(pendingStop.lng)
+    }
+    setAddingCustomStop(true)
+    setActiveTab('stops')
+    onConsumePendingStop()
+  }, [pendingStop, setActiveTab, onConsumePendingStop])
+
+  const handleAddStop = async (location: UserLocation) => {    const lastStop = trip.stops?.length ? trip.stops[trip.stops.length - 1] : null
     const day = lastStop?.day ?? 0
     const order = lastStop?.day === day ? (lastStop?.order ?? 0) + 1 : 0
     const res = await fetch(`/api/trips/${trip.id}/stops`, {
