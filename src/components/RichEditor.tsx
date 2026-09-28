@@ -24,6 +24,14 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
   // out reordered and misaligned).
   const lastEmitted = useRef(value)
 
+  // Render-time HTML is frozen at mount: passing the live `value` into
+  // dangerouslySetInnerHTML would make React replace the DOM on every
+  // keystroke (parent setState -> re-render -> innerHTML swap), pinning the
+  // caret at offset 0 so each character prepends (verified live: typed text
+  // came out fully reversed). External updates go through the effect below.
+  const initialHtml = useRef<string | null>(null)
+  if (initialHtml.current === null) initialHtml.current = value
+
   const emit = useCallback((html: string) => {
     lastEmitted.current = html
     onChange(html)
@@ -193,7 +201,7 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
           onPaste={handlePaste}
           style={{ minHeight }}
           data-placeholder={placeholder}
-          dangerouslySetInnerHTML={{ __html: value }}
+          dangerouslySetInnerHTML={{ __html: initialHtml.current ?? '' }}
         />
       )}
     </div>
