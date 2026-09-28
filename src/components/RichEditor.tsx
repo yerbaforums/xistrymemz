@@ -15,22 +15,16 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
   const [showSource, setShowSource] = useState(false)
   const [sourceText, setSourceText] = useState(value)
 
-  // Last HTML emitted via onChange (local edits + toolbar). The parent echoes
-  // it back as `value`; the DOM is only rewritten when `value` diverges from
-  // BOTH the live DOM and the last emission — i.e. a genuine external change
-  // (prefill, edit-existing, post-submit clear). Without this guard, every
-  // keystroke's parent re-render replaces innerHTML mid-edit, scrambling the
-  // caret and block structure (verified live: mixed-direction paragraphs came
-  // out reordered and misaligned).
-  const lastEmitted = useRef(value)
-
-  // Render-time HTML is frozen at mount: passing the live `value` into
-  // dangerouslySetInnerHTML would make React replace the DOM on every
-  // keystroke (parent setState -> re-render -> innerHTML swap), pinning the
-  // caret at offset 0 so each character prepends (verified live: typed text
-  // came out fully reversed). External updates go through the effect below.
-  const initialHtml = useRef<string | null>(null)
-  if (initialHtml.current === null) initialHtml.current = value
+  // The surface is intentionally UNCONTROLLED: no children and no
+  // dangerouslySetInnerHTML prop. React 19 re-applies the
+  // dangerouslySetInnerHTML prop on every parent re-render (verified live
+  // via stack trace: setProp -> updateProperties -> commitHostUpdate),
+  // wiping the DOM after each keystroke — typed text either vanished or
+  // came out fully reversed with the caret pinned at offset 0. The sync
+  // effect below is the sole DOM writer: it paints on mount and on genuine
+  // external changes (prefill, edit-existing, post-submit clear), never on
+  // local keystrokes.
+  const lastEmitted = useRef<string | null>(null)
 
   const emit = useCallback((html: string) => {
     lastEmitted.current = html
@@ -135,7 +129,7 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
     const text = e.clipboardData.getData('text/plain')
     document.execCommand('insertText', false, text)
     if (editorRef.current) emit(editorRef.current.innerHTML)
-  }, [onChange])
+  }, [emit])
 
   const toggleSource = useCallback(() => {
     if (showSource) {
@@ -201,7 +195,6 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
           onPaste={handlePaste}
           style={{ minHeight }}
           data-placeholder={placeholder}
-          dangerouslySetInnerHTML={{ __html: initialHtml.current ?? '' }}
         />
       )}
     </div>
