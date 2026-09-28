@@ -10,6 +10,13 @@ interface RichEditorProps {
   minHeight?: number
 }
 
+// First strong character decides direction: Hebrew/Arabic ranges (plus
+// presentation forms) read RTL; Latin/Greek/Cyrillic/CJK/Kana/Hangul read
+// LTR. Anything else (digits, emoji, punctuation) is direction-neutral and
+// skipped, matching the Unicode bidi algorithm's first-strong rule.
+const RTL_RE = /[\u0590-\u05FF\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/
+const LTR_RE = /[A-Za-z\u00C0-\u02AF\u0370-\u03FF\u0400-\u04FF\u3040-\u30FF\u4E00-\u9FFF\uAC00-\uD7AF]/
+
 export default function RichEditor({ value, onChange, placeholder = 'Start writing...', minHeight = 200 }: RichEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null)
   const [showSource, setShowSource] = useState(false)
@@ -31,6 +38,31 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
     onChange(html)
   }, [onChange])
 
+  // Per-paragraph auto-direction. `unicode-bidi: plaintext` fixes character
+  // order but NOT alignment: `text-align: start` resolves against the
+  // inherited `direction` property (ltr), so RTL paragraphs hug the left
+  // (verified live with bounding rects). Explicit per-block `dir` fixes both
+  // the editor and every render surface at once, because it ships inside the
+  // saved HTML. Blocks carrying data-dir-manual (the ⇄ toggle) are skipped.
+  const autoDir = useCallback((root: HTMLElement) => {
+    for (const child of Array.from(root.children)) {
+      const el = child as HTMLElement
+      if (el.hasAttribute('data-dir-manual')) continue
+      if (!/^(P|DIV|LI|H1|H2|H3|BLOCKQUOTE)$/.test(el.tagName)) continue
+      const text = el.textContent || ''
+      let dir: 'rtl' | 'ltr' | null = null
+      for (const ch of text) {
+        if (RTL_RE.test(ch)) { dir = 'rtl'; break }
+        if (LTR_RE.test(ch)) { dir = 'ltr'; break }
+      }
+      if (dir === null) {
+        el.removeAttribute('dir')
+      } else if (el.getAttribute('dir') !== dir) {
+        el.setAttribute('dir', dir)
+      }
+    }
+  }, [])
+
   useEffect(() => {
     const el = editorRef.current
     if (!showSource && el && value !== el.innerHTML && value !== lastEmitted.current) {
@@ -41,9 +73,10 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
   const exec = useCallback((command: string, value?: string) => {
     document.execCommand(command, false, value)
     if (editorRef.current) {
+      autoDir(editorRef.current)
       emit(editorRef.current.innerHTML)
     }
-  }, [emit])
+  }, [emit, autoDir])
 
   const handleInsertImage = useCallback(() => {
     const url = window.prompt('Enter image URL:')
@@ -116,10 +149,19 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
     if (!block || !root.contains(block) || block === root) {
       // No specific block: flip the whole surface explicitly.
       root.setAttribute('dir', root.getAttribute('dir') === 'rtl' ? 'ltr' : 'rtl')
-    } else if (block.getAttribute('dir') === 'rtl') {
-      block.setAttribute('dir', 'ltr')
+      root.setAttribute('data-dir-manual', '1')
     } else {
-      block.setAttribute('dir', 'rtl')
+      const manual = block.hasAttribute('data-dir-manual')
+      if (block.getAttribute('dir') === 'rtl') {
+        block.setAttribute('dir', 'ltr')
+      } else {
+        block.setAttribute('dir', 'rtl')
+      }
+      // A manual toggle sticks: mark it so auto-direction leaves it alone.
+      // Toggling the same block twice clears the mark, handing control back
+      // to auto-detect.
+      if (manual) block.removeAttribute('data-dir-manual')
+      else block.setAttribute('data-dir-manual', '1')
     }
     emit(root.innerHTML)
   }, [emit])
@@ -128,8 +170,11 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
     e.preventDefault()
     const text = e.clipboardData.getData('text/plain')
     document.execCommand('insertText', false, text)
-    if (editorRef.current) emit(editorRef.current.innerHTML)
-  }, [emit])
+    if (editorRef.current) {
+      autoDir(editorRef.current)
+      emit(editorRef.current.innerHTML)
+    }
+  }, [emit, autoDir])
 
   const toggleSource = useCallback(() => {
     if (showSource) {
@@ -191,7 +236,13 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
           contentEditable
           suppressContentEditableWarning
           dir="auto"
-          onInput={() => { if (editorRef.current) emit(editorRef.current.innerHTML) }}
+          onInput={() => {
+            const root = editorRef.current
+            if (!root) return
+            // Direction first, so the emitted HTML already carries it.
+            autoDir(root)
+            emit(root.innerHTML)
+          }}
           onPaste={handlePaste}
           style={{ minHeight }}
           data-placeholder={placeholder}
