@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useCallback, useState } from 'react'
+import { useRef, useCallback, useState, useEffect } from 'react'
 import styles from './RichEditor.module.css'
 
 interface RichEditorProps {
@@ -15,12 +15,33 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
   const [showSource, setShowSource] = useState(false)
   const [sourceText, setSourceText] = useState(value)
 
+  // Last HTML emitted via onChange (local edits + toolbar). The parent echoes
+  // it back as `value`; the DOM is only rewritten when `value` diverges from
+  // BOTH the live DOM and the last emission — i.e. a genuine external change
+  // (prefill, edit-existing, post-submit clear). Without this guard, every
+  // keystroke's parent re-render replaces innerHTML mid-edit, scrambling the
+  // caret and block structure (verified live: mixed-direction paragraphs came
+  // out reordered and misaligned).
+  const lastEmitted = useRef(value)
+
+  const emit = useCallback((html: string) => {
+    lastEmitted.current = html
+    onChange(html)
+  }, [onChange])
+
+  useEffect(() => {
+    const el = editorRef.current
+    if (!showSource && el && value !== el.innerHTML && value !== lastEmitted.current) {
+      el.innerHTML = value
+    }
+  }, [value, showSource])
+
   const exec = useCallback((command: string, value?: string) => {
     document.execCommand(command, false, value)
     if (editorRef.current) {
-      onChange(editorRef.current.innerHTML)
+      emit(editorRef.current.innerHTML)
     }
-  }, [onChange])
+  }, [emit])
 
   const handleInsertImage = useCallback(() => {
     const url = window.prompt('Enter image URL:')
@@ -98,14 +119,14 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
     } else {
       block.setAttribute('dir', 'rtl')
     }
-    onChange(root.innerHTML)
-  }, [onChange])
+    emit(root.innerHTML)
+  }, [emit])
 
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
     e.preventDefault()
     const text = e.clipboardData.getData('text/plain')
     document.execCommand('insertText', false, text)
-    if (editorRef.current) onChange(editorRef.current.innerHTML)
+    if (editorRef.current) emit(editorRef.current.innerHTML)
   }, [onChange])
 
   const toggleSource = useCallback(() => {
@@ -113,13 +134,13 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
       if (editorRef.current) {
         editorRef.current.innerHTML = sourceText
       }
-      onChange(sourceText)
+      emit(sourceText)
       setShowSource(false)
     } else {
       setSourceText(editorRef.current?.innerHTML || '')
       setShowSource(true)
     }
-  }, [showSource, sourceText, onChange])
+  }, [showSource, sourceText, emit])
 
   return (
     <div className={styles.wrapper}>
@@ -168,7 +189,7 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
           contentEditable
           suppressContentEditableWarning
           dir="auto"
-          onInput={() => { if (editorRef.current) onChange(editorRef.current.innerHTML) }}
+          onInput={() => { if (editorRef.current) emit(editorRef.current.innerHTML) }}
           onPaste={handlePaste}
           style={{ minHeight }}
           data-placeholder={placeholder}

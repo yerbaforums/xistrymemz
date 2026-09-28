@@ -89,6 +89,17 @@ export default function DirectoryPage() {
   const [nearMe, setNearMe] = useState(false)
   const [view, setView] = useState<'list' | 'map' | 'calendar'>('list')
   const [mapReady, setMapReady] = useState(false)
+
+  // Deep-link support: ?type=rental (etc.) pre-selects the tab. Read via
+  // window.location instead of useSearchParams to avoid a Suspense boundary.
+  // Only consumed on mount so in-page tab clicks stay authoritative.
+  useEffect(() => {
+    try {
+      const t = new URLSearchParams(window.location.search).get('type') || ''
+      if (TYPE_TABS.some(tab => tab.key === t)) setActiveType(t)
+    } catch {}
+  }, [])
+
   const [calMonth, setCalMonth] = useState(() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() } })
   const [calDay, setCalDay] = useState<number | null>(null)
 
@@ -259,7 +270,7 @@ export default function DirectoryPage() {
   // not a dead site. Only shown when the user isn't filtering/searching.
   const EMPTY_PATHS: Record<string, { title: string; description: string; action?: { label: string; href: string } }> = {
     product: { title: 'No products yet', description: 'Be the first to list one — sell direct, no platform cuts.', action: { label: '+ List a product', href: '/products/new' } },
-    service: { title: 'No services yet', description: 'Offer your skills here — locals book you and pay direct.', action: { label: '+ Offer a service', href: '/services/new' } },
+    service: { title: 'No services yet', description: 'Offer your skills here — locals book you and pay direct.', action: { label: '+ Offer a service', href: '/dashboard/services' } },
     rental: { title: 'No rentals yet', description: 'List a space, gear, or anything rentable in the community.', action: { label: '+ List a rental', href: '/products/new?type=rental' } },
     event: { title: 'No events yet', description: 'Host one and invite the community — gatherings start here.', action: { label: '+ Create event', href: '/events/new' } },
     project: { title: 'No projects yet', description: 'Start from scratch — or pick an open request to prefill one.', action: { label: '🚀 Start a project', href: '/projects/new' } },
