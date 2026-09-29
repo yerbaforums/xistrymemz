@@ -15,3 +15,21 @@ export const CRYPTO_LOGOS: Record<string, string> = {
   ARRR: 'pirate-chain.png',
   FIRO: 'firo.png',
 }
+
+// Human-readable names. Tickers alone ("FUSD", "XTM") mean nothing to someone
+// choosing which rail to send on, so surfaces that ask a user to pick an
+// address (e.g. /donate) show "Monero (XMR)" instead. Deliberately separate
+// from CRYPTO_LOGOS: having a logo does not mean having a listed market.
+export const CRYPTO_NAMES: Record<string, string> = {
+  BTC: 'Bitcoin',
+  ETH: 'Ethereum',
+  USDT: 'Tether',
+  USDC: 'USD Coin',
+  XMR: 'Monero',
+  XTM: 'Minotari',
+  ZANO: 'Zano',
+  FUSD: 'Freedom Dollar',
+  DERO: 'Dero',
+  ARRR: 'Pirate Chain',
+  FIRO: 'Firo',
+}

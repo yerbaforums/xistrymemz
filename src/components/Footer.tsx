@@ -83,6 +83,7 @@ export default function Footer() {
             <h4>{t('support')}</h4>
             <Link href="/help">{t('help')}</Link>
             <Link href="/contact">{t('contact')}</Link>
+            <Link href="/donate">{t('donate')}</Link>
             <Link href="/about">{t('about')}</Link>
             <Link href="/terms">{t('terms')}</Link>
             <Link href="/privacy">{t('privacy')}</Link>

@@ -1,0 +1,244 @@
+.page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px 20px 80px;
+}
+
+.hero {
+  text-align: center;
+  padding: 40px 0 32px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 32px;
+}
+
+.heroIcon {
+  font-size: 44px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.hero h1 {
+  font-size: 2.2rem;
+  margin: 0 0 12px;
+  color: var(--text-primary);
+}
+
+.hero p {
+  max-width: 620px;
+  margin: 0 auto;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.block {
+  margin-bottom: 40px;
+}
+
+.block h2 {
+  font-size: 1.35rem;
+  margin: 0 0 14px;
+  color: var(--text-primary);
+}
+
+.block p {
+  color: var(--text-secondary);
+  line-height: 1.65;
+  margin: 0 0 12px;
+}
+
+.block strong {
+  color: var(--text-primary);
+}
+
+/* Pillars — the differentiators that make crypto-only correct */
+.pillars {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  list-style: none;
+  padding: 0;
+  margin: 20px 0 0;
+}
+
+.pillars li {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pillars span {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+/* Burn / transparency list */
+.burnLead {
+  font-size: 1.02rem;
+}
+
+.burnList {
+  list-style: none;
+  padding: 0;
+  margin: 18px 0;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.burnList li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.burnList li:last-child {
+  border-bottom: none;
+}
+
+.burnLabel {
+  color: var(--text-primary);
+}
+
+.burnLabel a {
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+
+.burnLabel a:hover {
+  text-decoration: underline;
+}
+
+.burnAmount {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.burnTotal {
+  font-weight: 700;
+  background: var(--bg-secondary) !important;
+}
+
+.recurring {
+  background: var(--bg-tertiary);
+  border-left: 3px solid var(--accent-primary);
+  padding: 14px 16px;
+  border-radius: 0 var(--radius-md, 8px) var(--radius-md, 8px) 0;
+}
+
+.pending {
+  background: var(--bg-tertiary);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  font-size: 0.95rem;
+}
+
+.honest {
+  margin-top: 18px;
+  padding: 14px 16px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-lg);
+  font-size: 0.95rem;
+}
+
+/* Addresses */
+.donationList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.donationItem {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+}
+
+.donationMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.donationLabel {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.donationTicker {
+  font-weight: 400;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-left: 6px;
+}
+
+.donationPrice {
+  font-weight: 400;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.donationAddr {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
+
+.fineprint {
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.links {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.links li {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.links a {
+  color: var(--accent-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.links a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .donationItem {
+    flex-wrap: wrap;
+  }
+
+  .burnList li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}

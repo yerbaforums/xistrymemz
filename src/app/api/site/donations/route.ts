@@ -1,27 +1,13 @@
 import { apiSuccess, apiError } from '@/lib/api-helpers'
-import { prisma } from '@/lib/prisma'
-import { CRYPTO_LOGOS } from '@/lib/constants'
+import { getSiteDonationAddresses } from '@/lib/site-donations'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    const settings = await prisma.platformSettings.findFirst()
-    let donationAddresses = []
-    try {
-      if (settings?.donationAddresses) {
-        donationAddresses = JSON.parse(settings.donationAddresses)
-      }
-    } catch {
-      donationAddresses = []
-    }
-    const supported = donationAddresses.filter(
-      (da: { currency?: string }) =>
-        da && typeof da.currency === 'string' && Boolean(CRYPTO_LOGOS[da.currency])
-    )
-    return apiSuccess({ addresses: supported })
+    return apiSuccess({ addresses: await getSiteDonationAddresses() })
   } catch (error) {
     console.error('Error fetching site donation addresses:', error)
-    return apiError("Failed to fetch", 500)
+    return apiError('Failed to fetch', 500)
   }
 }
