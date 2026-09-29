@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server'
 import { apiSuccess, apiServerError } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { publicUserWhere } from '@/lib/public-stats-filter'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,6 +11,7 @@ export async function GET(request: NextRequest) {
     const take = Math.min(Math.max(1, parseInt(searchParams.get('take') || '8')), 12)
 
     const users = await prisma.user.findMany({
+      where: publicUserWhere(),
       select: {
         id: true,
         name: true,

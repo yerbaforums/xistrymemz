@@ -1,16 +1,17 @@
 import { prisma } from '@/lib/prisma'
 import { apiSuccess, apiServerError } from '@/lib/api-helpers'
+import { publicServiceWhere, publicUserWhere } from '@/lib/public-stats-filter'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
     const [members, shops, schools, products, services, rentals, events, plans, requests, forumPosts, forumReplies, offers, appointments, boards] = await Promise.all([
-      prisma.user.count(),
-      prisma.user.count({ where: { shopSlug: { not: null } } }),
-      prisma.user.count({ where: { schoolSlug: { not: null } } }),
+      prisma.user.count({ where: publicUserWhere() }),
+      prisma.user.count({ where: publicUserWhere({ shopSlug: { not: null } }) }),
+      prisma.user.count({ where: publicUserWhere({ schoolSlug: { not: null } }) }),
       prisma.product.count({ where: { published: true, type: 'PRODUCT' } }),
-      prisma.serviceOffering.count({ where: { isActive: true } }),
+      prisma.serviceOffering.count({ where: publicServiceWhere({ isActive: true }) }),
       prisma.product.count({ where: { published: true, type: 'RENTAL' } }),
       prisma.event.count({ where: { eventDate: { gte: new Date() } } }),
       prisma.project.count({ where: { published: true } }),

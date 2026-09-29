@@ -29,12 +29,18 @@ export default function StatsSection({ stats }: Props) {
     { key: 'boards' as const, icon: '📌', label: t('statsBoards'), href: '/boards' },
   ]
 
+  // A 14-tile grid with 9 zeros reads as a dead platform, which is the
+  // opposite of the signal we want a first-time visitor to take away.
+  // Only render the counts that are real.
+  const visible = STAT_CARDS.filter(card => (stats[card.key] ?? 0) > 0)
+  const shown = visible.length > 0 ? visible : [STAT_CARDS[0]]
+
   return (
     <section className={styles.section}>
       <div className={styles.inner}>
         <h2 className={styles.heading}>{t('statsTitle')}</h2>
-        <div className={styles.grid}>
-          {STAT_CARDS.map(card => (
+        <div className={styles.grid} data-count={shown.length}>
+          {shown.map(card => (
             <Link key={card.key} href={card.href} className={styles.card}>
               <span className={styles.icon}>{card.icon}</span>
               <span className={styles.value}>{stats[card.key]}</span>
