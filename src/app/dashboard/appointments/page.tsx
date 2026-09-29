@@ -354,6 +354,9 @@ export default function DashboardAppointments() {
           <button onClick={() => setViewMode(viewMode === 'list' ? 'calendar' : 'list')} className={styles.viewToggle}>
             {viewMode === 'list' ? '📅 Calendar' : '📋 List'}
           </button>
+          <Link href="/dashboard/calendar" className={`${styles.viewToggle} ${styles.noUnderline}`}>
+            🗓️ Full Planner
+          </Link>
           <Link href="/events/new" className="btn-primary">+ New Event</Link>
         </div>
       </div>

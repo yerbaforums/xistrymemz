@@ -132,6 +132,7 @@ export const DASHBOARD_SIDEBAR: SidebarNavItem[] = [
   { href: '/dashboard/messages', icon: '💬', label: 'Messages', section: 'primary' },
   { href: '/dashboard/appointments', icon: '🗓️', label: 'Appointments', section: 'primary' },
   { href: '/dashboard/projects', icon: '🚀', label: 'Projects', section: 'primary' },
+  { href: '/dashboard/calendar', icon: '📅', label: 'Planner', section: 'primary' },
   { href: '/discover', icon: '🌐', label: 'Discover', section: 'secondary' },
   { href: '/boards', icon: '📌', label: 'Boards', section: 'secondary' },
   { href: '/dashboard/planning', icon: '🗺️', label: 'Map Planning', section: 'secondary' },
