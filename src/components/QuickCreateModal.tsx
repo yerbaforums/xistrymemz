@@ -72,7 +72,23 @@ function extractCreatedId(body: unknown): string | null {
   const d2 = d1?.data as Record<string, unknown> | undefined
   if (d2 && typeof d2.id === 'string') return d2.id
   if (typeof b.id === 'string') return b.id
+  // Wrapped shapes, e.g. { service: {...}, needsEmailVerification }.
+  for (const v of Object.values(b)) {
+    if (v && typeof v === 'object' && typeof (v as Record<string, unknown>).id === 'string') {
+      return (v as Record<string, unknown>).id as string
+    }
+  }
   return null
+}
+
+// Creation endpoints echo needsEmailVerification (top-level or data-wrapped)
+// when the item was forced to draft for lack of a verified email.
+function needsVerification(body: unknown): boolean {
+  if (!body || typeof body !== 'object') return false
+  const b = body as Record<string, unknown>
+  if (b.needsEmailVerification === true) return true
+  const d = b.data as Record<string, unknown> | undefined
+  return d?.needsEmailVerification === true
 }
 
 export function QuickCreateProvider({ children }: { children: ReactNode }) {
@@ -444,7 +460,8 @@ function ProductForm({ onDone, prefill }: { onDone: () => void; prefill?: QuickC
       if (res.ok) {
         const body = await res.json().catch(() => null)
         const id = extractCreatedId(body)
-        success('Product created!')
+        if (needsVerification(body)) success('Product saved as draft. Verify your email to publish it.')
+        else success('Product created!')
         onDone()
         if (id) router.push(`/products/${id}`)
         else router.refresh()
@@ -1003,7 +1020,8 @@ function ServiceForm({ onDone, prefill }: { onDone: () => void; prefill?: QuickC
       if (res.ok) {
         const body = await res.json().catch(() => null)
         const id = extractCreatedId(body)
-        success('Service created!')
+        if (needsVerification(body)) success('Service saved as draft. Verify your email to publish it.')
+        else success('Service created!')
         onDone()
         if (id) router.push(`/services/${id}`)
         else router.refresh()

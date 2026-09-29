@@ -20,7 +20,9 @@ interface AppointmentItem {
   location: string | null
   meetingLink: string | null
   appointmentNotes?: string | null
-  formResponses?: Record<string, string> | null
+  // Stored as an array [{label, value}] (see schema); older rows may hold a
+  // record. Normalized at render — never render a raw value (React #31).
+  formResponses?: Array<{ label?: unknown; value?: unknown }> | Record<string, unknown> | null
   category?: string | null
   paymentStatus?: string | null
   paidAt?: string | null
@@ -620,16 +622,30 @@ export default function DashboardAppointments() {
                       <div className={styles.eventDetailRow}><span className={styles.eventLabel}>Buyer</span><span>{a.buyer.name || 'Anonymous'}</span></div>
                       <div className={styles.eventDetailRow}><span className={styles.eventLabel}>Seller</span><span>{a.seller.name || 'Anonymous'}</span></div>
                       {a.description && <div className={styles.eventDetailRow}><span className={styles.eventLabel}>Notes</span><p>{a.description}</p></div>}
-                      {a.formResponses && Object.keys(a.formResponses).length > 0 && (
-                        <div className={styles.eventDetailRow}>
-                          <span className={styles.eventLabel}>Form Responses</span>
-                          <div className={styles.formResponses}>
-                            {Object.entries(a.formResponses).map(([label, value]) => (
-                              <div key={label}><strong>{label}:</strong> {value}</div>
-                            ))}
+                      {(() => {
+                        // Stored shape is [{label, value}] (schema); tolerate a
+                        // legacy record too. String()-coerce everything: a raw
+                        // object child crashes React (#31 "object with keys").
+                        const fr = a.formResponses
+                        const entries: [string, string][] = Array.isArray(fr)
+                          ? fr
+                            .filter(r => r && typeof r === 'object' && typeof (r as { label?: unknown }).label === 'string')
+                            .map(r => [String((r as { label?: unknown }).label), String((r as { value?: unknown }).value ?? '')])
+                          : fr && typeof fr === 'object'
+                            ? Object.entries(fr).map(([k, v]) => [k, String(v ?? '')])
+                            : []
+                        if (entries.length === 0) return null
+                        return (
+                          <div className={styles.eventDetailRow}>
+                            <span className={styles.eventLabel}>Form Responses</span>
+                            <div className={styles.formResponses}>
+                              {entries.map(([label, value]) => (
+                                <div key={label}><strong>{label}:</strong> {value}</div>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )
+                      })()}
                     </div>
                     <div className={styles.eventModalActions}>
                       {a._role === 'seller' && a.status === 'PENDING' && (

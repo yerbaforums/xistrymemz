@@ -177,6 +177,30 @@ export default function BookAppointmentModal({
 
   const freeTimes = getFreeTimes()
 
+  // Why the submit is disabled, in plain language. Plain const (not memoized):
+  // freeTimes derives from async busy-slot state, so this must recompute
+  // every render. Shown above the buttons so a dead submit never leaves the
+  // requester guessing (e.g. enabled dates with zero free slots, or an
+  // unanswered required intake field).
+  const missingRequirements: string[] = (() => {
+    const missing: string[] = []
+    if (!selectedDate) {
+      missing.push('Select a date')
+    } else if (!selectedTime) {
+      if (loadingBusy || loadingAvail) missing.push('Loading available times…')
+      else if (freeTimes.length === 0) missing.push('No times available on this day — try another date')
+      else missing.push('Select a time')
+    }
+    if (formFields) {
+      const firstMissing = formFields.find(f => f.required && !isFieldAnswered(f, formResponses[f.label] || ''))
+      if (firstMissing) missing.push(`Answer required: ${firstMissing.label}`)
+    }
+    if (meetingLinkType === 'custom' && !customMeetingLink.trim()) {
+      missing.push('Add your meeting link (or pick another meeting option)')
+    }
+    return missing
+  })()
+
   const calendarCells = useMemo(() => {
     const year = currentMonth.getFullYear()
     const month = currentMonth.getMonth()
@@ -606,12 +630,16 @@ export default function BookAppointmentModal({
             </div>
           </div>
 
+          {missingRequirements.length > 0 && !booking && (
+            <p role="status" style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', margin: '8px 0 0', textAlign: 'right' }}>
+              To continue: {missingRequirements[0]}{missingRequirements.length > 1 ? ` (+${missingRequirements.length - 1} more)` : ''}
+            </p>
+          )}
           <div className={`${styles.flexEnd} ${styles.gap8}`}>
             <button type="button" onClick={onClose}
               className={styles.cancelBtn}>
               Cancel
-            </button>
-            <button type="submit" disabled={booking || !selectedDate || !selectedTime}
+            </button>            <button type="submit" disabled={booking || !selectedDate || !selectedTime}
               className={styles.submitBtn}
               style={{
                 cursor: booking ? 'not-allowed' : 'pointer',
