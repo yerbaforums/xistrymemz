@@ -26,7 +26,7 @@ interface HashtagItem {
 }
 
 type SortMode = 'trending' | 'alphabetical' | 'count'
-type EntityFilter = 'all' | 'products' | 'events' | 'services' | 'schoolContents' | 'projects' | 'requests' | 'groups' | 'posts'
+type EntityFilter = 'all' | 'products' | 'events' | 'services' | 'schoolContents' | 'projects' | 'requests' | 'groups' | 'posts' | 'blogPosts'
 
 const ENTITY_FILTERS: { key: EntityFilter; label: string; icon: string }[] = [
   { key: 'all', label: 'All', icon: '🏷️' },
@@ -38,11 +38,12 @@ const ENTITY_FILTERS: { key: EntityFilter; label: string; icon: string }[] = [
   { key: 'projects', label: 'Projects', icon: '📋' },
   { key: 'requests', label: 'Requests', icon: '🙋' },
   { key: 'groups', label: 'Groups', icon: '👥' },
+  { key: 'blogPosts', label: 'Blog', icon: '✍️' },
 ]
 
 const ENTITY_SHORT: Record<string, string> = {
   posts: 'post', products: 'prod', events: 'evt', services: 'svc',
-  schoolContents: 'sch', requests: 'req', groups: 'grp',
+  schoolContents: 'sch', requests: 'req', groups: 'grp', blogPosts: 'blog',
   forumPosts: 'forum', groupPosts: 'grp', projects: 'proj',
 }
 
@@ -55,14 +56,21 @@ function HashtagsPage() {
   const [tags, setTags] = useState<HashtagItem[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [sort, setSort] = useState<SortMode>('trending')
   const [entityFilter, setEntityFilter] = useState<EntityFilter>('all')
   const [isFallback, setIsFallback] = useState(false)
 
+  // Debounce search input: the API scans with limit=100 per keystroke.
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 300)
+    return () => clearTimeout(t)
+  }, [search])
+
   useEffect(() => {
     setLoading(true)
     const params = new URLSearchParams()
-    if (search) params.set('search', search)
+    if (debouncedSearch) params.set('search', debouncedSearch)
     if (sort === 'trending') params.set('mode', 'trending')
     if (entityFilter !== 'all') params.set('entity', entityFilter)
     params.set('limit', '100')
@@ -75,7 +83,7 @@ function HashtagsPage() {
       })
       .catch(() => { setTags([]); setIsFallback(false) })
       .finally(() => setLoading(false))
-  }, [search, sort, entityFilter])
+  }, [debouncedSearch, sort, entityFilter])
 
   const sorted = [...tags].sort((a, b) => {
     if (sort === 'alphabetical') return a.tag.localeCompare(b.tag)

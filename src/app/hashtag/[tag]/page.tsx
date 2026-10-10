@@ -13,7 +13,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import styles from './page.module.css'
 
-type TabType = 'all' | 'posts' | 'products' | 'events' | 'services' | 'schoolContents' | 'projects' | 'requests' | 'groups' | 'blogPosts'
+type TabType = 'all' | 'posts' | 'products' | 'events' | 'services' | 'schoolContents' | 'projects' | 'requests' | 'groups' | 'blogPosts' | 'forumPosts' | 'groupPosts'
 
 interface Totals {
   posts: number
@@ -125,6 +125,8 @@ const TABS: { key: TabType; label: string; icon: string }[] = [
   { key: 'requests', label: 'Requests', icon: '🙋' },
   { key: 'groups', label: 'Groups', icon: '👥' },
   { key: 'blogPosts', label: 'Blog', icon: '✍️' },
+  { key: 'forumPosts', label: 'Forum', icon: '💬' },
+  { key: 'groupPosts', label: 'Group Posts', icon: '📝' },
 ]
 
 const POST_SECTION_CONFIG: Record<string, { label: string; icon: string; order: number }> = {
@@ -148,10 +150,14 @@ function HashtagPage() {
   const [groups, setGroups] = useState<TagGroup[]>([])
   const [blogPosts, setBlogPosts] = useState<TagBlogPost[]>([])
   const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState<Record<string, boolean>>({})
+  const [loadingMore, setLoadingMore] = useState(false)
 
   useEffect(() => {
     if (!tag) return
     setLoading(true)
+    setPage(1)
     fetch(`/api/hashtags/${encodeURIComponent(tag)}?type=${activeTab}`)
       .then(r => r.json())
       .then(res => {
@@ -165,6 +171,27 @@ function HashtagPage() {
         setRequests(res.data?.requests || [])
         setGroups(res.data?.groups || [])
         setBlogPosts(res.data?.blogPosts || [])
+        // Dedicated forum/group tabs return their own shapes; fold them
+        // into posts with source markers so the grouped section renders.
+        if (Array.isArray(res.data?.forumPosts)) {
+          setPosts(res.data.forumPosts.map((p: TagPost) => ({ ...p, _sourceType: 'FORUMPOST' })))
+        }
+        if (Array.isArray(res.data?.groupPosts)) {
+          setPosts(res.data.groupPosts.map((p: TagPost) => ({ ...p, _sourceType: 'GROUPPOST' })))
+        }
+        // Full pages (default limit 20) imply more may exist.
+        const full = (arr: unknown[]) => arr.length >= 20
+        setHasMore({
+          posts: full(res.data?.posts || []),
+          products: full(res.data?.products || []),
+          events: full(res.data?.events || []),
+          services: full(res.data?.services || []),
+          schoolContents: full(res.data?.schoolContents || []),
+          projects: full(res.data?.projects || []),
+          requests: full(res.data?.requests || []),
+          groups: full(res.data?.groups || []),
+          blogPosts: full(res.data?.blogPosts || []),
+        })
       })
       .catch(() => {
         setTotals(null)
@@ -186,6 +213,46 @@ function HashtagPage() {
       totals.schoolContents + totals.projects + totals.requests + totals.groups +
       totals.forumPosts + totals.groupPosts + (totals.blogPosts || 0)
     : 0
+
+  const loadMore = () => {
+    if (loadingMore || !tag || activeTab === 'all') return
+    const next = page + 1
+    setLoadingMore(true)
+    fetch(`/api/hashtags/${encodeURIComponent(tag)}?type=${activeTab}&page=${next}`)
+      .then(r => r.json())
+      .then(res => {
+        const append = <T,>(setter: (updater: (prev: T[]) => T[]) => void, items: T[]) =>
+          setter(prev => [...prev, ...items])
+        if (activeTab === 'posts') append(setPosts, res.data?.posts || [])
+        else if (activeTab === 'products') append(setProducts, res.data?.products || [])
+        else if (activeTab === 'events') append(setEvents, res.data?.events || [])
+        else if (activeTab === 'services') append(setServices, res.data?.services || [])
+        else if (activeTab === 'schoolContents') append(setSchoolContents, res.data?.schoolContents || [])
+        else if (activeTab === 'projects') append(setProjects, res.data?.projects || [])
+        else if (activeTab === 'requests') append(setRequests, res.data?.requests || [])
+        else if (activeTab === 'groups') append(setGroups, res.data?.groups || [])
+        else if (activeTab === 'blogPosts') append(setBlogPosts, res.data?.blogPosts || [])
+        else if (activeTab === 'forumPosts') append(setPosts, (res.data?.forumPosts || []).map((p: TagPost) => ({ ...p, _sourceType: 'FORUMPOST' })))
+        else if (activeTab === 'groupPosts') append(setPosts, (res.data?.groupPosts || []).map((p: TagPost) => ({ ...p, _sourceType: 'GROUPPOST' })))
+        // A short page means exhausted.
+        const got =
+          activeTab === 'posts' ? (res.data?.posts || []).length :
+          activeTab === 'products' ? (res.data?.products || []).length :
+          activeTab === 'events' ? (res.data?.events || []).length :
+          activeTab === 'services' ? (res.data?.services || []).length :
+          activeTab === 'schoolContents' ? (res.data?.schoolContents || []).length :
+          activeTab === 'projects' ? (res.data?.projects || []).length :
+          activeTab === 'requests' ? (res.data?.requests || []).length :
+          activeTab === 'groups' ? (res.data?.groups || []).length :
+          activeTab === 'blogPosts' ? (res.data?.blogPosts || []).length :
+          activeTab === 'forumPosts' ? (res.data?.forumPosts || []).length :
+          (res.data?.groupPosts || []).length
+        if (got < 20) setHasMore(prev => ({ ...prev, [activeTab]: false }))
+        setPage(next)
+      })
+      .catch(() => {})
+      .finally(() => setLoadingMore(false))
+  }
 
   const showProducts = activeTab === 'all' || activeTab === 'products'
   const showEvents = activeTab === 'all' || activeTab === 'events'
@@ -375,23 +442,35 @@ function HashtagPage() {
             <section>
               {activeTab === 'all' && <h2 className={styles.sectionTitle}>Blog Posts</h2>}
               <div className={styles.schoolContentList}>
-                {blogPosts.map(item => (
-                  <Link key={item.id} href={`/blog/${item.blog?.blogSlug || ''}/${item.slug}`} className={styles.schoolContentCard}>
-                    <div className={styles.schoolContentHeader}>
-                      <span className={styles.schoolContentType}>✍️ Article</span>
-                      <span className={styles.schoolContentFree}>Free</span>
-                    </div>
-                    <h3 className={styles.schoolContentTitle}>{item.title}</h3>
-                    <p className={styles.schoolContentMeta}>
-                      by {item.blog?.blogName || item.blog?.name || 'Unknown'}
-                    </p>
-                    {item.excerpt && (
-                      <p className={styles.schoolContentDesc}>
-                        {item.excerpt.slice(0, 120)}{item.excerpt.length > 120 ? '...' : ''}
+                {blogPosts.map(item => {
+                  const href = item.blog?.blogSlug ? `/blog/${item.blog.blogSlug}/${item.slug}` : null
+                  const card = (
+                    <>
+                      <div className={styles.schoolContentHeader}>
+                        <span className={styles.schoolContentType}>✍️ Article</span>
+                        <span className={styles.schoolContentFree}>Free</span>
+                      </div>
+                      <h3 className={styles.schoolContentTitle}>{item.title}</h3>
+                      <p className={styles.schoolContentMeta}>
+                        by {item.blog?.blogName || item.blog?.name || 'Unknown'}
                       </p>
-                    )}
-                  </Link>
-                ))}
+                      {item.excerpt && (
+                        <p className={styles.schoolContentDesc}>
+                          {item.excerpt.slice(0, 120)}{item.excerpt.length > 120 ? '...' : ''}
+                        </p>
+                      )}
+                    </>
+                  )
+                  return href ? (
+                    <Link key={item.id} href={href} className={styles.schoolContentCard}>
+                      {card}
+                    </Link>
+                  ) : (
+                    <div key={item.id} className={styles.schoolContentCard}>
+                      {card}
+                    </div>
+                  )
+                })}
               </div>
               {activeTab === 'all' && totals && (totals.blogPosts || 0) > blogPosts.length && (
                 <div className={styles.viewAllRow}>
@@ -510,6 +589,14 @@ function HashtagPage() {
               <p className={styles.emptyTitle}>No results for #{tag}</p>
               <p className={styles.emptyDesc}>Try a different hashtag or be the first to use it!</p>
               <Link href="/hashtags" className={styles.emptyAction}>Browse Hashtags</Link>
+            </div>
+          )}
+
+          {!loading && activeTab !== 'all' && hasMore[activeTab] && totalCount > 0 && (
+            <div className={styles.viewAllRow}>
+              <Button variant="ghost" onClick={loadMore} disabled={loadingMore} className={styles.viewAllBtn}>
+                {loadingMore ? 'Loading…' : 'Load more →'}
+              </Button>
             </div>
           )}
         </div>

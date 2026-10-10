@@ -20,7 +20,10 @@ interface SavedItem {
 }
 
 const TYPE_CONFIG: Record<string, { icon: string; label: string; href: string }> = {
-  PLAN: { icon: '🚀', label: 'Project', href: '/projects' },
+  // Keys must match normalizeSavedType() output in /api/saved (PLAN is
+  // stored as PROJECT, FORUMPOST as FORUM_POST) — otherwise the card
+  // falls back to the raw key as label and a broken `//id` link.
+  PROJECT: { icon: '🚀', label: 'Project', href: '/projects' },
   PRODUCT: { icon: '🛒', label: 'Product', href: '/products' },
   SERVICE: { icon: '🔧', label: 'Service', href: '/services' },
   RENTAL: { icon: '🏠', label: 'Rental', href: '/rentals' },
@@ -68,20 +71,23 @@ export default function SavedPage() {
     }
   }
 
+  const typeLabel = (type: string) =>
+    TYPE_CONFIG[type]?.label || type.charAt(0) + type.slice(1).toLowerCase()
+
   const counts: Record<string, number> = {}
   for (const item of saved) {
     counts[item.itemType] = (counts[item.itemType] || 0) + 1
   }
 
   const filtered = (managed.filter === 'all' ? saved : saved.filter(s => s.itemType === managed.filter))
-    .filter(s => !managed.search || s.title?.toLowerCase().includes(managed.search.toLowerCase()) || (TYPE_CONFIG[s.itemType]?.label || s.itemType).toLowerCase().includes(managed.search.toLowerCase()))
+    .filter(s => !managed.search || s.title?.toLowerCase().includes(managed.search.toLowerCase()) || typeLabel(s.itemType).toLowerCase().includes(managed.search.toLowerCase()))
   const typeKeys = Object.keys(counts).sort()
 
   const pillOptions: PillOption[] = [
     { value: 'all', label: 'All', count: saved.length },
     ...typeKeys.map(type => ({
       value: type,
-      label: `${TYPE_CONFIG[type]?.icon || '📌'} ${TYPE_CONFIG[type]?.label || type}`,
+      label: `${TYPE_CONFIG[type]?.icon || '📌'} ${typeLabel(type)}`,
       count: counts[type],
     })),
   ]
@@ -91,7 +97,7 @@ export default function SavedPage() {
       `saved-${new Date().toISOString().slice(0, 10)}.csv`,
       ['Type', 'Title', 'Saved At'],
       filtered.map(item => [
-        TYPE_CONFIG[item.itemType]?.label || item.itemType,
+        typeLabel(item.itemType),
         item.title || 'Untitled',
         new Date(item.createdAt).toLocaleDateString(),
       ]),
@@ -137,15 +143,18 @@ export default function SavedPage() {
                 <div className={styles.emptySmall}>No saved items in this category</div>
               )}
               {filtered.map(item => {
-                const cfg = TYPE_CONFIG[item.itemType] || { icon: '📌', label: item.itemType, href: '/' }
-                const href = item.url || `${cfg.href}/${item.itemId}`
+                const cfg = TYPE_CONFIG[item.itemType]
+                const known = !!cfg
+                const icon = cfg?.icon || '📌'
+                const label = cfg?.label || item.itemType.charAt(0) + item.itemType.slice(1).toLowerCase()
+                const href = item.url || (known ? `${cfg.href}/${item.itemId}` : '/directory')
                 return (
                   <Link key={item.id} href={href} className={styles.card}>
-                    <div className={styles.cardIcon}>{cfg.icon}</div>
+                    <div className={styles.cardIcon}>{icon}</div>
                     <div className={styles.cardBody}>
                       <div className={styles.cardTitle}>{item.title || 'Untitled'}</div>
                       <div className={styles.cardMeta}>
-                        <span className={styles.badge}>{cfg.label}</span>
+                        <span className={styles.badge}>{label}</span>
                         <span className={styles.dot}>·</span>
                         <span>Saved {new Date(item.createdAt).toLocaleDateString()}</span>
                       </div>
