@@ -563,9 +563,20 @@ export default function DashboardAppointments() {
                 {Array.from({ length: new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate() }).map((_, i) => {
                   const day = i + 1
                   const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+                  // Local-day bucketing (not UTC date-part): evening items in
+                  // negative-offset zones would otherwise land a day late.
+                  const toLocalDay = (v?: string | null): string | null => {
+                    if (!v) return null
+                    const m = v.match(/^(\d{4})-(\d{2})-(\d{2})/)
+                    if (!m) return null
+                    if (!v.includes('T')) return `${m[1]}-${m[2]}-${m[3]}`
+                    const dt = new Date(v)
+                    if (Number.isNaN(dt.getTime())) return null
+                    return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`
+                  }
                   const dayItems = allItems.filter(i => {
                     const d = i._type === 'appointment' ? i.startTime : (i as EventItem).eventDate
-                    return d?.startsWith(dateStr)
+                    return toLocalDay(d) === dateStr
                   })
                   return (
                     <div key={day} className={`${styles.calendarDay} ${dayItems.length > 0 ? styles.hasEvents : ''}`}>

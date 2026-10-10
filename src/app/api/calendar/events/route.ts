@@ -43,10 +43,50 @@ export async function GET() {
       orderBy: { startDate: 'asc' }
     })
 
+    // Joined marketplace events (RSVP'd) — previously invisible in planner.
+    const joinedJoins = await prisma.eventJoiner.findMany({
+      where: { userId },
+      include: {
+        event: {
+          select: {
+            id: true, title: true, description: true, eventDate: true,
+            endDate: true, location: true,
+          },
+        },
+      },
+    })
+    const joinedEvents = joinedJoins
+      .map(j => j.event)
+      .filter(e => e && e.eventDate)
+
+    // Own requests carrying a deadline.
+    const requestDeadlines = await prisma.request.findMany({
+      where: { userId, deadline: { not: null } },
+      select: { id: true, title: true, deadline: true },
+      orderBy: { deadline: 'asc' },
+    })
+
+    // Rental windows where the user is renter or owner (handover/return).
+    const rentalWindows = await prisma.order.findMany({
+      where: {
+        OR: [{ buyerId: userId }, { sellerId: userId }],
+        rentalStart: { not: null },
+        status: { notIn: ['CANCELLED', 'DELIVERED'] },
+      },
+      select: {
+        id: true, description: true, rentalStart: true, rentalEnd: true,
+        status: true, buyerId: true,
+      },
+      orderBy: { rentalStart: 'asc' },
+    })
+
     return NextResponse.json({
       myEvents,
       publicEvents,
-      connectionEvents
+      connectionEvents,
+      joinedEvents,
+      requestDeadlines,
+      rentalWindows,
     })
   } catch (error) {
     console.error('Error fetching calendar events:', error)

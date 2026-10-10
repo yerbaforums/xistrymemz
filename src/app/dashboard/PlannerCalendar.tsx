@@ -19,7 +19,7 @@ interface CalendarEvent {
   visibility: string
   // Unified planner kind + deep link. Events without a link keep the
   // hover tooltip; appointments link to their detail modal.
-  kind?: 'personal' | 'project' | 'trip' | 'connections' | 'appointment'
+  kind?: 'personal' | 'project' | 'trip' | 'connections' | 'appointment' | 'event' | 'request' | 'rental'
   status?: string
   link?: string
 }
@@ -176,6 +176,9 @@ export default function CalendarWidget() {
     planEvents: true,
     connections: false,
     appointments: true,
+    events: true,
+    requests: true,
+    rentals: true,
   })
   const [trips, setTrips] = useState<CalendarTrip[]>([])
   const [newEvent, setNewEvent] = useState({
@@ -204,7 +207,14 @@ export default function CalendarWidget() {
 
       // Each source degrades independently: a failed fetch logs and yields
       // nothing rather than aborting the whole planner.
-      let data: { myEvents: CalendarEvent[]; publicEvents: CalendarEvent[]; connectionEvents: CalendarEvent[] } =
+      let data: {
+        myEvents: CalendarEvent[]
+        publicEvents: CalendarEvent[]
+        connectionEvents: CalendarEvent[]
+        joinedEvents?: unknown[]
+        requestDeadlines?: unknown[]
+        rentalWindows?: unknown[]
+      } =
         { myEvents: [], publicEvents: [], connectionEvents: [] }
       if (calRes.ok) {
         try {
@@ -213,6 +223,9 @@ export default function CalendarWidget() {
             myEvents: parsed?.myEvents || [],
             publicEvents: parsed?.publicEvents || [],
             connectionEvents: parsed?.connectionEvents || [],
+            joinedEvents: parsed?.joinedEvents || [],
+            requestDeadlines: parsed?.requestDeadlines || [],
+            rentalWindows: parsed?.rentalWindows || [],
           }
         } catch { /* keep defaults */ }
       } else {
@@ -224,6 +237,44 @@ export default function CalendarWidget() {
         ...tagKind(data.myEvents, 'personal'),
         ...tagKind(data.publicEvents, 'project'),
         ...tagKind(data.connectionEvents, 'connections'),
+        ...((data.joinedEvents || []) as Array<{ id: string; title: string; description?: string | null; eventDate?: string | null; endDate?: string | null; location?: string | null }>).map(e => ({
+          id: `evt-${e.id}`,
+          title: `🎟️ ${e.title}`,
+          description: e.description || undefined,
+          startDate: e.eventDate || '',
+          endDate: e.endDate || undefined,
+          allDay: !e.eventDate || !e.eventDate.includes('T'),
+          location: e.location || undefined,
+          color: '#8b5cf6',
+          userId: '',
+          visibility: 'PUBLIC',
+          kind: 'event' as const,
+          link: `/events/${e.id}`,
+        })),
+        ...((data.requestDeadlines || []) as Array<{ id: string; title: string; deadline?: string | null }>).map(r => ({
+          id: `req-${r.id}`,
+          title: `⏰ ${r.title}`,
+          startDate: r.deadline || '',
+          allDay: !r.deadline || !r.deadline.includes('T'),
+          color: '#f43f5e',
+          userId: '',
+          visibility: 'PRIVATE',
+          kind: 'request' as const,
+          link: `/requests/${r.id}`,
+        })),
+        ...((data.rentalWindows || []) as Array<{ id: string; description?: string | null; rentalStart?: string | null; rentalEnd?: string | null; status: string; buyerId: string }>).map(o => ({
+          id: `rent-${o.id}`,
+          title: `🔑 Rental: ${(o.description || 'order').slice(0, 40)}`,
+          startDate: o.rentalStart || '',
+          endDate: o.rentalEnd || undefined,
+          allDay: true,
+          color: '#06b6d4',
+          userId: '',
+          visibility: 'PRIVATE',
+          kind: 'rental' as const,
+          status: o.status,
+          link: `/orders/${o.id}`,
+        })),
       ])
       
       let planList: EventJoinerResponse[] = []
@@ -339,11 +390,28 @@ export default function CalendarWidget() {
     if (kind === 'connections') return filters.connections
     if (kind === 'appointment') return filters.appointments
     if (kind === 'trip') return filters.trips
+    if (kind === 'event') return filters.events
+    if (kind === 'request') return filters.requests
+    if (kind === 'rental') return filters.rentals
     return true
   }
 
   const localDayKey = (d: Date) =>
     `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+
+  // Local calendar-day bucket for a stored value. Date-only strings are
+  // taken as local calendar dates; datetimes convert to local time.
+  // (Bucketing on the raw UTC date part shifts evening events to the
+  // wrong day in negative-offset zones.)
+  const dayKeyOf = (value?: string | null): string | null => {
+    if (!value) return null
+    const m = value.match(/^(\d{4})-(\d{2})-(\d{2})/)
+    if (!m) return null
+    if (!value.includes('T')) return `${m[1]}-${m[2]}-${m[3]}`
+    const d = new Date(value)
+    if (Number.isNaN(d.getTime())) return null
+    return localDayKey(d)
+  }
 
   // Start minutes since midnight (local) for hour-grid positioning. Returns
   // null for date-only values, which render as all-day instead.
@@ -368,8 +436,7 @@ export default function CalendarWidget() {
   const getEventsForDateStr = (dateStr: string) => {
     const dayEvents = events.filter(e => {
       if (!e.startDate) return false
-      const eventDate = e.startDate.split('T')[0]
-      if (eventDate !== dateStr) return false
+      if (dayKeyOf(e.startDate) !== dateStr) return false
       // Multi-day events live in the all-day row; skip timed placement here
       // only when they genuinely span (handled separately in week/day).
       return visibleKind(e.kind || 'personal')
@@ -378,9 +445,10 @@ export default function CalendarWidget() {
     const tripEvents: CalendarEvent[] = []
     trips.forEach(t => {
       if (!t.startDate || !filters.trips) return
-      const tripStart = t.startDate.split('T')[0]
-      const tripEnd = t.endDate ? t.endDate.split('T')[0] : tripStart
-      if (dateStr >= tripStart && dateStr <= tripEnd) {
+      const tripStart = dayKeyOf(t.startDate)
+      const tripEnd = t.endDate ? dayKeyOf(t.endDate) || tripStart : tripStart
+      if (!tripStart) return
+      if (dateStr >= tripStart && dateStr <= (tripEnd || tripStart)) {
         tripEvents.push({
           id: `trip-${t.id}`,
           title: `🗺️ ${t.title}`,
@@ -441,18 +509,18 @@ export default function CalendarWidget() {
     getEventsForDateStr(dateStr).filter(e => {
       if (e.kind === 'trip') return true
       if (e.allDay) return true
-      const s = e.startDate.split('T')[0]
-      const en = e.endDate ? e.endDate.split('T')[0] : s
-      return en > s
+      const s = dayKeyOf(e.startDate)
+      const en = e.endDate ? dayKeyOf(e.endDate) || s : s
+      return !!s && !!en && en > s
     })
 
   // Timed blocks for a date (single-day placement; multi-day spans clip).
   const timedFor = (dateStr: string) =>
     getEventsForDateStr(dateStr).filter(e => {
       if (e.kind === 'trip' || e.allDay) return false
-      const s = e.startDate.split('T')[0]
-      const en = e.endDate ? e.endDate.split('T')[0] : s
-      if (en > s) return false
+      const s = dayKeyOf(e.startDate)
+      const en = e.endDate ? dayKeyOf(e.endDate) || s : s
+      if (!s || !en || en > s) return false
       return timedRange(e) !== null
     })
 
@@ -504,6 +572,18 @@ export default function CalendarWidget() {
         <label className={styles.filterChip}>
           <input type="checkbox" checked={filters.planEvents} onChange={e => setFilters(f => ({ ...f, planEvents: e.target.checked }))} />
           🟢 Project Events
+        </label>
+        <label className={styles.filterChip}>
+          <input type="checkbox" checked={filters.events} onChange={e => setFilters(f => ({ ...f, events: e.target.checked }))} />
+          🟣 Joined Events
+        </label>
+        <label className={styles.filterChip}>
+          <input type="checkbox" checked={filters.requests} onChange={e => setFilters(f => ({ ...f, requests: e.target.checked }))} />
+          🌹 Due Dates
+        </label>
+        <label className={styles.filterChip}>
+          <input type="checkbox" checked={filters.rentals} onChange={e => setFilters(f => ({ ...f, rentals: e.target.checked }))} />
+          🔑 Rentals
         </label>
         <label className={styles.filterChip}>
           <input type="checkbox" checked={filters.connections} onChange={e => setFilters(f => ({ ...f, connections: e.target.checked }))} />
@@ -619,6 +699,9 @@ export default function CalendarWidget() {
         <span className={styles.legendItem}>🟦 My Events</span>
         <span className={styles.legendItem}>📅 Appointments (status-colored)</span>
         <span className={styles.legendItem}>🟢 Project Events</span>
+        <span className={styles.legendItem}>🟣 Joined Events</span>
+        <span className={styles.legendItem}>🌹 Due Dates</span>
+        <span className={styles.legendItem}>🔑 Rentals</span>
         <span className={styles.legendItem}>🟠 Connections</span>
         <span className={styles.legendItem}>🟡 Trips</span>
       </div>
@@ -676,15 +759,6 @@ export default function CalendarWidget() {
               />
               All Day Event
             </label>
-            <select
-              value={newEvent.visibility}
-              onChange={e => setNewEvent({ ...newEvent, visibility: e.target.value })}
-              className={styles.select}
-            >
-              <option value="PRIVATE">🔒 Private</option>
-              <option value="PUBLIC">🌍 Public</option>
-              <option value="CONNECTIONS">🤝 Connections Only</option>
-            </select>
             <input
               type="text"
               placeholder="Location"

@@ -122,7 +122,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { title, description, imageUrl, projectId, productId, groupId, schoolContentId, eventId, category, priority, budget, goalAmount, currentFunding, location, isPublic, createGroup, acceptsDonations, selectedDonationAddrs, hashtags, customFields } = validation.data
+    const { title, description, imageUrl, projectId, productId, groupId, schoolContentId, eventId, category, priority, budget, goalAmount, currentFunding, location, isPublic, createGroup, acceptsDonations, selectedDonationAddrs, hashtags, customFields, deadline } = validation.data
 
     if (projectId) {
       const project = await prisma.project.findFirst({
@@ -212,6 +212,7 @@ export async function POST(request: Request) {
         ...donationAddressesToLegacy(selectedAddrList),
         donationAddresses: serializeDonationAddresses(selectedAddrList),
         status: 'PENDING',
+        deadline: deadline && !Number.isNaN(new Date(deadline).getTime()) ? new Date(deadline) : null,
         customFields: customFields != null
           ? customFields.filter(f => f && typeof f === 'object' && typeof f.label === 'string' && f.label.trim())
             .map(f => ({
