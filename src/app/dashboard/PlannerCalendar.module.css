@@ -10,6 +10,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-bottom: 1rem;
 }
 
@@ -381,6 +383,7 @@ button.dayNumber:hover {
 .weekWrap {
   display: flex;
   flex-direction: column;
+  overflow-x: auto;
   gap: 0;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md, 8px);
@@ -390,6 +393,8 @@ button.dayNumber:hover {
 .weekHeadRow,
 .weekAllDayRow {
   display: flex;
+  width: max-content;
+  min-width: 100%;
 }
 
 .weekGutter {
@@ -398,7 +403,7 @@ button.dayNumber:hover {
 }
 
 .weekHeadCell {
-  flex: 1;
+  flex: 1 0 72px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -431,7 +436,7 @@ button.dayNumber:hover {
 }
 
 .weekAllDayCell {
-  flex: 1;
+  flex: 1 0 72px;
   min-height: 26px;
   display: flex;
   flex-direction: column;
@@ -459,12 +464,6 @@ button.dayNumber:hover {
   text-decoration: none;
 }
 
-.weekGrid {
-  display: flex;
-  overflow-y: auto;
-  position: relative;
-}
-
 .weekGutterCol {
   flex: 0 0 44px;
   border-right: 1px solid var(--border-color);
@@ -480,10 +479,11 @@ button.dayNumber:hover {
 }
 
 .weekDayCol {
-  flex: 1;
+  flex: 1 0 72px;
   position: relative;
   border-left: 1px solid var(--border-color);
-  min-width: 0;
+  min-width: 72px;
+  cursor: crosshair;
 }
 
 .weekDayCol:first-of-type {
@@ -492,6 +492,27 @@ button.dayNumber:hover {
 
 .weekTodayCol {
   background: color-mix(in srgb, var(--accent-primary) 5%, transparent);
+}
+
+.nowLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #ef4444;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.nowLine::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: -4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ef4444;
 }
 
 .weekHourCell {

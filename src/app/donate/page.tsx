@@ -2,6 +2,7 @@ import Link from 'next/link'
 import styles from './page.module.css'
 import { DonateAddresses } from './DonateAddresses'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { prisma } from '@/lib/prisma'
 import { getSiteDonationAddresses } from '@/lib/site-donations'
 import { getCryptoPrices } from '@/lib/prices'
 import {
@@ -22,18 +23,25 @@ export const dynamic = 'force-dynamic'
 export const metadata = {
   title: 'Donate — XistrYmemZ',
   description:
-    'Fund the XistrYmemZ cooperative platform. 0% fees, no ads, no investors, no token. Itemised infrastructure costs, direct wallet addresses, MIT licensed source.',
+    'Fund the XistrYmemZ cooperative platform. 0% fees, no ads, no investors, no token. Itemised infrastructure costs, direct wallet addresses, AGPL licensed source.',
 }
 
 export default async function DonatePage() {
   // Independent lookups: neither depends on the other, so do not serialise them.
-  const [addresses, priceList] = await Promise.all([
+  const [addresses, priceList, admin] = await Promise.all([
     getSiteDonationAddresses(),
     getCryptoPrices().catch(() => []),
+    prisma.user.findFirst({
+      where: { role: 'ADMIN' },
+      orderBy: { createdAt: 'asc' },
+      select: { id: true },
+    }).catch(() => null),
   ])
 
   const prices: Record<string, number> = {}
   for (const p of priceList) prices[p.symbol] = p.price
+  const gold = prices['XAU']
+  const silver = prices['XAG']
 
   const configured = isConfigured()
   const burn = monthlyBurnTotal()
@@ -135,11 +143,45 @@ export default async function DonatePage() {
         </p>
       </section>
 
+      {/* ── Tokenized metals: price is live, transfer is arranged ── */}
+      <section className={styles.block} id="metals">
+        <h2>Gold and silver</h2>
+        <p>
+          We accept tokenized gold and silver at the live per-ounce price
+          below. There is no fixed receiving address for these — the transfer
+          is arranged one-to-one so both sides confirm the amount first.
+        </p>
+        <ul className={styles.burnList}>
+          <li>
+            <span className={styles.burnLabel}>🥇 Gold (PAXG) / oz</span>
+            <span className={styles.burnAmount}>
+              {gold != null ? formatUsd(gold) : 'price unavailable right now'}
+            </span>
+          </li>
+          <li>
+            <span className={styles.burnLabel}>🥈 Silver (KAG) / oz</span>
+            <span className={styles.burnAmount}>
+              {silver != null ? formatUsd(silver) : 'price unavailable right now'}
+            </span>
+          </li>
+        </ul>
+        <p>
+          {admin ? (
+            <Link href={`/dashboard/messages?user=${admin.id}`}>
+              Message an admin for transfer instructions →
+            </Link>
+          ) : (
+            <>Contact us through the <Link href="/feedback">feedback page</Link> for transfer instructions.</>
+          )}{' '}
+          Tell us which metal and roughly how much — we reply with where to send it.
+        </p>
+      </section>
+
       {/* ── Proof of life ── */}
       <section className={styles.block}>
         <h2>Where the money shows up</h2>
         <p>
-          The code is MIT licensed and public, so nothing here needs to be taken
+          The code is AGPL licensed and public, so nothing here needs to be taken
           on trust:
         </p>
         <ul className={styles.links}>

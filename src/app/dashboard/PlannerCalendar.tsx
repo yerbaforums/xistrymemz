@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import styles from './PlannerCalendar.module.css'
 import { useToast } from '@/context/ToastContext'
@@ -49,7 +49,7 @@ interface CalendarTrip {
 // minutes; multi-day items and trips render in the all-day header.
 // Appointment blocks link to their detail modal (highlight flow) so
 // confirmations happen without leaving the planner.
-function WeekDayView({ days, allDayFor, timedFor, timedRange, localDayKey, hours, hourH, fmtHour, goToDay, single }: {
+function WeekDayView({ days, allDayFor, timedFor, timedRange, localDayKey, hours, hourH, fmtHour, goToDay, single, onEmptySlot, nowMin }: {
   days: Date[]
   allDayFor: (dateStr: string) => CalendarEvent[]
   timedFor: (dateStr: string) => CalendarEvent[]
@@ -60,6 +60,8 @@ function WeekDayView({ days, allDayFor, timedFor, timedRange, localDayKey, hours
   fmtHour: (h: number) => string
   goToDay: (d: Date) => void
   single: boolean
+  onEmptySlot: (date: Date, minutes: number) => void
+  nowMin: number | null
 }) {
   const todayKey = localDayKey(new Date())
   return (
@@ -114,11 +116,27 @@ function WeekDayView({ days, allDayFor, timedFor, timedRange, localDayKey, hours
         {days.map(d => {
           const key = localDayKey(d)
           const items = timedFor(key)
+          const showNow = nowMin != null && key === todayKey
           return (
-            <div key={key} className={`${styles.weekDayCol} ${key === todayKey ? styles.weekTodayCol : ''}`}>
+            <div
+              key={key}
+              className={`${styles.weekDayCol} ${key === todayKey ? styles.weekTodayCol : ''}`}
+              onClick={e => {
+                // Empty-space click creates at that hour; links keep navigating.
+                if ((e.target as HTMLElement).closest('a')) return
+                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+                const minutes = Math.max(0, Math.min(24 * 60 - 15, ((e.clientY - rect.top) / hourH) * 60))
+                // Snap to the quarter hour so the prefilled form is tidy.
+                onEmptySlot(d, Math.floor(minutes / 15) * 15)
+              }}
+              title="Click an empty time to add an event"
+            >
               {hours.map(h => (
                 <div key={h} className={styles.weekHourCell} style={{ height: hourH }} />
               ))}
+              {showNow && (
+                <div className={styles.nowLine} style={{ top: (nowMin / 60) * hourH }} aria-hidden="true" />
+              )}
               {items.map(e => {
                 const r = timedRange(e)
                 if (!r) return null
@@ -167,6 +185,50 @@ export default function CalendarWidget() {
   const [events, setEvents] = useState<CalendarEvent[]>([])
   const [currentDate, setCurrentDate] = useState(new Date())
   const [view, setView] = useState<'month' | 'week' | 'day'>('month')
+  const [nowMin, setNowMin] = useState<number | null>(null)
+  const urlSynced = useRef(false)
+
+  // View + date survive refresh and are shareable (?view=week&date=...).
+  // Read once on mount (window.location avoids a Suspense boundary).
+  useEffect(() => {
+    try {
+      const sp = new URLSearchParams(window.location.search)
+      const v = sp.get('view')
+      if (v === 'week' || v === 'day' || v === 'month') setView(v)
+      const dt = sp.get('date')
+      if (dt && /^\d{4}-\d{2}-\d{2}$/.test(dt)) {
+        const [y, m, dd] = dt.split('-').map(Number)
+        const parsed = new Date(y, m - 1, dd)
+        if (!Number.isNaN(parsed.getTime())) setCurrentDate(parsed)
+      }
+    } catch {}
+  }, [])
+
+  useEffect(() => {
+    // Skip the first run: the read effect above owns initial state, and
+    // writing here would clobber a shared ?view=&date= before it applies.
+    if (!urlSynced.current) { urlSynced.current = true; return }
+    try {
+      const sp = new URLSearchParams(window.location.search)
+      if (sp.get('view') !== view || sp.get('date') !== localDayKey(currentDate)) {
+        sp.set('view', view)
+        sp.set('date', localDayKey(currentDate))
+        window.history.replaceState(null, '', `${window.location.pathname}?${sp.toString()}`)
+      }
+    } catch {}
+  }, [view, currentDate])
+
+  // "Now" line refreshes each minute while week/day is visible.
+  useEffect(() => {
+    if (view === 'month') { setNowMin(null); return }
+    const tick = () => {
+      const n = new Date()
+      setNowMin(n.getHours() * 60 + n.getMinutes())
+    }
+    tick()
+    const t = setInterval(tick, 60000)
+    return () => clearInterval(t)
+  }, [view])
   const [showAddEvent, setShowAddEvent] = useState(false)
   const [hoveredEvent, setHoveredEvent] = useState<CalendarEvent | null>(null)
   const [tooltipTimeout, setTooltipTimeout] = useState<NodeJS.Timeout | null>(null)
@@ -529,6 +591,23 @@ export default function CalendarWidget() {
     return `${h12}${h < 12 ? 'am' : 'pm'}`
   }
 
+  const toLocalInput = (d: Date) => {
+    const p = (n: number, w = 2) => String(n).padStart(w, '0')
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`
+  }
+
+  // Empty-slot click → Add Event modal prefilled at that date/time.
+  const openAt = (date: Date, minutes: number) => {
+    const start = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, minutes)
+    const end = new Date(start.getTime() + 60 * 60000)
+    setNewEvent(prev => ({
+      ...prev,
+      startDate: toLocalInput(start),
+      endDate: toLocalInput(end),
+    }))
+    setShowAddEvent(true)
+  }
+
   return (
     <div className={styles.calendarWidget}>
       <div className={styles.calendarHeader}>
@@ -672,6 +751,8 @@ export default function CalendarWidget() {
           fmtHour={fmtHour}
           goToDay={goToDay}
           single={view === 'day'}
+          onEmptySlot={openAt}
+          nowMin={nowMin}
         />
       )}
 

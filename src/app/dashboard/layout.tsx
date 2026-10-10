@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { SkeletonCard } from '@/components/Skeleton'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import DashboardTourWrapper from '@/components/DashboardTourWrapper'
+import DonateNudge from '@/components/DonateNudge'
 import ShortcutHelp from '@/components/ShortcutHelp'
 import { BREADCRUMB_LABELS } from '@/lib/navigation'
 import { dashboardShortcuts } from '@/lib/shortcuts'
@@ -118,6 +119,7 @@ export default function DashboardLayout({
             ⌨️
           </button>
         </nav>
+        <DonateNudge />
         <ErrorBoundary>{children}</ErrorBoundary>
       </div>
       <DashboardTourWrapper />
