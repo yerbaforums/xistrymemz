@@ -96,7 +96,7 @@ export async function PUT(
     } catch {
       return apiError("Invalid JSON body", 400)
     }
-    const { name, description, imageUrl, coverImage, bannerColor, isPrivate, hashtags } = body as Record<string, unknown>
+    const { name, description, imageUrl, coverImage, bannerColor, isPrivate, hashtags, acceptsDonations, donationAddress, donationCurrency, donationAddresses } = body as Record<string, unknown>
 
     const member = await prisma.groupMember.findFirst({
       where: { groupId: id, userId: session.user.id, role: 'ADMIN' }
@@ -113,6 +113,10 @@ export async function PUT(
     if (coverImage !== undefined) data.coverImage = coverImage
     if (bannerColor !== undefined) data.bannerColor = bannerColor
     if (isPrivate !== undefined) data.isPrivate = isPrivate
+    if (acceptsDonations !== undefined) data.acceptsDonations = !!acceptsDonations
+    if (donationAddress !== undefined) data.donationAddress = (donationAddress as string) || null
+    if (donationCurrency !== undefined) data.donationCurrency = (donationCurrency as string) || 'ETH'
+    if (donationAddresses !== undefined) data.donationAddresses = (donationAddresses as string) || null
 
     const group = await prisma.group.update({
       where: { id },

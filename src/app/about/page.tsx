@@ -7,6 +7,7 @@ import { QRCodeModal } from '@/components/QRCodeModal'
 import { DonationActions } from '@/components/DonationActions'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { useTranslations } from 'next-intl'
 
 interface DonationAddr {
   id: string
@@ -17,6 +18,7 @@ interface DonationAddr {
 }
 
 export default function About() {
+  const t = useTranslations('about')
   const [donations, setDonations] = useState<DonationAddr[]>([])
   const [qrOpen, setQrOpen] = useState<DonationAddr | null>(null)
 
@@ -31,17 +33,17 @@ export default function About() {
     <div className={styles.page}>
       <Breadcrumbs items={[
         { label: 'Home', href: '/' },
-        { label: 'About' },
+        { label: t('breadcrumb') },
       ]} />
       <section className={styles.hero}>
         <img src="/logo.png" alt="XistrYmemZ" className={styles.logo} />
         <h1>XistrYmemZ</h1>
-        <p>The cooperative platform for building, sharing, and growing together.</p>
+        <p>{t('tagline')}</p>
       </section>
 
       <section className={styles.content}>
         <div className={styles.block}>
-          <h2>What is XistrYmemZ?</h2>
+          <h2>{t('whatTitle')}</h2>
           <p>
             XistrYmemZ is an open-source community platform where creators, developers, tradespeople, 
             and neighbors collaborate on projects, offer services, buy and sell, teach skills, and 
@@ -54,96 +56,96 @@ export default function About() {
         </div>
 
         <div className={styles.block}>
-          <h2>Our Promise</h2>
+          <h2>{t('promiseTitle')}</h2>
           <div className={styles.features}>
             <div className={styles.feature}>
-              <h3>🚫 Ad-Free</h3>
+              <h3>{t('promise1Title')}</h3>
               <p>No banners, no pop-ups, no sponsored posts. Your experience is never interrupted by advertising. We fund the platform through optional donations, not by selling your attention.</p>
             </div>
             <div className={styles.feature}>
-              <h3>🔒 Your Data, Not for Sale</h3>
+              <h3>{t('promise2Title')}</h3>
               <p>We never sell, share, or trade your personal data to third parties. Your profile, content, messages, and activity stay yours. Period. No exceptions, no loopholes.</p>
             </div>
             <div className={styles.feature}>
-              <h3>🤖 AI-Free Zone</h3>
+              <h3>{t('promise3Title')}</h3>
               <p>No AI scraping, no AI-generated content fed into your feed, no AI trained on your data. Everything on XistrYmemZ is created by real people for real people.</p>
             </div>
             <div className={styles.feature}>
-              <h3>📊 No Algorithmic Tampering</h3>
+              <h3>{t('promise4Title')}</h3>
               <p>No algorithm decides what you see. Content appears chronologically and by your own choices — follow who you want, join what you want, see what you follow. No hidden ranking, no favor manipulation.</p>
             </div>
             <div className={styles.feature}>
-              <h3>👁️ No Shadowbanning</h3>
+              <h3>{t('promise5Title')}</h3>
               <p>We don&apos;t secretly suppress your reach. If there&apos;s an issue with your content, you&apos;ll know. No invisible penalties, no reduced visibility without explanation. Full transparency.</p>
             </div>
             <div className={styles.feature}>
-              <h3>✊ No Censorship</h3>
+              <h3>{t('promise6Title')}</h3>
               <p>Your voice matters. We don&apos;t censor legal content or suppress viewpoints. The community sets its own norms through groups and forums. Content is only removed for illegal material or clear violations of our terms.</p>
             </div>
           </div>
         </div>
 
         <div className={styles.block}>
-          <h2>Core Features</h2>
+          <h2>{t('featuresTitle')}</h2>
           <div className={styles.features}>
             <div className={styles.feature}>
-              <h3>🚀 Projects</h3>
+              <h3>{t('featProjects')}</h3>
               <p>Create detailed projects with goals, milestones, and resources. Invite collaborators and track progress together.</p>
             </div>
             <div className={styles.feature}>
-              <h3>🛒 Marketplace</h3>
+              <h3>{t('featMarketplace')}</h3>
               <p>Buy and sell products, list items for rent, and accept offers. Set up your own shop with custom branding.</p>
             </div>
             <div className={styles.feature}>
-              <h3>🔧 Services</h3>
+              <h3>{t('featServices')}</h3>
               <p>Offer your skills — from guitar lessons to web design. Accept appointments with built-in scheduling, set your hours, and manage bookings.</p>
             </div>
             <div className={styles.feature}>
-              <h3>📹 Video Chat</h3>
+              <h3>{t('featVideo')}</h3>
               <p>Start or join video rooms for face-to-face collaboration, remote lessons, consultations, or just hanging out.</p>
             </div>
             <div className={styles.feature}>
-              <h3>📝 Requests & Barter</h3>
+              <h3>{t('featRequests')}</h3>
               <p>Post what you need and accept offers from the community. Trade services, barter, and coordinate through the offer system.</p>
             </div>
             <div className={styles.feature}>
-              <h3>📅 Events & Planner</h3>
+              <h3>{t('featEvents')}</h3>
               <p>Host community events, manage your appointment calendar, and keep track of upcoming commitments.</p>
             </div>
             <div className={styles.feature}>
-              <h3>🏫 Schools & Teaching</h3>
+              <h3>{t('featSchools')}</h3>
               <p>Create educational content — articles, tutorials, courses, and video lessons. Build your school and grow a following.</p>
             </div>
             <div className={styles.feature}>
-              <h3># Hashtags</h3>
+              <h3>{t('featHashtags')}</h3>
               <p>Follow hashtags to discover new content across projects, services, events, and posts. Trending tags highlight what the community is talking about.</p>
             </div>
             <div className={styles.feature}>
-              <h3>👥 Community</h3>
+              <h3>{t('featCommunity')}</h3>
               <p>Join groups, connect with other members, participate in forums, and build your network — all within the platform.</p>
             </div>
             <div className={styles.feature}>
-              <h3>🔄 Share & Repost</h3>
+              <h3>{t('featShare')}</h3>
               <p>Share any project, service, event, or product to your feed. Repost content you find interesting to spread the word.</p>
             </div>
           </div>
         </div>
 
         <div className={styles.block}>
-          <h2>Getting Started</h2>
-          <p>New here? Here&apos;s how to get going:</p>
+          <h2>{t('gettingTitle')}</h2>
+          <p>{t('gettingSub')}</p>
           <div className={styles.links}>
-            <Link href="/auth/register">1. Create your account</Link>
-            <Link href="/onboarding">2. Complete your profile</Link>
-            <Link href="/projects">3. Browse projects</Link>
-            <Link href="/services">4. Explore services</Link>
-            <Link href="/community">5. Join the community</Link>
+            <Link href="/auth/register">{t('step1')}</Link>
+            <Link href="/onboarding">{t('step2')}</Link>
+            <Link href="/projects">{t('step3')}</Link>
+            <Link href="/services">{t('step4')}</Link>
+            <Link href="/community">{t('step5')}</Link>
           </div>
         </div>
 
         {donations.length > 0 && (
           <div className={styles.block}>
-            <h2>Support XistrYmemZ</h2>
+            <h2>{t('supportTitle')}</h2>
             <p>Help us keep the platform free and independent. Donations are optional and go directly toward hosting, development, and community programs.</p>
             <div className={styles.donationList}>
               {donations.map(da => (
@@ -160,16 +162,19 @@ export default function About() {
                 </div>
               ))}
             </div>
+            <p style={{ marginTop: 12 }}>
+              <Link href="/donate">{t('supportCta')}</Link>
+            </p>
           </div>
         )}
 
         <div className={styles.block}>
-          <h2>Links</h2>
+          <h2>{t('linksTitle')}</h2>
           <div className={styles.links}>
-            <Link href="/help">Help center</Link>
-            <Link href="/contact">Contact us</Link>
-            <Link href="/terms">Terms of service</Link>
-            <Link href="/privacy">Privacy policy</Link>
+            <Link href="/help">{t('linkHelp')}</Link>
+            <Link href="/contact">{t('linkContact')}</Link>
+            <Link href="/terms">{t('linkTerms')}</Link>
+            <Link href="/privacy">{t('linkPrivacy')}</Link>
           </div>
         </div>
       </section>

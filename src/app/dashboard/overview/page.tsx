@@ -408,6 +408,7 @@ export default async function DashboardOverview({
                 <Link href={userClasses.length > 0 ? `/onboarding` : `/onboarding`} className={styles.firstVisitLink}>🚀 Set Up Your Class</Link>
                 <Link href="/dashboard/feed#feed-post-form" className={styles.firstVisitLink}>✏️ Write Your First Post</Link>
                 <Link href="/products/new" className={styles.firstVisitLink}>🛒 List a Product</Link>
+                <Link href="/dashboard/services" className={styles.firstVisitLink}>🔧 Offer a Skill</Link>
                 <Link href="/community" className={styles.firstVisitLink}>👥 Find People</Link>
               </div>
             </div>
@@ -417,6 +418,7 @@ export default async function DashboardOverview({
             hasBio={!!user?.bio}
             postCount={allStats[6]}
             productCount={allStats[2]}
+            serviceCount={serviceCount}
             groupCount={allStats[3]}
             connectionCount={connectionCount}
             hasShop={!!user?.shopSlug}

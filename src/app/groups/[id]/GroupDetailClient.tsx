@@ -20,6 +20,12 @@ import { SkeletonCard } from '@/components/Skeleton'
 import Loading from '@/components/Loading'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import CollaborateButton from '@/components/CollaborateButton'
+import DonationAddressPicker from '@/components/DonationAddressPicker'
+import { QRCodeModal } from '@/components/QRCodeModal'
+import { DonationActions } from '@/components/DonationActions'
+import { useDonationAddresses } from '@/hooks/useDonationAddresses'
+import { hydrateDonationAddresses, serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
+import type { DonationAddr } from '@/types/product'
 import PinToBoardButton from '@/components/PinToBoardButton'
 import NextStepsSheet from '@/components/NextStepsSheet'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
@@ -118,6 +124,10 @@ interface Group {
   coverImage: string | null
   bannerColor: string | null
   isPrivate: boolean
+  acceptsDonations: boolean
+  donationAddress: string | null
+  donationCurrency: string
+  donationAddresses: string | null
   user: { id: string; name: string | null; image: string | null }
   members: Member[]
   posts: GroupPost[]
@@ -165,6 +175,10 @@ function GroupDetailContent() {
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set())
   const [showEditModal, setShowEditModal] = useState(false)
   const [editForm, setEditForm] = useState({ name: '', description: '', imageUrl: '', coverImage: '', isPrivate: false, hashtags: [] as string[] })
+  const [editAcceptsDonations, setEditAcceptsDonations] = useState(false)
+  const [editSelectedDonationAddrs, setEditSelectedDonationAddrs] = useState<DonationAddr[]>([])
+  const [qrAddr, setQrAddr] = useState<DonationAddr | null>(null)
+  const userDonationAddrs = useDonationAddresses()
   const [saving, setSaving] = useState(false)
   const [showBuyModal, setShowBuyModal] = useState(false)
   const [buyForm, setBuyForm] = useState({ title: '', description: '', targetPrice: '', minSupporters: '5', productUrl: '', productImage: '', linkedProductId: '' })
@@ -194,6 +208,8 @@ function GroupDetailContent() {
           isPrivate: data.isPrivate || false,
           hashtags: data.hashtags || []
         })
+        setEditAcceptsDonations(!!data.acceptsDonations)
+        setEditSelectedDonationAddrs(hydrateDonationAddresses(data.donationAddress, data.donationCurrency, data.donationAddresses))
       })
       .catch(() => error('Failed to load group'))
       .finally(() => setLoading(false))
@@ -306,10 +322,18 @@ function GroupDetailContent() {
     e.preventDefault()
     setSaving(true)
     try {
+      const legacy = donationAddressesToLegacy(editAcceptsDonations ? editSelectedDonationAddrs : [])
       const res = await fetch(`/api/groups/${params.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...editForm, hashtags: editForm.hashtags })
+        body: JSON.stringify({
+          ...editForm,
+          hashtags: editForm.hashtags,
+          acceptsDonations: editAcceptsDonations,
+          donationAddress: legacy.donationAddress,
+          donationCurrency: legacy.donationCurrency,
+          donationAddresses: editAcceptsDonations ? serializeDonationAddresses(editSelectedDonationAddrs) : null,
+        })
       })
       if (res.ok) {
         const data = await res.json()
@@ -689,6 +713,26 @@ function GroupDetailContent() {
                 <span className={styles.statLabel}>Active Buys</span>
               </div>
             </div>
+            {group.acceptsDonations && (() => {
+              const addrs = hydrateDonationAddresses(group.donationAddress, group.donationCurrency, group.donationAddresses)
+              if (addrs.length === 0) return null
+              return (
+                <div className={styles.stats} style={{ marginTop: 8 }}>
+                  <div className={styles.stat} style={{ alignItems: 'flex-start' }}>
+                    <span className={styles.statLabel}>💎 Support this group</span>
+                    <span style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 4 }}>
+                      {addrs.map(da => (
+                        <span key={da.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.8rem' }}>
+                          <strong>{da.label || da.currency}</strong>
+                          <code title={da.address}>{da.address.length > 20 ? `${da.address.slice(0, 10)}…${da.address.slice(-6)}` : da.address}</code>
+                          <DonationActions address={da.address} onQrClick={() => setQrAddr(da)} size="sm" />
+                        </span>
+                      ))}
+                    </span>
+                  </div>
+                </div>
+              )
+            })()}
           </div>
           <div className={styles.actions}>
             {myUserId && (
@@ -1177,6 +1221,22 @@ function GroupDetailContent() {
                 <label>Hashtags</label>
                 <HashtagInput value={editForm.hashtags} onChange={(tags) => setEditForm({ ...editForm, hashtags: tags })} placeholder="Add hashtags..." />
               </div>
+              <div className="form-group">
+                <label className={styles.checkboxLabel}>
+                  <input type="checkbox" checked={editAcceptsDonations} onChange={e => setEditAcceptsDonations(e.target.checked)} />
+                  Accept donations for this group
+                </label>
+              </div>
+              {editAcceptsDonations && (
+                <div className="form-group">
+                  <label>Donation addresses</label>
+                  <DonationAddressPicker
+                    savedAddresses={userDonationAddrs}
+                    selectedAddresses={editSelectedDonationAddrs}
+                    onAddressesChange={setEditSelectedDonationAddrs}
+                  />
+                </div>
+              )}
               <div className={styles.modalActions}>
                 <Button type="submit" variant="primary" disabled={saving}>{saving ? 'Saving...' : 'Save'}</Button>
                 <Button type="button" variant="ghost" onClick={() => setShowEditModal(false)}>Cancel</Button>
@@ -1387,6 +1447,14 @@ function GroupDetailContent() {
           extraAction={{ label: '🚀 Start a project with this group', href: `/projects/new?fromGroup=${group.id}` }}
           onClose={dismissFreshSheet}
           onView={dismissFreshSheet}
+        />
+      )}
+      {qrAddr && (
+        <QRCodeModal
+          isOpen={true}
+          onClose={() => setQrAddr(null)}
+          currency={qrAddr.label || qrAddr.currency}
+          address={qrAddr.address}
         />
       )}
     </ErrorBoundary>

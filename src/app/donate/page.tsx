@@ -3,6 +3,7 @@ import styles from './page.module.css'
 import { DonateAddresses } from './DonateAddresses'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import { prisma } from '@/lib/prisma'
+import { getTranslations } from 'next-intl/server'
 import { getSiteDonationAddresses } from '@/lib/site-donations'
 import { getCryptoPrices } from '@/lib/prices'
 import {
@@ -27,6 +28,7 @@ export const metadata = {
 }
 
 export default async function DonatePage() {
+  const t = await getTranslations('donate')
   // Independent lookups: neither depends on the other, so do not serialise them.
   const [addresses, priceList, admin] = await Promise.all([
     getSiteDonationAddresses(),
@@ -50,21 +52,22 @@ export default async function DonatePage() {
 
   return (
     <div className={styles.page}>
-      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Donate' }]} />
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: t('breadcrumb') }]} />
 
       <section className={styles.hero}>
         <span className={styles.heroIcon}>💎</span>
-        <h1>Fund the platform</h1>
+        <h1>{t('title')}</h1>
         <p>
           XistrYmemZ takes <strong>0%</strong> of every transaction and runs on
           donations. There is no fee revenue, no advertising, no investor and no
-          token — so what you give here is what pays for the infrastructure.
+          token — so what you give here is what pays for the infrastructure
+          <em>and</em> grows what runs on it.
         </p>
       </section>
 
       {/* ── Why crypto-only is the point, not a limitation ── */}
       <section className={styles.block}>
-        <h2>Why we only accept private money</h2>
+        <h2>{t('hWhy')}</h2>
         <p>
           Card processors and payment platforms take 2.9–3.5%, freeze accounts on
           their own discretion, and build a dossier on every transaction. A
@@ -81,7 +84,7 @@ export default async function DonatePage() {
 
       {/* ── Transparency: the whole point of this page ── */}
       <section className={styles.block}>
-        <h2>What your donation pays for</h2>
+        <h2>{t('hWhat')}</h2>
         {configured ? (
           <>
             <p className={styles.burnLead}>
@@ -130,7 +133,7 @@ export default async function DonatePage() {
 
       {/* ── Addresses: server-rendered so they exist without JS ── */}
       <section className={styles.block}>
-        <h2>Send directly to an address</h2>
+        <h2>{t('hSend')}</h2>
         <p>
           No form, no account, no intermediary. Copy the address or scan the QR
           code and send from any wallet. Verify the first and last characters
@@ -145,7 +148,7 @@ export default async function DonatePage() {
 
       {/* ── Tokenized metals: price is live, transfer is arranged ── */}
       <section className={styles.block} id="metals">
-        <h2>Gold and silver</h2>
+        <h2>{t('hMetals')}</h2>
         <p>
           We accept tokenized gold and silver at the live per-ounce price
           below. There is no fixed receiving address for these — the transfer
@@ -155,7 +158,7 @@ export default async function DonatePage() {
           <li>
             <span className={styles.burnLabel}>🥇 Gold (PAXG) / oz</span>
             <span className={styles.burnAmount}>
-              {gold != null ? formatUsd(gold) : 'price unavailable right now'}
+              {gold != null ? formatUsd(gold) : t('priceUnavailable')}
             </span>
           </li>
           <li>
@@ -168,7 +171,7 @@ export default async function DonatePage() {
         <p>
           {admin ? (
             <Link href={`/dashboard/messages?user=${admin.id}`}>
-              Message an admin for transfer instructions →
+              {t('msgAdminCta')}
             </Link>
           ) : (
             <>Contact us through the <Link href="/feedback">feedback page</Link> for transfer instructions.</>
@@ -179,7 +182,7 @@ export default async function DonatePage() {
 
       {/* ── Proof of life ── */}
       <section className={styles.block}>
-        <h2>Where the money shows up</h2>
+        <h2>{t('hProof')}</h2>
         <p>
           The code is AGPL licensed and public, so nothing here needs to be taken
           on trust:
@@ -203,8 +206,11 @@ export default async function DonatePage() {
         <p className={styles.honest}>
           Being straight about scale: the platform has a small member base right
           now and most of the codebase was written before there was anyone using
-          it. Donations buy infrastructure, not growth. We&apos;d rather you know
-          that before you give than find out after.
+          it. Every gift first keeps the servers on; whatever lands above the
+          monthly bill goes to growth decided in the open — translation bounties,
+          onboarding grants for members who bring their neighborhoods, and
+          capacity upgrades as usage demands. We&apos;d rather you know exactly
+          which of the two your gift feeds than find out after.
         </p>
       </section>
     </div>

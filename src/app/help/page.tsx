@@ -2,10 +2,12 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
 export default function Help() {
+  const t = useTranslations('help')
   const [openFaq, setOpenFaq] = useState<number | null>(null)
 
   const toggleFaq = (index: number) => {
@@ -104,34 +106,34 @@ export default function Help() {
   ]
 
   const guides = [
-    { title: 'Getting Started', description: 'Set up your profile and explore the platform', link: '/onboarding' },
-    { title: 'Creating Projects', description: 'Plan, organize, and track projects', link: '/projects/new' },
-    { title: 'Offering Services', description: 'List your skills and accept appointments', link: '/dashboard/services' },
-    { title: 'Using Video Chat', description: 'Set up and join video rooms', link: '/dashboard/video' },
-    { title: 'Managing Appointments', description: 'Track bookings and availability', link: '/dashboard/appointments' },
-    { title: 'Setting Up Shop', description: 'Create and manage your storefront', link: '/shop/setup' },
-    { title: 'Hosting Events', description: 'Plan and host community events', link: '/events' },
-    { title: 'Creating Requests', description: 'Ask for help and accept offers', link: '/requests' },
-    { title: 'Hashtags & Discovery', description: 'Follow hashtags and find trending topics', link: '/hashtags' },
-    { title: 'Schools & Teaching', description: 'Create educational content', link: '/schools' },
+    { title: t('guideGettingStarted'), description: 'Set up your profile and explore the platform', link: '/onboarding' },
+    { title: t('guideProjects'), description: 'Plan, organize, and track projects', link: '/projects/new' },
+    { title: t('guideServices'), description: 'List your skills and accept appointments', link: '/dashboard/services' },
+    { title: t('guideVideo'), description: 'Set up and join video rooms', link: '/dashboard/video' },
+    { title: t('guideAppointments'), description: 'Track bookings and availability', link: '/dashboard/appointments' },
+    { title: t('guideShop'), description: 'Create and manage your storefront', link: '/shop/setup' },
+    { title: t('guideEvents'), description: 'Plan and host community events', link: '/events' },
+    { title: t('guideRequests'), description: 'Ask for help and accept offers', link: '/requests' },
+    { title: t('guideHashtags'), description: 'Follow hashtags and find trending topics', link: '/hashtags' },
+    { title: t('guideSchools'), description: 'Create educational content', link: '/schools' },
   ]
 
   return (
     <div className={styles.page}>
       <Breadcrumbs items={[
         { label: 'Home', href: '/' },
-        { label: 'Help' },
+        { label: t('breadcrumb') },
       ]} />
       <div className={styles.container}>
         <section className={styles.hero}>
-          <h1>Help Center</h1>
+          <h1>{t('title')}</h1>
           <p className={styles.heroSubtitle}>
-            Find answers to common questions and learn how to make the most of XistrYmemZ
+            {t('subtitle')}
           </p>
         </section>
 
         <section className={styles.section}>
-          <h2>Quick Guides</h2>
+          <h2>{t('guidesTitle')}</h2>
           <div className={styles.guides}>
             {guides.map((guide, index) => (
               <Link key={index} href={guide.link} className={styles.guideCard}>
@@ -143,7 +145,7 @@ export default function Help() {
         </section>
 
         <section className={styles.section}>
-          <h2>Frequently Asked Questions</h2>
+          <h2>{t('faqTitle')}</h2>
           <div className={styles.faqList}>
             {faqs.map((faq, index) => (
               <div key={index} className={styles.faqItem}>

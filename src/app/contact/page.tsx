@@ -2,10 +2,12 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
 export default function Contact() {
+  const t = useTranslations('contact')
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '', website: '' })
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [statusMessage, setStatusMessage] = useState('')
@@ -25,15 +27,15 @@ export default function Contact() {
 
       if (res.ok) {
         setStatus('success')
-        setStatusMessage('Thank you for your message! We\'ll get back to you soon.')
+        setStatusMessage(t('successMsg'))
         setForm({ name: '', email: '', subject: '', message: '', website: '' })
       } else {
         setStatus('error')
-        setStatusMessage('Failed to send message. Please try again.')
+        setStatusMessage(t('errorMsg'))
       }
     } catch {
       setStatus('error')
-      setStatusMessage('Failed to send message. Please try again.')
+      setStatusMessage(t('errorMsg'))
     }
   }
 
@@ -41,39 +43,39 @@ export default function Contact() {
     <div className={styles.page}>
       <Breadcrumbs items={[
         { label: 'Home', href: '/' },
-        { label: 'Contact' },
+        { label: t('breadcrumb') },
       ]} />
       <div className={styles.container}>
         <section className={styles.hero}>
-          <h1>Contact Us</h1>
+          <h1>{t('title')}</h1>
           <p className={styles.heroSubtitle}>
-            Have questions or need support? We&apos;d love to hear from you.
+            {t('subtitle')}
           </p>
         </section>
 
         <div className={styles.content}>
           <div className={styles.info}>
             <div className={styles.infoCard}>
-              <h3>General Inquiries</h3>
-              <p>Questions about the platform, partnerships, or collaborations.</p>
-              <span className={styles.infoHint}>Use the form to send us a message</span>
+              <h3>{t('cardGeneralTitle')}</h3>
+              <p>{t('cardGeneralDesc')}</p>
+              <span className={styles.infoHint}>{t('cardHint')}</span>
             </div>
 
             <div className={styles.infoCard}>
-              <h3>Technical Support</h3>
-              <p>Need help with your account or using the platform?</p>
-              <span className={styles.infoHint}>Use the form to send us a message</span>
+              <h3>{t('cardSupportTitle')}</h3>
+              <p>{t('cardSupportDesc')}</p>
+              <span className={styles.infoHint}>{t('cardHint')}</span>
             </div>
 
             <div className={styles.infoCard}>
-              <h3>Report Issues</h3>
-              <p>Found a bug or inappropriate content? Let us know.</p>
-              <span className={styles.infoHint}>Use the form to send us a message</span>
+              <h3>{t('cardReportTitle')}</h3>
+              <p>{t('cardReportDesc')}</p>
+              <span className={styles.infoHint}>{t('cardHint')}</span>
             </div>
 
             <div className={styles.infoCard}>
-              <h3>Join Our Community</h3>
-              <p>Connect with other members and stay updated.</p>
+              <h3>{t('cardJoinTitle')}</h3>
+              <p>{t('cardJoinDesc')}</p>
               <div className={styles.socialLinks}>
                 <Link href="/community">Community</Link>
                 <Link href="/events">Events</Link>
@@ -82,20 +84,20 @@ export default function Contact() {
           </div>
 
           <form onSubmit={handleSubmit} className={styles.form}>
-            <h2>Send a Message</h2>
+            <h2>{t('formTitle')}</h2>
             
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
-                <label>Name</label>
+                <label>{t('labelName')}</label>
                 <input
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  placeholder="Your name"
+                  placeholder={t('phName')}
                 />
               </div>
               <div className={styles.formGroup}>
-                <label>Email *</label>
+                <label>{t('labelEmail')}</label>
                 <input
                   type="email"
                   value={form.email}
@@ -107,28 +109,28 @@ export default function Contact() {
             </div>
 
             <div className={styles.formGroup}>
-              <label>Subject</label>
+              <label>{t('labelSubject')}</label>
               <select
                 value={form.subject}
                 onChange={(e) => setForm({ ...form, subject: e.target.value })}
               >
-                <option value="">Select a topic</option>
-                <option value="general">General Inquiry</option>
-                <option value="support">Technical Support</option>
-                <option value="bug">Bug Report</option>
-                <option value="feature">Feature Request</option>
-                <option value="partnership">Partnership</option>
-                <option value="feedback">Feedback</option>
-                <option value="other">Other</option>
+                <option value="">{t('optTopic')}</option>
+                <option value="general">{t('optGeneral')}</option>
+                <option value="support">{t('optSupport')}</option>
+                <option value="bug">{t('optBug')}</option>
+                <option value="feature">{t('optFeature')}</option>
+                <option value="partnership">{t('optPartnership')}</option>
+                <option value="feedback">{t('optFeedback')}</option>
+                <option value="other">{t('optOther')}</option>
               </select>
             </div>
 
             <div className={styles.formGroup}>
-              <label>Message *</label>
+              <label>{t('labelMessage')}</label>
               <textarea
                 value={form.message}
                 onChange={(e) => setForm({ ...form, message: e.target.value })}
-                placeholder="Tell us how we can help..."
+                placeholder={t('phMessage')}
                 rows={6}
                 required
               />
@@ -145,7 +147,7 @@ export default function Contact() {
             />
 
             <button type="submit" className={styles.submitBtn} disabled={status === 'loading'}>
-              {status === 'loading' ? 'Sending...' : 'Send Message'}
+              {status === 'loading' ? t('sending') : t('submit')}
             </button>
 
             {statusMessage && (
@@ -157,23 +159,23 @@ export default function Contact() {
         </div>
 
         <section className={styles.faq}>
-          <h2>Quick Answers</h2>
+          <h2>{t('faqTitle')}</h2>
           <div className={styles.faqGrid}>
             <Link href="/help" className={styles.faqItem}>
-              <h3>How do I get started?</h3>
-              <p>Learn the basics of using XistrYmemZ</p>
+              <h3>{t('qa1Title')}</h3>
+              <p>{t('qa1Desc')}</p>
             </Link>
             <Link href="/help" className={styles.faqItem}>
-              <h3>How do I reset my password?</h3>
-              <p>Get help with account access</p>
+              <h3>{t('qa2Title')}</h3>
+              <p>{t('qa2Desc')}</p>
             </Link>
             <Link href="/help" className={styles.faqItem}>
-              <h3>How do I report content?</h3>
-              <p>Learn about our reporting system</p>
+              <h3>{t('qa3Title')}</h3>
+              <p>{t('qa3Desc')}</p>
             </Link>
             <Link href="/help" className={styles.faqItem}>
-              <h3>How do I create a project?</h3>
-              <p>Step-by-step guide to creating projects</p>
+              <h3>{t('qa4Title')}</h3>
+              <p>{t('qa4Desc')}</p>
             </Link>
           </div>
         </section>

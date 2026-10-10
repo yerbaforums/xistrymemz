@@ -84,8 +84,10 @@ export default function FeaturesSection() {
       <h2 className={styles.sectionTitle}>{t('featuresTitle')}</h2>
       <p className={styles.sectionSubtitle}>{t('featuresSubtitle')}</p>
       {GROUPS.map((group, gi) => (
-        <div key={gi} className={styles.group}>
-          <h3 className={styles.groupTitle}>{group.icon} {group.title}</h3>
+        <details key={gi} className={styles.group} open={gi === 0}>
+          <summary className={styles.groupTitle}>
+            {group.icon} {group.title}
+          </summary>
           <div className={styles.grid}>
             {group.features.map((f, i) => (
               <Link key={i} href={f.href} className={styles.card}>
@@ -95,7 +97,7 @@ export default function FeaturesSection() {
               </Link>
             ))}
           </div>
-        </div>
+        </details>
       ))}
     </section>
   )

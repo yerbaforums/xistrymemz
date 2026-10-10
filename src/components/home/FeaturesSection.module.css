@@ -40,6 +40,30 @@
   font-family: var(--font-heading);
 }
 
+summary.groupTitle {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+
+summary.groupTitle::-webkit-details-marker {
+  display: none;
+}
+
+summary.groupTitle::before {
+  content: '▸';
+  color: var(--text-secondary);
+  font-size: 1rem;
+  transition: transform 0.15s ease;
+}
+
+details[open] > summary.groupTitle::before {
+  transform: rotate(90deg);
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
