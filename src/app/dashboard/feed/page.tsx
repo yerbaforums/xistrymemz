@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import FeedItem from '@/components/FeedItem'
+import LiveRail from '@/components/LiveRail'
 import MentionInput, { type MentionInputHandle } from '@/components/MentionInput'
 import ImageUploader from '@/components/ImageUploader'
 import LinkItemModal from '@/components/LinkItemModal'
@@ -222,6 +223,9 @@ export default function DashboardFeed() {
         </form>
       )}
 
+      <div style={{ marginBottom: 4 }}>
+        <LiveRail compact />
+      </div>
       {trendingTags.length > 0 && (
         <div className={`${styles.trendingCard} ${styles.mb20}`}>
           <div className={`${styles.flexCenter} ${styles.gap8} ${styles.mb8}`}>

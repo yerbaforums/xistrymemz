@@ -34,14 +34,17 @@ export default function BottomNav() {
     }
   }
 
-  // Five slots max: Home, Discover, Create (FAB), Community, Profile/Sign In.
-  // Photos lives in the sidebar/drawer under Community — it doesn't need its own
-  // slot on a mobile bottom bar, so we avoid the duplicate-tab feel.
+  // Five slots max: Home, Directory, Create (FAB), Planner, Profile/Sign In.
+  // Planner replaces Discover on mobile so bookings/appointments are
+  // reachable on phones; Discover stays one tap away via Directory and
+  // the sidebar/drawer. Photos lives in the sidebar/drawer under
+  // Community — it doesn't need its own slot on a mobile bottom bar,
+  // so we avoid the duplicate-tab feel.
   const allItems: NavItem[] = isAuthenticated ? [
     { href: '/', label: 'Home', icon: '🏠' },
     { href: '/directory', label: 'Directory', icon: '📋' },
     { href: null, label: 'Create', icon: '+', isFab: true, action: handleCreate },
-    { href: '/discover', label: 'Discover', icon: '🌐' },
+    { href: '/dashboard/calendar', label: 'Planner', icon: '📅' },
     { href: session?.user?.username ? `/profile/${session.user.username}` : '/profile', label: 'Profile', icon: '👤' },
   ] : [
     { href: '/', label: 'Home', icon: '🏠' },

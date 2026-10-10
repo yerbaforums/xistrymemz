@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import styles from './page.module.css'
 import { PodcastsClient } from './PodcastsClient'
+import LiveRail from '@/components/LiveRail'
 import { SkeletonCard } from '@/components/Skeleton'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
@@ -57,6 +58,7 @@ export default function PodcastsPage() {
         <SkeletonCard />
       ) : (
         <Suspense fallback={<SkeletonCard />}>
+          <LiveRail compact />
           <PodcastsClient initialPodcasts={podcasts} />
         </Suspense>
       )}

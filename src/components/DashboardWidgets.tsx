@@ -6,6 +6,7 @@ import BoardsWidget from '@/components/BoardsWidget'
 import InviteWidget from '@/components/InviteWidget'
 import SchoolProgressWidget from '@/components/SchoolProgressWidget'
 import PendingTicketsWidget from '@/components/PendingTicketsWidget'
+import UpcomingWidget from '@/components/UpcomingWidget'
 import ConstellationPreview from '@/components/ConstellationPreview'
 import PeopleYouMayKnow from '@/components/PeopleYouMayKnow'
 
@@ -16,6 +17,7 @@ export default function DashboardWidgets() {
       <TravelingModeBanner />
       <ConstellationPreview />
       <PendingTicketsWidget />
+    <UpcomingWidget />
       <InviteWidget />
       <BoardsWidget />
       <SchoolProgressWidget />

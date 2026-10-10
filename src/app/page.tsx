@@ -6,6 +6,7 @@ import HomeMap from '@/components/HomeMap'
 import HeroSection from '@/components/home/HeroSection'
 import StatsSection from '@/components/home/StatsSection'
 import HashtagSection from '@/components/home/HashtagSection'
+import LiveRail from '@/components/LiveRail'
 import PulseSection from '@/components/home/PulseSection'
 import StepsSection from '@/components/home/StepsSection'
 import StartHereSection from '@/components/home/StartHereSection'
@@ -138,6 +139,7 @@ export default function Home() {
         loadingServices={pulseLoading}
       />
       <HashtagSection tags={trendingTags} />
+      <LiveRail />
       <StepsSection />
       <FeaturesSection />
       <PassportSection />

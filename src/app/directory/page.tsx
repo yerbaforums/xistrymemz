@@ -12,6 +12,7 @@ import Breadcrumbs from '@/components/Breadcrumbs'
 import HashtagChips from '@/components/HashtagChips'
 import Avatar from '@/components/Avatar'
 import DirectoryCardActions from '@/components/DirectoryCardActions'
+import liveStyles from '@/components/LiveBadge.module.css'
 import { haversineKm, formatDistance } from '@/lib/geo'
 import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
 import EntityMarker from '@/components/EntityMarker'
@@ -89,6 +90,17 @@ export default function DirectoryPage() {
   const [nearMe, setNearMe] = useState(false)
   const [view, setView] = useState<'list' | 'map' | 'calendar'>('list')
   const [mapReady, setMapReady] = useState(false)
+  // Live presence: userIds currently broadcasting (for member-card dots).
+  const [liveIds, setLiveIds] = useState<Set<string>>(new Set())
+  useEffect(() => {
+    fetch('/api/live-now')
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => {
+        const rows = d?.data?.live || d?.live || []
+        if (Array.isArray(rows)) setLiveIds(new Set(rows.map((e: { user: { id: string } }) => e.user.id)))
+      })
+      .catch(() => {})
+  }, [])
 
   // Deep-link support: ?type=rental (etc.) pre-selects the tab. Read via
   // window.location instead of useSearchParams to avoid a Suspense boundary.
@@ -327,7 +339,12 @@ export default function DirectoryPage() {
             {item.image ? <Image src={item.image} alt={item.title} width={400} height={96} style={{ objectFit: 'cover' }} loading="lazy" /> : <span>{TYPE_ICONS[item.type] || '📌'}</span>}
           </div>
           <div className={styles.cardInfo}>
-            <h3>{item.title}</h3>
+            <h3>
+              {item.title}{' '}
+              {item.type === 'member' && item.userId && liveIds.has(item.userId) && (
+                <span className={liveStyles.dot} title="LIVE now — open their profile to join" style={{ display: 'inline-block', verticalAlign: 'middle' }} />
+              )}
+            </h3>
             <div className={styles.cardTags}>
               <span className={styles.cardType}>{TYPE_ICONS[item.type]} {item.type}</span>
               {item.category && <span className={styles.cardCategory}>{item.category}</span>}

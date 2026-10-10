@@ -22,6 +22,7 @@ import Loading from '@/components/Loading'
 import MentionInput from '@/components/MentionInput'
 import ImageUploader from '@/components/ImageUploader'
 import FollowButton from '@/components/FollowButton'
+import { UserLiveBadge } from '@/components/LiveBadge'
 import ShareBar from '@/components/ShareBar'
 import EntityActions from '@/components/EntityActions'
 import SharedItemCard from '@/components/SharedItemCard'
@@ -792,6 +793,7 @@ export default function ProfilePage() {
                   <>
                     <h1>{user.name || 'Anonymous User'}</h1>
                     <RoleBadge role={user.role || 'USER'} />
+                    {user.id && <UserLiveBadge userId={user.id} />}
                     <ActiveStatus lastActiveAt={user.lastActiveAt} showLabel size={8} />
                     {user.lookingForCollaborators && <LookingForCollaboratorsBadge size="md" />}
                   </>
