@@ -69,6 +69,29 @@
   width: 100%;
   padding-top: 8px;
   border-top: 1px solid var(--border-color);
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+
+/* Labeled variant: auto width so text (Telegram, WhatsApp, …) fits.
+   The fixed 32px box is for icon-only buttons. */
+.socialBtnLabeled {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  min-height: 32px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-tertiary);
+  transition: var(--transition);
+  text-decoration: none;
+  flex-shrink: 0;
+  max-width: 100%;
+}
+
+.socialBtnLabeled:hover {
+  background: var(--border-color);
 }
 
 .socialLabel {

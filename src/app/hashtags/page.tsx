@@ -12,7 +12,7 @@ interface HashtagEntityCounts {
   events: number
   services: number
   schoolContents: number
-  plans: number
+  projects: number
   requests: number
   groups: number
   forumPosts: number
@@ -42,7 +42,7 @@ const ENTITY_FILTERS: { key: EntityFilter; label: string; icon: string }[] = [
 
 const ENTITY_SHORT: Record<string, string> = {
   posts: 'post', products: 'prod', events: 'evt', services: 'svc',
-  schoolContents: 'sch', plans: 'plan', requests: 'req', groups: 'grp',
+  schoolContents: 'sch', requests: 'req', groups: 'grp',
   forumPosts: 'forum', groupPosts: 'grp', projects: 'proj',
 }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { useToast } from '@/context/ToastContext'
 import { SOCIAL_PLATFORMS, buildShareUrl } from '@/lib/share-links'
@@ -24,6 +24,13 @@ export default function ShareBar({ entityType, title, description, image, varian
   const { success, error } = useToast()
   const [url] = useState(() => customUrl || (typeof window !== 'undefined' ? window.location.href : ''))
   const [showFull, setShowFull] = useState(false)
+  // Native Share doubles as a second copy path on devices without the
+  // Web Share API (most desktops fall back to copyLink), so only show it
+  // where it adds something.
+  const [canNativeShare, setCanNativeShare] = useState(false)
+  useEffect(() => {
+    setCanNativeShare(typeof navigator !== 'undefined' && 'share' in navigator)
+  }, [])
 
   const copyLink = async () => {
     try {
@@ -45,7 +52,9 @@ export default function ShareBar({ entityType, title, description, image, varian
     return (
       <div className={styles.compact}>
         <button onClick={copyLink} className={styles.compactBtn} title="Copy link">🔗</button>
-        <button onClick={nativeShare} className={styles.compactBtn} title="Share">📤</button>
+        {canNativeShare && (
+          <button onClick={nativeShare} className={styles.compactBtn} title="Share">📤</button>
+        )}
       </div>
     )
   }
@@ -56,10 +65,12 @@ export default function ShareBar({ entityType, title, description, image, varian
         <span className={styles.btnIcon}>🔗</span>
         <span className={styles.btnLabel}>Copy Link</span>
       </button>
-      <button onClick={nativeShare} className={styles.btn} title="Share via device">
-        <span className={styles.btnIcon}>📤</span>
-        <span className={styles.btnLabel}>Share</span>
-      </button>
+      {canNativeShare && (
+        <button onClick={nativeShare} className={styles.btn} title="Share via device">
+          <span className={styles.btnIcon}>📤</span>
+          <span className={styles.btnLabel}>Share</span>
+        </button>
+      )}
       <div className={styles.socialRow}>
         {SOCIAL_PLATFORMS.slice(0, 4).map(p => (
           <a
@@ -88,10 +99,10 @@ export default function ShareBar({ entityType, title, description, image, varian
               href={buildShareUrl(p, title, url)}
               target="_blank"
               rel="noopener noreferrer"
-              className={styles.socialBtn}
+              className={styles.socialBtnLabeled}
               title={p.label}
             >
-              <Image src={p.icon} alt={p.label} width={16} height={16} />
+              <Image src={p.icon} alt="" width={16} height={16} />
               <span className={styles.socialLabel}>{p.label}</span>
             </a>
           ))}

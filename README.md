@@ -8,7 +8,7 @@ An open-source, member-owned cooperative platform — marketplace, services,
 projects, groups, schools and media in one place, with **zero platform fees**
 and direct private-money payments.
 
-[Live site](https://xistrymemz.xyz) · [Donate](https://xistrymemz.xyz/donate) · [MIT licensed](LICENSE) · [Contributing](CONTRIBUTING.md)
+[Live site](https://xistrymemz.xyz) · [Donate](https://xistrymemz.xyz/donate) · [AGPL-3.0-or-later licensed](LICENSE) · [Contributing](CONTRIBUTING.md)
 
 </div>
 
@@ -99,4 +99,4 @@ public.
 
 ## License
 
-[MIT](LICENSE) © 2026 XistrYmemZ
+[AGPL-3.0-or-later](LICENSE) © 2026 XistrYmemZ — free software: run it, study it, share it; copyleft keeps hosted use open.

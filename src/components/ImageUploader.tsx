@@ -16,6 +16,11 @@ interface ImageUploaderProps {
   onVideoUrlChange?: (url: string | null) => void
   videoMaxSizeMB?: number
   videoLabel?: string
+  /**
+   * Byte-uploads are disabled by default (Pinata free-tier storage).
+   * Video is link-only unless a caller explicitly opts into uploads.
+   */
+  allowVideoUpload?: boolean
 }
 
 export default function ImageUploader({
@@ -27,6 +32,7 @@ export default function ImageUploader({
   onVideoUrlChange,
   videoMaxSizeMB = MAX_VIDEO_SIZE_MB,
   videoLabel = 'Add a video',
+  allowVideoUpload = false,
 }: ImageUploaderProps) {
   const [uploading, setUploading] = useState(false)
   const [videoUploading, setVideoUploading] = useState(false)
@@ -200,6 +206,7 @@ export default function ImageUploader({
             </div>
           ) : (
             <div style={{ display: 'flex', gap: 6 }}>
+            {allowVideoUpload && (
             <button
               type="button"
               onClick={handleVideoSelect}
@@ -210,6 +217,7 @@ export default function ImageUploader({
               {videoOptimizing ? <span style={{ fontSize: '1.1rem' }}>⚙️</span> : videoUploading ? <span style={{ fontSize: '1.2rem' }}>...</span> : <span style={{ fontSize: '1.3rem' }}>🎬</span>}
               <span>{videoOptimizing ? 'Optimizing…' : videoUploading ? 'Uploading…' : 'Video'}</span>
             </button>
+            )}
               <button
                 type="button"
                 onClick={() => setVideoLinkMode(true)}
@@ -224,7 +232,7 @@ export default function ImageUploader({
         )}
       </div>
       <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple onChange={handleFiles} style={{ display: 'none' }} />
-      {supportsVideo && (
+      {supportsVideo && allowVideoUpload && (
         <input ref={videoInputRef} type="file" accept="video/mp4,video/webm" onChange={handleVideoFile} style={{ display: 'none' }} />
       )}
     </div>

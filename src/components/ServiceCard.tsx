@@ -39,11 +39,18 @@ const ServiceCard = memo(function ServiceCard({ service, onClick, style }: Servi
 
   return (
     <div onClick={onClick} className={styles.card} style={style}>
-      {imageUrl ? (
-        <Image src={imageUrl} alt={title} width={400} height={220} className={styles.image} style={{ width: '100%', height: 'auto' }} />
-      ) : (
-        <div className={styles.imagePlaceholder}>{icon}</div>
-      )}
+      <Link
+        href={`/services/${service.id}`}
+        onClick={e => e.stopPropagation()}
+        aria-label={title}
+        style={{ display: 'block', color: 'inherit', textDecoration: 'none' }}
+      >
+        {imageUrl ? (
+          <Image src={imageUrl} alt={title} width={400} height={220} className={styles.image} style={{ width: '100%', height: 'auto' }} />
+        ) : (
+          <div className={styles.imagePlaceholder}>{icon}</div>
+        )}
+      </Link>
       <div className={styles.body}>
         <div className={styles.topRow}>
           <span className={styles.categoryBadge}>{icon} {label}</span>
@@ -51,7 +58,15 @@ const ServiceCard = memo(function ServiceCard({ service, onClick, style }: Servi
             ? <span className={styles.price}>${price}</span>
             : <span className={styles.price}>💬 Quote on inquiry</span>}
         </div>
-        <h3 className={styles.title}>{title}</h3>
+        <h3 className={styles.title}>
+          <Link
+            href={`/services/${service.id}`}
+            onClick={e => e.stopPropagation()}
+            style={{ color: 'inherit', textDecoration: 'none' }}
+          >
+            {title}
+          </Link>
+        </h3>
         {description && <p className={styles.description}>{description}</p>}
         {hashtags.length > 0 && (
           <div className={styles.hashtags}>

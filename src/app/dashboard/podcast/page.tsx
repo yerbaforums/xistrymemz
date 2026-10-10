@@ -100,7 +100,7 @@ export default function PodcastDashboardPage() {
   const handlePublish = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!title.trim()) return error('Title is required')
-    if (!audioUrl) return error('Upload an audio file first')
+    if (!audioUrl) return error('Add an audio link first')
     if (!slug) return error('Set up your podcast first')
 
     setSaving(true)

@@ -20,7 +20,7 @@ export async function GET(
     if (!hashtag) {
       return NextResponse.json({
         tag,
-        totals: { posts: 0, products: 0, events: 0, services: 0, schoolContents: 0, plans: 0, requests: 0, groups: 0, forumPosts: 0, groupPosts: 0, blogPosts: 0 },
+        totals: { posts: 0, products: 0, events: 0, services: 0, schoolContents: 0, projects: 0, requests: 0, groups: 0, forumPosts: 0, groupPosts: 0, blogPosts: 0 },
         data: {}
       })
     }

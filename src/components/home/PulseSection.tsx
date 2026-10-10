@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import Skeleton from '@/components/Skeleton'
+import SafeImage from '@/components/SafeImage'
 import { useScrollReveal } from '@/hooks/useScrollReveal'
 import type { FeaturedShop, FeaturedProduct, PublicRequest, FeaturedEvent, PublicProject, FeaturedBoard, FeaturedBlog, FeaturedPodcast, FeaturedService } from './types'
 import { useTranslations } from 'next-intl'
@@ -49,7 +50,7 @@ export default function PulseSection({ shops, products, requests, events, projec
               {shops.map(shop => (
                 <Link key={shop.id} href={`/shop/${shop.shopSlug}`} className={styles.item}>
                   <span className={styles.itemIcon}>
-                    {shop.shopImage ? <img src={shop.shopImage} alt="" /> : '🏪'}
+                    {shop.shopImage ? <SafeImage src={shop.shopImage} alt="" fallback="🏪" /> : '🏪'}
                   </span>
                   <span className={styles.itemTitle}>{shop.shopName}</span>
                   {shop._count && <span className={styles.itemMeta}>{shop._count.products}</span>}
@@ -71,7 +72,7 @@ export default function PulseSection({ shops, products, requests, events, projec
               {products.slice(0, 4).map(product => (
                 <Link key={product.id} href={`/products/${product.id}`} className={styles.item}>
                   <span className={styles.itemIcon}>
-                    {product.imageUrl ? <img src={product.imageUrl} alt="" /> : '🛒'}
+                    {product.imageUrl ? <SafeImage src={product.imageUrl} alt="" fallback="🛒" /> : '🛒'}
                   </span>
                   <div className={styles.itemCol}>
                     <span className={styles.itemTitle}>{product.title}</span>
@@ -193,7 +194,7 @@ export default function PulseSection({ shops, products, requests, events, projec
               {blogs.slice(0, 4).map(blog => (
                 <Link key={blog.id} href={`/blog/${blog.blogSlug}`} className={styles.item}>
                   <span className={styles.itemIcon}>
-                    {blog.blogImage ? <img src={blog.blogImage} alt="" /> : '✍️'}
+                    {blog.blogImage ? <SafeImage src={blog.blogImage} alt="" fallback="✍️" /> : '✍️'}
                   </span>
                   <div className={styles.itemCol}>
                     <span className={styles.itemTitle}>{blog.blogName || blog.name || 'Untitled'}</span>
@@ -218,7 +219,7 @@ export default function PulseSection({ shops, products, requests, events, projec
               {podcasts.slice(0, 4).map(podcast => (
                 <Link key={podcast.id} href={`/podcast/${podcast.podcastSlug}`} className={styles.item}>
                   <span className={styles.itemIcon}>
-                    {podcast.podcastImage ? <img src={podcast.podcastImage} alt="" /> : '🎙️'}
+                    {podcast.podcastImage ? <SafeImage src={podcast.podcastImage} alt="" fallback="🎙️" /> : '🎙️'}
                   </span>
                   <div className={styles.itemCol}>
                     <span className={styles.itemTitle}>{podcast.podcastName || podcast.name || 'Untitled'}</span>

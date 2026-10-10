@@ -71,7 +71,7 @@ export async function GET(request: Request) {
 
 async function enrichWithCounts(hashtags: { id: string; tag: string; postCount: number }[]) {
   return Promise.all(hashtags.map(async h => {
-    const [posts, products, events, services, schoolContents, plans, requests, groups, forumPosts, groupPosts] = await Promise.all([
+    const [posts, products, events, services, schoolContents, projects, requests, groups, forumPosts, groupPosts] = await Promise.all([
       prisma.postHashtag.count({ where: { hashtagId: h.id, sourceType: 'POST' } }),
       prisma.productHashtag.count({ where: { hashtagId: h.id } }),
       prisma.eventHashtag.count({ where: { hashtagId: h.id } }),
@@ -86,7 +86,7 @@ async function enrichWithCounts(hashtags: { id: string; tag: string; postCount: 
     return {
       tag: h.tag,
       postCount: h.postCount,
-      entities: { posts, products, events, services, schoolContents, plans, requests, groups, forumPosts, groupPosts }
+      entities: { posts, products, events, services, schoolContents, projects, requests, groups, forumPosts, groupPosts }
     }
   }))
 }

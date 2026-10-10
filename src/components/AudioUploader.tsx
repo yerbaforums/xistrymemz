@@ -11,6 +11,11 @@ interface AudioUploaderProps {
   onDuration?: (seconds: number) => void
   maxSizeMB?: number
   label?: string
+  /**
+   * Byte-uploads are disabled by default (Pinata free-tier storage).
+   * Audio is link-only unless a caller explicitly opts into uploads.
+   */
+  allowUpload?: boolean
 }
 
 const ACCEPT = 'audio/mpeg,audio/mp4,audio/webm,audio/ogg,audio/wav'
@@ -21,6 +26,7 @@ export default function AudioUploader({
   onDuration,
   maxSizeMB = MAX_AUDIO_SIZE_MB,
   label = 'Upload audio',
+  allowUpload = false,
 }: AudioUploaderProps) {
   const [uploading, setUploading] = useState(false)
   const [optimizing, setOptimizing] = useState(false)
@@ -122,6 +128,7 @@ export default function AudioUploader({
         </div>
       ) : (
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {allowUpload && (
         <button
           type="button"
           onClick={handleSelect}
@@ -132,6 +139,7 @@ export default function AudioUploader({
           <span style={{ fontSize: '1.2rem' }}>{optimizing ? '⚙️' : uploading ? '⏳' : '🎙️'}</span>
           {optimizing ? 'Optimizing audio…' : uploading ? 'Uploading…' : label}
         </button>
+        )}
           <button
             type="button"
             onClick={() => setLinkMode(true)}
@@ -142,7 +150,9 @@ export default function AudioUploader({
           </button>
         </div>
       )}
-      <input ref={inputRef} type="file" accept={ACCEPT} onChange={handleFile} style={{ display: 'none' }} />
+      {allowUpload && (
+        <input ref={inputRef} type="file" accept={ACCEPT} onChange={handleFile} style={{ display: 'none' }} />
+      )}
     </div>
   )
 }

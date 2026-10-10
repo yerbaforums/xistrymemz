@@ -7,13 +7,9 @@ import styles from './HashtagSection.module.css'
 interface HashtagEntity {
   tag: string
   postCount: number
-  entities?: {
-    posts: number
-    products: number
-    events: number
-    forumPosts: number
-    groupPosts: number
-  }
+  // Entity keys vary by endpoint (e.g. list uses `plans`, detail uses
+  // `projects`); accept any numeric breakdown and sum it all.
+  entities?: Record<string, number>
 }
 
 interface Props {
@@ -27,8 +23,7 @@ export default function HashtagSection({ tags }: Props) {
 
   const maxCount = Math.max(...tags.map(t => t.postCount)) || 1
   const totalEntities = (t: HashtagEntity) =>
-    (t.entities?.posts || 0) + (t.entities?.products || 0) + (t.entities?.events || 0) +
-    (t.entities?.forumPosts || 0) + (t.entities?.groupPosts || 0)
+    Object.values(t.entities || {}).reduce((sum, n) => sum + (n || 0), 0)
 
   return (
     <section className={styles.section}>
