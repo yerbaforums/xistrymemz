@@ -54,7 +54,7 @@ export async function PUT(
         type: 'APPOINTMENT_CONFIRMED',
         title: 'Booking Confirmed',
         message: `${appointment.seller.name || 'Seller'} confirmed your booking for "${appointment.title}"`,
-        link: `/dashboard/appointments`,
+        link: `/dashboard/appointments?highlight=${id}`,
         userId: appointment.buyerId,
         relatedId: id
       }
@@ -71,7 +71,7 @@ export async function PUT(
         type: 'APPOINTMENT_DECLINED',
         title: 'Booking Declined',
         message: `${appointment.seller.name || 'Seller'} declined your booking for "${appointment.title}"${declineReason ? `: ${declineReason}` : ''}`,
-        link: `/dashboard/appointments`,
+        link: `/dashboard/appointments?highlight=${id}`,
         userId: appointment.buyerId,
         relatedId: id
       }
@@ -104,7 +104,7 @@ export async function PUT(
         type: 'APPOINTMENT_PAID',
         title: 'Payment Submitted',
         message: `${appointment.buyer.name || 'Buyer'} submitted payment for "${appointment.title}"${txHash ? ` — TX: ${txHash.slice(0, 10)}...` : ''}`,
-        link: `/dashboard/appointments`,
+        link: `/dashboard/appointments?highlight=${id}`,
         userId: appointment.sellerId,
         relatedId: id
       }
@@ -123,7 +123,7 @@ export async function PUT(
         type: 'APPOINTMENT_PAID',
         title: 'Booking Paid',
         message: `Your appointment "${appointment.title}" has been confirmed and paid${meetingMsg}`,
-        link: `/dashboard/appointments`,
+        link: `/dashboard/appointments?highlight=${id}`,
         userId: appointment.buyerId,
         relatedId: id
       }
@@ -140,7 +140,7 @@ export async function PUT(
         type: 'APPOINTMENT_RESCHEDULED',
         title: 'Booking Rescheduled',
         message: `${otherName} rescheduled "${appointment.title}" — please review the new time`,
-        link: `/dashboard/appointments`,
+        link: `/dashboard/appointments?highlight=${id}`,
         userId: otherUserId,
         relatedId: id
       }

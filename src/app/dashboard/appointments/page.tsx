@@ -6,6 +6,8 @@ import { useSession } from 'next-auth/react'
 import { useToast } from '@/context/ToastContext'
 import ReviewPrompt from '@/components/ReviewPrompt'
 import AddToCalendar from '@/components/AddToCalendar'
+import BookAppointmentModal from '@/components/BookAppointmentModal'
+import { CRYPTO_LOGOS, CRYPTO_NAMES } from '@/lib/constants'
 import styles from '../events/events.module.css'
 
 interface AppointmentItem {
@@ -104,6 +106,7 @@ export default function DashboardAppointments() {
   const [appointments, setAppointments] = useState<AppointmentItem[]>([])
   const [events, setEvents] = useState<EventItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [availCount, setAvailCount] = useState<number | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedItem, setSelectedItem] = useState<PlannerItem | null>(null)
@@ -117,6 +120,8 @@ export default function DashboardAppointments() {
   const [declineReason, setDeclineReason] = useState('')
   const [showDeclineModal, setShowDeclineModal] = useState(false)
   const [declineAppt, setDeclineAppt] = useState<AppointmentItem | null>(null)
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [cancelAppt, setCancelAppt] = useState<AppointmentItem | null>(null)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [paymentAppt, setPaymentAppt] = useState<AppointmentItem | null>(null)
   const [paymentTxHash, setPaymentTxHash] = useState('')
@@ -125,6 +130,7 @@ export default function DashboardAppointments() {
   const [paymentNote, setPaymentNote] = useState('')
   const [showReviewPrompt, setShowReviewPrompt] = useState(false)
   const [reviewTarget, setReviewTarget] = useState<{ sellerId: string; sellerName: string; productId?: string } | null>(null)
+  const [rebookAppt, setRebookAppt] = useState<AppointmentItem | null>(null)
   const [highlightId, setHighlightId] = useState<string | null>(null)
 
   const fetchAll = async () => {
@@ -145,6 +151,17 @@ export default function DashboardAppointments() {
       if (evtRes.ok) {
         const data = await evtRes.json()
         setEvents((data || []).map((e: ApiEvent) => ({ ...e, _type: 'event' })))
+      }
+      // Availability gap: sellers with bookings but zero slots bounce every
+      // buyer ("No times available") without ever learning it. One count.
+      if (session?.user?.id) {
+        try {
+          const avRes = await fetch(`/api/availability?userId=${session.user.id}`)
+          if (avRes.ok) {
+            const av = await avRes.json()
+            setAvailCount((av?.data?.slots || av?.slots || []).length)
+          }
+        } catch { /* banner stays hidden */ }
       }
     } catch { /* ignore */ }
     setLoading(false)
@@ -239,6 +256,18 @@ export default function DashboardAppointments() {
     await handleAction(declineAppt.id, 'decline', { declineReason })
     setShowDeclineModal(false)
     setDeclineAppt(null)
+  }
+
+  const openCancel = (appt: AppointmentItem) => {
+    setCancelAppt(appt)
+    setShowCancelModal(true)
+  }
+
+  const handleCancelSubmit = async () => {
+    if (!cancelAppt) return
+    await handleAction(cancelAppt.id, 'cancel')
+    setShowCancelModal(false)
+    setCancelAppt(null)
   }
 
   const openPayment = (appt: AppointmentItem) => {
@@ -361,6 +390,15 @@ export default function DashboardAppointments() {
         </div>
       </div>
 
+      {availCount === 0 && appointments.some(a => a._role === 'seller') && (
+        <div className={styles.emptyState} style={{ padding: '12px 16px', marginBottom: 12 }}>
+          <p style={{ margin: 0, fontSize: '0.85rem' }}>
+            📅 You take bookings but have no availability set — buyers see “no times available”.
+            {' '}<Link href="/profile/edit" className="btn-secondary">⏰ Set Availability</Link>
+          </p>
+        </div>
+      )}
+
       <div className={styles.toolbarRow}>
         <div className={styles.searchBar}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -453,12 +491,12 @@ export default function DashboardAppointments() {
                             </>
                           )}
                           {appt._role === 'buyer' && appt.status === 'PENDING' && (
-                            <button onClick={() => handleAction(appt.id, 'cancel')} className={styles.cardDeleteBtn}>❌ Cancel Request</button>
+                            <button onClick={() => openCancel(appt)} className={styles.cardDeleteBtn}>❌ Cancel Request</button>
                           )}
                           {appt.status === 'CONFIRMED' && (
                             <>
                               <button onClick={() => openReschedule(appt)} className={styles.cardActionBtn}>🔄 Reschedule</button>
-                              <button onClick={() => handleAction(appt.id, 'cancel')} className={styles.cardDeleteBtn}>❌ Cancel</button>
+                              <button onClick={() => openCancel(appt)} className={styles.cardDeleteBtn}>❌ Cancel</button>
                             </>
                           )}
                           {appt.status === 'CONFIRMED' && appt._role === 'seller' && (
@@ -669,12 +707,12 @@ export default function DashboardAppointments() {
                         </>
                       )}
                       {a._role === 'buyer' && a.status === 'PENDING' && (
-                        <button onClick={() => { handleAction(a.id, 'cancel'); setSelectedItem(null) }} className={styles.deleteBtn}>❌ Cancel Request</button>
+                        <button onClick={() => { openCancel(a); setSelectedItem(null) }} className={styles.deleteBtn}>❌ Cancel Request</button>
                       )}
                       {a.status === 'CONFIRMED' && (
                         <>
                           <button onClick={() => { openReschedule(a); setSelectedItem(null) }} className="btn-secondary">🔄 Reschedule</button>
-                          <button onClick={() => { handleAction(a.id, 'cancel'); setSelectedItem(null) }} className={styles.deleteBtn}>❌ Cancel</button>
+                          <button onClick={() => { openCancel(a); setSelectedItem(null) }} className={styles.deleteBtn}>❌ Cancel</button>
                         </>
                       )}
                       {a._role === 'seller' && a.status === 'CONFIRMED' && a.paymentStatus !== 'PAID' && (
@@ -688,6 +726,9 @@ export default function DashboardAppointments() {
                       )}
                       {a._role === 'buyer' && a.status === 'COMPLETED' && (
                         <button onClick={() => { openReview(a); setSelectedItem(null) }} className="btn-primary">⭐ Leave a Review</button>
+                      )}
+                      {a._role === 'buyer' && (a.status === 'REJECTED' || a.status === 'CANCELLED' || a.status === 'COMPLETED') && (
+                        <button onClick={() => { setRebookAppt(a); setSelectedItem(null) }} className="btn-secondary">🔁 Book Again</button>
                       )}
                       {a.product && a._role === 'seller' && (
                         <Link href={`/dashboard/marketplace?editId=${a.product.id}`} className="btn-secondary">⚙️ Edit Listing Settings</Link>
@@ -799,7 +840,7 @@ export default function DashboardAppointments() {
               <label className={styles.modalLabel}>
                 Currency
                 <select value={paymentCurrency} onChange={e => setPaymentCurrency(e.target.value)} className={styles.modalInput}>
-                  {['XMR', 'BTC', 'ETH', 'USDT'].map(c => <option key={c} value={c}>{c}</option>)}
+                  {Object.keys(CRYPTO_LOGOS).map(c => <option key={c} value={c}>{c} — {CRYPTO_NAMES[c] || c}</option>)}
                 </select>
               </label>
               <label className={styles.modalLabel}>
@@ -819,6 +860,33 @@ export default function DashboardAppointments() {
         </div>
       )}
 
+      {showCancelModal && cancelAppt && (
+        <div className="modal-overlay" onClick={() => setShowCancelModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className={styles.eventModalHeader}>
+              <h2>Cancel: {cancelAppt.title}</h2>
+              <button onClick={() => setShowCancelModal(false)} className={styles.closeBtn}>✕</button>
+            </div>
+            <div className={styles.modalBody}>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: 0 }}>
+                {formatDate(cancelAppt.startTime)} at {formatTime(cancelAppt.startTime)}.
+                This cannot be undone — the other party will be notified.
+              </p>
+              {(cancelAppt.paymentStatus === 'PAID' || cancelAppt.txHash) && (
+                <p style={{ fontSize: '0.85rem', color: '#f59e0b', fontWeight: 600 }}>
+                  ⚠️ Payment was already submitted{cancelAppt.txHash ? ` (TX ${cancelAppt.txHash.slice(0, 12)}…)` : ''}.
+                  Canceling does not move funds — any refund must be arranged directly with the other party.
+                </p>
+              )}
+              <div className={styles.modalActions}>
+                <button onClick={() => setShowCancelModal(false)} className="btn-secondary">Keep Appointment</button>
+                <button onClick={handleCancelSubmit} className={styles.deleteBtn}>❌ Cancel Appointment</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showReviewPrompt && reviewTarget && (
         <ReviewPrompt
           open={showReviewPrompt}
@@ -826,6 +894,21 @@ export default function DashboardAppointments() {
           targetType="seller"
           targetLabel={reviewTarget.sellerName}
           onSubmit={submitReview}
+        />
+      )}
+
+      {rebookAppt && (
+        <BookAppointmentModal
+          isOpen={rebookAppt !== null}
+          onClose={() => setRebookAppt(null)}
+          sellerId={rebookAppt.seller.id}
+          sellerName={rebookAppt.seller.name}
+          productId={rebookAppt.product?.id || null}
+          productTitle={rebookAppt.product?.title || rebookAppt.title}
+          defaultDuration={rebookAppt.duration}
+          defaultLocation={rebookAppt.location}
+          defaultMeetingLink={rebookAppt.meetingLink}
+          serviceCategory={rebookAppt.category}
         />
       )}
     </div>

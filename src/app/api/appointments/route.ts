@@ -161,7 +161,7 @@ export async function POST(request: NextRequest) {
         entityType: 'APPOINTMENT',
         title: 'New Booking Request',
         message: `${buyerName} wants to book "${title}" with you`,
-        link: `/dashboard/appointments`,
+        link: `/dashboard/appointments?highlight=${appointment.id}`,
       })
     } catch {
       // silent — appointment was already created
