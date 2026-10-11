@@ -6,6 +6,7 @@ import Link from 'next/link'
 import FeedItem from '@/components/FeedItem'
 import ProductCard from '@/components/ProductCard'
 import ServiceCard from '@/components/ServiceCard'
+import SafeImage from '@/components/SafeImage'
 import Button from '@/components/ui/Button'
 import type { Product } from '@/types/product'
 import type { ServiceOffering } from '@/types/service'
@@ -100,6 +101,9 @@ interface TagBlogPost {
   excerpt?: string | null
   coverImage?: string | null
   publishedAt?: string | null
+  visibility?: string | null
+  price?: number | null
+  currency?: string | null
   blog?: { blogSlug?: string | null; blogName?: string | null; name?: string | null } | null
 }
 
@@ -298,7 +302,7 @@ function HashtagPage() {
             {totals.events > 0 && ` · ${totals.events} event${totals.events !== 1 ? 's' : ''}`}
             {totals.services > 0 && ` · ${totals.services} service${totals.services !== 1 ? 's' : ''}`}
             {totals.schoolContents > 0 && ` · ${totals.schoolContents} lesson${totals.schoolContents !== 1 ? 's' : ''}`}
-            {totals.projects > 0 && ` · ${totals.projects} plan${totals.projects !== 1 ? 's' : ''}`}
+            {totals.projects > 0 && ` · ${totals.projects} project${totals.projects !== 1 ? 's' : ''}`}
             {totals.requests > 0 && ` · ${totals.requests} request${totals.requests !== 1 ? 's' : ''}`}
             {totals.groups > 0 && ` · ${totals.groups} group${totals.groups !== 1 ? 's' : ''}`}
             {totals.forumPosts > 0 && ` · ${totals.forumPosts} forum post${totals.forumPosts !== 1 ? 's' : ''}`}
@@ -411,22 +415,39 @@ function HashtagPage() {
             <section>
               {activeTab === 'all' && <h2 className={styles.sectionTitle}>School Content</h2>}
               <div className={styles.schoolContentList}>
-                {schoolContents.map(item => (
-                  <Link key={item.id} href={`/school/${item.user?.schoolSlug || item.slug}`} className={styles.schoolContentCard}>
-                    <div className={styles.schoolContentHeader}>
-                      <span className={styles.schoolContentType}>{item.contentType}</span>
-                      {item.isPaid && <span className={styles.schoolContentPrice}>${item.price}</span>}
-                      {!item.isPaid && <span className={styles.schoolContentFree}>Free</span>}
+                {schoolContents.map(item => {
+                  // Lessons live at /school/[schoolSlug]/content/[id]; without
+                  // a school slug there is no valid target, so render the card
+                  // without a link instead of a 404.
+                  const href = item.user?.schoolSlug
+                    ? `/school/${item.user.schoolSlug}/content/${item.id}`
+                    : null
+                  const card = (
+                    <>
+                      <div className={styles.schoolContentHeader}>
+                        <span className={styles.schoolContentType}>{item.contentType}</span>
+                        {item.isPaid && <span className={styles.schoolContentPrice}>${item.price}</span>}
+                        {!item.isPaid && <span className={styles.schoolContentFree}>Free</span>}
+                      </div>
+                      <h3 className={styles.schoolContentTitle}>{item.title}</h3>
+                      <p className={styles.schoolContentMeta}>
+                        by {item.author?.name || 'Unknown'} · {item.user?.schoolName || ''}
+                      </p>
+                      <p className={styles.schoolContentDesc}>
+                        {item.content?.slice(0, 120)}{(item.content?.length ?? 0) > 120 ? '...' : ''}
+                      </p>
+                    </>
+                  )
+                  return href ? (
+                    <Link key={item.id} href={href} className={styles.schoolContentCard}>
+                      {card}
+                    </Link>
+                  ) : (
+                    <div key={item.id} className={styles.schoolContentCard}>
+                      {card}
                     </div>
-                    <h3 className={styles.schoolContentTitle}>{item.title}</h3>
-                    <p className={styles.schoolContentMeta}>
-                      by {item.author?.name || 'Unknown'} · {item.user?.schoolName || ''}
-                    </p>
-                    <p className={styles.schoolContentDesc}>
-                      {item.content?.slice(0, 120)}{(item.content?.length ?? 0) > 120 ? '...' : ''}
-                    </p>
-                  </Link>
-                ))}
+                  )
+                })}
               </div>
               {activeTab === 'all' && totals && totals.schoolContents > schoolContents.length && (
                 <div className={styles.viewAllRow}>
@@ -444,11 +465,16 @@ function HashtagPage() {
               <div className={styles.schoolContentList}>
                 {blogPosts.map(item => {
                   const href = item.blog?.blogSlug ? `/blog/${item.blog.blogSlug}/${item.slug}` : null
+                  const access = item.visibility === 'PAID' && (item.price || 0) > 0
+                    ? `🔒 $${item.price}${item.currency && item.currency !== 'USD' ? ` ${item.currency}` : ''}`
+                    : item.visibility === 'SUBSCRIBERS'
+                      ? '🔒 Subscribers'
+                      : 'Free'
                   const card = (
                     <>
                       <div className={styles.schoolContentHeader}>
                         <span className={styles.schoolContentType}>✍️ Article</span>
-                        <span className={styles.schoolContentFree}>Free</span>
+                        <span className={styles.schoolContentFree}>{access}</span>
                       </div>
                       <h3 className={styles.schoolContentTitle}>{item.title}</h3>
                       <p className={styles.schoolContentMeta}>
@@ -506,7 +532,7 @@ function HashtagPage() {
               {activeTab === 'all' && totals && totals.projects > projects.length && (
                 <div className={styles.viewAllRow}>
                   <Button variant="ghost" onClick={() => setActiveTab('projects')} className={styles.viewAllBtn}>
-                    View all {totals.projects} plans →
+                    View all {totals.projects} projects →
                   </Button>
                 </div>
               )}
@@ -554,7 +580,7 @@ function HashtagPage() {
                   <Link key={group.id} href={`/groups/${group.id}`} className={styles.groupCard}>
                     <div className={styles.groupCardHeader}>
                       {group.imageUrl && (
-                        <img src={group.imageUrl} alt="" className={styles.groupCardImage} />
+                        <SafeImage src={group.imageUrl} alt="" className={styles.groupCardImage} />
                       )}
                       <div>
                         <h3 className={styles.groupCardName}>{group.name}</h3>

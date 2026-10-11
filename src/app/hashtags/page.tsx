@@ -17,6 +17,7 @@ interface HashtagEntityCounts {
   groups: number
   forumPosts: number
   groupPosts: number
+  blogPosts: number
 }
 
 interface HashtagItem {
@@ -47,9 +48,16 @@ const ENTITY_SHORT: Record<string, string> = {
   forumPosts: 'forum', groupPosts: 'grp', projects: 'proj',
 }
 
+const ENTITY_LABEL: Record<string, string> = {
+  posts: 'Wall posts', products: 'Products', events: 'Events',
+  services: 'Services', schoolContents: 'School lessons', projects: 'Projects',
+  requests: 'Requests', groups: 'Groups', blogPosts: 'Blog articles',
+  forumPosts: 'Forum posts', groupPosts: 'Group posts',
+}
+
 const entityLabel = (key: string, count: number) => {
-  const label = ENTITY_SHORT[key]
-  return label ? `${count} ${label}` : ''
+  const label = ENTITY_SHORT[key] || key
+  return `${count} ${label}`
 }
 
 function HashtagsPage() {
@@ -85,14 +93,18 @@ function HashtagsPage() {
       .finally(() => setLoading(false))
   }, [debouncedSearch, sort, entityFilter])
 
+  const totalEntities = (t: HashtagItem) =>
+    Object.values(t.entities).reduce((sum, count) => sum + (count || 0), 0)
+
   const sorted = [...tags].sort((a, b) => {
     if (sort === 'alphabetical') return a.tag.localeCompare(b.tag)
-    if (sort === 'count') return b.postCount - a.postCount
+    // Most Used ranks by the same total the pill displays, so order and
+    // number always agree (postCount drifts from live counts).
+    if (sort === 'count') return totalEntities(b) - totalEntities(a)
     return 0
   })
 
-  const totalEntities = (t: HashtagItem) =>
-    Object.values(t.entities).reduce((sum, count) => sum + count, 0)
+  const maxTotal = Math.max(...sorted.map(totalEntities), 0) || 1
 
   return (
     <div className={styles.page}>
@@ -109,6 +121,7 @@ function HashtagsPage() {
       <div className={styles.controls}>
         <input
           type="text"
+          aria-label="Search hashtags"
           className={styles.searchInput}
           placeholder="Search hashtags..."
           value={search}
@@ -163,8 +176,7 @@ function HashtagsPage() {
           )}
         <div className={styles.cloud}>
           {sorted.map(h => {
-            const maxCount = Math.max(...sorted.map(t => t.postCount)) || 1
-            const size = 0.8 + (h.postCount / maxCount) * 0.6
+            const size = 0.8 + (totalEntities(h) / maxTotal) * 0.6
             return (
               <Link
                 key={h.tag}
@@ -173,10 +185,10 @@ function HashtagsPage() {
                 style={{ fontSize: `${size}rem` }}
               >
                 <span className={styles.pillTag}>#{h.tag}</span>
-                <span className={styles.pillCount}>{totalEntities(h)}</span>
+                <span className={styles.pillCount} title="Total tagged items">{totalEntities(h)}</span>
                 {Object.entries(h.entities).map(([key, count]) =>
                   count > 0 ? (
-                    <span key={key} className={styles.pillEntity} title={key}>
+                    <span key={key} className={styles.pillEntity} title={ENTITY_LABEL[key] || key}>
                       {entityLabel(key, count)}
                     </span>
                   ) : null

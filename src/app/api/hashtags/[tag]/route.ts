@@ -212,7 +212,9 @@ export async function GET(
         where: { hashtagId: hashtag.id, blogPost: { status: 'PUBLISHED' } },
         include: {
           blogPost: {
-            include: {
+            select: {
+              id: true, slug: true, title: true, excerpt: true, coverImage: true,
+              publishedAt: true, visibility: true, price: true, currency: true,
               blog: { select: { blogSlug: true, blogName: true, name: true } },
             },
           },
