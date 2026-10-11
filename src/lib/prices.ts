@@ -11,11 +11,6 @@ const COINGECKO_IDS: Record<string, string> = {
   FUSD: 'freedom-dollar',
   DERO: 'dero',
   ARRR: 'pirate-chain',
-  // Tokenized metals for the gold/silver donate option (per-ounce USD).
-  // No fallbacks: a stale metals figure is a wrong number, so offline they
-  // show nothing — same honesty rule as DERO/ARRR above.
-  XAU: 'pax-gold',
-  XAG: 'kinesis-silver',
 }
 
 const FALLBACK_PRICES: Record<string, number> = {

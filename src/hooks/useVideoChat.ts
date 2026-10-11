@@ -30,8 +30,16 @@ interface RoomInfo {
 
 interface SignalData {
   fromUserId: string
+  fromName?: string
   type: string
   data: unknown
+}
+
+export interface ChatMessage {
+  fromUserId: string
+  fromName: string
+  text: string
+  timestamp: number
 }
 
 export function useVideoChat(initialRoomId?: string, currentUserId?: string, initialAudioOnly = false) {
@@ -39,6 +47,7 @@ export function useVideoChat(initialRoomId?: string, currentUserId?: string, ini
   const [localStream, setLocalStream] = useState<MediaStream | null>(null)
   const [peers, setPeers] = useState<Peer[]>([])
   const [error, setError] = useState('')
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
   const [connecting, setConnecting] = useState(false)
   const [audioEnabled, setAudioEnabled] = useState(true)
   const [videoEnabled, setVideoEnabled] = useState(true)
@@ -184,6 +193,19 @@ export function useVideoChat(initialRoomId?: string, currentUserId?: string, ini
   }, [getEffectiveRoomId])
 
   const handleIncomingSignal = useCallback((sig: SignalData) => {
+    // Room chat bypasses peer lookup — it's broadcast, not per-connection.
+    if (sig.type === 'chat') {
+      const text = typeof (sig.data as Record<string, unknown>)?.text === 'string'
+        ? ((sig.data as Record<string, unknown>).text as string)
+        : ''
+      if (!text) return
+      setChatMessages(prev => {
+        if (prev.length > 200) return [...prev.slice(-199), { fromUserId: sig.fromUserId, fromName: sig.fromName || 'Someone', text, timestamp: Date.now() }]
+        return [...prev, { fromUserId: sig.fromUserId, fromName: sig.fromName || 'Someone', text, timestamp: Date.now() }]
+      })
+      return
+    }
+
     const existing = peersRef.current.get(sig.fromUserId)
     if (!existing) return
 
@@ -207,6 +229,12 @@ export function useVideoChat(initialRoomId?: string, currentUserId?: string, ini
       })
     } catch {}
   }, [getEffectiveRoomId])
+
+  const sendChat = useCallback(async (text: string) => {
+    const clean = text.trim().slice(0, 500)
+    if (!clean) return
+    await sendSignal('all', 'chat', { text: clean })
+  }, [sendSignal])
 
   const createPeer = useCallback((userId: string, initiator: boolean, stream: MediaStream) => {
     const SimplePeer = require('simple-peer')
@@ -359,6 +387,7 @@ export function useVideoChat(initialRoomId?: string, currentUserId?: string, ini
     }
     peersRef.current.clear()
     setPeers([])
+    setChatMessages([])
 
     if (screenStreamRef.current) {
       screenStreamRef.current.getTracks().forEach(t => t.stop())
@@ -408,6 +437,8 @@ export function useVideoChat(initialRoomId?: string, currentUserId?: string, ini
     audioEnabled,
     videoEnabled,
     isScreenSharing,
+    chatMessages,
+    sendChat,
     createRoom,
     joinRoom,
     fetchRoom,

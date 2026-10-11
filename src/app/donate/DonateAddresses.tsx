@@ -51,7 +51,7 @@ export function DonateAddresses({ addresses, prices }: DonateAddressesProps) {
                   <span className={styles.donationTicker}>{da.currency}</span>
                   {price && <span className={styles.donationPrice}>{` · ${price}`}</span>}
                 </span>
-                <code className={styles.donationAddr} title={da.address}>{da.address}</code>
+                <code className={styles.donationAddr} title={da.address}>{da.address.length > 20 ? `${da.address.slice(0, 10)}…${da.address.slice(-6)}` : da.address}</code>
               </div>
               <DonationActions
                 address={da.address}

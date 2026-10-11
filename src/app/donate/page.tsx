@@ -42,8 +42,6 @@ export default async function DonatePage() {
 
   const prices: Record<string, number> = {}
   for (const p of priceList) prices[p.symbol] = p.price
-  const gold = prices['XAU']
-  const silver = prices['XAG']
 
   const configured = isConfigured()
   const burn = monthlyBurnTotal()
@@ -146,28 +144,14 @@ export default async function DonatePage() {
         </p>
       </section>
 
-      {/* ── Tokenized metals: price is live, transfer is arranged ── */}
+      {/* ── Physical metals: arranged one-to-one, no fixed address ── */}
       <section className={styles.block} id="metals">
         <h2>{t('hMetals')}</h2>
         <p>
-          We accept tokenized gold and silver at the live per-ounce price
-          below. There is no fixed receiving address for these — the transfer
-          is arranged one-to-one so both sides confirm the amount first.
+          We also accept physical gold and silver. There is no fixed
+          receiving address for these — the transfer is arranged one-to-one
+          so both sides confirm everything first.
         </p>
-        <ul className={styles.burnList}>
-          <li>
-            <span className={styles.burnLabel}>🥇 Gold (PAXG) / oz</span>
-            <span className={styles.burnAmount}>
-              {gold != null ? formatUsd(gold) : t('priceUnavailable')}
-            </span>
-          </li>
-          <li>
-            <span className={styles.burnLabel}>🥈 Silver (KAG) / oz</span>
-            <span className={styles.burnAmount}>
-              {silver != null ? formatUsd(silver) : 'price unavailable right now'}
-            </span>
-          </li>
-        </ul>
         <p>
           {admin ? (
             <Link href={`/dashboard/messages?user=${admin.id}`}>
@@ -176,7 +160,7 @@ export default async function DonatePage() {
           ) : (
             <>Contact us through the <Link href="/feedback">feedback page</Link> for transfer instructions.</>
           )}{' '}
-          Tell us which metal and roughly how much — we reply with where to send it.
+          Tell us which metal and roughly how much — we reply with how to proceed.
         </p>
       </section>
 

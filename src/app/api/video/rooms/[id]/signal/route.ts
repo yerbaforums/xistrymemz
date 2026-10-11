@@ -11,7 +11,8 @@ function getSignals(roomId: string) {
   return signalStore.get(roomId)!
 }
 
-// POST: send a signal (offer, answer, ice-candidate)
+// POST: send a signal (offer, answer, ice-candidate) or a room chat
+// message (type 'chat' with toUserId 'all', broadcast to participants)
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -26,7 +27,7 @@ export async function POST(
     const body = await request.json()
     const { type, toUserId, data } = body
 
-    if (!type || !toUserId || !data) {
+    if (!type || !toUserId || data === undefined || data === null) {
       return apiError("Missing type, toUserId, or data", 400)
     }
 
@@ -38,12 +39,27 @@ export async function POST(
       return apiError("Not a participant", 403)
     }
 
+    // Room chat: broadcast text to all current participants. Capped length,
+    // trimmed; empty messages rejected.
+    let payload: unknown = data
+    let targetUserId: string = toUserId
+    if (type === 'chat') {
+      const text = typeof (data as Record<string, unknown>)?.text === 'string'
+        ? ((data as Record<string, unknown>).text as string).trim().slice(0, 500)
+        : ''
+      if (!text) {
+        return apiError("Message text is required", 400)
+      }
+      targetUserId = 'all'
+      payload = { text }
+    }
+
     const signals = getSignals(id)
     signals.push({
       fromUserId: session.user.id,
-      toUserId,
+      toUserId: targetUserId,
       type,
-      data,
+      data: payload,
       timestamp: Date.now(),
     })
 
@@ -77,21 +93,37 @@ export async function GET(
     }
 
     const allSignals = getSignals(id)
+    // Directed signals go to their recipient; chat broadcasts to everyone.
     const newSignals = allSignals.filter(
-      s => s.toUserId === session.user.id && s.timestamp > since
+      s => (s.toUserId === session.user.id || (s.type === 'chat' && s.toUserId === 'all')) && s.timestamp > since
     )
 
-    // Cleanup old signals
-    const cutoff = Date.now() - 60000 // 1 minute
-    signalStore.set(id, allSignals.filter(s => s.timestamp > cutoff))
+    // Resolve sender display names for chat messages.
+    const senderIds = [...new Set(newSignals.filter(s => s.type === 'chat').map(s => s.fromUserId))]
+    const senders = senderIds.length > 0
+      ? await prisma.user.findMany({
+          where: { id: { in: senderIds } },
+          select: { id: true, name: true },
+        })
+      : []
+    const names = new Map(senders.map(u => [u.id, u.name || 'Someone']))
+
+    // Cleanup old signals (chat kept longer so late joiners see context).
+    const now = Date.now()
+    const cutoff = now - 60000 // 1 minute
+    const chatCutoff = now - 3600000 // 1 hour
+    signalStore.set(id, allSignals.filter(s =>
+      s.type === 'chat' ? s.timestamp > chatCutoff : s.timestamp > cutoff
+    ))
 
     return NextResponse.json({
       signals: newSignals.map(s => ({
         fromUserId: s.fromUserId,
+        fromName: s.type === 'chat' ? (names.get(s.fromUserId) || 'Someone') : undefined,
         type: s.type,
         data: s.data,
       })),
-      now: Date.now(),
+      now,
     })
   } catch (error) {
     console.error('Error fetching signals:', error)

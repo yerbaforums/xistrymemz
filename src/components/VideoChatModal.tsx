@@ -21,6 +21,7 @@ export default function VideoChatModal({ roomId: initialRoomId, inviteCode, onCl
   const {
     room, localStream, peers, error, connecting,
     audioEnabled, videoEnabled, isScreenSharing,
+    chatMessages, sendChat,
     createRoom, joinRoom, fetchRoom, startCall, leaveRoom,
     toggleAudio, toggleVideo, toggleScreenShare
   } = useVideoChat(initialRoomId, session?.user?.id, audioOnly)
@@ -28,6 +29,9 @@ export default function VideoChatModal({ roomId: initialRoomId, inviteCode, onCl
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const joinPhaseRef = useRef<'idle' | 'joining' | 'started'>('idle')
   const [isFullscreen, setIsFullscreen] = useState(mode === 'modal')
+  const [showChat, setShowChat] = useState(false)
+  const [chatDraft, setChatDraft] = useState('')
+  const chatEndRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   // Phase 1: Join or create a room (only once)
@@ -100,6 +104,18 @@ export default function VideoChatModal({ roomId: initialRoomId, inviteCode, onCl
     return () => document.removeEventListener('fullscreenchange', handler)
   }, [])
 
+  // Auto-scroll chat to the latest message.
+  useEffect(() => {
+    if (showChat) chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }, [chatMessages, showChat])
+
+  const submitChat = () => {
+    const text = chatDraft.trim()
+    if (!text) return
+    setChatDraft('')
+    sendChat(text)
+  }
+
   const wrapperClass = mode === 'modal'
     ? styles.modalOverlay
     : isFullscreen
@@ -143,6 +159,38 @@ export default function VideoChatModal({ roomId: initialRoomId, inviteCode, onCl
         </div>
       )}
 
+      {showChat && room && (
+        <div className={styles.chatPanel} role="log" aria-label="Room chat">
+          <div className={styles.chatList}>
+            {chatMessages.length === 0 ? (
+              <p className={styles.chatEmpty}>No messages yet — say hello 👋</p>
+            ) : (
+              chatMessages.map((m, i) => (
+                <div key={`${m.timestamp}-${i}`} className={styles.chatMsg}>
+                  <span className={styles.chatName}>{m.fromName}</span>
+                  <span className={styles.chatText}>{m.text}</span>
+                </div>
+              ))
+            )}
+            <div ref={chatEndRef} />
+          </div>
+          <div className={styles.chatInputRow}>
+            <input
+              value={chatDraft}
+              onChange={e => setChatDraft(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); submitChat() } }}
+              placeholder="Message the room…"
+              maxLength={500}
+              className={styles.chatInput}
+              aria-label="Message the room"
+            />
+            <button type="button" onClick={submitChat} disabled={!chatDraft.trim()} className={styles.chatSend}>
+              Send
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className={styles.controls}>
         <button
           onClick={toggleAudio}
@@ -171,6 +219,13 @@ export default function VideoChatModal({ roomId: initialRoomId, inviteCode, onCl
             📋 Invite
           </button>
         )}
+        <button
+          onClick={() => setShowChat(v => !v)}
+          className={`${styles.controlBtn} ${showChat ? styles.controlActive : ''}`}
+          title={showChat ? 'Hide chat' : 'Show chat'}
+        >
+          💬{chatMessages.length > 0 ? ` ${chatMessages.length}` : ''}
+        </button>
         {mode === 'inline' && (
           <button onClick={toggleFullscreen} className={styles.controlBtn} title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}>
             {isFullscreen ? '◧' : '◨'}

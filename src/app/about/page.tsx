@@ -157,7 +157,7 @@ export default function About() {
                     height={24}
                   />
                   <span className={styles.donationLabel}>{da.label || da.currency}</span>
-                  <code className={styles.donationAddr} title={da.address}>{da.address}</code>
+                  <code className={styles.donationAddr} title={da.address}>{da.address.length > 20 ? `${da.address.slice(0, 10)}…${da.address.slice(-6)}` : da.address}</code>
                   <DonationActions address={da.address} onQrClick={() => setQrOpen(da)} size="md" />
                 </div>
               ))}

@@ -115,23 +115,6 @@ export default function Footer() {
                   </button>
                 )
               })}
-              {/* Tokenized metals (per-ounce USD, live). No fixed address —
-                  message an admin from /donate for transfer instructions. */}
-              {(['XAU', 'XAG'] as const).map(sym => (
-                prices[sym] != null && (
-                  <Link
-                    key={sym}
-                    href="/donate#metals"
-                    className={styles.donationPill}
-                    aria-label={`${sym === 'XAU' ? 'Gold' : 'Silver'} live price`}
-                    style={{ textDecoration: 'none' }}
-                  >
-                    <span aria-hidden="true">{sym === 'XAU' ? '🥇' : '🥈'}</span>
-                    <span className={styles.pillLabel}>{sym === 'XAU' ? 'Gold' : 'Silver'}</span>
-                    <span className={styles.pillPrice}>· {formatPrice(prices[sym], 'USD')}/oz</span>
-                  </Link>
-                )
-              ))}
             </div>
           </div>
         )}

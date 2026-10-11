@@ -501,7 +501,7 @@ export default function BlogDetailClient({ params }: { params: Promise<{ slug: s
                   <div key={da.id} className={styles.donationCardFull} onClick={() => setQrDonation(da)}>
                     <img src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'ethereum.png'}`} alt="" width={18} height={18} />
                     <span>{da.label || da.currency}</span>
-                    <code>{da.address}</code>
+                    <code title={da.address}>{da.address.length > 20 ? `${da.address.slice(0, 10)}…${da.address.slice(-6)}` : da.address}</code>
                   </div>
                 ))}
               </div>
