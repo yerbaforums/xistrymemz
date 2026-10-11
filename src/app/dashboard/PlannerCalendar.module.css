@@ -343,6 +343,7 @@
   border-radius: 6px;
   cursor: pointer;
   user-select: none;
+  white-space: nowrap;
 }
 
 .filterChip input {
@@ -387,7 +388,6 @@ button.dayNumber:hover {
   gap: 0;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md, 8px);
-  overflow: hidden;
 }
 
 .weekHeadRow,
@@ -519,6 +519,100 @@ button.dayNumber:hover {
   border-bottom: 1px solid var(--border-color);
   opacity: 0.55;
   box-sizing: border-box;
+}
+
+/* Hour grid body: days sit side-by-side and share one vertical scroll
+   so week view stays a triage surface instead of a very tall page. */
+.weekGrid {
+  display: flex;
+  width: max-content;
+  min-width: 100%;
+  overflow-y: auto;
+  max-height: min(62vh, 640px);
+  padding-top: 8px;
+  box-sizing: border-box;
+}
+
+.plannerMeta {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+.manageRow {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.manageLink {
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  white-space: nowrap;
+}
+
+.manageLink:hover {
+  border-color: var(--accent-primary);
+}
+
+.dayToday {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: -2px;
+}
+
+.dayAdd {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  line-height: 1;
+  padding: 0 4px;
+  margin-left: auto;
+}
+
+.dayAdd:hover,
+.dayAdd:focus-visible {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.dayTopRow {
+  display: flex;
+  align-items: center;
+}
+
+.dayMore {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+
+.dayMore:hover {
+  color: var(--accent-primary);
+  text-decoration: underline;
+}
+
+.nowLabel {
+  position: absolute;
+  left: 2px;
+  transform: translateY(-50%);
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: #ef4444;
+  pointer-events: none;
+  z-index: 6;
 }
 
 .weekBlock {

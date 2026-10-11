@@ -12,6 +12,7 @@ import Breadcrumbs from '@/components/Breadcrumbs'
 import HashtagChips from '@/components/HashtagChips'
 import Avatar from '@/components/Avatar'
 import DirectoryCardActions from '@/components/DirectoryCardActions'
+import { displayCategory } from '@/lib/category-taxonomy'
 import liveStyles from '@/components/LiveBadge.module.css'
 import { haversineKm, formatDistance } from '@/lib/geo'
 import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
@@ -347,7 +348,7 @@ export default function DirectoryPage() {
             </h3>
             <div className={styles.cardTags}>
               <span className={styles.cardType}>{TYPE_ICONS[item.type]} {item.type}</span>
-              {item.category && <span className={styles.cardCategory}>{item.category}</span>}
+              {item.category && (() => { const d = displayCategory(item.category); return <span className={styles.cardCategory}>{d.icon} {d.label}</span> })()}
               {dist != null && (sortBy === 'nearest' || nearMe) && (
                 <span className={styles.cardCategory}>📍 {formatDistance(dist)}</span>
               )}
@@ -416,7 +417,7 @@ export default function DirectoryPage() {
         {typeCategories.length > 0 && (
           <select aria-label="Filter by category" className={styles.filterSelect} value={activeCategory} onChange={e => setActiveCategory(e.target.value)}>
             <option value="">All categories</option>
-            {typeCategories.map(c => <option key={c} value={c}>{c}</option>)}
+            {typeCategories.map(c => { const d = displayCategory(c); return <option key={c} value={c}>{d.icon} {d.label}</option> })}
           </select>
         )}
         <select aria-label="Sort directory" className={styles.filterSelect} value={sortBy} onChange={e => setSortBy(e.target.value)}>

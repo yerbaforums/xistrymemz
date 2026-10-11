@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import styles from './page.module.css'
@@ -117,6 +117,42 @@ export default function SetupShopPage() {
 
   const wizard = useWizard(steps)
 
+  const fetchShopData = useCallback(async () => {
+    try {
+      const [shopRes, productsRes] = await Promise.all([
+        fetch('/api/shop'),
+        fetch('/api/my-products')
+      ])
+      
+      if (!shopRes.ok) throw new Error('Failed to fetch shop')
+      if (!productsRes.ok) throw new Error('Failed to fetch products')
+      
+      const shopData = (await shopRes.json())?.data
+      const prods = (await productsRes.json())?.data
+
+      // Existing shop? This wizard is for creation — manage it instead.
+      // (?template= still allows starting over from a template.)
+      if (shopData?.shopSlug && !templateId) {
+        router.push('/dashboard/shop')
+        return
+      }
+
+      setShopData({
+        shopName: shopData?.shopName || '',
+        shopAbout: shopData?.shopAbout || '',
+        shopImage: shopData?.shopImage || '',
+        shopSlug: shopData?.shopSlug || '',
+        email: shopData?.email || '',
+        name: shopData?.name || ''
+      })
+      setProducts(prods || [])
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }, [templateId, router])
+
   useEffect(() => {
     fetchShopData()
     if (templateId) {
@@ -133,36 +169,7 @@ export default function SetupShopPage() {
         })
       }
     }
-  }, [templateId])
-
-  const fetchShopData = async () => {
-    try {
-      const [shopRes, productsRes] = await Promise.all([
-        fetch('/api/shop'),
-        fetch('/api/my-products')
-      ])
-      
-      if (!shopRes.ok) throw new Error('Failed to fetch shop')
-      if (!productsRes.ok) throw new Error('Failed to fetch products')
-      
-      const shopData = (await shopRes.json())?.data
-      const prods = (await productsRes.json())?.data
-      
-      setShopData({
-        shopName: shopData?.shopName || '',
-        shopAbout: shopData?.shopAbout || '',
-        shopImage: shopData?.shopImage || '',
-        shopSlug: shopData?.shopSlug || '',
-        email: shopData?.email || '',
-        name: shopData?.name || ''
-      })
-      setProducts(prods || [])
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
-  }
+  }, [templateId, fetchShopData])
 
   const handleImageUpload = async (file: File, type: 'shop' | 'product', callback: (url: string) => void) => {
     setUploading(true)

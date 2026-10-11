@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import styles from './PlannerCalendar.module.css'
 import { useToast } from '@/context/ToastContext'
@@ -49,12 +49,13 @@ interface CalendarTrip {
 // minutes; multi-day items and trips render in the all-day header.
 // Appointment blocks link to their detail modal (highlight flow) so
 // confirmations happen without leaving the planner.
-function WeekDayView({ days, allDayFor, timedFor, timedRange, localDayKey, hours, hourH, fmtHour, goToDay, single, onEmptySlot, nowMin }: {
+function WeekDayView({ days, allDayFor, timedFor, timedRange, localDayKey, todayKey, hours, hourH, fmtHour, goToDay, single, onEmptySlot, nowMin }: {
   days: Date[]
   allDayFor: (dateStr: string) => CalendarEvent[]
   timedFor: (dateStr: string) => CalendarEvent[]
   timedRange: (e: CalendarEvent) => { startMin: number; endMin: number } | null
   localDayKey: (d: Date) => string
+  todayKey: string | null
   hours: number[]
   hourH: number
   fmtHour: (h: number) => string
@@ -63,7 +64,24 @@ function WeekDayView({ days, allDayFor, timedFor, timedRange, localDayKey, hours
   onEmptySlot: (date: Date, minutes: number) => void
   nowMin: number | null
 }) {
-  const todayKey = localDayKey(new Date())
+  // Side-by-side columns for overlapping timed blocks on one day, so
+  // concurrent items stay readable instead of stacking invisibly.
+  const layoutDay = (key: string) => {
+    const items = timedFor(key)
+    const ranged = items
+      .map(e => ({ e, r: timedRange(e) }))
+      .filter((x): x is { e: CalendarEvent; r: { startMin: number; endMin: number } } => x.r !== null)
+      .sort((a, b) => a.r.startMin - b.r.startMin || a.r.endMin - b.r.endMin)
+    const colEnd: number[] = []
+    const pos = new Map<string, number>()
+    for (const { e, r } of ranged) {
+      let c = colEnd.findIndex(end => end <= r.startMin)
+      if (c === -1) { c = colEnd.length; colEnd.push(r.endMin) }
+      else colEnd[c] = r.endMin
+      pos.set(e.id, c)
+    }
+    return { ncols: Math.max(1, colEnd.length), pos }
+  }
   return (
     <div className={styles.weekWrap}>
       <div className={styles.weekHeadRow}>
@@ -117,6 +135,7 @@ function WeekDayView({ days, allDayFor, timedFor, timedRange, localDayKey, hours
           const key = localDayKey(d)
           const items = timedFor(key)
           const showNow = nowMin != null && key === todayKey
+          const { ncols, pos } = layoutDay(key)
           return (
             <div
               key={key}
@@ -135,13 +154,19 @@ function WeekDayView({ days, allDayFor, timedFor, timedRange, localDayKey, hours
                 <div key={h} className={styles.weekHourCell} style={{ height: hourH }} />
               ))}
               {showNow && (
-                <div className={styles.nowLine} style={{ top: (nowMin / 60) * hourH }} aria-hidden="true" />
+                <>
+                  <div className={styles.nowLine} style={{ top: (nowMin / 60) * hourH }} aria-hidden="true" />
+                  <span className={styles.nowLabel} style={{ top: (nowMin / 60) * hourH }}>now</span>
+                </>
               )}
               {items.map(e => {
                 const r = timedRange(e)
                 if (!r) return null
                 const top = (r.startMin / 60) * hourH
                 const height = Math.max(((r.endMin - r.startMin) / 60) * hourH, 20)
+                const col = pos.get(e.id) ?? 0
+                const widthPct = 100 / ncols
+                const leftPct = col * widthPct
                 const inner = (
                   <>
                     <span className={styles.weekBlockTime}>
@@ -156,7 +181,7 @@ function WeekDayView({ days, allDayFor, timedFor, timedRange, localDayKey, hours
                     key={e.id}
                     href={e.link}
                     className={styles.weekBlock}
-                    style={{ top, height, backgroundColor: e.color }}
+                    style={{ top, height, backgroundColor: e.color, left: `calc(${leftPct}% + 2px)`, width: `calc(${widthPct}% - 4px)` }}
                     title={`${e.title}${e.status ? ` (${e.status})` : ''}`}
                   >
                     {inner}
@@ -165,7 +190,7 @@ function WeekDayView({ days, allDayFor, timedFor, timedRange, localDayKey, hours
                   <div
                     key={e.id}
                     className={styles.weekBlock}
-                    style={{ top, height, backgroundColor: e.color }}
+                    style={{ top, height, backgroundColor: e.color, left: `calc(${leftPct}% + 2px)`, width: `calc(${widthPct}% - 4px)` }}
                     title={e.title}
                   >
                     {inner}
@@ -181,10 +206,16 @@ function WeekDayView({ days, allDayFor, timedFor, timedRange, localDayKey, hours
 }
 
 export default function CalendarWidget() {
-  const { warning } = useToast()
+  const { warning, success, error: toastError } = useToast()
   const [events, setEvents] = useState<CalendarEvent[]>([])
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [currentDate, setCurrentDate] = useState(new Date())
   const [view, setView] = useState<'month' | 'week' | 'day'>('month')
+  // Client-side "today": resolved post-hydration so SSR output stays
+  // deterministic (render-time new Date() is the known #418 mismatch).
+  const [todayKey, setTodayKey] = useState<string | null>(null)
   const [nowMin, setNowMin] = useState<number | null>(null)
   const urlSynced = useRef(false)
 
@@ -232,7 +263,17 @@ export default function CalendarWidget() {
   const [showAddEvent, setShowAddEvent] = useState(false)
   const [hoveredEvent, setHoveredEvent] = useState<CalendarEvent | null>(null)
   const [tooltipTimeout, setTooltipTimeout] = useState<NodeJS.Timeout | null>(null)
-  const [filters, setFilters] = useState({
+  interface PlannerFilters {
+    personal: boolean
+    trips: boolean
+    planEvents: boolean
+    connections: boolean
+    appointments: boolean
+    events: boolean
+    requests: boolean
+    rentals: boolean
+  }
+  const DEFAULT_FILTERS: PlannerFilters = {
     personal: true,
     trips: true,
     planEvents: true,
@@ -241,7 +282,20 @@ export default function CalendarWidget() {
     events: true,
     requests: true,
     rentals: true,
+  }
+  const [filters, setFilters] = useState<PlannerFilters>(() => {
+    // Persisted per user choice; connections stay off by default so the
+    // first view is triage-clean. Guarded for SSR prerender.
+    if (typeof window === 'undefined') return DEFAULT_FILTERS
+    try {
+      const raw = window.localStorage.getItem('planner-filters')
+      if (raw) return { ...DEFAULT_FILTERS, ...(JSON.parse(raw) as Partial<PlannerFilters>) }
+    } catch { /* keep defaults */ }
+    return DEFAULT_FILTERS
   })
+  useEffect(() => {
+    try { window.localStorage.setItem('planner-filters', JSON.stringify(filters)) } catch { /* ignore */ }
+  }, [filters])
   const [trips, setTrips] = useState<CalendarTrip[]>([])
   const [newEvent, setNewEvent] = useState({
     title: '',
@@ -259,6 +313,8 @@ export default function CalendarWidget() {
   }, [])
 
   const fetchEvents = async () => {
+    setLoading(true)
+    setLoadError(null)
     try {
       const [calRes, planRes, tripsRes, apptsRes] = await Promise.all([
         fetch('/api/calendar/events'),
@@ -398,12 +454,22 @@ export default function CalendarWidget() {
       }
     } catch (err) {
       console.error(err)
+      setLoadError('Could not load planner items. Check your connection and retry.')
+    } finally {
+      setLoading(false)
+      setLastUpdated(new Date())
     }
   }
+
+  const refresh = () => { fetchEvents() }
 
   const createEvent = async () => {
     if (!newEvent.title || !newEvent.startDate) {
       warning('Please fill in required fields')
+      return
+    }
+    if (newEvent.endDate && newEvent.endDate < newEvent.startDate) {
+      warning('End time must be after start time')
       return
     }
     try {
@@ -424,10 +490,15 @@ export default function CalendarWidget() {
           color: '#3b82f6',
           visibility: 'PRIVATE'
         })
+        success('Event added to your planner')
         fetchEvents()
+      } else {
+        const data = await res.json().catch(() => ({}))
+        toastError(data.error || 'Could not create the event')
       }
     } catch (err) {
       console.error(err)
+      toastError('Could not create the event')
     }
   }
 
@@ -460,6 +531,8 @@ export default function CalendarWidget() {
 
   const localDayKey = (d: Date) =>
     `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+
+  useEffect(() => { setTodayKey(localDayKey(new Date())) }, [])
 
   // Local calendar-day bucket for a stored value. Date-only strings are
   // taken as local calendar dates; datetimes convert to local time.
@@ -608,17 +681,68 @@ export default function CalendarWidget() {
     setShowAddEvent(true)
   }
 
+  // Month-view "+" → prefilled all-day event on that date.
+  const openDayCreate = (year: number, month: number, day: number) => {
+    const start = new Date(year, month, day, 9, 0)
+    setNewEvent(prev => ({
+      ...prev,
+      startDate: toLocalInput(start),
+      endDate: '',
+      allDay: true,
+    }))
+    setShowAddEvent(true)
+  }
+
+  const titleRef = useRef<HTMLInputElement>(null)
+  useEffect(() => {
+    if (!showAddEvent) return
+    titleRef.current?.focus()
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setShowAddEvent(false) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [showAddEvent])
+
+  const counts = useMemo(() => {
+    const c = {
+      personal: 0, trips: 0, planEvents: 0, connections: 0,
+      appointments: 0, events: 0, requests: 0, rentals: 0,
+    }
+    for (const e of events) {
+      const k = e.kind || 'personal'
+      if (k === 'personal') c.personal++
+      else if (k === 'project') c.planEvents++
+      else if (k === 'connections') c.connections++
+      else if (k === 'appointment') c.appointments++
+      else if (k === 'event') c.events++
+      else if (k === 'request') c.requests++
+      else if (k === 'rental') c.rentals++
+    }
+    c.trips = trips.length
+    return c
+  }, [events, trips])
+
+  const allOn = () => setFilters({ personal: true, trips: true, planEvents: true, connections: true, appointments: true, events: true, requests: true, rentals: true })
+  const allOff = () => setFilters({ personal: false, trips: false, planEvents: false, connections: false, appointments: false, events: false, requests: false, rentals: false })
+
   return (
     <div className={styles.calendarWidget}>
       <div className={styles.calendarHeader}>
         <h3>📅 My Planner</h3>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-          <div role="tablist" aria-label="Calendar view" style={{ display: 'flex', gap: 4 }}>
+          <div role="tablist" aria-label="Calendar view" style={{ display: 'flex', gap: 4 }} onKeyDown={e => {
+            if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return
+            e.preventDefault()
+            const order = ['month', 'week', 'day'] as const
+            const i = order.indexOf(view)
+            const n = (i + (e.key === 'ArrowRight' ? 1 : order.length - 1)) % order.length
+            setView(order[n])
+          }}>
             {(['month', 'week', 'day'] as const).map(v => (
               <button
                 key={v}
                 role="tab"
                 aria-selected={view === v}
+                tabIndex={view === v ? 0 : -1}
                 onClick={() => setView(v)}
                 className={styles.navBtn}
                 style={view === v ? { background: 'var(--accent-primary)', color: '#fff' } : undefined}
@@ -627,55 +751,82 @@ export default function CalendarWidget() {
               </button>
             ))}
           </div>
-          <Link href="/dashboard/appointments" className={styles.navBtn} style={{ textDecoration: 'none' }}>🗓️ Appointments</Link>
-          <Link href="/dashboard/planning" className={styles.navBtn} style={{ textDecoration: 'none' }}>🗺️ Trips</Link>
           <button onClick={() => setShowAddEvent(true)} className={styles.addEventBtn}>
             + Add Event
           </button>
         </div>
       </div>
 
-      <div className={styles.calendarFilters}>
+      <div className={styles.calendarFilters} aria-label="Planner sources">
         <label className={styles.filterChip}>
           <input type="checkbox" checked={filters.personal} onChange={e => setFilters(f => ({ ...f, personal: e.target.checked }))} />
-          🟦 Personal
+          🟦 Personal ({counts.personal})
         </label>
         <label className={styles.filterChip}>
           <input type="checkbox" checked={filters.appointments} onChange={e => setFilters(f => ({ ...f, appointments: e.target.checked }))} />
-          📅 Appointments
+          📅 Appointments ({counts.appointments})
         </label>
         <label className={styles.filterChip}>
           <input type="checkbox" checked={filters.trips} onChange={e => setFilters(f => ({ ...f, trips: e.target.checked }))} />
-          🟡 Trips
+          🟡 Trips ({counts.trips})
         </label>
         <label className={styles.filterChip}>
           <input type="checkbox" checked={filters.planEvents} onChange={e => setFilters(f => ({ ...f, planEvents: e.target.checked }))} />
-          🟢 Project Events
+          🟢 Project Events ({counts.planEvents})
         </label>
         <label className={styles.filterChip}>
           <input type="checkbox" checked={filters.events} onChange={e => setFilters(f => ({ ...f, events: e.target.checked }))} />
-          🟣 Joined Events
+          🟣 Joined Events ({counts.events})
         </label>
         <label className={styles.filterChip}>
           <input type="checkbox" checked={filters.requests} onChange={e => setFilters(f => ({ ...f, requests: e.target.checked }))} />
-          🌹 Due Dates
+          ⏰ Due Dates ({counts.requests})
         </label>
         <label className={styles.filterChip}>
           <input type="checkbox" checked={filters.rentals} onChange={e => setFilters(f => ({ ...f, rentals: e.target.checked }))} />
-          🔑 Rentals
+          🔑 Rentals ({counts.rentals})
         </label>
         <label className={styles.filterChip}>
           <input type="checkbox" checked={filters.connections} onChange={e => setFilters(f => ({ ...f, connections: e.target.checked }))} />
-          🟠 Connections
+          🟠 Connections ({counts.connections})
         </label>
+        <button type="button" onClick={allOn} className={styles.navBtn} title="Show every source">All</button>
+        <button type="button" onClick={allOff} className={styles.navBtn} title="Hide every source">None</button>
       </div>
 
-      <div className={styles.calendarNav}>
-        <button onClick={() => stepDate(-1)} className={styles.navBtn}>←</button>
-        <span className={styles.monthYear}>{viewTitle}</span>
-        <button onClick={() => stepDate(1)} className={styles.navBtn}>→</button>
-        <button onClick={goToday} className={styles.navBtn}>Today</button>
+      <div className={styles.manageRow} aria-label="Manage planner sources">
+        <span>Manage:</span>
+        <Link href="/dashboard/appointments" className={styles.manageLink}>📅 Bookings</Link>
+        <Link href="/dashboard/planning" className={styles.manageLink}>🗺️ Trips</Link>
+        <Link href="/dashboard/events" className={styles.manageLink}>🎟️ Events</Link>
+        <Link href="/dashboard/projects" className={styles.manageLink}>🚀 Projects</Link>
+        <Link href="/dashboard/requests" className={styles.manageLink}>⏰ Requests</Link>
+        <Link href="/dashboard/rentals" className={styles.manageLink}>🔑 Rentals</Link>
       </div>
+
+      {loadError && (
+        <div className={styles.manageRow} role="alert">
+          <span>⚠️ {loadError}</span>
+          <button type="button" onClick={refresh} className={styles.navBtn}>Retry</button>
+        </div>
+      )}
+
+      <div className={styles.calendarNav}>
+        <button onClick={() => stepDate(-1)} className={styles.navBtn} aria-label="Previous period">←</button>
+        <span className={styles.monthYear}>{viewTitle}</span>
+        <button onClick={() => stepDate(1)} className={styles.navBtn} aria-label="Next period">→</button>
+        <button onClick={goToday} className={styles.navBtn}>Today</button>
+        <button onClick={refresh} className={styles.navBtn} title="Reload planner items">↻ Refresh</button>
+        <span className={styles.plannerMeta}>
+          {loading ? 'Loading…' : lastUpdated ? `Updated ${lastUpdated.toLocaleTimeString()}` : ''}
+        </span>
+      </div>
+
+      {!loading && !loadError && events.length === 0 && trips.length === 0 && (
+        <div className={styles.noEvents}>
+          Nothing on your planner yet. Add a personal event, book an appointment, plan a trip, or join an event — everything lands here.
+        </div>
+      )}
 
       {view === 'month' && (
       <div className={styles.calendarGrid}>
@@ -691,16 +842,39 @@ export default function CalendarWidget() {
           {Array.from({ length: daysInMonth }).map((_, i) => {
             const day = i + 1
             const dayEvents = getEventsForDay(day)
+            const cellDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+            const isToday = todayKey != null && localDayKey(cellDate) === todayKey
+            const openDay = () => goToDay(cellDate)
             return (
-              <div key={day} className={styles.dayCell}>
-                <button
-                  type="button"
-                  className={styles.dayNumber}
-                  onClick={() => goToDay(new Date(currentDate.getFullYear(), currentDate.getMonth(), day))}
-                  title="Open day view"
-                >
-                  {day}
-                </button>
+              <div
+                key={day}
+                className={`${styles.dayCell} ${isToday ? styles.dayToday : ''}`}
+                onClick={openDay}
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDay() } }}
+                role="button"
+                tabIndex={0}
+                aria-label={`${cellDate.toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}, ${dayEvents.length} items. Open day view.`}
+                title="Open day view"
+              >
+                <div className={styles.dayTopRow}>
+                  <button
+                    type="button"
+                    className={styles.dayNumber}
+                    onClick={e => { e.stopPropagation(); openDay() }}
+                    tabIndex={-1}
+                  >
+                    {day}
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.dayAdd}
+                    onClick={e => { e.stopPropagation(); openDayCreate(currentDate.getFullYear(), currentDate.getMonth(), day) }}
+                    title={`Add an event on ${cellDate.toLocaleDateString()}`}
+                    aria-label={`Add an event on ${cellDate.toLocaleDateString()}`}
+                  >
+                    +
+                  </button>
+                </div>
                 <div className={styles.dayEvents}>
                   {dayEvents.slice(0, 3).map(e => (
                     e.link ? (
@@ -710,15 +884,16 @@ export default function CalendarWidget() {
                         className={styles.eventPill}
                         style={{ backgroundColor: e.color }}
                         title={`${e.title}${e.status ? ` (${e.status})` : ''}`}
+                        onClick={ev => ev.stopPropagation()}
                       >
                         {e.title.slice(0, 14)}
                       </Link>
                     ) : (
                     <div
                       key={e.id}
-                      className={styles.eventDot}
+                      className={styles.eventPill}
                       style={{ backgroundColor: e.color }}
-                      title=""
+                      title={e.title}
                       onMouseEnter={() => {
                         if (tooltipTimeout) clearTimeout(tooltipTimeout)
                         setHoveredEvent(e)
@@ -727,10 +902,20 @@ export default function CalendarWidget() {
                         const timeout = setTimeout(() => setHoveredEvent(null), 300)
                         setTooltipTimeout(timeout)
                       }}
-                    />
+                    >
+                      {e.title.slice(0, 14)}
+                    </div>
                     )
                   ))}
-                  {dayEvents.length > 3 && <span className={styles.moreEvents}>+{dayEvents.length - 3}</span>}
+                  {dayEvents.length > 3 && (
+                    <button
+                      type="button"
+                      className={`${styles.moreEvents} ${styles.dayMore}`}
+                      onClick={ev => { ev.stopPropagation(); openDay() }}
+                    >
+                      +{dayEvents.length - 3}
+                    </button>
+                  )}
                 </div>
               </div>
             )
@@ -753,12 +938,15 @@ export default function CalendarWidget() {
           single={view === 'day'}
           onEmptySlot={openAt}
           nowMin={nowMin}
+          todayKey={todayKey}
         />
       )}
 
       {hoveredEvent && (
-        <div 
+        <div
           className={styles.eventTooltip}
+          role="dialog"
+          aria-label={hoveredEvent.title}
           onMouseEnter={() => {
             if (tooltipTimeout) clearTimeout(tooltipTimeout)
             setHoveredEvent(hoveredEvent)
@@ -772,24 +960,27 @@ export default function CalendarWidget() {
           <p>📅 {new Date(hoveredEvent.startDate).toLocaleDateString()}</p>
           {hoveredEvent.location && <p>📍 {hoveredEvent.location}</p>}
           {hoveredEvent.description && <p className={styles.tooltipDesc}>{hoveredEvent.description.slice(0, 60)}{hoveredEvent.description.length > 60 ? '...' : ''}</p>}
-          <Link href={hoveredEvent.link || `/events/${hoveredEvent.id}`} className={styles.tooltipLink}>Click to view details →</Link>
+          <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+            <Link href={hoveredEvent.link || `/events/${hoveredEvent.id}`} className={styles.tooltipLink}>Open details →</Link>
+            <button type="button" onClick={() => setHoveredEvent(null)} className={styles.navBtn}>Close</button>
+          </div>
         </div>
       )}
 
-      <div className={styles.legend}>
+      <div className={styles.legend} aria-label="Planner color key">
         <span className={styles.legendItem}>🟦 My Events</span>
-        <span className={styles.legendItem}>📅 Appointments (status-colored)</span>
+        <span className={styles.legendItem}>📅 Appointments: <span style={{ color: '#f59e0b' }}>●</span> pending <span style={{ color: '#6366f1' }}>●</span> confirmed <span style={{ color: '#22c55e' }}>●</span> paid</span>
         <span className={styles.legendItem}>🟢 Project Events</span>
         <span className={styles.legendItem}>🟣 Joined Events</span>
-        <span className={styles.legendItem}>🌹 Due Dates</span>
+        <span className={styles.legendItem}>⏰ Due Dates</span>
         <span className={styles.legendItem}>🔑 Rentals</span>
         <span className={styles.legendItem}>🟠 Connections</span>
         <span className={styles.legendItem}>🟡 Trips</span>
       </div>
 
       {showAddEvent && (
-        <div className={styles.modal}>
-          <div className={styles.modalContent}>
+        <div className={styles.modal} onClick={() => setShowAddEvent(false)}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Create new event">
             <h3>Create New Event</h3>
             <select
               value={newEvent.visibility}
@@ -805,6 +996,7 @@ export default function CalendarWidget() {
               <option value="SHOP">🏪 Shop - Shop customers</option>
             </select>
             <input
+              ref={titleRef}
               type="text"
               placeholder="Event Title *"
               value={newEvent.title}
@@ -852,6 +1044,9 @@ export default function CalendarWidget() {
               {['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'].map(c => (
                 <button
                   key={c}
+                  type="button"
+                  aria-label={`Event color ${c}`}
+                  aria-pressed={newEvent.color === c}
                   className={`${styles.colorBtn} ${newEvent.color === c ? styles.selected : ''}`}
                   style={{ backgroundColor: c }}
                   onClick={() => setNewEvent({ ...newEvent, color: c })}

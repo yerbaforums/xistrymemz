@@ -1,5 +1,6 @@
 import { NextResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { canonicalKey, rawValuesFor } from '@/lib/category-taxonomy'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,43 +18,43 @@ export async function GET(request: Request) {
       switch (typeFilter) {
         case 'shop': {
           const rows = await prisma.user.findMany({
-            where: { shopSlug: { not: null }, shopName: { not: '' }, ...(q ? { shopName: whereName } : {}), ...(cat ? { shopCategory: cat } : {}) },
+            where: { shopSlug: { not: null }, shopName: { not: '' }, ...(q ? { shopName: whereName } : {}), ...(cat ? { shopCategory: { in: rawValuesFor('shop', cat) } } : {}) },
             select: { id: true, shopName: true, shopImage: true, shopSlug: true, shopCategory: true, location: true, latitude: true, longitude: true, createdAt: true, name: true, image: true, _count: { select: { products: true } } },
             take, orderBy: { createdAt: 'desc' }
           })
-          return rows.map(s => ({ id: s.id, title: s.shopName || 'Shop', image: s.shopImage, url: `/shop/${s.shopSlug}`, meta: `📍 ${s.location || 'Location unknown'}`, type: 'shop', itemType: 'SHOP', userId: s.id, category: s.shopCategory, extra: `${s._count.products} products`, owner: s.name || undefined, ownerImage: s.image, latitude: s.latitude ?? null, longitude: s.longitude ?? null, createdAt: s.createdAt.toISOString() }))
+          return rows.map(s => ({ id: s.id, title: s.shopName || 'Shop', image: s.shopImage, url: `/shop/${s.shopSlug}`, meta: `📍 ${s.location || 'Location unknown'}`, type: 'shop', itemType: 'SHOP', userId: s.id, category: canonicalKey('shop', s.shopCategory), extra: `${s._count.products} products`, owner: s.name || undefined, ownerImage: s.image, latitude: s.latitude ?? null, longitude: s.longitude ?? null, createdAt: s.createdAt.toISOString() }))
         }
         case 'product': {
           const rows = await prisma.product.findMany({
-            where: { published: true, ...(q ? { title: whereName } : {}), ...(cat ? { category: cat } : {}) },
+            where: { published: true, ...(q ? { title: whereName } : {}), ...(cat ? { category: { in: rawValuesFor('product', cat) } } : {}) },
             select: { id: true, title: true, imageUrl: true, price: true, category: true, condition: true, location: true, latitude: true, longitude: true, createdAt: true, userId: true, user: { select: { name: true, image: true } }, hashtags: { select: { hashtag: { select: { tag: true } } } } },
             take, orderBy: { createdAt: 'desc' }
           })
-          return rows.map(p => ({ id: p.id, title: p.title, image: p.imageUrl, url: `/products/${p.id}`, meta: p.price ? `$${p.price}` : undefined, type: 'product', itemType: 'PRODUCT', userId: p.userId, category: p.category, extra: p.condition || undefined, location: p.location || undefined, latitude: p.latitude ?? null, longitude: p.longitude ?? null, owner: p.user.name || undefined, ownerImage: p.user.image, hashtags: p.hashtags.map(h => h.hashtag.tag), createdAt: p.createdAt.toISOString() }))
+          return rows.map(p => ({ id: p.id, title: p.title, image: p.imageUrl, url: `/products/${p.id}`, meta: p.price ? `$${p.price}` : undefined, type: 'product', itemType: 'PRODUCT', userId: p.userId, category: canonicalKey('product', p.category), extra: p.condition || undefined, location: p.location || undefined, latitude: p.latitude ?? null, longitude: p.longitude ?? null, owner: p.user.name || undefined, ownerImage: p.user.image, hashtags: p.hashtags.map(h => h.hashtag.tag), createdAt: p.createdAt.toISOString() }))
         }
         case 'service': {
           const rows = await prisma.serviceOffering.findMany({
-            where: { isActive: true, ...(q ? { title: whereName } : {}), ...(cat ? { category: cat } : {}) },
+            where: { isActive: true, ...(q ? { title: whereName } : {}), ...(cat ? { category: { in: rawValuesFor('service', cat) } } : {}) },
             select: { id: true, title: true, imageUrl: true, price: true, category: true, duration: true, location: true, createdAt: true, userId: true, latitude: true, longitude: true, user: { select: { name: true, image: true, latitude: true, longitude: true } }, hashtags: { select: { hashtag: { select: { tag: true } } } } },
             take, orderBy: { createdAt: 'desc' }
           })
-          return rows.map(s => ({ id: s.id, title: s.title, image: s.imageUrl, url: `/services/${s.id}`, meta: s.price ? `$${s.price}` : undefined, type: 'service', itemType: 'SERVICE', userId: s.userId, category: s.category, extra: `${s.duration} min`, location: s.location || undefined, latitude: s.latitude ?? s.user.latitude ?? null, longitude: s.longitude ?? s.user.longitude ?? null, owner: s.user.name || undefined, ownerImage: s.user.image, hashtags: s.hashtags.map(h => h.hashtag.tag), createdAt: s.createdAt.toISOString() }))
+          return rows.map(s => ({ id: s.id, title: s.title, image: s.imageUrl, url: `/services/${s.id}`, meta: s.price ? `$${s.price}` : undefined, type: 'service', itemType: 'SERVICE', userId: s.userId, category: canonicalKey('service', s.category), extra: `${s.duration} min`, location: s.location || undefined, latitude: s.latitude ?? s.user.latitude ?? null, longitude: s.longitude ?? s.user.longitude ?? null, owner: s.user.name || undefined, ownerImage: s.user.image, hashtags: s.hashtags.map(h => h.hashtag.tag), createdAt: s.createdAt.toISOString() }))
         }
         case 'rental': {
           const rows = await prisma.product.findMany({
-            where: { published: true, type: 'RENTAL', ...(q ? { title: whereName } : {}) },
+            where: { published: true, type: 'RENTAL', ...(q ? { title: whereName } : {}), ...(cat ? { category: { in: rawValuesFor('product', cat) } } : {}) },
             select: { id: true, title: true, imageUrl: true, rentalDaily: true, rentalWeekly: true, rentalMonthly: true, rentalDeposit: true, category: true, location: true, latitude: true, longitude: true, createdAt: true, userId: true, hashtags: { select: { hashtag: { select: { tag: true } } } } },
             take, orderBy: { createdAt: 'desc' }
           })
-          return rows.map(r => ({ id: r.id, title: r.title, image: r.imageUrl, url: `/products/${r.id}`, meta: r.rentalDaily ? `$${r.rentalDaily}/day` : undefined, type: 'rental', itemType: 'PRODUCT', userId: r.userId, category: r.category || undefined, extra: r.rentalWeekly ? `$${r.rentalWeekly}/wk` : r.rentalMonthly ? `$${r.rentalMonthly}/mo` : undefined, location: r.location || undefined, latitude: r.latitude ?? null, longitude: r.longitude ?? null, hashtags: r.hashtags.map(h => h.hashtag.tag), createdAt: r.createdAt.toISOString() }))
+          return rows.map(r => ({ id: r.id, title: r.title, image: r.imageUrl, url: `/products/${r.id}`, meta: r.rentalDaily ? `$${r.rentalDaily}/day` : undefined, type: 'rental', itemType: 'PRODUCT', userId: r.userId, category: r.category ? canonicalKey('product', r.category) : undefined, extra: r.rentalWeekly ? `$${r.rentalWeekly}/wk` : r.rentalMonthly ? `$${r.rentalMonthly}/mo` : undefined, location: r.location || undefined, latitude: r.latitude ?? null, longitude: r.longitude ?? null, hashtags: r.hashtags.map(h => h.hashtag.tag), createdAt: r.createdAt.toISOString() }))
         }
         case 'event': {
           const rows = await prisma.event.findMany({
-            where: { ...(q ? { title: whereName } : {}), ...(cat ? { eventCategory: cat } : {}) },
+            where: { ...(q ? { title: whereName } : {}), ...(cat ? { eventCategory: { in: rawValuesFor('event', cat) } } : {}) },
             select: { id: true, title: true, eventDate: true, eventCategory: true, location: true, latitude: true, longitude: true, organizerId: true, organizer: { select: { name: true, image: true } }, eventHashtags: { select: { hashtag: { select: { tag: true } } } } },
             take, orderBy: { eventDate: 'desc' }
           })
-          return rows.map(e => ({ id: e.id, title: e.title, image: null, url: `/events/${e.id}`, meta: e.eventDate ? new Date(e.eventDate).toLocaleDateString() : undefined, type: 'event', itemType: 'EVENT', userId: e.organizerId, category: e.eventCategory || undefined, extra: e.location || undefined, location: e.location || undefined, latitude: e.latitude ?? null, longitude: e.longitude ?? null, owner: e.organizer.name || undefined, ownerImage: e.organizer.image, hashtags: e.eventHashtags.map(h => h.hashtag.tag), createdAt: e.eventDate ? new Date(e.eventDate).toISOString() : undefined }))
+          return rows.map(e => ({ id: e.id, title: e.title, image: null, url: `/events/${e.id}`, meta: e.eventDate ? new Date(e.eventDate).toLocaleDateString() : undefined, type: 'event', itemType: 'EVENT', userId: e.organizerId, category: e.eventCategory ? canonicalKey('event', e.eventCategory) : undefined, extra: e.location || undefined, location: e.location || undefined, latitude: e.latitude ?? null, longitude: e.longitude ?? null, owner: e.organizer.name || undefined, ownerImage: e.organizer.image, hashtags: e.eventHashtags.map(h => h.hashtag.tag), createdAt: e.eventDate ? new Date(e.eventDate).toISOString() : undefined }))
         }
         case 'project': {
           const rows = await prisma.project.findMany({

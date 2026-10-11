@@ -42,6 +42,8 @@ export default async function DonatePage() {
 
   const prices: Record<string, number> = {}
   for (const p of priceList) prices[p.symbol] = p.price
+  const gold = prices['XAU']
+  const silver = prices['XAG']
 
   const configured = isConfigured()
   const burn = monthlyBurnTotal()
@@ -144,14 +146,29 @@ export default async function DonatePage() {
         </p>
       </section>
 
-      {/* ── Physical metals: arranged one-to-one, no fixed address ── */}
+      {/* ── Metals: live tokenized prices + physical, both arranged ── */}
       <section className={styles.block} id="metals">
         <h2>{t('hMetals')}</h2>
         <p>
-          We also accept physical gold and silver. There is no fixed
-          receiving address for these — the transfer is arranged one-to-one
-          so both sides confirm everything first.
+          We accept tokenized gold and silver at the live per-ounce price
+          below — or physical metal arranged one-to-one. There is no fixed
+          receiving address for either; the transfer is arranged so both
+          sides confirm everything first.
         </p>
+        <ul className={styles.burnList}>
+          <li>
+            <span className={styles.burnLabel}>🥇 Gold (PAXG) / oz</span>
+            <span className={styles.burnAmount}>
+              {gold != null ? formatUsd(gold) : t('priceUnavailable')}
+            </span>
+          </li>
+          <li>
+            <span className={styles.burnLabel}>🥈 Silver (KAG) / oz</span>
+            <span className={styles.burnAmount}>
+              {silver != null ? formatUsd(silver) : t('priceUnavailable')}
+            </span>
+          </li>
+        </ul>
         <p>
           {admin ? (
             <Link href={`/dashboard/messages?user=${admin.id}`}>
