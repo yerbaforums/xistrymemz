@@ -48,6 +48,8 @@
   border: none;
   border-radius: var(--radius-sm);
   color: var(--text-secondary);
+  flex-shrink: 0;
+  white-space: nowrap;
   cursor: pointer;
   font-size: 0.875rem;
   font-weight: 500;

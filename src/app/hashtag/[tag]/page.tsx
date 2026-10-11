@@ -366,7 +366,7 @@ function HashtagPage() {
                       <h3 className={styles.eventCardTitle}>{event.title}</h3>
                       {event.eventDate && (
                         <p className={styles.eventCardDate}>
-                          📅 {new Date(event.eventDate).toLocaleDateString('en-US', {
+                          📅 {new Date(event.eventDate).toLocaleDateString(undefined, {
                             weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
                           })}
                         </p>

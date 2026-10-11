@@ -79,7 +79,9 @@ function HashtagsPage() {
     setLoading(true)
     const params = new URLSearchParams()
     if (debouncedSearch) params.set('search', debouncedSearch)
-    if (sort === 'trending') params.set('mode', 'trending')
+    // Trending reads the 7-day pool; ranked sorts read all-time so popular
+    // tags aren't hidden whenever recent activity exists.
+    params.set('mode', sort === 'trending' ? 'trending' : 'all')
     if (entityFilter !== 'all') params.set('entity', entityFilter)
     params.set('limit', '100')
 

@@ -62,6 +62,11 @@ export async function GET(request: Request) {
       take: limit
     })
     const enriched = await enrichWithCounts(hashtags)
+    // All-time pool honors the entity filter like the trending branch, so
+    // ranked sorts and filters stay consistent across modes.
+    if (entity) {
+      return apiSuccess({ hashtags: enriched.filter(h => (h.entities as Record<string, number>)[entity] > 0) })
+    }
     return apiSuccess({ hashtags: enriched })
   } catch (error) {
     console.error('Error fetching hashtags:', error)

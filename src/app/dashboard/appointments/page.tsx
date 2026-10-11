@@ -79,11 +79,11 @@ const TYPE_CONFIG: Record<string, { icon: string; label: string; color: string }
 }
 
 function formatDate(d: string) {
-  return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  return new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 function formatTime(d: string) {
-  return new Date(d).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+  return new Date(d).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
 }
 
 function formatRelativeDate(dateString: string) {
@@ -95,7 +95,7 @@ function formatRelativeDate(dateString: string) {
   if (diffDays === 1) return 'Yesterday'
   if (diffDays < 7) return `${diffDays}d ago`
   if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
 
 export default function DashboardAppointments() {
@@ -333,7 +333,7 @@ export default function DashboardAppointments() {
   const getDateParts = (dateStr: string | null) => {
     if (!dateStr) return null
     const d = new Date(dateStr)
-    return { day: d.getDate(), month: d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase() }
+    return { day: d.getDate(), month: d.toLocaleDateString(undefined, { month: 'short' }).toUpperCase() }
   }
 
   if (loading) {
@@ -550,7 +550,7 @@ export default function DashboardAppointments() {
             <div className={styles.calendarContainer}>
               <div className={styles.calendarHeader}>
                 <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))} className={styles.calendarNav}>←</button>
-                <h3>{currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h3>
+                <h3>{currentMonth.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</h3>
                 <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))} className={styles.calendarNav}>→</button>
               </div>
               <div className={styles.calendarGrid}>
