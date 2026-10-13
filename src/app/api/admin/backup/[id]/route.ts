@@ -2,6 +2,7 @@ import { apiSuccess, apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { deleteBackup, getBackupFilePath } from '@/services/backupService'
+import { ipfsGatewayUrl } from '@/lib/ipfs'
 
 export const dynamic = 'force-dynamic'
 
@@ -62,9 +63,12 @@ export async function GET(
       const cid = backup.cid || ''
       const isRealCid = cid && !cid.startsWith('local-') && /^[a-zA-Z0-9]+$/.test(cid)
       if (isRealCid) {
-        return NextResponse.redirect(`https://ipfs.io/ipfs/${cid}`, 302)
+        return NextResponse.redirect(ipfsGatewayUrl(cid), 302)
       }
-      return apiError("Backup file no longer on this server — use the IPFS link", 404)
+      return apiError(
+        'Local-only backup (no durable IPFS copy) — set PINATA_API_KEY / PINATA_SECRET_API_KEY and take a new backup. This file is only available on the instance that created it.',
+        404,
+      )
     }
 
     const fs = require('fs')

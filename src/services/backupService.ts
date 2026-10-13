@@ -5,7 +5,7 @@ import path from 'path'
 import crypto from 'crypto'
 import os from 'os'
 import { promisify } from 'util'
-import FormData from 'form-data'
+import { ipfsGatewayUrl } from '@/lib/ipfs'
 
 const execAsync = promisify(exec)
 
@@ -166,42 +166,58 @@ async function createPrismaDump(timestamp: string, fileName: string, filePath: s
   return { filePath, fileName, fileSize: fileStats.size, dbSize }
 }
 
+/** Fallback CID for backups that were not pinned (no credentials or upload failure). */
+function localCid(filePath: string): string {
+  const hash = crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex')
+  return `local-${hash.slice(0, 16)}`
+}
+
 export async function uploadToIPFS(filePath: string): Promise<string> {
   const apiKey = process.env.PINATA_API_KEY
   const secretKey = process.env.PINATA_SECRET_API_KEY
 
   if (!apiKey || !secretKey) {
-    const hash = crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex')
-    return `local-${hash.slice(0, 16)}`
+    console.warn(
+      'Pinata credentials missing (PINATA_API_KEY / PINATA_SECRET_API_KEY) — backup stored as local-only with no durable IPFS copy.',
+    )
+    return localCid(filePath)
+  }
+
+  // Native FormData + Blob: let fetch set the multipart Content-Type itself.
+  // (The previous implementation called form-data's getHeaders() on the native
+  // FormData, which throws on every upload and silently degraded every backup
+  // to a local- CID even with valid keys.)
+  const buffer = fs.readFileSync(filePath)
+  const formData = new FormData()
+  formData.append('file', new Blob([new Uint8Array(buffer)]), path.basename(filePath))
+
+  const headers: Record<string, string> = {}
+  if (apiKey.startsWith('eyJ')) {
+    headers.Authorization = `Bearer ${apiKey}`
+  } else {
+    headers.pinata_api_key = apiKey
+    headers.pinata_secret_api_key = secretKey
   }
 
   try {
-    const form = new FormData()
-    form.append('file', fs.createReadStream(filePath))
-
     const response = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
       method: 'POST',
-      headers: {
-        // form-data's getHeaders() supplies the multipart
-        // Content-Type with boundary — without it native fetch
-        // cannot serialize the body and Pinata rejects the upload.
-        ...form.getHeaders(),
-        'pinata_api_key': apiKey,
-        'pinata_secret_api_key': secretKey,
-      },
-      body: form as unknown as BodyInit,
+      headers,
+      body: formData,
     })
 
     if (!response.ok) {
-      throw new Error(`Pinata upload failed: ${response.statusText}`)
+      const errText = await response.text().catch(() => '')
+      throw new Error(`Pinata upload failed (${response.status}): ${errText.slice(0, 200)}`)
     }
 
     const data = await response.json()
-    return data.IpfsHash
+    return data.IpfsHash as string
   } catch (error) {
-    console.error('IPFS upload failed, using local hash:', error)
-    const hash = crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex')
-    return `local-${hash.slice(0, 16)}`
+    // Keep the backup usable on the creating instance, but say so loudly —
+    // the admin table flags local- CIDs as not durable.
+    console.error('IPFS backup upload failed — backup stored as local-only:', error)
+    return localCid(filePath)
   }
 }
 
@@ -295,6 +311,7 @@ export async function getBackupsList() {
 
   return backups.map(b => ({
     ...b,
+    gatewayUrl: ipfsGatewayUrl(b.cid),
     createdAt: b.createdAt.toISOString(),
   }))
 }

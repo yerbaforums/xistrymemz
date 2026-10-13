@@ -10,6 +10,7 @@ interface BackupRecord {
   cid: string
   magnetLink: string
   torrentFile: string
+  gatewayUrl: string
   fileName: string
   fileSize: number
   dbSize: number
@@ -321,6 +322,11 @@ export default function AdminBackupsPage() {
                   <td className={styles.date}>{formatDate(b.createdAt)}</td>
                   <td>
                     <span className={styles.cid} title={b.cid}>{b.cid}</span>
+                    {b.cid.startsWith('local-') && (
+                      <span className={styles.localBadge} title="Not pinned to IPFS — only available on the instance that created it. Set PINATA_API_KEY/PINATA_SECRET_API_KEY for durable copies.">
+                        Local only
+                      </span>
+                    )}
                   </td>
                   <td>
                     <div className={styles.actions}>
@@ -332,7 +338,7 @@ export default function AdminBackupsPage() {
                       </a>
                       {!b.cid.startsWith('local-') && (
                         <a
-                          href={`https://ipfs.io/ipfs/${b.cid}`}
+                          href={b.gatewayUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className={styles.actionBtn}
@@ -341,14 +347,6 @@ export default function AdminBackupsPage() {
                           🌐 IPFS
                         </a>
                       )}
-                      <a
-                        href={b.magnetLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.actionBtn}
-                      >
-                        🧲 Magnet
-                      </a>
                       <button
                         onClick={() => setDeleteTarget(b.id)}
                         className={`${styles.actionBtn} ${styles.danger}`}

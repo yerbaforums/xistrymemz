@@ -295,6 +295,19 @@
   display: block;
 }
 
+.localBadge {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border: 1px solid var(--accent-secondary);
+  border-radius: 999px;
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--accent-secondary);
+  font-size: 0.7rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
 .actions {
   display: flex;
   gap: 6px;

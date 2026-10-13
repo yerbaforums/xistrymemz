@@ -3,6 +3,11 @@ const PINATA_SECRET_API_KEY = process.env.PINATA_SECRET_API_KEY || ''
 const IPFS_API_URL = process.env.IPFS_API_URL || 'http://127.0.0.1:5001'
 const IPFS_GATEWAY = process.env.IPFS_GATEWAY || 'https://gateway.pinata.cloud'
 
+/** Gateway URL for a CID, honoring the IPFS_GATEWAY env (or Pinata's public one). */
+export function ipfsGatewayUrl(cid: string): string {
+  return `${IPFS_GATEWAY}/ipfs/${cid}`
+}
+
 function pinataHeaders(): Record<string, string> {
   const headers: Record<string, string> = {}
   if (PINATA_API_KEY.startsWith('eyJ')) {
