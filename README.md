@@ -57,52 +57,19 @@ a member across all of them.
 
 ```mermaid
 flowchart TB
-  subgraph Public[Public site]
-    Home[🏠 Homepage]
-    Directory[📖 Directory — phonebook<br/>White · Yellow · Blue · Green · Violet<br/>+ map discovery]
-    Discover[🧭 Discover]
-    Search[🔍 Search]
-  end
+  Home[🏠 Homepage] --> Directory[📖 Directory — phonebook + map] & Discover[🧭 Discover] & Search[🔍 Search]
 
   subgraph Members[Member areas]
-    subgraph Social[Social]
-      Feed[Chronological feed]
-      Hashtags[Hashtags]
-      Boards[📌 Boards + map pins]
-      Groups[👥 Groups]
-      Msgs[💌 Connections + messaging]
-      Tips[💸 Author tips]
-    end
-    subgraph Economy[Economy — 0% platform fee]
-      Market[🛒 Products · services · rentals]
-      Shops[🏪 Custom-URL shops]
-      GroupBuys[Group buys]
-      Barter[🤝 Barter offers]
-      Requests[🎯 Projects, requests & funding]
-    end
-    subgraph Learn[Learn & create]
-      School[🎓 Courses + paid tiers]
-      Blogs[✍️ Blogs]
-      Podcasts[🎙️ Podcasts + per-show RSS]
-      Video[📹 P2P video/audio rooms]
-    end
-    subgraph Plan[Plan & meet]
-      Events[📅 Events + QR ticketing]
-      Appointments[📆 Appointments]
-      Trips[🗺️ Trips planner + custom stops]
-      Courier[🚚 Courier deals]
-    end
+    Social[💬 Social<br/>feed · hashtags · boards<br/>groups · tips · messages]
+    Economy[🛒 Economy — 0% platform fee<br/>products · services · rentals<br/>shops · group buys · barter]
+    Create[🎓 Learn + create<br/>school · blogs · podcasts<br/>P2P video/audio rooms]
+    Plan[📅 Plan + meet<br/>events + QR tickets · appointments<br/>trips planner · courier]
+    Projects[🎯 Projects + requests<br/>goals · funding · offers]
   end
 
-  Passport[🛂 Earth Passport<br/>identity · reputation badges · 14 classes<br/>opt-in location · privacy controls] --- Members
-
-  Dashboard[🕹️ Dashboard hub<br/>overview gauges · action queue · saved<br/>deals — search / filter / sort + pipeline value<br/>planner — status + past filters] -.-> Members
-
-  Admin[🛡️ Admin panel<br/>analytics + CSV · IPFS backups · reports<br/>badges · invite codes · subscribers · users] -.-> Members
-
-  Reach[🌍 Reach<br/>16 locales · PWA/offline shell<br/>sitemap + structured SEO · feed.xml<br/>ActivityPub — wiring in progress] --- Members
-
-  Public --> Members
+  Passport[🛂 Earth Passport<br/>identity · reputation · privacy] --- Members
+  Dashboard[🕹️ Dashboard hub] -.-> Members
+  Admin[🛡️ Admin panel] -.-> Members
 ```
 
 Money never routes through the platform. A buyer sends coins straight to the
@@ -111,10 +78,8 @@ alive is donations, not fees:
 
 ```mermaid
 flowchart LR
-  Buyer[Buyer] -->|sends coins directly —<br/>Monero · Minotari · Zano · Freedom Dollar| Wallet[Seller's wallet]
-  Wallet --> Kept[Seller keeps 100%]
-  Donors[Voluntary donations] --> Platform[Platform<br/>no custody · no processor<br/>no KYC · 0% fees]
-  Platform -.->|never touches the money| Buyer
+  Buyer[Buyer] -->|Monero · Minotari · Zano · Freedom Dollar| Seller[Seller's wallet — keeps 100%]
+  Donors[Voluntary donations] --> Platform[Platform — 0% fees · no custody · no KYC]
 ```
 
 ## Stack
@@ -125,35 +90,10 @@ Sharp + Pinata/IPFS · Zod · Jest
 
 ```mermaid
 flowchart TB
-  subgraph Client[Browser · PWA]
-    UI[Next.js 16 + React 19<br/>16 locales · offline shell]
-  end
-
-  subgraph App[Next.js server]
-    Pages[Pages + server actions]
-    API[API routes]
-    Auth[NextAuth v4]
-    Cron[Cron jobs<br/>federation · reminders · backups]
-    Fed[ActivityPub<br/>inbox / outbox / nodeinfo]
-  end
-
-  subgraph Infra[Backing services]
-    DB[(Neon PostgreSQL<br/>Prisma 6)]
-    Pinata[Pinata — IPFS pinning<br/>media + durable backups]
-    Resend[Resend — transactional email]
-    DeepL[DeepL — machine translation]
-    Maps[OpenStreetMap tiles]
-    WebRTC[simple-peer — P2P rooms]
-  end
-
-  UI --> Pages & API
-  Pages --> Auth --> DB
-  API --> DB
-  API --> Pinata & Resend & DeepL
-  Cron --> API
-  Fed --> API
-  UI --> Maps
-  UI --> WebRTC
+  UI[Browser · PWA<br/>Next.js 16 + React 19 · 16 locales] --> Server[Next.js server<br/>pages · API routes · NextAuth v4<br/>cron · ActivityPub]
+  Server --> DB[(Neon PostgreSQL — Prisma 6)]
+  Server --> Pinata[Pinata — IPFS] & Resend[Resend — email] & DeepL[DeepL — translation]
+  UI --> Maps[OpenStreetMap] & WebRTC[simple-peer — P2P rooms]
 ```
 
 ### Repository layout
@@ -164,10 +104,11 @@ src/
 ├── components/   # Shared UI (filters, modals, pickers)
 ├── hooks/        # useVideoChat (WebRTC + screen share), …
 ├── lib/          # constants, auth, ipfs, media, i18n routing
-├── services/     # backupService (dumps, IPFS, torrents)
+├── services/     # backupService (dumps, encryption, IPFS)
 ├── i18n/         # locale routing + message loading
 prisma/           # schema.prisma
 public/           # crypto-logos, PWA manifest
+scripts/          # decrypt-backup.mjs (offline restore)
 ```
 
 ## Running it locally
@@ -211,6 +152,8 @@ holds placeholders only, never real secrets. Only `DATABASE_URL` and
 | `PINATA_API_KEY` + `PINATA_SECRET_API_KEY` | | IPFS pinning — required for durable backups and IPFS media; without them backups are local-only | (empty) |
 | `IPFS_GATEWAY` | | Public gateway for CID downloads and media links | `https://gateway.pinata.cloud` |
 | `IPFS_API_URL` | | Local IPFS node HTTP API for self-hosted pinning | `http://127.0.0.1:5001` |
+| `BACKUP_ENCRYPTION_KEY` | for backups | AES-256-GCM key — dumps are encrypted before they touch disk or IPFS; backups refuse to run without it | `openssl rand -base64 32` |
+| `IPFS_PIN_URL` | | Pin backups to your own IPFS node (kubo RPC URL) instead of Pinata | (empty) |
 | `RESEND_API_KEY` | | Transactional email (notifications, verification) | (empty) |
 | `EMAIL_FROM` | | Sender address for emails | `noreply@xistrymemz.xyz` |
 | `DEEPL_API_KEY` | | Machine translation for missing locales | (empty) |
@@ -219,24 +162,34 @@ holds placeholders only, never real secrets. Only `DATABASE_URL` and
 
 ### Backups
 
-The admin **Backups** page snapshots the database on a schedule. When Pinata is
-configured each dump is delivered three ways — a plain download, an IPFS
-gateway link, and a torrent / magnet pair — and falls back to a local-only copy
-otherwise:
+The admin **Backups** page snapshots the database. Every dump is encrypted
+before it leaves the server (AES-256-GCM via `BACKUP_ENCRYPTION_KEY`), so the
+pinned IPFS copy is ciphertext — a leaked CID reveals nothing without the key.
+
+Decentralized storage, any of:
+
+- **Pinata** — managed pinning; set both API keys.
+- **Your own IPFS node** — set `IPFS_PIN_URL` to a kubo RPC URL; no third party.
+- **Manual** — download the ciphertext from a CID and keep it offline.
+
+Automatic backups: point a cron provider at `/api/cron/backup` with
+`CRON_SECRET` (query param or Bearer token). Offline restore:
+`BACKUP_ENCRYPTION_KEY=… node scripts/decrypt-backup.mjs backup.enc -o restored.sql.gz`.
 
 ```mermaid
 flowchart TB
-  Dump[Database dump — gzip] --> Pinata{Pinata<br/>credentials?}
-  Pinata -->|set + upload OK| Pinned[Pinned to IPFS — real CID]
-  Pinata -->|missing / failed| Local[local- CID — not durable]
-
-  Pinned --> D1[⬇ Download<br/>authed API route — streams the file,<br/>redirects to the gateway when off-instance]
-  Pinned --> D2[🌐 Gateway link<br/>opens IPFS_GATEWAY from anywhere]
-  Pinned --> D3[🧲 Torrent path<br/>magnet URI + .torrent metadata file<br/>IPFS webseed + public trackers]
-
-  Local --> L1[⬇ Download only on the instance<br/>that created the backup]
-  Local --> L2[⚠️ Local-only badge in the table]
+  Dump[DB dump — gzip] --> Enc[🔒 Encrypt — AES-256-GCM]
+  Enc --> Target{Backup target?}
+  Target -->|Pinata keys| Pinata[Pinned ciphertext — real CID]
+  Target -->|IPFS_PIN_URL| Node[Your own IPFS node — real CID]
+  Target -->|none| Local[local- CID — not durable]
+  Pinata & Node --> DL[⬇ Download — authed route, decrypted server-side]
+  Pinata & Node --> GW[🌐 Gateway — ciphertext, restore offline with the key]
+  Local --> L[⬇ Only on the creating instance · Local-only badge]
 ```
+
+> Backups taken before encryption landed were pinned as plaintext — unpin
+> them from the Pinata dashboard and take a fresh backup.
 
 ## Funding
 

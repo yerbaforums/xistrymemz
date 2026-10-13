@@ -2093,10 +2093,10 @@ model File {
 // Database backups with torrent seeding
 model Backup {
   id          String   @id @default(cuid())
-  cid         String   @unique // IPFS CID of backup file
-  magnetLink  String // Full magnet URI with trackers + IPFS webseed
-  torrentFile String // Path to .torrent file in public/backups/
-  fileName    String // backup-2026-05-06.sql.gz
+  cid         String   @unique // IPFS CID of the encrypted backup file
+  magnetLink  String // unused — torrent linking removed; always ''
+  torrentFile String // unused — torrent linking removed; always ''
+  fileName    String // backup-2026-05-06.sql.gz.enc (encrypted with BACKUP_ENCRYPTION_KEY)
   fileSize    Int // Bytes
   dbSize      Int // Original DB size before compression
   createdById String

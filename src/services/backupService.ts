@@ -86,7 +86,78 @@ async function prismaDump(): Promise<string> {
   return JSON.stringify(data, null, 2)
 }
 
+// ── Encryption ──────────────────────────────────────────────────────
+// Every dump is encrypted before it touches disk or IPFS, so a
+// leaked CID only ever exposes ciphertext. File layout:
+//   [16-byte scrypt salt][12-byte IV][16-byte GCM auth tag][ciphertext]
+// The key is derived with scrypt from BACKUP_ENCRYPTION_KEY. GCM's
+// auth tag doubles as tamper detection — a corrupted or modified
+// backup fails to decrypt instead of restoring silently.
+
+function getBackupPassphrase(): string {
+  const passphrase = process.env.BACKUP_ENCRYPTION_KEY
+  if (!passphrase) {
+    throw new Error(
+      'BACKUP_ENCRYPTION_KEY is not set — refusing to create an unencrypted backup. Generate one with: openssl rand -base64 32',
+    )
+  }
+  return passphrase
+}
+
+function encryptFile(plainPath: string): string {
+  const passphrase = getBackupPassphrase()
+  const salt = crypto.randomBytes(16)
+  const iv = crypto.randomBytes(12)
+  const key = crypto.scryptSync(passphrase, salt, 32)
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv)
+  const input = fs.readFileSync(plainPath)
+  const encrypted = Buffer.concat([cipher.update(input), cipher.final()])
+  const tag = cipher.getAuthTag()
+
+  const encPath = `${plainPath}.enc`
+  fs.writeFileSync(encPath, Buffer.concat([salt, iv, tag, encrypted]))
+  fs.unlinkSync(plainPath) // never leave plaintext on disk
+  return encPath
+}
+
+/** Decrypt a backup file (same layout as encryptFile). */
+export function decryptBackupFile(encPath: string): Buffer {
+  const passphrase = getBackupPassphrase()
+  const data = fs.readFileSync(encPath)
+  const salt = data.subarray(0, 16)
+  const iv = data.subarray(16, 28)
+  const tag = data.subarray(28, 44)
+  const ciphertext = data.subarray(44)
+  const key = crypto.scryptSync(passphrase, salt, 32)
+  const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv)
+  decipher.setAuthTag(tag)
+  return Buffer.concat([decipher.update(ciphertext), decipher.final()])
+}
+
+/**
+ * Create a database dump. The raw dump is produced by
+ * createPlainDump (pg_dump, sqlite, or a Prisma JSON fallback)
+ * and encrypted before anything else sees it — the file on disk,
+ * the IPFS-pinned copy, and every download are all ciphertext.
+ */
 export async function createDatabaseDump(): Promise<{
+  filePath: string
+  fileName: string
+  fileSize: number
+  dbSize: number
+}> {
+  const dump = await createPlainDump()
+  const encPath = encryptFile(dump.filePath)
+  const stats = fs.statSync(encPath)
+  return {
+    filePath: encPath,
+    fileName: `${dump.fileName}.enc`,
+    fileSize: stats.size,
+    dbSize: dump.dbSize,
+  }
+}
+
+async function createPlainDump(): Promise<{
   filePath: string
   fileName: string
   fileSize: number
@@ -176,13 +247,35 @@ export async function uploadToIPFS(filePath: string): Promise<string> {
   const apiKey = process.env.PINATA_API_KEY
   const secretKey = process.env.PINATA_SECRET_API_KEY
 
-  if (!apiKey || !secretKey) {
-    console.warn(
-      'Pinata credentials missing (PINATA_API_KEY / PINATA_SECRET_API_KEY) — backup stored as local-only with no durable IPFS copy.',
-    )
-    return localCid(filePath)
+  // Target 1 — managed pinning (Pinata) when credentials exist.
+  if (apiKey && secretKey) {
+    try {
+      return await pinToPinata(filePath, apiKey, secretKey)
+    } catch (error) {
+      console.error('Pinata upload failed — trying the next backup target:', error)
+    }
   }
 
+  // Target 2 — an admin's own IPFS node (IPFS_PIN_URL). Raw kubo
+  // RPC over HTTP, so no client dependency is needed. Decentralized
+  // durability without a third party.
+  const pinUrl = process.env.IPFS_PIN_URL
+  if (pinUrl) {
+    try {
+      return await pinToOwnNode(filePath, pinUrl)
+    } catch (error) {
+      console.error('Own-node pinning failed — storing local-only:', error)
+    }
+  }
+
+  // No durable target — local-only, flagged in the admin table.
+  console.warn(
+    'No backup target configured (PINATA_API_KEY/PINATA_SECRET_API_KEY or IPFS_PIN_URL) — backup stored as local-only with no durable copy.',
+  )
+  return localCid(filePath)
+}
+
+async function pinToPinata(filePath: string, apiKey: string, secretKey: string): Promise<string> {
   // Native FormData + Blob: let fetch set the multipart Content-Type itself.
   // (The previous implementation called form-data's getHeaders() on the native
   // FormData, which throws on every upload and silently degraded every backup
@@ -199,57 +292,62 @@ export async function uploadToIPFS(filePath: string): Promise<string> {
     headers.pinata_secret_api_key = secretKey
   }
 
-  try {
-    const response = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
-      method: 'POST',
-      headers,
-      body: formData,
-    })
+  const response = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
+    method: 'POST',
+    headers,
+    body: formData,
+  })
 
-    if (!response.ok) {
-      const errText = await response.text().catch(() => '')
-      throw new Error(`Pinata upload failed (${response.status}): ${errText.slice(0, 200)}`)
-    }
-
-    const data = await response.json()
-    return data.IpfsHash as string
-  } catch (error) {
-    // Keep the backup usable on the creating instance, but say so loudly —
-    // the admin table flags local- CIDs as not durable.
-    console.error('IPFS backup upload failed — backup stored as local-only:', error)
-    return localCid(filePath)
+  if (!response.ok) {
+    const errText = await response.text().catch(() => '')
+    throw new Error(`Pinata upload failed (${response.status}): ${errText.slice(0, 200)}`)
   }
+
+  const data = await response.json()
+  return data.IpfsHash as string
 }
 
-export function generateMagnetLink(cid: string, fileName: string): string {
-  const trackers = [
-    'udp://tracker.opentrackr.org:1337/announce',
-    'udp://tracker.openbittorrent.com:6969/announce',
-    'udp://tracker.leechers-paradise.org:6969/announce',
-    'udp://9.rarbg.to:2710/announce',
-    'udp://p4p.arenabg.com:1337/announce',
-  ]
+async function pinToOwnNode(filePath: string, url: string): Promise<string> {
+  // POST /api/v0/add?pin=true — adds and pins in one call on any
+  // kubo-compatible node. The response shape varies slightly by version.
+  const buffer = fs.readFileSync(filePath)
+  const formData = new FormData()
+  formData.append('file', new Blob([new Uint8Array(buffer)]), path.basename(filePath))
 
-  const trackerParams = trackers.map(t => `tr=${encodeURIComponent(t)}`).join('&')
-  return `magnet:?xt=urn:btih:${cid}&dn=${encodeURIComponent(fileName)}&${trackerParams}&ws=http://ipfs.io/ipfs/${cid}`
+  const response = await fetch(`${url.replace(/\/+$/, '')}/api/v0/add?pin=true`, {
+    method: 'POST',
+    body: formData,
+  })
+
+  if (!response.ok) {
+    const errText = await response.text().catch(() => '')
+    throw new Error(`IPFS node add failed (${response.status}): ${errText.slice(0, 200)}`)
+  }
+
+  const data = await response.json()
+  const cid = data.Cid?.['/'] || data.Hash || data.cid
+  if (typeof cid !== 'string' || !cid) {
+    throw new Error('IPFS node returned no CID')
+  }
+  return cid
 }
 
 export async function saveBackupRecord(metadata: {
   cid: string
-  magnetLink: string
   fileName: string
   fileSize: number
   dbSize: number
   userId: string
 }) {
-  const torrentFileName = `${metadata.fileName.replace('.sql.gz', '')}.torrent`
-  saveTorrentFile(torrentFileName, metadata, getBackupDir())
-
+  // Torrent linking was removed: magnet URIs announced the dump to
+  // public BitTorrent trackers with an IPFS webseed — the leakiest
+  // possible channel for a private database dump. The columns stay
+  // non-null in the schema, so they are simply left empty.
   const backup = await prisma.backup.create({
     data: {
       cid: metadata.cid,
-      magnetLink: metadata.magnetLink,
-      torrentFile: `/backups/${torrentFileName}`,
+      magnetLink: '',
+      torrentFile: '',
       fileName: metadata.fileName,
       fileSize: metadata.fileSize,
       dbSize: metadata.dbSize,
@@ -264,43 +362,6 @@ export async function saveBackupRecord(metadata: {
   return backup
 }
 
-function saveTorrentFile(fileName: string, metadata: { cid: string; fileName: string; fileSize: number }, baseDir: string) {
-  const torrentPath = path.join(baseDir, fileName)
-  const content = {
-    ...createTorrentContent(metadata),
-    createdBy: 'XistryMemz Backup System',
-    creationDate: new Date().toISOString(),
-  }
-  fs.writeFileSync(torrentPath, JSON.stringify(content, null, 2))
-}
-
-function createTorrentContent(metadata: {
-  cid: string
-  fileName: string
-  fileSize: number
-}) {
-  return {
-    version: 1,
-    createdBy: 'XistryMemz Backup System',
-    creationDate: new Date().toISOString(),
-    info: {
-      name: metadata.fileName,
-      length: metadata.fileSize,
-      pieceLength: 262144,
-      pieces: metadata.cid,
-      private: false,
-    },
-    'ipfs-cid': metadata.cid,
-    webseeds: [
-      `https://ipfs.io/ipfs/${metadata.cid}`,
-    ],
-    announceList: [
-      ['udp://tracker.opentrackr.org:1337/announce'],
-      ['udp://tracker.openbittorrent.com:6969/announce'],
-    ],
-  }
-}
-
 export async function getBackupsList() {
   const backups = await prisma.backup.findMany({
     orderBy: { createdAt: 'desc' },
@@ -311,6 +372,7 @@ export async function getBackupsList() {
 
   return backups.map(b => ({
     ...b,
+    encrypted: b.fileName.endsWith('.enc'),
     gatewayUrl: ipfsGatewayUrl(b.cid),
     createdAt: b.createdAt.toISOString(),
   }))
@@ -323,12 +385,6 @@ export async function deleteBackup(id: string) {
   const filePath = getBackupFilePath(backup.fileName)
   if (filePath) {
     fs.unlinkSync(filePath)
-  }
-
-  const torrentFileName = path.basename(backup.torrentFile)
-  const torrentPath = path.join(getBackupDir(), torrentFileName)
-  if (fs.existsSync(torrentPath)) {
-    fs.unlinkSync(torrentPath)
   }
 
   await prisma.backup.delete({ where: { id } })

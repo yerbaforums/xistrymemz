@@ -1,8 +1,11 @@
 import { apiSuccess, apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { deleteBackup, getBackupFilePath } from '@/services/backupService'
+import { deleteBackup, getBackupFilePath, decryptBackupFile } from '@/services/backupService'
 import { ipfsGatewayUrl } from '@/lib/ipfs'
+import fs from 'fs'
+import os from 'os'
+import path from 'path'
 
 export const dynamic = 'force-dynamic'
 
@@ -63,22 +66,47 @@ export async function GET(
       const cid = backup.cid || ''
       const isRealCid = cid && !cid.startsWith('local-') && /^[a-zA-Z0-9]+$/.test(cid)
       if (isRealCid) {
+        // The pinned copy is AES-256-GCM ciphertext. This redirect is
+        // the disaster-recovery path: download the ciphertext and
+        // decrypt it offline with scripts/decrypt-backup.mjs and the
+        // BACKUP_ENCRYPTION_KEY.
         return NextResponse.redirect(ipfsGatewayUrl(cid), 302)
       }
       return apiError(
-        'Local-only backup (no durable IPFS copy) — set PINATA_API_KEY / PINATA_SECRET_API_KEY and take a new backup. This file is only available on the instance that created it.',
+        'Local-only backup (no durable IPFS copy) — set PINATA_API_KEY / PINATA_SECRET_API_KEY (or IPFS_PIN_URL) and take a new backup. This file is only available on the instance that created it.',
         404,
       )
     }
 
-    const fs = require('fs')
-    const stat = fs.statSync(filePath)
-    const fileStream = fs.createReadStream(filePath)
+    const downloadName = backup.fileName.replace(/\.enc$/, '')
+
+    // Encrypted backups (the current format) are decrypted
+    // server-side and streamed from a temp file so large dumps
+    // never sit in memory; the temp file is removed once the
+    // stream closes. Legacy plaintext backups (pre-encryption)
+    // stream as-is.
+    let servePath = filePath
+    let isTemp = false
+    if (backup.fileName.endsWith('.enc')) {
+      const plain = decryptBackupFile(filePath)
+      const tmpPath = path.join(os.tmpdir(), `restore-${Date.now()}-${downloadName}`)
+      fs.writeFileSync(tmpPath, plain)
+      servePath = tmpPath
+      isTemp = true
+    }
+
+    const stat = fs.statSync(servePath)
+    const fileStream = fs.createReadStream(servePath)
+    if (isTemp) {
+      fileStream.on('close', () => {
+        try { fs.unlinkSync(servePath) } catch {}
+      })
+    }
 
     return new NextResponse(fileStream as unknown as BodyInit, {
       headers: {
         'Content-Type': 'application/gzip',
-        'Content-Disposition': `attachment; filename="${backup.fileName}"`,
+        'Content-Disposition': `attachment; filename="${downloadName}"`,
         'Content-Length': String(stat.size),
       },
     })

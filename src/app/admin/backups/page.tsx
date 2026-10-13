@@ -8,8 +8,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog'
 interface BackupRecord {
   id: string
   cid: string
-  magnetLink: string
-  torrentFile: string
+  encrypted: boolean
   gatewayUrl: string
   fileName: string
   fileSize: number
@@ -172,8 +171,8 @@ export default function AdminBackupsPage() {
         <div>
           <h1>Database Backups</h1>
           <p className={styles.subtitle}>
-            Create, download, and manage encrypted database backups with IPFS
-            &amp; BitTorrent distribution
+            Create, download, and manage encrypted database backups with
+            durable IPFS copies
           </p>
         </div>
       </div>
@@ -209,9 +208,10 @@ export default function AdminBackupsPage() {
       <div className={styles.section}>
         <h2>Create Backup</h2>
         <p className={styles.description}>
-          Manually trigger a full database backup. The dump is compressed with
-          gzip, pinned to IPFS, and a magnet link is generated for BitTorrent
-          distribution.
+          Manually trigger a full database backup. The dump is compressed
+          with gzip, encrypted with AES-256-GCM, and pinned to IPFS as
+          ciphertext — a leaked CID reveals nothing without
+          BACKUP_ENCRYPTION_KEY.
         </p>
         <div className={styles.createSection}>
           <button
@@ -316,6 +316,11 @@ export default function AdminBackupsPage() {
                     {b.fileName.length > 30
                       ? b.fileName.slice(0, 27) + '...'
                       : b.fileName}
+                    {b.encrypted && (
+                      <span className={styles.encBadge} title="AES-256-GCM encrypted — the pinned copy is ciphertext and needs BACKUP_ENCRYPTION_KEY to restore.">
+                        🔒 Encrypted
+                      </span>
+                    )}
                   </td>
                   <td className={styles.fileSize}>{formatBytes(b.fileSize)}</td>
                   <td className={styles.fileSize}>{formatBytes(b.dbSize)}</td>
@@ -323,7 +328,7 @@ export default function AdminBackupsPage() {
                   <td>
                     <span className={styles.cid} title={b.cid}>{b.cid}</span>
                     {b.cid.startsWith('local-') && (
-                      <span className={styles.localBadge} title="Not pinned to IPFS — only available on the instance that created it. Set PINATA_API_KEY/PINATA_SECRET_API_KEY for durable copies.">
+                      <span className={styles.localBadge} title="Not pinned to IPFS — only available on the instance that created it. Set PINATA_API_KEY/PINATA_SECRET_API_KEY (or IPFS_PIN_URL) for durable copies.">
                         Local only
                       </span>
                     )}
@@ -342,7 +347,7 @@ export default function AdminBackupsPage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className={styles.actionBtn}
-                          title="Durable copy pinned on IPFS"
+                          title="Ciphertext pinned on IPFS — restore offline with scripts/decrypt-backup.mjs + BACKUP_ENCRYPTION_KEY"
                         >
                           🌐 IPFS
                         </a>

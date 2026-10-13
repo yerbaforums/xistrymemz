@@ -4,7 +4,6 @@ import { authOptions } from '@/lib/auth'
 import {
   createDatabaseDump,
   uploadToIPFS,
-  generateMagnetLink,
   saveBackupRecord,
   getBackupsList,
   getBackupStats,
@@ -55,11 +54,9 @@ export async function POST() {
     const dump = await createDatabaseDump()
 
     const cid = await uploadToIPFS(dump.filePath)
-    const magnetLink = generateMagnetLink(cid, dump.fileName)
 
     const backup = await saveBackupRecord({
       cid,
-      magnetLink,
       fileName: dump.fileName,
       fileSize: dump.fileSize,
       dbSize: dump.dbSize,
