@@ -10,6 +10,7 @@ import { QRCodeModal } from '@/components/QRCodeModal'
 import SponsorButton from '@/components/SponsorButton'
 import { useToast } from '@/context/ToastContext'
 import { getCryptoIcon, getCryptoName } from '@/lib/crypto-icons'
+import { SUPPORTED_CRYPTOS } from '@/lib/constants'
 
 interface ProjectSupportProps {
   projectId: string
@@ -231,15 +232,14 @@ export default function ProjectSupport({
                       <input
                         type="number" value={editGoalAmount} onChange={e => setEditGoalAmount(parseFloat(e.target.value) || 0)}
                         className={styles.editInput}
-                        min={0} step={1}
+                        min={0} step={1} inputMode="decimal"
+                        aria-label="Funding goal amount"
                         placeholder="Amount"
                       />
-                      <select value={editCurrency} onChange={e => setEditCurrency(e.target.value)} className={styles.editCurrencySelect}>
-                        <option value="USD">$ USD</option>
-                        <option value="XMR">XMR (Monero)</option>
-                        <option value="XTM">XTM (Tari)</option>
-                        <option value="ZANO">ZANO (Zano)</option>
-                        <option value="FUSD">FUSD (Freedom Dollar)</option>
+                      <select value={editCurrency} onChange={e => setEditCurrency(e.target.value)} className={styles.editCurrencySelect} aria-label="Funding goal currency">
+                        {SUPPORTED_CRYPTOS.map(c => (
+                          <option key={c} value={c}>{getCryptoName(c)} ({c})</option>
+                        ))}
                       </select>
                     </div>
                     <button onClick={async () => {
@@ -247,7 +247,7 @@ export default function ProjectSupport({
                       try {
                         await fetch(`/api/projects/${projectId}`, {
                           method: 'PUT', headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ goalAmount: editGoalAmount || null })
+                          body: JSON.stringify({ goalAmount: editGoalAmount || null, donationCurrency: editCurrency })
                         })
                         toastSuccess('Goal updated!')
                         setEditGoal(false)
@@ -278,6 +278,18 @@ export default function ProjectSupport({
                   </div>
                 ) : (
                   <form onSubmit={handleContribute} className={styles.contributeForm}>
+                    <div className={styles.quickAmounts} role="group" aria-label="Quick contribution amounts">
+                      {[5, 10, 25, 50].map(amount => (
+                        <button
+                          key={amount}
+                          type="button"
+                          onClick={() => setContributeAmount(Math.min(amount, maxSlider))}
+                          className={`${styles.quickAmount} ${contributeAmount === Math.min(amount, maxSlider) ? styles.quickAmountActive : ''}`}
+                        >
+                          {amount} {donationCurrency}
+                        </button>
+                      ))}
+                    </div>
                     <div className={styles.sliderRow}>
                       <label className={styles.contributeLabel} htmlFor="amount-donationcurrency-contributeamount">
                         Amount ({donationCurrency}): <strong>{contributeAmount}</strong>

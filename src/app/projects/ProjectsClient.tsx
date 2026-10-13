@@ -57,6 +57,7 @@ interface ProjectData {
   longitude: number | null
   goalAmount: number | null
   currentFunding: number | null
+  donationCurrency: string
   createdAt: string
   updatedAt: string
   user: { id: string; name: string | null; image: string | null; username: string | null }
@@ -395,7 +396,7 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
         <div className={styles.cardFundingBar}>
           <div className={styles.cardFundingFill} style={{ width: `${pct}%` }} />
         </div>
-        <span className={styles.cardFundingLabel}>{funded}/{goal} raised</span>
+        <span className={styles.cardFundingLabel}>{funded}/{goal} {project.donationCurrency} raised</span>
       </div>
     )
   }
@@ -564,7 +565,7 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
                             </svg>
-                            {project.currentFunding || 0}/{project.goalAmount}
+                            {project.currentFunding || 0}/{project.goalAmount} {project.donationCurrency}
                           </span>
                         )}
                       </div>

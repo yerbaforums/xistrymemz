@@ -950,7 +950,7 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
                     {project.goalAmount && project.goalAmount > 0 && (
                       <div className={styles.statChip}>
                         <span className={styles.statChipIcon}>💰</span>
-                        <span>${project.currentFunding || 0} / ${project.goalAmount}</span>
+                        <span>{project.currentFunding || 0} / {project.goalAmount} {project.donationCurrency}</span>
                       </div>
                     )}
                     {project.needsVolunteers && (

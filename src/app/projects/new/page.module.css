@@ -487,3 +487,24 @@
   outline: none;
   border-color: var(--accent-primary);
 }
+
+.goalCurrencyRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.goalCurrencyRow input {
+  flex: 1;
+  min-width: 0;
+}
+
+.goalCurrencyRow select {
+  width: auto;
+  flex-shrink: 0;
+}
+
+.hint {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}

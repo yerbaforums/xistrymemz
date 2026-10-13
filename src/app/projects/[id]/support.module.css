@@ -642,3 +642,30 @@
   font-size: 0.85rem;
   cursor: pointer;
 }
+
+.quickAmounts {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.quickAmount {
+  padding: 5px 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.quickAmount:hover {
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+}
+
+.quickAmountActive {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}

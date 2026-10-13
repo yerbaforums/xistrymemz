@@ -37,6 +37,7 @@ export default async function ProjectsPage() {
       updatedAt: true,
       goalAmount: true,
       currentFunding: true,
+      donationCurrency: true,
       user: { select: { id: true, name: true, username: true, image: true } },
       _count: { select: { requests: true, joiners: true } },
       events: {

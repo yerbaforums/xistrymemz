@@ -15,6 +15,8 @@ import AssetPicker from '@/components/AssetPicker'
 import NextStepsSheet from '@/components/NextStepsSheet'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import { PROJECT_CATEGORIES } from '@/lib/project-categories'
+import { SUPPORTED_CRYPTOS } from '@/lib/constants'
+import { getCryptoName } from '@/lib/crypto-icons'
 import type { UserAsset } from '@/components/AssetPicker'
 import type { DonationAddr } from '@/types/product'
 
@@ -104,6 +106,7 @@ export default function NewProjectPage() {
   const [volunteerRoles, setVolunteerRoles] = useState('')
   const [volunteerDescription, setVolunteerDescription] = useState('')
   const [goalAmount, setGoalAmount] = useState('')
+  const [goalCurrency, setGoalCurrency] = useState('FUSD')
   const [acceptsDonations, setAcceptsDonations] = useState(false)
   const [selectedDonationAddrs, setSelectedDonationAddrs] = useState<DonationAddr[]>([])
   const [donationDescription, setDonationDescription] = useState('')
@@ -212,7 +215,7 @@ export default function NewProjectPage() {
         goalAmount: goalAmount ? parseFloat(goalAmount) : null,
         acceptsDonations,
         donationAddress: selectedDonationAddrs[0]?.address || null,
-        donationCurrency: selectedDonationAddrs[0]?.currency || 'XMR',
+        donationCurrency: goalCurrency,
         donationDescription: donationDescription || null,
         donationAddresses: selectedDonationAddrs.length > 0 ? JSON.stringify(selectedDonationAddrs) : null,
         goals: goals || null,
@@ -414,10 +417,21 @@ export default function NewProjectPage() {
                 <summary className={styles.sectionSummary}>💰 Funding & Donations</summary>
                 <div className={styles.sectionContent}>
                   <div className={styles.field}>
-                    <label htmlFor="funding-goal">Funding Goal ($)</label>
-                    <input type="number" value={goalAmount}
-                      onChange={e => setGoalAmount(e.target.value)}
-                      placeholder="0.00" step="0.01" min="0"  id="funding-goal"/>
+                    <label htmlFor="funding-goal">Funding Goal</label>
+                    <div className={styles.goalCurrencyRow}>
+                      <input type="number" value={goalAmount}
+                        onChange={e => setGoalAmount(e.target.value)}
+                        placeholder="0.00" step="0.01" min="0" inputMode="decimal"
+                        aria-label="Funding goal amount" id="funding-goal"/>
+                      <select value={goalCurrency}
+                        onChange={e => setGoalCurrency(e.target.value)}
+                        aria-label="Funding goal currency" id="funding-goal-currency">
+                        {SUPPORTED_CRYPTOS.map(c => (
+                          <option key={c} value={c}>{getCryptoName(c)} ({c})</option>
+                        ))}
+                      </select>
+                    </div>
+                    <small className={styles.hint}>Optional — leave 0 to run without a goal. Supporters send directly to your donation address; the platform takes 0%.</small>
                   </div>
                   <label className={styles.checkField}>
                     <input type="checkbox" checked={acceptsDonations}
@@ -562,7 +576,7 @@ export default function NewProjectPage() {
                   {(goalAmount || acceptsDonations) && (
                     <div className={styles.reviewSection}>
                       <strong>💰 Funding</strong>
-                      {goalAmount && <span>Goal: ${parseFloat(goalAmount).toFixed(2)}</span>}
+                      {goalAmount && <span>Goal: {parseFloat(goalAmount).toFixed(2)} {goalCurrency}</span>}
                       {acceptsDonations && <span>Accepts private-money donations</span>}
                     </div>
                   )}

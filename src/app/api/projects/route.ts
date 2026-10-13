@@ -64,7 +64,7 @@ export const POST = withValidation(projectSchema, async (data, req, session) => 
       goalAmount: goalAmount ?? null,
       acceptsDonations: acceptsDonations ?? false,
       donationAddress: donationAddress || null,
-      donationCurrency: donationCurrency || 'XMR',
+      donationCurrency: donationCurrency || 'FUSD',
       donationDescription: donationDescription || null,
       donationAddresses: donationAddresses || null,
       phases: phases || null,
