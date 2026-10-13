@@ -11,7 +11,8 @@ to shape it.
 2. **Mobile / responsive** — several surfaces still assume desktop width.
 3. **Tests** — coverage is thin relative to feature count.
 4. **Docs & self-hosting** — Docker containerization, deployment guides,
-   `.env` explanations. Currently a real gap.
+   deeper `.env` coverage. The basics are covered: a commented `.env.example`
+   plus an environment-variables table in the README.
 5. **ActivityPub federation** — endpoints exist, the logic is not wired.
 6. **i18n parity** — 16 locales; several surfaces fall back to English.
 

@@ -30,18 +30,92 @@ algorithmic feed.
 | Area | Capability |
 |---|---|
 | **Marketplace** | Products, services, rentals, custom-URL shops, group buys |
-| **Payments** | Direct wallet-to-wallet in XMR, ARRR, DERO, ZANO, XTM, FIRO, BTC, ETH, USDT/USDC. Optional escrow. No processor, no KYC, no custody. |
+| **Payments** | Direct wallet-to-wallet in Monero (XMR), Minotari (XTM), Zano (ZANO) and Freedom Dollar (FUSD). No processor, no custody, no KYC. |
 | **Projects & requests** | Goals, milestones, collaborators, funding, offers, barter |
 | **Directory** | Phonebook pages (White/Yellow/Blue/Green/Violet) + map discovery, sortable by name, newest, or nearest |
 | **Earth Passport** | Portable identity, reputation badges, 14 user classes, opt-in location, privacy controls |
 | **Boards** | Location-based community bulletin boards with map pins |
-| **Social** | Chronological feed, hashtag discovery, quote-posts, connections, messaging |
+| **Groups** | Member-run groups with their own feeds, member activity, and join flows |
+| **Social** | Chronological feed, hashtag discovery, quote-posts, author tips, connections, messaging, notifications, saved items |
 | **School & blogs** | Courses, lessons, paid tiers, subscriptions; long-form writing |
 | **Media** | Podcasts with per-show RSS, photos, P2P video/audio rooms, link embeds |
-| **Operations** | Bookings, appointments, planner, events with QR ticketing, courier deals, CSV export |
+| **Operations** | Bookings, appointments, trips planner (custom stops on a map), events with QR ticketing, courier deals, CSV export |
+| **Dashboard** | Per-member hub: overview gauges, action queue, saved items, a deals pipeline with search/filter/sort and pipeline value, a planner with status & past filters |
+| **Admin** | First-party analytics (referrers, countries, top pages, date ranges, CSV export), durable IPFS backups, moderation (reports), badges, invite codes, subscribers & user management |
 
-Also: 16 locales, PWA/offline shell, sitemap + structured SEO, first-party
-analytics, i18n via `next-intl`.
+Also: 16 locales, PWA/offline shell, sitemap + structured SEO, privacy-first
+first-party analytics, i18n via `next-intl`, ActivityPub endpoints (wiring
+in progress).
+
+## How it's structured
+
+One account, four surfaces. The **public site** is the front door; the
+**member areas** are where everything happens; the **dashboard hub** is where a
+member runs their own corner of the platform; the **admin panel** keeps the
+whole thing running. The **Earth Passport** is the single identity that follows
+a member across all of them.
+
+```mermaid
+flowchart TB
+  subgraph Public[Public site]
+    Home[🏠 Homepage]
+    Directory[📖 Directory — phonebook<br/>White · Yellow · Blue · Green · Violet<br/>+ map discovery]
+    Discover[🧭 Discover]
+    Search[🔍 Search]
+  end
+
+  subgraph Members[Member areas]
+    subgraph Social[Social]
+      Feed[Chronological feed]
+      Hashtags[Hashtags]
+      Boards[📌 Boards + map pins]
+      Groups[👥 Groups]
+      Msgs[💌 Connections + messaging]
+      Tips[💸 Author tips]
+    end
+    subgraph Economy[Economy — 0% platform fee]
+      Market[🛒 Products · services · rentals]
+      Shops[🏪 Custom-URL shops]
+      GroupBuys[Group buys]
+      Barter[🤝 Barter offers]
+      Requests[🎯 Projects, requests & funding]
+    end
+    subgraph Learn[Learn & create]
+      School[🎓 Courses + paid tiers]
+      Blogs[✍️ Blogs]
+      Podcasts[🎙️ Podcasts + per-show RSS]
+      Video[📹 P2P video/audio rooms]
+    end
+    subgraph Plan[Plan & meet]
+      Events[📅 Events + QR ticketing]
+      Appointments[📆 Appointments]
+      Trips[🗺️ Trips planner + custom stops]
+      Courier[🚚 Courier deals]
+    end
+  end
+
+  Passport[🛂 Earth Passport<br/>identity · reputation badges · 14 classes<br/>opt-in location · privacy controls] --- Members
+
+  Dashboard[🕹️ Dashboard hub<br/>overview gauges · action queue · saved<br/>deals — search / filter / sort + pipeline value<br/>planner — status + past filters] -.-> Members
+
+  Admin[🛡️ Admin panel<br/>analytics + CSV · IPFS backups · reports<br/>badges · invite codes · subscribers · users] -.-> Members
+
+  Reach[🌍 Reach<br/>16 locales · PWA/offline shell<br/>sitemap + structured SEO · feed.xml<br/>ActivityPub — wiring in progress] --- Members
+
+  Public --> Members
+```
+
+Money never routes through the platform. A buyer sends coins straight to the
+seller's wallet and both sides mark the order settled; what keeps the platform
+alive is donations, not fees:
+
+```mermaid
+flowchart LR
+  Buyer[Buyer] -->|sends coins directly —<br/>Monero · Minotari · Zano · Freedom Dollar| Wallet[Seller's wallet]
+  Wallet --> Kept[Seller keeps 100%]
+  Donors[Voluntary donations] --> Platform[Platform<br/>no custody · no processor<br/>no KYC · 0% fees]
+  Platform -.->|never touches the money| Buyer
+```
 
 ## Stack
 
@@ -74,13 +148,56 @@ required to boot; the rest wire up OAuth providers, email (Resend), and IPFS.
 | `npm test` | Jest (live-server suites skip when no server is up) |
 | `npm run db:push` / `db:migrate` / `db:studio` | Prisma |
 
+## Environment variables
+
+Copy `.env.example` to `.env` and fill in the blanks — the committed example
+holds placeholders only, never real secrets. Only `DATABASE_URL` and
+`NEXTAUTH_SECRET` are required to boot.
+
+| Variable | Required | Purpose | Default / example |
+|---|---|---|---|
+| `DATABASE_URL` | ✅ | PostgreSQL connection string | `postgresql://user:pass@localhost:5432/xistrymemz` |
+| `NEXTAUTH_SECRET` | ✅ | NextAuth session signing secret | generate with `openssl rand -base64 32` |
+| `NEXTAUTH_URL` | | Canonical origin — auth callbacks, email links, feeds, federation, CORS | `http://localhost:3000` |
+| `ADMIN_EMAILS` / `ADMIN_NAMES` | | Comma-separated emails (and names) granted admin on sign-in | `ada@example.com,bob@example.com` |
+| OAuth pairs (`GOOGLE_`/`GITHUB_`/`DISCORD_`/`TWITTER_`/`FACEBOOK_` `CLIENT_ID`+`CLIENT_SECRET`) | | Social sign-in — each provider is registered only when both values are set | (empty) |
+| `PINATA_API_KEY` + `PINATA_SECRET_API_KEY` | | IPFS pinning — required for durable backups and IPFS media; without them backups are local-only | (empty) |
+| `IPFS_GATEWAY` | | Public gateway for CID downloads and media links | `https://gateway.pinata.cloud` |
+| `IPFS_API_URL` | | Local IPFS node HTTP API for self-hosted pinning | `http://127.0.0.1:5001` |
+| `RESEND_API_KEY` | | Transactional email (notifications, verification) | (empty) |
+| `EMAIL_FROM` | | Sender address for emails | `noreply@xistrymemz.xyz` |
+| `DEEPL_API_KEY` | | Machine translation for missing locales | (empty) |
+| `CRON_SECRET` | | Bearer token authorizing `/api/cron/*` routes | (empty) |
+| `NEXT_PUBLIC_MAX_VIDEO_DURATION_SEC` | | Cap on uploaded video, in seconds | `900` (15 min) |
+
+### Backups
+
+The admin **Backups** page snapshots the database on a schedule. When Pinata is
+configured each dump is delivered three ways — a plain download, an IPFS
+gateway link, and a torrent / magnet pair — and falls back to a local-only copy
+otherwise:
+
+```mermaid
+flowchart TB
+  Dump[Database dump — gzip] --> Pinata{Pinata<br/>credentials?}
+  Pinata -->|set + upload OK| Pinned[Pinned to IPFS — real CID]
+  Pinata -->|missing / failed| Local[local- CID — not durable]
+
+  Pinned --> D1[⬇ Download<br/>authed API route — streams the file,<br/>redirects to the gateway when off-instance]
+  Pinned --> D2[🌐 Gateway link<br/>opens IPFS_GATEWAY from anywhere]
+  Pinned --> D3[🧲 Torrent path<br/>magnet URI + .torrent metadata file<br/>IPFS webseed + public trackers]
+
+  Local --> L1[⬇ Download only on the instance<br/>that created the backup]
+  Local --> L2[⚠️ Local-only badge in the table]
+```
+
 ## Funding
 
 The platform runs on donations — there is no fee revenue, no ads, and no
 investor. Infrastructure (Vercel, Neon, Pinata) is itemized publicly on the
 donate page, along with a ledger of what's been received.
 
-Donations are accepted in **XMR, ZANO, ARRR, DERO, XTM and FUSD**. No
+Donations are accepted in **Monero, Minotari, Zano and Freedom Dollar**. No
 processor, no custody, no KYC.
 
 → <https://xistrymemz.xyz/donate>
