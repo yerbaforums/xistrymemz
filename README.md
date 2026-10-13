@@ -175,6 +175,8 @@ Decentralized storage, any of:
 Automatic backups: point a cron provider at `/api/cron/backup` with
 `CRON_SECRET` (query param or Bearer token). Offline restore:
 `BACKUP_ENCRYPTION_KEY=… node scripts/decrypt-backup.mjs backup.enc -o restored.sql.gz`.
+Deleting a backup (or retention cleaning it up) removes the local file **and**
+unpins the remote copy from Pinata / your own node.
 
 ```mermaid
 flowchart TB

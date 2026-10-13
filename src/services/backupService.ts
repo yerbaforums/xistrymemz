@@ -387,8 +387,65 @@ export async function deleteBackup(id: string) {
     fs.unlinkSync(filePath)
   }
 
+  // Also remove the durable copy — otherwise the ciphertext (or a
+  // pre-encryption plaintext dump) stays pinned on Pinata forever,
+  // still fetchable by anyone holding the CID.
+  await unpinRemote(backup.cid)
+
   await prisma.backup.delete({ where: { id } })
   return true
+}
+
+/**
+ * Unpin a CID from wherever it might be pinned (Pinata and/or the
+ * admin's own IPFS node). Best-effort: failures are logged but do
+ * not block the local delete — a stray pin can always be removed
+ * from the Pinata dashboard or with `ipfs pin rm`. cleanOldBackups()
+ * routes through here too, so retention genuinely frees remote
+ * storage instead of just hiding rows.
+ */
+async function unpinRemote(cid: string): Promise<void> {
+  if (!cid || cid.startsWith('local-')) return
+
+  const apiKey = process.env.PINATA_API_KEY
+  const secretKey = process.env.PINATA_SECRET_API_KEY
+  if (apiKey && secretKey) {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (apiKey.startsWith('eyJ')) {
+      headers.Authorization = `Bearer ${apiKey}`
+    } else {
+      headers.pinata_api_key = apiKey
+      headers.pinata_secret_api_key = secretKey
+    }
+    try {
+      const response = await fetch('https://api.pinata.cloud/pinning/removePinFromIPFS', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ ipfsPinHash: cid }),
+      })
+      if (!response.ok) {
+        const errText = await response.text().catch(() => '')
+        console.error(`Pinata unpin failed (${response.status}) for ${cid}: ${errText.slice(0, 200)}`)
+      }
+    } catch (error) {
+      console.error('Pinata unpin request failed:', error)
+    }
+  }
+
+  const pinUrl = process.env.IPFS_PIN_URL
+  if (pinUrl) {
+    try {
+      const response = await fetch(
+        `${pinUrl.replace(/\/+$/, '')}/api/v0/pin/rm?arg=${encodeURIComponent(cid)}`,
+        { method: 'POST' },
+      )
+      if (!response.ok) {
+        console.error(`Own-node unpin failed (${response.status}) for ${cid}`)
+      }
+    } catch (error) {
+      console.error('Own-node unpin request failed:', error)
+    }
+  }
 }
 
 export async function getBackupStats() {
