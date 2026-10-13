@@ -815,7 +815,7 @@ model Request {
   goalAmount          Float?                 @default(0)
   currentFunding      Float?                 @default(0)
   payoutAddress       String?
-  payoutCurrency      String?                @default("XMR")
+  payoutCurrency      String?                @default("FUSD")
   deadline            DateTime?
   location            String?
   latitude            Float?

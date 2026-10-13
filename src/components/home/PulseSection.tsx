@@ -103,7 +103,7 @@ export default function PulseSection({ shops, products, requests, events, projec
                   </div>
                   {req.goalAmount && (
                     <span className={styles.itemPrice}>
-                      ${req.currentFunding || 0}/${req.goalAmount}
+                      {req.currentFunding || 0}/{req.goalAmount} {req.payoutCurrency || 'FUSD'}
                     </span>
                   )}
                 </Link>

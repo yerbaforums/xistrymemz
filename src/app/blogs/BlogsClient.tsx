@@ -28,15 +28,27 @@ interface BlogsClientProps {
 
 export function BlogsClient({ initialBlogs }: BlogsClientProps) {
   const [blogs] = useState<Blog[]>(initialBlogs)
+  const [search, setSearch] = useState('')
+
+  const filteredBlogs = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return blogs
+    return blogs.filter(b =>
+      (b.blogName || b.name || '').toLowerCase().includes(q) ||
+      (b.blogAbout || '').toLowerCase().includes(q) ||
+      (b.blogTagline || '').toLowerCase().includes(q) ||
+      (b.username || b.name || '').toLowerCase().includes(q)
+    )
+  }, [blogs, search])
 
   const indexItems: IndexItem[] = useMemo(
     () =>
-      blogs.map((b) => ({
+      filteredBlogs.map((b) => ({
         id: b.id,
         label: b.blogName || b.name || 'Untitled',
         sortKey: b.blogName || b.name || 'Untitled',
       })),
-    [blogs]
+    [filteredBlogs]
   )
 
   const renderBlog = useCallback(
@@ -95,10 +107,31 @@ export function BlogsClient({ initialBlogs }: BlogsClientProps) {
   }
 
   return (
-    <AlphabeticalIndex
-      items={indexItems}
-      renderCard={renderBlog}
-      sidebarTitle="Blogs"
-    />
+    <div>
+      <div className={styles.searchBar}>
+        <input
+          type="search"
+          className={styles.searchInput}
+          placeholder="Search blogs…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          aria-label="Search blogs"
+        />
+      </div>
+      {indexItems.length === 0 ? (
+        <EmptyState
+          icon="✍️"
+          title="No blogs match"
+          description={search ? `Nothing found for "${search}".` : 'No blogs yet.'}
+          action={search ? { label: 'Clear search', onClick: () => setSearch('') } : undefined}
+        />
+      ) : (
+        <AlphabeticalIndex
+          items={indexItems}
+          renderCard={renderBlog}
+          sidebarTitle="Blogs"
+        />
+      )}
+    </div>
   )
 }

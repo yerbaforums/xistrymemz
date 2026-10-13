@@ -11,6 +11,7 @@ import { FieldListEditor } from '@/components/listings/FieldListEditor'
 import type { FormField as CustomFormField } from '@/types/service'
 import { useZodForm } from '@/hooks/useZodForm'
 import FormField from '@/components/ui/FormField'
+import GoalCurrencySelect from '@/components/GoalCurrencySelect'
 import FormInput from '@/components/ui/FormInput'
 import FormTextarea from '@/components/ui/FormTextarea'
 import FormSelect from '@/components/ui/FormSelect'
@@ -41,6 +42,7 @@ const requestFormSchema = z.object({
   priority: z.string(),
   budget: z.string(),
   goalAmount: z.string(),
+  payoutCurrency: z.string(),
   location: z.string(),
   deadline: z.string(),
   isPublic: z.boolean(),
@@ -181,13 +183,23 @@ export default function RequestForm({
           />
         </FormField>
         <FormField label="Goal Amount (optional)" htmlFor="request-goal">
-          <FormInput
-            id="request-goal"
-            type="number"
-            placeholder="Goal Amount (optional)"
-            value={form.goalAmount}
-            onChange={e => setValue('goalAmount', e.target.value)}
-          />
+          <div style={{ display: 'flex', gap: 8 }}>
+            <FormInput
+              id="request-goal"
+              type="number"
+              inputMode="decimal"
+              placeholder="Goal Amount (optional)"
+              value={form.goalAmount}
+              onChange={e => setValue('goalAmount', e.target.value)}
+              style={{ flex: 1 }}
+            />
+            <GoalCurrencySelect
+              className="select-field"
+              style={{ width: 'auto', flexShrink: 0 }}
+              value={form.payoutCurrency}
+              onChange={c => setValue('payoutCurrency', c)}
+            />
+          </div>
         </FormField>
       </div>
       <FormField label="Location" htmlFor="request-location" hint="Where do you need this?">

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import styles from './page.module.css'
 import CollaborateButton from '@/components/CollaborateButton'
+import GoalCurrencySelect from '@/components/GoalCurrencySelect'
 import PinToBoardButton from '@/components/PinToBoardButton'
 import Button from '@/components/ui/Button'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
@@ -181,6 +182,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [requestTitle, setRequestTitle] = useState('')
   const [requestDesc, setRequestDesc] = useState('')
   const [requestGoal, setRequestGoal] = useState('')
+  const [requestCurrency, setRequestCurrency] = useState('FUSD')
   const [requestLoading, setRequestLoading] = useState(false)
   const [showEscrowModal, setShowEscrowModal] = useState(false)
   const [escrowLoading, setEscrowLoading] = useState(false)
@@ -345,6 +347,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           description: requestDesc || `Looking for: ${product.title}`,
           productId: product.id,
           goalAmount: requestGoal ? parseFloat(requestGoal) : (product.price || 0),
+          payoutCurrency: requestCurrency,
           isPublic: true
         })
       })
@@ -1200,16 +1203,21 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               />
             </div>
             <div className="form-group">
-              <label htmlFor="request-goal">Funding Goal ($)</label>
-              <input
-                id="request-goal"
-                type="number"
-                value={requestGoal}
-                onChange={e => setRequestGoal(e.target.value)}
-                placeholder={product.price ? `$${product.price}` : "0"}
-                min="1"
-                step="0.01"
-              />
+              <label htmlFor="request-goal">Funding Goal</label>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input
+                  id="request-goal"
+                  type="number"
+                  inputMode="decimal"
+                  value={requestGoal}
+                  onChange={e => setRequestGoal(e.target.value)}
+                  placeholder={product.price ? String(product.price) : "0"}
+                  min="1"
+                  step="0.01"
+                  style={{ flex: 1 }}
+                />
+                <GoalCurrencySelect style={{ width: 'auto', flexShrink: 0 }} value={requestCurrency} onChange={setRequestCurrency} />
+              </div>
             </div>
             <div className={styles.modalActions}>
               <Button 

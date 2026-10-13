@@ -117,6 +117,7 @@ interface Request {
   priority: string
   budget: number | null
   goalAmount: number | null
+  payoutCurrency: string | null
   currentFunding: number
   showDonationAddress: boolean
   deadline: string | null
@@ -1068,7 +1069,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                 <div className={styles.fundingSliderSection}>
                   <div className={styles.fundingSliderHeader}>
                     <span className={styles.metaLabel}>Adjust Funding</span>
-                    <span className={styles.fundingSliderValue}>${fundingSlider}</span>
+                    <span className={styles.fundingSliderValue}>{fundingSlider} {request.payoutCurrency || 'FUSD'}</span>
                   </div>
                   <input
                     type="range"
@@ -1099,7 +1100,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                       />
                     </div>
                     <span className={styles.fundingText}>
-                      ${request.currentFunding || 0} raised of ${request.goalAmount} goal ({Math.round(fundingPct)}%)
+                      {request.currentFunding || 0} {request.payoutCurrency || 'FUSD'} raised of {request.goalAmount} {request.payoutCurrency || 'FUSD'} goal ({Math.round(fundingPct)}%)
                     </span>
                   </div>
                 </div>

@@ -13,6 +13,7 @@ import { useToast } from '@/context/ToastContext'
 import { calculateDistance, geocodeLocation } from '@/lib/geocoding'
 import { usePassportLocation } from '@/hooks/usePassportLocation'
 import HashtagInput from '@/components/HashtagInput'
+import GoalCurrencySelect from '@/components/GoalCurrencySelect'
 import { REQUEST_CATEGORIES, PRIORITY_COLORS } from '@/lib/request-categories'
 import { EmptyState } from '@/components/EmptyState'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
@@ -88,11 +89,11 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'newest')
   const [showCreate, setShowCreate] = useState(false)
   const [editingRequest, setEditingRequest] = useState<Request | null>(null)
-  const [editForm, setEditForm] = useState({ title: '', description: '', category: 'GENERAL', priority: 'MEDIUM', budget: '', goalAmount: '', location: '', isPublic: true, allowFulfillments: true, showDonationAddress: true, images: [] as string[], hashtags: [] as string[] })
+  const [editForm, setEditForm] = useState({ title: '', description: '', category: 'GENERAL', priority: 'MEDIUM', budget: '', goalAmount: '', payoutCurrency: 'FUSD', location: '', isPublic: true, allowFulfillments: true, showDonationAddress: true, images: [] as string[], hashtags: [] as string[] })
   const [saving, setSaving] = useState(false)
   const [newRequest, setNewRequest] = useState({
     title: '', description: '', category: 'GENERAL', priority: 'MEDIUM',
-    budget: '', goalAmount: '', location: '', isPublic: true, allowFulfillments: true, showDonationAddress: true, createGroup: false,
+    budget: '', goalAmount: '', payoutCurrency: 'FUSD', location: '', isPublic: true, allowFulfillments: true, showDonationAddress: true, createGroup: false,
     images: [] as string[], hashtags: [] as string[]
   })
   const [creating, setCreating] = useState(false)
@@ -229,6 +230,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
           priority: newRequest.priority,
           budget: newRequest.budget ? parseFloat(newRequest.budget) : null,
           goalAmount: newRequest.goalAmount ? parseFloat(newRequest.goalAmount) : null,
+          payoutCurrency: newRequest.payoutCurrency || 'FUSD',
           location: newRequest.location || null,
           isPublic: newRequest.isPublic,
           allowFulfillments: newRequest.allowFulfillments,
@@ -245,7 +247,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
           commentCount: 0, fulfillmentCount: 0, supportCount: 0
         }, ...requests])
         setShowCreate(false)
-        setNewRequest({ title: '', description: '', category: 'GENERAL', priority: 'MEDIUM', budget: '', goalAmount: '', location: '', isPublic: true, allowFulfillments: true, showDonationAddress: true, createGroup: false, images: [], hashtags: [] })
+        setNewRequest({ title: '', description: '', category: 'GENERAL', priority: 'MEDIUM', budget: '', goalAmount: '', payoutCurrency: 'FUSD', location: '', isPublic: true, allowFulfillments: true, showDonationAddress: true, createGroup: false, images: [], hashtags: [] })
         success('Request created!')
       } else {
         const err = await res.json()
@@ -269,6 +271,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
           priority: editForm.priority,
           budget: editForm.budget ? parseFloat(editForm.budget) : null,
           goalAmount: editForm.goalAmount ? parseFloat(editForm.goalAmount) : null,
+          payoutCurrency: editForm.payoutCurrency || 'FUSD',
           location: editForm.location || null,
           isPublic: editForm.isPublic,
           allowFulfillments: editForm.allowFulfillments,
@@ -453,8 +456,9 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
                 </select>
               </div>
               <div className={styles.formRow}>
-                <input type="number" placeholder="Budget (optional)" value={newRequest.budget} onChange={e => setNewRequest({ ...newRequest, budget: e.target.value })} className={styles.input} />
-                <input type="number" placeholder="Goal Amount (optional)" value={newRequest.goalAmount} onChange={e => setNewRequest({ ...newRequest, goalAmount: e.target.value })} className={styles.input} />
+                <input type="number" inputMode="decimal" placeholder="Budget (optional)" value={newRequest.budget} onChange={e => setNewRequest({ ...newRequest, budget: e.target.value })} className={styles.input} />
+                <input type="number" inputMode="decimal" placeholder="Goal Amount (optional)" value={newRequest.goalAmount} onChange={e => setNewRequest({ ...newRequest, goalAmount: e.target.value })} className={styles.input} />
+                <GoalCurrencySelect className={styles.select} value={newRequest.payoutCurrency} onChange={c => setNewRequest({ ...newRequest, payoutCurrency: c })} />
               </div>
               <input type="text" placeholder="Location (optional)" value={newRequest.location} onChange={e => setNewRequest({ ...newRequest, location: e.target.value })} className={styles.input} />
               <div className={styles.field} style={{ marginBottom: '12px' }}>
@@ -583,8 +587,8 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
                       {(req.goalAmount || 0) > 0 && (
                         <div className={styles.fundingSection}>
                           <div className={styles.fundingHeader}>
-                            <span>💝 ${req.currentFunding || 0} raised</span>
-                            <span>of ${req.goalAmount}</span>
+                            <span>💝 {req.currentFunding || 0} {req.payoutCurrency || 'FUSD'} raised</span>
+                            <span>of {req.goalAmount} {req.payoutCurrency || 'FUSD'}</span>
                           </div>
                           <div className={styles.progressBar}>
                             <div className={styles.progressFill} style={{ width: `${pct}%` }} />
@@ -656,7 +660,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
 
                       <div className={styles.cardActions}>
                         {canManage && (
-                          <button onClick={() => { setEditingRequest(req); setEditForm({ title: req.title, description: req.description || '', category: req.category, priority: req.priority, budget: req.budget?.toString() || '', goalAmount: req.goalAmount?.toString() || '', location: req.location || '', isPublic: req.isPublic, allowFulfillments: req.allowFulfillments, showDonationAddress: req.showDonationAddress, images: req.imageUrl ? [req.imageUrl] : [], hashtags: [] }) }} className={styles.editBtn}>Edit</button>
+                          <button onClick={() => { setEditingRequest(req); setEditForm({ title: req.title, description: req.description || '', category: req.category, priority: req.priority, budget: req.budget?.toString() || '', goalAmount: req.goalAmount?.toString() || '', payoutCurrency: req.payoutCurrency || 'FUSD', location: req.location || '', isPublic: req.isPublic, allowFulfillments: req.allowFulfillments, showDonationAddress: req.showDonationAddress, images: req.imageUrl ? [req.imageUrl] : [], hashtags: [] }) }} className={styles.editBtn}>Edit</button>
                         )}
                         {canManage && <button onClick={() => setDeleteTarget(req.id)} className={styles.deleteBtn}>Delete</button>}
                         <Link href={`/requests/${req.id}`} className={styles.viewDetailsBtn}>View Details →</Link>
@@ -692,8 +696,9 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
               </select>
             </div>
             <div className={styles.formRow}>
-              <input type="number" placeholder="Budget" value={editForm.budget} onChange={e => setEditForm({ ...editForm, budget: e.target.value })} className={styles.input} />
-              <input type="number" placeholder="Goal Amount" value={editForm.goalAmount} onChange={e => setEditForm({ ...editForm, goalAmount: e.target.value })} className={styles.input} />
+              <input type="number" inputMode="decimal" placeholder="Budget" value={editForm.budget} onChange={e => setEditForm({ ...editForm, budget: e.target.value })} className={styles.input} />
+              <input type="number" inputMode="decimal" placeholder="Goal Amount" value={editForm.goalAmount} onChange={e => setEditForm({ ...editForm, goalAmount: e.target.value })} className={styles.input} />
+              <GoalCurrencySelect className={styles.select} value={editForm.payoutCurrency} onChange={c => setEditForm({ ...editForm, payoutCurrency: c })} />
             </div>
             <input type="text" placeholder="Location" value={editForm.location} onChange={e => setEditForm({ ...editForm, location: e.target.value })} className={styles.input} />
             <div className={styles.field} style={{ marginBottom: '12px' }}>

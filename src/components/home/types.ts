@@ -37,6 +37,7 @@ export interface PublicRequest {
   status: string
   currentFunding: number | null
   goalAmount: number | null
+  payoutCurrency: string | null
   user: { name: string | null }
 }
 

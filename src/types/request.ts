@@ -62,6 +62,7 @@ export interface RequestFormData {
   priority: string
   budget: string
   goalAmount: string
+  payoutCurrency: string
   location: string
   deadline: string
   isPublic: boolean
@@ -81,6 +82,7 @@ export function getDefaultRequestFormData(): RequestFormData {
     priority: 'MEDIUM',
     budget: '',
     goalAmount: '',
+    payoutCurrency: 'FUSD',
     location: '',
     deadline: '',
     isPublic: true,

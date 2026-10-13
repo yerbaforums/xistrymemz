@@ -101,6 +101,7 @@ export default async function RequestDetailPage({
     priority: request.priority || 'MEDIUM',
     budget: request.budget,
     goalAmount: request.goalAmount,
+    payoutCurrency: request.payoutCurrency,
     currentFunding: request.currentFunding || 0,
     showDonationAddress: request.showDonationAddress,
     deadline: request.deadline?.toISOString() || null,

@@ -35,6 +35,7 @@ export default function NewRequestPage() {
         priority: data.priority,
         budget: data.budget ? parseFloat(data.budget) : null,
         goalAmount: data.goalAmount ? parseFloat(data.goalAmount) : null,
+        payoutCurrency: data.payoutCurrency || 'FUSD',
         location: data.location || null,
         isPublic: data.isPublic,
         allowFulfillments: data.allowFulfillments,

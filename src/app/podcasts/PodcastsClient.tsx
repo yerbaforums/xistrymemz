@@ -30,15 +30,26 @@ interface PodcastsClientProps {
 
 export function PodcastsClient({ initialPodcasts }: PodcastsClientProps) {
   const [podcasts] = useState<Podcast[]>(initialPodcasts)
+  const [search, setSearch] = useState('')
+
+  const filteredPodcasts = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return podcasts
+    return podcasts.filter(p =>
+      (p.podcastName || p.name || '').toLowerCase().includes(q) ||
+      (p.podcastAbout || '').toLowerCase().includes(q) ||
+      (p.username || p.name || '').toLowerCase().includes(q)
+    )
+  }, [podcasts, search])
 
   const indexItems: IndexItem[] = useMemo(
     () =>
-      podcasts.map((p) => ({
+      filteredPodcasts.map((p) => ({
         id: p.id,
         label: p.podcastName || p.name || 'Untitled',
         sortKey: p.podcastName || p.name || 'Untitled',
       })),
-    [podcasts]
+    [filteredPodcasts]
   )
 
   const renderPodcast = useCallback(
@@ -101,10 +112,31 @@ export function PodcastsClient({ initialPodcasts }: PodcastsClientProps) {
   }
 
   return (
-    <AlphabeticalIndex
-      items={indexItems}
-      renderCard={renderPodcast}
-      sidebarTitle="Podcasts"
-    />
+    <div>
+      <div className={styles.searchBar}>
+        <input
+          type="search"
+          className={styles.searchInput}
+          placeholder="Search podcasts…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          aria-label="Search podcasts"
+        />
+      </div>
+      {indexItems.length === 0 ? (
+        <EmptyState
+          icon="🎙️"
+          title="No podcasts match"
+          description={search ? `Nothing found for "${search}".` : 'No podcasts yet.'}
+          action={search ? { label: 'Clear search', onClick: () => setSearch('') } : undefined}
+        />
+      ) : (
+        <AlphabeticalIndex
+          items={indexItems}
+          renderCard={renderPodcast}
+          sidebarTitle="Podcasts"
+        />
+      )}
+    </div>
   )
 }

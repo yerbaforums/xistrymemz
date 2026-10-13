@@ -13,6 +13,7 @@ import ProjectUpdates from './ProjectUpdates'
 import { parseGoals, parseMilestones, parseResources, stringifyGoals, stringifyMilestones, stringifyResources } from '@/lib/project-utils'
 import { getUserProfileUrl } from '@/lib/utils'
 import ShareBar from '@/components/ShareBar'
+import GoalCurrencySelect from '@/components/GoalCurrencySelect'
 import EntityActions from '@/components/EntityActions'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import CollaborateButton from '@/components/CollaborateButton'
@@ -40,7 +41,7 @@ import WorkTogether from '@/components/WorkTogether'
 
 interface Request {
   id: string; title: string; description: string | null; status: string
-  goalAmount: number | null; currentFunding: number | null
+  goalAmount: number | null; currentFunding: number | null; payoutCurrency: string | null
   createdAt: string; productId: string | null
   product: { id: string; title: string; price: number | null; imageUrl: string | null } | null
   user: { name: string | null; email: string }
@@ -148,6 +149,7 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
   const [editedVolunteerRoles, setEditedVolunteerRoles] = useState(project.volunteerRoles || '')
   const [editedVolunteerDescription, setEditedVolunteerDescription] = useState(project.volunteerDescription || '')
   const [editedGoalAmount, setEditedGoalAmount] = useState(project.goalAmount?.toString() || '')
+  const [editedGoalCurrency, setEditedGoalCurrency] = useState(project.donationCurrency || 'FUSD')
   const [editedStatus, setEditedStatus] = useState(project.status)
   const [editedPhases, setEditedPhases] = useState<string[]>(() => {
     try { const phasesJson = (project as { phases?: string | null }).phases; const p = phasesJson ? JSON.parse(phasesJson) : []; return Array.isArray(p) ? p : [] } catch { return [] }
@@ -334,6 +336,7 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
         volunteerRoles: editedVolunteerRoles || null,
         volunteerDescription: editedVolunteerDescription || null,
         goalAmount: editedGoalAmount ? parseFloat(editedGoalAmount) : null,
+        donationCurrency: editedGoalCurrency,
         videoUrl: editedVideoUrl || null,
         imageUrl: editedImages[0] || null,
         images: editedImages.length > 0 ? JSON.stringify(editedImages) : null,
@@ -736,8 +739,11 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
                     <summary className={styles.editSectionSummary}>💰 Funding</summary>
                     <div className={styles.editSectionBody}>
                       <div className={styles.formGroup}>
-                        <label htmlFor="funding-goal">Funding Goal ($)</label>
-                        <input type="number" value={editedGoalAmount} onChange={e => setEditedGoalAmount(e.target.value)} placeholder="0.00" className={styles.formInput}  id="funding-goal"/>
+                        <label htmlFor="funding-goal">Funding Goal</label>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <input type="number" inputMode="decimal" value={editedGoalAmount} onChange={e => setEditedGoalAmount(e.target.value)} placeholder="0.00" className={styles.formInput} style={{ flex: 1 }} id="funding-goal"/>
+                          <GoalCurrencySelect className={styles.formInput} style={{ width: 'auto', flexShrink: 0 }} value={editedGoalCurrency} onChange={setEditedGoalCurrency} />
+                        </div>
                       </div>
                     </div>
                   </details>
@@ -1191,7 +1197,7 @@ donationDescription={project.donationDescription}
                           <div className={styles.requestFundingTrack}>
                             <div className={styles.requestFundingFill} style={{ width: `${pct}%` }} />
                           </div>
-                          <span className={styles.requestFundingText}>${funding} / ${goal} ({pct}%)</span>
+                          <span className={styles.requestFundingText}>{funding} / {goal} {req.payoutCurrency || 'FUSD'} ({pct}%)</span>
                         </div>
                       )}
                     </div>

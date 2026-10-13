@@ -122,7 +122,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { title, description, imageUrl, projectId, productId, groupId, schoolContentId, eventId, category, priority, budget, goalAmount, currentFunding, location, isPublic, createGroup, acceptsDonations, selectedDonationAddrs, hashtags, customFields, deadline } = validation.data
+    const { title, description, imageUrl, projectId, productId, groupId, schoolContentId, eventId, category, priority, budget, goalAmount, payoutCurrency, currentFunding, location, isPublic, createGroup, acceptsDonations, selectedDonationAddrs, hashtags, customFields, deadline } = validation.data
 
     if (projectId) {
       const project = await prisma.project.findFirst({
@@ -203,6 +203,7 @@ export async function POST(request: Request) {
         priority: priority || 'MEDIUM',
         budget: budget || null,
         goalAmount: goalAmount || null,
+        payoutCurrency: payoutCurrency || 'FUSD',
         currentFunding: currentFunding || 0,
         location: location || null,
         isPublic: isPublic || false,
