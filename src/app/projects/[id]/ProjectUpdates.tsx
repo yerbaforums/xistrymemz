@@ -144,7 +144,7 @@ export default function ProjectUpdates({ projectId, isOwner, isEditor }: Props) 
             <div key={update.id} className={styles.updateCard}>
               <div className={styles.updateHeader}>
                 <div className={styles.flexRow}>
-                  {update.user.image ? <img src={update.user.image} alt="" className={styles.userAvatar} />
+                  {update.user.image ? <img loading="lazy" src={update.user.image} alt="" className={styles.userAvatar} />
                     : <div className={styles.avatarFallback}>{(update.user.name || 'U')[0]}</div>}
                   <strong className={styles.userName}>{update.user.name || 'User'}</strong>
                   <span className={styles.timeAgo}>{formatTime(update.createdAt)}</span>
@@ -156,11 +156,11 @@ export default function ProjectUpdates({ projectId, isOwner, isEditor }: Props) 
 
               {images.length > 0 && (
                 <div className={styles.imageGrid} style={{ gridTemplateColumns: `repeat(${Math.min(images.length, 3)}, 1fr)` }}>
-                  {images.map((url, i) => <img key={i} src={url} alt="" className={styles.imageGridImg} />)}
+                  {images.map((url, i) => <img loading="lazy" key={i} src={url} alt="" className={styles.imageGridImg} />)}
                 </div>
               )}
               {update.imageUrl && !update.images && (
-                <img src={update.imageUrl} alt="" className={styles.legacyImage} />
+                <img loading="lazy" src={update.imageUrl} alt="" className={styles.legacyImage} />
               )}
 
               <div className={styles.actionBar}>

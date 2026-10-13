@@ -98,6 +98,18 @@ export default function UserDropdown({ session, open, onClose }: UserDropdownPro
             <span aria-hidden="true">{item.icon}</span> {item.label}
           </Link>
         ))}
+
+        {session?.user?.role === 'ADMIN' && (
+          <>
+            <div className={styles.userDivider} />
+            <div className={styles.userSectionLabel}>Admin</div>
+            {NAV.admin.map(item => (
+              <Link key={item.href} href={item.href} className={styles.userLink} role="menuitem" onClick={onClose}>
+                <span aria-hidden="true">{item.icon}</span> {item.label}
+              </Link>
+            ))}
+          </>
+        )}
       </div>
       <button onClick={() => signOut()} className={styles.signOutBtn} role="menuitem">Sign Out</button>
     </div>

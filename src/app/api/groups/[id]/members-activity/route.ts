@@ -1,5 +1,7 @@
 import { apiError, NextResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 
 export async function GET(
   request: Request,
@@ -7,16 +9,32 @@ export async function GET(
 ) {
   const { id } = await params
   const { searchParams } = new URL(request.url)
-  const limit = parseInt(searchParams.get('limit') || '10')
+  const parsedLimit = parseInt(searchParams.get('limit') || '10')
+  const limit = Math.min(50, Math.max(1, Number.isFinite(parsedLimit) ? parsedLimit : 10))
 
   // Get group members
   const group = await prisma.group.findUnique({
     where: { id },
-    select: { id: true, name: true }
+    select: { id: true, name: true, isPrivate: true }
   })
 
   if (!group) {
     return apiError("Group not found", 404)
+  }
+
+  // Private groups: only members may view member activity
+  if (group.isPrivate) {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return apiError("Unauthorized", 401)
+    }
+    const membership = await prisma.groupMember.findFirst({
+      where: { groupId: id, userId: session.user.id },
+      select: { id: true }
+    })
+    if (!membership) {
+      return apiError("Forbidden", 403)
+    }
   }
 
   const memberIds = await prisma.groupMember.findMany({

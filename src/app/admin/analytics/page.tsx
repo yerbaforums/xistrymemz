@@ -10,6 +10,30 @@ interface ViewData {
   count: number
 }
 
+interface TopPage {
+  page: string
+  visits: number
+  uniqueVisitors: number
+}
+
+interface ReferrerUrl {
+  referrer: string
+  count: number
+}
+
+interface CountryDetail {
+  country: string
+  count: number
+  cities: { city: string; count: number }[]
+}
+
+interface BackupHealth {
+  totalBackups: number
+  totalSize: number
+  diskUsage: number
+  lastBackupAt: string | null
+}
+
 interface ContentDay {
   date: string
   posts: number
@@ -61,6 +85,9 @@ interface AnalyticsData {
     topDomains: { domain: string | null; count: number }[]
     dailyVisits: ViewData[]
   }
+  topPages: TopPage[]
+  topReferrerUrls: ReferrerUrl[]
+  countryDetails: CountryDetail[]
 }
 
 interface Visit {
@@ -89,6 +116,16 @@ interface VisitsResponse {
 }
 
 const DATE_RANGES = ['24h', '7d', '30d', 'All'] as const
+
+const VISIT_RANGES = ['all', '24h', '7d', '30d'] as const
+
+function formatBytes(bytes: number): string {
+  if (!bytes || bytes <= 0) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
+}
 
 function SimpleBar({ items, max, color }: { items: { label: string; value: number }[]; max: number; color: string }) {
   return (
@@ -207,6 +244,40 @@ export default function AdminAnalyticsPage() {
   const [ipFilter, setIpFilter] = useState('')
   const [pageFilter, setPageFilter] = useState('')
   const [countryFilter, setCountryFilter] = useState('')
+  const [visitsRange, setVisitsRange] = useState<typeof VISIT_RANGES[number]>('all')
+  const [health, setHealth] = useState<BackupHealth | null>(null)
+
+  useEffect(() => {
+    setVisitsLoading(true)
+    const params = new URLSearchParams()
+    params.set('page', String(visitsPage))
+    if (visitsRange !== 'all') params.set('range', visitsRange)
+    if (ipFilter) params.set('ip', ipFilter)
+    if (pageFilter) params.set('pagePath', pageFilter)
+    if (countryFilter) params.set('country', countryFilter)
+    fetch(`/api/admin/analytics/visits?${params}`)
+      .then(r => r.json())
+      .then((d: VisitsResponse) => {
+        setVisits(d.visits)
+        setVisitsTotal(d.total)
+        setVisitsPages(d.totalPages)
+        setVisitsLoading(false)
+      })
+      .catch(() => setVisitsLoading(false))
+  }, [visitsPage, ipFilter, pageFilter, countryFilter, visitsRange])
+
+  useEffect(() => {
+    fetch('/api/admin/backup?mode=stats')
+      .then(r => r.json())
+      .then((d: { data?: BackupHealth } & BackupHealth) => setHealth(d?.data || d))
+      .catch(() => {})
+  }, [])
+
+  const exportCsv = (kind: 'visits' | 'pages' | 'referrers' | 'countries') => {
+    const params = new URLSearchParams({ type: kind })
+    if (kind === 'visits' && visitsRange !== 'all') params.set('range', visitsRange)
+    window.open(`/api/admin/analytics/export?${params}`, '_blank')
+  }
 
   useEffect(() => {
     setVisitsLoading(true)
@@ -363,6 +434,16 @@ export default function AdminAnalyticsPage() {
       </div>
 
       <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>🖥️ System Health</h2>
+        <div className={styles.statsGrid}>
+          <StatsCard icon="💾" label="Backups" value={health ? health.totalBackups : '—'} />
+          <StatsCard icon="📦" label="Backup Size" value={health ? formatBytes(health.totalSize) : '—'} />
+          <StatsCard icon="💿" label="Disk Usage" value={health ? formatBytes(health.diskUsage) : '—'} />
+          <StatsCard icon="🕒" label="Last Backup" value={health?.lastBackupAt ? formatTime(health.lastBackupAt) : 'Never'} />
+        </div>
+      </div>
+
+      <div className={styles.section}>
         <h2 className={styles.sectionTitle}>🌐 Traffic Sources</h2>
         <div className={styles.statsGrid}>
           <StatsCard icon="👁️" label="Visits Today" value={data.traffic.visitsToday} />
@@ -388,20 +469,88 @@ export default function AdminAnalyticsPage() {
         </div>
         <div className={styles.twoCol} style={{ marginTop: 16 }}>
           <div className={styles.card}>
-            <h3 className={styles.cardTitle}>Top Countries</h3>
-            {data.traffic.byCountry.length > 0 ? (
+            <h3 className={styles.cardTitle}>Top Referrers (full URLs)</h3>
+            {data.topReferrerUrls.length > 0 ? (
               <table className={styles.table}>
-                <thead><tr><th>Country</th><th>Visits</th></tr></thead>
+                <thead><tr><th>Referrer</th><th>Visits</th></tr></thead>
                 <tbody>
-                  {data.traffic.byCountry.map(c => (
-                    <tr key={c.country || 'unknown'}>
-                      <td>{c.country ? <span className={styles.countryCell}>{c.country}</span> : <span className={styles.unknown}>Unknown</span>}</td>
-                      <td>{c.count}</td>
+                  {data.topReferrerUrls.map(r => (
+                    <tr key={r.referrer}>
+                      <td className={styles.pageCell} title={r.referrer}>
+                        <a className={styles.link} href={r.referrer} target="_blank" rel="noopener noreferrer">
+                          {r.referrer.length > 55 ? r.referrer.slice(0, 52) + '…' : r.referrer}
+                        </a>
+                      </td>
+                      <td>{r.count}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            ) : <div className={styles.empty}>No referral data yet</div>}
+            <button className={styles.pageBtn} style={{ marginTop: 8 }} onClick={() => exportCsv('referrers')}>⬇ Export CSV</button>
+          </div>
+          <div className={styles.card}>
+            <h3 className={styles.cardTitle}>Top Pages</h3>
+            {data.topPages.length > 0 ? (
+              <table className={styles.table}>
+                <thead><tr><th>Page</th><th>Visits</th><th>Unique</th></tr></thead>
+                <tbody>
+                  {data.topPages.map(p => (
+                    <tr key={p.page}>
+                      <td className={styles.pageCell} title={p.page}>{p.page.length > 40 ? p.page.slice(0, 37) + '…' : p.page}</td>
+                      <td>{p.visits}</td>
+                      <td>{p.uniqueVisitors}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : <div className={styles.empty}>No page data yet</div>}
+            <button className={styles.pageBtn} style={{ marginTop: 8 }} onClick={() => exportCsv('pages')}>⬇ Export CSV</button>
+          </div>
+        </div>
+        <div className={styles.twoCol} style={{ marginTop: 16 }}>
+          <div className={styles.card}>
+            <h3 className={styles.cardTitle}>Top Countries</h3>
+            {data.traffic.byCountry.length > 0 ? (
+              <table className={styles.table}>
+                <thead><tr><th>Country</th><th>Visits</th><th>Share</th></tr></thead>
+                <tbody>
+                  {data.traffic.byCountry.map(c => {
+                    const share = data.traffic.totalVisits > 0
+                      ? ((c.count / data.traffic.totalVisits) * 100).toFixed(1)
+                      : '0.0'
+                    return (
+                      <tr key={c.country || 'unknown'}>
+                        <td>{c.country ? <span className={styles.countryCell}>{c.country}</span> : <span className={styles.unknown}>Unknown</span>}</td>
+                        <td>{c.count}</td>
+                        <td>{share}%</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
             ) : <div className={styles.empty}>No traffic data yet</div>}
+            {data.countryDetails.length > 0 && (
+              <details style={{ marginTop: 8 }}>
+                <summary style={{ cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                  📍 City breakdown ({data.countryDetails.length} countries)
+                </summary>
+                <div style={{ marginTop: 8 }}>
+                  {data.countryDetails.map(cd => (
+                    <div key={cd.country} style={{ marginBottom: 8 }}>
+                      <strong style={{ fontSize: '0.85rem' }}>{cd.country}</strong>
+                      {cd.cities.map(city => (
+                        <div key={city.city} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                          <span>{city.city}</span>
+                          <span>{city.count}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </details>
+            )}
+            <button className={styles.pageBtn} style={{ marginTop: 8 }} onClick={() => exportCsv('countries')}>⬇ Export CSV</button>
           </div>
           <div className={styles.card}>
             <h3 className={styles.cardTitle}>Top Referring Domains</h3>
@@ -499,6 +648,18 @@ export default function AdminAnalyticsPage() {
             <input className={styles.filterInput} type="text" placeholder="Filter by visitor hash..." value={ipFilter} onChange={e => { setIpFilter(e.target.value); setVisitsPage(1) }} />
             <input className={styles.filterInput} type="text" placeholder="Filter by page..." value={pageFilter} onChange={e => { setPageFilter(e.target.value); setVisitsPage(1) }} />
             <input className={styles.filterInput} type="text" placeholder="Filter by country..." value={countryFilter} onChange={e => { setCountryFilter(e.target.value); setVisitsPage(1) }} />
+          </div>
+          <div className={styles.filterBar}>
+            {VISIT_RANGES.map(r => (
+              <button
+                key={r}
+                className={`${styles.dateBtn} ${visitsRange === r ? styles.dateBtnActive : ''}`}
+                onClick={() => { setVisitsRange(r); setVisitsPage(1) }}
+              >
+                {r === 'all' ? 'All time' : r}
+              </button>
+            ))}
+            <button className={styles.pageBtn} onClick={() => exportCsv('visits')}>⬇ Export CSV</button>
           </div>
           {visitsLoading ? (
             <div className={styles.empty}>Loading visits...</div>

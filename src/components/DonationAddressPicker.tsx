@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import type { DonationAddr } from '@/types/product'
 import styles from './DonationAddressPicker.module.css'
@@ -40,11 +40,16 @@ export default function DonationAddressPicker({
 
   const hasSaved = savedAddresses.length > 0
 
+  // Auto-select saved addresses once, when they first become
+  // available and nothing is selected yet. Guarded by a ref so a
+  // later manual deselect is never overridden.
+  const autoSelectedRef = useRef(false)
   useEffect(() => {
-    if (hasSaved && selectedAddresses.length === 0) {
+    if (hasSaved && !autoSelectedRef.current && selectedAddresses.length === 0) {
+      autoSelectedRef.current = true
       onAddressesChange(savedAddresses)
     }
-  }, [hasSaved])
+  }, [hasSaved, savedAddresses, selectedAddresses, onAddressesChange])
 
   const isSelected = (addr: DonationAddr) =>
     selectedAddresses.some(a => a.address === addr.address && a.currency === addr.currency)

@@ -2,6 +2,7 @@ import { NextRequest, apiSuccess, apiError, NextResponse } from '@/lib/api-helpe
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { SUPPORTED_CRYPTOS } from '@/lib/constants'
 
 export async function GET(request: NextRequest) {
   try {
@@ -47,10 +48,15 @@ export async function POST(request: NextRequest) {
       return apiError("Currency and address are required", 400)
     }
 
+    const normalizedCurrency = String(currency).toUpperCase()
+    if (!SUPPORTED_CRYPTOS.includes(normalizedCurrency)) {
+      return apiError(`Unsupported currency. Supported: ${SUPPORTED_CRYPTOS.join(', ')}`, 400)
+    }
+
     const donationAddress = await prisma.donationAddress.create({
       data: {
         userId: session.user.id,
-        currency,
+        currency: normalizedCurrency,
         address,
         label: label || null,
         isPublic: true,

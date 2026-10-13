@@ -94,7 +94,7 @@ export default function TicketQRModal({ ticketCode, onClose }: TicketQRModalProp
             ${ticket.event.eventDate ? `<div class="meta">${new Date(ticket.event.eventDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}</div>` : ''}
             <div class="meta">Attendee: ${ticket.user.name || 'Guest'} · ${ticket.quantity}x</div>
             <div class="status" style="background:${STATUS_COLORS[ticket.paymentStatus]}22;color:${STATUS_COLORS[ticket.paymentStatus]}">${STATUS_LABELS[ticket.paymentStatus]}</div>
-            <div class="qr"><img src="${qrDataUrl}" width="200" height="200" /></div>
+            <div class="qr"><img src="${qrDataUrl}" width="200" height="200" alt="Ticket QR code" /></div>
             <div class="code">Ticket: ${ticketCode.slice(0, 8)}...${ticketCode.slice(-4)}</div>
           </div></body></html>`)
         printWindow.document.close()

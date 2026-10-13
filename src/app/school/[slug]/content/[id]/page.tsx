@@ -12,6 +12,8 @@ import PinToBoardButton from '@/components/PinToBoardButton'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import MediaPlayer from '@/components/MediaPlayer'
 import WorkTogether from '@/components/WorkTogether'
+import { sanitizeHtml } from '@/lib/sanitize'
+import { parseImageList } from '@/lib/utils'
 
 interface ContentData {
   id: string
@@ -191,7 +193,7 @@ export default function SchoolContentDetailPage() {
   if (fetchError) return <div className={styles.error}>Failed to load content</div>
   if (!content) return <div className={styles.error}>Content not found</div>
 
-  const images: string[] = content.images ? JSON.parse(content.images) : []
+  const images = parseImageList(content.images)
   const isHtml = content.content.startsWith('<')
 
   const handleToggleComplete = async () => {
@@ -262,7 +264,7 @@ export default function SchoolContentDetailPage() {
       ) : (
         <div className={styles.body}>
           {isHtml ? (
-            <div dangerouslySetInnerHTML={{ __html: content.content }} />
+            <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(content.content) }} />
           ) : (
             content.content.split('\n').map((line, i) => <p key={i}>{line}</p>)
           )}
@@ -286,7 +288,7 @@ export default function SchoolContentDetailPage() {
         <div className={styles.imageGrid}>
           {images.map((url, i) => (
             <div key={i} className={styles.imageWrap}>
-              <img src={url} alt="" />
+              <img loading="lazy" src={url} alt="" />
             </div>
           ))}
         </div>

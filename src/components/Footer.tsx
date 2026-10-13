@@ -21,7 +21,7 @@ interface DonationAddr {
 }
 
 function formatPrice(price: number, currency: string): string {
-  if (currency === 'USDT' || currency === 'USDC' || currency === 'FUSD' || currency === 'USD') return `$${price.toFixed(2)}`
+  if (currency === 'FUSD' || currency === 'USD') return `$${price.toFixed(2)}`
   if (price >= 1000) return `$${price.toLocaleString('en-US', { maximumFractionDigits: 2 })}`
   if (price >= 1) return `$${price.toFixed(2)}`
   return `$${price.toFixed(6)}`
@@ -104,7 +104,7 @@ export default function Footer() {
                     aria-label={`Donate ${da.currency}`}
                   >
                     <Image
-                      src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'ethereum.png'}`}
+                      src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'crypto.svg'}`}
                       alt={da.currency}
                       width={16}
                       height={16}

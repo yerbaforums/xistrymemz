@@ -200,6 +200,62 @@ export async function GET() {
       connectionCount: u._count.sentConnections,
     }))
 
+    // Top landing pages with unique-visitor counts. Raw SQL is
+    // used because Prisma's groupBy cannot COUNT(DISTINCT).
+    const topPagesRaw = await prisma.$queryRaw<Array<{ landingPage: string; visits: bigint; uniques: bigint }>>`
+      SELECT "landingPage", COUNT(*) AS visits, COUNT(DISTINCT "ipHash") AS uniques
+      FROM "PageVisit"
+      WHERE "landingPage" IS NOT NULL
+      GROUP BY "landingPage"
+      ORDER BY visits DESC
+      LIMIT 20
+    `
+    const topPages = topPagesRaw.map(r => ({
+      page: r.landingPage,
+      visits: Number(r.visits),
+      uniqueVisitors: Number(r.uniques),
+    }))
+
+    // Full referrer URLs (the overview only aggregates domains/types).
+    const topReferrerUrls = await prisma.pageVisit.groupBy({
+      by: ['referrer'],
+      _count: true,
+      orderBy: { _count: { referrer: 'desc' } },
+      where: { referrer: { not: null } },
+      take: 20,
+    })
+
+    // Country detail with city-level breakdown.
+    const countryCityRows = await prisma.pageVisit.groupBy({
+      by: ['country', 'city'],
+      _count: true,
+      orderBy: { _count: { country: 'desc' } },
+      where: { country: { not: null } },
+      take: 200,
+    })
+    const countryDetailMap = new Map<string, { country: string; count: number; cities: { city: string; count: number }[] }>()
+    for (const row of countryCityRows) {
+      const key = row.country || 'unknown'
+      let entry = countryDetailMap.get(key)
+      if (!entry) {
+        entry = { country: key, count: 0, cities: [] }
+        countryDetailMap.set(key, entry)
+      }
+      entry.count += row._count
+      if (row.city) {
+        const city = entry.cities.find(c => c.city === row.city)
+        if (city) city.count += row._count
+        else entry.cities.push({ city: row.city, count: row._count })
+      }
+    }
+    const countryDetails = [...countryDetailMap.values()]
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 15)
+      .map(c => ({
+        ...c,
+        cities: c.cities.sort((a, b) => b.count - a.count).slice(0, 5),
+      }))
+
     // Daily content creation (last 30 days)
     const [dailyPosts, dailyProducts, dailyServices, dailyRequests] = await Promise.all([
       prisma.post.findMany({ where: { createdAt: { gte: thirtyDaysAgo } }, select: { createdAt: true } }),
@@ -270,6 +326,9 @@ export async function GET() {
         user: { id: r.user.id, name: r.user.name },
       })),
       topUsers,
+      topPages,
+      topReferrerUrls: topReferrerUrls.map(r => ({ referrer: r.referrer, count: r._count })),
+      countryDetails,
       productCategoryCounts: productCategoryCounts.map(r => ({ category: r.category, count: r._count })),
       serviceCategoryCounts: serviceCategoryCounts.map(r => ({ category: r.category, count: r._count })),
       dailyViews: dailyViewsRaw,

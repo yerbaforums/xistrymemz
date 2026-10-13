@@ -54,6 +54,8 @@ export function useEntityActions({
   const [liking, setLiking] = useState(false)
   const [saving, setSaving] = useState(false)
   const viewRecorded = useRef(false)
+  const showRepliesRef = useRef(showReplies)
+  showRepliesRef.current = showReplies
 
   const loadCounts = useCallback(async () => {
     const params = new URLSearchParams({ entityType, entityId })
@@ -152,10 +154,9 @@ export function useEntityActions({
   }, [entityType, entityId])
 
   const toggleReplies = useCallback(() => {
-    setShowReplies(s => {
-      if (!s) loadReplies()
-      return !s
-    })
+    const next = !showRepliesRef.current
+    setShowReplies(next)
+    if (next) loadReplies()
   }, [loadReplies])
 
   return {

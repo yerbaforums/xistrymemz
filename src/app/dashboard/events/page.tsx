@@ -144,7 +144,7 @@ export default function DashboardEvents() {
           }
           return updated
         })
-        success(action === 'mark-paid' ? 'Marked as paid' : 'Approved')
+        success(action === 'mark-paid' ? 'Marked as paid' : action === 'approve' ? 'Approved' : 'Cancelled')
       } else {
         error('Failed to update ticket')
       }

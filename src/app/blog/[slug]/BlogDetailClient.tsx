@@ -119,7 +119,7 @@ function CompactDonation({ donation }: { donation: DonationAddr }) {
   return (
     <>
       <div className={styles.compactDonationCard} onClick={() => setQrOpen(true)}>
-        <img src={`/crypto-logos/${CRYPTO_LOGOS[donation.currency] || 'ethereum.png'}`} alt="" width={14} height={14} />
+        <img loading="lazy" src={`/crypto-logos/${CRYPTO_LOGOS[donation.currency] || 'crypto.svg'}`} alt="" width={14} height={14} />
         <span className={styles.compactDonationLabel}>{donation.label || donation.currency}</span>
         <code className={styles.compactDonationAddr} title={donation.address}>{shortAddr}</code>
       </div>
@@ -142,7 +142,7 @@ function LinkCard({ link }: { link: UserLink }) {
   return (
     <a href={link.url} target="_blank" rel="noopener noreferrer" className={styles.linkPill}>
       {iconSrc.startsWith('/') ? (
-        <img src={iconSrc} alt={link.label || link.type} width={14} height={14} />
+        <img loading="lazy" src={iconSrc} alt={link.label || link.type} width={14} height={14} />
       ) : (
         <span>{iconSrc}</span>
       )}
@@ -455,7 +455,7 @@ export default function BlogDetailClient({ params }: { params: Promise<{ slug: s
             <Link key={p.id} href={`/blog/${resolvedSlug}/${p.slug}`} className={styles.postCard}>
               {p.coverImage && (
                 <div className={styles.cardThumb}>
-                  <img src={p.coverImage} alt="" />
+                  <img loading="lazy" src={p.coverImage} alt="" />
                 </div>
               )}
               <div className={styles.cardBody}>
@@ -499,7 +499,7 @@ export default function BlogDetailClient({ params }: { params: Promise<{ slug: s
                 <h4>💜 Donations</h4>
                 {blog.donationAddresses.map((da) => (
                   <div key={da.id} className={styles.donationCardFull} onClick={() => setQrDonation(da)}>
-                    <img src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'ethereum.png'}`} alt="" width={18} height={18} />
+                    <img loading="lazy" src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'crypto.svg'}`} alt="" width={18} height={18} />
                     <span>{da.label || da.currency}</span>
                     <code title={da.address}>{da.address.length > 20 ? `${da.address.slice(0, 10)}…${da.address.slice(-6)}` : da.address}</code>
                   </div>

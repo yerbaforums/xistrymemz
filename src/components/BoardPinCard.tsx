@@ -3,7 +3,7 @@
 import { memo, useState, useCallback, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { getUserProfileUrl } from '@/lib/utils'
+import { getUserProfileUrl, parseImageList } from '@/lib/utils'
 import LinkedEntityDetail from '@/components/LinkedEntityDetail'
 import LinkPreview from '@/components/LinkPreview'
 import EntityActions from '@/components/EntityActions'
@@ -124,7 +124,7 @@ function ImageCarousel({ images }: { images: string[] }) {
 
 const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, boardSlug, onDelete, onFlyTo, onView, onEdit }: BoardPinCardProps) {
   const [minimized, setMinimized] = useState(false)
-  const parsedImages = pin.images ? JSON.parse(pin.images) as string[] : []
+  const parsedImages = parseImageList(pin.images)
   const expirationText = timeUntilExpires(pin.expiresAt)
   const canDelete = isOwner || isBoardOwner
 

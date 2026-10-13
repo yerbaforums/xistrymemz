@@ -25,6 +25,12 @@ export async function POST(
     return apiError("Group not found", 404)
   }
 
+  // Private groups cannot be joined directly — there is no approval
+  // flow, so membership is admin-only for private groups.
+  if (group.isPrivate) {
+    return apiError("This group is private", 403)
+  }
+
   const existing = await prisma.groupMember.findUnique({
     where: { groupId_userId: { groupId, userId } }
   })

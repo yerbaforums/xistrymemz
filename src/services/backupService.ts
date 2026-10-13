@@ -9,19 +9,33 @@ import FormData from 'form-data'
 
 const execAsync = promisify(exec)
 
+let resolvedBackupDir: string | null = null
+
 function getBackupDir(): string {
-  const dir = path.join(os.tmpdir(), 'backups')
-  if (!fs.existsSync(dir)) {
-    try { fs.mkdirSync(dir, { recursive: true }) } catch {}
+  if (resolvedBackupDir) return resolvedBackupDir
+
+  // Prefer the persistent, in-repo backups/ directory (self-hosted /
+  // Docker). On read-only serverless filesystems (Vercel) the probe
+  // write below fails and we fall back to /tmp, which is the only
+  // writable location there — durability then comes from the
+  // IPFS-pinned copy (see the download route).
+  const persistent = path.join(process.cwd(), 'backups')
+  try {
+    fs.mkdirSync(persistent, { recursive: true })
+    const probe = path.join(persistent, '.write-probe')
+    fs.writeFileSync(probe, '')
+    fs.unlinkSync(probe)
+    resolvedBackupDir = persistent
+  } catch {
+    const tmp = path.join(os.tmpdir(), 'backups')
+    fs.mkdirSync(tmp, { recursive: true })
+    resolvedBackupDir = tmp
   }
-  return dir
+  return resolvedBackupDir
 }
 
 function ensureBackupDirs() {
-  const dir = getBackupDir()
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true })
-  }
+  getBackupDir()
 }
 
 function findPgDump(): string | null {
@@ -168,6 +182,10 @@ export async function uploadToIPFS(filePath: string): Promise<string> {
     const response = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
       method: 'POST',
       headers: {
+        // form-data's getHeaders() supplies the multipart
+        // Content-Type with boundary — without it native fetch
+        // cannot serialize the body and Pinata rejects the upload.
+        ...form.getHeaders(),
         'pinata_api_key': apiKey,
         'pinata_secret_api_key': secretKey,
       },
@@ -285,8 +303,8 @@ export async function deleteBackup(id: string) {
   const backup = await prisma.backup.findUnique({ where: { id } })
   if (!backup) return false
 
-  const filePath = path.join(getBackupDir(), backup.fileName)
-  if (fs.existsSync(filePath)) {
+  const filePath = getBackupFilePath(backup.fileName)
+  if (filePath) {
     fs.unlinkSync(filePath)
   }
 
@@ -349,6 +367,10 @@ export async function cleanOldBackups(retentionCount: number) {
 }
 
 export function getBackupFilePath(fileName: string): string | null {
+  // Reject anything that is not a plain file name so a crafted
+  // value cannot escape the backup directory.
+  if (!fileName || path.basename(fileName) !== fileName) return null
+
   const candidates = [
     path.join(getBackupDir(), fileName),
     path.join(process.cwd(), 'backups', fileName),

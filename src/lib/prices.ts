@@ -9,11 +9,9 @@ const COINGECKO_IDS: Record<string, string> = {
   XTM: 'minotari',
   ZANO: 'zano',
   FUSD: 'freedom-dollar',
-  DERO: 'dero',
-  ARRR: 'pirate-chain',
   // Tokenized metals for the gold/silver donate option (per-ounce USD).
-  // No fallbacks: a stale metals figure is a wrong number, so offline they
-  // show nothing — same honesty rule as DERO/ARRR above.
+  // No fallbacks: a stale metals figure is a wrong number, so offline
+  // they show nothing.
   XAU: 'pax-gold',
   XAG: 'kinesis-silver',
 }
@@ -23,11 +21,6 @@ const FALLBACK_PRICES: Record<string, number> = {
   XTM: 0.06,
   ZANO: 0.50,
   FUSD: 1,
-  // DERO and ARRR are deliberately absent. These two move far enough that a
-  // stale hardcoded figure is a wrong number, and /donate renders whatever
-  // this returns as a USD anchor next to the address. If CoinGecko is
-  // unreachable they therefore show no price, which is honest; the older four
-  // keep their existing long-standing fallbacks (FUSD is pegged, so 1 is fine).
 }
 
 const SYMBOLS = Object.keys(COINGECKO_IDS) as (keyof typeof COINGECKO_IDS)[]

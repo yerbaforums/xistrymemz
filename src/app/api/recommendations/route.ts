@@ -1,5 +1,7 @@
 import { NextRequest, apiSuccess, apiError, NextResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,12 +46,12 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    const admin = await prisma.user.findFirst({
-      where: { role: 'ADMIN' }
-    })
+    const session = await getServerSession(authOptions)
 
-    if (!admin) {
-      return apiError("Admin not found", 404)
+    // Recommendations contain submitter contact details —
+    // admin-only read.
+    if (session?.user?.role !== 'ADMIN') {
+      return apiError("Unauthorized", 403)
     }
 
     const recommendations = await prisma.recommendation.findMany({

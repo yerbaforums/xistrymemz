@@ -18,7 +18,7 @@ export async function GET(
       include: {
         user: { select: { id: true, name: true, image: true } },
         members: {
-          include: { user: { select: { id: true, name: true, image: true, email: true, username: true } } }
+          include: { user: { select: { id: true, name: true, image: true, username: true } } }
         },
         posts: {
           orderBy: [{ pinned: 'desc' }, { createdAt: 'desc' }],
@@ -62,6 +62,12 @@ export async function GET(
 
     const isMember = userId ? group.members.some(m => m.userId === userId) : false
     const isAdmin = userId ? group.members.some(m => m.userId === userId && m.role === 'ADMIN') : false
+
+    // Private groups are only visible to members. Return 404 (not 403)
+    // so the group's existence is not leaked to outsiders.
+    if (group.isPrivate && !isMember) {
+      return apiError("Group not found", 404)
+    }
 
     const marketplaceProducts = group.groupProducts.map(gp => ({
       ...gp.product,
@@ -115,7 +121,7 @@ export async function PUT(
     if (isPrivate !== undefined) data.isPrivate = isPrivate
     if (acceptsDonations !== undefined) data.acceptsDonations = !!acceptsDonations
     if (donationAddress !== undefined) data.donationAddress = (donationAddress as string) || null
-    if (donationCurrency !== undefined) data.donationCurrency = (donationCurrency as string) || 'ETH'
+    if (donationCurrency !== undefined) data.donationCurrency = (donationCurrency as string) || 'XMR'
     if (donationAddresses !== undefined) data.donationAddresses = (donationAddresses as string) || null
 
     const group = await prisma.group.update({

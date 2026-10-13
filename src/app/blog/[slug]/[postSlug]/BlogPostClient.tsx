@@ -12,6 +12,7 @@ import EntityActions from '@/components/EntityActions'
 import PinToBoardButton from '@/components/PinToBoardButton'
 import TipAuthorButton from '@/components/TipAuthorButton'
 import { useToast } from '@/context/ToastContext'
+import { sanitizeHtml } from '@/lib/sanitize'
 
 interface PostData {
   id: string
@@ -242,7 +243,7 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
       <article className={styles.article}>
         {post.coverImage && (
           <div className={styles.coverImage}>
-            <img src={post.coverImage} alt="" />
+            <img loading="lazy" src={post.coverImage} alt="" />
           </div>
         )}
 
@@ -271,7 +272,7 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
         ) : (
           <div className={styles.body}>
             {isHtml ? (
-              <div className={styles.htmlBody} dangerouslySetInnerHTML={{ __html: post.content }} />
+              <div className={styles.htmlBody} dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }} />
             ) : (
               post.content.split('\n').map((line, i) => <p key={i}>{line}</p>)
             )}

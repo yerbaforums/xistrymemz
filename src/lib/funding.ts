@@ -60,7 +60,7 @@ export function daysCoveredBy(monthlyUsd: number): number | null {
 }
 
 /** Pegged assets are worth their peg; render them as exactly $1.00. */
-const PEGGED = new Set(['USDT', 'USDC', 'FUSD'])
+const PEGGED = new Set(['FUSD'])
 
 export function formatUsd(n: number): string {
   return `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
@@ -72,8 +72,7 @@ export function formatUsd(n: number): string {
  * Pegged coins render as exactly $1.00 rather than the literal API value —
  * CoinGecko currently returns ~$0.999 for FUSD, and printing a stablecoin at
  * $0.999021 reads as a depeg scare rather than as accuracy. Sub-cent coins
- * (DERO trades near $0.008) need extra precision or the anchor rounds to $0.01
- * and looks broken.
+ * need extra precision or the anchor rounds to $0.01 and looks broken.
  */
 export function formatCryptoPrice(price: number | undefined, currency: string): string {
   if (price == null || !Number.isFinite(price)) return ''

@@ -2,6 +2,7 @@ import { apiSuccess, apiError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { SUPPORTED_CRYPTOS } from '@/lib/constants'
 
 const VALID_TYPES = ['POST','PRODUCT','SERVICE','EVENT','PROJECT','REQUEST','SCHOOLCONTENT','GROUP','SHOP']
 
@@ -22,13 +23,18 @@ export async function POST(request: Request) {
       return apiError("Invalid entity type", 400)
     }
 
+    const tipCurrency = currency ? String(currency).toUpperCase() : 'XTM'
+    if (!SUPPORTED_CRYPTOS.includes(tipCurrency)) {
+      return apiError("Invalid currency", 400)
+    }
+
     const tip = await prisma.entityTip.create({
       data: {
         userId: session.user.id,
         entityType: type,
         entityId,
         amount: parseFloat(amount),
-        currency: currency || 'XTM',
+        currency: tipCurrency,
       },
     })
 

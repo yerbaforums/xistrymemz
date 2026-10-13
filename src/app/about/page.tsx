@@ -151,7 +151,7 @@ export default function About() {
               {donations.map(da => (
                 <div key={da.id} className={styles.donationItem}>
                   <img
-                    src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'ethereum.png'}`}
+                    src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'crypto.svg'}`}
                     alt={da.currency}
                     width={24}
                     height={24}

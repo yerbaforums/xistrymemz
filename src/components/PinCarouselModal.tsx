@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import LinkedEntityDetail from '@/components/LinkedEntityDetail'
+import { parseImageList } from '@/lib/utils'
 import styles from './PinCarouselModal.module.css'
 
 interface PinUser {
@@ -102,7 +103,7 @@ export default function PinCarouselModal({ pins, initialIndex, onClose, boardSlu
 
   if (!pin) return null
 
-  const parsedImages = pin.images ? JSON.parse(pin.images) as string[] : []
+  const parsedImages = parseImageList(pin.images)
   const currentImage = parsedImages[imageIndex] || pin.entityImage
 
   return (

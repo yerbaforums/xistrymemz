@@ -21,6 +21,15 @@ export async function GET(request: Request) {
       where = {
         members: { some: { userId } }
       }
+    } else {
+      // Public directory: private groups are invisible unless the
+      // viewer is already a member.
+      where = {
+        OR: [
+          { isPrivate: false },
+          ...(userId ? [{ members: { some: { userId } } }] : []),
+        ],
+      }
     }
 
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'))

@@ -40,6 +40,15 @@ export default async function AdminLayout({
           <Link href="/admin/messages" className={styles.navLink}>
             💬 Messages
           </Link>
+          <Link href="/admin/badges" className={styles.navLink}>
+            🏅 Badges
+          </Link>
+          <Link href="/admin/feedback" className={styles.navLink}>
+            📨 Feedback
+          </Link>
+          <Link href="/admin/reports" className={styles.navLink}>
+            🚩 Reports
+          </Link>
           <Link href="/admin/invite-codes" className={styles.navLink}>
             🎟️ Invites
           </Link>

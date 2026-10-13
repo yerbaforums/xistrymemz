@@ -2,6 +2,7 @@ import { NextRequest, apiSuccess, apiError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { SUPPORTED_CRYPTOS } from '@/lib/constants'
 
 export async function PUT(
   request: NextRequest,
@@ -23,10 +24,17 @@ export async function PUT(
 
     const { currency, address, label, qrCodeUrl, showQR, sortOrder, isPublic } = body
 
+    if (currency !== undefined) {
+      const normalizedCurrency = String(currency).toUpperCase()
+      if (!SUPPORTED_CRYPTOS.includes(normalizedCurrency)) {
+        return apiError(`Unsupported currency. Supported: ${SUPPORTED_CRYPTOS.join(', ')}`, 400)
+      }
+    }
+
     const updated = await prisma.donationAddress.update({
       where: { id },
       data: {
-        currency: currency || existing.currency,
+        currency: currency !== undefined ? String(currency).toUpperCase() : existing.currency,
         address: address || existing.address,
         label: label !== undefined ? (label || null) : existing.label,
         qrCodeUrl: qrCodeUrl !== undefined ? (qrCodeUrl || null) : existing.qrCodeUrl,

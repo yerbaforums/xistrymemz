@@ -89,7 +89,7 @@ export default function DashboardFeed() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           content: postContent.trim(),
-          images: postImages.length > 0 ? JSON.stringify(postImages) : null,
+          images: postImages.length > 0 ? postImages : null,
           context: 'PROFILE',
         })
       })

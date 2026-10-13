@@ -10,6 +10,7 @@ interface SSEEvent {
 
 export function useNotificationSSE(onEvent: (event: SSEEvent) => void) {
   const eventSourceRef = useRef<EventSource | null>(null)
+  const reconnectRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const onEventRef = useRef(onEvent)
   onEventRef.current = onEvent
 
@@ -37,13 +38,18 @@ export function useNotificationSSE(onEvent: (event: SSEEvent) => void) {
 
       es.onerror = () => {
         es.close()
-        setTimeout(connect, 3000)
+        eventSourceRef.current = null
+        reconnectRef.current = setTimeout(connect, 3000)
       }
     }
 
     connect()
 
     return () => {
+      if (reconnectRef.current) {
+        clearTimeout(reconnectRef.current)
+        reconnectRef.current = null
+      }
       es.close()
     }
   }, [cleanup])

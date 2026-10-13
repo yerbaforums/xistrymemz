@@ -100,7 +100,7 @@ export default function FeedbackSection() {
           </form>
         ) : (
           <p className={styles.loginPrompt}>
-            <Link href="/auth/signin" className={styles.cta}>Sign in</Link> to submit feedback, or{' '}
+            <Link href="/auth/login" className={styles.cta}>Sign in</Link> to submit feedback, or{' '}
             <Link href="/feedback">visit the feedback page</Link>.
           </p>
         )}

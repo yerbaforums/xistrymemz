@@ -2,7 +2,20 @@ import { NextResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { deliverToInbox } from '@/lib/federation'
 
-export async function GET() {
+function authorized(request: Request): boolean {
+  const required = process.env.CRON_SECRET
+  if (!required) return true
+  const url = new URL(request.url)
+  return url.searchParams.get('secret') === required
+}
+
+// GET /api/cron/deliver-fediverse — flush pending Fediverse deliveries.
+// Guarded by CRON_SECRET: this signs activities with users' private keys.
+export async function GET(request: Request) {
+  if (!authorized(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const pending = await prisma.outboxActivity.findMany({
     where: {
       status: 'PENDING',
@@ -12,19 +25,39 @@ export async function GET() {
     take: 50
   })
 
+  // Batch the per-activity lookups into two queries instead of N×2.
+  // Followers are grouped by followedId; users are keyed by id.
+  const activityUserIds = pending.map(a => a.userId)
+  const [followRows, userRows] = await Promise.all([
+    prisma.follow.findMany({
+      where: {
+        followedId: { in: activityUserIds },
+        status: 'ACCEPTED',
+        remoteInboxUrl: { not: null }
+      },
+      select: { followedId: true, remoteInboxUrl: true }
+    }),
+    prisma.user.findMany({
+      where: { id: { in: activityUserIds } },
+      select: { id: true, privateKey: true, federatedUrl: true }
+    }),
+  ])
+
+  const remoteInboxByUser = new Map<string, string[]>()
+  for (const row of followRows) {
+    const list = remoteInboxByUser.get(row.followedId) || []
+    list.push(row.remoteInboxUrl!)
+    remoteInboxByUser.set(row.followedId, list)
+  }
+  const userById = new Map(userRows.map(u => [u.id, u]))
+
   let delivered = 0
   let failed = 0
 
   for (const activity of pending) {
-    const followers = await prisma.follow.findMany({
-      where: {
-        followedId: activity.userId,
-        status: 'ACCEPTED',
-        remoteInboxUrl: { not: null }
-      }
-    })
+    const remoteInboxUrls = remoteInboxByUser.get(activity.userId) || []
 
-    if (followers.length === 0) {
+    if (remoteInboxUrls.length === 0) {
       await prisma.outboxActivity.update({
         where: { id: activity.id },
         data: { status: 'DELIVERED', deliveredAt: new Date() }
@@ -33,10 +66,7 @@ export async function GET() {
       continue
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: activity.userId },
-      select: { privateKey: true, federatedUrl: true }
-    })
+    const user = userById.get(activity.userId)
     if (!user?.privateKey || !user?.federatedUrl) {
       await prisma.outboxActivity.update({
         where: { id: activity.id },
@@ -46,12 +76,22 @@ export async function GET() {
       continue
     }
 
-    const serialized = JSON.parse(activity.serialized)
+    let serialized: Record<string, unknown>
+    try {
+      serialized = JSON.parse(activity.serialized) as Record<string, unknown>
+    } catch {
+      await prisma.outboxActivity.update({
+        where: { id: activity.id },
+        data: { status: 'FAILED', lastError: 'Bad payload' }
+      })
+      failed++
+      continue
+    }
     const keyId = `${user.federatedUrl}#main-key`
     let allOk = true
 
-    for (const follower of followers) {
-      const ok = await deliverToInbox(follower.remoteInboxUrl!, serialized, user.privateKey, keyId)
+    for (const inboxUrl of remoteInboxUrls) {
+      const ok = await deliverToInbox(inboxUrl, serialized, user.privateKey, keyId)
       if (!ok) allOk = false
     }
 

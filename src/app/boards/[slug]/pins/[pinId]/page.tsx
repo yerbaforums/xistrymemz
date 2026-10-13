@@ -6,6 +6,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import { getEntityIcon } from '@/lib/entity-icons'
+import { parseImageList } from '@/lib/utils'
 import EntityActions from '@/components/EntityActions'
 import type { ActionEntityType } from '@/hooks/useEntityActions'
 import Breadcrumbs from '@/components/Breadcrumbs'
@@ -93,7 +94,7 @@ export default function PinDetailPage() {
   if (loading) return <div className="landing" style={{ padding: 32 }}><Skeleton width="100%" height="200px" /></div>
   if (!pin) return <div className="landing" style={{ padding: 32, textAlign: 'center' }}><h2>Pin not found</h2><Link href={`/boards/${slug}`}>← Back to Board</Link></div>
 
-  const images: string[] = pin.images ? JSON.parse(pin.images) : []
+  const images = parseImageList(pin.images)
   const catColors: Record<string, string> = {
     LOST_FOUND: '#ef4444', PROMOTION: '#3b82f6', EVENT: '#8b5cf6',
     SERVICE: '#22c55e', HOUSING: '#ec4899', JOBS: '#14b8a6', FREE: '#22c55e', GENERAL: '#6b7280',
@@ -104,7 +105,7 @@ export default function PinDetailPage() {
     <div className="landing" style={{ maxWidth: 800, margin: '0 auto', padding: '24px 16px 60px' }}>
       {fullImg && (
         <div onClick={() => setFullImg(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-          <img src={fullImg} alt="" style={{ maxWidth: '95vw', maxHeight: '95vh', objectFit: 'contain', borderRadius: 8 }} />
+          <img loading="lazy" src={fullImg} alt="" style={{ maxWidth: '95vw', maxHeight: '95vh', objectFit: 'contain', borderRadius: 8 }} />
         </div>
       )}
 
@@ -144,7 +145,7 @@ export default function PinDetailPage() {
             {images.length > 1 && (
               <div style={{ display: 'flex', gap: 6, padding: 8, overflowX: 'auto', background: 'var(--bg-primary)' }}>
                 {images.map((img, i) => (
-                  <img key={i} src={img} alt="" onClick={(e) => { e.stopPropagation(); setImgIdx(i) }} style={{ width: 60, height: 40, objectFit: 'cover', borderRadius: 4, cursor: 'pointer', opacity: i === imgIdx ? 1 : 0.5, border: i === imgIdx ? '2px solid var(--accent-primary)' : 'none' }} />
+                  <img loading="lazy" key={i} src={img} alt="" onClick={(e) => { e.stopPropagation(); setImgIdx(i) }} style={{ width: 60, height: 40, objectFit: 'cover', borderRadius: 4, cursor: 'pointer', opacity: i === imgIdx ? 1 : 0.5, border: i === imgIdx ? '2px solid var(--accent-primary)' : 'none' }} />
                 ))}
               </div>
             )}
@@ -153,7 +154,7 @@ export default function PinDetailPage() {
 
         {pin.entityType && pin.entityId && (
           <Link href={getEntityHref(pin.entityType, pin.entityId)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 12, background: 'var(--bg-tertiary)', borderRadius: 8, textDecoration: 'none', color: 'var(--text-primary)' }}>
-            {pin.entityImage ? <img src={pin.entityImage} alt="" style={{ width: 40, height: 40, borderRadius: 4, objectFit: 'cover' }} /> : <span style={{ fontSize: '1.3rem' }}>{getEntityIcon(pin.entityType)}</span>}
+            {pin.entityImage ? <img loading="lazy" src={pin.entityImage} alt="" style={{ width: 40, height: 40, borderRadius: 4, objectFit: 'cover' }} /> : <span style={{ fontSize: '1.3rem' }}>{getEntityIcon(pin.entityType)}</span>}
             <div style={{ minWidth: 0 }}>
               <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'capitalize' }}>{pin.entityType.replace('_', ' ')}</div>
               <div style={{ fontSize: '0.85rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pin.entityTitle || 'View →'}</div>

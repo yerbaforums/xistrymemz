@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server'
 
 const DEEPL_API_BASE = process.env.DEEPL_API_KEY?.startsWith('fake') || process.env.DEEPL_API_KEY?.startsWith('test')
   ? 'https://api-free.deepl.com/v2'
-  : 'https://api-free.deepl.com/v2'
+  : 'https://api.deepl.com/v2'
 
 const ALLOWED_TARGETS = ['BG', 'CS', 'DA', 'DE', 'EL', 'EN', 'ES', 'ET', 'FI', 'FR', 'HU', 'ID', 'IT', 'JA', 'KO', 'LT', 'LV', 'NB', 'NL', 'PL', 'PT', 'RO', 'RU', 'SK', 'SL', 'SV', 'TR', 'UK', 'ZH']
 const MAX_TEXT_LENGTH = 10000

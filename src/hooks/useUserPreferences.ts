@@ -38,6 +38,14 @@ export function useUserPreferences() {
       })
   }, [status, session?.user?.id])
 
+  // Clear any pending debounced save on unmount so no request
+  // fires after the component is gone.
+  useEffect(() => {
+    return () => {
+      if (saveTimer.current) clearTimeout(saveTimer.current)
+    }
+  }, [])
+
   const setPreference = useCallback(
     (patch: Partial<UserPreferences>) => {
       setPrefs(prev => {

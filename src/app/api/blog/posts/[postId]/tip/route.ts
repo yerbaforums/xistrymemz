@@ -3,8 +3,9 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { createNotification } from '@/services/notificationService'
+import { SUPPORTED_CRYPTOS } from '@/lib/constants'
 
-const VALID_CURRENCIES = ['XMR', 'XTM', 'ZANO', 'FUSD', 'USD']
+const VALID_CURRENCIES = [...SUPPORTED_CRYPTOS, 'USD']
 
 // POST tip a blog post { amount, currency }
 export async function POST(request: Request, { params }: { params: Promise<{ postId: string }> }) {

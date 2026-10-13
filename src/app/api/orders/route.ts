@@ -76,6 +76,29 @@ export async function POST(request: Request) {
       return apiError('Seller not found', 400)
     }
 
+    // The server is the source of truth for the price: when the order
+    // is for a listed product, recompute the amount from the product's
+    // price so a client cannot spoof it.
+    let finalAmount = amount
+    if (productId) {
+      const product = await prisma.product.findUnique({
+        where: { id: productId },
+        select: { id: true, price: true, userId: true }
+      })
+      if (!product) {
+        return apiError('Product not found', 400)
+      }
+      if (product.userId !== sellerId) {
+        return apiError('Product does not belong to this seller', 400)
+      }
+      if (product.price != null) {
+        finalAmount = product.price * quantity
+      }
+    }
+    if (!finalAmount || finalAmount <= 0) {
+      return apiError('Amount must be greater than 0', 400)
+    }
+
     let courierId: string | undefined
     let courierFee: number | undefined
     let courierStatus: string | undefined
@@ -102,7 +125,7 @@ export async function POST(request: Request) {
         productId: productId ?? null,
         description: description ?? null,
         notes: notes ?? null,
-        amount,
+        amount: finalAmount,
         currency,
         sellerPayoutAddress: sellerPayoutAddress ?? null,
         sellerPayoutCurrency: sellerPayoutCurrency ?? null,
@@ -128,7 +151,7 @@ export async function POST(request: Request) {
         entityId: order.id,
         entityType: 'ORDER',
         title: 'New order received',
-        message: `${session.user.name || 'A buyer'} placed an order for $${amount} ${currency}`,
+        message: `${session.user.name || 'A buyer'} placed an order for $${finalAmount} ${currency}`,
         link: `/orders/${order.id}`,
       }).catch(() => null)
       // Auto-assigned courier gets a delivery request alongside the sale.

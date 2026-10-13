@@ -121,7 +121,7 @@ export default function ShopListingsPage() {
         <div className={styles.cardMain}>
           <div className={styles.cardThumb}>
             {item.imageUrl ? (
-              <img src={item.imageUrl} alt="" />
+              <img loading="lazy" src={item.imageUrl} alt="" />
             ) : (
               <span className={styles.cardIcon}>{isService ? '🔧' : (item as ProductRow).type === 'RENTAL' ? '🏠' : '📦'}</span>
             )}

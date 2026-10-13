@@ -98,6 +98,7 @@ export const NAV: NavConfig = {
   ],
 
   admin: [
+    { href: '/admin/analytics', icon: '📊', label: 'Analytics' },
     { href: '/admin/subscribers', icon: '📧', label: 'Subscribers' },
     { href: '/admin/orders', icon: '📦', label: 'Orders' },
     { href: '/admin/messages', icon: '💬', label: 'Messages' },
@@ -105,6 +106,8 @@ export const NAV: NavConfig = {
     { href: '/admin/users', icon: '👤', label: 'Users' },
     { href: '/admin/badges', icon: '🏅', label: 'Badges' },
     { href: '/admin/feedback', icon: '📨', label: 'Feedback' },
+    { href: '/admin/reports', icon: '🚩', label: 'Reports' },
+    { href: '/admin/backups', icon: '💾', label: 'Backups' },
     { href: '/admin/settings', icon: '⚙️', label: 'Settings' },
   ],
 }

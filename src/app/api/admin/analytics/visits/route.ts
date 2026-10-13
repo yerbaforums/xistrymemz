@@ -18,11 +18,19 @@ export async function GET(request: Request) {
     const ipFilter = url.searchParams.get('ip') || null
     const pageFilter = url.searchParams.get('pagePath') || null
     const countryFilter = url.searchParams.get('country') || null
+    const range = url.searchParams.get('range') || null
 
     const where: Record<string, unknown> = {}
     if (ipFilter) where.ipHash = { contains: ipFilter, mode: 'insensitive' }
     if (pageFilter) where.landingPage = { contains: pageFilter, mode: 'insensitive' }
     if (countryFilter) where.country = { contains: countryFilter, mode: 'insensitive' }
+    if (range === '24h') {
+      where.createdAt = { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }
+    } else if (range === '7d') {
+      where.createdAt = { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+    } else if (range === '30d') {
+      where.createdAt = { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+    }
 
     const [total, visits] = await Promise.all([
       prisma.pageVisit.count({ where }),

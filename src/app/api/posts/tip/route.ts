@@ -2,6 +2,7 @@ import { apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { SUPPORTED_CRYPTOS } from '@/lib/constants'
 
 const CRYPTO_RATES: Record<string, number> = {
   XMR: 1, XTM: 100, ZANO: 25, FUSD: 1
@@ -15,13 +16,17 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json()
-    const { postId, amount, cryptoSymbol } = body
+    const { postId, amount } = body
 
     if (!postId || !amount || amount <= 0) {
       return apiError("Invalid parameters", 400)
     }
 
-    const cryptoRate = CRYPTO_RATES[cryptoSymbol || 'XMR'] || 1
+    const cryptoSymbol = typeof body.cryptoSymbol === 'string' ? body.cryptoSymbol.toUpperCase() : 'XMR'
+    if (!SUPPORTED_CRYPTOS.includes(cryptoSymbol)) {
+      return apiError("Unsupported currency", 400)
+    }
+    const cryptoRate = CRYPTO_RATES[cryptoSymbol] ?? 1
     const usdAmount = amount * cryptoRate
 
     const post = await prisma.post.findUnique({

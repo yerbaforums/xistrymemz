@@ -53,18 +53,29 @@ export async function GET(
     }
 
     const filePath = getBackupFilePath(backup.fileName)
+
+    // Serverless note: local backup files live in ephemeral
+    // storage, so on platforms like Vercel the file may only
+    // exist on the instance that created it. The durable copy
+    // is the IPFS-pinned version — fall back to the gateway.
     if (!filePath) {
-      return apiError("Backup file not found on disk", 404)
+      const cid = backup.cid || ''
+      const isRealCid = cid && !cid.startsWith('local-') && /^[a-zA-Z0-9]+$/.test(cid)
+      if (isRealCid) {
+        return NextResponse.redirect(`https://ipfs.io/ipfs/${cid}`, 302)
+      }
+      return apiError("Backup file no longer on this server — use the IPFS link", 404)
     }
 
     const fs = require('fs')
-    const fileBuffer = fs.readFileSync(filePath)
+    const stat = fs.statSync(filePath)
+    const fileStream = fs.createReadStream(filePath)
 
-    return new NextResponse(fileBuffer, {
+    return new NextResponse(fileStream as unknown as BodyInit, {
       headers: {
         'Content-Type': 'application/gzip',
         'Content-Disposition': `attachment; filename="${backup.fileName}"`,
-        'Content-Length': String(fileBuffer.length),
+        'Content-Length': String(stat.size),
       },
     })
   } catch (error) {

@@ -179,7 +179,7 @@ model User {
 
   // Donation settings (legacy single address)
   donationAddress  String?
-  donationCurrency String  @default("ETH")
+  donationCurrency String  @default("XMR")
   acceptsDonations Boolean @default(false)
 
   // Multiple donation addresses
@@ -480,7 +480,7 @@ model Project {
   goalAmount          Float?  @default(0)
   currentFunding      Float?  @default(0)
   donationAddress     String?
-  donationCurrency    String  @default("ETH")
+  donationCurrency    String  @default("XMR")
   acceptsDonations    Boolean @default(false)
   donationDescription String?
   donationAddresses   String? // JSON: [{currency, address, label}]
@@ -561,7 +561,7 @@ model Event {
   // Donations
   acceptsDonations  Boolean @default(false)
   donationAddress   String?
-  donationCurrency  String  @default("ETH")
+  donationCurrency  String  @default("XMR")
   donationAddresses String? // JSON: [{currency, address, label}]
 
   // Volunteering
@@ -815,7 +815,7 @@ model Request {
   goalAmount          Float?                 @default(0)
   currentFunding      Float?                 @default(0)
   payoutAddress       String?
-  payoutCurrency      String?                @default("ETH")
+  payoutCurrency      String?                @default("XMR")
   deadline            DateTime?
   location            String?
   latitude            Float?
@@ -848,7 +848,7 @@ model Request {
   // Donations
   acceptsDonations  Boolean @default(false)
   donationAddress   String?
-  donationCurrency  String  @default("ETH")
+  donationCurrency  String  @default("XMR")
   donationAddresses String? // JSON: [{currency, address, label}]
 
   // Custom questions for help requests
@@ -969,7 +969,7 @@ model Product {
 
   acceptsDonations  Boolean @default(false)
   donationAddress   String?
-  donationCurrency  String  @default("ETH")
+  donationCurrency  String  @default("XMR")
   donationAddresses String? // JSON: [{currency, address, label}]
 
   // Appointment scheduling
@@ -984,7 +984,7 @@ model Product {
   customizationFields Json? // [{ label: string, type: "text"|"textarea", required: boolean }]
 
   sellerPayoutAddress  String? // Crypto address for direct payouts
-  sellerCryptoCurrency String? // BTC, ETH, USDT, USDC, XMR, XTM, ARRR, DERO, ZANO, OTHER
+  sellerCryptoCurrency String? // XMR, XTM, ZANO, FUSD, OTHER
   isApproved           Boolean          @default(false)
   approvedAt           DateTime?
   approvedBy           String? // User ID of admin who approved
@@ -1466,7 +1466,7 @@ model Group {
   // Donations
   acceptsDonations  Boolean @default(false)
   donationAddress   String?
-  donationCurrency  String  @default("ETH")
+  donationCurrency  String  @default("XMR")
   donationAddresses String? // JSON: [{currency, address, label}]
 
   userId        String
@@ -2058,9 +2058,9 @@ model DonationAddress {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  currency  String // ETH, BTC, XMR, USDT, USDC, etc.
+  currency  String // XMR, XTM, ZANO, FUSD, etc.
   address   String
-  label     String? // e.g., "Main ETH Wallet", "Cold Storage"
+  label     String? // e.g., "Main XMR Wallet", "Cold Storage"
   qrCodeUrl String? // URL to QR code image
   showQR    Boolean  @default(true)
   sortOrder Int      @default(0)

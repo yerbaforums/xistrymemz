@@ -2,6 +2,7 @@ import { apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { SUPPORTED_CRYPTOS } from '@/lib/constants'
 
 export async function POST(req: Request) {
   try {
@@ -21,6 +22,11 @@ export async function POST(req: Request) {
       return apiError("Cannot tip yourself", 400)
     }
 
+    const tipCurrency = currency ? String(currency).toUpperCase() : 'XTM'
+    if (!SUPPORTED_CRYPTOS.includes(tipCurrency)) {
+      return apiError("Invalid currency", 400)
+    }
+
     const targetUser = await prisma.user.findUnique({
       where: { id: userId }
     })
@@ -35,15 +41,15 @@ export async function POST(req: Request) {
         entityType: 'USER',
         entityId: userId,
         amount: Number(amount),
-        currency: currency || 'XTM'
+        currency: tipCurrency
       }
     })
 
     return NextResponse.json({
       success: true,
       amount: Number(amount),
-      currency: currency || 'XTM',
-      message: `Donation of ${amount} ${currency || 'XTM'} recorded for ${targetUser.name || targetUser.email}!`
+      currency: tipCurrency,
+      message: `Donation of ${amount} ${tipCurrency} recorded for ${targetUser.name || targetUser.email}!`
     })
   } catch (error) {
     console.error('Error recording tip:', error)

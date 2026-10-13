@@ -261,7 +261,7 @@ function EventDetailContent() {
       .then(data => {
         const ev = data?.data || data
         setEvent(ev)
-        setMyTicket(ev.myTicket || null)
+        setMyTicket(ev?.myTicket || null)
         setLoading(false)
         if (ev) {
           setRelatedLoading(true)
@@ -1166,7 +1166,7 @@ function EventDetailContent() {
                   const shortAddr = da.address.length > 20 ? da.address.slice(0, 10) + '...' + da.address.slice(-8) : da.address
                   return (
                     <div key={da.id || da.address} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid var(--border-color)' }}>
-                      <Image src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'ethereum.png'}`} alt="" width={20} height={20} style={{ borderRadius: '50%' }} />
+                      <Image src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'crypto.svg'}`} alt="" width={20} height={20} style={{ borderRadius: '50%' }} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{da.label || da.currency}</div>
                         <code style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', wordBreak: 'break-all' }}>{shortAddr}</code>
@@ -1182,7 +1182,7 @@ function EventDetailContent() {
                 })
                 if (event.donationAddress) return (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 0' }}>
-                    <Image src={`/crypto-logos/${CRYPTO_LOGOS[event.donationCurrency || 'XMR'] || 'ethereum.png'}`} alt="" width={20} height={20} style={{ borderRadius: '50%' }} />
+                    <Image src={`/crypto-logos/${CRYPTO_LOGOS[event.donationCurrency || 'XMR'] || 'crypto.svg'}`} alt="" width={20} height={20} style={{ borderRadius: '50%' }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{event.donationCurrency || 'XMR'}</div>
                       <code style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', wordBreak: 'break-all' }}>{event.donationAddress.length > 20 ? event.donationAddress.slice(0, 10) + '...' + event.donationAddress.slice(-8) : event.donationAddress}</code>
