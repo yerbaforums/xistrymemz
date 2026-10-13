@@ -192,7 +192,7 @@ export default function LinkItemModal({
 
             {targetType && (
               <div className={styles.step}>
-                <label className={styles.label}>2. Search for item</label>
+                <label className={styles.label} htmlFor="2-search-for-item">2. Search for item</label>
                 <input
                   type="text"
                   value={query}
@@ -200,7 +200,7 @@ export default function LinkItemModal({
                   placeholder={`Search ${ENTITY_TYPES.find(t => t.value === targetType)?.label || ''}...`}
                   className={styles.searchInput}
                   autoFocus
-                />
+                 id="2-search-for-item"/>
                 {searching && <div className={styles.searching}>Searching...</div>}
                 {results.length > 0 && (
                   <div className={styles.results}>

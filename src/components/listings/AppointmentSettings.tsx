@@ -77,7 +77,7 @@ export function AppointmentSettings({
         <div className={styles.fields}>
           <div className={styles.row}>
             <div className={styles.group}>
-              <label>Default Session Duration (min)</label>
+              <label htmlFor="default-session-duration-min">Default Session Duration (min)</label>
               <input
                 type="number"
                 value={value.appointmentDuration}
@@ -85,45 +85,45 @@ export function AppointmentSettings({
                 placeholder={defaultDurationLabel || '60'}
                 min={5}
                 step={5}
-              />
+               id="default-session-duration-min"/>
               {defaultDurationLabel && (
                 <small>Leave blank to use {defaultDurationLabel}</small>
               )}
             </div>
             <div className={styles.group}>
-              <label>Minimum Lead Time (hours)</label>
+              <label htmlFor="minimum-lead-time-hours">Minimum Lead Time (hours)</label>
               <input
                 type="number"
                 value={value.appointmentLeadTime}
                 onChange={e => set({ appointmentLeadTime: e.target.value })}
                 placeholder="24"
                 min={0}
-              />
+               id="minimum-lead-time-hours"/>
               <small>How far in advance bookings must be made</small>
             </div>
           </div>
 
           <div className={styles.group}>
-            <label>Appointment Location Override</label>
+            <label htmlFor="appointment-location-override">Appointment Location Override</label>
             <input
               type="text"
               value={value.appointmentLocation}
               onChange={e => set({ appointmentLocation: e.target.value })}
               placeholder={defaultLocationLabel || 'Location for in-person meetings'}
-            />
+             id="appointment-location-override"/>
             {defaultLocationLabel && (
               <small>Leave blank to use {defaultLocationLabel}</small>
             )}
           </div>
 
           <div className={styles.group}>
-            <label>Appointment Meeting Link Override</label>
+            <label htmlFor="appointment-meeting-link-override">Appointment Meeting Link Override</label>
             <input
               type="url"
               value={value.appointmentMeetingLink}
               onChange={e => set({ appointmentMeetingLink: e.target.value })}
               placeholder={defaultMeetingLinkLabel || 'https://...'}
-            />
+             id="appointment-meeting-link-override"/>
             {defaultMeetingLinkLabel && (
               <small>Leave blank to use {defaultMeetingLinkLabel}</small>
             )}

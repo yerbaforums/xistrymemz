@@ -611,12 +611,12 @@ export default function BlogDashboard() {
               <div className={styles.editorGrid}>
                 <div className={styles.editorMain}>
                   <div className="form-group">
-                    <label>Title</label>
-                    <input type="text" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Post title" required />
+                    <label htmlFor="title">Title</label>
+                    <input type="text" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Post title" required  id="title"/>
                   </div>
                   <div className="form-group">
-                    <label>Excerpt (optional, shown in listings)</label>
-                    <input type="text" value={form.excerpt} onChange={(e) => setForm({ ...form, excerpt: e.target.value })} placeholder="A short summary" />
+                    <label htmlFor="excerpt-optional-shown-in-listings">Excerpt (optional, shown in listings)</label>
+                    <input type="text" value={form.excerpt} onChange={(e) => setForm({ ...form, excerpt: e.target.value })} placeholder="A short summary"  id="excerpt-optional-shown-in-listings"/>
                   </div>
                   <div className="form-group">
                     <label>Content</label>
@@ -625,16 +625,16 @@ export default function BlogDashboard() {
                 </div>
                 <div className={styles.editorSide}>
                   <div className="form-group">
-                    <label>Status</label>
-                    <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as PostForm['status'] })}>
+                    <label htmlFor="status">Status</label>
+                    <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as PostForm['status'] })} id="status">
                       <option value="DRAFT">Draft</option>
                       <option value="PUBLISHED">Publish now</option>
                     </select>
                   </div>
                   <AdvancedSection label="Monetization & discovery">
                   <div className="form-group">
-                    <label>Visibility</label>
-                    <select value={form.visibility} onChange={(e) => setForm({ ...form, visibility: e.target.value as PostForm['visibility'] })}>
+                    <label htmlFor="visibility">Visibility</label>
+                    <select value={form.visibility} onChange={(e) => setForm({ ...form, visibility: e.target.value as PostForm['visibility'] })} id="visibility">
                       <option value="FREE">Free — everyone</option>
                       <option value="SUBSCRIBERS">Subscribers only</option>
                       <option value="PAID">Paid — unlock purchase</option>
@@ -664,8 +664,8 @@ export default function BlogDashboard() {
                     <ImageUploader images={coverImages} onChange={(urls) => { setCoverImages(urls); setForm((f) => ({ ...f, coverImage: urls[0] || '' })) }} maxImages={1} />
                   </div>
                   <div className="form-group">
-                    <label>Tags (comma separated)</label>
-                    <input type="text" value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} placeholder="travel, crypto, guides" />
+                    <label htmlFor="tags-comma-separated">Tags (comma separated)</label>
+                    <input type="text" value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} placeholder="travel, crypto, guides"  id="tags-comma-separated"/>
                   </div>
                 </div>
               </div>

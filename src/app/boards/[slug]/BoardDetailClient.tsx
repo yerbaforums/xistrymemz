@@ -592,21 +592,21 @@ export default function BoardDetailPage() {
             <h2>✏️ Edit Board</h2>
             <form onSubmit={handleEdit}>
               <div className="form-group">
-                <label>Board Name *</label>
+                <label htmlFor="board-name">Board Name *</label>
                 <input
                   type="text"
                   value={editName}
                   onChange={e => setEditName(e.target.value)}
                   required
-                />
+                 id="board-name"/>
               </div>
               <div className="form-group">
-                <label>Description</label>
+                <label htmlFor="description">Description</label>
                 <textarea
                   value={editDescription}
                   onChange={e => setEditDescription(e.target.value)}
                   rows={3}
-                />
+                 id="description"/>
               </div>
               <div className="form-group">
                 <label>Location</label>
@@ -617,12 +617,12 @@ export default function BoardDetailPage() {
               </div>
               <div className="form-row" style={{ display: 'flex', gap: 8 }}>
                 <div className="form-group" style={{ flex: 1 }}>
-                  <label>Latitude</label>
-                  <input type="number" step="any" value={editLatitude} onChange={e => setEditLatitude(e.target.value)} placeholder="40.7128" />
+                  <label htmlFor="latitude">Latitude</label>
+                  <input type="number" step="any" value={editLatitude} onChange={e => setEditLatitude(e.target.value)} placeholder="40.7128"  id="latitude"/>
                 </div>
                 <div className="form-group" style={{ flex: 1 }}>
-                  <label>Longitude</label>
-                  <input type="number" step="any" value={editLongitude} onChange={e => setEditLongitude(e.target.value)} placeholder="-74.006" />
+                  <label htmlFor="longitude">Longitude</label>
+                  <input type="number" step="any" value={editLongitude} onChange={e => setEditLongitude(e.target.value)} placeholder="-74.006"  id="longitude"/>
                 </div>
               </div>
               <div className="form-actions">
@@ -642,28 +642,28 @@ export default function BoardDetailPage() {
             <h2>✏️ Edit Pin</h2>
             <form onSubmit={handleEditPin}>
               <div className="form-group">
-                <label>Title</label>
-                <input type="text" value={editPinTitle} onChange={e => setEditPinTitle(e.target.value)} />
+                <label htmlFor="title">Title</label>
+                <input type="text" value={editPinTitle} onChange={e => setEditPinTitle(e.target.value)}  id="title"/>
               </div>
               <div className="form-group">
-                <label>Content</label>
-                <textarea value={editPinContent} onChange={e => setEditPinContent(e.target.value)} rows={3} />
+                <label htmlFor="content">Content</label>
+                <textarea value={editPinContent} onChange={e => setEditPinContent(e.target.value)} rows={3}  id="content"/>
               </div>
               <div className="form-group">
                 <label>Images</label>
                 <ImageUploader images={editPinImages} onChange={setEditPinImages} maxImages={6} />
               </div>
               <div className="form-group">
-                <label>Category</label>
-                <select value={editPinCategory} onChange={e => setEditPinCategory(e.target.value)}>
+                <label htmlFor="category">Category</label>
+                <select value={editPinCategory} onChange={e => setEditPinCategory(e.target.value)} id="category">
                   {PIN_CATEGORIES.map(c => (
                     <option key={c.value} value={c.value}>{c.label}</option>
                   ))}
                 </select>
               </div>
               <div className="form-group">
-                <label>Expires At</label>
-                <input type="datetime-local" value={editPinExpiresAt} onChange={e => setEditPinExpiresAt(e.target.value)} />
+                <label htmlFor="expires-at">Expires At</label>
+                <input type="datetime-local" value={editPinExpiresAt} onChange={e => setEditPinExpiresAt(e.target.value)}  id="expires-at"/>
               </div>
               {editingPin.entityType && editingPin.entityId && (
                 <div className="form-group">
@@ -674,16 +674,16 @@ export default function BoardDetailPage() {
                 </div>
               )}
               <div className="form-group">
-                <label>Contact Name</label>
-                <input type="text" value={editPinContactName} onChange={e => setEditPinContactName(e.target.value)} />
+                <label htmlFor="contact-name">Contact Name</label>
+                <input type="text" value={editPinContactName} onChange={e => setEditPinContactName(e.target.value)}  id="contact-name"/>
               </div>
               <div className="form-group">
-                <label>Contact Email</label>
-                <input type="email" value={editPinContactEmail} onChange={e => setEditPinContactEmail(e.target.value)} />
+                <label htmlFor="contact-email">Contact Email</label>
+                <input type="email" value={editPinContactEmail} onChange={e => setEditPinContactEmail(e.target.value)}  id="contact-email"/>
               </div>
               <div className="form-group">
-                <label>Contact Phone</label>
-                <input type="tel" value={editPinContactPhone} onChange={e => setEditPinContactPhone(e.target.value)} />
+                <label htmlFor="contact-phone">Contact Phone</label>
+                <input type="tel" value={editPinContactPhone} onChange={e => setEditPinContactPhone(e.target.value)}  id="contact-phone"/>
               </div>
               <div className="form-actions">
                 <Button type="button" variant="ghost" onClick={() => setEditingPin(null)}>Cancel</Button>

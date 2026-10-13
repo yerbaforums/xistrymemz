@@ -79,16 +79,16 @@ export default function ProductFilters({
         </div>
 
         <div className={styles.group}>
-          <label className={styles.label}>Type</label>
-          <select value={type} onChange={e => onTypeChange(e.target.value)} className={styles.select}>
+          <label className={styles.label} htmlFor="type">Type</label>
+          <select value={type} onChange={e => onTypeChange(e.target.value)} className={styles.select} id="type">
             <option value="ALL">All Types</option>
             <option value="PRODUCT">Products</option>
           </select>
         </div>
 
         <div className={styles.group}>
-          <label className={styles.label}>Category</label>
-          <select value={category} onChange={e => onCategoryChange(e.target.value)} className={styles.select}>
+          <label className={styles.label} htmlFor="category">Category</label>
+          <select value={category} onChange={e => onCategoryChange(e.target.value)} className={styles.select} id="category">
             <option value="ALL">All Categories</option>
             {categories.map(cat => cat && (
               <option key={cat} value={cat}>{cat}</option>
@@ -97,8 +97,8 @@ export default function ProductFilters({
         </div>
 
         <div className={styles.group}>
-          <label className={styles.label}>Location</label>
-          <select value={location} onChange={e => onLocationChange(e.target.value)} className={styles.select}>
+          <label className={styles.label} htmlFor="location">Location</label>
+          <select value={location} onChange={e => onLocationChange(e.target.value)} className={styles.select} id="location">
             <option value="ALL">All Locations</option>
             <option value="GLOBAL">Global</option>
             {locations.filter(l => l !== 'GLOBAL').map(loc => loc && (
@@ -108,8 +108,8 @@ export default function ProductFilters({
         </div>
 
         <div className={styles.group}>
-          <label className={styles.label}>Condition</label>
-          <select value={condition} onChange={e => onConditionChange(e.target.value)} className={styles.select}>
+          <label className={styles.label} htmlFor="condition">Condition</label>
+          <select value={condition} onChange={e => onConditionChange(e.target.value)} className={styles.select} id="condition">
             <option value="ALL">Any Condition</option>
             {conditions.map(cond => (
               <option key={cond} value={cond}>{cond.replace('_', ' ')}</option>

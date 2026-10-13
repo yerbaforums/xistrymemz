@@ -332,7 +332,7 @@ export default function AdminSettingsPage() {
             </div>
 
             <div className={styles.mb12}>
-              <label className={styles.formLabel}>Address</label>
+              <label className={styles.formLabel} htmlFor="address">Address</label>
               <input
                 type="text"
                 value={donationForm.address}
@@ -340,18 +340,18 @@ export default function AdminSettingsPage() {
                 placeholder={`Enter ${donationForm.currency} address...`}
                 required
                 className={styles.formInput}
-              />
+               id="address"/>
             </div>
 
             <div className={styles.mb12}>
-              <label className={styles.formLabel}>Label (optional)</label>
+              <label className={styles.formLabel} htmlFor="label-optional">Label (optional)</label>
               <input
                 type="text"
                 value={donationForm.label}
                 onChange={e => setDonationForm({ ...donationForm, label: e.target.value })}
                 placeholder="e.g., Main Wallet, Community Fund..."
                 className={styles.formInput}
-              />
+               id="label-optional"/>
             </div>
 
             <div className={styles.mb12}>

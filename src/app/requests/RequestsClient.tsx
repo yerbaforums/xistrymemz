@@ -370,21 +370,21 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
           </h2>
 
           <div className={styles.filterGroup}>
-            <label className={styles.filterLabel}>Search</label>
-            <input type="text" placeholder="Search requests..." aria-label="Search requests" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className={styles.filterInput} />
+            <label className={styles.filterLabel} htmlFor="search">Search</label>
+            <input type="text" placeholder="Search requests..." aria-label="Search requests" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className={styles.filterInput}  id="search"/>
           </div>
 
           <div className={styles.filterGroup}>
-            <label className={styles.filterLabel}>Category</label>
-            <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className={styles.filterSelect}>
+            <label className={styles.filterLabel} htmlFor="category">Category</label>
+            <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className={styles.filterSelect} id="category">
               <option value="ALL">All Categories</option>
               {REQUEST_CATEGORIES.map(cat => (<option key={cat.value} value={cat.value}>{cat.label}</option>))}
             </select>
           </div>
 
           <div className={styles.filterGroup}>
-            <label className={styles.filterLabel}>Sort</label>
-            <select value={sortBy} onChange={e => setSortBy(e.target.value)} className={styles.filterSelect}>
+            <label className={styles.filterLabel} htmlFor="sort">Sort</label>
+            <select value={sortBy} onChange={e => setSortBy(e.target.value)} className={styles.filterSelect} id="sort">
               <option value="newest">Newest</option>
               <option value="oldest">Oldest</option>
               <option value="mostSupported">Most Supported</option>

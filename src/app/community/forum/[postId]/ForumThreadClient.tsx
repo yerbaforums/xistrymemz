@@ -945,12 +945,12 @@ export default function ForumThreadPage() {
             <h3>Report Post</h3>
             <p className={styles.reportHint}>Help keep the community safe and respectful.</p>
 
-            <label className={styles.reportLabel}>Reason</label>
+            <label className={styles.reportLabel} htmlFor="reason">Reason</label>
             <select
               value={reportReason}
               onChange={e => setReportReason(e.target.value as 'SPAM' | 'ABUSE' | 'HARASSMENT' | 'INAPPROPRIATE' | 'OTHER')}
               className={styles.reportSelect}
-            >
+             id="reason">
               <option value="SPAM">Spam</option>
               <option value="ABUSE">Abuse</option>
               <option value="HARASSMENT">Harassment</option>

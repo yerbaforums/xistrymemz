@@ -485,13 +485,13 @@ export default function OrdersPage() {
           <div className="modal" onClick={e => e.stopPropagation()}>
             <h2>Message {messageTo?.name}</h2>
             <div className="form-group">
-              <label>Message</label>
+              <label htmlFor="message">Message</label>
               <textarea
                 value={messageText}
                 onChange={(e) => setMessageText(e.target.value)}
                 placeholder="Type your message..."
                 rows={4}
-              />
+               id="message"/>
             </div>
             <div className={styles.modalActions}>
               <Button onClick={() => setShowMessageModal(false)} variant="ghost">Cancel</Button>

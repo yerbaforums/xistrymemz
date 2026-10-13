@@ -176,7 +176,7 @@ export default function AdminBadgesPage() {
 
       <form onSubmit={handleAward} className={styles.awardForm}>
         <div className={styles.formGroup}>
-          <label>User (id or username)</label>
+          <label htmlFor="user-id-or-username">User (id or username)</label>
           <input
             type="text"
             value={form.userId}
@@ -184,10 +184,10 @@ export default function AdminBadgesPage() {
             className={styles.formInput}
             placeholder="user id or username"
             required
-          />
+           id="user-id-or-username"/>
         </div>
         <div className={styles.formGroup}>
-          <label>Badge Name</label>
+          <label htmlFor="badge-name">Badge Name</label>
           <input
             type="text"
             value={form.name}
@@ -195,27 +195,27 @@ export default function AdminBadgesPage() {
             className={styles.formInput}
             placeholder="e.g. TRUSTED_SELLER"
             required
-          />
+           id="badge-name"/>
         </div>
         <div className={styles.formGroup} style={{ maxWidth: 150 }}>
-          <label>Tier</label>
+          <label htmlFor="tier">Tier</label>
           <select
             value={form.tier}
             onChange={e => setForm({ ...form, tier: e.target.value })}
             className={styles.formInput}
-          >
+           id="tier">
             {TIERS.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
         <div className={styles.formGroup}>
-          <label>Description</label>
+          <label htmlFor="description">Description</label>
           <input
             type="text"
             value={form.description}
             onChange={e => setForm({ ...form, description: e.target.value })}
             className={styles.formInput}
             placeholder="Optional description"
-          />
+           id="description"/>
         </div>
         <button type="submit" disabled={submitting} className={styles.submitBtn}>
           {submitting ? 'Awarding...' : 'Award Badge'}
@@ -337,33 +337,33 @@ export default function AdminBadgesPage() {
             <h2 className={styles.modalTitle}>Edit Badge</h2>
             <form onSubmit={handleEditSave} className={styles.awardForm} style={{ border: 'none', padding: 0, marginBottom: 0, alignItems: 'stretch' }}>
               <div className={styles.formGroup}>
-                <label>Badge Name</label>
+                <label htmlFor="badge-name-2">Badge Name</label>
                 <input
                   type="text"
                   value={editForm.name}
                   onChange={e => setEditForm({ ...editForm, name: e.target.value })}
                   className={styles.formInput}
                   required
-                />
+                 id="badge-name-2"/>
               </div>
               <div className={styles.formGroup}>
-                <label>Tier</label>
+                <label htmlFor="tier-2">Tier</label>
                 <select
                   value={editForm.tier}
                   onChange={e => setEditForm({ ...editForm, tier: e.target.value })}
                   className={styles.formInput}
-                >
+                 id="tier-2">
                   {TIERS.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
               <div className={styles.formGroup}>
-                <label>Description</label>
+                <label htmlFor="description-2">Description</label>
                 <input
                   type="text"
                   value={editForm.description}
                   onChange={e => setEditForm({ ...editForm, description: e.target.value })}
                   className={styles.formInput}
-                />
+                 id="description-2"/>
               </div>
               <div className={styles.modalActions}>
                 <button type="button" onClick={() => setEditing(null)} className={styles.cancelBtn}>Cancel</button>

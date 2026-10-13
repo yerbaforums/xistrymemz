@@ -285,30 +285,30 @@ export default function CourierSetupPage() {
                 
                 <div className={styles.formPreview}>
                   <div className="form-group">
-                    <label>Service Name *</label>
+                    <label htmlFor="service-name">Service Name *</label>
                     <input
                       type="text"
                       value={formData.name}
                       onChange={e => setFormData({...formData, name: e.target.value})}
                       placeholder="e.g., Standard Delivery"
                       required
-                    />
+                     id="service-name"/>
                   </div>
                   <div className="form-group">
-                    <label>Description</label>
+                    <label htmlFor="description">Description</label>
                     <textarea
                       value={formData.description}
                       onChange={e => setFormData({...formData, description: e.target.value})}
                       placeholder="Describe your delivery service..."
                       rows={2}
-                    />
+                     id="description"/>
                   </div>
                   <div className="form-group">
-                    <label>Service Type</label>
+                    <label htmlFor="service-type">Service Type</label>
                     <select
                       value={formData.serviceType}
                       onChange={e => setFormData({...formData, serviceType: e.target.value})}
-                    >
+                     id="service-type">
                       <option value="DELIVERY">Delivery</option>
                       <option value="PICKUP">Pickup</option>
                       <option value="EXPRESS">Express</option>
@@ -326,23 +326,23 @@ export default function CourierSetupPage() {
                 
                 <div className={styles.formPreview}>
                   <div className="form-group">
-                    <label>Service Areas (zip codes or cities, comma separated)</label>
+                    <label htmlFor="service-areas-zip-codes-or-cities-comma-">Service Areas (zip codes or cities, comma separated)</label>
                     <input
                       type="text"
                       value={formData.availableAreas}
                       onChange={e => setFormData({...formData, availableAreas: e.target.value})}
                       placeholder="e.g., 90210, Beverly Hills, Los Angeles"
-                    />
+                     id="service-areas-zip-codes-or-cities-comma-"/>
                   </div>
                   <div className="form-group">
-                    <label>Max Distance (miles)</label>
+                    <label htmlFor="max-distance-miles">Max Distance (miles)</label>
                     <input
                       type="number"
                       value={formData.maxDistance}
                       onChange={e => setFormData({...formData, maxDistance: e.target.value})}
                       placeholder="50"
                       min="1"
-                    />
+                     id="max-distance-miles"/>
                   </div>
                 </div>
               </div>
@@ -356,7 +356,7 @@ export default function CourierSetupPage() {
                 <div className={styles.formPreview}>
                   <div className="form-row">
                     <div className="form-group">
-                      <label>Base Price ($) *</label>
+                      <label htmlFor="base-price">Base Price ($) *</label>
                       <input
                         type="number"
                         value={formData.basePrice}
@@ -365,10 +365,10 @@ export default function CourierSetupPage() {
                         step="0.01"
                         min="0"
                         required
-                      />
+                       id="base-price"/>
                     </div>
                     <div className="form-group">
-                      <label>Price Per Mile ($)</label>
+                      <label htmlFor="price-per-mile">Price Per Mile ($)</label>
                       <input
                         type="number"
                         value={formData.pricePerMile}
@@ -376,7 +376,7 @@ export default function CourierSetupPage() {
                         placeholder="0.00"
                         step="0.01"
                         min="0"
-                      />
+                       id="price-per-mile"/>
                     </div>
                   </div>
                 </div>
@@ -477,31 +477,31 @@ export default function CourierSetupPage() {
             <h2>{editingService ? 'Edit Courier Service' : 'Create Courier Service'}</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label>Service Name *</label>
+                <label htmlFor="service-name-2">Service Name *</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={e => setFormData({...formData, name: e.target.value})}
                   placeholder="e.g., Standard Delivery, Express Delivery"
                   required
-                />
+                 id="service-name-2"/>
               </div>
               <div className="form-group">
-                <label>Description</label>
+                <label htmlFor="description-2">Description</label>
                 <textarea
                   value={formData.description}
                   onChange={e => setFormData({...formData, description: e.target.value})}
                   placeholder="Describe your delivery service..."
                   rows={2}
-                />
+                 id="description-2"/>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Service Type</label>
+                  <label htmlFor="service-type-2">Service Type</label>
                   <select
                     value={formData.serviceType}
                     onChange={e => setFormData({...formData, serviceType: e.target.value})}
-                  >
+                   id="service-type-2">
                     <option value="DELIVERY">Delivery</option>
                     <option value="PICKUP">Pickup</option>
                     <option value="EXPRESS">Express</option>
@@ -509,7 +509,7 @@ export default function CourierSetupPage() {
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Base Price ($) *</label>
+                  <label htmlFor="base-price-2">Base Price ($) *</label>
                   <input
                     type="number"
                     value={formData.basePrice}
@@ -518,12 +518,12 @@ export default function CourierSetupPage() {
                     step="0.01"
                     min="0"
                     required
-                  />
+                   id="base-price-2"/>
                 </div>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Price Per Mile ($)</label>
+                  <label htmlFor="price-per-mile-2">Price Per Mile ($)</label>
                   <input
                     type="number"
                     value={formData.pricePerMile}
@@ -531,27 +531,27 @@ export default function CourierSetupPage() {
                     placeholder="0.00"
                     step="0.01"
                     min="0"
-                  />
+                   id="price-per-mile-2"/>
                 </div>
                 <div className="form-group">
-                  <label>Max Distance (miles)</label>
+                  <label htmlFor="max-distance-miles-2">Max Distance (miles)</label>
                   <input
                     type="number"
                     value={formData.maxDistance}
                     onChange={e => setFormData({...formData, maxDistance: e.target.value})}
                     placeholder="50"
                     min="1"
-                  />
+                   id="max-distance-miles-2"/>
                 </div>
               </div>
               <div className="form-group">
-                <label>Service Areas (zip codes or cities, comma separated)</label>
+                <label htmlFor="service-areas-zip-codes-or-cities-comma--2">Service Areas (zip codes or cities, comma separated)</label>
                 <input
                   type="text"
                   value={formData.availableAreas}
                   onChange={e => setFormData({...formData, availableAreas: e.target.value})}
                   placeholder="e.g., 90210, Beverly Hills, Los Angeles"
-                />
+                 id="service-areas-zip-codes-or-cities-comma--2"/>
               </div>
               <div className="form-group">
                 <label className={styles.checkboxLabel}>

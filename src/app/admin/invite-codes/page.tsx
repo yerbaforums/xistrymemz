@@ -138,42 +138,42 @@ export default function AdminInviteCodesPage() {
           <h3>Create New Invite Codes</h3>
           <div className={styles.formGrid}>
             <div className={styles.formGroup}>
-              <label>Type</label>
+              <label htmlFor="type">Type</label>
               <select
                 value={form.type}
                 onChange={e => setForm({ ...form, type: e.target.value })}
-              >
+               id="type">
                 <option value="BETA">Beta</option>
                 <option value="EMAIL_LIST">Email List</option>
                 <option value="GENERAL">General</option>
               </select>
             </div>
             <div className={styles.formGroup}>
-              <label>Max Uses</label>
+              <label htmlFor="max-uses">Max Uses</label>
               <input
                 type="number"
                 min="1"
                 value={form.maxUses}
                 onChange={e => setForm({ ...form, maxUses: parseInt(e.target.value) || 1 })}
-              />
+               id="max-uses"/>
             </div>
             <div className={styles.formGroup}>
-              <label>Expires</label>
+              <label htmlFor="expires">Expires</label>
               <input
                 type="date"
                 value={form.expiresAt}
                 onChange={e => setForm({ ...form, expiresAt: e.target.value })}
-              />
+               id="expires"/>
             </div>
             <div className={styles.formGroup}>
-              <label>Count</label>
+              <label htmlFor="count">Count</label>
               <input
                 type="number"
                 min="1"
                 max="50"
                 value={form.count}
                 onChange={e => setForm({ ...form, count: parseInt(e.target.value) || 1 })}
-              />
+               id="count"/>
             </div>
           </div>
           <button onClick={createCodes} disabled={saving} className={styles.generateBtn}>

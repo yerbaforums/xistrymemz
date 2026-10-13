@@ -279,7 +279,7 @@ export default function ProjectSupport({
                 ) : (
                   <form onSubmit={handleContribute} className={styles.contributeForm}>
                     <div className={styles.sliderRow}>
-                      <label className={styles.contributeLabel}>
+                      <label className={styles.contributeLabel} htmlFor="amount-donationcurrency-contributeamount">
                         Amount ({donationCurrency}): <strong>{contributeAmount}</strong>
                       </label>
                       <input
@@ -290,7 +290,7 @@ export default function ProjectSupport({
                         value={sliderValue}
                         onChange={e => setContributeAmount(parseFloat(e.target.value))}
                         className={styles.amountSlider}
-                      />
+                       id="amount-donationcurrency-contributeamount"/>
                       <div className={styles.sliderLabels}>
                         <span>1</span>
                         <span>{maxSlider}</span>
@@ -429,16 +429,16 @@ export default function ProjectSupport({
                     {editNeedsVolunteers && (
                       <>
                         <div>
-                          <label className={styles.blockLabel}>Roles Needed (comma-separated)</label>
+                          <label className={styles.blockLabel} htmlFor="roles-needed-comma-separated">Roles Needed (comma-separated)</label>
                           <input type="text" value={editVolunteerRoles} onChange={e => setEditVolunteerRoles(e.target.value)}
                             placeholder="e.g. Photography, Design, Writing" className={styles.editInputWide}
-                          />
+                           id="roles-needed-comma-separated"/>
                         </div>
                         <div>
-                          <label className={styles.blockLabel}>Description</label>
+                          <label className={styles.blockLabel} htmlFor="description">Description</label>
                           <textarea value={editVolunteerDescription} onChange={e => setEditVolunteerDescription(e.target.value)} rows={2}
                             placeholder="Describe what volunteers will do..." className={styles.editTextarea}
-                          />
+                           id="description"/>
                         </div>
                       </>
                     )}

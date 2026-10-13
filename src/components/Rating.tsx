@@ -279,14 +279,14 @@ export default function RatingDisplay({ userId, productId, type = 'SELLER' }: Ra
             rows={3}
           />
           <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Image URLs (comma-separated, optional)</label>
+            <label className={styles.formLabel} htmlFor="image-urls-comma-separated-optional">Image URLs (comma-separated, optional)</label>
             <input
               type="text"
               value={imageUrls}
               onChange={(e) => setImageUrls(e.target.value)}
               placeholder="https://example.com/img1.jpg, https://example.com/img2.jpg"
               className={styles.imageInput}
-            />
+             id="image-urls-comma-separated-optional"/>
           </div>
           <div className={styles.ratingFormActions}>
             <Button 

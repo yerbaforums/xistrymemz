@@ -1344,24 +1344,24 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
             {showFulfillmentForm && (
               <form onSubmit={handleCreateFulfillment} className={styles.fulfillmentForm}>
                 <div className="form-group">
-                  <label>Title</label>
+                  <label htmlFor="title">Title</label>
                   <input
                     type="text"
                     value={fulfillmentForm.title}
                     onChange={e => setFulfillmentForm({ ...fulfillmentForm, title: e.target.value })}
                     placeholder="Brief description of your offer"
                     required
-                  />
+                   id="title"/>
                 </div>
                 <div className="form-group">
-                  <label>Details</label>
+                  <label htmlFor="details">Details</label>
                   <textarea
                     value={fulfillmentForm.content}
                     onChange={e => setFulfillmentForm({ ...fulfillmentForm, content: e.target.value })}
                     placeholder="Explain how you can fulfill this request..."
                     rows={4}
                     required
-                  />
+                   id="details"/>
                 </div>
                 {(request.customFields || []).length > 0 && (
                   <div style={{ margin: '12px 0' }}>
@@ -1493,13 +1493,13 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               Mark this request as completed and let everyone know how it was resolved.
             </p>
             <div className="form-group">
-              <label>Message</label>
+              <label htmlFor="message">Message</label>
               <textarea
                 value={completeMessage}
                 onChange={e => setCompleteMessage(e.target.value)}
                 placeholder="Describe how the request was completed..."
                 rows={3}
-              />
+               id="message"/>
             </div>
             <div className={styles.modalActions}>
               <Button
@@ -1576,13 +1576,13 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                 </div>
                 {selectedHistory && (
                   <div className="form-group">
-                    <label>Reason for rollback (optional)</label>
+                    <label htmlFor="reason-for-rollback-optional">Reason for rollback (optional)</label>
                     <textarea
                       value={rollbackReason}
                       onChange={e => setRollbackReason(e.target.value)}
                       placeholder="Why are you rolling back this status?"
                       rows={2}
-                    />
+                     id="reason-for-rollback-optional"/>
                   </div>
                 )}
                 <div className={styles.modalActions}>
@@ -1617,13 +1617,13 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               Send a message to {request.user.name || 'this user'} about this request.
             </p>
             <div className="form-group">
-              <label>Message</label>
+              <label htmlFor="message-2">Message</label>
               <textarea
                 value={contactMessage}
                 onChange={e => setContactMessage(e.target.value)}
                 placeholder="Write your message..."
                 rows={3}
-              />
+               id="message-2"/>
             </div>
             <div className={styles.modalActions}>
               <Button
@@ -1652,40 +1652,40 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
           <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
             <h2>✏️ Edit Request</h2>
             <div className="form-group">
-              <label>Title</label>
+              <label htmlFor="title-2">Title</label>
               <input
                 type="text"
                 value={editForm.title}
                 onChange={e => setEditForm({ ...editForm, title: e.target.value })}
                 required
-              />
+               id="title-2"/>
             </div>
             <div className="form-group">
-              <label>Description</label>
+              <label htmlFor="description">Description</label>
               <textarea
                 value={editForm.description}
                 onChange={e => setEditForm({ ...editForm, description: e.target.value })}
                 rows={4}
-              />
+               id="description"/>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div className="form-group">
-                <label>Category</label>
+                <label htmlFor="category">Category</label>
                 <select
                   value={editForm.category}
                   onChange={e => setEditForm({ ...editForm, category: e.target.value })}
-                >
+                 id="category">
                   {REQUEST_CATEGORIES.map(cat => (
                     <option key={cat.value} value={cat.value}>{cat.icon} {cat.label}</option>
                   ))}
                 </select>
               </div>
               <div className="form-group">
-                <label>Priority</label>
+                <label htmlFor="priority">Priority</label>
                 <select
                   value={editForm.priority}
                   onChange={e => setEditForm({ ...editForm, priority: e.target.value })}
-                >
+                 id="priority">
                   {PRIORITIES.map(pri => (
                     <option key={pri.value} value={pri.value}>{pri.label}</option>
                   ))}
@@ -1694,22 +1694,22 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div className="form-group">
-                <label>Budget (optional)</label>
+                <label htmlFor="budget-optional">Budget (optional)</label>
                 <input
                   type="number"
                   value={editForm.budget}
                   onChange={e => setEditForm({ ...editForm, budget: e.target.value })}
                   placeholder="0.00"
                   step="0.01"
-                />
+                 id="budget-optional"/>
               </div>
               <div className="form-group">
-                <label>Deadline (optional)</label>
+                <label htmlFor="deadline-optional">Deadline (optional)</label>
                 <input
                   type="date"
                   value={editForm.deadline}
                   onChange={e => setEditForm({ ...editForm, deadline: e.target.value })}
-                />
+                 id="deadline-optional"/>
               </div>
             </div>
             <div className="form-group">
@@ -1768,11 +1768,11 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
             <h2>🔗 Link to Project</h2>
             <p className={styles.modalText}>Select a project to link this request to.</p>
             <div className="form-group">
-              <label>Project</label>
+              <label htmlFor="project">Project</label>
               <select
                 value={selectedProjectId}
                 onChange={e => setSelectedProjectId(e.target.value)}
-              >
+               id="project">
                 <option value="">-- Select project --</option>
                 {myProjects.map(p => (
                   <option key={p.id} value={p.id}>{p.title}</option>

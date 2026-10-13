@@ -226,7 +226,7 @@ function GroupDetailContent() {
     }
   }, [activeTab, group?.isMember, params.id])
 
-  const refreshGroup = () => fetch(`/api/groups/${params.id}`).then(r => r.json()).then(data => setGroup(data))
+  const refreshGroup = () => fetch(`/api/groups/${params.id}`).then(r => r.json()).then(data => setGroup(data)).catch(() => {})
 
   const handleJoin = async () => {
     if (!session?.user?.id) {
@@ -1196,20 +1196,20 @@ function GroupDetailContent() {
             <h2>Edit Group</h2>
             <form onSubmit={handleSaveGroup}>
               <div className="form-group">
-                <label>Name</label>
-                <input type="text" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} required />
+                <label htmlFor="name">Name</label>
+                <input type="text" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} required  id="name"/>
               </div>
               <div className="form-group">
-                <label>Description</label>
-                <textarea value={editForm.description} onChange={e => setEditForm({ ...editForm, description: e.target.value })} rows={3} />
+                <label htmlFor="description">Description</label>
+                <textarea value={editForm.description} onChange={e => setEditForm({ ...editForm, description: e.target.value })} rows={3}  id="description"/>
               </div>
               <div className="form-group">
-                <label>Group Image URL</label>
-                <input type="url" value={editForm.imageUrl} onChange={e => setEditForm({ ...editForm, imageUrl: e.target.value })} placeholder="https://..." />
+                <label htmlFor="group-image-url">Group Image URL</label>
+                <input type="url" value={editForm.imageUrl} onChange={e => setEditForm({ ...editForm, imageUrl: e.target.value })} placeholder="https://..."  id="group-image-url"/>
               </div>
               <div className="form-group">
-                <label>Cover Image URL</label>
-                <input type="url" value={editForm.coverImage} onChange={e => setEditForm({ ...editForm, coverImage: e.target.value })} placeholder="https://..." />
+                <label htmlFor="cover-image-url">Cover Image URL</label>
+                <input type="url" value={editForm.coverImage} onChange={e => setEditForm({ ...editForm, coverImage: e.target.value })} placeholder="https://..."  id="cover-image-url"/>
               </div>
               <div className="form-group">
                 <label className={styles.checkboxLabel}>
@@ -1254,30 +1254,30 @@ function GroupDetailContent() {
             <p className={styles.buyModalDesc}>Pool resources with group members to get a better deal on a product or service.</p>
             <form onSubmit={handleCreateBuy}>
               <div className="form-group">
-                <label>Title *</label>
-                <input type="text" value={buyForm.title} onChange={e => setBuyForm({ ...buyForm, title: e.target.value })} placeholder="e.g., Bulk Order: Organic Coffee" required />
+                <label htmlFor="title">Title *</label>
+                <input type="text" value={buyForm.title} onChange={e => setBuyForm({ ...buyForm, title: e.target.value })} placeholder="e.g., Bulk Order: Organic Coffee" required  id="title"/>
               </div>
               <div className="form-group">
-                <label>Description</label>
-                <textarea value={buyForm.description} onChange={e => setBuyForm({ ...buyForm, description: e.target.value })} rows={3} placeholder="What are we buying together?" />
+                <label htmlFor="description-2">Description</label>
+                <textarea value={buyForm.description} onChange={e => setBuyForm({ ...buyForm, description: e.target.value })} rows={3} placeholder="What are we buying together?"  id="description-2"/>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Target Price ($) *</label>
-                  <input type="number" value={buyForm.targetPrice} onChange={e => setBuyForm({ ...buyForm, targetPrice: e.target.value })} placeholder="100" step="0.01" min="1" required />
+                  <label htmlFor="target-price">Target Price ($) *</label>
+                  <input type="number" value={buyForm.targetPrice} onChange={e => setBuyForm({ ...buyForm, targetPrice: e.target.value })} placeholder="100" step="0.01" min="1" required  id="target-price"/>
                 </div>
                 <div className="form-group">
-                  <label>Min Supporters *</label>
-                  <input type="number" value={buyForm.minSupporters} onChange={e => setBuyForm({ ...buyForm, minSupporters: e.target.value })} placeholder="5" min="2" required />
+                  <label htmlFor="min-supporters">Min Supporters *</label>
+                  <input type="number" value={buyForm.minSupporters} onChange={e => setBuyForm({ ...buyForm, minSupporters: e.target.value })} placeholder="5" min="2" required  id="min-supporters"/>
                 </div>
               </div>
               <div className="form-group">
-                <label>Product URL (external)</label>
-                <input type="url" value={buyForm.productUrl} onChange={e => setBuyForm({ ...buyForm, productUrl: e.target.value })} placeholder="https://..." />
+                <label htmlFor="product-url-external">Product URL (external)</label>
+                <input type="url" value={buyForm.productUrl} onChange={e => setBuyForm({ ...buyForm, productUrl: e.target.value })} placeholder="https://..."  id="product-url-external"/>
               </div>
               <div className="form-group">
-                <label>Product Image URL</label>
-                <input type="url" value={buyForm.productImage} onChange={e => setBuyForm({ ...buyForm, productImage: e.target.value })} placeholder="https://..." />
+                <label htmlFor="product-image-url">Product Image URL</label>
+                <input type="url" value={buyForm.productImage} onChange={e => setBuyForm({ ...buyForm, productImage: e.target.value })} placeholder="https://..."  id="product-image-url"/>
               </div>
               <div className={styles.modalActions}>
                 <Button type="submit" variant="primary" disabled={creatingBuy}>{creatingBuy ? 'Creating...' : 'Create Group Buy'}</Button>
@@ -1296,17 +1296,17 @@ function GroupDetailContent() {
             <p className={styles.buyModalDesc}>Ask the group for help, funding, or collaboration on a project or need.</p>
             <form onSubmit={handleCreateRequest}>
               <div className="form-group">
-                <label>Title *</label>
-                <input type="text" value={requestForm.title} onChange={e => setRequestForm({ ...requestForm, title: e.target.value })} placeholder="e.g., Need funding for community garden" required />
+                <label htmlFor="title-2">Title *</label>
+                <input type="text" value={requestForm.title} onChange={e => setRequestForm({ ...requestForm, title: e.target.value })} placeholder="e.g., Need funding for community garden" required  id="title-2"/>
               </div>
               <div className="form-group">
-                <label>Description</label>
-                <textarea value={requestForm.description} onChange={e => setRequestForm({ ...requestForm, description: e.target.value })} rows={3} placeholder="Describe what you need..." />
+                <label htmlFor="description-3">Description</label>
+                <textarea value={requestForm.description} onChange={e => setRequestForm({ ...requestForm, description: e.target.value })} rows={3} placeholder="Describe what you need..."  id="description-3"/>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Category</label>
-                  <select value={requestForm.category} onChange={e => setRequestForm({ ...requestForm, category: e.target.value })}>
+                  <label htmlFor="category">Category</label>
+                  <select value={requestForm.category} onChange={e => setRequestForm({ ...requestForm, category: e.target.value })} id="category">
                     <option value="FUNDING">Funding</option>
                     <option value="COLLABORATION">Collaboration</option>
                     <option value="HELP_NEEDED">Help Needed</option>
@@ -1314,8 +1314,8 @@ function GroupDetailContent() {
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Priority</label>
-                  <select value={requestForm.priority} onChange={e => setRequestForm({ ...requestForm, priority: e.target.value })}>
+                  <label htmlFor="priority">Priority</label>
+                  <select value={requestForm.priority} onChange={e => setRequestForm({ ...requestForm, priority: e.target.value })} id="priority">
                     <option value="LOW">Low</option>
                     <option value="MEDIUM">Medium</option>
                     <option value="HIGH">High</option>
@@ -1325,12 +1325,12 @@ function GroupDetailContent() {
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Budget ($)</label>
-                  <input type="number" value={requestForm.budget} onChange={e => setRequestForm({ ...requestForm, budget: e.target.value })} placeholder="Optional" step="0.01" />
+                  <label htmlFor="budget">Budget ($)</label>
+                  <input type="number" value={requestForm.budget} onChange={e => setRequestForm({ ...requestForm, budget: e.target.value })} placeholder="Optional" step="0.01"  id="budget"/>
                 </div>
                 <div className="form-group">
-                  <label>Goal Amount ($)</label>
-                  <input type="number" value={requestForm.goalAmount} onChange={e => setRequestForm({ ...requestForm, goalAmount: e.target.value })} placeholder="Funding goal" step="0.01" />
+                  <label htmlFor="goal-amount">Goal Amount ($)</label>
+                  <input type="number" value={requestForm.goalAmount} onChange={e => setRequestForm({ ...requestForm, goalAmount: e.target.value })} placeholder="Funding goal" step="0.01"  id="goal-amount"/>
                 </div>
               </div>
               <div className="form-group">

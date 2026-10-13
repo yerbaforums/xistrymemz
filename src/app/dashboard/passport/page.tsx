@@ -583,9 +583,9 @@ export default function PassportPage() {
     {showSaveAsLocation && (
       <div className={styles.locationForm} style={{ marginTop: 8 }}>
         <div className={styles.formGroup}>
-          <label className={styles.formLabel}>Location Name</label>
+          <label className={styles.formLabel} htmlFor="location-name">Location Name</label>
           <input type="text" value={saveAsLocationName} onChange={e => setSaveAsLocationName(e.target.value)}
-            placeholder="e.g., Home, Office, Cafe" className={styles.inputWFull} />
+            placeholder="e.g., Home, Office, Cafe" className={styles.inputWFull}  id="location-name"/>
         </div>
         <div className={styles.formGroup}>
           <label className={styles.formLabel}>Group / Category</label>
@@ -603,9 +603,9 @@ export default function PassportPage() {
           {showQuickCategory && (
             <div className={styles.categoryForm} style={{ marginTop: 8, padding: 12 }}>
               <div className={styles.formGroup} style={{ marginBottom: 8 }}>
-                <label className={styles.formLabel}>Name</label>
+                <label className={styles.formLabel} htmlFor="name">Name</label>
                 <input type="text" value={quickCategoryName} onChange={e => setQuickCategoryName(e.target.value)}
-                  placeholder="e.g., Cafe, Park" className={styles.inputWFull} />
+                  placeholder="e.g., Cafe, Park" className={styles.inputWFull}  id="name"/>
               </div>
               <div className={styles.formGroup} style={{ marginBottom: 8 }}>
                 <label className={styles.formLabel}>Icon</label>
@@ -619,9 +619,9 @@ export default function PassportPage() {
                 </div>
               </div>
               <div className={styles.formGroup} style={{ marginBottom: 8 }}>
-                <label className={styles.formLabel}>Color</label>
+                <label className={styles.formLabel} htmlFor="color">Color</label>
                 <input type="color" value={quickCategoryColor} onChange={e => setQuickCategoryColor(e.target.value)}
-                  className={styles.colorInput} />
+                  className={styles.colorInput}  id="color"/>
               </div>
               <div className={styles.formActions}>
                 <button type="button" onClick={() => setShowQuickCategory(false)}
@@ -659,8 +659,8 @@ export default function PassportPage() {
         </div>
 
         <div className={styles.mb12}>
-          <label className={styles.label}>Search Radius ({searchRadius}km)</label>
-          <input type="range" min="1" max="500" value={searchRadius} onChange={e => setSearchRadius(Number(e.target.value))} className={styles.rangeInput} />
+          <label className={styles.label} htmlFor="search-radius-searchradius-km">Search Radius ({searchRadius}km)</label>
+          <input type="range" min="1" max="500" value={searchRadius} onChange={e => setSearchRadius(Number(e.target.value))} className={styles.rangeInput}  id="search-radius-searchradius-km"/>
           <p className={styles.rangeDesc}>Shows listings within this radius when using &quot;Near Me&quot; filters.</p>
         </div>
 
@@ -842,9 +842,9 @@ export default function PassportPage() {
             <h3 className={styles.formTitle}>{editingLocationId ? 'Edit Location' : 'Add New Location'}</h3>
 
             <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Location Name</label>
+              <label className={styles.formLabel} htmlFor="location-name-2">Location Name</label>
               <input type="text" value={locationForm.name} onChange={e => setLocationForm({ ...locationForm, name: e.target.value })} placeholder="e.g., Home, Office, Favorite Cafe..." required
-                className={styles.inputWFull} />
+                className={styles.inputWFull}  id="location-name-2"/>
             </div>
 
             <div className={styles.formGroup}>
@@ -874,9 +874,9 @@ export default function PassportPage() {
             </div>
 
             <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Address</label>
+              <label className={styles.formLabel} htmlFor="address">Address</label>
               <input type="text" value={locationForm.location} onChange={e => setLocationForm({ ...locationForm, location: e.target.value })} placeholder="Auto-filled from search or pin-drop" required
-                className={styles.inputWFull} />
+                className={styles.inputWFull}  id="address"/>
             </div>
 
             <div className={styles.formGroup}>
@@ -891,9 +891,9 @@ export default function PassportPage() {
             </div>
 
             <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Category</label>
+              <label className={styles.formLabel} htmlFor="category">Category</label>
               <select value={locationForm.categoryId} onChange={e => setLocationForm({ ...locationForm, categoryId: e.target.value })}
-                className={styles.inputSelect}>
+                className={styles.inputSelect} id="category">
                 <option value="">No category</option>
                 {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>)}
               </select>
@@ -941,9 +941,9 @@ export default function PassportPage() {
           <form onSubmit={editingCategory ? handleUpdateCategory : handleAddCategory} className={styles.categoryForm}>
             <h3 className={styles.formTitle}>{editingCategory ? 'Edit Category' : 'New Category'}</h3>
             <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Name</label>
+              <label className={styles.formLabel} htmlFor="name-2">Name</label>
               <input type="text" value={categoryForm.name} onChange={e => setCategoryForm({ ...categoryForm, name: e.target.value })} placeholder="e.g., Camping, Restaurants, Shops" required
-                className={styles.inputWFull} />
+                className={styles.inputWFull}  id="name-2"/>
             </div>
 
             {/* Icon picker */}
@@ -960,9 +960,9 @@ export default function PassportPage() {
             </div>
 
             <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Color</label>
+              <label className={styles.formLabel} htmlFor="color-2">Color</label>
               <input type="color" value={categoryForm.color} onChange={e => setCategoryForm({ ...categoryForm, color: e.target.value })}
-                className={styles.colorInput} />
+                className={styles.colorInput}  id="color-2"/>
             </div>
 
             <div className={styles.formActions}>

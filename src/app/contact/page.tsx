@@ -88,32 +88,32 @@ export default function Contact() {
             
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
-                <label>{t('labelName')}</label>
+                <label htmlFor="t-labelname">{t('labelName')}</label>
                 <input
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   placeholder={t('phName')}
-                />
+                 id="t-labelname"/>
               </div>
               <div className={styles.formGroup}>
-                <label>{t('labelEmail')}</label>
+                <label htmlFor="t-labelemail">{t('labelEmail')}</label>
                 <input
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   placeholder="your@email.com"
                   required
-                />
+                 id="t-labelemail"/>
               </div>
             </div>
 
             <div className={styles.formGroup}>
-              <label>{t('labelSubject')}</label>
+              <label htmlFor="t-labelsubject">{t('labelSubject')}</label>
               <select
                 value={form.subject}
                 onChange={(e) => setForm({ ...form, subject: e.target.value })}
-              >
+               id="t-labelsubject">
                 <option value="">{t('optTopic')}</option>
                 <option value="general">{t('optGeneral')}</option>
                 <option value="support">{t('optSupport')}</option>
@@ -126,14 +126,14 @@ export default function Contact() {
             </div>
 
             <div className={styles.formGroup}>
-              <label>{t('labelMessage')}</label>
+              <label htmlFor="t-labelmessage">{t('labelMessage')}</label>
               <textarea
                 value={form.message}
                 onChange={(e) => setForm({ ...form, message: e.target.value })}
                 placeholder={t('phMessage')}
                 rows={6}
                 required
-              />
+               id="t-labelmessage"/>
             </div>
 
             <input

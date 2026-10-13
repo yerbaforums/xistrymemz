@@ -203,32 +203,32 @@ function SchoolSetupContent() {
             
             <form onSubmit={handleSave} className={styles.form}>
               <div className="form-group">
-                <label>School Name *</label>
+                <label htmlFor="school-name">School Name *</label>
                 <input
                   type="text"
                   value={schoolName}
                   onChange={e => setSchoolName(e.target.value)}
                   placeholder="e.g., Web Development Academy"
                   required
-                />
+                 id="school-name"/>
               </div>
               <div className="form-group">
-                <label>About Your School</label>
+                <label htmlFor="about-your-school">About Your School</label>
                 <textarea
                   value={schoolAbout}
                   onChange={e => setSchoolAbout(e.target.value)}
                   placeholder="Describe what your school is about..."
                   rows={4}
-                />
+                 id="about-your-school"/>
               </div>
               <div className="form-group">
-                <label>Cover Image URL</label>
+                <label htmlFor="cover-image-url">Cover Image URL</label>
                 <input
                   type="url"
                   value={schoolImage}
                   onChange={e => setSchoolImage(e.target.value)}
                   placeholder="https://example.com/image.jpg"
-                />
+                 id="cover-image-url"/>
                 {schoolImage && (
                   <div className={styles.imagePreview}>
                     <img src={schoolImage} alt="Preview" />

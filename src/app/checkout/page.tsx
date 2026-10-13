@@ -362,14 +362,14 @@ function CheckoutContent() {
 
               {courierOption && (
                 <div className="form-group">
-                  <label>Delivery Address</label>
+                  <label htmlFor="delivery-address">Delivery Address</label>
                   <textarea
                     value={deliveryAddress}
                     onChange={e => setDeliveryAddress(e.target.value)}
                     placeholder="Enter your delivery address..."
                     rows={2}
                     className={styles.textarea}
-                  />
+                   id="delivery-address"/>
                 </div>
               )}
             </div>

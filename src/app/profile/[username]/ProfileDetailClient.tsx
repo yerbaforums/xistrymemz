@@ -240,7 +240,7 @@ function DonationCard({ donation }: { donation: DonationAddr }) {
     <>
       <div className={styles.donationCard}>
         <div className={styles.donationInfo}>
-          <img src={`/crypto-logos/${CRYPTO_LOGOS[donation.currency] || 'ethereum.png'}`} alt="" width={24} height={24} />
+          <img src={`/crypto-logos/${CRYPTO_LOGOS[donation.currency] || 'crypto.svg'}`} alt="" width={24} height={24} />
           <div>
             <div className={styles.donationLabel}>
               {donation.label || donation.currency}
@@ -271,7 +271,7 @@ function CompactDonation({ donation }: { donation: DonationAddr }) {
   return (
     <>
       <div className={styles.compactDonationCard} onClick={() => setQrOpen(true)}>
-        <img src={`/crypto-logos/${CRYPTO_LOGOS[donation.currency] || 'ethereum.png'}`} alt="" width={16} height={16} />
+        <img src={`/crypto-logos/${CRYPTO_LOGOS[donation.currency] || 'crypto.svg'}`} alt="" width={16} height={16} />
         <span className={styles.compactDonationLabel}>{donation.label || donation.currency}</span>
         <code className={styles.compactDonationAddr} title={donation.address}>{shortAddr}</code>
       </div>
@@ -1719,7 +1719,7 @@ export default function ProfilePage() {
             {editMode ? (
               <form onSubmit={handleUpdateProfile} className={styles.editForm}>
                 <div className={styles.formGroup}>
-                  <label>Username</label>
+                  <label htmlFor="username">Username</label>
                   <input
                     type="text"
                     value={editForm.username}
@@ -1727,17 +1727,17 @@ export default function ProfilePage() {
                     placeholder="username"
                     maxLength={50}
                     pattern="[a-zA-Z0-9]+"
-                  />
+                   id="username"/>
                   <small className={styles.formHint}>Profile URL: xistrymemz.xyz/profile/{editForm.username || 'username'}</small>
                 </div>
                 <div className={styles.formGroup}>
-                  <label>Display Name</label>
+                  <label htmlFor="display-name">Display Name</label>
                   <input
                     type="text"
                     value={editForm.name}
                     onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                     placeholder="Your display name"
-                  />
+                   id="display-name"/>
                   <small className={styles.formHint}>Shown on your profile and posts</small>
                 </div>
                 <div className={styles.formGroup}>
@@ -1773,31 +1773,31 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <div className={styles.formGroup}>
-                  <label>Bio</label>
+                  <label htmlFor="bio">Bio</label>
                   <textarea
                     value={editForm.bio}
                     onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
                     placeholder="Tell us about yourself..."
                     rows={4}
-                  />
+                   id="bio"/>
                 </div>
                 <div className={styles.formGroup}>
-                  <label>Location</label>
+                  <label htmlFor="location">Location</label>
                   <input
                     type="text"
                     value={editForm.location}
                     onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
                     placeholder="City, Country"
-                  />
+                   id="location"/>
                 </div>
                 <div className={styles.formGroup}>
-                  <label>Website</label>
+                  <label htmlFor="website">Website</label>
                   <input
                     type="url"
                     value={editForm.website}
                     onChange={(e) => setEditForm({ ...editForm, website: e.target.value })}
                     placeholder="https://example.com"
-                  />
+                   id="website"/>
                 </div>
                 <div className={styles.formActions}>
                   <Button type="submit" className={styles.saveBtn}>Save Changes</Button>

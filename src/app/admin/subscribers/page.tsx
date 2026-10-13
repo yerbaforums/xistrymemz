@@ -230,24 +230,24 @@ export default function SubscribersPage() {
             <h2>Send Email to {filteredSubscribers.length} Subscribers</h2>
             <form onSubmit={handleSendEmail}>
               <div className={styles.formGroup}>
-                <label>Subject</label>
+                <label htmlFor="subject">Subject</label>
                 <input
                   type="text"
                   value={emailSubject}
                   onChange={(e) => setEmailSubject(e.target.value)}
                   placeholder="Email subject"
                   required
-                />
+                 id="subject"/>
               </div>
               <div className={styles.formGroup}>
-                <label>Message</label>
+                <label htmlFor="message">Message</label>
                 <textarea
                   value={emailBody}
                   onChange={(e) => setEmailBody(e.target.value)}
                   placeholder="Email body..."
                   rows={10}
                   required
-                />
+                 id="message"/>
               </div>
               <div className={styles.modalActions}>
                 <button type="button" onClick={() => setShowEmailForm(false)} className={styles.cancelBtn}>

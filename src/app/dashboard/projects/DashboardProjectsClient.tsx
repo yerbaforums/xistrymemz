@@ -546,20 +546,20 @@ export default function DashboardProjectsClient({ initialProjects }: DashboardPr
             </div>
             <form onSubmit={handleCreate}>
               <div className={styles.formGroup}>
-                <label>Project Title *</label>
-                <input type="text" value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="e.g., Launch my online store" required />
+                <label htmlFor="project-title">Project Title *</label>
+                <input type="text" value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="e.g., Launch my online store" required  id="project-title"/>
               </div>
               <div className={styles.formGroup}>
-                <label>Description</label>
-                <textarea value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="What is this project about?" rows={3} />
+                <label htmlFor="description">Description</label>
+                <textarea value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="What is this project about?" rows={3}  id="description"/>
               </div>
               <div className={styles.formGroup}>
-                <label>Goals (one per line)</label>
-                <textarea value={newGoals} onChange={e => setNewGoals(e.target.value)} placeholder="What do you want to achieve?" rows={3} />
+                <label htmlFor="goals-one-per-line">Goals (one per line)</label>
+                <textarea value={newGoals} onChange={e => setNewGoals(e.target.value)} placeholder="What do you want to achieve?" rows={3}  id="goals-one-per-line"/>
               </div>
               <div className={styles.formGroup}>
-                <label>Milestones (one per line)</label>
-                <textarea value={newMileposts} onChange={e => setNewMileposts(e.target.value)} placeholder="Key milestones..." rows={3} />
+                <label htmlFor="milestones-one-per-line">Milestones (one per line)</label>
+                <textarea value={newMileposts} onChange={e => setNewMileposts(e.target.value)} placeholder="Key milestones..." rows={3}  id="milestones-one-per-line"/>
               </div>
               <div className={styles.modalActions}>
                 <Button type="button" onClick={() => setShowCreateModal(false)} variant="ghost">Cancel</Button>

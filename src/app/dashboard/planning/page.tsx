@@ -677,8 +677,8 @@ function TripDetail({ trip: initialTrip, savedLocations, categories: _categories
               <textarea className={styles.formTextarea} value={editDesc} onChange={e => setEditDesc(e.target.value)} placeholder="Description" rows={2} />
               <textarea className={`${styles.formTextarea} ${styles.mt8}`} value={editNotes} onChange={e => setEditNotes(e.target.value)} placeholder="Trip notes..." rows={2} />
               <div className={styles.formRow}>
-                <div><label className={styles.formLabel}>Start</label><input className={styles.formInput} type="date" value={editStart} onChange={e => setEditStart(e.target.value)} /></div>
-                <div><label className={styles.formLabel}>End</label><input className={styles.formInput} type="date" value={editEnd} onChange={e => setEditEnd(e.target.value)} /></div>
+                <div><label className={styles.formLabel} htmlFor="start">Start</label><input className={styles.formInput} type="date" value={editStart} onChange={e => setEditStart(e.target.value)}  id="start"/></div>
+                <div><label className={styles.formLabel} htmlFor="end">End</label><input className={styles.formInput} type="date" value={editEnd} onChange={e => setEditEnd(e.target.value)}  id="end"/></div>
               </div>
               <label className={styles.formCheckbox}><input type="checkbox" checked={editPublic} onChange={e => setEditPublic(e.target.checked)} /> Public trip</label>
               <div className={`${styles.flex} ${styles.gap8}`}>
@@ -757,26 +757,26 @@ function TripDetail({ trip: initialTrip, savedLocations, categories: _categories
               )}
 
               <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Name *</label>
-                <input className={styles.formInput} value={customStopName} onChange={e => setCustomStopName(e.target.value)} placeholder="Stop name" />
+                <label className={styles.formLabel} htmlFor="name">Name *</label>
+                <input className={styles.formInput} value={customStopName} onChange={e => setCustomStopName(e.target.value)} placeholder="Stop name"  id="name"/>
               </div>
               <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Address</label>
-                <input className={styles.formInput} value={customStopLoc} onChange={e => setCustomStopLoc(e.target.value)} placeholder="Address or place description" />
+                <label className={styles.formLabel} htmlFor="address">Address</label>
+                <input className={styles.formInput} value={customStopLoc} onChange={e => setCustomStopLoc(e.target.value)} placeholder="Address or place description"  id="address"/>
               </div>
               <div className={styles.formRow}>
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Arrival</label>
-                  <input className={styles.formInput} type="time" value={customStopArrival} onChange={e => setCustomStopArrival(e.target.value)} />
+                  <label className={styles.formLabel} htmlFor="arrival">Arrival</label>
+                  <input className={styles.formInput} type="time" value={customStopArrival} onChange={e => setCustomStopArrival(e.target.value)}  id="arrival"/>
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Departure</label>
-                  <input className={styles.formInput} type="time" value={customStopDeparture} onChange={e => setCustomStopDeparture(e.target.value)} />
+                  <label className={styles.formLabel} htmlFor="departure">Departure</label>
+                  <input className={styles.formInput} type="time" value={customStopDeparture} onChange={e => setCustomStopDeparture(e.target.value)}  id="departure"/>
                 </div>
               </div>
               <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Notes</label>
-                <textarea className={styles.formTextarea} value={customStopNotes} onChange={e => setCustomStopNotes(e.target.value)} rows={2} placeholder="Notes about this stop..." />
+                <label className={styles.formLabel} htmlFor="notes">Notes</label>
+                <textarea className={styles.formTextarea} value={customStopNotes} onChange={e => setCustomStopNotes(e.target.value)} rows={2} placeholder="Notes about this stop..."  id="notes"/>
               </div>
               <label className={`${styles.formCheckbox} ${styles.mb12}`}>
                 <input type="checkbox" checked={saveToProfile} onChange={e => setSaveToProfile(e.target.checked)} />
@@ -848,24 +848,24 @@ function TripDetail({ trip: initialTrip, savedLocations, categories: _categories
                         <div className={styles.stopDetailPanel}>
                           {/* Name */}
                           <div className={styles.formGroup}>
-                            <label className={styles.formLabel}>Name</label>
-                            <input className={styles.formInput} value={stop.name} onChange={e => handleUpdateStopField(stop.id, { name: e.target.value })} placeholder="Stop name" />
+                            <label className={styles.formLabel} htmlFor="name-2">Name</label>
+                            <input className={styles.formInput} value={stop.name} onChange={e => handleUpdateStopField(stop.id, { name: e.target.value })} placeholder="Stop name"  id="name-2"/>
                           </div>
                           {/* Notes */}
                           <div className={styles.formGroup}>
-                            <label className={styles.formLabel}>Notes</label>
-                            <textarea className={styles.formTextarea} value={stop.notes || ''} onChange={e => handleUpdateStopField(stop.id, { notes: e.target.value })} rows={2} placeholder="Notes..." />
+                            <label className={styles.formLabel} htmlFor="notes-2">Notes</label>
+                            <textarea className={styles.formTextarea} value={stop.notes || ''} onChange={e => handleUpdateStopField(stop.id, { notes: e.target.value })} rows={2} placeholder="Notes..."  id="notes-2"/>
                           </div>
 
                           {/* Arrival/Departure */}
                           <div className={styles.formRow}>
                             <div className={styles.formGroup}>
-                              <label className={styles.formLabel}>Arrival</label>
-                              <input className={styles.formInput} type="time" value={stop.arrivalTime || ''} onChange={e => handleUpdateStopField(stop.id, { arrivalTime: e.target.value || null })} />
+                              <label className={styles.formLabel} htmlFor="arrival-2">Arrival</label>
+                              <input className={styles.formInput} type="time" value={stop.arrivalTime || ''} onChange={e => handleUpdateStopField(stop.id, { arrivalTime: e.target.value || null })}  id="arrival-2"/>
                             </div>
                             <div className={styles.formGroup}>
-                              <label className={styles.formLabel}>Departure</label>
-                              <input className={styles.formInput} type="time" value={stop.departureTime || ''} onChange={e => handleUpdateStopField(stop.id, { departureTime: e.target.value || null })} />
+                              <label className={styles.formLabel} htmlFor="departure-2">Departure</label>
+                              <input className={styles.formInput} type="time" value={stop.departureTime || ''} onChange={e => handleUpdateStopField(stop.id, { departureTime: e.target.value || null })}  id="departure-2"/>
                             </div>
                           </div>
 
@@ -1327,12 +1327,12 @@ function NewTripModal({ onClose, onCreated }: { onClose: () => void; onCreated: 
         {step === 0 && (
           <div>
             <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Trip Name *</label>
-              <input className={styles.formInput} value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g., Summer Road Trip" autoFocus />
+              <label className={styles.formLabel} htmlFor="trip-name">Trip Name *</label>
+              <input className={styles.formInput} value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g., Summer Road Trip" autoFocus  id="trip-name"/>
             </div>
             <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Description</label>
-              <textarea className={styles.formTextarea} value={description} onChange={e => setDescription(e.target.value)} placeholder="What's this trip about?" rows={3} />
+              <label className={styles.formLabel} htmlFor="description">Description</label>
+              <textarea className={styles.formTextarea} value={description} onChange={e => setDescription(e.target.value)} placeholder="What's this trip about?" rows={3}  id="description"/>
             </div>
           </div>
         )}
@@ -1341,12 +1341,12 @@ function NewTripModal({ onClose, onCreated }: { onClose: () => void; onCreated: 
           <div>
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Start Date</label>
-                <input className={styles.formInput} type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
+                <label className={styles.formLabel} htmlFor="start-date">Start Date</label>
+                <input className={styles.formInput} type="date" value={startDate} onChange={e => setStartDate(e.target.value)}  id="start-date"/>
               </div>
               <div className={styles.formGroup}>
-                <label className={styles.formLabel}>End Date</label>
-                <input className={styles.formInput} type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
+                <label className={styles.formLabel} htmlFor="end-date">End Date</label>
+                <input className={styles.formInput} type="date" value={endDate} onChange={e => setEndDate(e.target.value)}  id="end-date"/>
               </div>
             </div>
             <div className={styles.formGroup}>

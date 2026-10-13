@@ -337,19 +337,19 @@ export default function NewProjectPage() {
           {step === 0 && (
             <>
               <div className={styles.field}>
-                <label>Project Title *</label>
+                <label htmlFor="project-title">Project Title *</label>
                 <input type="text" value={title} onChange={e => setTitle(e.target.value)}
-                  placeholder="Name your project" />
+                  placeholder="Name your project"  id="project-title"/>
               </div>
               <div className={styles.field}>
-                <label>Description</label>
+                <label htmlFor="description">Description</label>
                 <textarea value={description} onChange={e => setDescription(e.target.value)}
-                  placeholder="What is this project about?" rows={4} />
+                  placeholder="What is this project about?" rows={4}  id="description"/>
               </div>
               <div className={styles.row}>
                 <div className={styles.field}>
-                  <label>Category</label>
-                  <select value={category} onChange={e => setCategory(e.target.value)}>
+                  <label htmlFor="category">Category</label>
+                  <select value={category} onChange={e => setCategory(e.target.value)} id="category">
                     <option value="">Select a category...</option>
                     {PROJECT_CATEGORIES.map(c => (
                       <option key={c.value} value={c.value}>{c.icon} {c.label}</option>
@@ -357,8 +357,8 @@ export default function NewProjectPage() {
                   </select>
                 </div>
                 <div className={styles.field}>
-                  <label>Status</label>
-                  <select value={status} onChange={e => setStatus(e.target.value)}>
+                  <label htmlFor="status">Status</label>
+                  <select value={status} onChange={e => setStatus(e.target.value)} id="status">
                     <option value="IDEA">💡 Idea</option>
                     <option value="IN_PROGRESS">🔨 In Progress</option>
                     <option value="COMPLETED">✅ Completed</option>
@@ -395,16 +395,16 @@ export default function NewProjectPage() {
                 {needsVolunteers && (
                   <div className={styles.nestedFields}>
                     <div className={styles.field}>
-                      <label>Volunteer Roles (comma separated)</label>
+                      <label htmlFor="volunteer-roles-comma-separated">Volunteer Roles (comma separated)</label>
                       <input type="text" value={volunteerRoles}
                         onChange={e => setVolunteerRoles(e.target.value)}
-                        placeholder="e.g. Setup, Photography, Cleanup" />
+                        placeholder="e.g. Setup, Photography, Cleanup"  id="volunteer-roles-comma-separated"/>
                     </div>
                     <div className={styles.field}>
-                      <label>Volunteer Description</label>
+                      <label htmlFor="volunteer-description">Volunteer Description</label>
                       <textarea value={volunteerDescription}
                         onChange={e => setVolunteerDescription(e.target.value)}
-                        placeholder="Describe what volunteers will do..." rows={2} />
+                        placeholder="Describe what volunteers will do..." rows={2}  id="volunteer-description"/>
                     </div>
                   </div>
                 )}
@@ -414,10 +414,10 @@ export default function NewProjectPage() {
                 <summary className={styles.sectionSummary}>💰 Funding & Donations</summary>
                 <div className={styles.sectionContent}>
                   <div className={styles.field}>
-                    <label>Funding Goal ($)</label>
+                    <label htmlFor="funding-goal">Funding Goal ($)</label>
                     <input type="number" value={goalAmount}
                       onChange={e => setGoalAmount(e.target.value)}
-                      placeholder="0.00" step="0.01" min="0" />
+                      placeholder="0.00" step="0.01" min="0"  id="funding-goal"/>
                   </div>
                   <label className={styles.checkField}>
                     <input type="checkbox" checked={acceptsDonations}
@@ -432,10 +432,10 @@ export default function NewProjectPage() {
                         onAddressesChange={setSelectedDonationAddrs}
                       />
                       <div className={styles.field}>
-                        <label>Donation Description</label>
+                        <label htmlFor="donation-description">Donation Description</label>
                         <textarea value={donationDescription}
                           onChange={e => setDonationDescription(e.target.value)}
-                          placeholder="What will donations fund?" rows={2} />
+                          placeholder="What will donations fund?" rows={2}  id="donation-description"/>
                       </div>
                     </>
                   )}
@@ -495,14 +495,14 @@ export default function NewProjectPage() {
                 <summary className={styles.sectionSummary}>🎯 Goals & Milestones</summary>
                 <div className={styles.sectionContent}>
                   <div className={styles.field}>
-                    <label>Goals (one per line)</label>
+                    <label htmlFor="goals-one-per-line">Goals (one per line)</label>
                     <textarea value={goals} onChange={e => setGoals(e.target.value)}
-                      placeholder="What do you want to achieve?" rows={4} />
+                      placeholder="What do you want to achieve?" rows={4}  id="goals-one-per-line"/>
                   </div>
                   <div className={styles.field}>
-                    <label>Milestones (one per line)</label>
+                    <label htmlFor="milestones-one-per-line">Milestones (one per line)</label>
                     <textarea value={mileposts} onChange={e => setMileposts(e.target.value)}
-                      placeholder="Key milestones or phases" rows={4} />
+                      placeholder="Key milestones or phases" rows={4}  id="milestones-one-per-line"/>
                   </div>
                 </div>
               </details>

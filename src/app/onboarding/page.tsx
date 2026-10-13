@@ -534,23 +534,23 @@ export default function OnboardingPage() {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>Display Name</label>
+                  <label htmlFor="display-name">Display Name</label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Your name"
-                  />
+                   id="display-name"/>
                 </div>
                 
                 <div className={styles.formGroup}>
-                  <label>Bio</label>
+                  <label htmlFor="bio">Bio</label>
                   <textarea
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
                     placeholder="Tell us about yourself..."
                     rows={3}
-                  />
+                   id="bio"/>
                 </div>
                 
                 <div className={styles.formGroup}>
@@ -601,11 +601,11 @@ export default function OnboardingPage() {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>Search Radius (miles)</label>
+                  <label htmlFor="search-radius-miles">Search Radius (miles)</label>
                   <select
                     value={searchRadius}
                     onChange={(e) => setSearchRadius(e.target.value)}
-                  >
+                   id="search-radius-miles">
                     <option value="10">10 miles</option>
                     <option value="25">25 miles</option>
                     <option value="50">50 miles</option>

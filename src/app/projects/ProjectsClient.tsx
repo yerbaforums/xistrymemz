@@ -282,8 +282,8 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
       <div className={styles.filterDivider} />
 
       <div className={styles.filterGroup}>
-        <label className={styles.filterLabel}>Category</label>
-        <select className={styles.filterSelect} value={category} onChange={e => setCategory(e.target.value)}>
+        <label className={styles.filterLabel} htmlFor="category">Category</label>
+        <select className={styles.filterSelect} value={category} onChange={e => setCategory(e.target.value)} id="category">
           <option value="ALL">🌟 All Categories</option>
           {CATEGORIES.map(cat => (
             <option key={cat} value={cat}>{getCategoryIcon(cat)} {getCategoryLabel(cat)}</option>
@@ -311,8 +311,8 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
       <div className={styles.filterDivider} />
 
       <div className={styles.filterGroup}>
-        <label className={styles.filterLabel}>Sort By</label>
-        <select className={styles.filterSelect} value={sortBy} onChange={e => setSortBy(e.target.value as SortOption)}>
+        <label className={styles.filterLabel} htmlFor="sort-by">Sort By</label>
+        <select className={styles.filterSelect} value={sortBy} onChange={e => setSortBy(e.target.value as SortOption)} id="sort-by">
           <option value="newest">🕐 Newest</option>
           <option value="oldest">🕐 Oldest</option>
           <option value="mostActive">📋 Most Active</option>

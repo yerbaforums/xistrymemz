@@ -485,14 +485,14 @@ export default function SetupShopPage() {
             
             <div className={styles.form}>
               <div className="form-group">
-                <label>Shop Name *</label>
+                <label htmlFor="shop-name">Shop Name *</label>
                 <input
                   type="text"
                   value={shopData.shopName || ''}
                   onChange={e => setShopData({...shopData, shopName: e.target.value})}
                   placeholder="Your shop name"
                   required
-                />
+                 id="shop-name"/>
               </div>
               <div className="form-group">
                 <label>Shop Image</label>
@@ -506,8 +506,8 @@ export default function SetupShopPage() {
                 {shopData.shopImage && <img src={shopData.shopImage} alt="Shop preview" className={styles.imagePreview} />}
               </div>
               <div className="form-group">
-                <label>About Your Shop</label>
-                <textarea value={shopData.shopAbout || ''} onChange={e => setShopData({...shopData, shopAbout: e.target.value})} placeholder="Tell customers about your shop..." rows={4} />
+                <label htmlFor="about-your-shop">About Your Shop</label>
+                <textarea value={shopData.shopAbout || ''} onChange={e => setShopData({...shopData, shopAbout: e.target.value})} placeholder="Tell customers about your shop..." rows={4}  id="about-your-shop"/>
               </div>
             </div>
           </div>
@@ -604,34 +604,34 @@ export default function SetupShopPage() {
             <h2>Add New Listing</h2>
             <form onSubmit={handleCreateProduct}>
               <div className="form-group">
-                <label>Title *</label>
-                <input type="text" value={newProduct.title} onChange={e => setNewProduct({...newProduct, title: e.target.value})} placeholder="Item title" required />
+                <label htmlFor="title">Title *</label>
+                <input type="text" value={newProduct.title} onChange={e => setNewProduct({...newProduct, title: e.target.value})} placeholder="Item title" required  id="title"/>
               </div>
               <div className="form-group">
-                <label>Description</label>
-                <textarea value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} placeholder="Description" rows={3} />
+                <label htmlFor="description">Description</label>
+                <textarea value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} placeholder="Description" rows={3}  id="description"/>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Type</label>
-                  <select value={newProduct.type} onChange={e => setNewProduct({...newProduct, type: e.target.value})}>
+                  <label htmlFor="type">Type</label>
+                  <select value={newProduct.type} onChange={e => setNewProduct({...newProduct, type: e.target.value})} id="type">
                     <option value="PRODUCT">Product</option>
                     <option value="RENTAL">Rental</option>
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Price</label>
-                  <input type="number" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} placeholder="0.00" step="0.01" />
+                  <label htmlFor="price">Price</label>
+                  <input type="number" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} placeholder="0.00" step="0.01"  id="price"/>
                 </div>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Category</label>
-                  <input type="text" value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})} placeholder="e.g., Electronics, Cleaning" />
+                  <label htmlFor="category">Category</label>
+                  <input type="text" value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})} placeholder="e.g., Electronics, Cleaning"  id="category"/>
                 </div>
                 <div className="form-group">
-                  <label>Condition</label>
-                  <select value={newProduct.condition} onChange={e => setNewProduct({...newProduct, condition: e.target.value})}>
+                  <label htmlFor="condition">Condition</label>
+                  <select value={newProduct.condition} onChange={e => setNewProduct({...newProduct, condition: e.target.value})} id="condition">
                     <option value="">Select...</option>
                     <option value="NEW">New</option>
                     <option value="LIKE_NEW">Like New</option>
@@ -652,8 +652,8 @@ export default function SetupShopPage() {
                 {newProduct.imageUrl && <img src={newProduct.imageUrl} alt="Preview" className={styles.imagePreview} />}
               </div>
               <div className="form-group">
-                <label>Hashtags</label>
-                <input type="text" value={newProduct.hashtags} onChange={e => setNewProduct({...newProduct, hashtags: e.target.value})} placeholder="e.g. tech, vintage, handmade (comma separated)" />
+                <label htmlFor="hashtags">Hashtags</label>
+                <input type="text" value={newProduct.hashtags} onChange={e => setNewProduct({...newProduct, hashtags: e.target.value})} placeholder="e.g. tech, vintage, handmade (comma separated)"  id="hashtags"/>
               </div>
               <div className="form-group">
                 <label className={styles.checkboxLabel}>
@@ -663,8 +663,8 @@ export default function SetupShopPage() {
               </div>
               {!newProduct.isGlobal && (
                 <div className="form-group">
-                  <label>Location</label>
-                  <input type="text" value={newProduct.location} onChange={e => setNewProduct({...newProduct, location: e.target.value})} placeholder="City, State" />
+                  <label htmlFor="location">Location</label>
+                  <input type="text" value={newProduct.location} onChange={e => setNewProduct({...newProduct, location: e.target.value})} placeholder="City, State"  id="location"/>
                 </div>
               )}
               <div className="form-group">
@@ -717,34 +717,34 @@ export default function SetupShopPage() {
             <h2>Edit Listing</h2>
             <form onSubmit={handleUpdateProduct}>
               <div className="form-group">
-                <label>Title *</label>
-                <input type="text" value={editProduct.title} onChange={e => setEditProduct({...editProduct, title: e.target.value})} placeholder="Item title" required />
+                <label htmlFor="title-2">Title *</label>
+                <input type="text" value={editProduct.title} onChange={e => setEditProduct({...editProduct, title: e.target.value})} placeholder="Item title" required  id="title-2"/>
               </div>
               <div className="form-group">
-                <label>Description</label>
-                <textarea value={editProduct.description} onChange={e => setEditProduct({...editProduct, description: e.target.value})} placeholder="Description" rows={3} />
+                <label htmlFor="description-2">Description</label>
+                <textarea value={editProduct.description} onChange={e => setEditProduct({...editProduct, description: e.target.value})} placeholder="Description" rows={3}  id="description-2"/>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Type</label>
-                  <select value={editProduct.type} onChange={e => setEditProduct({...editProduct, type: e.target.value})}>
+                  <label htmlFor="type-2">Type</label>
+                  <select value={editProduct.type} onChange={e => setEditProduct({...editProduct, type: e.target.value})} id="type-2">
                     <option value="PRODUCT">Product</option>
                     <option value="RENTAL">Rental</option>
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Price</label>
-                  <input type="number" value={editProduct.price} onChange={e => setEditProduct({...editProduct, price: e.target.value})} placeholder="0.00" step="0.01" />
+                  <label htmlFor="price-2">Price</label>
+                  <input type="number" value={editProduct.price} onChange={e => setEditProduct({...editProduct, price: e.target.value})} placeholder="0.00" step="0.01"  id="price-2"/>
                 </div>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Category</label>
-                  <input type="text" value={editProduct.category} onChange={e => setEditProduct({...editProduct, category: e.target.value})} placeholder="e.g., Electronics, Cleaning" />
+                  <label htmlFor="category-2">Category</label>
+                  <input type="text" value={editProduct.category} onChange={e => setEditProduct({...editProduct, category: e.target.value})} placeholder="e.g., Electronics, Cleaning"  id="category-2"/>
                 </div>
                 <div className="form-group">
-                  <label>Condition</label>
-                  <select value={editProduct.condition} onChange={e => setEditProduct({...editProduct, condition: e.target.value})}>
+                  <label htmlFor="condition-2">Condition</label>
+                  <select value={editProduct.condition} onChange={e => setEditProduct({...editProduct, condition: e.target.value})} id="condition-2">
                     <option value="">Select...</option>
                     <option value="NEW">New</option>
                     <option value="LIKE_NEW">Like New</option>
@@ -765,8 +765,8 @@ export default function SetupShopPage() {
                 {editProduct.imageUrl && <img src={editProduct.imageUrl} alt="Preview" className={styles.imagePreview} />}
               </div>
               <div className="form-group">
-                <label>Hashtags</label>
-                <input type="text" value={editProduct.hashtags} onChange={e => setEditProduct({...editProduct, hashtags: e.target.value})} placeholder="e.g. tech, vintage, handmade (comma separated)" />
+                <label htmlFor="hashtags-2">Hashtags</label>
+                <input type="text" value={editProduct.hashtags} onChange={e => setEditProduct({...editProduct, hashtags: e.target.value})} placeholder="e.g. tech, vintage, handmade (comma separated)"  id="hashtags-2"/>
               </div>
               <div className="form-group">
                 <label className={styles.checkboxLabel}>
@@ -776,8 +776,8 @@ export default function SetupShopPage() {
               </div>
               {!editProduct.isGlobal && (
                 <div className="form-group">
-                  <label>Location</label>
-                  <input type="text" value={editProduct.location} onChange={e => setEditProduct({...editProduct, location: e.target.value})} placeholder="City, State" />
+                  <label htmlFor="location-2">Location</label>
+                  <input type="text" value={editProduct.location} onChange={e => setEditProduct({...editProduct, location: e.target.value})} placeholder="City, State"  id="location-2"/>
                 </div>
               )}
               <div className="form-group">

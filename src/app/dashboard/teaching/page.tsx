@@ -246,20 +246,20 @@ export default function TeachingPage() {
             <h2>⚙️ School Settings</h2>
             <form onSubmit={handleSchoolSubmit}>
               <div className="form-group">
-                <label>School Name</label>
-                <input type="text" value={schoolForm.schoolName} onChange={e => setSchoolForm({...schoolForm, schoolName: e.target.value})} />
+                <label htmlFor="school-name">School Name</label>
+                <input type="text" value={schoolForm.schoolName} onChange={e => setSchoolForm({...schoolForm, schoolName: e.target.value})}  id="school-name"/>
               </div>
               <div className="form-group">
-                <label>About</label>
-                <textarea value={schoolForm.schoolAbout} onChange={e => setSchoolForm({...schoolForm, schoolAbout: e.target.value})} rows={3} />
+                <label htmlFor="about">About</label>
+                <textarea value={schoolForm.schoolAbout} onChange={e => setSchoolForm({...schoolForm, schoolAbout: e.target.value})} rows={3}  id="about"/>
               </div>
               <div className="form-group">
                 <label>Image</label>
                 <ImageUploader images={schoolForm.schoolImages} onChange={(urls) => setSchoolForm({...schoolForm, schoolImages: urls, schoolImage: urls[0] || ''})} maxImages={1} />
               </div>
               <div className="form-group">
-                <label>URL Slug</label>
-                <input type="text" value={schoolForm.schoolSlug} onChange={e => setSchoolForm({...schoolForm, schoolSlug: e.target.value})} />
+                <label htmlFor="url-slug">URL Slug</label>
+                <input type="text" value={schoolForm.schoolSlug} onChange={e => setSchoolForm({...schoolForm, schoolSlug: e.target.value})}  id="url-slug"/>
                 <small style={{color: 'var(--text-secondary)'}}>xistrymemz.xyz/school/{schoolForm.schoolSlug || 'your-slug'}</small>
               </div>
               <div className={styles.formActions}>
@@ -281,12 +281,12 @@ export default function TeachingPage() {
                 📚 Lessons are categorized, sectioned course content with progression. Writing fiction or a personal essay? Use <Link href="/dashboard/blog">Blog Stories</Link> instead.
               </p>
               <div className="form-group">
-                <label>Title</label>
-                <input type="text" value={contentForm.title} onChange={e => setContentForm({...contentForm, title: e.target.value})} required />
+                <label htmlFor="title">Title</label>
+                <input type="text" value={contentForm.title} onChange={e => setContentForm({...contentForm, title: e.target.value})} required  id="title"/>
               </div>
               <div className="form-group">
-                <label>Type</label>
-                <select value={contentForm.contentType} onChange={e => setContentForm({...contentForm, contentType: e.target.value})}>
+                <label htmlFor="type">Type</label>
+                <select value={contentForm.contentType} onChange={e => setContentForm({...contentForm, contentType: e.target.value})} id="type">
                   <option value="article">Article</option>
                   <option value="video">Video</option>
                   <option value="course">Course</option>
@@ -295,20 +295,20 @@ export default function TeachingPage() {
                 </select>
               </div>
               <div className="form-group">
-                <label>Content Body</label>
-                <textarea value={contentForm.content} onChange={e => setContentForm({...contentForm, content: e.target.value})} rows={6} placeholder="Write your content here..." style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.9rem', resize: 'vertical'}} />
+                <label htmlFor="content-body">Content Body</label>
+                <textarea value={contentForm.content} onChange={e => setContentForm({...contentForm, content: e.target.value})} rows={6} placeholder="Write your content here..." style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.9rem', resize: 'vertical'}}  id="content-body"/>
               </div>
               <div className="form-group">
-                <label>Images (JSON array of URLs)</label>
-                <input type="text" value={contentForm.images} onChange={e => setContentForm({...contentForm, images: e.target.value})} placeholder='["https://..."]' style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)'}} />
+                <label htmlFor="images-json-array-of-urls">Images (JSON array of URLs)</label>
+                <input type="text" value={contentForm.images} onChange={e => setContentForm({...contentForm, images: e.target.value})} placeholder='["https://..."]' style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)'}}  id="images-json-array-of-urls"/>
               </div>
               <div className="form-group">
-                <label>Video URL</label>
-                <input type="text" value={contentForm.videoUrl} onChange={e => setContentForm({...contentForm, videoUrl: e.target.value})} placeholder="https://youtube.com/..." style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)'}} />
+                <label htmlFor="video-url">Video URL</label>
+                <input type="text" value={contentForm.videoUrl} onChange={e => setContentForm({...contentForm, videoUrl: e.target.value})} placeholder="https://youtube.com/..." style={{width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)'}}  id="video-url"/>
               </div>
               <div className="form-group">
-                <label>Price</label>
-                <input type="number" value={contentForm.price} onChange={e => setContentForm({...contentForm, price: e.target.value})} step="0.01" />
+                <label htmlFor="price">Price</label>
+                <input type="number" value={contentForm.price} onChange={e => setContentForm({...contentForm, price: e.target.value})} step="0.01"  id="price"/>
                 <label className={styles.checkLabel} style={{marginTop: 8}}>
                   <input type="checkbox" checked={contentForm.isPaid} onChange={e => setContentForm({...contentForm, isPaid: e.target.checked})} />
                   Paid content

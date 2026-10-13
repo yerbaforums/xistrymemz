@@ -218,7 +218,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   }, [])
 
   useEffect(() => {
-    params.then(setResolvedParams)
+    params.then(setResolvedParams).catch(() => {})
   }, [params])
 
   useEffect(() => {
@@ -643,59 +643,59 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           {isEditing ? (
             <div className={styles.editForm}>
               <div className="form-group">
-                <label>Title</label>
+                <label htmlFor="title">Title</label>
                 <input
                   type="text"
                   value={editData.title}
                   onChange={e => setEditData({...editData, title: e.target.value})}
-                />
+                 id="title"/>
               </div>
               <div className="form-group">
-                <label>Description</label>
+                <label htmlFor="description">Description</label>
                 <textarea
                   value={editData.description}
                   onChange={e => setEditData({...editData, description: e.target.value})}
                   rows={4}
-                />
+                 id="description"/>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Type</label>
+                  <label htmlFor="type">Type</label>
                   <select
                     value={editData.type}
                     onChange={e => setEditData({...editData, type: e.target.value})}
-                  >
+                   id="type">
                     <option value="PRODUCT">Product</option>
                     <option value="RENTAL">Rental</option>
                   </select>
                 </div>
                 {editData.type !== 'RENTAL' && (
                   <div className="form-group">
-                    <label>Price</label>
+                    <label htmlFor="price">Price</label>
                     <input
                       type="number"
                       value={editData.price}
                       onChange={e => setEditData({...editData, price: e.target.value})}
                       step="0.01"
-                    />
+                     id="price"/>
                   </div>
                 )}
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Category</label>
+                  <label htmlFor="category">Category</label>
                   <input
                     type="text"
                     value={editData.category}
                     onChange={e => setEditData({...editData, category: e.target.value})}
-                  />
+                   id="category"/>
                 </div>
                 <div className="form-group">
-                  <label>Condition</label>
+                  <label htmlFor="condition">Condition</label>
                   <select
                     value={editData.condition}
                     onChange={e => setEditData({...editData, condition: e.target.value})}
-                  >
+                   id="condition">
                     <option value="">Select...</option>
                     <option value="NEW">New</option>
                     <option value="LIKE_NEW">Like New</option>
@@ -708,30 +708,30 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 <div className={styles.rentalPricing}>
                   <div className="form-row">
                     <div className="form-group">
-                      <label>Daily Rate ($)</label>
-                      <input type="number" value={editData.rentalDaily} onChange={e => setEditData({...editData, rentalDaily: e.target.value})} placeholder="0.00" step="0.01" />
+                      <label htmlFor="daily-rate">Daily Rate ($)</label>
+                      <input type="number" value={editData.rentalDaily} onChange={e => setEditData({...editData, rentalDaily: e.target.value})} placeholder="0.00" step="0.01"  id="daily-rate"/>
                     </div>
                     <div className="form-group">
-                      <label>Weekly Rate ($)</label>
-                      <input type="number" value={editData.rentalWeekly} onChange={e => setEditData({...editData, rentalWeekly: e.target.value})} placeholder="0.00" step="0.01" />
+                      <label htmlFor="weekly-rate">Weekly Rate ($)</label>
+                      <input type="number" value={editData.rentalWeekly} onChange={e => setEditData({...editData, rentalWeekly: e.target.value})} placeholder="0.00" step="0.01"  id="weekly-rate"/>
                     </div>
                     <div className="form-group">
-                      <label>Monthly Rate ($)</label>
-                      <input type="number" value={editData.rentalMonthly} onChange={e => setEditData({...editData, rentalMonthly: e.target.value})} placeholder="0.00" step="0.01" />
+                      <label htmlFor="monthly-rate">Monthly Rate ($)</label>
+                      <input type="number" value={editData.rentalMonthly} onChange={e => setEditData({...editData, rentalMonthly: e.target.value})} placeholder="0.00" step="0.01"  id="monthly-rate"/>
                     </div>
                   </div>
                   <div className="form-row">
                     <div className="form-group">
-                      <label>Deposit ($)</label>
-                      <input type="number" value={editData.rentalDeposit} onChange={e => setEditData({...editData, rentalDeposit: e.target.value})} placeholder="0.00" step="0.01" />
+                      <label htmlFor="deposit">Deposit ($)</label>
+                      <input type="number" value={editData.rentalDeposit} onChange={e => setEditData({...editData, rentalDeposit: e.target.value})} placeholder="0.00" step="0.01"  id="deposit"/>
                     </div>
                     <div className="form-group">
-                      <label>Min Days</label>
-                      <input type="number" value={editData.rentalMinDays} onChange={e => setEditData({...editData, rentalMinDays: parseInt(e.target.value) || 1})} min="1" />
+                      <label htmlFor="min-days">Min Days</label>
+                      <input type="number" value={editData.rentalMinDays} onChange={e => setEditData({...editData, rentalMinDays: parseInt(e.target.value) || 1})} min="1"  id="min-days"/>
                     </div>
                     <div className="form-group">
-                      <label>Max Days</label>
-                      <input type="number" value={editData.rentalMaxDays} onChange={e => setEditData({...editData, rentalMaxDays: e.target.value})} placeholder="Unlimited" min="1" />
+                      <label htmlFor="max-days">Max Days</label>
+                      <input type="number" value={editData.rentalMaxDays} onChange={e => setEditData({...editData, rentalMaxDays: e.target.value})} placeholder="Unlimited" min="1"  id="max-days"/>
                     </div>
                   </div>
                   <div className="form-group">
@@ -754,21 +754,21 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               </div>
               {!editData.isGlobal && (
                 <div className="form-group">
-                  <label>Location</label>
+                  <label htmlFor="location">Location</label>
                   <input
                     type="text"
                     value={editData.location}
                     onChange={e => setEditData({...editData, location: e.target.value})}
-                  />
+                   id="location"/>
                 </div>
               )}
               <div className="form-group">
-                <label>Location Details</label>
+                <label htmlFor="location-details">Location Details</label>
                 <input
                   type="text"
                   value={editData.locationDetails}
                   onChange={e => setEditData({...editData, locationDetails: e.target.value})}
-                />
+                 id="location-details"/>
               </div>
               <details className={styles.listingSettings}>
                 <summary className={styles.settingsSummary}>⚙️ Listing Settings</summary>
@@ -1019,7 +1019,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 {CRYPTO_DISPLAY.map(({ symbol, decimals, fallback }) => (
                   <span key={symbol} className={styles.cryptoLabel}>
                     <img
-                      src={`/crypto-logos/${CRYPTO_LOGOS[symbol] || 'ethereum.png'}`}
+                      src={`/crypto-logos/${CRYPTO_LOGOS[symbol] || 'crypto.svg'}`}
                       alt={symbol}
                       className={styles.cryptoLogo}
                     />
@@ -1264,12 +1264,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
             {courierServices.length > 0 && (
               <div className="form-group">
-                <label>Courier Service (Optional)</label>
+                <label htmlFor="courier-service-optional">Courier Service (Optional)</label>
                 <select
                   value={selectedCourier}
                   onChange={e => setSelectedCourier(e.target.value)}
                   className={styles.projectSelect}
-                >
+                 id="courier-service-optional">
                   <option value="">No delivery needed</option>
                   {courierServices.map(courier => (
                     <option key={courier.id} value={courier.id}>
@@ -1282,26 +1282,26 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
             {selectedCourier && (
               <div className="form-group">
-                <label>Delivery Address</label>
+                <label htmlFor="delivery-address">Delivery Address</label>
                 <textarea
                   value={deliveryAddress}
                   onChange={e => setDeliveryAddress(e.target.value)}
                   placeholder="Enter delivery address..."
                   rows={2}
-                />
+                 id="delivery-address"/>
               </div>
             )}
 
             {product.type !== 'RENTAL' && product.price != null && (
               <div className="form-group">
-                <label>Quantity</label>
+                <label htmlFor="quantity">Quantity</label>
                 <input
                   type="number"
                   min={1}
                   value={orderQty}
                   onChange={e => setOrderQty(Math.max(1, parseInt(e.target.value) || 1))}
                   style={{ maxWidth: 120 }}
-                />
+                 id="quantity"/>
               </div>
             )}
 
@@ -1310,7 +1310,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 <label>Rental Period</label>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                   <div style={{ flex: 1, minWidth: 130 }}>
-                    <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Start Date</label>
+                    <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }} htmlFor="start-date">Start Date</label>
                     <input
                       type="date"
                       className={styles.projectSelect}
@@ -1318,10 +1318,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                       value={rentalStart}
                       min={new Date().toISOString().split('T')[0]}
                       onChange={e => setRentalStart(e.target.value)}
-                    />
+                     id="start-date"/>
                   </div>
                   <div style={{ flex: 1, minWidth: 130 }}>
-                    <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>End Date</label>
+                    <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }} htmlFor="end-date">End Date</label>
                     <input
                       type="date"
                       className={styles.projectSelect}
@@ -1329,7 +1329,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                       value={rentalEnd}
                       min={rentalStart || new Date().toISOString().split('T')[0]}
                       onChange={e => setRentalEnd(e.target.value)}
-                    />
+                     id="end-date"/>
                   </div>
                 </div>
                 <small style={{ color: 'var(--text-muted)', display: 'block', marginTop: 6 }}>
@@ -1423,7 +1423,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             </div>
 
             <div className="form-group">
-              <label>Contribution Amount</label>
+              <label htmlFor="contribution-amount">Contribution Amount</label>
               <input
                 type="number"
                 value={fundAmount}
@@ -1431,7 +1431,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 placeholder="Enter amount..."
                 min="1"
                 step="0.01"
-              />
+               id="contribution-amount"/>
             </div>
 
             <div className={styles.modalActions}>

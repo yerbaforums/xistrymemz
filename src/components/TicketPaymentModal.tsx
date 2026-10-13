@@ -179,7 +179,7 @@ export default function TicketPaymentModal({
 
             <div className={styles.section}>
               <h4>Payment details</h4>
-              <label className={styles.fieldLabel}>
+              <label className={styles.fieldLabel} htmlFor="transaction-hash-optional">
                 Transaction Hash (optional)
               </label>
               <input
@@ -188,8 +188,8 @@ export default function TicketPaymentModal({
                 onChange={e => setTxHash(e.target.value)}
                 placeholder="0x..."
                 className={styles.input}
-              />
-              <label className={styles.fieldLabel}>
+               id="transaction-hash-optional"/>
+              <label className={styles.fieldLabel} htmlFor="note-optional">
                 Note (optional)
               </label>
               <textarea
@@ -198,7 +198,7 @@ export default function TicketPaymentModal({
                 placeholder="Add a note for the organizer..."
                 rows={2}
                 className={styles.textarea}
-              />
+               id="note-optional"/>
             </div>
 
             <button

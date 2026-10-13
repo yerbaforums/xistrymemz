@@ -259,7 +259,7 @@ export default function AdminBackupsPage() {
 
         <div style={{ marginTop: '16px', display: 'flex', gap: '16px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
           <div className={styles.optionField}>
-            <label className={styles.optionLabel}>Interval (hours)</label>
+            <label className={styles.optionLabel} htmlFor="interval-hours">Interval (hours)</label>
             <input
               type="number"
               value={intervalHours}
@@ -267,10 +267,10 @@ export default function AdminBackupsPage() {
               className={styles.optionInput}
               min={1}
               max={168}
-            />
+             id="interval-hours"/>
           </div>
           <div className={styles.optionField}>
-            <label className={styles.optionLabel}>Retention (backups)</label>
+            <label className={styles.optionLabel} htmlFor="retention-backups">Retention (backups)</label>
             <input
               type="number"
               value={retentionCount}
@@ -278,7 +278,7 @@ export default function AdminBackupsPage() {
               className={styles.optionInput}
               min={1}
               max={100}
-            />
+             id="retention-backups"/>
           </div>
           <button
             onClick={handleSaveAutoBackupSettings}
@@ -330,6 +330,17 @@ export default function AdminBackupsPage() {
                       >
                         ⬇ Download
                       </a>
+                      {!b.cid.startsWith('local-') && (
+                        <a
+                          href={`https://ipfs.io/ipfs/${b.cid}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={styles.actionBtn}
+                          title="Durable copy pinned on IPFS"
+                        >
+                          🌐 IPFS
+                        </a>
+                      )}
                       <a
                         href={b.magnetLink}
                         target="_blank"

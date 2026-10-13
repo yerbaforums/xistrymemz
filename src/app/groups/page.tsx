@@ -299,27 +299,27 @@ export default function GroupsPage() {
             <h2>Create New Group</h2>
             <form onSubmit={handleCreate}>
               <div className="form-group">
-                <label>Group Name *</label>
+                <label htmlFor="group-name">Group Name *</label>
                 <input
                   type="text"
                   value={name}
                   onChange={e => setName(e.target.value)}
                   placeholder="Enter group name"
                   required
-                />
+                 id="group-name"/>
               </div>
               <div className="form-group">
-                <label>Description</label>
+                <label htmlFor="description">Description</label>
                 <textarea
                   value={description}
                   onChange={e => setDescription(e.target.value)}
                   placeholder="What is this group about?"
                   rows={3}
-                />
+                 id="description"/>
               </div>
               <div className="form-group">
-                <label>Category</label>
-                <select value={category} onChange={e => setCategory(e.target.value)}>
+                <label htmlFor="category">Category</label>
+                <select value={category} onChange={e => setCategory(e.target.value)} id="category">
                   {GROUP_CATEGORIES.map(c => (
                     <option key={c.value} value={c.value}>{c.icon} {c.label}</option>
                   ))}

@@ -173,7 +173,7 @@ export default function TicketScanModal({ eventId, onClose }: TicketScanModalPro
 
           {mode === 'manual' && (
             <div className={styles.manualEntry}>
-              <label>Enter ticket code</label>
+              <label htmlFor="enter-ticket-code">Enter ticket code</label>
               <input
                 type="text"
                 value={manualCode}
@@ -181,7 +181,7 @@ export default function TicketScanModal({ eventId, onClose }: TicketScanModalPro
                 placeholder="Paste ticket code or URL..."
                 className={styles.input}
                 onKeyDown={e => { if (e.key === 'Enter') handleLookup(manualCode.trim()) }}
-              />
+               id="enter-ticket-code"/>
               <button onClick={() => handleLookup(manualCode.trim())} disabled={!manualCode.trim()} className={styles.lookupBtn}>
                 Look Up
               </button>

@@ -479,15 +479,15 @@ export default function DashboardServices() {
             <form onSubmit={handleSubmit}>
               <div className="form-row">
                 <div className="form-group" style={{ flex: 1 }}>
-                  <label>Title *</label>
-                  <input type="text" value={form.title} onChange={e => setForm({...form, title: e.target.value})} placeholder="e.g. 1-Hour Guitar Lesson" required />
+                  <label htmlFor="title">Title *</label>
+                  <input type="text" value={form.title} onChange={e => setForm({...form, title: e.target.value})} placeholder="e.g. 1-Hour Guitar Lesson" required  id="title"/>
                 </div>
               </div>
 
               <div className="form-row">
                 <div className="form-group" style={{ flex: 1 }}>
-                  <label>Category</label>
-                  <select value={form.category} onChange={e => setForm({...form, category: e.target.value as ServiceCategory})}>
+                  <label htmlFor="category">Category</label>
+                  <select value={form.category} onChange={e => setForm({...form, category: e.target.value as ServiceCategory})} id="category">
                     {SERVICE_CATEGORIES.map(cat => (
                       <option key={cat} value={cat}>{SERVICE_CATEGORY_ICONS[cat]} {SERVICE_CATEGORY_LABELS[cat]}</option>
                     ))}
@@ -497,18 +497,18 @@ export default function DashboardServices() {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label>Duration (minutes) *</label>
-                  <input type="number" value={form.duration} onChange={e => setForm({...form, duration: parseInt(e.target.value) || 60})} min={5} step={5} />
+                  <label htmlFor="duration-minutes">Duration (minutes) *</label>
+                  <input type="number" value={form.duration} onChange={e => setForm({...form, duration: parseInt(e.target.value) || 60})} min={5} step={5}  id="duration-minutes"/>
                 </div>
                 <div className="form-group">
-                  <label>Price ($)</label>
-                  <input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} placeholder="0.00" step="0.01" />
+                  <label htmlFor="price">Price ($)</label>
+                  <input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} placeholder="0.00" step="0.01"  id="price"/>
                 </div>
               </div>
 
               <div className="form-group">
-                <label>Description</label>
-                <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} rows={2} placeholder="Describe what you offer..." />
+                <label htmlFor="description">Description</label>
+                <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} rows={2} placeholder="Describe what you offer..."  id="description"/>
               </div>
 
               <div className="form-row">
@@ -519,8 +519,8 @@ export default function DashboardServices() {
                   />
                 </div>
                 <div className="form-group" style={{ flex: 1 }}>
-                  <label>Meeting Link</label>
-                  <input type="url" value={form.meetingLink} onChange={e => setForm({...form, meetingLink: e.target.value})} placeholder="https://meet.google.com/..." />
+                  <label htmlFor="meeting-link">Meeting Link</label>
+                  <input type="url" value={form.meetingLink} onChange={e => setForm({...form, meetingLink: e.target.value})} placeholder="https://meet.google.com/..."  id="meeting-link"/>
                 </div>
               </div>
 
@@ -595,25 +595,25 @@ export default function DashboardServices() {
             <h2>⚙️ Shop Settings</h2>
             <form onSubmit={handleShopSubmit}>
               <div className="form-group">
-                <label>Shop Name</label>
-                <input type="text" value={shopForm.shopName} onChange={e => setShopForm({...shopForm, shopName: e.target.value})} placeholder="Your shop name" />
+                <label htmlFor="shop-name">Shop Name</label>
+                <input type="text" value={shopForm.shopName} onChange={e => setShopForm({...shopForm, shopName: e.target.value})} placeholder="Your shop name"  id="shop-name"/>
               </div>
               <div className="form-group">
-                <label>About Your Shop</label>
-                <textarea value={shopForm.shopAbout} onChange={e => setShopForm({...shopForm, shopAbout: e.target.value})} rows={3} placeholder="Tell customers about your shop..." />
+                <label htmlFor="about-your-shop">About Your Shop</label>
+                <textarea value={shopForm.shopAbout} onChange={e => setShopForm({...shopForm, shopAbout: e.target.value})} rows={3} placeholder="Tell customers about your shop..."  id="about-your-shop"/>
               </div>
               <div className="form-group">
                 <label>Shop Image</label>
                 <ImageUploader images={shopForm.shopImages || []} onChange={(urls) => setShopForm({...shopForm, shopImages: urls})} maxImages={1} />
               </div>
               <div className="form-group">
-                <label>Shop URL Slug</label>
-                <input type="text" value={shopForm.shopSlug} onChange={e => setShopForm({...shopForm, shopSlug: e.target.value})} placeholder="my-shop" />
+                <label htmlFor="shop-url-slug">Shop URL Slug</label>
+                <input type="text" value={shopForm.shopSlug} onChange={e => setShopForm({...shopForm, shopSlug: e.target.value})} placeholder="my-shop"  id="shop-url-slug"/>
                 <small style={{color: 'var(--text-secondary)'}}>xistrymemz.xyz/shop/{shopForm.shopSlug || 'your-slug'}</small>
               </div>
               <div className="form-group">
-                <label>Contact Email</label>
-                <input type="email" value={shopForm.email} onChange={e => setShopForm({...shopForm, email: e.target.value})} placeholder="you@example.com" />
+                <label htmlFor="contact-email">Contact Email</label>
+                <input type="email" value={shopForm.email} onChange={e => setShopForm({...shopForm, email: e.target.value})} placeholder="you@example.com"  id="contact-email"/>
               </div>
               <div className={styles.formActions}>
                 <button type="button" onClick={() => setShowShopModal(false)} className="btn-ghost">Cancel</button>

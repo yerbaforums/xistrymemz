@@ -134,12 +134,12 @@ export default function ShopDashboard() {
           <h2>Shop Settings</h2>
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label>Shop Name</label>
-              <input type="text" value={form.shopName} onChange={e => setForm({...form, shopName: e.target.value})} placeholder="Your shop name" />
+              <label htmlFor="shop-name">Shop Name</label>
+              <input type="text" value={form.shopName} onChange={e => setForm({...form, shopName: e.target.value})} placeholder="Your shop name"  id="shop-name"/>
             </div>
             <div className="form-group">
-              <label>About Your Shop</label>
-              <textarea value={form.shopAbout} onChange={e => setForm({...form, shopAbout: e.target.value})} rows={3} placeholder="Tell customers about your shop..." />
+              <label htmlFor="about-your-shop">About Your Shop</label>
+              <textarea value={form.shopAbout} onChange={e => setForm({...form, shopAbout: e.target.value})} rows={3} placeholder="Tell customers about your shop..."  id="about-your-shop"/>
             </div>
 <div className="form-group">
                 <label>Shop Image</label>
@@ -150,29 +150,29 @@ export default function ShopDashboard() {
                 <ImageUploader images={form.shopCoverImages} onChange={(urls) => setForm(f => ({...f, shopCoverImages: urls, shopCoverImage: urls[0] || ''}))} maxImages={1} />
               </div>
               <div className="form-group">
-                <label>Cover Style</label>
-                <select value={form.shopCoverStyle} onChange={e => setForm(f => ({...f, shopCoverStyle: e.target.value}))}>
+                <label htmlFor="cover-style">Cover Style</label>
+                <select value={form.shopCoverStyle} onChange={e => setForm(f => ({...f, shopCoverStyle: e.target.value}))} id="cover-style">
                   <option value="cover">Wide Cover</option>
                   <option value="tile">Tile Pattern</option>
                   <option value="gradient">Gradient</option>
                 </select>
               </div>
               <div className="form-group">
-                <label>Shop Category</label>
-                <select value={form.shopCategory} onChange={e => setForm(f => ({...f, shopCategory: e.target.value}))}>
+                <label htmlFor="shop-category">Shop Category</label>
+                <select value={form.shopCategory} onChange={e => setForm(f => ({...f, shopCategory: e.target.value}))} id="shop-category">
                   {SHOP_CATEGORIES.map(cat => (
                     <option key={cat.value} value={cat.value}>{cat.icon} {cat.label}</option>
                   ))}
                 </select>
               </div>
               <div className="form-group">
-                <label>Shop URL Slug</label>
-              <input type="text" value={form.shopSlug} onChange={e => setForm({...form, shopSlug: e.target.value})} placeholder="my-shop" />
+                <label htmlFor="shop-url-slug">Shop URL Slug</label>
+              <input type="text" value={form.shopSlug} onChange={e => setForm({...form, shopSlug: e.target.value})} placeholder="my-shop"  id="shop-url-slug"/>
               <small style={{color: 'var(--text-secondary)'}}>xistrymemz.xyz/shop/{form.shopSlug || 'your-slug'}</small>
             </div>
             <div className="form-group">
-              <label>Contact Email</label>
-              <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} placeholder="you@example.com" />
+              <label htmlFor="contact-email">Contact Email</label>
+              <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} placeholder="you@example.com"  id="contact-email"/>
             </div>
             <div className={styles.formActions}>
               <button type="submit" className="btn-primary" disabled={saving}>

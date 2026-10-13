@@ -621,33 +621,33 @@ function MarketplaceContent() {
             <h2>⚙️ {t('settings')}</h2>
             <form onSubmit={handleShopSubmit}>
               <div className="form-group">
-                <label>Shop Name</label>
-                <input type="text" value={shopForm.shopName} onChange={e => setShopForm({...shopForm, shopName: e.target.value})} placeholder="Your shop name" />
+                <label htmlFor="shop-name">Shop Name</label>
+                <input type="text" value={shopForm.shopName} onChange={e => setShopForm({...shopForm, shopName: e.target.value})} placeholder="Your shop name"  id="shop-name"/>
               </div>
               <div className="form-group">
-                <label>About Your Shop</label>
-                <textarea value={shopForm.shopAbout} onChange={e => setShopForm({...shopForm, shopAbout: e.target.value})} rows={3} placeholder="Tell customers about your shop..." />
+                <label htmlFor="about-your-shop">About Your Shop</label>
+                <textarea value={shopForm.shopAbout} onChange={e => setShopForm({...shopForm, shopAbout: e.target.value})} rows={3} placeholder="Tell customers about your shop..."  id="about-your-shop"/>
               </div>
               <div className="form-group">
                 <label>Shop Image</label>
                 <ImageUploader images={shopForm.shopImages || []} onChange={(urls) => setShopForm({...shopForm, shopImages: urls})} maxImages={1} />
               </div>
               <div className="form-group">
-                <label>Shop URL Slug</label>
-                <input type="text" value={shopForm.shopSlug} onChange={e => setShopForm({...shopForm, shopSlug: e.target.value})} placeholder="my-shop" />
+                <label htmlFor="shop-url-slug">Shop URL Slug</label>
+                <input type="text" value={shopForm.shopSlug} onChange={e => setShopForm({...shopForm, shopSlug: e.target.value})} placeholder="my-shop"  id="shop-url-slug"/>
                 <small style={{color: 'var(--text-secondary)'}}>xistrymemz.xyz/shop/{shopForm.shopSlug || 'your-slug'}</small>
               </div>
               <div className="form-group">
-                <label>Shop Category</label>
-                <select value={shopForm.shopCategory} onChange={e => setShopForm({...shopForm, shopCategory: e.target.value})}>
+                <label htmlFor="shop-category">Shop Category</label>
+                <select value={shopForm.shopCategory} onChange={e => setShopForm({...shopForm, shopCategory: e.target.value})} id="shop-category">
                   {SHOP_CATEGORIES.map(cat => (
                     <option key={cat.value} value={cat.value}>{cat.icon} {cat.label}</option>
                   ))}
                 </select>
               </div>
               <div className="form-group">
-                <label>Contact Email</label>
-                <input type="email" value={shopForm.email} onChange={e => setShopForm({...shopForm, email: e.target.value})} placeholder="you@example.com" />
+                <label htmlFor="contact-email">Contact Email</label>
+                <input type="email" value={shopForm.email} onChange={e => setShopForm({...shopForm, email: e.target.value})} placeholder="you@example.com"  id="contact-email"/>
               </div>
               <div className={styles.formActions}>
                 <button type="button" onClick={() => setShowShopModal(false)} className="btn-ghost">Cancel</button>
@@ -679,40 +679,40 @@ function MarketplaceContent() {
             <h2>{editingProduct ? '✏️ ' + t('products') : '➕ ' + t('products')}</h2>
             <form onSubmit={handleProductSubmit}>
               <div className="form-group">
-                <label>Title *</label>
-                <input type="text" value={productForm.title} onChange={e => setProductForm({...productForm, title: e.target.value})} placeholder="Product or service name" required />
+                <label htmlFor="title">Title *</label>
+                <input type="text" value={productForm.title} onChange={e => setProductForm({...productForm, title: e.target.value})} placeholder="Product or service name" required  id="title"/>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Type</label>
-                  <select value={productForm.type} onChange={e => setProductForm({...productForm, type: e.target.value})}>
+                  <label htmlFor="type">Type</label>
+                  <select value={productForm.type} onChange={e => setProductForm({...productForm, type: e.target.value})} id="type">
                     {PRODUCT_TYPES.map(t => (
                       <option key={t} value={t}>{t.charAt(0) + t.slice(1).toLowerCase()}</option>
                     ))}
                   </select>
                 </div>
               <div className="form-group">
-                <label>Price</label>
-                  <input type="number" value={productForm.price} onChange={e => setProductForm({...productForm, price: e.target.value})} placeholder="0.00" step="0.01" />
+                <label htmlFor="price">Price</label>
+                  <input type="number" value={productForm.price} onChange={e => setProductForm({...productForm, price: e.target.value})} placeholder="0.00" step="0.01"  id="price"/>
                 </div>
                 <div className="form-group">
-                  <label>Category</label>
-                  <input type="text" value={productForm.category} onChange={e => setProductForm({...productForm, category: e.target.value})} placeholder="e.g., Electronics" />
+                  <label htmlFor="category">Category</label>
+                  <input type="text" value={productForm.category} onChange={e => setProductForm({...productForm, category: e.target.value})} placeholder="e.g., Electronics"  id="category"/>
                 </div>
               </div>
 
               <div className="form-group">
-                <label>Description</label>
-                <textarea value={productForm.description} onChange={e => setProductForm({...productForm, description: e.target.value})} rows={2} placeholder="Describe your product..." />
+                <label htmlFor="description">Description</label>
+                <textarea value={productForm.description} onChange={e => setProductForm({...productForm, description: e.target.value})} rows={2} placeholder="Describe your product..."  id="description"/>
               </div>
               <div className="form-group">
-                <label>Hashtags</label>
-                <input type="text" value={productForm.hashtags} onChange={e => setProductForm({...productForm, hashtags: e.target.value})} placeholder="e.g. tech, vintage, handmade (comma separated)" />
+                <label htmlFor="hashtags">Hashtags</label>
+                <input type="text" value={productForm.hashtags} onChange={e => setProductForm({...productForm, hashtags: e.target.value})} placeholder="e.g. tech, vintage, handmade (comma separated)"  id="hashtags"/>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Condition</label>
-                  <select value={productForm.condition} onChange={e => setProductForm({...productForm, condition: e.target.value})}>
+                  <label htmlFor="condition">Condition</label>
+                  <select value={productForm.condition} onChange={e => setProductForm({...productForm, condition: e.target.value})} id="condition">
                     <option value="">Select...</option>
                     {PRODUCT_CONDITIONS.map(c => (
                       <option key={c} value={c}>{c.split('_').map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(' ')}</option>

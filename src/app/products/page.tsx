@@ -623,38 +623,38 @@ export default function ProductsPage() {
               <form onSubmit={handleMySubmit} className={styles.myForm}>
                 <div className={styles.myFormRow}>
                   <div className="form-group">
-                    <label>Title *</label>
-                    <input type="text" value={myForm.title} onChange={e => setMyForm({...myForm, title: e.target.value})} placeholder="Item title" required />
+                    <label htmlFor="title">Title *</label>
+                    <input type="text" value={myForm.title} onChange={e => setMyForm({...myForm, title: e.target.value})} placeholder="Item title" required  id="title"/>
                   </div>
                 </div>
                 <div className={styles.myFormRow}>
                   <div className="form-group">
-                    <label>Description</label>
-                    <textarea value={myForm.description} onChange={e => setMyForm({...myForm, description: e.target.value})} placeholder="Description" rows={3} />
+                    <label htmlFor="description">Description</label>
+                    <textarea value={myForm.description} onChange={e => setMyForm({...myForm, description: e.target.value})} placeholder="Description" rows={3}  id="description"/>
                   </div>
                 </div>
                 <div className={styles.myFormRow}>
                   <div className="form-group" style={{ flex: 1 }}>
-                    <label>Price ($)</label>
-                    <input type="number" value={myForm.price} onChange={e => setMyForm({...myForm, price: e.target.value})} placeholder="0.00" step="0.01" />
+                    <label htmlFor="price">Price ($)</label>
+                    <input type="number" value={myForm.price} onChange={e => setMyForm({...myForm, price: e.target.value})} placeholder="0.00" step="0.01"  id="price"/>
                   </div>
                   <div className="form-group" style={{ flex: 1 }}>
-                    <label>Category</label>
-                    <input type="text" value={myForm.category} onChange={e => setMyForm({...myForm, category: e.target.value})} placeholder="e.g. Electronics" />
+                    <label htmlFor="category">Category</label>
+                    <input type="text" value={myForm.category} onChange={e => setMyForm({...myForm, category: e.target.value})} placeholder="e.g. Electronics"  id="category"/>
                   </div>
                 </div>
                 <div className={styles.myFormRow}>
                   <div className="form-group" style={{ flex: 1 }}>
-                    <label>Type</label>
-                    <select value={myForm.type} onChange={e => setMyForm({...myForm, type: e.target.value})}>
+                    <label htmlFor="type">Type</label>
+                    <select value={myForm.type} onChange={e => setMyForm({...myForm, type: e.target.value})} id="type">
                       {PRODUCT_TYPES.map(t => (
                         <option key={t} value={t}>{t.charAt(0) + t.slice(1).toLowerCase()}</option>
                       ))}
                     </select>
                   </div>
                   <div className="form-group" style={{ flex: 1 }}>
-                    <label>Condition</label>
-                    <select value={myForm.condition} onChange={e => setMyForm({...myForm, condition: e.target.value})}>
+                    <label htmlFor="condition">Condition</label>
+                    <select value={myForm.condition} onChange={e => setMyForm({...myForm, condition: e.target.value})} id="condition">
                       <option value="">Select...</option>
                       {PRODUCT_CONDITIONS.map(c => (
                         <option key={c} value={c}>{c.split('_').map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(' ')}</option>
@@ -670,14 +670,14 @@ export default function ProductsPage() {
   </div>
   <div className={styles.myFormRow}>
     <div className="form-group" style={{ flex: 1 }}>
-      <label>Hashtags</label>
-      <input type="text" value={myForm.hashtags} onChange={e => setMyForm({...myForm, hashtags: e.target.value})} placeholder="e.g. tech, vintage, handmade (comma separated)" />
+      <label htmlFor="hashtags">Hashtags</label>
+      <input type="text" value={myForm.hashtags} onChange={e => setMyForm({...myForm, hashtags: e.target.value})} placeholder="e.g. tech, vintage, handmade (comma separated)"  id="hashtags"/>
     </div>
   </div>
   <div className={styles.myFormRow}>
     <div className="form-group" style={{ flex: 1 }}>
-      <label>Location</label>
-                    <input type="text" value={myForm.location} onChange={e => setMyForm({...myForm, location: e.target.value})} placeholder="City, State" />
+      <label htmlFor="location">Location</label>
+                    <input type="text" value={myForm.location} onChange={e => setMyForm({...myForm, location: e.target.value})} placeholder="City, State"  id="location"/>
                   </div>
                   <div className="form-group" style={{ flex: '0 0 auto', display: 'flex', alignItems: 'flex-end', paddingBottom: '4px' }}>
                     <label className={styles.myCheckLabel}>

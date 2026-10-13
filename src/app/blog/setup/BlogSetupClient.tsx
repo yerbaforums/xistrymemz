@@ -164,18 +164,18 @@ export default function BlogSetupClient() {
         <h2>Blog Details</h2>
 
         <div className="form-group">
-          <label>Blog Name</label>
-          <input type="text" value={form.blogName ?? ''} onChange={(e) => setForm({ ...form, blogName: e.target.value })} placeholder="My Newsletter" required />
+          <label htmlFor="blog-name">Blog Name</label>
+          <input type="text" value={form.blogName ?? ''} onChange={(e) => setForm({ ...form, blogName: e.target.value })} placeholder="My Newsletter" required  id="blog-name"/>
         </div>
 
         <div className="form-group">
-          <label>Tagline</label>
-          <input type="text" value={form.blogTagline ?? ''} onChange={(e) => setForm({ ...form, blogTagline: e.target.value })} placeholder="A short hook — shows under your blog name" />
+          <label htmlFor="tagline">Tagline</label>
+          <input type="text" value={form.blogTagline ?? ''} onChange={(e) => setForm({ ...form, blogTagline: e.target.value })} placeholder="A short hook — shows under your blog name"  id="tagline"/>
         </div>
 
         <div className="form-group">
-          <label>About / Bio</label>
-          <textarea value={form.blogAbout ?? ''} onChange={(e) => setForm({ ...form, blogAbout: e.target.value })} rows={3} placeholder="What do you write about? Why should people subscribe?" />
+          <label htmlFor="about-bio">About / Bio</label>
+          <textarea value={form.blogAbout ?? ''} onChange={(e) => setForm({ ...form, blogAbout: e.target.value })} rows={3} placeholder="What do you write about? Why should people subscribe?"  id="about-bio"/>
         </div>
 
         <div className="form-group">
@@ -189,8 +189,8 @@ export default function BlogSetupClient() {
         </div>
 
         <div className="form-group">
-          <label>Cover Style</label>
-          <select value={form.blogCoverStyle} onChange={(e) => setForm((f) => ({ ...f, blogCoverStyle: e.target.value }))}>
+          <label htmlFor="cover-style">Cover Style</label>
+          <select value={form.blogCoverStyle} onChange={(e) => setForm((f) => ({ ...f, blogCoverStyle: e.target.value }))} id="cover-style">
             <option value="cover">Wide Cover</option>
             <option value="tile">Tile Pattern</option>
             <option value="gradient">Gradient</option>
@@ -198,8 +198,8 @@ export default function BlogSetupClient() {
         </div>
 
         <div className="form-group">
-          <label>Blog URL Slug</label>
-          <input type="text" value={form.blogSlug ?? ''} onChange={(e) => setForm({ ...form, blogSlug: e.target.value })} placeholder="my-blog" />
+          <label htmlFor="blog-url-slug">Blog URL Slug</label>
+          <input type="text" value={form.blogSlug ?? ''} onChange={(e) => setForm({ ...form, blogSlug: e.target.value })} placeholder="my-blog"  id="blog-url-slug"/>
           <small style={{ color: 'var(--text-secondary)' }}>xistrymemz.xyz/blog/{form.blogSlug || 'your-slug'}</small>
         </div>
 

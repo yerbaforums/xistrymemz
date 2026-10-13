@@ -151,7 +151,7 @@ function CompactDonation({ donation }: { donation: DonationAddr }) {
   return (
     <>
       <div className={styles.compactDonationCard} onClick={() => setQrOpen(true)}>
-        <img src={`/crypto-logos/${CRYPTO_LOGOS[donation.currency] || 'ethereum.png'}`} alt="" width={14} height={14} />
+        <img src={`/crypto-logos/${CRYPTO_LOGOS[donation.currency] || 'crypto.svg'}`} alt="" width={14} height={14} />
         <span className={styles.compactDonationLabel}>{donation.label || donation.currency}</span>
         <code className={styles.compactDonationAddr} title={donation.address}>{shortAddr}</code>
       </div>
@@ -574,12 +574,12 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
             {showContentForm && isOwner && (
               <form onSubmit={handleCreateContent} className={styles.contentForm}>
                 <div className={styles.formGroup}>
-                  <label>Title</label>
-                  <input type="text" value={contentForm.title} onChange={e => setContentForm({ ...contentForm, title: e.target.value })} required />
+                  <label htmlFor="title">Title</label>
+                  <input type="text" value={contentForm.title} onChange={e => setContentForm({ ...contentForm, title: e.target.value })} required  id="title"/>
                 </div>
                 <div className={styles.formGroup}>
-                  <label>Type</label>
-                  <select value={contentForm.contentType} onChange={e => setContentForm({ ...contentForm, contentType: e.target.value })}>
+                  <label htmlFor="type">Type</label>
+                  <select value={contentForm.contentType} onChange={e => setContentForm({ ...contentForm, contentType: e.target.value })} id="type">
                     <option value="article">Article</option>
                     <option value="lesson">Lesson</option>
                     <option value="note">Note</option>
@@ -620,12 +620,12 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                 <AdvancedSection label="Organization & monetization">
                 <div className={styles.formRow}>
                   <div className={styles.formGroup} style={{ flex: 1 }}>
-                    <label>Course Section (optional)</label>
-                    <input type="text" value={contentForm.section} onChange={e => setContentForm({ ...contentForm, section: e.target.value })} placeholder="e.g. Module 1: Basics" />
+                    <label htmlFor="course-section-optional">Course Section (optional)</label>
+                    <input type="text" value={contentForm.section} onChange={e => setContentForm({ ...contentForm, section: e.target.value })} placeholder="e.g. Module 1: Basics"  id="course-section-optional"/>
                   </div>
                   <div className={styles.formGroup} style={{ flex: 1 }}>
-                    <label>Sort Order</label>
-                    <input type="number" value={contentForm.sortOrder} onChange={e => setContentForm({ ...contentForm, sortOrder: parseInt(e.target.value) || 0 })} placeholder="0" />
+                    <label htmlFor="sort-order">Sort Order</label>
+                    <input type="number" value={contentForm.sortOrder} onChange={e => setContentForm({ ...contentForm, sortOrder: parseInt(e.target.value) || 0 })} placeholder="0"  id="sort-order"/>
                   </div>
                 </div>
                 <div className={styles.formGroup}>
@@ -644,13 +644,13 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                 </AdvancedSection>
                 {contentForm.contentType === 'quiz' && (
                   <div className={styles.formGroup}>
-                    <label>Quiz Questions (one per line: Question|Option1|Option2|Option3|Option4|CorrectAnswer)</label>
+                    <label htmlFor="quiz-questions-one-per-line-question-opt">Quiz Questions (one per line: Question|Option1|Option2|Option3|Option4|CorrectAnswer)</label>
                     <textarea
                       value={contentForm.content}
                       onChange={e => setContentForm({ ...contentForm, content: e.target.value })}
                       rows={6}
                       placeholder="What is 2+2?|3|4|5|6|4&#10;What color is the sky?|Red|Blue|Green|Yellow|Blue"
-                    />
+                     id="quiz-questions-one-per-line-question-opt"/>
                     <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>Format: Question|Option1|Option2|Option3|Option4|CorrectAnswer (one per line)</p>
                   </div>
                 )}
@@ -828,12 +828,12 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
             {isOwner && showEditModal ? (
               <form onSubmit={handleSaveSchool} className={styles.editForm}>
                 <div className={styles.formGroup}>
-                  <label>School Name</label>
-                  <input type="text" value={editForm.schoolName} onChange={e => setEditForm({ ...editForm, schoolName: e.target.value })} required />
+                  <label htmlFor="school-name">School Name</label>
+                  <input type="text" value={editForm.schoolName} onChange={e => setEditForm({ ...editForm, schoolName: e.target.value })} required  id="school-name"/>
                 </div>
                 <div className={styles.formGroup}>
-                  <label>About</label>
-                  <textarea value={editForm.schoolAbout} onChange={e => setEditForm({ ...editForm, schoolAbout: e.target.value })} rows={4} />
+                  <label htmlFor="about">About</label>
+                  <textarea value={editForm.schoolAbout} onChange={e => setEditForm({ ...editForm, schoolAbout: e.target.value })} rows={4}  id="about"/>
                 </div>
                 <div className={styles.formGroup}>
                   <label>School Logo</label>
@@ -883,7 +883,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                       {school.donationAddresses.map(da => (
                         <div key={da.id} className={styles.donationCardFull}>
                           <div className={styles.donationInfo}>
-                            <img src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'ethereum.png'}`} alt="" width={24} height={24} />
+                            <img src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'crypto.svg'}`} alt="" width={24} height={24} />
                             <div>
                               <div className={styles.donationLabel}>{da.label || da.currency}</div>
                               <code className={styles.donationAddress} title={da.address}>{da.address.length > 20 ? da.address.slice(0, 10) + '...' + da.address.slice(-8) : da.address}</code>
@@ -926,16 +926,16 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
               } catch {}
             }}>
               <div className="form-group">
-                <label>Course Title</label>
-                <input type="text" value={courseForm.title} onChange={e => setCourseForm({...courseForm, title: e.target.value})} required />
+                <label htmlFor="course-title">Course Title</label>
+                <input type="text" value={courseForm.title} onChange={e => setCourseForm({...courseForm, title: e.target.value})} required  id="course-title"/>
               </div>
               <div className="form-group">
-                <label>Description</label>
-                <textarea value={courseForm.description} onChange={e => setCourseForm({...courseForm, description: e.target.value})} rows={3} />
+                <label htmlFor="description">Description</label>
+                <textarea value={courseForm.description} onChange={e => setCourseForm({...courseForm, description: e.target.value})} rows={3}  id="description"/>
               </div>
               <div className="form-group">
-                <label>Difficulty</label>
-                <select value={courseForm.difficulty} onChange={e => setCourseForm({...courseForm, difficulty: e.target.value})}>
+                <label htmlFor="difficulty">Difficulty</label>
+                <select value={courseForm.difficulty} onChange={e => setCourseForm({...courseForm, difficulty: e.target.value})} id="difficulty">
                   <option value="beginner">Beginner</option>
                   <option value="intermediate">Intermediate</option>
                   <option value="advanced">Advanced</option>

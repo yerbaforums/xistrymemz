@@ -358,24 +358,24 @@ export default function EventsPage() {
           </h2>
 
           <div className={styles.filterGroup}>
-            <label className={styles.filterLabel}>Category</label>
-            <select value={category} onChange={e => setCategory(e.target.value)} className={styles.filterSelect}>
+            <label className={styles.filterLabel} htmlFor="category">Category</label>
+            <select value={category} onChange={e => setCategory(e.target.value)} className={styles.filterSelect} id="category">
               <option value="ALL">All Categories</option>
               {categories.map(cat => (<option key={cat} value={cat!}>{cat}</option>))}
             </select>
           </div>
 
           <div className={styles.filterGroup}>
-            <label className={styles.filterLabel}>Location</label>
-            <select value={location} onChange={e => setLocation(e.target.value)} className={styles.filterSelect}>
+            <label className={styles.filterLabel} htmlFor="location">Location</label>
+            <select value={location} onChange={e => setLocation(e.target.value)} className={styles.filterSelect} id="location">
               <option value="ALL">All Locations</option>
               {locations.map(loc => (<option key={loc} value={loc!}>{loc}</option>))}
             </select>
           </div>
 
           <div className={styles.filterGroup}>
-            <label className={styles.filterLabel}>Sort</label>
-            <select value={sortBy} onChange={e => setSortBy(e.target.value)} className={styles.filterSelect}>
+            <label className={styles.filterLabel} htmlFor="sort">Sort</label>
+            <select value={sortBy} onChange={e => setSortBy(e.target.value)} className={styles.filterSelect} id="sort">
               <option value="date">Date (Soonest)</option>
               <option value="date-desc">Date (Latest)</option>
             </select>
@@ -384,14 +384,14 @@ export default function EventsPage() {
           <div className={styles.filterDivider} />
 
           <div className={styles.filterGroup}>
-            <label className={styles.filterLabel}>Date Range</label>
+            <label className={styles.filterLabel} htmlFor="date-range">Date Range</label>
             <select value={dateRange} onChange={e => {
               setDateRange(e.target.value)
               if (e.target.value !== 'custom') {
                 setStartDate('')
                 setEndDate('')
               }
-            }} className={styles.filterSelect}>
+            }} className={styles.filterSelect} id="date-range">
               <option value="">Any Time</option>
               <option value="week">Next 7 Days</option>
               <option value="month">Next 30 Days</option>
@@ -404,14 +404,14 @@ export default function EventsPage() {
 
           {dateRange === 'custom' && (
             <div className={styles.filterGroup}>
-              <label className={styles.filterLabel}>Start Date</label>
-              <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className={styles.filterInput} />
+              <label className={styles.filterLabel} htmlFor="start-date">Start Date</label>
+              <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className={styles.filterInput}  id="start-date"/>
             </div>
           )}
           {dateRange === 'custom' && (
             <div className={styles.filterGroup}>
-              <label className={styles.filterLabel}>End Date</label>
-              <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className={styles.filterInput} />
+              <label className={styles.filterLabel} htmlFor="end-date">End Date</label>
+              <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className={styles.filterInput}  id="end-date"/>
             </div>
           )}
 

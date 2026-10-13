@@ -340,21 +340,21 @@ function ContentForm({ onDone }: { onDone: () => void }) {
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
       <div className={styles.formGroup}>
-        <label className={styles.label}>Title</label>
-        <input type="text" value={title} onChange={e => setTitle(e.target.value)} className={styles.input} placeholder="Content title" required autoFocus />
+        <label className={styles.label} htmlFor="title">Title</label>
+        <input type="text" value={title} onChange={e => setTitle(e.target.value)} className={styles.input} placeholder="Content title" required autoFocus  id="title"/>
       </div>
       <div className={styles.formRow}>
         <div className={styles.formGroup}>
-          <label className={styles.label}>Type</label>
-          <select value={contentType} onChange={e => { setContentType(e.target.value); setContent('') }} className={styles.select}>
+          <label className={styles.label} htmlFor="type">Type</label>
+          <select value={contentType} onChange={e => { setContentType(e.target.value); setContent('') }} className={styles.select} id="type">
             {Object.entries(CONTENT_TYPE_MAP).map(([val, label]) => (
               <option key={val} value={val}>{label}</option>
             ))}
           </select>
         </div>
         <div className={styles.formGroup}>
-          <label className={styles.label}>Price</label>
-          <input type="number" value={price} onChange={e => setPrice(e.target.value)} className={styles.input} placeholder="0.00" step="0.01" />
+          <label className={styles.label} htmlFor="price">Price</label>
+          <input type="number" value={price} onChange={e => setPrice(e.target.value)} className={styles.input} placeholder="0.00" step="0.01"  id="price"/>
           <label className={styles.checkLabel}>
             <input type="checkbox" checked={isPaid} onChange={e => setIsPaid(e.target.checked)} />
             Paid
@@ -389,8 +389,8 @@ function ContentForm({ onDone }: { onDone: () => void }) {
         </div>
       )}
       <div className={styles.formGroup}>
-        <label className={styles.label}>Content</label>
-        <textarea value={content} onChange={e => setContent(e.target.value)} rows={8} className={styles.textareaMono} placeholder="Write your content here..." />
+        <label className={styles.label} htmlFor="content">Content</label>
+        <textarea value={content} onChange={e => setContent(e.target.value)} rows={8} className={styles.textareaMono} placeholder="Write your content here..."  id="content"/>
       </div>
       <div className={styles.formGroup}>
         <label className={styles.label}>Images</label>
@@ -479,38 +479,38 @@ function ProductForm({ onDone, prefill }: { onDone: () => void; prefill?: QuickC
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
       <div className={styles.formGroup}>
-        <label className={styles.label}>Title</label>
-        <input type="text" value={title} onChange={e => setTitle(e.target.value)} className={styles.input} placeholder="Product name" required autoFocus />
+        <label className={styles.label} htmlFor="title-2">Title</label>
+        <input type="text" value={title} onChange={e => setTitle(e.target.value)} className={styles.input} placeholder="Product name" required autoFocus  id="title-2"/>
       </div>
       <div className={styles.formRow}>
         <div className={styles.formGroup}>
-          <label className={styles.label}>Price ($)</label>
-          <input type="number" value={price} onChange={e => setPrice(e.target.value)} className={styles.input} placeholder="0.00" step="0.01" />
+          <label className={styles.label} htmlFor="price-2">Price ($)</label>
+          <input type="number" value={price} onChange={e => setPrice(e.target.value)} className={styles.input} placeholder="0.00" step="0.01"  id="price-2"/>
         </div>
         <div className={styles.formGroup}>
-          <label className={styles.label}>Type</label>
-          <select value={type} onChange={e => setType(e.target.value)} className={styles.select}>
+          <label className={styles.label} htmlFor="type-2">Type</label>
+          <select value={type} onChange={e => setType(e.target.value)} className={styles.select} id="type-2">
             {PRODUCT_TYPES.map(t => (<option key={t} value={t}>{t.charAt(0) + t.slice(1).toLowerCase()}</option>))}
           </select>
         </div>
       </div>
       <div className={styles.formRow}>
         <div className={styles.formGroup}>
-          <label className={styles.label}>Category</label>
-          <select value={category} onChange={e => setCategory(e.target.value)} className={styles.select}>
+          <label className={styles.label} htmlFor="category">Category</label>
+          <select value={category} onChange={e => setCategory(e.target.value)} className={styles.select} id="category">
             {PRODUCT_CATEGORIES.map(c => (<option key={c.value} value={c.value}>{c.label}</option>))}
           </select>
         </div>
         <div className={styles.formGroup}>
-          <label className={styles.label}>Condition</label>
-          <select value={condition} onChange={e => setCondition(e.target.value)} className={styles.select}>
+          <label className={styles.label} htmlFor="condition">Condition</label>
+          <select value={condition} onChange={e => setCondition(e.target.value)} className={styles.select} id="condition">
             {PRODUCT_CONDITIONS.map(c => (<option key={c} value={c}>{c}</option>))}
           </select>
         </div>
       </div>
       <div className={styles.formGroup}>
-        <label className={styles.label}>Description</label>
-        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="Describe your product..." />
+        <label className={styles.label} htmlFor="description">Description</label>
+        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="Describe your product..."  id="description"/>
       </div>
       <div className={styles.formGroup}>
         <label className={styles.label}>Images</label>
@@ -684,17 +684,17 @@ function GroupForm({ onDone, prefill }: { onDone: () => void; prefill?: QuickCre
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
       <div className={styles.formGroup}>
-        <label className={styles.label}>Group Name</label>
-        <input type="text" value={name} onChange={e => setName(e.target.value)} className={styles.input} placeholder="Group name" required autoFocus />
+        <label className={styles.label} htmlFor="group-name">Group Name</label>
+        <input type="text" value={name} onChange={e => setName(e.target.value)} className={styles.input} placeholder="Group name" required autoFocus  id="group-name"/>
       </div>
       <div className={styles.formGroup}>
-        <label className={styles.label}>Description</label>
-        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="What is this group about?" />
+        <label className={styles.label} htmlFor="description-2">Description</label>
+        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="What is this group about?"  id="description-2"/>
       </div>
       <div className={styles.formRow}>
         <div className={styles.formGroup}>
-          <label className={styles.label}>Category</label>
-          <select value={category} onChange={e => setCategory(e.target.value)} className={styles.select}>
+          <label className={styles.label} htmlFor="category-2">Category</label>
+          <select value={category} onChange={e => setCategory(e.target.value)} className={styles.select} id="category-2">
             <option value="GENERAL">General</option>
             <option value="TECHNOLOGY">💻 Technology</option>
             <option value="ARTS">🎨 Arts</option>
@@ -835,13 +835,13 @@ function RequestForm({ onDone, prefill }: { onDone: () => void; prefill?: QuickC
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
       <div className={styles.formGroup}>
-        <label className={styles.label}>Title</label>
-        <input type="text" value={title} onChange={e => setTitle(e.target.value)} className={styles.input} placeholder="What do you need?" required autoFocus />
+        <label className={styles.label} htmlFor="title-3">Title</label>
+        <input type="text" value={title} onChange={e => setTitle(e.target.value)} className={styles.input} placeholder="What do you need?" required autoFocus  id="title-3"/>
       </div>
       <div className={styles.formRow}>
         <div className={styles.formGroup}>
-          <label className={styles.label}>Category</label>
-          <select value={category} onChange={e => setCategory(e.target.value)} className={styles.select}>
+          <label className={styles.label} htmlFor="category-3">Category</label>
+          <select value={category} onChange={e => setCategory(e.target.value)} className={styles.select} id="category-3">
             <option value="">Select category...</option>
             {REQUEST_CATEGORIES.map(c => (
               <option key={c.value} value={c.value}>{c.icon} {c.label}</option>
@@ -849,8 +849,8 @@ function RequestForm({ onDone, prefill }: { onDone: () => void; prefill?: QuickC
           </select>
         </div>
         <div className={styles.formGroup}>
-          <label className={styles.label}>Priority</label>
-          <select value={priority} onChange={e => setPriority(e.target.value)} className={styles.select}>
+          <label className={styles.label} htmlFor="priority">Priority</label>
+          <select value={priority} onChange={e => setPriority(e.target.value)} className={styles.select} id="priority">
             <option value="LOW">🟢 Low</option>
             <option value="MEDIUM">🟡 Medium</option>
             <option value="HIGH">🔴 High</option>
@@ -859,17 +859,17 @@ function RequestForm({ onDone, prefill }: { onDone: () => void; prefill?: QuickC
         </div>
       </div>
       <div className={styles.formGroup}>
-        <label className={styles.label}>Description</label>
-        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="Describe what you need..." />
+        <label className={styles.label} htmlFor="description-3">Description</label>
+        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="Describe what you need..."  id="description-3"/>
       </div>
       <div className={styles.formRow}>
         <div className={styles.formGroup}>
-          <label className={styles.label}>Budget ($)</label>
-          <input type="number" value={budget} onChange={e => setBudget(e.target.value)} className={styles.input} placeholder="0.00" step="0.01" />
+          <label className={styles.label} htmlFor="budget">Budget ($)</label>
+          <input type="number" value={budget} onChange={e => setBudget(e.target.value)} className={styles.input} placeholder="0.00" step="0.01"  id="budget"/>
         </div>
         <div className={styles.formGroup}>
-          <label className={styles.label}>Goal Amount ($)</label>
-          <input type="number" value={goalAmount} onChange={e => setGoalAmount(e.target.value)} className={styles.input} placeholder="0.00" step="0.01" />
+          <label className={styles.label} htmlFor="goal-amount">Goal Amount ($)</label>
+          <input type="number" value={goalAmount} onChange={e => setGoalAmount(e.target.value)} className={styles.input} placeholder="0.00" step="0.01"  id="goal-amount"/>
         </div>
       </div>
 
@@ -888,8 +888,8 @@ function RequestForm({ onDone, prefill }: { onDone: () => void; prefill?: QuickC
         <summary className={styles.sectionSummary}>📅 Deadline & Visibility</summary>
         <div className={styles.sectionContent}>
           <div className={styles.formGroup}>
-            <label className={styles.label}>Deadline</label>
-            <input type="date" value={deadline} onChange={e => setDeadline(e.target.value)} className={styles.input} />
+            <label className={styles.label} htmlFor="deadline">Deadline</label>
+            <input type="date" value={deadline} onChange={e => setDeadline(e.target.value)} className={styles.input}  id="deadline"/>
           </div>
           <label className={styles.checkLabel}>
             <input type="checkbox" checked={isPublic} onChange={e => setIsPublic(e.target.checked)} />
@@ -1039,31 +1039,31 @@ function ServiceForm({ onDone, prefill }: { onDone: () => void; prefill?: QuickC
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
       <div className={styles.formGroup}>
-        <label className={styles.label}>Title</label>
-        <input type="text" value={title} onChange={e => setTitle(e.target.value)} className={styles.input} placeholder="Service title" required autoFocus />
+        <label className={styles.label} htmlFor="title-4">Title</label>
+        <input type="text" value={title} onChange={e => setTitle(e.target.value)} className={styles.input} placeholder="Service title" required autoFocus  id="title-4"/>
       </div>
       <div className={styles.formGroup}>
-        <label className={styles.label}>Description</label>
-        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="Describe your service..." />
+        <label className={styles.label} htmlFor="description-4">Description</label>
+        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="Describe your service..."  id="description-4"/>
       </div>
       <div className={styles.formRow}>
         <div className={styles.formGroup}>
-          <label className={styles.label}>Category</label>
-          <select value={category} onChange={e => setCategory(e.target.value)} className={styles.select}>
+          <label className={styles.label} htmlFor="category-4">Category</label>
+          <select value={category} onChange={e => setCategory(e.target.value)} className={styles.select} id="category-4">
             {SERVICE_CATEGORIES.map(cat => (
               <option key={cat} value={cat}>{SERVICE_CATEGORY_LABELS[cat]}</option>
             ))}
           </select>
         </div>
         <div className={styles.formGroup}>
-          <label className={styles.label}>Duration (min)</label>
-          <input type="number" value={duration} onChange={e => setDuration(e.target.value)} className={styles.input} placeholder="60" min="5" />
+          <label className={styles.label} htmlFor="duration-min">Duration (min)</label>
+          <input type="number" value={duration} onChange={e => setDuration(e.target.value)} className={styles.input} placeholder="60" min="5"  id="duration-min"/>
         </div>
       </div>
       <div className={styles.formRow}>
         <div className={styles.formGroup}>
-          <label className={styles.label}>Price ($)</label>
-          <input type="number" value={price} onChange={e => setPrice(e.target.value)} className={styles.input} placeholder="0.00" step="0.01" />
+          <label className={styles.label} htmlFor="price-3">Price ($)</label>
+          <input type="number" value={price} onChange={e => setPrice(e.target.value)} className={styles.input} placeholder="0.00" step="0.01"  id="price-3"/>
         </div>
         <div className={styles.formGroup}>
           <label className={styles.label}>Cover Image</label>
@@ -1089,12 +1089,12 @@ function ServiceForm({ onDone, prefill }: { onDone: () => void; prefill?: QuickC
             <div className={styles.nestedFields}>
               <div className={styles.formRow}>
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Duration (min)</label>
-                  <input type="number" value={bookingDuration} onChange={e => setBookingDuration(e.target.value)} className={styles.input} placeholder="60" min="5" />
+                  <label className={styles.label} htmlFor="duration-min-2">Duration (min)</label>
+                  <input type="number" value={bookingDuration} onChange={e => setBookingDuration(e.target.value)} className={styles.input} placeholder="60" min="5"  id="duration-min-2"/>
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Lead Time (hours)</label>
-                  <input type="number" value={bookingLeadTime} onChange={e => setBookingLeadTime(e.target.value)} className={styles.input} placeholder="24" min="0" />
+                  <label className={styles.label} htmlFor="lead-time-hours">Lead Time (hours)</label>
+                  <input type="number" value={bookingLeadTime} onChange={e => setBookingLeadTime(e.target.value)} className={styles.input} placeholder="24" min="0"  id="lead-time-hours"/>
                 </div>
               </div>
               <input type="text" value={bookingLocation} onChange={e => setBookingLocation(e.target.value)} className={styles.input} placeholder="Booking location (optional)" />
@@ -1257,21 +1257,21 @@ function ProjectForm({ onDone, prefill }: { onDone: () => void; prefill?: QuickC
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
       <div className={styles.formGroup}>
-        <label className={styles.label}>Title</label>
-        <input type="text" value={title} onChange={e => setTitle(e.target.value)} className={styles.input} placeholder="Project name" required autoFocus />
+        <label className={styles.label} htmlFor="title-5">Title</label>
+        <input type="text" value={title} onChange={e => setTitle(e.target.value)} className={styles.input} placeholder="Project name" required autoFocus  id="title-5"/>
       </div>
       <div className={styles.formRow}>
         <div className={styles.formGroup}>
-          <label className={styles.label}>Status</label>
-          <select value={status} onChange={e => setStatus(e.target.value)} className={styles.select}>
+          <label className={styles.label} htmlFor="status">Status</label>
+          <select value={status} onChange={e => setStatus(e.target.value)} className={styles.select} id="status">
             <option value="IDEA">💡 Idea</option>
             <option value="IN_PROGRESS">🔨 In Progress</option>
             <option value="COMPLETED">✅ Completed</option>
           </select>
         </div>
         <div className={styles.formGroup}>
-          <label className={styles.label}>Category</label>
-          <select value={category} onChange={e => setCategory(e.target.value)} className={styles.select}>
+          <label className={styles.label} htmlFor="category-5">Category</label>
+          <select value={category} onChange={e => setCategory(e.target.value)} className={styles.select} id="category-5">
             <option value="">Select...</option>
             {PROJECT_CATEGORIES.map(c => (
               <option key={c.value} value={c.value}>{c.icon} {c.label}</option>
@@ -1280,8 +1280,8 @@ function ProjectForm({ onDone, prefill }: { onDone: () => void; prefill?: QuickC
         </div>
       </div>
       <div className={styles.formGroup}>
-        <label className={styles.label}>Description</label>
-        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="Describe your project..." />
+        <label className={styles.label} htmlFor="description-5">Description</label>
+        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="Describe your project..."  id="description-5"/>
       </div>
       <div className={styles.formGroup}>
         <label className={styles.label}>Cover Image</label>

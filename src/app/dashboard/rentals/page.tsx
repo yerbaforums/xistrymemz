@@ -430,45 +430,45 @@ export default function RentalsPage() {
             <h2>{editing ? '✏️ Edit Rental' : '➕ Add Rental Listing'}</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label>Title *</label>
-                <input type="text" value={form.title} onChange={e => setForm({...form, title: e.target.value})} placeholder="What are you renting?" required />
+                <label htmlFor="title">Title *</label>
+                <input type="text" value={form.title} onChange={e => setForm({...form, title: e.target.value})} placeholder="What are you renting?" required  id="title"/>
               </div>
               <div className="form-group">
-                <label>Description</label>
-                <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} rows={2} placeholder="Describe the item, condition, and rental terms..." />
+                <label htmlFor="description">Description</label>
+                <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} rows={2} placeholder="Describe the item, condition, and rental terms..."  id="description"/>
               </div>
               <div className={styles.formRow}>
                 <div className="form-group">
-                  <label>Daily Price</label>
-                  <input type="number" value={form.rentalDaily} onChange={e => setForm({...form, rentalDaily: e.target.value})} placeholder="0.00" step="0.01" />
+                  <label htmlFor="daily-price">Daily Price</label>
+                  <input type="number" value={form.rentalDaily} onChange={e => setForm({...form, rentalDaily: e.target.value})} placeholder="0.00" step="0.01"  id="daily-price"/>
                 </div>
                 <div className="form-group">
-                  <label>Weekly Price</label>
-                  <input type="number" value={form.rentalWeekly} onChange={e => setForm({...form, rentalWeekly: e.target.value})} placeholder="0.00" step="0.01" />
+                  <label htmlFor="weekly-price">Weekly Price</label>
+                  <input type="number" value={form.rentalWeekly} onChange={e => setForm({...form, rentalWeekly: e.target.value})} placeholder="0.00" step="0.01"  id="weekly-price"/>
                 </div>
                 <div className="form-group">
-                  <label>Monthly Price</label>
-                  <input type="number" value={form.rentalMonthly} onChange={e => setForm({...form, rentalMonthly: e.target.value})} placeholder="0.00" step="0.01" />
-                </div>
-              </div>
-              <div className={styles.formRow}>
-                <div className="form-group">
-                  <label>Deposit</label>
-                  <input type="number" value={form.rentalDeposit} onChange={e => setForm({...form, rentalDeposit: e.target.value})} placeholder="0.00" step="0.01" />
-                </div>
-                <div className="form-group">
-                  <label>Min Days</label>
-                  <input type="number" value={form.rentalMinDays} onChange={e => setForm({...form, rentalMinDays: e.target.value})} min="1" />
-                </div>
-                <div className="form-group">
-                  <label>Max Days (optional)</label>
-                  <input type="number" value={form.rentalMaxDays} onChange={e => setForm({...form, rentalMaxDays: e.target.value})} min="1" />
+                  <label htmlFor="monthly-price">Monthly Price</label>
+                  <input type="number" value={form.rentalMonthly} onChange={e => setForm({...form, rentalMonthly: e.target.value})} placeholder="0.00" step="0.01"  id="monthly-price"/>
                 </div>
               </div>
               <div className={styles.formRow}>
                 <div className="form-group">
-                  <label>Category</label>
-                  <input type="text" value={form.category} onChange={e => setForm({...form, category: e.target.value})} placeholder="e.g., Tools, Space, Vehicle" />
+                  <label htmlFor="deposit">Deposit</label>
+                  <input type="number" value={form.rentalDeposit} onChange={e => setForm({...form, rentalDeposit: e.target.value})} placeholder="0.00" step="0.01"  id="deposit"/>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="min-days">Min Days</label>
+                  <input type="number" value={form.rentalMinDays} onChange={e => setForm({...form, rentalMinDays: e.target.value})} min="1"  id="min-days"/>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="max-days-optional">Max Days (optional)</label>
+                  <input type="number" value={form.rentalMaxDays} onChange={e => setForm({...form, rentalMaxDays: e.target.value})} min="1"  id="max-days-optional"/>
+                </div>
+              </div>
+              <div className={styles.formRow}>
+                <div className="form-group">
+                  <label htmlFor="category">Category</label>
+                  <input type="text" value={form.category} onChange={e => setForm({...form, category: e.target.value})} placeholder="e.g., Tools, Space, Vehicle"  id="category"/>
                 </div>
                 <div className="form-group">
                   <label>Image</label>
@@ -522,25 +522,25 @@ export default function RentalsPage() {
             <h2>⚙️ Shop Settings</h2>
             <form onSubmit={handleShopSubmit}>
               <div className="form-group">
-                <label>Shop Name</label>
-                <input type="text" value={shopForm.shopName} onChange={e => setShopForm({...shopForm, shopName: e.target.value})} placeholder="Your shop name" />
+                <label htmlFor="shop-name">Shop Name</label>
+                <input type="text" value={shopForm.shopName} onChange={e => setShopForm({...shopForm, shopName: e.target.value})} placeholder="Your shop name"  id="shop-name"/>
               </div>
               <div className="form-group">
-                <label>About Your Shop</label>
-                <textarea value={shopForm.shopAbout} onChange={e => setShopForm({...shopForm, shopAbout: e.target.value})} rows={3} placeholder="Tell customers about your shop..." />
+                <label htmlFor="about-your-shop">About Your Shop</label>
+                <textarea value={shopForm.shopAbout} onChange={e => setShopForm({...shopForm, shopAbout: e.target.value})} rows={3} placeholder="Tell customers about your shop..."  id="about-your-shop"/>
               </div>
               <div className="form-group">
                 <label>Shop Image</label>
                 <ImageUploader images={shopForm.shopImages || []} onChange={(urls) => setShopForm({...shopForm, shopImages: urls})} maxImages={1} />
               </div>
               <div className="form-group">
-                <label>Shop URL Slug</label>
-                <input type="text" value={shopForm.shopSlug} onChange={e => setShopForm({...shopForm, shopSlug: e.target.value})} placeholder="my-shop" />
+                <label htmlFor="shop-url-slug">Shop URL Slug</label>
+                <input type="text" value={shopForm.shopSlug} onChange={e => setShopForm({...shopForm, shopSlug: e.target.value})} placeholder="my-shop"  id="shop-url-slug"/>
                 <small style={{color: 'var(--text-secondary)'}}>xistrymemz.xyz/shop/{shopForm.shopSlug || 'your-slug'}</small>
               </div>
               <div className="form-group">
-                <label>Contact Email</label>
-                <input type="email" value={shopForm.email} onChange={e => setShopForm({...shopForm, email: e.target.value})} placeholder="you@example.com" />
+                <label htmlFor="contact-email">Contact Email</label>
+                <input type="email" value={shopForm.email} onChange={e => setShopForm({...shopForm, email: e.target.value})} placeholder="you@example.com"  id="contact-email"/>
               </div>
               <div className={styles.formActions}>
                 <button type="button" onClick={() => setShowShopModal(false)} className="btn-ghost">Cancel</button>

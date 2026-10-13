@@ -89,40 +89,40 @@ export default function FeedbackPage() {
 
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.formGroup}>
-          <label>Category</label>
-          <select value={category} onChange={e => setCategory(e.target.value)}>
+          <label htmlFor="category">Category</label>
+          <select value={category} onChange={e => setCategory(e.target.value)} id="category">
             {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
         <div className={styles.formGroup}>
-          <label>Message</label>
+          <label htmlFor="message">Message</label>
           <textarea
             value={message}
             onChange={e => setMessage(e.target.value)}
             placeholder="Describe your feedback..."
             rows={4}
             required
-          />
+           id="message"/>
         </div>
         {!session?.user && (
           <div className={styles.formGroup}>
-            <label>Email (required for anonymous)</label>
+            <label htmlFor="email-required-for-anonymous">Email (required for anonymous)</label>
             <input
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="your@email.com"
-            />
+             id="email-required-for-anonymous"/>
           </div>
         )}
         <div className={styles.formGroup}>
-          <label>Screenshot URL (optional)</label>
+          <label htmlFor="screenshot-url-optional">Screenshot URL (optional)</label>
           <input
             type="url"
             value={screenshot}
             onChange={e => setScreenshot(e.target.value)}
             placeholder="https://..."
-          />
+           id="screenshot-url-optional"/>
         </div>
         <button type="submit" disabled={submitting} className={styles.submitBtn}>
           {submitting ? 'Submitting...' : 'Submit Feedback'}

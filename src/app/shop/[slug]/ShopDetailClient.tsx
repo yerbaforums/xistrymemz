@@ -169,7 +169,7 @@ function CompactDonation({ donation }: { donation: DonationAddr }) {
   return (
     <>
       <div className={styles.compactDonationCard} onClick={() => setQrOpen(true)}>
-        <img src={`/crypto-logos/${CRYPTO_LOGOS[donation.currency] || 'ethereum.png'}`} alt="" width={14} height={14} />
+        <img src={`/crypto-logos/${CRYPTO_LOGOS[donation.currency] || 'crypto.svg'}`} alt="" width={14} height={14} />
         <span className={styles.compactDonationLabel}>{donation.label || donation.currency}</span>
         <code className={styles.compactDonationAddr} title={donation.address}>{shortAddr}</code>
       </div>
@@ -637,12 +637,12 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
             {isOwner && showEditModal ? (
               <form onSubmit={handleSaveShop} className={styles.editForm}>
                 <div className={styles.formGroup}>
-                  <label>Shop Name</label>
-                  <input type="text" value={editForm.shopName} onChange={e => setEditForm({ ...editForm, shopName: e.target.value })} required />
+                  <label htmlFor="shop-name">Shop Name</label>
+                  <input type="text" value={editForm.shopName} onChange={e => setEditForm({ ...editForm, shopName: e.target.value })} required  id="shop-name"/>
                 </div>
                 <div className={styles.formGroup}>
-                  <label>About</label>
-                  <textarea value={editForm.shopAbout} onChange={e => setEditForm({ ...editForm, shopAbout: e.target.value })} rows={4} />
+                  <label htmlFor="about">About</label>
+                  <textarea value={editForm.shopAbout} onChange={e => setEditForm({ ...editForm, shopAbout: e.target.value })} rows={4}  id="about"/>
                 </div>
                 <div className={styles.formGroup}>
                   <label>Shop Logo</label>
@@ -694,7 +694,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                       {shop.donationAddresses.map(da => (
                         <div key={da.id} className={styles.donationCardFull}>
                           <div className={styles.donationInfo}>
-                            <img src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'ethereum.png'}`} alt="" width={24} height={24} />
+                            <img src={`/crypto-logos/${CRYPTO_LOGOS[da.currency] || 'crypto.svg'}`} alt="" width={24} height={24} />
                             <div>
                               <div className={styles.donationLabel}>{da.label || da.currency}</div>
                               <code className={styles.donationAddress} title={da.address}>

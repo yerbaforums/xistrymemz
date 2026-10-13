@@ -299,30 +299,30 @@ export default function NewProductPage() {
         {wizard.currentStep === 'basics' && (
           <div className={styles.stepContent}>
             <div className="form-group">
-              <label>Title *</label>
-              <input type="text" value={form.title} onChange={e => update('title', e.target.value)} placeholder="What are you listing?" required />
+              <label htmlFor="title">Title *</label>
+              <input type="text" value={form.title} onChange={e => update('title', e.target.value)} placeholder="What are you listing?" required  id="title"/>
             </div>
             <div className="form-group">
-              <label>Description</label>
-              <textarea value={form.description} onChange={e => update('description', e.target.value)} placeholder="Describe your item... Use #hashtags to make it discoverable" rows={5} />
+              <label htmlFor="description">Description</label>
+              <textarea value={form.description} onChange={e => update('description', e.target.value)} placeholder="Describe your item... Use #hashtags to make it discoverable" rows={5}  id="description"/>
             </div>
             <div className={styles.row}>
               <div className="form-group">
-                <label>Type</label>
-                <select value={form.type} onChange={e => update('type', e.target.value)}>
+                <label htmlFor="type">Type</label>
+                <select value={form.type} onChange={e => update('type', e.target.value)} id="type">
                   {PRODUCT_TYPES.map(t => (
                     <option key={t} value={t}>{t.charAt(0) + t.slice(1).toLowerCase()}</option>
                   ))}
                 </select>
               </div>
               <div className="form-group">
-                <label>Category</label>
-                <input type="text" value={form.category} onChange={e => update('category', e.target.value)} placeholder="e.g. Electronics" />
+                <label htmlFor="category">Category</label>
+                <input type="text" value={form.category} onChange={e => update('category', e.target.value)} placeholder="e.g. Electronics"  id="category"/>
               </div>
             </div>
             <div className="form-group">
-              <label>Condition</label>
-              <select value={form.condition} onChange={e => update('condition', e.target.value)}>
+              <label htmlFor="condition">Condition</label>
+              <select value={form.condition} onChange={e => update('condition', e.target.value)} id="condition">
                 {conditions.map(c => (
                   <option key={c} value={c}>{c ? c.replace('_', ' ') : 'Select...'}</option>
                 ))}
@@ -335,38 +335,38 @@ export default function NewProductPage() {
           <div className={styles.stepContent}>
             {form.type !== 'RENTAL' ? (
               <div className="form-group">
-                <label>Price ($)</label>
-                <input type="number" value={form.price} onChange={e => update('price', e.target.value)} placeholder="0.00" step="0.01" min="0" />
+                <label htmlFor="price">Price ($)</label>
+                <input type="number" value={form.price} onChange={e => update('price', e.target.value)} placeholder="0.00" step="0.01" min="0"  id="price"/>
               </div>
             ) : (
               <div className={styles.rentalSection}>
                 <h3>Rental Pricing</h3>
                 <div className={styles.row}>
                   <div className="form-group">
-                    <label>Daily Rate ($)</label>
-                    <input type="number" value={form.rentalDaily} onChange={e => update('rentalDaily', e.target.value)} placeholder="0.00" step="0.01" />
+                    <label htmlFor="daily-rate">Daily Rate ($)</label>
+                    <input type="number" value={form.rentalDaily} onChange={e => update('rentalDaily', e.target.value)} placeholder="0.00" step="0.01"  id="daily-rate"/>
                   </div>
                   <div className="form-group">
-                    <label>Weekly Rate ($)</label>
-                    <input type="number" value={form.rentalWeekly} onChange={e => update('rentalWeekly', e.target.value)} placeholder="0.00" step="0.01" />
+                    <label htmlFor="weekly-rate">Weekly Rate ($)</label>
+                    <input type="number" value={form.rentalWeekly} onChange={e => update('rentalWeekly', e.target.value)} placeholder="0.00" step="0.01"  id="weekly-rate"/>
                   </div>
                   <div className="form-group">
-                    <label>Monthly Rate ($)</label>
-                    <input type="number" value={form.rentalMonthly} onChange={e => update('rentalMonthly', e.target.value)} placeholder="0.00" step="0.01" />
+                    <label htmlFor="monthly-rate">Monthly Rate ($)</label>
+                    <input type="number" value={form.rentalMonthly} onChange={e => update('rentalMonthly', e.target.value)} placeholder="0.00" step="0.01"  id="monthly-rate"/>
                   </div>
                 </div>
                 <div className={styles.row}>
                   <div className="form-group">
-                    <label>Deposit ($)</label>
-                    <input type="number" value={form.rentalDeposit} onChange={e => update('rentalDeposit', e.target.value)} placeholder="0.00" step="0.01" />
+                    <label htmlFor="deposit">Deposit ($)</label>
+                    <input type="number" value={form.rentalDeposit} onChange={e => update('rentalDeposit', e.target.value)} placeholder="0.00" step="0.01"  id="deposit"/>
                   </div>
                   <div className="form-group">
-                    <label>Min Days</label>
-                    <input type="number" value={form.rentalMinDays} onChange={e => update('rentalMinDays', parseInt(e.target.value) || 1)} min="1" />
+                    <label htmlFor="min-days">Min Days</label>
+                    <input type="number" value={form.rentalMinDays} onChange={e => update('rentalMinDays', parseInt(e.target.value) || 1)} min="1"  id="min-days"/>
                   </div>
                   <div className="form-group">
-                    <label>Max Days</label>
-                    <input type="number" value={form.rentalMaxDays} onChange={e => update('rentalMaxDays', e.target.value)} placeholder="Unlimited" min="1" />
+                    <label htmlFor="max-days">Max Days</label>
+                    <input type="number" value={form.rentalMaxDays} onChange={e => update('rentalMaxDays', e.target.value)} placeholder="Unlimited" min="1"  id="max-days"/>
                   </div>
                 </div>
                 <label className={styles.checkLabel}>
@@ -495,8 +495,8 @@ export default function NewProductPage() {
               />
             </div>
             <div className="form-group">
-              <label>Location Details</label>
-              <input type="text" value={form.locationDetails} onChange={e => update('locationDetails', e.target.value)} placeholder="Additional details (optional)" />
+              <label htmlFor="location-details">Location Details</label>
+              <input type="text" value={form.locationDetails} onChange={e => update('locationDetails', e.target.value)} placeholder="Additional details (optional)"  id="location-details"/>
             </div>
             <div className="form-group">
               <label className={styles.checkLabel}>
@@ -510,13 +510,13 @@ export default function NewProductPage() {
         {wizard.currentStep === 'review' && (
           <div className={styles.stepContent}>
             <div className="form-group">
-              <label>Tags</label>
+              <label htmlFor="tags">Tags</label>
               <input
                 type="text"
                 value={form.tagsInput}
                 onChange={e => update('tagsInput', e.target.value)}
                 placeholder="Add tags: #electronics #vintage (space or comma separated)"
-              />
+               id="tags"/>
               <div className={styles.tagPreview}>
                 {extractedTags().map(tag => (
                   <span key={tag} className={styles.tag}>#{tag}</span>

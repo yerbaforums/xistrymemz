@@ -119,8 +119,8 @@ export default function QuickPinModal({ entityType, entityId, entityTitle, entit
         </div>
 
         <div className={styles.field}>
-          <label className={styles.label}>Category</label>
-          <select value={category} onChange={e => setCategory(e.target.value)} className={styles.select}>
+          <label className={styles.label} htmlFor="category">Category</label>
+          <select value={category} onChange={e => setCategory(e.target.value)} className={styles.select} id="category">
             {PIN_CATEGORIES.map(c => (
               <option key={c.value} value={c.value}>{c.label}</option>
             ))}
@@ -128,14 +128,14 @@ export default function QuickPinModal({ entityType, entityId, entityTitle, entit
         </div>
 
         <div className={styles.field}>
-          <label className={styles.label}>Board</label>
+          <label className={styles.label} htmlFor="board">Board</label>
           <input
             type="text"
             className={styles.searchInput}
             placeholder="Search boards..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-          />
+           id="board"/>
           <div className={styles.boardList}>
             {loadingBoards ? (
               <Loading size="small" message="Loading..." />

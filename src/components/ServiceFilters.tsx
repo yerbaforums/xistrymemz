@@ -68,8 +68,8 @@ export default function ServiceFilters({
         </div>
 
         <div className={styles.group}>
-          <label className={styles.label}>Category</label>
-          <select className={styles.select} value={category} onChange={e => onCategoryChange(e.target.value)}>
+          <label className={styles.label} htmlFor="category">Category</label>
+          <select className={styles.select} value={category} onChange={e => onCategoryChange(e.target.value)} id="category">
             <option value="ALL">All Categories</option>
             {SERVICE_CATEGORIES.map(cat => (
               <option key={cat} value={cat}>{SERVICE_CATEGORY_LABELS[cat]}</option>
@@ -102,8 +102,8 @@ export default function ServiceFilters({
         </details>
 
         <div className={styles.group}>
-          <label className={styles.label}>Sort</label>
-          <select className={styles.select} value={sortBy} onChange={e => onSortChange(e.target.value)}>
+          <label className={styles.label} htmlFor="sort">Sort</label>
+          <select className={styles.select} value={sortBy} onChange={e => onSortChange(e.target.value)} id="sort">
             <option value="newest">Newest</option>
             <option value="price-low">Price: Low to High</option>
             <option value="price-high">Price: High to Low</option>

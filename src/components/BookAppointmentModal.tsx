@@ -462,11 +462,11 @@ export default function BookAppointmentModal({
           )}
 
           <div className={styles.mb12}>
-            <label className={styles.label}>Title</label>
+            <label className={styles.label} htmlFor="title">Title</label>
             <input
               type="text" value={title} onChange={e => setTitle(e.target.value)}
               className={styles.input}
-            />
+             id="title"/>
           </div>
 
           {formFields && formFields.length > 0 && (
@@ -499,22 +499,22 @@ export default function BookAppointmentModal({
           )}
 
           <div className={styles.mb12}>
-            <label className={styles.label}>Notes / Comments</label>
+            <label className={styles.label} htmlFor="notes-comments">Notes / Comments</label>
             <textarea
               value={description} onChange={e => setDescription(e.target.value)}
               rows={3}
               placeholder="Anything the seller should know..."
               className={`${styles.input} ${styles.resizeVertical}`}
-            />
+             id="notes-comments"/>
           </div>
 
           <div className={styles.mb12}>
-            <label className={styles.label}>Location (optional)</label>
+            <label className={styles.label} htmlFor="location-optional">Location (optional)</label>
             <input
               type="text" value={location} onChange={e => setLocation(e.target.value)}
               placeholder="Physical address or meeting point"
               className={styles.input}
-            />
+             id="location-optional"/>
           </div>
 
           {/* Meeting Link Selection */}

@@ -347,14 +347,14 @@ export default function ProfileEditPage() {
             <h2 className={styles.sectionTitle}>Basic Information</h2>
 
             <div className={styles.mb16}>
-              <label className={styles.label}>Username</label>
-              <input type="text" value={username} onChange={e => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))} placeholder="username" maxLength={50} className={styles.inputField} />
+              <label className={styles.label} htmlFor="username">Username</label>
+              <input type="text" value={username} onChange={e => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))} placeholder="username" maxLength={50} className={styles.inputField}  id="username"/>
               <small className={styles.small}>Letters and numbers only. Profile URL: xistrymemz.xyz/profile/{username || 'username'}</small>
             </div>
 
             <div className={styles.mb16}>
-              <label className={styles.label}>Display Name</label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)} className={styles.inputField} />
+              <label className={styles.label} htmlFor="display-name">Display Name</label>
+              <input type="text" value={name} onChange={e => setName(e.target.value)} className={styles.inputField}  id="display-name"/>
             </div>
 
             <div className={styles.mb16}>
@@ -384,13 +384,13 @@ export default function ProfileEditPage() {
             <AvailabilityEditor userId={session?.user.id ?? ''} />
 
             <div className={styles.mb16}>
-              <label className={styles.label}>Bio</label>
-              <textarea value={bio} onChange={e => setBio(e.target.value)} rows={3} className={styles.textareaField} />
+              <label className={styles.label} htmlFor="bio">Bio</label>
+              <textarea value={bio} onChange={e => setBio(e.target.value)} rows={3} className={styles.textareaField}  id="bio"/>
             </div>
 
             <div className={styles.mb16}>
-              <label className={styles.label}>Website</label>
-              <input type="url" value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://example.com" className={styles.inputField} />
+              <label className={styles.label} htmlFor="website">Website</label>
+              <input type="url" value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://example.com" className={styles.inputField}  id="website"/>
             </div>
 
             <div>
@@ -561,7 +561,7 @@ export default function ProfileEditPage() {
               </div>
 
               <div className={styles.mb12}>
-                <label className={styles.donFormLabel}>{donationForm.currency} Address</label>
+                <label className={styles.donFormLabel} htmlFor="donationform-currency-address">{donationForm.currency} Address</label>
                 <input
                   type="text"
                   value={donationForm.address}
@@ -569,18 +569,18 @@ export default function ProfileEditPage() {
                   placeholder={`Enter your ${donationForm.currency} address...`}
                   required
                   className={styles.donInput}
-                />
+                 id="donationform-currency-address"/>
               </div>
 
               <div className={styles.mb12}>
-                <label className={styles.donFormLabel}>Label (optional)</label>
+                <label className={styles.donFormLabel} htmlFor="label-optional">Label (optional)</label>
                 <input
                   type="text"
                   value={donationForm.label}
                   onChange={e => setDonationForm({...donationForm, label: e.target.value})}
                   placeholder="e.g., Main Wallet, Cold Storage..."
                   className={styles.donInput}
-                />
+                 id="label-optional"/>
               </div>
 
               <div className={styles.mb16}>
@@ -742,12 +742,12 @@ export default function ProfileEditPage() {
               <h3 className={styles.h3Mt0}>{editingLink ? 'Edit Link' : 'Add New Link'}</h3>
 
               <div className={styles.mb12}>
-                <label className={styles.donFormLabel}>Link Type</label>
+                <label className={styles.donFormLabel} htmlFor="link-type">Link Type</label>
                 <select
                   value={linkForm.type}
                   onChange={e => setLinkForm({...linkForm, type: e.target.value})}
                   className={styles.selectField}
-                >
+                 id="link-type">
                   {SOCIAL_TYPES.map(t => (
                     <option key={t.type} value={t.type}>{t.label}</option>
                   ))}
@@ -755,7 +755,7 @@ export default function ProfileEditPage() {
               </div>
 
               <div className={styles.mb12}>
-                <label className={styles.donFormLabel}>URL</label>
+                <label className={styles.donFormLabel} htmlFor="url">URL</label>
                 <input
                   type="url"
                   value={linkForm.url}
@@ -763,29 +763,29 @@ export default function ProfileEditPage() {
                   placeholder="https://..."
                   required
                   className={styles.selectField}
-                />
+                 id="url"/>
               </div>
 
               <div className={styles.mb12}>
-                <label className={styles.donFormLabel}>Label (optional)</label>
+                <label className={styles.donFormLabel} htmlFor="label-optional-2">Label (optional)</label>
                 <input
                   type="text"
                   value={linkForm.label}
                   onChange={e => setLinkForm({...linkForm, label: e.target.value})}
                   placeholder="Custom label..."
                   className={styles.selectField}
-                />
+                 id="label-optional-2"/>
               </div>
 
               <div className={styles.mb12}>
-                <label className={styles.donFormLabel}>Custom Icon URL (optional)</label>
+                <label className={styles.donFormLabel} htmlFor="custom-icon-url-optional">Custom Icon URL (optional)</label>
                 <input
                   type="url"
                   value={linkForm.icon}
                   onChange={e => setLinkForm({...linkForm, icon: e.target.value})}
                   placeholder="https://example.com/icon.png"
                   className={styles.selectField}
-                />
+                 id="custom-icon-url-optional"/>
                 {linkForm.icon && (
                   <div className={styles.iconPreviewRow}>
                     <span className={styles.previewLabel}>Preview:</span>

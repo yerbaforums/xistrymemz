@@ -679,8 +679,8 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
                   <textarea value={editedDescription} onChange={e => setEditedDescription(e.target.value)} className={styles.descInput} rows={3} />
                   <div className={`${styles.formRow} ${styles.formRowGap}`}>
                     <div className={styles.formGroup}>
-                      <label>Category</label>
-                      <select value={editedCategory} onChange={e => setEditedCategory(e.target.value)} className={styles.formInput}>
+                      <label htmlFor="category">Category</label>
+                      <select value={editedCategory} onChange={e => setEditedCategory(e.target.value)} className={styles.formInput} id="category">
                         <option value="">Select...</option>
                         {PROJECT_CATEGORIES.map(c => (
                           <option key={c.value} value={c.value}>{c.icon} {c.label}</option>
@@ -688,8 +688,8 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
                       </select>
                     </div>
                     <div className={styles.formGroup}>
-                      <label>Status</label>
-                      <select value={editedStatus} onChange={e => setEditedStatus(e.target.value)} className={styles.formInput}>
+                      <label htmlFor="status">Status</label>
+                      <select value={editedStatus} onChange={e => setEditedStatus(e.target.value)} className={styles.formInput} id="status">
                         <option value="IDEA">💡 Idea</option>
                         <option value="ACTIVE">🚀 Active</option>
                         <option value="IN_PROGRESS">🔨 In Progress</option>
@@ -706,8 +706,8 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
                         onChange={v => { setEditedLocation(v.text); setEditedLatitude(v.latitude); setEditedLongitude(v.longitude) }}
                       />
                       <div className={styles.formGroup}>
-                        <label>Location Details</label>
-                        <input type="text" value={editedLocationDetails} onChange={e => setEditedLocationDetails(e.target.value)} placeholder="e.g. Meetup point, address" className={styles.formInput} />
+                        <label htmlFor="location-details">Location Details</label>
+                        <input type="text" value={editedLocationDetails} onChange={e => setEditedLocationDetails(e.target.value)} placeholder="e.g. Meetup point, address" className={styles.formInput}  id="location-details"/>
                       </div>
                     </div>
                   </details>
@@ -736,8 +736,8 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
                     <summary className={styles.editSectionSummary}>💰 Funding</summary>
                     <div className={styles.editSectionBody}>
                       <div className={styles.formGroup}>
-                        <label>Funding Goal ($)</label>
-                        <input type="number" value={editedGoalAmount} onChange={e => setEditedGoalAmount(e.target.value)} placeholder="0.00" className={styles.formInput} />
+                        <label htmlFor="funding-goal">Funding Goal ($)</label>
+                        <input type="number" value={editedGoalAmount} onChange={e => setEditedGoalAmount(e.target.value)} placeholder="0.00" className={styles.formInput}  id="funding-goal"/>
                       </div>
                     </div>
                   </details>
@@ -1047,13 +1047,13 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
                              onAddressesChange={(addrs) => setEditSelectedDonationAddrs(addrs)}
                            />
                            <div className={styles.field}>
-                            <label>Donation Description</label>
+                            <label htmlFor="donation-description">Donation Description</label>
                             <textarea
                               value={editDonationDescription}
                               onChange={e => setEditDonationDescription(e.target.value)}
                               placeholder="What will donations be used for?"
                               rows={2}
-                            />
+                             id="donation-description"/>
                           </div>
                         </>
                       )}
@@ -1237,16 +1237,16 @@ donationDescription={project.donationDescription}
             <h2>Create Request</h2>
             <form onSubmit={handleCreateRequest}>
               <div className="form-group">
-                <label>Title</label>
-                <input type="text" value={requestTitle} onChange={e => setRequestTitle(e.target.value)} placeholder="Request title" required />
+                <label htmlFor="title">Title</label>
+                <input type="text" value={requestTitle} onChange={e => setRequestTitle(e.target.value)} placeholder="Request title" required  id="title"/>
               </div>
               <div className="form-group">
-                <label>Description</label>
-                <textarea value={requestDesc} onChange={e => setRequestDesc(e.target.value)} placeholder="Describe what you need" rows={4} />
+                <label htmlFor="description">Description</label>
+                <textarea value={requestDesc} onChange={e => setRequestDesc(e.target.value)} placeholder="Describe what you need" rows={4}  id="description"/>
               </div>
               <div className="form-group">
-                <label>Add from Marketplace (optional)</label>
-                <select value={selectedProductId} onChange={e => setSelectedProductId(e.target.value)}>
+                <label htmlFor="add-from-marketplace-optional">Add from Marketplace (optional)</label>
+                <select value={selectedProductId} onChange={e => setSelectedProductId(e.target.value)} id="add-from-marketplace-optional">
                   <option value="">-- Select --</option>
                   {availableProducts.map(p => <option key={p.id} value={p.id}>{p.title} {p.price ? `$${p.price}` : ''}</option>)}
                 </select>
@@ -1308,8 +1308,8 @@ donationDescription={project.donationDescription}
               Change status from <strong>{project.status}</strong> to <strong>{rollbackStatus}</strong>?
             </p>
             <div className="form-group">
-              <label>Reason (optional)</label>
-              <input type="text" value={rollbackReason} onChange={e => setRollbackReason(e.target.value)} placeholder="Why are you rolling back?" />
+              <label htmlFor="reason-optional">Reason (optional)</label>
+              <input type="text" value={rollbackReason} onChange={e => setRollbackReason(e.target.value)} placeholder="Why are you rolling back?"  id="reason-optional"/>
             </div>
             <div className={styles.modalActions}>
               <button onClick={() => setShowRollbackModal(false)} className="btn-ghost">Cancel</button>
