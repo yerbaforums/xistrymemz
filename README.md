@@ -4,9 +4,9 @@
 
 **Bringing back the directory internet.**
 
-An open-source, member-owned cooperative platform — marketplace, services,
-projects, groups, schools and media in one place, with **zero platform fees**
-and direct private-money payments.
+An open-source, member-owned cooperative platform — marketplace, directory,
+social, projects, groups, schools and media in one place, with **zero
+platform fees** and direct private-money payments.
 
 [Live site](https://xistrymemz.xyz) · [Donate](https://xistrymemz.xyz/donate) · [AGPL-3.0-or-later licensed](LICENSE) · [Contributing](CONTRIBUTING.md)
 
@@ -122,6 +122,53 @@ flowchart LR
 Next.js 16 · React 19 · TypeScript · Prisma 6 · PostgreSQL (Neon) ·
 NextAuth v4 · next-intl · Leaflet/OpenStreetMap · `simple-peer` (WebRTC) ·
 Sharp + Pinata/IPFS · Zod · Jest
+
+```mermaid
+flowchart TB
+  subgraph Client[Browser · PWA]
+    UI[Next.js 16 + React 19<br/>16 locales · offline shell]
+  end
+
+  subgraph App[Next.js server]
+    Pages[Pages + server actions]
+    API[API routes]
+    Auth[NextAuth v4]
+    Cron[Cron jobs<br/>federation · reminders · backups]
+    Fed[ActivityPub<br/>inbox / outbox / nodeinfo]
+  end
+
+  subgraph Infra[Backing services]
+    DB[(Neon PostgreSQL<br/>Prisma 6)]
+    Pinata[Pinata — IPFS pinning<br/>media + durable backups]
+    Resend[Resend — transactional email]
+    DeepL[DeepL — machine translation]
+    Maps[OpenStreetMap tiles]
+    WebRTC[simple-peer — P2P rooms]
+  end
+
+  UI --> Pages & API
+  Pages --> Auth --> DB
+  API --> DB
+  API --> Pinata & Resend & DeepL
+  Cron --> API
+  Fed --> API
+  UI --> Maps
+  UI --> WebRTC
+```
+
+### Repository layout
+
+```
+src/
+├── app/          # Pages, API routes, admin, cron
+├── components/   # Shared UI (filters, modals, pickers)
+├── hooks/        # useVideoChat (WebRTC + screen share), …
+├── lib/          # constants, auth, ipfs, media, i18n routing
+├── services/     # backupService (dumps, IPFS, torrents)
+├── i18n/         # locale routing + message loading
+prisma/           # schema.prisma
+public/           # crypto-logos, PWA manifest
+```
 
 ## Running it locally
 

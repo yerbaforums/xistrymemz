@@ -558,12 +558,12 @@ export default function ForumPage() {
               onChange={e => setSortBy(e.target.value)}
               className={styles.sortSelect}
             >
-              <option value="newest">Newest</option>
-              <option value="top">Top (Votes)</option>
-              <option value="oldest">Oldest</option>
-              <option value="mostReplies">Most Replies</option>
-              <option value="mostViews">Most Views</option>
-              <option value="mostTips">Most Tips</option>
+              <option value="newest">🕐 Newest</option>
+              <option value="top">🔥 Top (Votes)</option>
+              <option value="oldest">🕰️ Oldest</option>
+              <option value="mostReplies">💬 Most Replies</option>
+              <option value="mostViews">👀 Most Views</option>
+              <option value="mostTips">💸 Most Tips</option>
             </select>
           </div>
 
@@ -607,7 +607,7 @@ export default function ForumPage() {
                 onChange={e => setPostType(e.target.value)}
                 className={styles.categorySelect}
               >
-                <option value="">General Post</option>
+                <option value="">📝 General Post</option>
                 <option value="IDEA">💡 Share an Idea</option>
                 <option value="DEBATE">⚖️ Start a Debate</option>
               </select>

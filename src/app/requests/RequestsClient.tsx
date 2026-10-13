@@ -378,18 +378,18 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
             <label className={styles.filterLabel} htmlFor="category">Category</label>
             <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className={styles.filterSelect} id="category">
               <option value="ALL">All Categories</option>
-              {REQUEST_CATEGORIES.map(cat => (<option key={cat.value} value={cat.value}>{cat.label}</option>))}
+              {REQUEST_CATEGORIES.map(cat => (<option key={cat.value} value={cat.value}>{cat.icon} {cat.label}</option>))}
             </select>
           </div>
 
           <div className={styles.filterGroup}>
             <label className={styles.filterLabel} htmlFor="sort">Sort</label>
             <select value={sortBy} onChange={e => setSortBy(e.target.value)} className={styles.filterSelect} id="sort">
-              <option value="newest">Newest</option>
-              <option value="oldest">Oldest</option>
-              <option value="mostSupported">Most Supported</option>
-              <option value="mostComments">Most Comments</option>
-              <option value="mostOffers">Most Offers</option>
+              <option value="newest">🕐 Newest</option>
+              <option value="oldest">🕰️ Oldest</option>
+              <option value="mostSupported">💪 Most Supported</option>
+              <option value="mostComments">💬 Most Comments</option>
+              <option value="mostOffers">🤝 Most Offers</option>
             </select>
           </div>
 
@@ -446,7 +446,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
               />
               <div className={styles.formRow}>
                 <select value={newRequest.category} onChange={e => setNewRequest({ ...newRequest, category: e.target.value })} className={styles.select}>
-                  {REQUEST_CATEGORIES.map(cat => (<option key={cat.value} value={cat.value}>{cat.label}</option>))}
+                  {REQUEST_CATEGORIES.map(cat => (<option key={cat.value} value={cat.value}>{cat.icon} {cat.label}</option>))}
                 </select>
                 <select value={newRequest.priority} onChange={e => setNewRequest({ ...newRequest, priority: e.target.value })} className={styles.select}>
                   <option value="LOW">Low</option><option value="MEDIUM">Medium</option><option value="HIGH">High</option><option value="URGENT">Urgent</option>
@@ -685,7 +685,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
             />
             <div className={styles.formRow}>
               <select value={editForm.category} onChange={e => setEditForm({ ...editForm, category: e.target.value })} className={styles.select}>
-                {REQUEST_CATEGORIES.map(cat => (<option key={cat.value} value={cat.value}>{cat.label}</option>))}
+                {REQUEST_CATEGORIES.map(cat => (<option key={cat.value} value={cat.value}>{cat.icon} {cat.label}</option>))}
               </select>
               <select value={editForm.priority} onChange={e => setEditForm({ ...editForm, priority: e.target.value })} className={styles.select}>
                 {['LOW','MEDIUM','HIGH','URGENT'].map(p => (<option key={p} value={p}>{p}</option>))}

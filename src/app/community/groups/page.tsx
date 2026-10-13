@@ -102,8 +102,8 @@ export default function GroupsPage() {
         </div>
         <div className={styles.sortBox}>
           <select value={sortBy} onChange={e => setSortBy(e.target.value as 'recent' | 'members')} className={styles.sortSelect}>
-            <option value="recent">Most Recent</option>
-            <option value="members">Most Members</option>
+            <option value="recent">🕐 Most Recent</option>
+            <option value="members">👥 Most Members</option>
           </select>
         </div>
       </div>

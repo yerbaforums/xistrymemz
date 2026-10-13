@@ -65,9 +65,9 @@ const TYPE_ICONS: Record<string, string> = {
 }
 
 const SORT_OPTIONS = [
-  { key: 'title', label: 'Name' },
-  { key: 'newest', label: 'Newest' },
-  { key: 'nearest', label: 'Nearest' },
+  { key: 'title', label: 'Name', icon: '🔤' },
+  { key: 'newest', label: 'Newest', icon: '🕐' },
+  { key: 'nearest', label: 'Nearest', icon: '📍' },
 ]
 
 export default function DirectoryPage() {
@@ -421,7 +421,7 @@ export default function DirectoryPage() {
           </select>
         )}
         <select aria-label="Sort directory" className={styles.filterSelect} value={sortBy} onChange={e => setSortBy(e.target.value)}>
-          {SORT_OPTIONS.map(o => <option key={o.key} value={o.key}>{o.label}</option>)}
+          {SORT_OPTIONS.map(o => <option key={o.key} value={o.key}>{o.icon} {o.label}</option>)}
         </select>
         {session?.user && (
           <button

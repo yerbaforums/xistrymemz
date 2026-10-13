@@ -516,9 +516,9 @@ export default function ProductsPage() {
               </span>
               <div className={styles.resultsControls}>
                 <select value={sortBy} onChange={e => setSortBy(e.target.value)} className={styles.sortSelect} aria-label="Sort products">
-                  <option value="newest">Newest First</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
+                  <option value="newest">🕐 Newest First</option>
+                  <option value="price-low">💲 Price: Low to High</option>
+                  <option value="price-high">💲 Price: High to Low</option>
                   {passportLocation?.latitude && <option value="nearest">📍 Nearest</option>}
                 </select>
                 <div className={styles.viewToggle}>

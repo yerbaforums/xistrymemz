@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS } from '@/types/service'
+import { SERVICE_CATEGORIES, SERVICE_CATEGORY_ICONS, SERVICE_CATEGORY_LABELS } from '@/types/service'
 import styles from './ServiceFilters.module.css'
 
 interface ServiceFiltersProps {
@@ -70,9 +70,9 @@ export default function ServiceFilters({
         <div className={styles.group}>
           <label className={styles.label} htmlFor="category">Category</label>
           <select className={styles.select} value={category} onChange={e => onCategoryChange(e.target.value)} id="category">
-            <option value="ALL">All Categories</option>
+            <option value="ALL">📋 All Categories</option>
             {SERVICE_CATEGORIES.map(cat => (
-              <option key={cat} value={cat}>{SERVICE_CATEGORY_LABELS[cat]}</option>
+              <option key={cat} value={cat}>{SERVICE_CATEGORY_ICONS[cat]} {SERVICE_CATEGORY_LABELS[cat]}</option>
             ))}
           </select>
         </div>
@@ -104,10 +104,10 @@ export default function ServiceFilters({
         <div className={styles.group}>
           <label className={styles.label} htmlFor="sort">Sort</label>
           <select className={styles.select} value={sortBy} onChange={e => onSortChange(e.target.value)} id="sort">
-            <option value="newest">Newest</option>
-            <option value="price-low">Price: Low to High</option>
-            <option value="price-high">Price: High to Low</option>
-            <option value="duration">Duration: Shortest</option>
+            <option value="newest">🕐 Newest</option>
+            <option value="price-low">💲 Price: Low to High</option>
+            <option value="price-high">💲 Price: High to Low</option>
+            <option value="duration">⏱ Duration: Shortest</option>
             <option value="nearest">📍 Nearest</option>
           </select>
         </div>

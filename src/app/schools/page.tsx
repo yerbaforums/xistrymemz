@@ -39,26 +39,26 @@ interface Content {
 }
 
 const CONTENT_TYPES = [
-  { value: 'all', label: 'All Types' },
-  { value: 'article', label: 'Articles' },
-  { value: 'video', label: 'Videos' },
-  { value: 'course', label: 'Courses' },
-  { value: 'tutorial', label: 'Tutorials' },
-  { value: 'guide', label: 'Guides' },
+  { value: 'all', label: 'All Types', icon: '📋' },
+  { value: 'article', label: 'Articles', icon: '📄' },
+  { value: 'video', label: 'Videos', icon: '🎥' },
+  { value: 'course', label: 'Courses', icon: '🎓' },
+  { value: 'tutorial', label: 'Tutorials', icon: '📘' },
+  { value: 'guide', label: 'Guides', icon: '🧭' },
 ]
 
 const CATEGORIES = [
-  { value: 'all', label: 'All Categories' },
-  { value: 'technology', label: 'Technology' },
-  { value: 'business', label: 'Business' },
-  { value: 'design', label: 'Design' },
-  { value: 'marketing', label: 'Marketing' },
-  { value: 'programming', label: 'Programming' },
-  { value: 'music', label: 'Music' },
-  { value: 'art', label: 'Art' },
-  { value: 'science', label: 'Science' },
-  { value: 'health', label: 'Health' },
-  { value: 'general', label: 'General' },
+  { value: 'all', label: 'All Categories', icon: '🗂️' },
+  { value: 'technology', label: 'Technology', icon: '💻' },
+  { value: 'business', label: 'Business', icon: '💼' },
+  { value: 'design', label: 'Design', icon: '🎨' },
+  { value: 'marketing', label: 'Marketing', icon: '📣' },
+  { value: 'programming', label: 'Programming', icon: '👩‍💻' },
+  { value: 'music', label: 'Music', icon: '🎵' },
+  { value: 'art', label: 'Art', icon: '🖼️' },
+  { value: 'science', label: 'Science', icon: '🔬' },
+  { value: 'health', label: 'Health', icon: '🏥' },
+  { value: 'general', label: 'General', icon: '📚' },
 ]
 
 export default function SchoolsPage() {
@@ -149,7 +149,7 @@ export default function SchoolsPage() {
           className={styles.filterSelect}
         >
           {CATEGORIES.map(cat => (
-            <option key={cat.value} value={cat.value}>{cat.label}</option>
+            <option key={cat.value} value={cat.value}>{cat.icon} {cat.label}</option>
           ))}
         </select>
 
@@ -159,7 +159,7 @@ export default function SchoolsPage() {
           className={styles.filterSelect}
         >
           {CONTENT_TYPES.map(type => (
-            <option key={type.value} value={type.value}>{type.label}</option>
+            <option key={type.value} value={type.value}>{type.icon} {type.label}</option>
           ))}
         </select>
 
@@ -168,8 +168,8 @@ export default function SchoolsPage() {
           onChange={e => setSort(e.target.value)}
           className={styles.filterSelect}
         >
-          <option value="recent">Most Recent</option>
-          <option value="popular">Most Popular</option>
+          <option value="recent">🕐 Most Recent</option>
+          <option value="popular">⭐ Most Popular</option>
         </select>
       </div>
 

@@ -376,8 +376,8 @@ export default function EventsPage() {
           <div className={styles.filterGroup}>
             <label className={styles.filterLabel} htmlFor="sort">Sort</label>
             <select value={sortBy} onChange={e => setSortBy(e.target.value)} className={styles.filterSelect} id="sort">
-              <option value="date">Date (Soonest)</option>
-              <option value="date-desc">Date (Latest)</option>
+              <option value="date">📅 Date (Soonest)</option>
+              <option value="date-desc">🕐 Date (Latest)</option>
             </select>
           </div>
 
@@ -423,11 +423,11 @@ export default function EventsPage() {
               <input type="text" value={zipCode} onChange={e => setZipCode(e.target.value)} placeholder="Enter ZIP code" className={styles.zipInput} onKeyDown={e => e.key === 'Enter' && geocodeZipCode()} />
               <div className={styles.zipRow}>
                 <select value={radius} onChange={e => setRadius(e.target.value)} className={styles.filterSelect} disabled={!userLocation && !zipCode}>
-                  <option value="5">5 mi</option>
-                  <option value="10">10 mi</option>
-                  <option value="25">25 mi</option>
-                  <option value="50">50 mi</option>
-                  <option value="100">100 mi</option>
+                  <option value="5">📍 5 mi</option>
+                  <option value="10">📍 10 mi</option>
+                  <option value="25">📍 25 mi</option>
+                  <option value="50">📍 50 mi</option>
+                  <option value="100">📍 100 mi</option>
                 </select>
                 <Button onClick={geocodeZipCode} className={styles.zipBtn} variant="secondary" disabled={geocodingLoading || !zipCode.trim()}>
                   {geocodingLoading ? '...' : 'Go'}

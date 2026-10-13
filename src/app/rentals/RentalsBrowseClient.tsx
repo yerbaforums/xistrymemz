@@ -141,21 +141,21 @@ export default function RentalsBrowseClient({ initialRentals, categories, locati
         />
 
         <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className={styles.filterSelect}>
-          <option value="ALL">All Categories</option>
+          <option value="ALL">📋 All Categories</option>
           {categories.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
 
         <select value={locationFilter} onChange={e => setLocationFilter(e.target.value)} className={styles.filterSelect}>
-          <option value="ALL">All Locations</option>
-          <option value="GLOBAL">Global</option>
+          <option value="ALL">🌍 All Locations</option>
+          <option value="GLOBAL">🌐 Global</option>
           {locations.map(l => <option key={l} value={l}>{l}</option>)}
         </select>
 
         <select value={sort} onChange={e => setSort(e.target.value)} className={styles.filterSelect}>
-          <option value="newest">Newest</option>
-          <option value="oldest">Oldest</option>
-          <option value="daily_low">Price: Low First</option>
-          <option value="daily_high">Price: High First</option>
+          <option value="newest">🕐 Newest</option>
+          <option value="oldest">🕰️ Oldest</option>
+          <option value="daily_low">💲 Price: Low First</option>
+          <option value="daily_high">💲 Price: High First</option>
         </select>
 
         <label className={styles.availableToggle}>

@@ -35,8 +35,8 @@ const ENTITY_TYPES = [
 ]
 
 const INTENT_FILTERS = [
-  { key: '', label: 'All' },
-  { key: 'COLLABORATE', label: '🤝 Collaborate' },
+  { key: '', label: 'All', icon: '' },
+  { key: 'COLLABORATE', label: 'Collaborate', icon: '🤝' },
 ]
 
 interface DiscoverItem {
@@ -349,7 +349,7 @@ export default function DiscoverPage() {
               className={`${styles.intentPill} ${intentFilter === f.key ? styles.intentPillActive : ''}`}
               onClick={() => { setIntentFilter(f.key); setPage(1) }}
             >
-              {f.label}
+              {f.icon} {f.label}
             </Button>
           ))}
         </div>

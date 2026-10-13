@@ -460,8 +460,8 @@ export default function BoardsPage() {
             className={styles.sortSelect}
             style={{ padding: '6px 8px', fontSize: '0.8rem', width: 'auto' }}
           >
-            <option value="recent">Newest</option>
-            <option value="alpha">A-Z</option>
+            <option value="recent">🕐 Newest</option>
+            <option value="alpha">🔤 A-Z</option>
           </select>
         </form>
       </div>
