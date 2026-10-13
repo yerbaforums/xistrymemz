@@ -111,6 +111,8 @@ export default function DashboardAppointments() {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedItem, setSelectedItem] = useState<PlannerItem | null>(null)
   const [filterType, setFilterType] = useState('ALL')
+  const [statusFilter, setStatusFilter] = useState('ALL')
+  const [viewScope, setViewScope] = useState<'upcoming' | 'past'>('upcoming')
   const [searchQuery, setSearchQuery] = useState('')
   const [showRescheduleModal, setShowRescheduleModal] = useState(false)
   const [rescheduleAppt, setRescheduleAppt] = useState<AppointmentItem | null>(null)
@@ -342,22 +344,35 @@ export default function DashboardAppointments() {
         return i.type === filterType
       })
     }
+    // Appointment status filter — only meaningful when appointments are shown.
+    if (statusFilter !== 'ALL') {
+      items = items.filter(i => i._type !== 'appointment' || (i as AppointmentItem).status === statusFilter)
+    }
     return items
-  }, [appointments, events, searchQuery, filterType])
+  }, [appointments, events, searchQuery, filterType, statusFilter])
 
-  const upcomingItems = useMemo(() => {
-    const now = new Date()
+  const whenMillis = (i: PlannerItem) => {
+    const d = i._type === 'appointment' ? i.startTime : (i as EventItem).eventDate
+    if (!d) return 0 // undated items count as upcoming
+    const t = new Date(d).getTime()
+    return Number.isNaN(t) ? 0 : t
+  }
+
+  const futureItems = useMemo(() => {
+    const now = new Date().getTime()
     return allItems
-      .filter(i => {
-        const d = i._type === 'appointment' ? i.startTime : (i as EventItem).eventDate
-        return d ? new Date(d) >= now : true
-      })
-      .sort((a, b) => {
-        const aD = a._type === 'appointment' ? a.startTime : ((a as EventItem).eventDate || a.createdAt)
-        const bD = b._type === 'appointment' ? b.startTime : ((b as EventItem).eventDate || b.createdAt)
-        return new Date(aD).getTime() - new Date(bD).getTime()
-      })
+      .filter(i => whenMillis(i) === 0 || whenMillis(i) >= now)
+      .sort((a, b) => whenMillis(a) - whenMillis(b))
   }, [allItems])
+
+  const pastItems = useMemo(() => {
+    const now = new Date().getTime()
+    return allItems
+      .filter(i => whenMillis(i) !== 0 && whenMillis(i) < now)
+      .sort((a, b) => whenMillis(b) - whenMillis(a))
+  }, [allItems])
+
+  const visibleItems = viewScope === 'upcoming' ? futureItems : pastItems
 
   const getDateParts = (dateStr: string | null) => {
     if (!dateStr) return null
@@ -407,29 +422,60 @@ export default function DashboardAppointments() {
           <input type="text" placeholder="Search planner..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className={styles.searchInput} />
         </div>
 
-        <div className={styles.filterPills}>
-          {[
-            { key: 'ALL', icon: '🌟', label: 'All' },
-            { key: 'APPOINTMENT', icon: '📅', label: 'Appointments' },
-            { key: 'ORGANIZED', icon: '🎯', label: 'Organized' },
-            { key: 'JOINED', icon: '📋', label: 'Joined' },
-            { key: 'PERSONAL', icon: '🗓️', label: 'Personal' },
-          ].map(f => (
-            <button key={f.key} onClick={() => setFilterType(f.key)}
-              className={`${styles.filterBtn} ${filterType === f.key ? styles.active : ''}`}>
-              {f.icon} {f.label} ({f.key === 'ALL' ? allItems.length :
-                f.key === 'APPOINTMENT' ? appointments.length :
-                events.filter(e => e.type === f.key).length})
-            </button>
-          ))}
+        <div className={styles.filterPills} role="group" aria-label="Show upcoming or past">
+          <button onClick={() => setViewScope('upcoming')}
+            className={`${styles.filterBtn} ${viewScope === 'upcoming' ? styles.active : ''}`}
+            aria-pressed={viewScope === 'upcoming'}>
+            ⬆ Upcoming ({futureItems.length})
+          </button>
+          <button onClick={() => setViewScope('past')}
+            className={`${styles.filterBtn} ${viewScope === 'past' ? styles.active : ''}`}
+            aria-pressed={viewScope === 'past'}>
+            ⏪ Past ({pastItems.length})
+          </button>
         </div>
       </div>
 
-      {upcomingItems.length === 0 ? (
+      <div className={styles.filterPills}>
+        {[
+          { key: 'ALL', icon: '🌟', label: 'All' },
+          { key: 'APPOINTMENT', icon: '📅', label: 'Appointments' },
+          { key: 'ORGANIZED', icon: '🎯', label: 'Organized' },
+          { key: 'JOINED', icon: '📋', label: 'Joined' },
+          { key: 'PERSONAL', icon: '🗓️', label: 'Personal' },
+        ].map(f => (
+          <button key={f.key} onClick={() => setFilterType(f.key)}
+            className={`${styles.filterBtn} ${filterType === f.key ? styles.active : ''}`}>
+            {f.icon} {f.label} ({f.key === 'ALL' ? allItems.length :
+              f.key === 'APPOINTMENT' ? appointments.length :
+              events.filter(e => e.type === f.key).length})
+          </button>
+        ))}
+      </div>
+
+      {(filterType === 'ALL' || filterType === 'APPOINTMENT') && (
+        <div className={styles.filterPills} style={{ marginBottom: 12 }} role="group" aria-label="Filter by appointment status">
+          {[
+            { key: 'ALL', icon: '🌟', label: 'All statuses' },
+            ...Object.entries(STATUS_CONFIG).map(([key, cfg]) => ({ key, icon: cfg.icon, label: cfg.label })),
+          ].map(s => (
+            <button key={s.key} onClick={() => setStatusFilter(s.key)}
+              className={`${styles.filterBtn} ${statusFilter === s.key ? styles.active : ''}`}
+              aria-pressed={statusFilter === s.key}>
+              {s.icon} {s.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {visibleItems.length === 0 ? (
         <div className={styles.emptyState}>
           <div className={styles.emptyIcon}>📅</div>
-          <h3>Nothing planned yet</h3>
-          <p>Book appointments, create events, or join group activities to fill your planner.</p>
+          <h3>{viewScope === 'past' ? 'No past items' : 'Nothing planned yet'}</h3>
+          <p>{viewScope === 'past'
+            ? 'Completed and cancelled bookings and events will appear here.'
+            : 'Book appointments, create events, or join group activities to fill your planner.'}
+          </p>
           <div className={styles.emptyActions}>
             <Link href="/profile/edit" className="btn-secondary">⏰ Set Availability</Link>
             <Link href="/events/new" className="btn-primary">+ New Event</Link>
@@ -440,7 +486,7 @@ export default function DashboardAppointments() {
         <>
           {viewMode === 'list' && (
             <div className={styles.cardGrid}>
-              {upcomingItems.map((item, i) => {
+              {visibleItems.map((item, i) => {
                 if (item._type === 'appointment') {
                   const appt = item as AppointmentItem
                   const statusCfg = STATUS_CONFIG[appt.status] || STATUS_CONFIG.PENDING

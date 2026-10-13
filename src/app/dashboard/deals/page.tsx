@@ -3,7 +3,7 @@ import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { EmptyState } from '@/components/EmptyState'
-import DealRow from './DealRow'
+import DealsList from './DealsList'
 import ConnectNudge from '@/components/ConnectNudge'
 import styles from './deals.module.css'
 
@@ -259,6 +259,8 @@ export default async function DashboardDeals() {
   const active = deals.filter(d => !['COMPLETED', 'CANCELLED', 'REJECTED', 'WITHDRAWN', 'DELIVERED'].includes(d.status))
   const actionCount = deals.filter(d => d.actionNeeded).length
   const completed = deals.length - active.length
+  // Pipeline value: sum of live deal amounts in USD (orders, requests, group buys).
+  const pipelineValue = active.reduce((sum, d) => sum + (d.amount ?? 0), 0)
 
   return (
     <div className={styles.container}>
@@ -284,6 +286,12 @@ export default async function DashboardDeals() {
           <span className={styles.statValue}>{deals.length}</span>
           <span className={styles.statLabel}>Total</span>
         </div>
+        <div className={styles.statCard}>
+          <span className={styles.statValue} style={{ fontSize: '1.4rem' }}>
+            ${pipelineValue.toLocaleString(undefined, { maximumFractionDigits: pipelineValue % 1 === 0 ? 0 : 2 })}
+          </span>
+          <span className={styles.statLabel}>Pipeline Value</span>
+        </div>
       </div>
 
       {deals.length === 0 ? (
@@ -298,11 +306,7 @@ export default async function DashboardDeals() {
       ) : (
         <div className={styles.section}>
           <h2>All Deals</h2>
-          <div className={styles.list}>
-            {deals.map(deal => (
-              <DealRow key={`${deal.kind}-${deal.id}`} deal={deal} styles={styles} />
-            ))}
-          </div>
+          <DealsList deals={deals} styles={styles} />
         </div>
       )}
     </div>
