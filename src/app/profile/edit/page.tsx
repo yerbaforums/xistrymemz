@@ -412,7 +412,7 @@ export default function ProfileEditPage() {
                         } else {
                           setUserClass([...classes, cls].join(', '))
                         }
-                      }} className={styles.autoWidth} />
+                      }} />
                       <span>{CLASS_ICONS[cls] || ''} {cls}</span>
                     </label>
                   )
@@ -426,7 +426,7 @@ export default function ProfileEditPage() {
                   type="checkbox"
                   checked={lookingForCollaborators}
                   onChange={e => setLookingForCollaborators(e.target.checked)}
-                  className={styles.checkboxInput}
+                 
                 />
                 <span>🤝 Looking for collaborators</span>
               </label>
@@ -482,7 +482,7 @@ export default function ProfileEditPage() {
                 type="checkbox"
                 checked={acceptsDonations}
                 onChange={e => setAcceptsDonations(e.target.checked)}
-                className={styles.checkboxInput}
+               
               />
               <span>Accept donations on my profile</span>
             </label>
@@ -594,7 +594,7 @@ export default function ProfileEditPage() {
                     type="checkbox"
                     checked={donationForm.showQR}
                     onChange={e => setDonationForm({...donationForm, showQR: e.target.checked})}
-                    className={styles.checkboxInput}
+                   
                   />
                   <span>Show QR code on profile</span>
                 </label>
@@ -629,42 +629,42 @@ export default function ProfileEditPage() {
 
         <div className={styles.mb12}>
           <label className={styles.checkboxLabel}>
-            <input type="checkbox" checked={showShop} onChange={e => setShowShop(e.target.checked)} className={styles.checkboxInput} />
+            <input type="checkbox" checked={showShop} onChange={e => setShowShop(e.target.checked)} />
             <span>🛍️ Show shop on profile</span>
           </label>
         </div>
 
         <div className={styles.mb12}>
           <label className={styles.checkboxLabel}>
-            <input type="checkbox" checked={showSchool} onChange={e => setShowSchool(e.target.checked)} className={styles.checkboxInput} />
+            <input type="checkbox" checked={showSchool} onChange={e => setShowSchool(e.target.checked)} />
             <span>🏫 Show school on profile</span>
           </label>
         </div>
 
         <div className={styles.mb12}>
           <label className={styles.checkboxLabel}>
-            <input type="checkbox" checked={enableTips} onChange={e => setEnableTips(e.target.checked)} className={styles.checkboxInput} />
+            <input type="checkbox" checked={enableTips} onChange={e => setEnableTips(e.target.checked)} />
             <span>💎 Enable tips on content</span>
           </label>
         </div>
 
         <div className={styles.mb12}>
           <label className={styles.checkboxLabel}>
-            <input type="checkbox" checked={enableReplies} onChange={e => setEnableReplies(e.target.checked)} className={styles.checkboxInput} />
+            <input type="checkbox" checked={enableReplies} onChange={e => setEnableReplies(e.target.checked)} />
             <span>💬 Enable replies on content</span>
           </label>
         </div>
 
         <div className={styles.mb12}>
           <label className={styles.checkboxLabel}>
-            <input type="checkbox" checked={enableLikes} onChange={e => setEnableLikes(e.target.checked)} className={styles.checkboxInput} />
+            <input type="checkbox" checked={enableLikes} onChange={e => setEnableLikes(e.target.checked)} />
             <span>❤️ Enable likes on content</span>
           </label>
         </div>
 
         <div>
           <label className={styles.checkboxLabel}>
-            <input type="checkbox" checked={showViewCount} onChange={e => setShowViewCount(e.target.checked)} className={styles.checkboxInput} />
+            <input type="checkbox" checked={showViewCount} onChange={e => setShowViewCount(e.target.checked)} />
             <span>👁️ Show view count</span>
           </label>
         </div>

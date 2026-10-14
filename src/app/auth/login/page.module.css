@@ -151,13 +151,6 @@
   color: var(--text-secondary);
 }
 
-.checkboxLabel input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--accent-primary);
-  cursor: pointer;
-}
-
 .inputValid {
   border-color: var(--accent-success) !important;
 }

@@ -11,17 +11,17 @@
 .backLink {
   display: inline-block;
   margin-bottom: 1rem;
-  color: #888888;
+  color: var(--text-muted);
   text-decoration: none;
   font-size: 0.875rem;
 }
 
 .backLink:hover {
-  color: #00d9ff;
+  color: var(--accent-primary);
 }
 
 .subtitle {
-  color: #888888;
+  color: var(--text-muted);
   margin-top: 0.5rem;
 }
 
@@ -82,14 +82,14 @@
 }
 
 .templateCard:hover {
-  border-color: #00d9ff;
-  box-shadow: 0 4px 24px rgba(0, 217, 255, 0.1);
+  border-color: var(--accent-primary);
+  box-shadow: 0 4px 24px color-mix(in srgb, var(--accent-primary) 10%, transparent);
 }
 
 .selected {
-  border-color: #00d9ff;
-  box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
-  background: #1a1a2e;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--accent-primary) 30%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 12%, var(--bg-card));
 }
 
 .templateIcon {
@@ -106,10 +106,10 @@
 .category {
   display: inline-block;
   padding: 0.125rem 0.5rem;
-  background: #1f1f1f;
+  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
   border-radius: 4px;
   font-size: 0.75rem;
-  color: #00d9ff;
+  color: var(--accent-primary);
   margin-bottom: 0.5rem;
 }
 

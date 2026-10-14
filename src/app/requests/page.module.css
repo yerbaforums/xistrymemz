@@ -679,10 +679,6 @@
   cursor: pointer;
 }
 
-.checkbox input {
-  accent-color: var(--accent-primary);
-}
-
 .formActions {
   display: flex;
   gap: 10px;

@@ -377,21 +377,6 @@
   border-bottom: 1px solid var(--border-color);
 }
 
-.toggleLabel {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-}
-
-.toggleLabel input[type="checkbox"] {
-  accent-color: var(--accent-primary);
-  width: 16px;
-  height: 16px;
-}
-
 .toggleText {
   font-weight: 500;
 }
@@ -889,10 +874,6 @@
   font-size: 0.75rem;
   color: var(--text-muted);
   margin-left: auto;
-}
-
-.autoCompleteLabel input[type="checkbox"] {
-  accent-color: var(--accent-primary);
 }
 
 .noFulfillments {

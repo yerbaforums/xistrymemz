@@ -80,7 +80,7 @@
 .selected {
   border-color: var(--accent-primary);
   box-shadow: 0 0 20px color-mix(in srgb, var(--accent-primary) 30%, transparent);
-  background: #1a1a2e;
+  background: color-mix(in srgb, var(--accent-primary) 12%, var(--bg-card));
 }
 
 .templateIcon {

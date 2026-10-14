@@ -708,7 +708,7 @@ export default function ProductsPage() {
                     <input type="text" value={myForm.location} onChange={e => setMyForm({...myForm, location: e.target.value})} placeholder="City, State"  id="location"/>
                   </div>
                   <div className="form-group" style={{ flex: '0 0 auto', display: 'flex', alignItems: 'flex-end', paddingBottom: '4px' }}>
-                    <label className={styles.myCheckLabel}>
+                    <label className="checkbox-field">
                       <input type="checkbox" checked={myForm.isGlobal} onChange={e => setMyForm({...myForm, isGlobal: e.target.checked})} />
                       Global
                     </label>
@@ -725,7 +725,7 @@ export default function ProductsPage() {
                   </label>
                 )}
                 <div className={styles.myFormRow}>
-                  <label className={styles.myCheckLabel}>
+                  <label className="checkbox-field">
                     <input type="checkbox" checked={myForm.published} onChange={e => setMyForm({...myForm, published: e.target.checked})} />
                     Publish now
                   </label>
@@ -733,15 +733,15 @@ export default function ProductsPage() {
                 <details className={styles.listingSettings}>
                   <summary className={styles.settingsSummary}>⚙️ Listing Settings</summary>
                   <div className={styles.settingsBody}>
-                    <label className={styles.myCheckLabel}>
+                    <label className="checkbox-field">
                       <input type="checkbox" checked={myForm.acceptsOffers} onChange={e => setMyForm({...myForm, acceptsOffers: e.target.checked})} />
                       Accept Barter Offers
                     </label>
-                    <label className={styles.myCheckLabel}>
+                    <label className="checkbox-field">
                       <input type="checkbox" checked={myForm.acceptsRequests} onChange={e => setMyForm({...myForm, acceptsRequests: e.target.checked})} />
                       Allow adding to Projects
                     </label>
-                    <label className={styles.myCheckLabel}>
+                    <label className="checkbox-field">
                       <input type="checkbox" checked={myForm.acceptsDonations} onChange={e => setMyForm({...myForm, acceptsDonations: e.target.checked})} />
                       Accept Donations
                     </label>

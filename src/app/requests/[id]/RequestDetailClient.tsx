@@ -1108,7 +1108,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
 
               {isOwner && (
                 <div className={styles.donationToggle}>
-                  <label className={styles.toggleLabel}>
+                  <label className="checkbox-field">
                     <input
                       type="checkbox"
                       checked={showDonationAddress}
@@ -1319,7 +1319,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
 
             {canEdit && (
               <div className={styles.fulfillmentToggle}>
-                <label className={styles.toggleLabel}>
+                <label className="checkbox-field">
                   <input
                     type="checkbox"
                     checked={allowFulfillments}
@@ -1714,7 +1714,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               </div>
             </div>
             <div className="form-group">
-              <label className={styles.toggleLabel}>
+              <label className="checkbox-field">
                 <input
                   type="checkbox"
                   checked={editForm.allowFulfillments}
@@ -1724,7 +1724,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               </label>
             </div>
             <div className="form-group">
-              <label className={styles.toggleLabel}>
+              <label className="checkbox-field">
                 <input
                   type="checkbox"
                   checked={editForm.showDonationAddress}

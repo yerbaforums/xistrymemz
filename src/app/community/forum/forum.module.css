@@ -197,14 +197,6 @@
   user-select: none;
 }
 
-.pollToggle input {
-  margin: 0;
-  accent-color: var(--accent-primary);
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-}
-
 .categorySelect {
   padding: 8px 12px;
   background: var(--bg-tertiary);

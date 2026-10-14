@@ -1058,10 +1058,6 @@
   border-color: var(--accent-primary);
 }
 
-.classOption input {
-  accent-color: var(--accent-primary);
-}
-
 .classOption span {
   font-size: 0.9rem;
 }
@@ -2301,7 +2297,6 @@
 .label { display: block; margin-bottom: 8px; color: var(--text-secondary); }
 .small { color: var(--text-secondary); font-size: 0.75rem; }
 .errorBox { padding: 12px; margin-bottom: 20px; background: rgba(255,51,102,0.1); border: 1px solid #ff3366; border-radius: 8px; }
-.checkboxInput { width: 18px; height: 18px; accent-color: var(--accent-primary); }
 .cardMb { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
 .cardMt { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; margin-top: 20px; }
 .editPageWrapper { max-width: 800px; margin: 0 auto; padding: 20px; }
@@ -2364,6 +2359,5 @@
 .gap8Row { display: flex; gap: 8px; }
 .h2Mb8 { margin-bottom: 8px; }
 .emptyPadding { padding: 20px; }
-.autoWidth { width: auto; accent-color: var(--accent-primary); }
 .emptyLinkState { color: var(--text-secondary); text-align: center; padding: 20px; }
 .sectionSubtitle { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 16px; line-height: 1.5; }
