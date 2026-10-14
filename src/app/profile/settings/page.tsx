@@ -47,28 +47,28 @@ export default async function ProfileSettingsPage() {
               <p>Change email, password, and security</p>
             </Link>
 
-            <Link href="/settings/notifications" className={styles.card}>
-              <span className={styles.cardIcon}>🔔</span>
-              <h3>{t('notifications')}</h3>
-              <p>Configure email and message alerts</p>
-            </Link>
-
-            <Link href="/settings/preferences" className={styles.card}>
-              <span className={styles.cardIcon}>🧩</span>
-              <h3>Tool Visibility</h3>
-              <p>Choose which tools appear in your navigation</p>
-            </Link>
-
             <Link href="/settings/privacy" className={styles.card}>
               <span className={styles.cardIcon}>🔒</span>
               <h3>Privacy</h3>
               <p>Control who can see your information</p>
             </Link>
 
+            <Link href="/settings/notifications" className={styles.card}>
+              <span className={styles.cardIcon}>🔔</span>
+              <h3>{t('notifications')}</h3>
+              <p>Configure email and message alerts</p>
+            </Link>
+
             <Link href="/dashboard/availability" className={styles.card}>
               <span className={styles.cardIcon}>🗓️</span>
               <h3>Availability</h3>
               <p>Set the days and hours you take appointments</p>
+            </Link>
+
+            <Link href="/settings/preferences" className={styles.card}>
+              <span className={styles.cardIcon}>🧩</span>
+              <h3>Tool Visibility</h3>
+              <p>Choose which tools appear in your navigation</p>
             </Link>
           </div>
         </main>

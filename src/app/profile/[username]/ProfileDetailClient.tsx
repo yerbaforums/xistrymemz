@@ -12,7 +12,7 @@ import { getUserProfileUrl } from '@/lib/utils'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { DonationActions } from '@/components/DonationActions'
 import { CRYPTO_LOGOS } from '@/lib/constants'
-import { USER_CLASSES, CLASS_ICONS, matchesClass } from '@/lib/user-classes'
+import { CLASS_ICONS } from '@/lib/user-classes'
 import RoleBadge from '@/components/RoleBadge'
 import ActiveStatus from '@/components/ActiveStatus'
 import LookingForCollaboratorsBadge from '@/components/LookingForCollaboratorsBadge'
@@ -356,7 +356,6 @@ export default function ProfilePage() {
   const [totalPostCount, setTotalPostCount] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'posts' | 'projects' | 'connections' | 'groups' | 'forum' | 'events' | 'requests' | 'shop' | 'services' | 'school' | 'reviews' | 'about'>('posts')
-  const [activeClass, setActiveClass] = useState<string | null>(null)
   const [forumPosts, setForumPosts] = useState<ForumPostEntry[]>([])
   const [userEvents, setUserEvents] = useState<UserEventEntry[]>([])
   const [joinedEvents, setJoinedEvents] = useState<UserEventEntry[]>([])
@@ -364,18 +363,6 @@ export default function ProfilePage() {
   const [loadingForum, setLoadingForum] = useState(false)
   const [loadingEvents, setLoadingEvents] = useState(false)
   const [loadingRequests, setLoadingRequests] = useState(false)
-  const [editMode, setEditMode] = useState(false)
-  const [editForm, setEditForm] = useState({
-    name: '',
-    username: '',
-    bio: '',
-    location: '',
-    website: '',
-    image: '',
-    coverImage: '',
-    coverStyle: '',
-    userClass: ''
-  })
   const [newPost, setNewPost] = useState('')
   const [newPostImages, setNewPostImages] = useState<string[]>([])
   const [newPostVideo, setNewPostVideo] = useState<string | null>(null)
@@ -434,17 +421,6 @@ export default function ProfilePage() {
       setDonationAddresses(data.user.donationAddresses || [])
       setTotalPostCount(data.totalPostCount ?? data.posts?.length ?? 0)
       setHasMorePosts((data.totalPostCount ?? 0) > (data.posts?.length ?? 0))
-      setEditForm({
-        name: data.user.name || '',
-        username: data.user.username || '',
-        bio: data.user.bio || '',
-        location: data.user.location || '',
-        website: data.user.website || '',
-        image: data.user.image || '',
-        coverImage: data.user.coverImage || '',
-        coverStyle: data.user.coverStyle || 'cover',
-        userClass: data.user.userClass || ''
-      })
     } catch (error) {
       console.error('Error fetching profile:', error)
     } finally {
@@ -473,10 +449,9 @@ export default function ProfilePage() {
   }, [activeTab, user?.id])
 
   // Fetch events when tab is active: organized + joined, so the counts
-  // always match a visible list (past events included in both). Also fetched
-  // for class-filtered views, which include joined events.
+  // always match a visible list (past events included in both).
   useEffect(() => {
-    if ((activeTab !== 'events' && activeClass === null) || !user) return
+    if (activeTab !== 'events' || !user) return
     const fetchEvents = async () => {
       setLoadingEvents(true)
       try {
@@ -503,7 +478,7 @@ export default function ProfilePage() {
       }
     }
     fetchEvents()
-  }, [activeTab, activeClass, user?.id])
+  }, [activeTab, user?.id])
 
   // Fetch requests when tab is active
   useEffect(() => {
@@ -525,34 +500,6 @@ export default function ProfilePage() {
     fetchRequests()
   }, [activeTab, user?.id])
 
-  const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault()
-    try {
-      if (!user) return
-      const res = await fetch(`/api/users/${user.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editForm)
-      })
-      
-      const data = await res.json()
-      
-      if (res.ok) {
-        setEditMode(false)
-        const newUsername = editForm.username?.toLowerCase().replace(/[^a-z0-9]/g, '') || ''
-        if (newUsername && newUsername !== params.username) {
-          router.push(`/profile/${newUsername}`)
-        } else {
-          fetchProfile(getTargetId())
-        }
-      } else {
-        console.error('Profile update failed:', data.error)
-      }
-    } catch (error) {
-      console.error('Error updating profile:', error)
-    }
-  }
-
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !user) return
@@ -567,10 +514,9 @@ export default function ProfilePage() {
       const updateRes = await fetch(`/api/users/${user.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...editForm, image: url })
+        body: JSON.stringify({ image: url })
       })
       if (updateRes.ok) {
-        setEditForm(f => ({ ...f, image: url }))
         fetchProfile(getTargetId())
         update()
         toastSuccess('Avatar updated!')
@@ -601,10 +547,9 @@ export default function ProfilePage() {
       const updateRes = await fetch(`/api/users/${user.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...editForm, coverImage: url })
+        body: JSON.stringify({ coverImage: url })
       })
       if (updateRes.ok) {
-        setEditForm(f => ({ ...f, coverImage: url }))
         fetchProfile(getTargetId())
         toastSuccess('Cover image updated!')
       } else {
@@ -773,7 +718,7 @@ export default function ProfilePage() {
           }}
         >
           {!user.coverImage && <div className={styles.coverPlaceholder} />}
-          {isOwnProfile && !editMode && (
+          {isOwnProfile && (
             <Button
               type="button"
               onClick={() => coverInputRef.current?.click()}
@@ -788,13 +733,13 @@ export default function ProfilePage() {
         
            <div className={styles.profileContent}>
               <div className={styles.avatarSection}>
-                <div className={styles.avatar} style={{ cursor: isOwnProfile && !editMode ? 'pointer' : undefined }} onClick={() => { if (isOwnProfile && !editMode) avatarInputRef.current?.click() }}>
+                <div className={styles.avatar} style={{ cursor: isOwnProfile ? 'pointer' : undefined }} onClick={() => { if (isOwnProfile) avatarInputRef.current?.click() }}>
                   {user.image ? (
                     <IpfsImage src={user.image} alt={user.name || 'User'} thumbWidth={256} />
                   ) : (
                     <span>{user.name?.[0] || 'U'}</span>
                   )}
-                  {isOwnProfile && !editMode && (
+                  {isOwnProfile && (
                     <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', opacity: 0, transition: 'opacity 0.2s', fontSize: 12, color: '#fff', fontWeight: 600 }}>
                       {avatarUploading ? '...' : 'Edit'}
                     </div>
@@ -810,23 +755,13 @@ export default function ProfilePage() {
           
            <div className={styles.profileInfo}>
               <div className={styles.nameRow}>
-                {editMode ? (
-                  <input
-                    type="text"
-                    value={editForm.name}
-                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                    className={styles.editInput}
-                    placeholder="Display name"
-                  />
-                ) : (
-                  <>
-                    <h1>{user.name || 'Anonymous User'}</h1>
-                    <RoleBadge role={user.role || 'USER'} />
-                    {user.id && <UserLiveBadge userId={user.id} />}
-                    <ActiveStatus lastActiveAt={user.lastActiveAt} showLabel size={8} />
-                    {user.lookingForCollaborators && <LookingForCollaboratorsBadge size="md" />}
-                  </>
-                )}
+                <>
+                  <h1>{user.name || 'Anonymous User'}</h1>
+                  <RoleBadge role={user.role || 'USER'} />
+                  {user.id && <UserLiveBadge userId={user.id} />}
+                  <ActiveStatus lastActiveAt={user.lastActiveAt} showLabel size={8} />
+                  {user.lookingForCollaborators && <LookingForCollaboratorsBadge size="md" />}
+                </>
               </div>
               
               {user.username && (
@@ -1051,14 +986,7 @@ export default function ProfilePage() {
                </Link>
              )}
              {isOwnProfile ? (
-              editMode ? (
-                <>
-                  <Button onClick={handleUpdateProfile} className={styles.saveBtn}>Save</Button>
-                  <Button onClick={() => setEditMode(false)} className={styles.cancelBtn}>Cancel</Button>
-                </>
-              ) : (
-                <Button onClick={() => { setEditMode(true); setActiveTab('about'); }} className={styles.editBtn}>Edit Profile</Button>
-              )
+              <Link href="/profile/edit" className={styles.editBtn}>Edit Profile</Link>
             )             : status === 'authenticated' ? (
               <>
                 <Link href={`/dashboard/messages?user=${user.id}`} className={styles.messageBtn}>Message</Link>
@@ -1197,139 +1125,8 @@ export default function ProfilePage() {
         </Button>
       </div>
 
-      {userClasses.length > 0 && (
-        <div className={styles.classTabs}>
-          <Button
-            className={`${styles.classTab} ${activeClass === null ? styles.classTabActive : ''}`}
-            onClick={() => { setActiveClass(null); setActiveTab('posts') }}
-            title="Show activity across all classes"
-          >
-            <span className={styles.classIcon}>🗂️</span>
-            All
-          </Button>
-          {userClasses.map(cls => (
-            <Button
-              key={cls}
-              className={`${styles.classTab} ${activeClass === cls ? styles.classTabActive : ''}`}
-              onClick={() => { setActiveClass(cls); setActiveTab('posts') }}
-            >
-              <span className={styles.classIcon}>{CLASS_ICONS[cls] || '👤'}</span>
-              {cls}
-            </Button>
-          ))}
-        </div>
-      )}
-
       <div className={styles.content}>
-        {activeClass !== null && (
-          <div className={styles.classContent}>
-            <h3 className={styles.classSectionTitle}>
-              <span className={styles.classIcon}>{CLASS_ICONS[activeClass] || '👤'}</span>
-              {activeClass} Activity
-            </h3>
-            {posts.filter(p => matchesClass(p.content || '', activeClass)).length > 0 && (
-              <div className={styles.classEntitySection}>
-                <h4>Posts</h4>
-                <div className={styles.classEntityGrid}>
-                  {posts.filter(p => matchesClass(p.content || '', activeClass)).slice(0, 6).map(p => (
-                    <div key={p.id} className={styles.classEntityCard}>
-                      {p.images && <div className={styles.classEntityImage}><IpfsImage src={getPostImages(p.images)[0] || ''} alt="" thumbWidth={512} /></div>}
-                      <div className={styles.classEntityBody}>
-                        <Link href={`/posts/${p.id}`} className={styles.classEntityLink}>{p.content?.slice(0, 80)}</Link>
-                        <span className={styles.classEntityDate}>{new Date(p.createdAt).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            {projects.filter(p => matchesClass(p.title || '', activeClass)).length > 0 && (
-              <div className={styles.classEntitySection}>
-                <h4>Projects</h4>
-                <div className={styles.classEntityGrid}>
-                  {projects.filter(p => matchesClass(p.title || '', activeClass)).slice(0, 6).map(p => (
-                    <div key={p.id} className={styles.classEntityCard}>
-                      <div className={styles.classEntityBody}>
-                        <Link href={`/projects/${p.id}`} className={styles.classEntityLink}>{p.title}</Link>
-                        <span className={styles.classEntityBadge}>{p.status}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            {products.filter(p => matchesClass(p.title || '', activeClass)).length > 0 && (
-              <div className={styles.classEntitySection}>
-                <h4>Shop</h4>
-                <div className={styles.classEntityGrid}>
-                  {products.filter(p => matchesClass(p.title || '', activeClass)).slice(0, 6).map(p => (
-                    <div key={p.id} className={styles.classEntityCard}>
-                      {p.imageUrl && <div className={styles.classEntityImage}><IpfsImage src={p.imageUrl} alt="" thumbWidth={512} /></div>}
-                      <div className={styles.classEntityBody}>
-                        <Link href={`/products/${p.id}`} className={styles.classEntityLink}>{p.title}</Link>
-                        {p.price && <span className={styles.classEntityPrice}>${p.price}</span>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            {[...userEvents, ...joinedEvents.filter(e => !userEvents.some(u => u.id === e.id))].filter(e => matchesClass(e.title || '', activeClass)).length > 0 && (
-              <div className={styles.classEntitySection}>
-                <h4>Events</h4>
-                <div className={styles.classEntityGrid}>
-                  {[...userEvents, ...joinedEvents.filter(e => !userEvents.some(u => u.id === e.id))].filter(e => matchesClass(e.title || '', activeClass)).slice(0, 6).map(e => (
-                    <div key={e.id} className={styles.classEntityCard}>
-                      <div className={styles.classEntityBody}>
-                        <Link href={`/events/${e.id}`} className={styles.classEntityLink}>{e.title}</Link>
-                        <span className={styles.classEntityDate}>{new Date(e.eventDate || '').toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            {userClasses.length > 0 && userRequests.filter(r => matchesClass(r.title || '', activeClass) || matchesClass(r.description || '', activeClass)).length > 0 && (
-              <div className={styles.classEntitySection}>
-                <h4>Requests</h4>
-                <div className={styles.classEntityGrid}>
-                  {userRequests.filter(r => matchesClass(r.title || '', activeClass) || matchesClass(r.description || '', activeClass)).slice(0, 6).map(r => (
-                    <div key={r.id} className={styles.classEntityCard}>
-                      <div className={styles.classEntityBody}>
-                        <Link href={`/requests/${r.id}`} className={styles.classEntityLink}>{r.title}</Link>
-                        <span className={styles.classEntityBadge}>{r.status || 'OPEN'}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            {groups.filter(g => matchesClass(g.name || '', activeClass) || matchesClass(g.description || '', activeClass)).length > 0 && (
-              <div className={styles.classEntitySection}>
-                <h4>Groups</h4>
-                <div className={styles.classEntityGrid}>
-                  {groups.filter(g => matchesClass(g.name || '', activeClass) || matchesClass(g.description || '', activeClass)).slice(0, 6).map(g => (
-                    <div key={g.id} className={styles.classEntityCard}>
-                      {g.image && <div className={styles.classEntityImage}><IpfsImage src={g.image} alt="" thumbWidth={512} /></div>}
-                      <div className={styles.classEntityBody}>
-                        <Link href={`/groups/${g.id}`} className={styles.classEntityLink}>{g.name}</Link>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            {posts.filter(p => matchesClass(p.content || '', activeClass)).length === 0 &&
-             projects.filter(p => matchesClass(p.title || '', activeClass) || matchesClass(p.description || '', activeClass)).length === 0 &&
-             products.filter(p => matchesClass(p.title || '', activeClass) || matchesClass(p.description || '', activeClass)).length === 0 &&
-             userEvents.filter(e => matchesClass(e.title || '', activeClass) || matchesClass(e.description || '', activeClass)).length === 0 &&
-             userRequests.filter(r => matchesClass(r.title || '', activeClass) || matchesClass(r.description || '', activeClass)).length === 0 &&
-             groups.filter(g => matchesClass(g.name || '', activeClass) || matchesClass(g.description || '', activeClass)).length === 0 && (
-              <EmptyState icon="👤" title={`No ${activeClass} activity found`} description="This user has no activity in this class." />
-            )}
-          </div>
-        )}
-        {activeClass === null && activeTab === 'posts' && (
+        {activeTab === 'posts' && (
           <div className={styles.postsSection}>
             {status === 'authenticated' && (
               <form onSubmit={handleCreatePost} className={styles.createPost}>
@@ -1483,7 +1280,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {activeClass === null && activeTab === 'projects' && (
+        {activeTab === 'projects' && (
           <div className={styles.projectsSection}>
             {projects.length > 0 ? (
               <div className={styles.projectsGrid}>
@@ -1517,7 +1314,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {activeClass === null && activeTab === 'connections' && (
+        {activeTab === 'connections' && (
           <div className={styles.connectionsSection}>
             {connections.length > 0 ? (
               <div className={styles.connectionsGrid}>
@@ -1543,7 +1340,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {activeClass === null && activeTab === 'groups' && (
+        {activeTab === 'groups' && (
           <div className={styles.groupsSection}>
             {groups.length > 0 ? (
               <div className={styles.groupsGrid}>
@@ -1579,7 +1376,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {activeClass === null && activeTab === 'forum' && (
+        {activeTab === 'forum' && (
           <div className={styles.forumSection}>
             <h3>Forum Posts</h3>
             {loadingForum ? (
@@ -1603,7 +1400,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {activeClass === null && activeTab === 'events' && (
+        {activeTab === 'events' && (
           <div className={styles.eventsSection}>
             <h3>Events</h3>
             {loadingEvents ? (
@@ -1677,7 +1474,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {activeClass === null && activeTab === 'requests' && (
+        {activeTab === 'requests' && (
           <div className={styles.requestsSection}>
             <h3>Requests</h3>
             {loadingRequests ? (
@@ -1699,7 +1496,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {activeClass === null && activeTab === 'shop' && (
+        {activeTab === 'shop' && (
           <div className={styles.shopSection}>
             {user.shopSlug && (
               <Link href={`/shop/${user.shopSlug}`} className={styles.viewShopLink}>
@@ -1742,7 +1539,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {activeClass === null && activeTab === 'services' && (
+        {activeTab === 'services' && (
           <div className={styles.shopSection}>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: '0 0 12px' }}>
               Bookable services — pick a time or send an inquiry for a quote.
@@ -1779,7 +1576,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {activeClass === null && activeTab === 'school' && (
+        {activeTab === 'school' && (
           <div className={styles.schoolSection}>
             {user.schoolSlug && (
               <Link href={`/school/${user.schoolSlug}`} className={styles.schoolCard}>
@@ -1790,106 +1587,14 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {activeClass === null && activeTab === 'reviews' && (
+        {activeTab === 'reviews' && (
           <div className={styles.reviewsSection}>
             <Rating userId={user.id} type="SELLER" />
           </div>
         )}
 
-        {activeClass === null && activeTab === 'about' && (
+        {activeTab === 'about' && (
           <div className={styles.aboutSection}>
-            {editMode ? (
-              <form onSubmit={handleUpdateProfile} className={styles.editForm}>
-                <div className={styles.formGroup}>
-                  <label htmlFor="username">Username</label>
-                  <input
-                    type="text"
-                    value={editForm.username}
-                    onChange={(e) => setEditForm({ ...editForm, username: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '') })}
-                    placeholder="username"
-                    maxLength={50}
-                    pattern="[a-zA-Z0-9]+"
-                   id="username"/>
-                  <small className={styles.formHint}>Profile URL: xistrymemz.xyz/profile/{editForm.username || 'username'}</small>
-                </div>
-                <div className={styles.formGroup}>
-                  <label htmlFor="display-name">Display Name</label>
-                  <input
-                    type="text"
-                    value={editForm.name}
-                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                    placeholder="Your display name"
-                   id="display-name"/>
-                  <small className={styles.formHint}>Shown on your profile and posts</small>
-                </div>
-                <div className={styles.formGroup}>
-                  <label>Profile Picture</label>
-                  <ImageUploader images={editForm.image ? [editForm.image] : []} onChange={urls => setEditForm({ ...editForm, image: urls[0] || '' })} maxImages={1} />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>Cover Image</label>
-                  <ImageUploader images={editForm.coverImage ? [editForm.coverImage] : []} onChange={urls => setEditForm({ ...editForm, coverImage: urls[0] || '' })} maxImages={1} />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>User Class (select multiple)</label>
-                  <div className={styles.classGrid}>
-                    {USER_CLASSES.map(cls => (
-                      <label key={cls} className={styles.classOption}>
-                        <input
-                          type="checkbox"
-                          checked={editForm.userClass.split(',').map(c => c.trim()).includes(cls)}
-                          onChange={(e) => {
-                            const classes = editForm.userClass.split(',').map(c => c.trim()).filter(Boolean)
-                            if (e.target.checked) {
-                              if (!classes.includes(cls)) classes.push(cls)
-                            } else {
-                              const idx = classes.indexOf(cls)
-                              if (idx > -1) classes.splice(idx, 1)
-                            }
-                            setEditForm({ ...editForm, userClass: classes.join(', ') })
-                          }}
-                        />
-                        <span>{cls}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-                <div className={styles.formGroup}>
-                  <label htmlFor="bio">Bio</label>
-                  <textarea
-                    value={editForm.bio}
-                    onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
-                    placeholder="Tell us about yourself..."
-                    rows={4}
-                   id="bio"/>
-                </div>
-                <div className={styles.formGroup}>
-                  <label htmlFor="location">Location</label>
-                  <input
-                    type="text"
-                    value={editForm.location}
-                    onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
-                    placeholder="City, Country"
-                   id="location"/>
-                </div>
-                <div className={styles.formGroup}>
-                  <label htmlFor="website">Website</label>
-                  <input
-                    type="url"
-                    value={editForm.website}
-                    onChange={(e) => setEditForm({ ...editForm, website: e.target.value })}
-                    placeholder="https://example.com"
-                   id="website"/>
-                </div>
-                <div className={styles.formActions}>
-                  <Button type="submit" className={styles.saveBtn}>Save Changes</Button>
-                  <Button type="button" onClick={() => setEditMode(false)} className={styles.cancelBtn}>
-                    Cancel
-                  </Button>
-                </div>
-              </form>
-             ) : (
-              <>
                 <div className={styles.aboutBlock}>
                   <h3>Bio</h3>
                   <p>{user.bio || 'No bio provided yet.'}</p>
@@ -2062,8 +1767,6 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 )}
-              </>
-            )}
           </div>
         )}
       </div>

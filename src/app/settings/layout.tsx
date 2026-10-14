@@ -5,9 +5,10 @@ const SETTINGS_SECTIONS = [
   { href: '/profile/settings', icon: '🏠', label: 'All Settings' },
   { href: '/profile/edit', icon: '✏️', label: 'Edit Profile' },
   { href: '/settings/account', icon: '⚙️', label: 'Account' },
-  { href: '/settings/notifications', icon: '🔔', label: 'Notifications' },
   { href: '/settings/privacy', icon: '🔒', label: 'Privacy' },
-  { href: '/wallet', icon: '💳', label: 'Wallet' },
+  { href: '/settings/notifications', icon: '🔔', label: 'Notifications' },
+  { href: '/dashboard/availability', icon: '🗓️', label: 'Availability' },
+  { href: '/settings/preferences', icon: '🧩', label: 'Tool Visibility' },
 ]
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
