@@ -74,6 +74,28 @@
   line-height: 1.5;
 }
 
+/* Fine-print notes under the cards. The section background is fixed-dark in
+   both modes, so these use fixed light-safe palette colors (NOT theme vars —
+   inherited var(--text-primary) is near-black in light mode and unreadable
+   here). */
+.note {
+  font-size: 0.82rem;
+  color: #8fb88f;
+  opacity: 0.9;
+  margin: 12px auto 0;
+  max-width: 640px;
+  line-height: 1.6;
+}
+
+.noteHighlight {
+  font-size: 0.82rem;
+  color: #c0e0c0;
+  opacity: 0.95;
+  margin: 8px auto 0;
+  max-width: 640px;
+  line-height: 1.6;
+}
+
 .cta {
   display: inline-block;
   padding: 14px 32px;

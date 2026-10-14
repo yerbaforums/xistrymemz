@@ -87,6 +87,7 @@ export default function HomeMap() {
         )}
       </div>
       <p className={styles.footer}>{t('footer', { count: items.length })}</p>
+      <p className={styles.legend}>✈️ Traveling pins move with their owners — Near-Me filters follow them too.</p>
       <Link href="/discover" style={{ display: 'inline-block', marginTop: 8, fontSize: '0.85rem', color: 'var(--accent-primary)', textDecoration: 'none' }}>
         🌐 Explore everything on Discover →
       </Link>

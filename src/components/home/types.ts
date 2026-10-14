@@ -29,6 +29,9 @@ export interface FeaturedProduct {
   price: number | null
   imageUrl: string | null
   user: { name: string | null; shopSlug: string | null }
+  /** Present when the owner's listing travels with them (see listing-location). */
+  ownerTraveling?: boolean
+  effectiveLocation?: string | null
 }
 
 export interface PublicRequest {
@@ -94,6 +97,9 @@ export interface FeaturedService {
   price: number | null
   category: string | null
   user: { name: string | null }
+  /** Present when the owner's service travels with them (see listing-location). */
+  ownerTraveling?: boolean
+  effectiveLocation?: string | null
 }
 
 export interface RecentMember {

@@ -77,6 +77,11 @@ export default function PulseSection({ shops, products, requests, events, projec
                   <div className={styles.itemCol}>
                     <span className={styles.itemTitle}>{product.title}</span>
                     <span className={styles.itemMeta}>{t('byLabel')} {product.user.name || 'Unknown'}</span>
+                    {product.ownerTraveling && (
+                      <span className={styles.travelChip} title={product.effectiveLocation ? `Traveling — currently near ${product.effectiveLocation}` : 'Traveling with owner'}>
+                        ✈️ Traveling{product.effectiveLocation ? ` · ${product.effectiveLocation}` : ''}
+                      </span>
+                    )}
                   </div>
                   {product.price && <span className={styles.itemPrice}>${product.price}</span>}
                 </Link>
@@ -247,6 +252,11 @@ export default function PulseSection({ shops, products, requests, events, projec
                   <div className={styles.itemCol}>
                     <span className={styles.itemTitle}>{service.title}</span>
                     <span className={styles.itemMeta}>{service.category || `${t('byLabel')} ${service.user?.name || 'Unknown'}`}</span>
+                    {service.ownerTraveling && (
+                      <span className={styles.travelChip} title={service.effectiveLocation ? `Traveling — currently near ${service.effectiveLocation}` : 'Traveling with owner'}>
+                        ✈️ Traveling{service.effectiveLocation ? ` · ${service.effectiveLocation}` : ''}
+                      </span>
+                    )}
                   </div>
                   {service.price != null && <span className={styles.itemPrice}>${service.price}</span>}
                 </Link>

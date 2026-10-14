@@ -36,11 +36,16 @@ export default function PassportSection() {
             <h4>{t('passportUserClasses')}</h4>
             <p>{t('passportUserClassesDesc')}</p>
           </div>
+          <div className={styles.card}>
+            <span className={styles.cardIcon}>🧳</span>
+            <h4>Listings travel with you</h4>
+            <p>Opt in per product or service — while you&apos;re in Traveling mode they show and filter by your current location.</p>
+          </div>
         </div>
-        <p style={{ fontSize: '0.82rem', opacity: 0.85, marginTop: 12 }}>
+        <p className={styles.note}>
           🔒 Hide your location from the public anytime — your private discovery, radius filters, and trip planning keep working.
         </p>
-        <p style={{ fontSize: '0.82rem', opacity: 0.85, marginTop: 8 }}>
+        <p className={styles.noteHighlight}>
           ✈️ Switch on Traveling mode and your opted-in listings travel with you — Near-Me results across the
           marketplace, services, directory, events, requests and projects follow your current passport location.
         </p>

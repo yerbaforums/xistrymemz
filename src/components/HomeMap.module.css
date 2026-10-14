@@ -67,7 +67,14 @@
 
 .footer {
   margin-top: 12px;
+  margin-bottom: 0;
   font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.legend {
+  margin-top: 4px;
+  font-size: 0.75rem;
   color: var(--text-muted);
 }
 
