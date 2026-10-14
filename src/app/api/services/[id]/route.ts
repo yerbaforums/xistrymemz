@@ -7,6 +7,11 @@ import { geocodeLocation } from '@/lib/geocoding'
 import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import { extractHashtags, linkHashtags, removeHashtags } from '@/services/hashtagService'
 import { hasVerifiedEmail } from '@/lib/verified-email'
+import {
+  getEffectiveListingLocation,
+  sanitizeEffectiveLocationForPublic,
+  isPassportHidden,
+} from '@/lib/listing-location'
 import type { DonationAddr } from '@/types/product'
 
 export async function GET(
@@ -15,11 +20,17 @@ export async function GET(
 ) {
   try {
     const { id } = await params
+    const session = await getServerSession(authOptions)
 
     const service = await prisma.serviceOffering.findUnique({
       where: { id },
       include: {
-        user: { select: { id: true, name: true, image: true, username: true } },
+        user: {
+          select: {
+            id: true, name: true, image: true, username: true,
+            location: true, traveling: true, latitude: true, longitude: true, preferences: true,
+          },
+        },
         hashtags: { include: { hashtag: { select: { id: true, tag: true } } } },
       },
     })
@@ -27,6 +38,17 @@ export async function GET(
     if (!service) {
       return apiError("Service not found", 404)
     }
+
+    // Effective location: services opted into "travels with me" sit at the
+    // owner's current passport location while they're traveling. The
+    // traveling-derived city is hidden from non-owners when the owner's
+    // passport is hidden, and raw owner preferences never leave the server.
+    const effective = getEffectiveListingLocation(service, service.user)
+    const isOwnerView = session?.user?.id === service.userId
+    const shown = isOwnerView
+      ? effective
+      : sanitizeEffectiveLocationForPublic(effective, isPassportHidden(service.user?.preferences))
+    const { preferences: _ownerPrefs, ...ownerPublic } = service.user
 
     const safe = {
       id: service.id,
@@ -36,11 +58,18 @@ export async function GET(
       duration: service.duration,
       price: service.price ?? null,
       location: service.location ?? null,
+      latitude: service.latitude ?? null,
+      longitude: service.longitude ?? null,
+      travelsWithOwner: service.travelsWithOwner === true,
+      effectiveLocation: shown.location,
+      effectiveLatitude: shown.latitude,
+      effectiveLongitude: shown.longitude,
+      ownerTraveling: effective.traveling,
       meetingLink: service.meetingLink ?? null,
       imageUrl: service.imageUrl ?? null,
       isActive: service.isActive,
       userId: service.userId,
-      user: service.user,
+      user: ownerPublic,
       viewCount: service.viewCount,
       acceptsAppointments: service.acceptsAppointments === true,
       appointmentDuration: service.appointmentDuration ?? null,
@@ -112,6 +141,11 @@ export async function PUT(
       if (!d.location) { updateData.latitude = null; updateData.longitude = null }
     }
     if (d.meetingLink !== undefined) updateData.meetingLink = d.meetingLink || null
+    // Online services (meeting-link only) have nowhere to travel with you.
+    if (d.travelsWithOwner !== undefined) {
+      updateData.travelsWithOwner = d.meetingLink ? false : d.travelsWithOwner === true
+    }
+    if (d.meetingLink !== undefined && d.meetingLink) updateData.travelsWithOwner = false
     if (d.imageUrl !== undefined) updateData.imageUrl = d.imageUrl || null
     if (d.isActive !== undefined) updateData.isActive = d.isActive
     if (d.isActive === true && !(await hasVerifiedEmail(session.user.id))) {

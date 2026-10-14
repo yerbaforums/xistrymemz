@@ -22,6 +22,9 @@ import LocationCard from '@/components/LocationCard'
 import { usePassportLocation } from '@/hooks/usePassportLocation'
 import { calculateDistance } from '@/lib/geocoding'
 
+// calculateDistance returns miles; the passport search radius is in km.
+const KM_PER_MILE = 1.609344
+
 
 interface LeafletIconInit {
   Icon: {
@@ -66,6 +69,14 @@ export default function ServicesPage() {
   const [showBooking, setShowBooking] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>((searchParams.get('view') as 'grid' | 'list' | 'map') || 'grid')
   const PAGE_SIZE = 20
+  // Passport-powered Near Me filter. Defaults ON (preserves the previous
+  // always-on behavior) but is now visible and switchable.
+  const [nearMe, setNearMe] = useState(true)
+  const [radiusKm, setRadiusKm] = useState(passportLocation?.searchRadius || 50)
+
+  useEffect(() => {
+    if (passportLocation?.searchRadius) setRadiusKm(passportLocation.searchRadius)
+  }, [passportLocation?.searchRadius])
 
   const fetchServices = async (pageNum: number, append: boolean) => {
     const res = await fetch(`/api/services?page=${pageNum}&pageSize=${PAGE_SIZE}`)
@@ -84,6 +95,11 @@ export default function ServicesPage() {
         location: typeof s.location === 'string' ? s.location : null,
         latitude: typeof s.latitude === 'number' ? s.latitude : null,
         longitude: typeof s.longitude === 'number' ? s.longitude : null,
+        travelsWithOwner: s.travelsWithOwner === true,
+        effectiveLocation: typeof s.effectiveLocation === 'string' ? s.effectiveLocation : null,
+        effectiveLatitude: typeof s.effectiveLatitude === 'number' ? s.effectiveLatitude : null,
+        effectiveLongitude: typeof s.effectiveLongitude === 'number' ? s.effectiveLongitude : null,
+        ownerTraveling: s.ownerTraveling === true,
         meetingLink: typeof s.meetingLink === 'string' ? s.meetingLink : null,
         imageUrl: typeof s.imageUrl === 'string' ? s.imageUrl : null,
         isActive: s.isActive === true,
@@ -152,11 +168,15 @@ export default function ServicesPage() {
 
     const passportLat = passportLocation?.latitude
     const passportLng = passportLocation?.longitude
-    const loc = passportLat != null && passportLng != null ? { lat: passportLat, lng: passportLng, r: passportLocation?.searchRadius || 50 } : null
-    if (loc) {
+    // calculateDistance returns miles; the passport radius is in km.
+    const loc = passportLat != null && passportLng != null ? { lat: passportLat, lng: passportLng, r: radiusKm / KM_PER_MILE } : null
+    if (loc && nearMe) {
+      // Near Me: filter on the EFFECTIVE location — services opted into
+      // "travels with me" sit at their owner's current location while the
+      // owner is traveling. Services without any coordinates pass through.
       result = result.filter(s => {
-        const sLat = s.latitude
-        const sLng = s.longitude
+        const sLat = s.effectiveLatitude ?? s.latitude
+        const sLng = s.effectiveLongitude ?? s.longitude
         if (!sLat || !sLng) return true
         return calculateDistance(loc.lat, loc.lng, sLat, sLng) <= loc.r
       })
@@ -167,10 +187,10 @@ export default function ServicesPage() {
     else if (sortBy === 'duration') result.sort((a, b) => a.duration - b.duration)
     else if (sortBy === 'nearest' && loc) {
       result.sort((a, b) => {
-        const latA = a.latitude
-        const lngA = a.longitude
-        const latB = b.latitude
-        const lngB = b.longitude
+        const latA = a.effectiveLatitude ?? a.latitude
+        const lngA = a.effectiveLongitude ?? a.longitude
+        const latB = b.effectiveLatitude ?? b.latitude
+        const lngB = b.effectiveLongitude ?? b.longitude
         const dA = latA != null && lngA != null ? calculateDistance(loc.lat, loc.lng, latA, lngA) : Infinity
         const dB = latB != null && lngB != null ? calculateDistance(loc.lat, loc.lng, latB, lngB) : Infinity
         return dA - dB
@@ -178,7 +198,7 @@ export default function ServicesPage() {
     }
     else result.reverse()
     return result
-  }, [services, category, searchQuery, sortBy, priceMin, priceMax, passportLocation])
+  }, [services, category, searchQuery, sortBy, priceMin, priceMax, passportLocation, nearMe, radiusKm])
 
   const clearFilters = () => {
     setCategory('ALL'); setSearchQuery(''); setPriceMin(''); setPriceMax('')
@@ -252,6 +272,11 @@ export default function ServicesPage() {
           onSetLocation={() => {}}
           onDetect={() => {}}
           onFlyHome={() => {}}
+          traveling={passportLocation?.traveling === true}
+          nearMe={nearMe}
+          onNearMeChange={setNearMe}
+          radiusKm={radiusKm}
+          onRadiusKmChange={setRadiusKm}
         />
       )}
 
@@ -305,24 +330,33 @@ export default function ServicesPage() {
               <div style={{ height: '500px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
                 <MapContainer center={[39.8283, -98.5795]} zoom={4} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
                   <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                  {filteredServices.filter(s => s.latitude && s.longitude).map(s => (
-                    <EntityMarker key={s.id} type="SERVICE" position={[s.latitude!, s.longitude!]}>
-                      <Popup>
-                        <strong>{s.title}</strong>
-                        <br />
-                        {s.location && <span>📍 {s.location}</span>}
-                        <br />
-                        <Link href={`/services/${s.id}`}>View Details →</Link>
-                      </Popup>
-                    </EntityMarker>
-                  ))}
+                  {filteredServices.map(s => {
+                    // Plot at the effective location (traveling services sit
+                    // at their owner's current passport location).
+                    const lat = s.effectiveLatitude ?? s.latitude
+                    const lng = s.effectiveLongitude ?? s.longitude
+                    if (lat == null || lng == null) return null
+                    return (
+                      <EntityMarker key={s.id} type="SERVICE" position={[lat, lng]}>
+                        <Popup>
+                          <strong>{s.title}</strong>
+                          <br />
+                          {s.ownerTraveling
+                            ? `✈️ Near ${s.effectiveLocation || 'owner'} (traveling)`
+                            : s.location ? `📍 ${s.location}` : null}
+                          <br />
+                          <Link href={`/services/${s.id}`}>View Details →</Link>
+                        </Popup>
+                      </EntityMarker>
+                    )
+                  })}
                 </MapContainer>
               </div>
-              {filteredServices.filter(s => !s.latitude || !s.longitude).length > 0 && (
+              {filteredServices.filter(s => (s.effectiveLatitude ?? s.latitude) == null || (s.effectiveLongitude ?? s.longitude) == null).length > 0 && (
                 <div style={{ marginTop: 16 }}>
                   <h3 style={{ fontSize: '0.9rem', marginBottom: 8, color: 'var(--text-secondary)' }}>Global / Not location specific</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {filteredServices.filter(s => !s.latitude || !s.longitude).map(s => (
+                    {filteredServices.filter(s => (s.effectiveLatitude ?? s.latitude) == null || (s.effectiveLongitude ?? s.longitude) == null).map(s => (
                       <Link key={s.id} href={`/services/${s.id}`} style={{ padding: '10px 14px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', textDecoration: 'none', color: 'inherit' }}>
                         <strong>{s.title}</strong>
                         {s.location && <span style={{ marginLeft: 8, fontSize: '0.85rem', color: 'var(--text-muted)' }}>📍 {s.location}</span>}
@@ -333,7 +367,16 @@ export default function ServicesPage() {
               )}
             </div>
           ) : filteredServices.length === 0 ? (
-            <EmptyState icon="🔧" title="No services found" description="Try adjusting your filters or check back later." action={{ label: 'Clear Filters', onClick: clearFilters }} />
+            <EmptyState
+              icon="🔧"
+              title="No services found"
+              description={
+                nearMe
+                  ? `Nothing within ${radiusKm} km of you. Try a wider radius or turn off 📍 Near Me.`
+                  : 'Try adjusting your filters or check back later.'
+              }
+              action={{ label: nearMe ? 'Turn off Near Me' : 'Clear Filters', onClick: nearMe ? () => setNearMe(false) : clearFilters }}
+            />
           ) : (
             <>
               <div className={viewMode === 'list' ? styles.list : styles.grid}>

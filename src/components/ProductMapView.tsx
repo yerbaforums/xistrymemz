@@ -42,18 +42,23 @@ export default function ProductMapView({ products, userLocation, mapRef: externa
   const mapRef = externalMapRef || internalMapRef
   const [globalExpanded, setGlobalExpanded] = useState(false)
 
+  // Effective coordinates: listings opted into "travels with me" sit at their
+  // owner's current passport location while the owner is traveling.
+  const effLat = (p: Product) => p.effectiveLatitude ?? p.latitude
+  const effLng = (p: Product) => p.effectiveLongitude ?? p.longitude
+
   const mappableProducts = products.filter(p =>
-    (p.latitude != null && p.longitude != null) || p.isGlobal
+    (effLat(p) != null && effLng(p) != null) || p.isGlobal
   )
-  const productsWithCoords = mappableProducts.filter(p => p.latitude != null && p.longitude != null)
-  const globalProducts = mappableProducts.filter(p => p.isGlobal && (p.latitude == null || p.longitude == null))
+  const productsWithCoords = mappableProducts.filter(p => effLat(p) != null && effLng(p) != null)
+  const globalProducts = mappableProducts.filter(p => p.isGlobal && (effLat(p) == null || effLng(p) == null))
 
   const getCenter = (): [number, number] => {
     if (userLocation) return [userLocation.lat, userLocation.lon]
     if (productsWithCoords.length > 0) {
-      if (productsWithCoords.length === 1) return [productsWithCoords[0].latitude!, productsWithCoords[0].longitude!]
-      const lats = productsWithCoords.map(p => p.latitude!)
-      const lons = productsWithCoords.map(p => p.longitude!)
+      if (productsWithCoords.length === 1) return [effLat(productsWithCoords[0])!, effLng(productsWithCoords[0])!]
+      const lats = productsWithCoords.map(p => effLat(p)!)
+      const lons = productsWithCoords.map(p => effLng(p)!)
       return [(Math.min(...lats) + Math.max(...lats)) / 2, (Math.min(...lons) + Math.max(...lons)) / 2]
     }
     return [39.8283, -98.5795]
@@ -63,8 +68,8 @@ export default function ProductMapView({ products, userLocation, mapRef: externa
     if (userLocation) return 10
     if (productsWithCoords.length === 0) return 4
     if (productsWithCoords.length === 1) return 13
-    const lats = productsWithCoords.map(p => p.latitude!)
-    const lons = productsWithCoords.map(p => p.longitude!)
+    const lats = productsWithCoords.map(p => effLat(p)!)
+    const lons = productsWithCoords.map(p => effLng(p)!)
     const maxDiff = Math.max(Math.max(...lats) - Math.min(...lats), Math.max(...lons) - Math.min(...lons))
     if (maxDiff < 0.1) return 13
     if (maxDiff < 0.5) return 11
@@ -141,14 +146,22 @@ export default function ProductMapView({ products, userLocation, mapRef: externa
           <EntityMarker
             key={product.id}
             type="PRODUCT"
-            position={[product.latitude!, product.longitude!]}
+            position={[effLat(product)!, effLng(product)!]}
           >
             <Popup>
               <div className={styles.popup}>
                 {product.imageUrl && <img src={product.imageUrl} alt="" className={styles.popupImg} />}
                 <h4 className={styles.popupTitle}>{product.title}</h4>
                 {product.price != null && <p className={styles.popupPrice}>${product.price}</p>}
-                <p className={styles.popupMeta}>{product.isGlobal ? '🌍 Global' : `📍 ${product.location || 'Local'}`}</p>
+                <p className={styles.popupMeta}>
+                  {product.isGlobal
+                    ? '🌍 Global'
+                    : product.ownerTraveling
+                      ? product.effectiveLocation
+                        ? `✈️ Near ${product.effectiveLocation} · traveling`
+                        : '✈️ Traveling with owner'
+                      : `📍 ${product.location || 'Local'}`}
+                </p>
                 <Link href={`/products/${product.id}`} className={styles.popupLink}>View Details →</Link>
               </div>
             </Popup>

@@ -32,6 +32,8 @@ const ServiceCard = memo(function ServiceCard({ service, onClick, style }: Servi
   const price = typeof service.price === 'number' ? service.price : null
   const duration = typeof service.duration === 'number' ? service.duration : 60
   const location = typeof service.location === 'string' ? service.location : null
+  const ownerTraveling = service.ownerTraveling === true
+  const effectiveLocation = typeof service.effectiveLocation === 'string' ? service.effectiveLocation : null
   const viewCount = typeof service.viewCount === 'number' ? service.viewCount : 0
   const userName = typeof service.user?.name === 'string' ? service.user.name : null
   const userImage = typeof service.user?.image === 'string' ? service.user.image : null
@@ -77,7 +79,15 @@ const ServiceCard = memo(function ServiceCard({ service, onClick, style }: Servi
         )}
         <div className={styles.meta}>
           <span>🕐 {formatDuration(duration)}</span>
-          {location && <span>📍 {location}</span>}
+          {(ownerTraveling || location) && (
+            <span title={ownerTraveling ? 'This service is traveling with its owner' : undefined}>
+              {ownerTraveling
+                ? effectiveLocation
+                  ? `✈️ Near ${effectiveLocation} · traveling`
+                  : '✈️ Traveling with owner'
+                : `📍 ${location}`}
+            </span>
+          )}
           <ViewCount count={viewCount} />
         </div>
         <div className={styles.author}>

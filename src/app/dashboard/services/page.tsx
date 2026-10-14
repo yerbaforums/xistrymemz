@@ -54,6 +54,7 @@ const EMPTY_FORM = {
   location: '',
   latitude: null as number | null,
   longitude: null as number | null,
+  travelsWithOwner: false,
   meetingLink: '',
   imageUrl: '',
   imageUrls: [] as string[],
@@ -208,6 +209,7 @@ export default function DashboardServices() {
       location: s.location || '',
       latitude: s.latitude || null,
       longitude: s.longitude || null,
+      travelsWithOwner: s.travelsWithOwner === true && !s.meetingLink,
 
       meetingLink: s.meetingLink || '',
       imageUrl: s.imageUrl || '',
@@ -251,6 +253,8 @@ export default function DashboardServices() {
         location: form.location || null,
         latitude: form.latitude,
         longitude: form.longitude,
+        // Online services (meeting-link only) have nowhere to travel with you.
+        travelsWithOwner: form.meetingLink ? false : form.travelsWithOwner,
         meetingLink: form.meetingLink || null,
         imageUrl: form.imageUrls?.[0] || null,
         isActive: form.isActive,
@@ -536,6 +540,20 @@ export default function DashboardServices() {
                   <input type="url" value={form.meetingLink} onChange={e => setForm({...form, meetingLink: e.target.value})} placeholder="https://meet.google.com/..."  id="meeting-link"/>
                 </div>
               </div>
+
+              {!form.meetingLink && (
+                <label
+                  className="checkbox-field"
+                  title="While you're in passport Traveling mode, this service shows and filters by your current location"
+                >
+                  <input
+                    type="checkbox"
+                    checked={form.travelsWithOwner}
+                    onChange={e => setForm({ ...form, travelsWithOwner: e.target.checked })}
+                  />
+                  <span>✈️ This service travels with me — show my current passport location while I&apos;m traveling</span>
+                </label>
+              )}
 
               <div className="form-row">
                 <div className="form-group">

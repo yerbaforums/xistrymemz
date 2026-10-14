@@ -88,6 +88,14 @@ export interface ServiceOffering {
   location: string | null
   latitude: number | null
   longitude: number | null
+  /** Opt-in: effective location follows the owner's current passport location while traveling. */
+  travelsWithOwner?: boolean
+  /** Effective location (equals `location` unless traveling with the owner). */
+  effectiveLocation?: string | null
+  effectiveLatitude?: number | null
+  effectiveLongitude?: number | null
+  /** True when this service is currently traveling with its owner. */
+  ownerTraveling?: boolean
   meetingLink: string | null
   imageUrl: string | null
   isActive: boolean

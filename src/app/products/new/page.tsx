@@ -74,6 +74,7 @@ export default function NewProductPage() {
     createGroup: false,
     tagsInput: '',
     shareToFeed: false,
+    travelsWithOwner: false,
     acceptsAppointments: false,
     appointmentDuration: '60',
     appointmentLeadTime: '24',
@@ -135,6 +136,7 @@ export default function NewProductPage() {
           locationDetails: form.locationDetails || null,
           latitude: form.latitude,
           longitude: form.longitude,
+          travelsWithOwner: form.travelsWithOwner,
           imageUrl: form.imageUrl || null,
           paymentMethods: form.paymentMethods.join(','),
           paymentType: 'DIRECT',
@@ -503,6 +505,14 @@ export default function NewProductPage() {
               <label htmlFor="location-details">Location Details</label>
               <input type="text" value={form.locationDetails} onChange={e => update('locationDetails', e.target.value)} placeholder="Additional details (optional)"  id="location-details"/>
             </div>
+            <label className="checkbox-field" title="While you're in passport Traveling mode, this listing shows and filters by your current location">
+              <input
+                type="checkbox"
+                checked={form.travelsWithOwner}
+                onChange={e => update('travelsWithOwner', e.target.checked)}
+              />
+              <span>✈️ This listing travels with me — show my current passport location while I&apos;m traveling</span>
+            </label>
             <div className="form-group">
               <label className={styles.checkLabel}>
                 <input type="checkbox" checked={form.createGroup} onChange={e => update('createGroup', e.target.checked)} />

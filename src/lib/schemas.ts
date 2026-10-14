@@ -89,6 +89,9 @@ export const productSchema = z.object({
   locationDetails: z.string().optional().nullable(),
   isGlobal: z.boolean().optional(),
   isRemote: z.boolean().optional(),
+  // Opt-in: while the owner is in passport Traveling mode, this listing's
+  // effective location follows the owner's current location.
+  travelsWithOwner: z.boolean().optional(),
   imageUrl: z.string().optional().nullable(),
   paymentMethods: z.string().optional().nullable(),
   paymentType: z.enum(['BOTH', 'ESCROW', 'DIRECT']).optional().nullable(),
@@ -145,6 +148,9 @@ export const serviceOfferingSchema = z.object({
   duration: z.coerce.number().int().min(5, 'Duration must be at least 5 minutes'),
   price: z.coerce.number().min(0).optional().nullable(),
   location: z.string().max(200).optional().nullable(),
+  // Opt-in: while the owner is in passport Traveling mode, this service's
+  // effective location follows the owner's current location.
+  travelsWithOwner: z.boolean().optional(),
   meetingLink: z.string().url().optional().nullable().or(z.literal('')),
   imageUrl: z.string().optional().nullable(),
   isActive: z.boolean().optional(),

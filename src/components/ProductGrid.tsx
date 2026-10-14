@@ -17,6 +17,10 @@ interface ProductGridProps {
   onPageChange?: (page: number) => void
   onFund?: (product: Product) => void
   onClearFilters?: () => void
+  /** Overrides the empty-state description (e.g. a Near Me hint). */
+  emptyDescription?: string
+  /** Overrides the empty-state action (e.g. turn off Near Me). */
+  emptyAction?: { label: string; onClick: () => void }
   showOwnerActions?: boolean
   onEdit?: (product: Product) => void
   onTogglePublish?: (product: Product) => void
@@ -33,6 +37,8 @@ export default function ProductGrid({
   onPageChange,
   onFund,
   onClearFilters,
+  emptyDescription,
+  emptyAction,
   showOwnerActions,
   onEdit,
   onTogglePublish,
@@ -67,7 +73,14 @@ export default function ProductGrid({
   }
 
   if (products.length === 0) {
-    return <EmptyState icon="🛒" title="No products found" description="Try adjusting your filters or search criteria." action={onClearFilters ? { label: 'Clear Filters', onClick: onClearFilters } : undefined} />
+    return (
+      <EmptyState
+        icon="🛒"
+        title="No products found"
+        description={emptyDescription || 'Try adjusting your filters or search criteria.'}
+        action={emptyAction || (onClearFilters ? { label: 'Clear Filters', onClick: onClearFilters } : undefined)}
+      />
+    )
   }
 
   return (

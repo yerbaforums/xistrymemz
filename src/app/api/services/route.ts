@@ -7,6 +7,11 @@ import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/don
 import { extractHashtags, linkHashtags } from '@/services/hashtagService'
 import { geocodeLocation } from '@/lib/geocoding'
 import { hasVerifiedEmail } from '@/lib/verified-email'
+import {
+  getEffectiveListingLocation,
+  sanitizeEffectiveLocationForPublic,
+  isPassportHidden,
+} from '@/lib/listing-location'
 import type { DonationAddr } from '@/types/product'
 
 export const dynamic = 'force-dynamic'
@@ -19,6 +24,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('q')
     const userId = searchParams.get('userId')
     const sort = searchParams.get('sort') || 'newest'
+    const session = await getServerSession(authOptions)
 
     const where: Record<string, unknown> = { isActive: true }
 
@@ -47,7 +53,12 @@ export async function GET(request: NextRequest) {
       prisma.serviceOffering.findMany({
         where,
         include: {
-          user: { select: { id: true, name: true, image: true, username: true } },
+          user: {
+            select: {
+              id: true, name: true, image: true, username: true,
+              location: true, traveling: true, latitude: true, longitude: true, preferences: true,
+            },
+          },
           hashtags: { include: { hashtag: { select: { tag: true } } } }
         },
         skip,
@@ -63,32 +74,50 @@ export async function GET(request: NextRequest) {
       prisma.serviceOffering.count({ where })
     ])
 
-    const services = rawServices.map(s => ({
-      id: s.id,
-      title: s.title,
-      description: s.description ?? null,
-      category: s.category,
-      duration: s.duration,
-      price: s.price ?? null,
-      location: s.location ?? null,
-      latitude: s.latitude ?? null,
-      longitude: s.longitude ?? null,
-      meetingLink: s.meetingLink ?? null,
-      imageUrl: s.imageUrl ?? null,
-      isActive: s.isActive === true,
-      userId: s.userId,
-      user: s.user,
-      viewCount: s.viewCount,
-      acceptsAppointments: s.acceptsAppointments === true,
-      appointmentDuration: s.appointmentDuration ?? null,
-      appointmentLeadTime: s.appointmentLeadTime ?? null,
-      appointmentLocation: s.appointmentLocation ?? null,
-      appointmentMeetingLink: s.appointmentMeetingLink ?? null,
-      appointmentFormFields: Array.isArray(s.appointmentFormFields) ? s.appointmentFormFields : null,
-      hashtags: s.hashtags ?? [],
-      createdAt: s.createdAt instanceof Date ? s.createdAt.toISOString() : String(s.createdAt),
-      updatedAt: s.updatedAt instanceof Date ? s.updatedAt.toISOString() : String(s.updatedAt),
-    }))
+    const services = rawServices.map(s => {
+      // Effective location: services opted into "travels with me" sit at the
+      // owner's current passport location while they're traveling. The
+      // traveling-derived city is hidden from non-owners when the owner's
+      // passport is hidden, and raw owner preferences never leave the server.
+      const effective = getEffectiveListingLocation(s, s.user)
+      const isOwnerView = session?.user?.id === s.userId
+      const shown = isOwnerView
+        ? effective
+        : sanitizeEffectiveLocationForPublic(effective, isPassportHidden(s.user?.preferences))
+      const { preferences: _ownerPrefs, ...ownerPublic } = s.user
+
+      return {
+        id: s.id,
+        title: s.title,
+        description: s.description ?? null,
+        category: s.category,
+        duration: s.duration,
+        price: s.price ?? null,
+        location: s.location ?? null,
+        latitude: s.latitude ?? null,
+        longitude: s.longitude ?? null,
+        travelsWithOwner: s.travelsWithOwner === true,
+        effectiveLocation: shown.location,
+        effectiveLatitude: shown.latitude,
+        effectiveLongitude: shown.longitude,
+        ownerTraveling: effective.traveling,
+        meetingLink: s.meetingLink ?? null,
+        imageUrl: s.imageUrl ?? null,
+        isActive: s.isActive === true,
+        userId: s.userId,
+        user: ownerPublic,
+        viewCount: s.viewCount,
+        acceptsAppointments: s.acceptsAppointments === true,
+        appointmentDuration: s.appointmentDuration ?? null,
+        appointmentLeadTime: s.appointmentLeadTime ?? null,
+        appointmentLocation: s.appointmentLocation ?? null,
+        appointmentMeetingLink: s.appointmentMeetingLink ?? null,
+        appointmentFormFields: Array.isArray(s.appointmentFormFields) ? s.appointmentFormFields : null,
+        hashtags: s.hashtags ?? [],
+        createdAt: s.createdAt instanceof Date ? s.createdAt.toISOString() : String(s.createdAt),
+        updatedAt: s.updatedAt instanceof Date ? s.updatedAt.toISOString() : String(s.updatedAt),
+      }
+    })
 
     return apiSuccess({ services, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
 
@@ -150,6 +179,10 @@ export async function POST(request: NextRequest) {
         location: parsed.data.location || null,
         latitude,
         longitude,
+        // Online services (meeting-link only) have nowhere to travel with you.
+        travelsWithOwner: parsed.data.meetingLink
+          ? false
+          : parsed.data.travelsWithOwner ?? false,
         meetingLink: parsed.data.meetingLink || null,
         imageUrl: parsed.data.imageUrl || null,
         isActive: wantsPublish && verifiedPublish,

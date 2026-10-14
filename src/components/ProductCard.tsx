@@ -164,7 +164,15 @@ const ProductCard = memo(function ProductCard({
         )}
 
         <div className={styles.meta}>
-          <span>{product.isGlobal ? '🌍 Global' : `📍 ${product.location || 'Local'}`}</span>
+          <span title={product.ownerTraveling ? 'This listing is traveling with its owner' : undefined}>
+            {product.isGlobal
+              ? '🌍 Global'
+              : product.ownerTraveling
+                ? product.effectiveLocation
+                  ? `✈️ Near ${product.effectiveLocation} · traveling`
+                  : '✈️ Traveling with owner'
+                : `📍 ${product.location || 'Local'}`}
+          </span>
           <span className={styles.seller}>
             <Avatar src={product.user?.image} name={product.user?.name} size={16} />
             {product.user?.name || 'Unknown'}

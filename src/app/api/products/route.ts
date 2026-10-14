@@ -6,6 +6,13 @@ import { geocodeLocation } from '@/lib/geocoding'
 import { extractHashtags, linkHashtags } from '@/services/hashtagService'
 import { productSchema, validateBody } from '@/lib/schemas'
 import { hasVerifiedEmail } from '@/lib/verified-email'
+import {
+  getEffectiveListingLocation,
+  sanitizeEffectiveLocationForPublic,
+  isPassportHidden,
+} from '@/lib/listing-location'
+
+const KM_PER_MILE = 1.609344
 
 export async function GET(request: Request) {
   try {
@@ -52,7 +59,10 @@ export async function GET(request: Request) {
       }
     }
 
-    const searchRadius = radius ? parseFloat(radius) : userRadius
+    // Radius is in kilometers (the passport slider unit); convert once for
+    // the miles-based distance helper below.
+    const searchRadiusKm = radius ? parseFloat(radius) : userRadius
+    const searchRadiusMiles = searchRadiusKm / KM_PER_MILE
 
     const where: { published: boolean; pinned?: boolean; category?: string; type?: string | { not: string } | { notIn: string[] }; location?: string; user?: { shopSlug: string }; userId?: string; OR?: Record<string, unknown>[] } = { published: true, type: { notIn: ['SERVICE', 'RENTAL'] } }
 
@@ -89,7 +99,12 @@ export async function GET(request: Request) {
         take: pageSize,
         skip,
         include: {
-          user: { select: { name: true, image: true, location: true, neighborhood: true, shopSlug: true } },
+          user: {
+            select: {
+              name: true, image: true, location: true, neighborhood: true, shopSlug: true,
+              traveling: true, latitude: true, longitude: true, preferences: true,
+            },
+          },
           hashtags: { include: { hashtag: { select: { id: true, tag: true } } } },
         },
         orderBy: [
@@ -114,17 +129,40 @@ export async function GET(request: Request) {
       const lng = userLng ? parseFloat(userLng) : userLocation?.longitude
 
       if (lat && lng) {
+        // Filter on the EFFECTIVE location: listings opted into "travels with
+        // me" sit at their owner's current passport location while traveling.
         filteredProducts = products.filter(p => {
           if (p.isGlobal || p.isRemote) return true
-          if (!p.latitude || !p.longitude) return true
-          const distance = calculateDistance(lat, lng, p.latitude, p.longitude)
-          return distance <= searchRadius
+          const eff = getEffectiveListingLocation(p, p.user)
+          if (eff.latitude == null || eff.longitude == null) return true
+          const distance = calculateDistance(lat, lng, eff.latitude, eff.longitude)
+          return distance <= searchRadiusMiles
         })
       }
     }
 
+    // Attach effective-location fields; strip raw owner preferences (and the
+    // traveling-derived city) from public payloads when the owner's passport
+    // is hidden.
+    const items = filteredProducts.map(p => {
+      const { preferences: _ownerPrefs, ...owner } = p.user
+      const effective = getEffectiveListingLocation(p, p.user)
+      const isOwnerView = session?.user?.id === p.userId
+      const shown = isOwnerView
+        ? effective
+        : sanitizeEffectiveLocationForPublic(effective, isPassportHidden(p.user?.preferences))
+      return {
+        ...p,
+        user: owner,
+        effectiveLocation: shown.location,
+        effectiveLatitude: shown.latitude,
+        effectiveLongitude: shown.longitude,
+        ownerTraveling: effective.traveling,
+      }
+    })
+
     return NextResponse.json({
-      items: filteredProducts,
+      items,
       total,
       page,
       pageSize,
@@ -174,7 +212,7 @@ export async function POST(request: Request) {
 
     const { 
       title, description, price, type, category, condition,
-      location, locationDetails, isGlobal, isRemote, imageUrl,
+      location, locationDetails, isGlobal, isRemote, travelsWithOwner, imageUrl,
       paymentMethods, paymentType, acceptsRequests, acceptsOffers, requestPrice, published,
       rentalDaily, rentalWeekly, rentalMonthly, rentalDeposit,
       rentalMinDays, rentalMaxDays, rentalAvailable,
@@ -215,6 +253,7 @@ export async function POST(request: Request) {
         longitude,
         isGlobal: isGlobal ?? false,
         isRemote: isRemote ?? false,
+        travelsWithOwner: !isGlobal && !isRemote ? (travelsWithOwner ?? false) : false,
         imageUrl,
         paymentMethods: paymentMethodsString,
         paymentType: paymentType || 'BOTH',

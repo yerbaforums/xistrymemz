@@ -73,6 +73,11 @@ function sanitizeService(raw: unknown): ServiceOffering | null {
       location: safeStr(src.location),
       latitude: safeNum(src.latitude),
       longitude: safeNum(src.longitude),
+      travelsWithOwner: safeBool(src.travelsWithOwner),
+      effectiveLocation: safeStr(src.effectiveLocation),
+      effectiveLatitude: safeNum(src.effectiveLatitude),
+      effectiveLongitude: safeNum(src.effectiveLongitude),
+      ownerTraveling: safeBool(src.ownerTraveling),
       meetingLink: safeStr(src.meetingLink),
       imageUrl: safeStr(src.imageUrl),
       isActive: safeBool(src.isActive),
@@ -195,6 +200,8 @@ export default function ServiceDetailPage() {
   const description = typeof service.description === 'string' ? service.description : null
   const imageUrl = typeof service.imageUrl === 'string' ? service.imageUrl : null
   const location = typeof service.location === 'string' ? service.location : null
+  const ownerTraveling = service.ownerTraveling === true
+  const effectiveLocation = typeof service.effectiveLocation === 'string' ? service.effectiveLocation : null
   const meetingLink = typeof service.meetingLink === 'string' ? service.meetingLink : null
   const apptDuration = typeof service.appointmentDuration === 'number' ? service.appointmentDuration : null
   const apptLeadTime = typeof service.appointmentLeadTime === 'number' ? service.appointmentLeadTime : null
@@ -267,11 +274,19 @@ export default function ServiceDetailPage() {
                   <div className={styles.detailValue}>Quote on inquiry — book or message to get a quote</div>
                 </div>
               )}
-              {location && (
+              {(location || ownerTraveling) && (
                 <div className={styles.detailCard}>
-                  <div className={styles.detailIcon}>📍</div>
-                  <div className={styles.detailLabel}>Location</div>
-                  <div className={styles.detailValue}>{location}</div>
+                  <div className={styles.detailIcon}>{ownerTraveling ? '✈️' : '📍'}</div>
+                  <div className={styles.detailLabel}>
+                    {ownerTraveling ? 'Current Location (traveling)' : 'Location'}
+                  </div>
+                  <div className={styles.detailValue}>
+                    {ownerTraveling
+                      ? effectiveLocation
+                        ? `Near ${effectiveLocation} — this service travels with its owner`
+                        : 'This service travels with its owner (location private)'
+                      : location}
+                  </div>
                 </div>
               )}
               {meetingLink && (

@@ -42,6 +42,14 @@ export interface Product {
   longitude: number | null
   isGlobal: boolean
   isRemote: boolean
+  /** Opt-in: effective location follows the owner's current passport location while traveling. */
+  travelsWithOwner?: boolean
+  /** Effective location (equals `location` unless traveling with the owner). */
+  effectiveLocation?: string | null
+  effectiveLatitude?: number | null
+  effectiveLongitude?: number | null
+  /** True when this listing is currently traveling with its owner. */
+  ownerTraveling?: boolean
   imageUrl: string | null
   published: boolean
   pinned: boolean

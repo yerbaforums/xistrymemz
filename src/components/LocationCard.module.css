@@ -26,7 +26,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #00d9ff33, #7b61ff33);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent-primary) 20%, transparent),
+    color-mix(in srgb, var(--accent-secondary) 20%, transparent)
+  );
   border-radius: 50%;
 }
 
@@ -70,4 +74,41 @@
   background: var(--accent-primary);
   color: var(--bg-primary);
   border-color: var(--accent-primary);
+}
+
+.nearMeToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition);
+}
+
+.nearMeToggle:hover {
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+}
+
+.radiusSelect {
+  /* Override the global `select { width: 100% }` inside the flex row. */
+  width: auto;
+  padding: 3px 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.radiusSelect:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

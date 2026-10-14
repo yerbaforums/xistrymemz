@@ -40,6 +40,10 @@ export default function PassportSection() {
         <p style={{ fontSize: '0.82rem', opacity: 0.85, marginTop: 12 }}>
           🔒 Hide your location from the public anytime — your private discovery, radius filters, and trip planning keep working.
         </p>
+        <p style={{ fontSize: '0.82rem', opacity: 0.85, marginTop: 8 }}>
+          ✈️ Switch on Traveling mode and your opted-in listings travel with you — Near-Me results across the
+          marketplace, services, directory, events, requests and projects follow your current passport location.
+        </p>
         <Link href="/dashboard/passport" className={styles.cta}>
           {t('passportCta')}
         </Link>

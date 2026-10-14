@@ -949,6 +949,9 @@ model Product {
   longitude       Float?
   isGlobal        Boolean @default(false)
   isRemote        Boolean @default(false)
+  // Opt-in: while the owner is in passport Traveling mode, this listing's
+  // effective location follows the owner's current location.
+  travelsWithOwner Boolean @default(false)
   imageUrl        String?
   published       Boolean @default(true)
   pinned          Boolean @default(false)
@@ -2267,6 +2270,9 @@ model ServiceOffering {
   location    String?
   latitude    Float?
   longitude   Float?
+  // Opt-in: while the owner is in passport Traveling mode, this service's
+  // effective location follows the owner's current location.
+  travelsWithOwner Boolean @default(false)
   meetingLink String?
   imageUrl    String?
   isActive    Boolean @default(true)

@@ -54,6 +54,11 @@ interface Product {
   latitude: number | null
   longitude: number | null
   isGlobal: boolean
+  travelsWithOwner?: boolean
+  effectiveLocation?: string | null
+  effectiveLatitude?: number | null
+  effectiveLongitude?: number | null
+  ownerTraveling?: boolean
   imageUrl: string | null
   userId: string
   user: {
@@ -206,6 +211,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [messageContent, setMessageContent] = useState('')
   const [messageSending, setMessageSending] = useState(false)
   const [mapExpanded, setMapExpanded] = useState(false)
+
+  // Effective location: listings opted into "travels with me" sit at the
+  // owner's current passport location while the owner is traveling.
+  const ownerTraveling = product?.ownerTraveling === true
+  const effectiveLocation = product?.effectiveLocation ?? null
+  const mapLat = ownerTraveling ? (product?.effectiveLatitude ?? product?.latitude ?? null) : (product?.latitude ?? null)
+  const mapLng = ownerTraveling ? (product?.effectiveLongitude ?? product?.longitude ?? null) : (product?.longitude ?? null)
+  const showLocationMap = product != null && !product.isGlobal && mapLat != null && mapLng != null
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [cryptoPrices, setCryptoPrices] = useState<Record<string, number>>({})
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
@@ -979,16 +992,30 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
           <div className={styles.locationCard}>
             <h3>Location</h3>
-            <p>{product.isGlobal ? '🌍 Available Globally' : `📍 ${product.location}`}</p>
-            {product.locationDetails && (
+            <p>
+              {product.isGlobal
+                ? '🌍 Available Globally'
+                : ownerTraveling
+                  ? effectiveLocation
+                    ? `✈️ Near ${effectiveLocation} · traveling with owner`
+                    : '✈️ Traveling with owner'
+                  : `📍 ${product.location || 'Local'}`}
+            </p>
+            {ownerTraveling && effectiveLocation && (
+              <p className={styles.locationDetails}>
+                This listing travels with its owner — it shows and filters by their current
+                passport location while they&apos;re on the move. Home location: {product.location || 'not set'}.
+              </p>
+            )}
+            {!ownerTraveling && product.locationDetails && (
               <p className={styles.locationDetails}>{product.locationDetails}</p>
             )}
           </div>
 
-          {!product.isGlobal && product.latitude && product.longitude && (
+          {showLocationMap && (
             <div className={styles.mapCard}>
               <div className={styles.mapCardHeader}>
-                <h3>📍 Product Location</h3>
+                <h3>{ownerTraveling ? '✈️ Current Location (traveling)' : '📍 Product Location'}</h3>
                 <Button
                   className={styles.mapToggleBtn}
                   variant="ghost"
@@ -998,16 +1025,22 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 </Button>
               </div>
               <div className={`${styles.mapContainer} ${mapExpanded ? styles.mapExpanded : ''}`}>
-                <MapContainer center={[product.latitude, product.longitude]} zoom={13} style={{ height: '100%', width: '100%', position: 'relative', zIndex: 1 }}>
+                <MapContainer
+                  center={[mapLat!, mapLng!]}
+                  zoom={13}
+                  style={{ height: '100%', width: '100%', position: 'relative', zIndex: 1 }}
+                >
                   <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
-                    <EntityMarker type="PRODUCT" position={[product.latitude, product.longitude]}>
+                  <EntityMarker type="PRODUCT" position={[mapLat!, mapLng!]}>
                     <Popup>
                       <strong>{product.title}</strong>
                       <br />
-                      {product.location}
+                      {ownerTraveling
+                        ? `✈️ Near ${effectiveLocation || 'owner'} (traveling)`
+                        : product.location}
                     </Popup>
                   </EntityMarker>
                 </MapContainer>

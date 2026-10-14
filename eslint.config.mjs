@@ -16,7 +16,7 @@ const config = [
       "@next/next/no-img-element": "off",
       "react-hooks/exhaustive-deps": "warn",
       "@typescript-eslint/no-explicit-any": "error",
-      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
       // eslint-plugin-react-hooks v7 (shipped by eslint-config-next@16) enables
       // React Compiler-era experimental rules by default. This project does not
       // use the React Compiler (no babel-plugin-react-compiler), so they only

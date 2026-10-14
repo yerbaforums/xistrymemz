@@ -24,6 +24,9 @@ import { EmptyState } from '@/components/EmptyState'
 import Button from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 
+// calculateDistance returns miles; the passport search radius is in km.
+const KM_PER_MILE = 1.609344
+
 export default function ProductsPage() {
   const { data: session } = useSession()
   const { error, success } = useToast()
@@ -104,6 +107,14 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [page, setPage] = useState(1)
   const pageSize = 20
+  // Passport-powered Near Me filter — opt-in (OFF by default).
+  const [nearMe, setNearMe] = useState(false)
+  const [radiusKm, setRadiusKm] = useState(50)
+
+  // Track the passport's search radius once it loads.
+  useEffect(() => {
+    if (passportLocation?.searchRadius) setRadiusKm(passportLocation.searchRadius)
+  }, [passportLocation?.searchRadius])
 
   const [showRequestModal, setShowRequestModal] = useState(false)
   const [requestProduct, setRequestProduct] = useState<Product | null>(null)
@@ -128,6 +139,7 @@ export default function ProductsPage() {
     condition: '',
     location: '',
     isGlobal: false,
+    travelsWithOwner: false,
     imageUrl: '',
     imageUrls: [] as string[],
     published: true,
@@ -246,12 +258,16 @@ export default function ProductsPage() {
 
     const passportLat = passportLocation?.latitude
     const passportLng = passportLocation?.longitude
-    const loc = passportLat != null && passportLng != null ? { lat: passportLat, lng: passportLng, r: passportLocation?.searchRadius || 50 } : null
-    if (loc) {
+    const loc = passportLat != null && passportLng != null ? { lat: passportLat, lng: passportLng, r: radiusKm / KM_PER_MILE } : null
+    if (loc && nearMe) {
+      // Near Me (opt-in): filter on the EFFECTIVE location — listings opted
+      // into "travels with me" sit at their owner's current location while
+      // the owner is traveling (falls back to the listing's static location
+      // when the owner keeps their passport private).
       result = result.filter(p => {
         if (p.isGlobal || p.isRemote) return true
-        const pLat = p.latitude
-        const pLng = p.longitude
+        const pLat = p.effectiveLatitude ?? p.latitude
+        const pLng = p.effectiveLongitude ?? p.longitude
         if (pLat == null || pLng == null) return false
         return calculateDistance(loc.lat, loc.lng, pLat, pLng) <= loc.r
       })
@@ -263,10 +279,10 @@ export default function ProductsPage() {
       result.sort((a, b) => {
         if (a.isGlobal && !b.isGlobal) return -1
         if (!a.isGlobal && b.isGlobal) return 1
-        const latA = a.latitude
-        const lngA = a.longitude
-        const latB = b.latitude
-        const lngB = b.longitude
+        const latA = a.effectiveLatitude ?? a.latitude
+        const lngA = a.effectiveLongitude ?? a.longitude
+        const latB = b.effectiveLatitude ?? b.latitude
+        const lngB = b.effectiveLongitude ?? b.longitude
         const dA = latA != null && lngA != null ? calculateDistance(loc.lat, loc.lng, latA, lngA) : Infinity
         const dB = latB != null && lngB != null ? calculateDistance(loc.lat, loc.lng, latB, lngB) : Infinity
         return dA - dB
@@ -275,7 +291,7 @@ export default function ProductsPage() {
     else if (sortBy === 'newest') result.reverse()
 
     return result
-  }, [products, type, category, location, condition, priceMin, priceMax, searchQuery, passportLocation, sortBy])
+  }, [products, type, category, location, condition, priceMin, priceMax, searchQuery, passportLocation, nearMe, radiusKm, sortBy])
 
   const categories = useMemo(() => [...new Set(products.map(p => p.category).filter(Boolean))], [products])
   const locations = useMemo(() => [...new Set(products.map(p => p.location).filter(Boolean))], [products])
@@ -337,6 +353,7 @@ export default function ProductsPage() {
       condition: product.condition || '',
       location: product.location || '',
       isGlobal: product.isGlobal,
+      travelsWithOwner: product.travelsWithOwner === true && !product.isGlobal && !product.isRemote,
       imageUrl: product.imageUrl || '',
       imageUrls: product.imageUrl ? [product.imageUrl] : [] as string[],
       published: product.published,
@@ -495,6 +512,11 @@ export default function ProductsPage() {
             onSetLocation={() => setSettingLocation(s => !s)}
             onDetect={handleDetectLocation}
             onFlyHome={handleFlyHome}
+            traveling={passportLocation?.traveling === true}
+            nearMe={nearMe}
+            onNearMeChange={setNearMe}
+            radiusKm={radiusKm}
+            onRadiusKmChange={setRadiusKm}
           />
         )}
         <div className={styles.mainLayout}>
@@ -582,6 +604,12 @@ export default function ProductsPage() {
                 onPageChange={setPage}
                 onFund={handleFund}
                 onClearFilters={clearFilters}
+                emptyDescription={
+                  nearMe
+                    ? `Nothing within ${radiusKm} km of you. Try a wider radius or turn off 📍 Near Me.`
+                    : undefined
+                }
+                emptyAction={nearMe ? { label: 'Turn off Near Me', onClick: () => setNearMe(false) } : undefined}
               />
             )}
           </main>
@@ -686,6 +714,16 @@ export default function ProductsPage() {
                     </label>
                   </div>
                 </div>
+                {!myForm.isGlobal && (
+                  <label className="checkbox-field" title="While you're in passport Traveling mode, this listing shows and filters by your current location">
+                    <input
+                      type="checkbox"
+                      checked={myForm.travelsWithOwner}
+                      onChange={e => setMyForm({ ...myForm, travelsWithOwner: e.target.checked })}
+                    />
+                    <span>✈️ This listing travels with me (shows my current location while I&apos;m traveling)</span>
+                  </label>
+                )}
                 <div className={styles.myFormRow}>
                   <label className={styles.myCheckLabel}>
                     <input type="checkbox" checked={myForm.published} onChange={e => setMyForm({...myForm, published: e.target.checked})} />

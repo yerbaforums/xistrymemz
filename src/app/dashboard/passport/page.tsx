@@ -670,7 +670,9 @@ export default function PassportPage() {
             <span className={styles.checkboxText}>I&apos;m currently traveling</span>
           </label>
           <p className={styles.rangeDesc}>
-            {traveling ? 'Your profile shows you as traveling. Community members will see you\'re on the move.' : 'Your profile shows your home location. Toggle this on when traveling.'}
+            {traveling
+              ? 'Your profile shows you as traveling. Opted-in listings and services show and filter by this current location.'
+              : 'Your profile shows your home location. Toggle this on when traveling — opted-in listings and services follow your current location.'}
           </p>
           {traveling && savedLocations.length > 0 && (
             <div className={styles.travelingContainer}>

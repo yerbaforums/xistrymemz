@@ -6,6 +6,11 @@ import { validateBody, productSchema } from '@/lib/schemas'
 import { geocodeLocation } from '@/lib/geocoding'
 import { extractHashtags, linkHashtags, removeHashtags } from '@/services/hashtagService'
 import { hasVerifiedEmail } from '@/lib/verified-email'
+import {
+  getEffectiveListingLocation,
+  sanitizeEffectiveLocationForPublic,
+  isPassportHidden,
+} from '@/lib/listing-location'
 import type { Prisma } from '@prisma/client'
 
 interface ProductUpdateBody {
@@ -38,6 +43,7 @@ interface ProductUpdateBody {
   rentalMinDays?: string | number
   rentalMaxDays?: string | number
   rentalAvailable?: boolean
+  travelsWithOwner?: boolean
   hashtags?: string[]
   acceptsAppointments?: boolean
   appointmentDuration?: string | number
@@ -54,19 +60,43 @@ export async function GET(
 ) {
   try {
     const { id } = await params
+    const session = await getServerSession(authOptions)
 
     const product = await prisma.product.findUnique({
       where: { id },
       include: {
-        user: { select: { id: true, name: true, username: true, email: true, role: true, userClass: true } }
-      }
+        user: {
+          select: {
+            id: true, name: true, username: true, email: true, role: true, userClass: true,
+            location: true, traveling: true, latitude: true, longitude: true, preferences: true,
+          },
+        },
+      },
     })
 
     if (!product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 })
     }
 
-    return NextResponse.json(product)
+    // Effective location: listings opted into "travels with me" sit at the
+    // owner's current passport location while they're traveling. The
+    // traveling-derived city is hidden from non-owners when the owner's
+    // passport is hidden, and raw owner preferences never leave the server.
+    const effective = getEffectiveListingLocation(product, product.user)
+    const isOwnerView = session?.user?.id === product.userId
+    const shown = isOwnerView
+      ? effective
+      : sanitizeEffectiveLocationForPublic(effective, isPassportHidden(product.user?.preferences))
+    const { preferences: _ownerPrefs, ...ownerPublic } = product.user
+
+    return NextResponse.json({
+      ...product,
+      user: ownerPublic,
+      effectiveLocation: shown.location,
+      effectiveLatitude: shown.latitude,
+      effectiveLongitude: shown.longitude,
+      ownerTraveling: effective.traveling,
+    })
   } catch (error) {
     console.error('GET /api/products/[id]:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -98,7 +128,7 @@ export async function PUT(
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    const { title, description, price, type, category, condition, location, locationDetails, imageUrl, isGlobal, published, paymentMethods, paymentType, acceptsRequests, acceptsOffers, requestPrice, acceptsDonations, donationAddress, donationCurrency, donationAddresses, sellerPayoutAddress, sellerCryptoCurrency, rentalDaily, rentalWeekly, rentalMonthly, rentalDeposit, rentalMinDays, rentalMaxDays, rentalAvailable, hashtags, acceptsAppointments, appointmentDuration, appointmentLeadTime, appointmentLocation, appointmentMeetingLink, appointmentFormFields, customizationFields } = body
+    const { title, description, price, type, category, condition, location, locationDetails, imageUrl, isGlobal, travelsWithOwner, published, paymentMethods, paymentType, acceptsRequests, acceptsOffers, requestPrice, acceptsDonations, donationAddress, donationCurrency, donationAddresses, sellerPayoutAddress, sellerCryptoCurrency, rentalDaily, rentalWeekly, rentalMonthly, rentalDeposit, rentalMinDays, rentalMaxDays, rentalAvailable, hashtags, acceptsAppointments, appointmentDuration, appointmentLeadTime, appointmentLocation, appointmentMeetingLink, appointmentFormFields, customizationFields } = body
 
     const existing = await prisma.product.findFirst({
       where: { id, userId: session.user.id }
@@ -115,6 +145,9 @@ export async function PUT(
     const paymentMethodsString = paymentMethods ? 
       (Array.isArray(paymentMethods) ? paymentMethods.join(',') : String(paymentMethods)) 
       : existing.paymentMethods
+
+    // Global listings have no physical location to travel with you.
+    const globalLike = (isGlobal ?? existing.isGlobal) === true
 
     let latitude = existing.latitude
     let longitude = existing.longitude
@@ -145,6 +178,10 @@ export async function PUT(
         latitude: latitude ?? existing.latitude,
         longitude: longitude ?? existing.longitude,
         isGlobal: isGlobal ?? existing.isGlobal,
+        // Global/Remote listings have no physical location to travel with you.
+        travelsWithOwner: globalLike
+          ? false
+          : travelsWithOwner ?? existing.travelsWithOwner,
         imageUrl: imageUrl ?? existing.imageUrl,
         published: published ?? existing.published,
         paymentMethods: paymentMethodsString,
