@@ -87,7 +87,9 @@ export async function GET(
 
     const postsTake = 20
     const [projects, posts, products, services, connections, groupMemberships, totalPostCount, userLocations,
-      eventVolunteerCount, projectVolunteerCount, eventAttendeeCount, organizedEventCount, ownEventJoinCount, forumPostCount, forumReplyCount,
+      eventVolunteerCount, projectVolunteerCount, eventAttendeeCount, organizedEventCount, ownEventJoinCount,
+      organizedUpcomingCount, joinedUpcomingCount, ownUpcomingJoinCount,
+      forumPostCount, forumReplyCount,
       badgeCount, barterOfferSentCount, barterOfferReceivedCount, orderCount, requestCount
     ] = await Promise.all([
       prisma.project.findMany({
@@ -216,6 +218,10 @@ export async function GET(
       prisma.event.count({ where: { organizerId: userId } }),
       // Own events the organizer also joined (subtracted so headline totals never double-count).
       prisma.eventJoiner.count({ where: { userId, event: { organizerId: userId } } }),
+      // Upcoming-only counts (undated counts as upcoming, matching the client split).
+      prisma.event.count({ where: { organizerId: userId, OR: [{ eventDate: { gte: new Date() } }, { eventDate: null }] } }),
+      prisma.eventJoiner.count({ where: { userId, event: { OR: [{ eventDate: { gte: new Date() } }, { eventDate: null }] } } }),
+      prisma.eventJoiner.count({ where: { userId, event: { organizerId: userId, OR: [{ eventDate: { gte: new Date() } }, { eventDate: null }] } } }),
       prisma.forumPost.count({ where: { authorId: userId } }),
       prisma.forumReply.count({ where: { authorId: userId } }),
       prisma.badge.count({ where: { userId } }),
@@ -287,7 +293,7 @@ export async function GET(
     ])
 
     const isOwner = session?.user?.id === userId
-    const privacyPrefs = (prefRow?.preferences as { privacy?: { passportVisibility?: string; showExactCoords?: boolean } } | null) ?? null
+    const privacyPrefs = (prefRow?.preferences as { privacy?: { passportVisibility?: string; showExactCoords?: boolean }; display?: { showPastEvents?: boolean } } | null) ?? null
     const sanitized = sanitizePassportForPublic(user, privacyPrefs, isOwner)
     // Exact location (coords + saved-location addresses) is only visible to
     // the owner or to viewers the owner explicitly enabled it for. Everyone
@@ -325,6 +331,11 @@ export async function GET(
         organizedEventCount,
         // Exact deduped total matching the tab lists (organized + joined, minus own joins).
         totalEventCount: organizedEventCount + eventAttendeeCount + eventVolunteerCount - ownEventJoinCount,
+        // Upcoming-only headline counts (what the tab headers show).
+        upcomingEventCount: organizedUpcomingCount + joinedUpcomingCount - ownUpcomingJoinCount,
+        organizedUpcomingCount,
+        // Owner-controlled past-events visibility (default true).
+        showPastEvents: privacyPrefs?.display?.showPastEvents !== false,
         forumPostCount,
         forumReplyCount,
         badgeCount,

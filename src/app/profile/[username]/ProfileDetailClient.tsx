@@ -117,6 +117,9 @@ interface ProfileUser {
   eventCount?: number
   organizedEventCount?: number
   totalEventCount?: number
+  upcomingEventCount?: number
+  organizedUpcomingCount?: number
+  showPastEvents?: boolean
   forumPostCount?: number
   forumReplyCount?: number
   badgeCount?: number
@@ -245,6 +248,17 @@ function splitUpcomingPast<T extends { eventDate: string | null }>(events: T[]):
   return { upcoming, past }
 }
 
+function EventListCard({ ev }: { ev: UserEventEntry }) {
+  return (
+    <Link href={`/events/${ev.id}`} className={styles.forumPostCard}>
+      <span className={styles.forumPostCategory}>{ev.eventCategory || 'Event'}</span>
+      <h4>{ev.title}</h4>
+      {ev.eventDate && <p>{new Date(ev.eventDate).toLocaleDateString()}{ev.location ? ` · ${ev.location}` : ''}</p>}
+      <span className={styles.forumPostMeta}>👥 {ev._count?.eventJoiners ?? 0} attendees</span>
+    </Link>
+  )
+}
+
 function DonationCard({ donation }: { donation: DonationAddr }) {
   const [qrOpen, setQrOpen] = useState(false)
   const shortAddr = donation.address.length > 12
@@ -359,6 +373,7 @@ export default function ProfilePage() {
   const [forumPosts, setForumPosts] = useState<ForumPostEntry[]>([])
   const [userEvents, setUserEvents] = useState<UserEventEntry[]>([])
   const [joinedEvents, setJoinedEvents] = useState<UserEventEntry[]>([])
+  const [eventView, setEventView] = useState<'list' | 'grid'>('list')
   const [userRequests, setUserRequests] = useState<UserRequestEntry[]>([])
   const [loadingForum, setLoadingForum] = useState(false)
   const [loadingEvents, setLoadingEvents] = useState(false)
@@ -428,7 +443,8 @@ export default function ProfilePage() {
     }
   }
 
-  // Fetch forum posts when tab is active
+  // Fetch forum posts when tab is active.
+  // NOTE: /api/forum/posts wraps the array as { success, data: [...] }.
   useEffect(() => {
     if (activeTab !== 'forum' || !user) return
     const fetchForumPosts = async () => {
@@ -437,7 +453,8 @@ export default function ProfilePage() {
         const res = await fetch(`/api/forum/posts?authorId=${user.id}&limit=20`)
         if (res.ok) {
           const data = await res.json()
-          setForumPosts(data || [])
+          const list = Array.isArray(data) ? data : data?.data
+          setForumPosts(Array.isArray(list) ? list : [])
         }
       } catch (err) {
         console.error(err)
@@ -448,8 +465,8 @@ export default function ProfilePage() {
     fetchForumPosts()
   }, [activeTab, user?.id])
 
-  // Fetch events when tab is active: organized + joined, so the counts
-  // always match a visible list (past events included in both).
+  // Fetch events when tab is active: organized + joined.
+  // NOTE: /api/events wraps lists as { success, data: { items [...] } }.
   useEffect(() => {
     if (activeTab !== 'events' || !user) return
     const fetchEvents = async () => {
@@ -462,14 +479,15 @@ export default function ProfilePage() {
         let organizedIds = new Set<string>()
         if (orgRes.ok) {
           const data = await orgRes.json()
-          const organized = data || []
+          const organized = data?.data?.items || data?.items || []
           setUserEvents(organized)
           organizedIds = new Set(organized.map((e: UserEventEntry) => e.id))
         }
         if (joinedRes.ok) {
           const data = await joinedRes.json()
+          const joined = data?.data?.items || data?.items || []
           // Exclude events they organized (shown above) so nothing double-counts.
-          setJoinedEvents((data || []).filter((e: UserEventEntry) => !organizedIds.has(e.id)))
+          setJoinedEvents(joined.filter((e: UserEventEntry) => !organizedIds.has(e.id)))
         }
       } catch (err) {
         console.error(err)
@@ -480,7 +498,8 @@ export default function ProfilePage() {
     fetchEvents()
   }, [activeTab, user?.id])
 
-  // Fetch requests when tab is active
+  // Fetch requests when tab is active.
+  // NOTE: /api/requests returns { items [...] } unwrapped.
   useEffect(() => {
     if (activeTab !== 'requests' || !user) return
     const fetchRequests = async () => {
@@ -489,7 +508,8 @@ export default function ProfilePage() {
         const res = await fetch(`/api/requests?userId=${user.id}&limit=20`)
         if (res.ok) {
           const data = await res.json()
-          setUserRequests(data || [])
+          const list = Array.isArray(data) ? data : data?.items
+          setUserRequests(Array.isArray(list) ? list : [])
         }
       } catch (err) {
         console.error(err)
@@ -499,6 +519,22 @@ export default function ProfilePage() {
     }
     fetchRequests()
   }, [activeTab, user?.id])
+
+  // Owner-only: toggle past-events visibility on this profile (default on).
+  const handlePastToggle = async (next: boolean) => {
+    if (!user) return
+    setUser({ ...user, showPastEvents: next })
+    try {
+      const res = await fetch('/api/user/preferences', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ display: { showPastEvents: next } }),
+      })
+      if (!res.ok) throw new Error()
+    } catch {
+      setUser({ ...user, showPastEvents: !next })
+    }
+  }
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -960,9 +996,9 @@ export default function ProfilePage() {
                   <span className={styles.statLabel}>Deals</span>
                 </div>
               )}
-              {(user.totalEventCount ?? (user.organizedEventCount ?? 0) + (user.eventCount ?? 0)) > 0 ? (
+              {(user.upcomingEventCount ?? (user.organizedUpcomingCount ?? 0)) > 0 ? (
                 <div className={styles.stat}>
-                  <span className={styles.statValue}>{user.totalEventCount ?? (user.organizedEventCount ?? 0) + (user.eventCount ?? 0)}</span>
+                  <span className={styles.statValue}>{user.upcomingEventCount ?? (user.organizedUpcomingCount ?? 0)}</span>
                   <span className={styles.statLabel}>Events</span>
                 </div>
               ) : null}
@@ -1079,7 +1115,7 @@ export default function ProfilePage() {
           className={`${styles.tab} ${activeTab === 'events' ? styles.active : ''}`}
           onClick={() => setActiveTab('events')}
         >
-          Events {(user.totalEventCount ?? (user.organizedEventCount ?? 0) + (user.eventCount ?? 0)) > 0 ? `(${user.totalEventCount ?? (user.organizedEventCount ?? 0) + (user.eventCount ?? 0)})` : ''}
+          Events {(user.upcomingEventCount ?? (user.organizedUpcomingCount ?? 0)) > 0 ? `(${user.upcomingEventCount ?? (user.organizedUpcomingCount ?? 0)})` : ''}
         </Button>
         <Button 
           className={`${styles.tab} ${activeTab === 'requests' ? styles.active : ''}`}
@@ -1402,71 +1438,95 @@ export default function ProfilePage() {
 
         {activeTab === 'events' && (
           <div className={styles.eventsSection}>
-            <h3>Events</h3>
+            <div className={styles.eventsHeaderRow}>
+              <h3>Events</h3>
+              <div className={styles.eventsControls}>
+                <div className={styles.viewToggle} role="group" aria-label="Event layout">
+                  <button
+                    type="button"
+                    className={eventView === 'list' ? styles.viewToggleActive : ''}
+                    onClick={() => setEventView('list')}
+                    aria-pressed={eventView === 'list'}
+                    title="List view"
+                  >
+                    ☰
+                  </button>
+                  <button
+                    type="button"
+                    className={eventView === 'grid' ? styles.viewToggleActive : ''}
+                    onClick={() => setEventView('grid')}
+                    aria-pressed={eventView === 'grid'}
+                    title="Grid view"
+                  >
+                    ▦
+                  </button>
+                </div>
+                {isOwnProfile && (
+                  <label className="checkbox-field" title="Show your past events on this profile">
+                    <input
+                      type="checkbox"
+                      checked={user.showPastEvents !== false}
+                      onChange={e => handlePastToggle(e.target.checked)}
+                    />
+                    <span>Past events</span>
+                  </label>
+                )}
+              </div>
+            </div>
             {loadingEvents ? (
               <div className={styles.empty}><Skeleton width="100%" height="1rem" /></div>
             ) : (userEvents.length > 0 || joinedEvents.length > 0) ? (
               <>
-                {userEvents.length > 0 && (
-                  <>
-                    <h4 className={styles.eventSubhead}>Hosting ({userEvents.length})</h4>
-                    <div className={styles.postsList}>
-                      {splitUpcomingPast(userEvents).upcoming.map(ev => (
-                        <Link key={ev.id} href={`/events/${ev.id}`} className={styles.forumPostCard}>
-                          <span className={styles.forumPostCategory}>{ev.eventCategory || 'Event'}</span>
-                          <h4>{ev.title}</h4>
-                          {ev.eventDate && <p>{new Date(ev.eventDate).toLocaleDateString()}{ev.location ? ` · ${ev.location}` : ''}</p>}
-                          <span className={styles.forumPostMeta}>👥 {ev._count?.eventJoiners ?? 0} attendees</span>
-                        </Link>
-                      ))}
-                    </div>
-                    {splitUpcomingPast(userEvents).past.length > 0 && (
-                      <>
-                        <h4 className={styles.eventSubheadMuted}>Past hosted ({splitUpcomingPast(userEvents).past.length})</h4>
-                        <div className={styles.postsList}>
-                          {splitUpcomingPast(userEvents).past.map(ev => (
-                            <Link key={ev.id} href={`/events/${ev.id}`} className={styles.forumPostCard}>
-                              <span className={styles.forumPostCategory}>{ev.eventCategory || 'Event'}</span>
-                              <h4>{ev.title}</h4>
-                              {ev.eventDate && <p>{new Date(ev.eventDate).toLocaleDateString()}{ev.location ? ` · ${ev.location}` : ''}</p>}
-                              <span className={styles.forumPostMeta}>👥 {ev._count?.eventJoiners ?? 0} attendees</span>
-                            </Link>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </>
-                )}
-                {joinedEvents.length > 0 && (
-                  <>
-                    <h4 className={styles.eventSubhead}>Joined ({joinedEvents.length})</h4>
-                    <div className={styles.postsList}>
-                      {splitUpcomingPast(joinedEvents).upcoming.map(ev => (
-                        <Link key={ev.id} href={`/events/${ev.id}`} className={styles.forumPostCard}>
-                          <span className={styles.forumPostCategory}>{ev.eventCategory || 'Event'}</span>
-                          <h4>{ev.title}</h4>
-                          {ev.eventDate && <p>{new Date(ev.eventDate).toLocaleDateString()}{ev.location ? ` · ${ev.location}` : ''}</p>}
-                          <span className={styles.forumPostMeta}>👥 {ev._count?.eventJoiners ?? 0} attendees</span>
-                        </Link>
-                      ))}
-                    </div>
-                    {splitUpcomingPast(joinedEvents).past.length > 0 && (
-                      <>
-                        <h4 className={styles.eventSubheadMuted}>Past attended ({splitUpcomingPast(joinedEvents).past.length})</h4>
-                        <div className={styles.postsList}>
-                          {splitUpcomingPast(joinedEvents).past.map(ev => (
-                            <Link key={ev.id} href={`/events/${ev.id}`} className={styles.forumPostCard}>
-                              <span className={styles.forumPostCategory}>{ev.eventCategory || 'Event'}</span>
-                              <h4>{ev.title}</h4>
-                              {ev.eventDate && <p>{new Date(ev.eventDate).toLocaleDateString()}{ev.location ? ` · ${ev.location}` : ''}</p>}
-                              <span className={styles.forumPostMeta}>👥 {ev._count?.eventJoiners ?? 0} attendees</span>
-                            </Link>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </>
-                )}
+                {(() => {
+                  const org = splitUpcomingPast(userEvents)
+                  const joined = splitUpcomingPast(joinedEvents)
+                  const showPast = user.showPastEvents !== false
+                  const listClass = eventView === 'grid' ? styles.eventsGrid : styles.postsList
+                  return (
+                    <>
+                      {userEvents.length > 0 && (
+                        <>
+                          <h4 className={styles.eventSubhead}>Hosting ({org.upcoming.length})</h4>
+                          {org.upcoming.length > 0 ? (
+                            <div className={listClass}>
+                              {org.upcoming.map(ev => <EventListCard key={ev.id} ev={ev} />)}
+                            </div>
+                          ) : (
+                            <p className={styles.emptyNote}>No upcoming hosted events{showPast && org.past.length > 0 ? ' — see past below.' : '.'}</p>
+                          )}
+                          {showPast && org.past.length > 0 && (
+                            <>
+                              <h4 className={styles.eventSubheadMuted}>Past hosted ({org.past.length})</h4>
+                              <div className={listClass}>
+                                {org.past.map(ev => <EventListCard key={ev.id} ev={ev} />)}
+                              </div>
+                            </>
+                          )}
+                        </>
+                      )}
+                      {joinedEvents.length > 0 && (
+                        <>
+                          <h4 className={styles.eventSubhead}>Joined ({joined.upcoming.length})</h4>
+                          {joined.upcoming.length > 0 ? (
+                            <div className={listClass}>
+                              {joined.upcoming.map(ev => <EventListCard key={ev.id} ev={ev} />)}
+                            </div>
+                          ) : (
+                            <p className={styles.emptyNote}>No upcoming joined events{showPast && joined.past.length > 0 ? ' — see past below.' : '.'}</p>
+                          )}
+                          {showPast && joined.past.length > 0 && (
+                            <>
+                              <h4 className={styles.eventSubheadMuted}>Past attended ({joined.past.length})</h4>
+                              <div className={listClass}>
+                                {joined.past.map(ev => <EventListCard key={ev.id} ev={ev} />)}
+                              </div>
+                            </>
+                          )}
+                        </>
+                      )}
+                    </>
+                  )
+                })()}
               </>
             ) : (
               <EmptyState icon="📅" title="No events yet" description={`${user.name || 'This user'} hasn't hosted or joined any events yet.`} />

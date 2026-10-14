@@ -10,6 +10,8 @@ interface UserPreferences {
   notifications?: Record<string, boolean>
   delivery?: Record<string, boolean>
   privacy?: { passportVisibility?: 'public' | 'hidden'; showExactCoords?: boolean }
+  /** Profile display options. */
+  display?: { showPastEvents?: boolean }
   dashboard?: { preset?: string; density?: 'comfortable' | 'compact'; modules?: Record<string, { visible?: boolean; order?: number }> }
 }
 
@@ -35,6 +37,9 @@ export const PREF_DEFAULTS: UserPreferences = {
     in_app: true,
     email: true,
     push: false,
+  },
+  display: {
+    showPastEvents: true,
   },
 }
 

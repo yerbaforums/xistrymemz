@@ -430,6 +430,69 @@
   color: var(--text-muted);
 }
 
+.eventsHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.eventsHeaderRow h3 {
+  margin: 0;
+}
+
+.eventsControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.viewToggle {
+  display: inline-flex;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.viewToggle button {
+  background: var(--bg-secondary);
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  line-height: 1;
+  transition: var(--transition);
+}
+
+.viewToggle button + button {
+  border-left: 1px solid var(--border-color);
+}
+
+.viewToggle button:hover {
+  color: var(--text-primary);
+}
+
+.viewToggleActive {
+  background: var(--accent-primary) !important;
+  color: var(--bg-primary) !important;
+}
+
+.eventsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.emptyNote {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
 .forumPostCard {
   display: block;
   background: var(--bg-secondary);
