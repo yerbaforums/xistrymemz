@@ -1,0 +1,136 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 4px 6px 4px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 35%, transparent);
+  color: var(--text-primary);
+  font-size: 0.8rem;
+}
+
+.chipText {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chipRemove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 999px;
+}
+
+.chipRemove:hover {
+  color: var(--accent-secondary);
+}
+
+.searchRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.typeSelect {
+  flex: 0 0 auto;
+  /* Override the global `select { width: 100% }` so the row doesn't stack. */
+  width: auto;
+  min-width: 120px;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 180px;
+}
+
+.results {
+  display: flex;
+  flex-direction: column;
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-card);
+}
+
+.status {
+  padding: 10px 12px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  text-align: left;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+}
+
+.result:last-child {
+  border-bottom: none;
+}
+
+.result:hover {
+  background: var(--bg-tertiary);
+}
+
+.resultIcon {
+  flex-shrink: 0;
+}
+
+.resultTitle {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resultType {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+}

@@ -2,6 +2,7 @@ import { apiSuccess, apiError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { passwordSchema } from '@/lib/validation'
 import bcrypt from 'bcryptjs'
 
 export async function PUT(request: Request) {
@@ -17,8 +18,9 @@ export async function PUT(request: Request) {
       return apiError("Current password and new password are required", 400)
     }
 
-    if (newPassword.length < 6) {
-      return apiError("New password must be at least 6 characters", 400)
+    const pwCheck = passwordSchema.safeParse(newPassword)
+    if (!pwCheck.success) {
+      return apiError(pwCheck.error.issues[0].message, 400)
     }
 
     const user = await prisma.user.findUnique({

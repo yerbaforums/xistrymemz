@@ -7,6 +7,7 @@ import Image from 'next/image'
 import styles from '../login/page.module.css'
 import Loading from '@/components/Loading'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { passwordSchema } from '@/lib/validation'
 
 function ResetPasswordContent() {
   const searchParams = useSearchParams()
@@ -29,8 +30,9 @@ function ResetPasswordContent() {
     e.preventDefault()
     setError('')
 
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters')
+    const pwCheck = passwordSchema.safeParse(password)
+    if (!pwCheck.success) {
+      setError(pwCheck.error.issues[0].message)
       return
     }
 
@@ -143,8 +145,9 @@ function ResetPasswordContent() {
               placeholder="Enter new password"
               required
               minLength={8}
+              autoComplete="new-password"
             />
-            <span className={styles.fieldHint}>Minimum 8 characters</span>
+            <span className={styles.fieldHint}>At least 8 characters with lowercase, uppercase, and a number</span>
           </div>
 
           <div className={styles.formGroup}>
@@ -158,6 +161,12 @@ function ResetPasswordContent() {
               required
               minLength={8}
             />
+            {confirmPassword && password === confirmPassword && (
+              <span className={styles.fieldSuccess}>✓ Passwords match</span>
+            )}
+            {confirmPassword && password !== confirmPassword && (
+              <span className={styles.fieldHint}>Passwords don&apos;t match yet…</span>
+            )}
           </div>
 
           <button type="submit" className={styles.submitBtn} disabled={loading}>

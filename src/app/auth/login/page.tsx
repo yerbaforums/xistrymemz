@@ -139,10 +139,8 @@ function LoginForm() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               required
-              minLength={8}
-              aria-describedby="password-hint"
+              autoComplete="current-password"
             />
-            <span id="password-hint" className={styles.fieldHint}>Minimum 8 characters</span>
           </div>
 
           <div className={styles.formOptions}>

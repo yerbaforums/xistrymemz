@@ -38,7 +38,7 @@
 }
 
 .statCard {
-  background: var(--bg-card, #16162a);
+  background: var(--bg-card);
   border: 1px solid var(--border-color, #2a2a4a);
   border-radius: 12px;
   padding: 16px;
@@ -60,7 +60,7 @@
 }
 
 .section {
-  background: var(--bg-card, #16162a);
+  background: var(--bg-card);
   border: 1px solid var(--border-color, #2a2a4a);
   border-radius: 14px;
   padding: 20px;
@@ -138,7 +138,7 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #7c3aed, #06b6d4);
+  background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
   color: #fff;
   display: inline-flex;
   align-items: center;
@@ -193,7 +193,7 @@
 }
 
 .postTitleLink:hover {
-  color: var(--accent, #06b6d4);
+  color: var(--accent-primary);
 }
 
 .postMeta {
@@ -243,7 +243,7 @@
 }
 
 .promptCard {
-  background: var(--bg-card, #16162a);
+  background: var(--bg-card);
   border: 1px solid var(--border-color, #2a2a4a);
   border-radius: 14px;
   padding: 30px;
@@ -261,7 +261,7 @@
 }
 
 .editorModal {
-  background: var(--bg-card, #16162a);
+  background: var(--bg-card);
   border: 1px solid var(--border-color, #2a2a4a);
   border-radius: 14px;
   padding: 20px;

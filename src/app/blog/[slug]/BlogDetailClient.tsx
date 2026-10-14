@@ -367,7 +367,11 @@ export default function BlogDetailClient({ params }: { params: Promise<{ slug: s
 
   const coverStyle = blog.blogCoverStyle === 'fill'
     ? { backgroundImage: `url(${blog.blogCoverImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : { backgroundImage: `linear-gradient(135deg, #7c3aed22, #06b6d422), url(${blog.blogCoverImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    : {
+        backgroundImage: `linear-gradient(135deg, color-mix(in srgb, var(--accent-secondary) 13%, transparent), color-mix(in srgb, var(--accent-primary) 13%, transparent)), url(${blog.blogCoverImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }
 
   return (
     <div className={styles.page}>

@@ -17,6 +17,8 @@ import { ConfirmDialog } from '@/components/ConfirmDialog'
 import BulkBar from '@/components/BulkBar'
 import LocationPicker from '@/components/LocationPicker'
 import HashtagInput from '@/components/HashtagInput'
+import EntityLinkPicker, { commitPendingLinks } from '@/components/EntityLinkPicker'
+import type { PendingLink } from '@/components/EntityLinkPicker'
 import { AppointmentSettings, type AppointmentField } from '@/components/listings/AppointmentSettings'
 import styles from './page.module.css'
 
@@ -78,6 +80,7 @@ export default function DashboardServices() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
+  const [links, setLinks] = useState<PendingLink[]>([])
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const [search, setSearch] = useState('')
   const [confirmAction, setConfirmAction] = useState<'delete-service' | 'unpublish-shop' | 'delete-shop' | null>(null)
@@ -190,6 +193,7 @@ export default function DashboardServices() {
 
   const resetForm = () => {
     setForm(EMPTY_FORM)
+    setLinks([])
     setEditingId(null)
     setShowForm(false)
   }
@@ -226,6 +230,7 @@ export default function DashboardServices() {
       hashtags: s.hashtags?.map(h => h.hashtag?.tag ?? '').filter(Boolean) || [],
     })
     setEditingId(s.id)
+    setLinks([]) // links are only collected for new services
     setShowForm(true)
   }
 
@@ -271,6 +276,14 @@ export default function DashboardServices() {
 
       if (res.ok) {
         const data = res.status === 201 ? await res.json().catch(() => null) : null
+        if (!editingId && data) {
+          // Create returns NextResponse.json({ service, needsEmailVerification }).
+          const serviceId =
+            (data as { service?: { id?: string } })?.service?.id ||
+            (data as { data?: { id?: string } })?.data?.id ||
+            (data as { id?: string })?.id
+          if (serviceId) void commitPendingLinks('SERVICE', serviceId, links)
+        }
         if (!editingId && data?.needsEmailVerification) {
           success('Service saved as draft. Verify your email to publish it.')
         } else {
@@ -577,6 +590,13 @@ export default function DashboardServices() {
                 <label>Hashtags</label>
                 <HashtagInput value={form.hashtags} onChange={(tags) => setForm({...form, hashtags: tags})} placeholder="Add hashtags..." />
               </div>
+
+              <EntityLinkPicker
+                value={links}
+                onChange={setLinks}
+                types={['PROJECT', 'EVENT', 'PRODUCT', 'GROUP', 'USER']}
+                hint="Optionally connect this service to related projects, events, products, groups, or members."
+              />
 
               <div className={styles.formActions}>
                 <button type="button" onClick={resetForm} className="btn-ghost">Cancel</button>

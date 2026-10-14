@@ -88,8 +88,8 @@ export default function PodcastDetailClient({ params }: { params: Promise<{ slug
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Podcasts', href: '/podcasts' }, { label: p.podcastName || slug }]} />
       <div className={styles.header}>
-        <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Podcasts', href: '/podcasts' }, { label: p.podcastName || slug }]} />
         {cover && (
           <div className={styles.coverWrap}>
             <Image src={cover} alt="" fill priority sizes="(max-width: 768px) 100vw, 1200px" style={{ objectFit: 'cover' }} />
@@ -97,7 +97,7 @@ export default function PodcastDetailClient({ params }: { params: Promise<{ slug
           </div>
         )}
         <div className={styles.headerInner}>
-          <div className={styles.avatarWrap}>
+          <div className={`${styles.avatarWrap} ${!cover ? styles.avatarNoCover : ''}`}>
             {p.podcastImage ? (
               <Image src={p.podcastImage} alt="" width={88} height={88} className={styles.avatar} />
             ) : (

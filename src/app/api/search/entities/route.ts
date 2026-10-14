@@ -8,6 +8,7 @@ interface SearchableDelegate {
 const SEARCH_CONFIG: Record<string, {
   model: string
   titleField: string
+  titleFallbackField?: string
   select: Record<string, boolean>
   urlField?: string
   where: (q: string) => object
@@ -206,38 +207,71 @@ const SEARCH_CONFIG: Record<string, {
     }),
     url: (slug) => `/podcast/${slug}`,
   },
+  USER: {
+    model: 'user',
+    titleField: 'name',
+    titleFallbackField: 'username',
+    select: { id: true, name: true, username: true },
+    urlField: 'username',
+    where: (q) => ({
+      OR: [
+        { name: { contains: q, mode: 'insensitive' as const } },
+        { username: { contains: q, mode: 'insensitive' as const } },
+      ],
+    }),
+    url: (param) => `/profile/${param}`,
+  },
 }
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
-    const type = searchParams.get('type')
+    const typeParam = searchParams.get('type')
     const q = searchParams.get('q') || ''
 
-    if (!type || !q || q.length < 2) {
+    if (!typeParam || !q || q.length < 2) {
       return apiSuccess({ items: [] })
     }
 
-    const config = SEARCH_CONFIG[type]
-    if (!config) {
+    // Accept a single type, a comma-separated list, or ALL — so a picker can
+    // search every linkable entity kind in one debounced request.
+    const requested = [...new Set(
+      (typeParam.toUpperCase() === 'ALL'
+        ? Object.keys(SEARCH_CONFIG)
+        : typeParam.split(',')
+      )
+        .map((t) => t.trim().toUpperCase())
+        .filter((t) => SEARCH_CONFIG[t]),
+    )]
+
+    if (requested.length === 0) {
       return apiSuccess({ items: [] })
     }
 
-    const results = await (prisma as unknown as Record<string, SearchableDelegate>)[config.model].findMany({
-      where: config.where(q),
-      select: config.select,
-      take: 20,
-      orderBy: { createdAt: 'desc' },
-    })
+    const perTypeTake = requested.length === 1 ? 20 : 8
 
-    const items = results.map((r) => ({
-      id: r.id,
-      title: String(r[config.titleField] ?? '').slice(0, 100) || 'Untitled',
-      url: config.url(String(r[(config as { urlField?: string }).urlField || 'id'])),
-      type,
-    }))
+    const perType = await Promise.all(
+      requested.map(async (type) => {
+        const config = SEARCH_CONFIG[type]
+        const results = await (prisma as unknown as Record<string, SearchableDelegate>)[config.model].findMany({
+          where: config.where(q),
+          select: config.select,
+          take: perTypeTake,
+          orderBy: { createdAt: 'desc' },
+        })
 
-    return apiSuccess({ items })
+        const urlKey = config.urlField
+        const fallbackKey = config.titleFallbackField
+        return results.map((r) => ({
+          id: String(r.id),
+          title: String(r[config.titleField] ?? (fallbackKey ? r[fallbackKey] : '') ?? '').slice(0, 100) || 'Untitled',
+          url: config.url(String((urlKey ? r[urlKey] : undefined) ?? r.id)),
+          type,
+        }))
+      }),
+    )
+
+    return apiSuccess({ items: perType.flat().slice(0, 40) })
   } catch (error) {
     console.error('Error searching entities:', error)
     return apiSuccess({ items: [] })

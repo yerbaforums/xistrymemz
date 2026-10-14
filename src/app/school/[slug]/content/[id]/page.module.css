@@ -81,11 +81,11 @@
 }
 
 .body li::marker {
-  color: var(--accent, #06b6d4);
+  color: var(--accent-primary);
 }
 
 .body blockquote {
-  border-left: 3px solid var(--accent, #06b6d4);
+  border-left: 3px solid var(--accent-primary);
   margin: 1em 0;
   padding: 4px 16px;
   opacity: 0.85;
@@ -99,7 +99,7 @@
 }
 
 .body pre {
-  background: #10101f;
+  background: var(--bg-tertiary);
   border: 1px solid var(--border-color, #2a2a4a);
   border-radius: 8px;
   padding: 12px;
@@ -107,7 +107,7 @@
 }
 
 .body a {
-  color: var(--accent, #06b6d4);
+  color: var(--accent-primary);
 }
 
 .body img {

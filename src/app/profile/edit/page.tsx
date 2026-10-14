@@ -9,7 +9,6 @@ import { getUserProfileUrl } from '@/lib/utils'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { useToast } from '@/context/ToastContext'
 import ImageUploader from '@/components/ImageUploader'
-import AvailabilityEditor from '@/components/AvailabilityEditor'
 import { TimeZoneSelect } from '@/components/listings/TimeZoneSelect'
 import Skeleton from '@/components/Skeleton'
 import Breadcrumbs from '@/components/Breadcrumbs'
@@ -381,7 +380,13 @@ export default function ProfileEditPage() {
               <TimeZoneSelect value={timeZone} onChange={setTimeZone} label="Your Timezone" />
             </div>
 
-            <AvailabilityEditor userId={session?.user.id ?? ''} />
+            <div className={styles.mb16}>
+              <label className={styles.label}>Appointment Availability</label>
+              <p style={{ margin: '4px 0 8px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                Set the days and hours you accept appointments on the dedicated page.
+              </p>
+              <Link href="/dashboard/availability" className="btn-secondary">🗓️ Manage availability</Link>
+            </div>
 
             <div className={styles.mb16}>
               <label className={styles.label} htmlFor="bio">Bio</label>

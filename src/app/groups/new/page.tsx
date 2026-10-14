@@ -8,6 +8,8 @@ import { useToast } from '@/context/ToastContext'
 import Loading from '@/components/Loading'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import ImageUploader from '@/components/ImageUploader'
+import EntityLinkPicker, { commitPendingLinks } from '@/components/EntityLinkPicker'
+import type { PendingLink } from '@/components/EntityLinkPicker'
 import NextStepsSheet from '@/components/NextStepsSheet'
 
 export default function NewGroupPage() {
@@ -21,6 +23,7 @@ export default function NewGroupPage() {
   const [creating, setCreating] = useState(false)
   const [authenticated, setAuthenticated] = useState(false)
   const [createdGroup, setCreatedGroup] = useState<{ id: string } | null>(null)
+  const [links, setLinks] = useState<PendingLink[]>([])
 
   useEffect(() => {
     fetch('/api/auth/session')
@@ -43,6 +46,7 @@ export default function NewGroupPage() {
       if (res.ok) {
         const group = await res.json()
         const id = group?.id || group?.data?.id
+        if (id) void commitPendingLinks('GROUP', id, links)
         success('Group created!')
         if (id) setCreatedGroup({ id })
         else router.push('/groups')
@@ -157,16 +161,22 @@ export default function NewGroupPage() {
               <h3>Private Group</h3>
               <p>Only invited members can see content and participate</p>
             </div>
-            <label className={styles.toggleLabel}>
+            <label className="toggle-switch">
               <input
                 type="checkbox"
                 checked={isPrivate}
                 onChange={e => setIsPrivate(e.target.checked)}
-                className={styles.toggleInput}
               />
-              <span className={styles.toggleSlider} />
+              <span className="toggle-slider" />
             </label>
           </div>
+
+            <EntityLinkPicker
+              value={links}
+              onChange={setLinks}
+              types={['PROJECT', 'EVENT', 'SERVICE', 'GROUP', 'USER']}
+              hint="Optionally link this group to related projects, events, services, or members."
+            />
 
           <div className={styles.actions}>
             <Link href="/groups" className={styles.cancelBtn}>

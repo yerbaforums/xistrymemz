@@ -14,6 +14,8 @@ import DonationAddressPicker from '@/components/DonationAddressPicker'
 import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import { PRODUCT_CONDITIONS, PRODUCT_TYPES } from '@/lib/product-categories'
 import LocationPicker from '@/components/LocationPicker'
+import EntityLinkPicker, { commitPendingLinks } from '@/components/EntityLinkPicker'
+import type { PendingLink } from '@/components/EntityLinkPicker'
 import { AppointmentSettings } from '@/components/listings/AppointmentSettings'
 import type { AppointmentField } from '@/components/listings/AppointmentSettings'
 import { FieldListEditor } from '@/components/listings/FieldListEditor'
@@ -37,6 +39,7 @@ export default function NewProductPage() {
 
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
+  const [links, setLinks] = useState<PendingLink[]>([])
   const userDonationAddrs = useDonationAddresses()
   const [shop, setShop] = useState<{ shopName: string; shopSlug: string } | null>(null)
   const [listingMode, setListingMode] = useState<'shop' | 'standalone' | null>(null)
@@ -162,6 +165,8 @@ export default function NewProductPage() {
       })
       if (res.ok) {
         const productRes = await res.json(); const product = productRes?.data || productRes
+        // Persist any cross-links now that the product exists.
+        void commitPendingLinks('PRODUCT', product.id, links)
         if (product.needsEmailVerification) {
           warning('Saved as draft. Verify your email to publish this listing.')
           router.push('/dashboard/marketplace')
@@ -527,6 +532,13 @@ export default function NewProductPage() {
               </div>
             </div>
 
+            <EntityLinkPicker
+              value={links}
+              onChange={setLinks}
+              types={['PROJECT', 'SERVICE', 'EVENT', 'GROUP', 'USER']}
+              hint="Optionally connect this listing to related projects, events, services, groups, or members."
+            />
+
             <div className={styles.reviewCard}>
               <h3>Review Your Listing</h3>
               <div className={styles.reviewGrid}>
@@ -571,9 +583,9 @@ export default function NewProductPage() {
               </div>
             </div>
 
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', background: 'var(--bg-tertiary)', borderRadius: 8, cursor: 'pointer', marginTop: 12 }}>
+            <label className={styles.feedShareRow}>
               <input type="checkbox" checked={form.shareToFeed} onChange={e => setForm({ ...form, shareToFeed: e.target.checked })} />
-              <span style={{ fontSize: '0.9rem' }}>Also share to my feed</span>
+              <span>Also share to my feed</span>
             </label>
           </div>
         )}

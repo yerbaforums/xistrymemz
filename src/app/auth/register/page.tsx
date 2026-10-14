@@ -7,6 +7,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import styles from '../login/page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { PASSWORD_MIN_LENGTH } from '@/lib/validation'
 
 const OAUTH_META: Record<string, { label: string; icon: string }> = {
   google: { label: 'Google', icon: '/social-logos/google.svg' },
@@ -38,6 +39,9 @@ function RegisterForm() {
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [capsLock, setCapsLock] = useState(false)
   const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle')
   const [cooldown, setCooldown] = useState(0)
   const [oauthLoading, setOauthLoading] = useState<string | null>(null)
@@ -121,11 +125,33 @@ function RegisterForm() {
     }
   }
 
+  // Live password policy checklist — mirrors the server-side passwordSchema
+  // in src/lib/validation.ts (min length + lower/upper/digit).
+  const pwRules = {
+    length: password.length >= PASSWORD_MIN_LENGTH,
+    lower: /[a-z]/.test(password),
+    upper: /[A-Z]/.test(password),
+    digit: /[0-9]/.test(password),
+  }
+  const passwordEligible = pwRules.length && pwRules.lower && pwRules.upper && pwRules.digit
+  const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword
+
+  const trackCapsLock = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (typeof e.getModifierState === 'function') {
+      setCapsLock(e.getModifierState('CapsLock'))
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     if (password !== confirmPassword) {
       setPasswordError('Passwords do not match')
+      setLoading(false)
+      return
+    }
+    if (!passwordEligible) {
+      setPasswordError('Please meet all the password requirements above')
       setLoading(false)
       return
     }
@@ -278,33 +304,71 @@ function RegisterForm() {
 
           <div className={styles.formGroup}>
             <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Create a password"
-              required
-              minLength={8}
-              aria-describedby="password-hint"
-            />
-            <span id="password-hint" className={styles.fieldHint}>Minimum 8 characters</span>
+            <div className={styles.passwordWrap}>
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyUp={trackCapsLock}
+                onBlur={() => setCapsLock(false)}
+                placeholder="Create a password"
+                required
+                minLength={PASSWORD_MIN_LENGTH}
+                autoComplete="new-password"
+                aria-describedby="password-rules"
+              />
+              <button
+                type="button"
+                className={styles.pwToggle}
+                onClick={() => setShowPassword(s => !s)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                title={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? '🙈' : '👁'}
+              </button>
+            </div>
+            {capsLock && <span className={styles.capsWarn}>⚠️ Caps Lock is on</span>}
+            <ul id="password-rules" className={styles.pwRules}>
+              <li className={pwRules.length ? styles.pwRuleOk : ''}>{pwRules.length ? '✓' : '○'} {PASSWORD_MIN_LENGTH}+ characters</li>
+              <li className={pwRules.lower ? styles.pwRuleOk : ''}>{pwRules.lower ? '✓' : '○'} Lowercase letter</li>
+              <li className={pwRules.upper ? styles.pwRuleOk : ''}>{pwRules.upper ? '✓' : '○'} Uppercase letter</li>
+              <li className={pwRules.digit ? styles.pwRuleOk : ''}>{pwRules.digit ? '✓' : '○'} A number</li>
+            </ul>
+            {passwordEligible && <span className={styles.fieldSuccess}>✓ Password is strong</span>}
           </div>
 
           <div className={styles.formGroup}>
             <label htmlFor="confirmPassword">Confirm Password</label>
-            <input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => {
-                setConfirmPassword(e.target.value)
-                if (passwordError && e.target.value === password) setPasswordError('')
-              }}
-              placeholder="Confirm your password"
-              required
-              minLength={8}
-            />
+            <div className={styles.passwordWrap}>
+              <input
+                id="confirmPassword"
+                type={showConfirm ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value)
+                  if (passwordError && e.target.value === password) setPasswordError('')
+                }}
+                onKeyUp={trackCapsLock}
+                onBlur={() => setCapsLock(false)}
+                placeholder="Confirm your password"
+                required
+                minLength={PASSWORD_MIN_LENGTH}
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                className={styles.pwToggle}
+                onClick={() => setShowConfirm(s => !s)}
+                aria-label={showConfirm ? 'Hide password' : 'Show password'}
+                title={showConfirm ? 'Hide password' : 'Show password'}
+              >
+                {showConfirm ? '🙈' : '👁'}
+              </button>
+            </div>
+            {capsLock && <span className={styles.capsWarn}>⚠️ Caps Lock is on</span>}
+            {passwordsMatch && <span className={styles.fieldSuccess}>✓ Passwords match</span>}
+            {confirmPassword && !passwordsMatch && <span className={styles.fieldHint}>Passwords don&apos;t match yet…</span>}
             {passwordError && <span className={styles.fieldError}>{passwordError}</span>}
           </div>
 
@@ -346,7 +410,17 @@ function RegisterForm() {
             </label>
           </div>
 
-          <button type="submit" className={styles.submitBtn} disabled={loading || cooldown > 0 || usernameStatus === 'taken'}>
+          <button
+            type="submit"
+            className={styles.submitBtn}
+            disabled={
+              loading ||
+              cooldown > 0 ||
+              usernameStatus === 'taken' ||
+              (password.length > 0 && !passwordEligible) ||
+              (confirmPassword.length > 0 && password !== confirmPassword)
+            }
+          >
             {loading ? (
               <span className={styles.loadingContent}>
                 <span className={styles.spinner} aria-hidden="true"></span>

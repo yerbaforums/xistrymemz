@@ -31,7 +31,7 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #7c3aed, #06b6d4);
+  background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
   color: #fff;
   display: inline-flex;
   align-items: center;

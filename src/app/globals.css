@@ -32,6 +32,8 @@ html {
   --bg-primary: #0d0d0d;
   --bg-secondary: #161616;
   --bg-tertiary: #1f1f1f;
+  --bg-card: #161616;
+  --bg-input: rgba(255, 255, 255, 0.04);
   --accent-primary: #00d9ff;
   --accent-secondary: #ff3366;
   --accent-success: #00ff88;
@@ -412,12 +414,180 @@ a:focus-visible {
   margin-bottom: 16px;
 }
 
+/* Side-by-side form fields — wraps to one column on narrow screens */
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.form-row > .form-group {
+  margin-bottom: 0;
+}
+
+/* Submit / cancel button row shared by creation forms */
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.form-card {
+  padding: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+}
+
 .form-group label {
   display: block;
   margin-bottom: 8px;
   color: var(--text-secondary);
   font-size: 0.875rem;
   font-weight: 500;
+}
+
+/* Themed checkbox / radio — consistent size, theme-aware colors, focus glow */
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  padding: 4px 0;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+  vertical-align: middle;
+  cursor: pointer;
+  border: 1.5px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-card);
+  position: relative;
+  transition: var(--transition);
+}
+
+input[type="checkbox"]:hover:not(:disabled),
+input[type="radio"]:hover:not(:disabled) {
+  border-color: var(--accent-primary);
+}
+
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 10px;
+  border: solid var(--bg-primary);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+input[type="radio"] {
+  border-radius: 50%;
+}
+
+input[type="radio"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border: none;
+  border-radius: 50%;
+  background: var(--bg-primary);
+  transform: translate(-50%, -50%);
+}
+
+input[type="checkbox"]:focus-visible,
+input[type="radio"]:focus-visible {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-glow);
+}
+
+input[type="checkbox"]:disabled,
+input[type="radio"]:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Themed slider toggle — wraps a real checkbox for accessibility */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.toggle-switch input[type="checkbox"] {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.toggle-switch .toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  transition: var(--transition);
+}
+
+.toggle-switch .toggle-slider::before {
+  content: '';
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 2px;
+  bottom: 2px;
+  background: var(--text-muted);
+  border-radius: 50%;
+  transition: var(--transition);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(20px);
+  background: var(--bg-primary);
+}
+
+.toggle-switch input:focus-visible + .toggle-slider {
+  box-shadow: var(--shadow-glow);
+}
+
+.toggle-switch input:disabled + .toggle-slider {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .breadcrumbs {
@@ -430,9 +600,16 @@ a:focus-visible {
   color: var(--text-secondary);
 }
 
+.breadcrumb-item {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
 .breadcrumb-link {
   color: var(--accent-primary);
   text-decoration: none;
+  transition: color var(--transition);
 }
 
 .breadcrumb-link:hover {
@@ -441,11 +618,25 @@ a:focus-visible {
 
 .breadcrumb-current {
   color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 42ch;
 }
 
 .breadcrumb-sep {
   color: var(--text-muted);
   margin: 0 0.25rem;
+}
+
+@media (max-width: 640px) {
+  .breadcrumbs {
+    font-size: 0.75rem;
+  }
+
+  .breadcrumb-current {
+    max-width: 24ch;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

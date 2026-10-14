@@ -1,9 +1,20 @@
 import { z } from 'zod'
 
+// Shared password policy — single source of truth for every password-setting
+// flow (register, reset, change). Keep in sync with the client-side rules
+// checklist on the register page.
+export const PASSWORD_MIN_LENGTH = 8
+export const passwordSchema = z
+  .string()
+  .min(PASSWORD_MIN_LENGTH, `Password must be at least ${PASSWORD_MIN_LENGTH} characters`)
+  .regex(/[a-z]/, 'Password must include a lowercase letter')
+  .regex(/[A-Z]/, 'Password must include an uppercase letter')
+  .regex(/[0-9]/, 'Password must include a number')
+
 export const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').optional().nullable(),
   email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: passwordSchema,
   username: z.string().min(2, 'Username must be at least 2 characters').optional().nullable(),
   inviteCode: z.string().optional().nullable()
 })
@@ -23,7 +34,7 @@ export const forgotPasswordSchema = z.object({
 
 export const resetPasswordSchema = z.object({
   token: z.string().min(1, 'Token is required'),
-  password: z.string().min(8, 'Password must be at least 8 characters')
+  password: passwordSchema
 })
 
 export const verifyEmailSchema = z.object({

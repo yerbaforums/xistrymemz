@@ -13,7 +13,7 @@
 }
 
 .tipBtn:hover {
-  border-color: var(--accent, #06b6d4);
+  border-color: var(--accent-primary);
 }
 
 .overlay {
@@ -69,7 +69,7 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -107,7 +107,7 @@
 
 .copyBtn:hover,
 .qrBtn:hover {
-  border-color: var(--accent, #06b6d4);
+  border-color: var(--accent-primary);
 }
 
 .closeBtn {

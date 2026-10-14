@@ -31,7 +31,7 @@
 }
 
 .formCard {
-  background: var(--bg-card, #16162a);
+  background: var(--bg-card);
   border: 1px solid var(--border-color, #2a2a4a);
   border-radius: 14px;
   padding: 24px;
@@ -76,7 +76,7 @@
   padding: 8px 10px;
   border-radius: 8px;
   border: 1px solid var(--border-color, #2a2a4a);
-  background: #10101f;
+  background: var(--bg-tertiary);
   color: inherit;
   font-size: 0.88rem;
 }
@@ -102,7 +102,7 @@
 .addTier {
   background: none;
   border: 1px dashed var(--border-color, #2a2a4a);
-  color: var(--accent, #06b6d4);
+  color: var(--accent-primary);
   padding: 8px 14px;
   border-radius: 8px;
   cursor: pointer;

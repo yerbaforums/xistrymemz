@@ -61,6 +61,8 @@ interface RequestFormProps {
   onCancel?: () => void
   submitLabel?: string
   saving?: boolean
+  /** Rendered just above the action buttons (e.g. an entity link picker). */
+  extraLinks?: React.ReactNode
 }
 
 export default function RequestForm({
@@ -69,6 +71,7 @@ export default function RequestForm({
   onCancel,
   submitLabel = 'Create Request',
   saving: externalSaving,
+  extraLinks,
 }: RequestFormProps) {
   const { values: form, errors, setValue, patch, handleSubmit } = useZodForm<RequestFormData>(
     requestFormSchema,
@@ -251,6 +254,7 @@ export default function RequestForm({
           title="Add a question"
         />
       </div>
+      {extraLinks}
       <div className="form-actions">
         <button type="submit" disabled={isSaving} className="btn-primary">
           {isSaving ? 'Saving...' : submitLabel}

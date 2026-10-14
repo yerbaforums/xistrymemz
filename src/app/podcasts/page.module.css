@@ -30,7 +30,7 @@
   flex-direction: column;
   border-radius: 14px;
   overflow: hidden;
-  background: var(--bg-card, #16162a);
+  background: var(--bg-card);
   border: 1px solid var(--border-color, #2a2a4a);
   text-decoration: none;
   color: inherit;
@@ -39,7 +39,7 @@
 
 .podcastCard:hover {
   transform: translateY(-3px);
-  border-color: var(--accent, #06b6d4);
+  border-color: var(--accent-primary);
 }
 
 .cardCover {
@@ -48,7 +48,7 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: #10101f;
+  background: var(--bg-tertiary);
 }
 
 .cardCover img {
@@ -58,13 +58,13 @@
 }
 
 .coverGradient {
-  background: linear-gradient(135deg, #7c3aed33, #06b6d433);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent-secondary) 20%, transparent), color-mix(in srgb, var(--accent-primary) 20%, transparent));
 }
 
 .coverInitial {
   font-size: 3rem;
   font-weight: 800;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--text-secondary);
 }
 
 .cardBody {
@@ -93,7 +93,7 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #7c3aed, #06b6d4);
+  background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
   color: #fff;
   display: inline-flex;
   align-items: center;
@@ -136,7 +136,7 @@
   gap: 8px;
   padding: 8px 10px;
   border-radius: 8px;
-  background: #10101f;
+  background: var(--bg-tertiary);
   border: 1px solid var(--border-color, #2a2a4a);
   margin-bottom: 10px;
   font-size: 0.82rem;
@@ -144,7 +144,7 @@
 }
 
 .latestLabel {
-  color: var(--accent, #06b6d4);
+  color: var(--accent-primary);
   font-weight: 700;
   font-size: 0.7rem;
   text-transform: uppercase;
@@ -172,7 +172,7 @@
 .listenNow {
   font-size: 0.85rem;
   font-weight: 700;
-  color: var(--accent, #06b6d4);
+  color: var(--accent-primary);
 }
 
 .clearFilter {

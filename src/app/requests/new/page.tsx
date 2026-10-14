@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useToast } from '@/context/ToastContext'
 import RequestForm from '@/components/RequestForm'
+import EntityLinkPicker, { commitPendingLinks } from '@/components/EntityLinkPicker'
+import type { PendingLink } from '@/components/EntityLinkPicker'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import NextStepsSheet from '@/components/NextStepsSheet'
 import type { RequestFormData } from '@/types/request'
@@ -14,6 +16,7 @@ export default function NewRequestPage() {
   const { success, error: toastError } = useToast()
   const [createdId, setCreatedId] = useState<string | null>(null)
   const [createdTitle, setCreatedTitle] = useState('')
+  const [links, setLinks] = useState<PendingLink[]>([])
 
   const projectId = (() => {
     try {
@@ -48,6 +51,7 @@ export default function NewRequestPage() {
     if (res.ok) {
       const created = await res.json()
       const id = created?.id || created?.data?.id
+      if (id) void commitPendingLinks('REQUEST', id, links)
       success('Request created!')
       if (id) {
         setCreatedId(id)
@@ -68,7 +72,17 @@ export default function NewRequestPage() {
       <h1>New Request</h1>
       {projectId && <p role="status">🔗 Will link to project on create.</p>}
       <div className="form-card">
-        <RequestForm onSubmit={handleSubmit} />
+        <RequestForm
+          onSubmit={handleSubmit}
+          extraLinks={
+            <EntityLinkPicker
+              value={links}
+              onChange={setLinks}
+              types={['PROJECT', 'SERVICE', 'PRODUCT', 'EVENT', 'GROUP', 'USER']}
+              hint="Optionally connect this request to related projects, services, products, events, groups, or members."
+            />
+          }
+        />
       </div>
       {createdId && (
         <NextStepsSheet

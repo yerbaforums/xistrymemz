@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
 import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { passwordSchema } from '@/lib/validation'
 
 export default function AccountSettingsPage() {
   const { data: session, update } = useSession()
@@ -50,8 +51,9 @@ export default function AccountSettingsPage() {
       addToast?.('Passwords do not match', 'error')
       return
     }
-    if (newPassword.length < 6) {
-      addToast?.('Password must be at least 6 characters', 'error')
+    const pwCheck = passwordSchema.safeParse(newPassword)
+    if (!pwCheck.success) {
+      addToast?.(pwCheck.error.issues[0].message, 'error')
       return
     }
     setChangingPassword(true)
@@ -112,7 +114,7 @@ export default function AccountSettingsPage() {
               value={currentPassword}
               onChange={e => setCurrentPassword(e.target.value)}
               required
-              minLength={6}
+              autoComplete="current-password"
             />
           </div>
           <div className={styles.field}>
@@ -123,8 +125,10 @@ export default function AccountSettingsPage() {
               value={newPassword}
               onChange={e => setNewPassword(e.target.value)}
               required
-              minLength={6}
+              minLength={8}
+              autoComplete="new-password"
             />
+            <small className={styles.fieldHint}>At least 8 characters with lowercase, uppercase, and a number</small>
           </div>
           <div className={styles.field}>
             <label htmlFor="confirmPassword">Confirm New Password</label>
@@ -134,8 +138,12 @@ export default function AccountSettingsPage() {
               value={confirmPassword}
               onChange={e => setConfirmPassword(e.target.value)}
               required
-              minLength={6}
+              minLength={8}
+              autoComplete="new-password"
             />
+            {confirmPassword && newPassword === confirmPassword && (
+              <small className={styles.fieldSuccess}>✓ Passwords match</small>
+            )}
           </div>
           <button type="submit" className={styles.saveBtn} disabled={changingPassword}>
             {changingPassword ? 'Changing...' : 'Change Password'}

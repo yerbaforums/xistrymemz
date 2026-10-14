@@ -35,6 +35,9 @@ const ENTITY_TYPES = [
   { value: 'SHOP', label: 'Shop', icon: '🏪' },
   { value: 'SCHOOL', label: 'School', icon: '🏫' },
   { value: 'BOARD', label: 'Board', icon: '🪵' },
+  { value: 'BLOG', label: 'Blog', icon: '📰' },
+  { value: 'PODCAST', label: 'Podcast', icon: '🎙️' },
+  { value: 'USER', label: 'Member', icon: '👤' },
 ]
 
 const RELATION_TYPES = [

@@ -338,3 +338,56 @@
     flex-direction: column;
   }
 }
+
+/* Password input with show/hide toggle */
+.passwordWrap {
+  position: relative;
+  display: flex;
+}
+
+.passwordWrap input {
+  flex: 1;
+  padding-right: 44px;
+}
+
+.pwToggle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.05rem;
+  line-height: 1;
+  color: var(--text-muted);
+  padding: 4px;
+}
+
+.pwToggle:hover {
+  color: var(--text-primary);
+}
+
+/* Live password requirements checklist */
+.pwRules {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, max-content));
+  gap: 2px 14px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.pwRuleOk {
+  color: var(--accent-success);
+}
+
+.capsWarn {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--accent-warning);
+}

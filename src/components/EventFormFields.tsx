@@ -102,6 +102,8 @@ interface EventFormFieldsProps {
   onCancel?: () => void
   submitLabel?: string
   compact?: boolean
+  /** Rendered just above the action buttons (e.g. an entity link picker). */
+  extraLinks?: React.ReactNode
 }
 
 export type { UserAsset }
@@ -121,6 +123,7 @@ export default function EventFormFields({
   onCancel,
   submitLabel,
   compact,
+  extraLinks,
 }: EventFormFieldsProps) {
   const userDonationAddrs = useDonationAddresses()
 
@@ -560,6 +563,8 @@ export default function EventFormFields({
           </div>
         </details>
       )}
+
+      {extraLinks}
 
       {(onCancel || submitLabel) && (
         <div className={styles.actions}>

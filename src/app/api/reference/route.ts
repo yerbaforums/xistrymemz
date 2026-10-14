@@ -24,8 +24,12 @@ const OWNER_FIELDS: Record<string, { field: string; relation: string }> = {
   SERVICE: { field: 'userId', relation: 'user' },
   GROUP: { field: 'createdById', relation: 'createdBy' },
   SCHOOLCONTENT: { field: 'userId', relation: 'user' },
+  BOARD: { field: 'ownerId', relation: 'owner' },
   SHOP: { field: '', relation: '' },
   SCHOOL: { field: '', relation: '' },
+  BLOG: { field: '', relation: '' },
+  PODCAST: { field: '', relation: '' },
+  USER: { field: '', relation: '' },
 }
 
 const ENTITY_MODELS: Record<string, string> = {
@@ -38,15 +42,25 @@ const ENTITY_MODELS: Record<string, string> = {
   SERVICE: 'serviceOffering',
   GROUP: 'group',
   SCHOOLCONTENT: 'schoolContent',
+  BOARD: 'bulletinBoard',
   SHOP: 'user',
   SCHOOL: 'user',
+  BLOG: 'user',
+  PODCAST: 'user',
+  USER: 'user',
 }
 
 async function getEntityOwner(
   type: string,
   id: string,
 ): Promise<string | null> {
-  if (type === 'SHOP' || type === 'SCHOOL') {
+  if (
+    type === 'SHOP' ||
+    type === 'SCHOOL' ||
+    type === 'BLOG' ||
+    type === 'PODCAST' ||
+    type === 'USER'
+  ) {
     const user = await prisma.user.findUnique({
       where: { id },
       select: { id: true },

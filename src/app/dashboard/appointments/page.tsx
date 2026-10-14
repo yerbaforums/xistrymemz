@@ -392,7 +392,7 @@ export default function DashboardAppointments() {
           <p className={styles.subtitle}>Appointments, personal events, and group activities</p>
         </div>
         <div className={styles.headerActions}>
-          <Link href="/profile/edit" className={`${styles.viewToggle} ${styles.noUnderline}`}>
+          <Link href="/dashboard/availability" className={`${styles.viewToggle} ${styles.noUnderline}`}>
             ⏰ Availability
           </Link>
           <button onClick={() => setViewMode(viewMode === 'list' ? 'calendar' : 'list')} className={styles.viewToggle}>
@@ -409,7 +409,7 @@ export default function DashboardAppointments() {
         <div className={styles.emptyState} style={{ padding: '12px 16px', marginBottom: 12 }}>
           <p style={{ margin: 0, fontSize: '0.85rem' }}>
             📅 You take bookings but have no availability set — buyers see “no times available”.
-            {' '}<Link href="/profile/edit" className="btn-secondary">⏰ Set Availability</Link>
+            {' '}<Link href="/dashboard/availability" className="btn-secondary">⏰ Set Availability</Link>
           </p>
         </div>
       )}
@@ -477,7 +477,7 @@ export default function DashboardAppointments() {
             : 'Book appointments, create events, or join group activities to fill your planner.'}
           </p>
           <div className={styles.emptyActions}>
-            <Link href="/profile/edit" className="btn-secondary">⏰ Set Availability</Link>
+            <Link href="/dashboard/availability" className="btn-secondary">⏰ Set Availability</Link>
             <Link href="/events/new" className="btn-primary">+ New Event</Link>
             <Link href="/events" className="btn-secondary">Browse Events</Link>
           </div>

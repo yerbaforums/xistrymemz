@@ -143,16 +143,10 @@
 .checkField {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   cursor: pointer;
   font-size: 0.9rem;
   color: var(--text-primary);
-}
-
-.checkField input {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--accent-primary);
 }
 
 .actions {

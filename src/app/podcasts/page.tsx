@@ -48,8 +48,8 @@ export default function PodcastsPage() {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Podcasts' }]} />
       <div className={styles.header}>
-        <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Podcasts' }]} />
         <h1>Podcasts</h1>
         <p>Audio shows from community members — listen, subscribe via RSS, and join live broadcasts</p>
       </div>

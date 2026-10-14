@@ -6,6 +6,7 @@ export interface EntityIcon {
 
 export const ENTITY_ICONS: Record<string, EntityIcon> = {
   BOARD:     { emoji: '🪵', color: '#8B6914', label: 'Board' },
+  USER:      { emoji: '👤', color: '#6366f1', label: 'Member' },
   PRODUCT:   { emoji: '🛒', color: '#3b82f6', label: 'Product' },
   EVENT:     { emoji: '📅', color: '#f59e0b', label: 'Event' },
   PROJECT:   { emoji: '🚀', color: '#8b5cf6', label: 'Project' },
@@ -20,6 +21,9 @@ export const ENTITY_ICONS: Record<string, EntityIcon> = {
   POST:      { emoji: '📝', color: '#6366f1', label: 'Post' },
   FORUMPOST: { emoji: '💬', color: '#6366f1', label: 'Forum Post' },
   SCHOOLCONTENT: { emoji: '📚', color: '#f59e0b', label: 'School Content' },
+  BLOG:      { emoji: '📰', color: '#0ea5e9', label: 'Blog' },
+  BLOGPOST:  { emoji: '✍️', color: '#0ea5e9', label: 'Blog Post' },
+  PODCAST:   { emoji: '🎙️', color: '#ef4444', label: 'Podcast' },
 }
 
 export function getEntityIcon(type: string): string {

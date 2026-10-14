@@ -31,6 +31,25 @@ const RELATION_LABELS: Record<string, string> = {
   PROMOTES: 'Promotes',
 }
 
+const TYPE_URL_PREFIX: Record<string, string> = {
+  PLAN: '/projects/',
+  PROJECT: '/projects/',
+  PRODUCT: '/products/',
+  EVENT: '/events/',
+  REQUEST: '/requests/',
+  SERVICE: '/services/',
+  GROUP: '/groups/',
+  POST: '/posts/',
+  FORUMPOST: '/community/forum/',
+  SCHOOLCONTENT: '/school/content/',
+  BOARD: '/boards/',
+  USER: '/profile/',
+  SHOP: '/shop/',
+  SCHOOL: '/school/',
+  BLOG: '/blog/',
+  PODCAST: '/podcast/',
+}
+
 interface LinkedItemsSectionProps {
   entityType: string
   entityId: string
@@ -108,6 +127,12 @@ export default function LinkedItemsSection({
   const outgoing = backlinks.filter(b => b.sourceType === entityType && b.sourceId === entityId)
   const incoming = backlinks.filter(b => b.targetType === entityType && b.targetId === entityId)
 
+  // Prefer the URL resolved by the API (already slug-aware); fall back to the
+  // type prefix map so incoming/outgoing cards still link somewhere useful.
+  const resolveHref = (type: string, id: string) =>
+    items.find(i => i.type === type && i.id === id)?.url ||
+    (TYPE_URL_PREFIX[type] ? TYPE_URL_PREFIX[type] + id : '/')
+
   if (loading) return null
   if (items.length === 0 && outgoing.length === 0 && incoming.length === 0) return null
 
@@ -137,15 +162,7 @@ export default function LinkedItemsSection({
           <div className={styles.list}>
             {outgoing.map(bl => (
               <div key={bl.id} className={styles.card}>
-                <Link href={(() => {
-                  const labels: Record<string, string> = {
-                    PLAN: '/projects/', PRODUCT: '/products/', EVENT: '/events/',
-                    REQUEST: '/requests/', SERVICE: '/services/', GROUP: '/groups/',
-                    POST: '/posts/', SCHOOLCONTENT: '/school/content/',
-                    SHOP: '/shop/', SCHOOL: '/school/',
-                  }
-                  return (labels[bl.targetType] || '/') + bl.targetId
-                })()} className={styles.cardLink}>
+                <Link href={resolveHref(bl.targetType, bl.targetId)} className={styles.cardLink}>
                   <span className={styles.icon}>{getEntityIcon(bl.targetType)}</span>
                   <div className={styles.info}>
                     <span className={styles.itemTitle}>
@@ -178,15 +195,7 @@ export default function LinkedItemsSection({
           <div className={styles.list}>
             {incoming.map(bl => (
               <div key={bl.id} className={styles.card}>
-                <Link href={(() => {
-                  const labels: Record<string, string> = {
-                    PLAN: '/projects/', PRODUCT: '/products/', EVENT: '/events/',
-                    REQUEST: '/requests/', SERVICE: '/services/', GROUP: '/groups/',
-                    POST: '/posts/', SCHOOLCONTENT: '/school/content/',
-                    SHOP: '/shop/', SCHOOL: '/school/',
-                  }
-                  return (labels[bl.sourceType] || '/') + bl.sourceId
-                })()} className={styles.cardLink}>
+                <Link href={resolveHref(bl.sourceType, bl.sourceId)} className={styles.cardLink}>
                   <span className={styles.icon}>{getEntityIcon(bl.sourceType)}</span>
                   <div className={styles.info}>
                     <span className={styles.itemTitle}>

@@ -64,6 +64,12 @@ export default async function ProfileSettingsPage() {
               <h3>Privacy</h3>
               <p>Control who can see your information</p>
             </Link>
+
+            <Link href="/dashboard/availability" className={styles.card}>
+              <span className={styles.cardIcon}>🗓️</span>
+              <h3>Availability</h3>
+              <p>Set the days and hours you take appointments</p>
+            </Link>
           </div>
         </main>
       </div>

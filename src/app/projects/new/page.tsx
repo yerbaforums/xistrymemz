@@ -12,6 +12,8 @@ import HashtagInput from '@/components/HashtagInput'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
 import LocationPicker from '@/components/LocationPicker'
 import AssetPicker from '@/components/AssetPicker'
+import EntityLinkPicker, { commitPendingLinks } from '@/components/EntityLinkPicker'
+import type { PendingLink } from '@/components/EntityLinkPicker'
 import NextStepsSheet from '@/components/NextStepsSheet'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import { PROJECT_CATEGORIES } from '@/lib/project-categories'
@@ -120,6 +122,7 @@ export default function NewProjectPage() {
   const [mileposts, setMileposts] = useState('')
   const [hashtags, setHashtags] = useState<string[]>([])
   const [linkedAsset, setLinkedAsset] = useState<UserAsset | null>(null)
+  const [links, setLinks] = useState<PendingLink[]>([])
 
   // Step 4: Review extras
   const [postUpdate, setPostUpdate] = useState(false)
@@ -240,6 +243,7 @@ export default function NewProjectPage() {
 
       const data = await res.json()
       const projectId = data?.data?.id
+      if (projectId) void commitPendingLinks('PROJECT', projectId, links)
       if (projectId && fromRequestId) {
         // Auto-link the source request (best effort — never block nav).
         fetch(`/api/requests/${fromRequestId}`, {
@@ -624,6 +628,13 @@ export default function NewProjectPage() {
                   )}
                 </div>
               </div>
+
+              <EntityLinkPicker
+                value={links}
+                onChange={setLinks}
+                types={['REQUEST', 'EVENT', 'SERVICE', 'PRODUCT', 'GROUP', 'USER']}
+                hint="Optionally connect this project to related requests, events, services, products, groups, or members."
+              />
 
               <div className={styles.reviewOptions}>
                 <label className={styles.checkField}>

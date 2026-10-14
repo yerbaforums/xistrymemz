@@ -46,6 +46,16 @@
   color: var(--text-secondary);
 }
 
+.fieldHint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.fieldSuccess {
+  font-size: 0.75rem;
+  color: var(--accent-success);
+}
+
 .saveBtn {
   align-self: flex-start;
   padding: 10px 24px;

@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import EventFormFields, { getDefaultEventFormData } from '@/components/EventFormFields'
+import EntityLinkPicker, { commitPendingLinks } from '@/components/EntityLinkPicker'
+import type { PendingLink } from '@/components/EntityLinkPicker'
 import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
 import { getEventTemplateById } from '@/lib/event-templates'
 import type { EventFormData } from '@/components/EventFormFields'
@@ -15,6 +17,7 @@ export function EventForm() {
   const { success, error } = useToast()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState<EventFormData>(() => getDefaultEventFormData())
+  const [links, setLinks] = useState<PendingLink[]>([])
 
   useEffect(() => {
     const templateId = searchParams.get('template')
@@ -93,6 +96,7 @@ export function EventForm() {
       if (res.ok) {
         const body = await res.json().catch(() => null)
         const createdId = (body as { data?: { id?: string }; id?: string })?.data?.id || (body as { id?: string })?.id
+        if (createdId) void commitPendingLinks('EVENT', createdId, links)
         success('Event created successfully!')
         router.push(createdId ? `/events/${createdId}?fresh=1` : '/events')
       } else {
@@ -105,7 +109,7 @@ export function EventForm() {
     } finally {
       setLoading(false)
     }
-  }, [formData, success, error, router])
+  }, [formData, links, success, error, router])
 
   return (
     <div>
@@ -116,6 +120,14 @@ export function EventForm() {
         mode="create"
         saving={loading}
         onCancel={() => router.back()}
+        extraLinks={
+          <EntityLinkPicker
+            value={links}
+            onChange={setLinks}
+            types={['PROJECT', 'SERVICE', 'PRODUCT', 'GROUP', 'USER']}
+            hint="Add related projects, services, products, groups, or members beyond the primary link above."
+          />
+        }
       />
 
       {searchParams.get('template') && (
