@@ -5,6 +5,7 @@ import Link from 'next/link'
 import IpfsImage from '@/components/IpfsImage'
 import LinkedEntityDetail from '@/components/LinkedEntityDetail'
 import { parseImageList } from '@/lib/utils'
+import { primaryIpfsUrl, isIpfsGatewayUrl } from '@/lib/ipfs-gateway'
 import styles from './PinCarouselModal.module.css'
 
 interface PinUser {
@@ -94,6 +95,29 @@ export default function PinCarouselModal({ pins, initialIndex, onClose, boardSlu
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = '' }
   }, [])
+
+  // Preload neighbor images (same pin ±1, adjacent pins' first image) so
+  // carousel navigation never waits on a cold gateway.
+  useEffect(() => {
+    if (pins.length === 0) return
+    const urls = new Set<string>()
+    const current = parseImageList(pins[index]?.images)
+    for (const i of [imageIndex - 1, imageIndex + 1]) {
+      const u = current[i] || (i === 0 ? pins[index]?.entityImage : undefined)
+      if (u) urls.add(u)
+    }
+    for (const j of [(index + 1) % pins.length, (index - 1 + pins.length) % pins.length]) {
+      const p = pins[j]
+      if (!p) continue
+      const first = parseImageList(p.images)[0] || p.entityImage
+      if (first) urls.add(first)
+    }
+    for (const u of urls) {
+      const src = isIpfsGatewayUrl(u) ? primaryIpfsUrl(u) : u
+      const img = new Image()
+      img.src = src
+    }
+  }, [pins, index, imageIndex])
 
   useEffect(() => {
     if (!autoPlay) return

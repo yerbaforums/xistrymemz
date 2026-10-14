@@ -87,7 +87,7 @@ export async function GET(
 
     const postsTake = 20
     const [projects, posts, products, services, connections, groupMemberships, totalPostCount, userLocations,
-      eventVolunteerCount, projectVolunteerCount, eventAttendeeCount, forumPostCount, forumReplyCount,
+      eventVolunteerCount, projectVolunteerCount, eventAttendeeCount, organizedEventCount, ownEventJoinCount, forumPostCount, forumReplyCount,
       badgeCount, barterOfferSentCount, barterOfferReceivedCount, orderCount, requestCount
     ] = await Promise.all([
       prisma.project.findMany({
@@ -213,6 +213,9 @@ export async function GET(
       prisma.eventJoiner.count({ where: { userId, role: 'VOLUNTEER' } }),
       prisma.projectJoiner.count({ where: { userId, role: 'VOLUNTEER' } }),
       prisma.eventJoiner.count({ where: { userId, role: 'ATTENDEE' } }),
+      prisma.event.count({ where: { organizerId: userId } }),
+      // Own events the organizer also joined (subtracted so headline totals never double-count).
+      prisma.eventJoiner.count({ where: { userId, event: { organizerId: userId } } }),
       prisma.forumPost.count({ where: { authorId: userId } }),
       prisma.forumReply.count({ where: { authorId: userId } }),
       prisma.badge.count({ where: { userId } }),
@@ -284,12 +287,22 @@ export async function GET(
     ])
 
     const isOwner = session?.user?.id === userId
-    const sanitized = sanitizePassportForPublic(user, (prefRow?.preferences as { privacy?: { passportVisibility?: string; showExactCoords?: boolean } } | null) ?? null, isOwner)
+    const privacyPrefs = (prefRow?.preferences as { privacy?: { passportVisibility?: string; showExactCoords?: boolean } } | null) ?? null
+    const sanitized = sanitizePassportForPublic(user, privacyPrefs, isOwner)
+    // Exact location (coords + saved-location addresses) is only visible to
+    // the owner or to viewers the owner explicitly enabled it for. Everyone
+    // else sees location names at most — never address text — honoring the
+    // "city only" promise of the default public passport.
+    const showExactLocation = isOwner ||
+      ((sanitized as { passportVisibility?: string }).passportVisibility === 'public' &&
+        privacyPrefs?.privacy?.showExactCoords === true)
     const sanitizedLocations = isOwner
       ? userLocations
       : ((sanitized as { passportVisibility?: string }).passportVisibility === 'hidden'
         ? []
-        : userLocations.map(loc => ({ ...loc, latitude: null, longitude: null })))
+        : showExactLocation
+          ? userLocations
+          : userLocations.map(loc => ({ ...loc, location: null, latitude: null, longitude: null })))
 
     return NextResponse.json({
       user: {
@@ -309,6 +322,9 @@ export async function GET(
         links,
         volunteerCount: eventVolunteerCount + projectVolunteerCount,
         eventCount: eventAttendeeCount + eventVolunteerCount,
+        organizedEventCount,
+        // Exact deduped total matching the tab lists (organized + joined, minus own joins).
+        totalEventCount: organizedEventCount + eventAttendeeCount + eventVolunteerCount - ownEventJoinCount,
         forumPostCount,
         forumReplyCount,
         badgeCount,

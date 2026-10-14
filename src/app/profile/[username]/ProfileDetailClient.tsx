@@ -115,6 +115,8 @@ interface ProfileUser {
   userLocations?: UserLocation[]
   volunteerCount?: number
   eventCount?: number
+  organizedEventCount?: number
+  totalEventCount?: number
   forumPostCount?: number
   forumReplyCount?: number
   badgeCount?: number
@@ -231,6 +233,18 @@ interface UserRequestEntry {
   createdAt: string
 }
 
+/** Split events into upcoming vs past (undated counts as upcoming). */
+function splitUpcomingPast<T extends { eventDate: string | null }>(events: T[]): { upcoming: T[]; past: T[] } {
+  const now = Date.now()
+  const upcoming: T[] = []
+  const past: T[] = []
+  for (const e of events) {
+    if (e.eventDate && new Date(e.eventDate).getTime() < now) past.push(e)
+    else upcoming.push(e)
+  }
+  return { upcoming, past }
+}
+
 function DonationCard({ donation }: { donation: DonationAddr }) {
   const [qrOpen, setQrOpen] = useState(false)
   const shortAddr = donation.address.length > 12
@@ -345,6 +359,7 @@ export default function ProfilePage() {
   const [activeClass, setActiveClass] = useState<string | null>(null)
   const [forumPosts, setForumPosts] = useState<ForumPostEntry[]>([])
   const [userEvents, setUserEvents] = useState<UserEventEntry[]>([])
+  const [joinedEvents, setJoinedEvents] = useState<UserEventEntry[]>([])
   const [userRequests, setUserRequests] = useState<UserRequestEntry[]>([])
   const [loadingForum, setLoadingForum] = useState(false)
   const [loadingEvents, setLoadingEvents] = useState(false)
@@ -457,16 +472,29 @@ export default function ProfilePage() {
     fetchForumPosts()
   }, [activeTab, user?.id])
 
-  // Fetch events when tab is active
+  // Fetch events when tab is active: organized + joined, so the counts
+  // always match a visible list (past events included in both). Also fetched
+  // for class-filtered views, which include joined events.
   useEffect(() => {
-    if (activeTab !== 'events' || !user) return
+    if ((activeTab !== 'events' && activeClass === null) || !user) return
     const fetchEvents = async () => {
       setLoadingEvents(true)
       try {
-        const res = await fetch(`/api/events?organizerId=${user.id}`)
-        if (res.ok) {
-          const data = await res.json()
-          setUserEvents(data || [])
+        const [orgRes, joinedRes] = await Promise.all([
+          fetch(`/api/events?organizerId=${user.id}`),
+          fetch(`/api/events?participantId=${user.id}`),
+        ])
+        let organizedIds = new Set<string>()
+        if (orgRes.ok) {
+          const data = await orgRes.json()
+          const organized = data || []
+          setUserEvents(organized)
+          organizedIds = new Set(organized.map((e: UserEventEntry) => e.id))
+        }
+        if (joinedRes.ok) {
+          const data = await joinedRes.json()
+          // Exclude events they organized (shown above) so nothing double-counts.
+          setJoinedEvents((data || []).filter((e: UserEventEntry) => !organizedIds.has(e.id)))
         }
       } catch (err) {
         console.error(err)
@@ -475,7 +503,7 @@ export default function ProfilePage() {
       }
     }
     fetchEvents()
-  }, [activeTab, user?.id])
+  }, [activeTab, activeClass, user?.id])
 
   // Fetch requests when tab is active
   useEffect(() => {
@@ -997,12 +1025,12 @@ export default function ProfilePage() {
                   <span className={styles.statLabel}>Deals</span>
                 </div>
               )}
-              {user.eventCount !== undefined && user.eventCount > 0 && (
+              {(user.totalEventCount ?? (user.organizedEventCount ?? 0) + (user.eventCount ?? 0)) > 0 ? (
                 <div className={styles.stat}>
-                  <span className={styles.statValue}>{user.eventCount}</span>
+                  <span className={styles.statValue}>{user.totalEventCount ?? (user.organizedEventCount ?? 0) + (user.eventCount ?? 0)}</span>
                   <span className={styles.statLabel}>Events</span>
                 </div>
-              )}
+              ) : null}
               {user.forumPostCount !== undefined && (user.forumPostCount > 0 || (user.forumReplyCount ?? 0) > 0) && (
                 <div className={styles.stat}>
                   <span className={styles.statValue}>{user.forumPostCount! + (user.forumReplyCount ?? 0)}</span>
@@ -1123,7 +1151,7 @@ export default function ProfilePage() {
           className={`${styles.tab} ${activeTab === 'events' ? styles.active : ''}`}
           onClick={() => setActiveTab('events')}
         >
-          Events {(user.eventCount ?? 0) > 0 ? `(${user.eventCount})` : ''}
+          Events {(user.totalEventCount ?? (user.organizedEventCount ?? 0) + (user.eventCount ?? 0)) > 0 ? `(${user.totalEventCount ?? (user.organizedEventCount ?? 0) + (user.eventCount ?? 0)})` : ''}
         </Button>
         <Button 
           className={`${styles.tab} ${activeTab === 'requests' ? styles.active : ''}`}
@@ -1174,9 +1202,10 @@ export default function ProfilePage() {
           <Button
             className={`${styles.classTab} ${activeClass === null ? styles.classTabActive : ''}`}
             onClick={() => { setActiveClass(null); setActiveTab('posts') }}
+            title="Show activity across all classes"
           >
-            <span className={styles.classIcon}>{CLASS_ICONS['Architect'] || '📋'}</span>
-            Combined
+            <span className={styles.classIcon}>🗂️</span>
+            All
           </Button>
           {userClasses.map(cls => (
             <Button
@@ -1245,11 +1274,11 @@ export default function ProfilePage() {
                 </div>
               </div>
             )}
-            {userEvents.filter(e => matchesClass(e.title || '', activeClass)).length > 0 && (
+            {[...userEvents, ...joinedEvents.filter(e => !userEvents.some(u => u.id === e.id))].filter(e => matchesClass(e.title || '', activeClass)).length > 0 && (
               <div className={styles.classEntitySection}>
                 <h4>Events</h4>
                 <div className={styles.classEntityGrid}>
-                  {userEvents.filter(e => matchesClass(e.title || '', activeClass)).slice(0, 6).map(e => (
+                  {[...userEvents, ...joinedEvents.filter(e => !userEvents.some(u => u.id === e.id))].filter(e => matchesClass(e.title || '', activeClass)).slice(0, 6).map(e => (
                     <div key={e.id} className={styles.classEntityCard}>
                       <div className={styles.classEntityBody}>
                         <Link href={`/events/${e.id}`} className={styles.classEntityLink}>{e.title}</Link>
@@ -1579,19 +1608,71 @@ export default function ProfilePage() {
             <h3>Events</h3>
             {loadingEvents ? (
               <div className={styles.empty}><Skeleton width="100%" height="1rem" /></div>
-            ) : userEvents.length > 0 ? (
-              <div className={styles.postsList}>
-                {userEvents.map(ev => (
-                  <Link key={ev.id} href={`/events/${ev.id}`} className={styles.forumPostCard}>
-                    <span className={styles.forumPostCategory}>{ev.eventCategory || 'Event'}</span>
-                    <h4>{ev.title}</h4>
-                    {ev.eventDate && <p>{new Date(ev.eventDate).toLocaleDateString()}{ev.location ? ` · ${ev.location}` : ''}</p>}
-                    <span className={styles.forumPostMeta}>👥 {ev._count?.eventJoiners ?? 0} attendees</span>
-                  </Link>
-                ))}
-              </div>
+            ) : (userEvents.length > 0 || joinedEvents.length > 0) ? (
+              <>
+                {userEvents.length > 0 && (
+                  <>
+                    <h4 className={styles.eventSubhead}>Hosting ({userEvents.length})</h4>
+                    <div className={styles.postsList}>
+                      {splitUpcomingPast(userEvents).upcoming.map(ev => (
+                        <Link key={ev.id} href={`/events/${ev.id}`} className={styles.forumPostCard}>
+                          <span className={styles.forumPostCategory}>{ev.eventCategory || 'Event'}</span>
+                          <h4>{ev.title}</h4>
+                          {ev.eventDate && <p>{new Date(ev.eventDate).toLocaleDateString()}{ev.location ? ` · ${ev.location}` : ''}</p>}
+                          <span className={styles.forumPostMeta}>👥 {ev._count?.eventJoiners ?? 0} attendees</span>
+                        </Link>
+                      ))}
+                    </div>
+                    {splitUpcomingPast(userEvents).past.length > 0 && (
+                      <>
+                        <h4 className={styles.eventSubheadMuted}>Past hosted ({splitUpcomingPast(userEvents).past.length})</h4>
+                        <div className={styles.postsList}>
+                          {splitUpcomingPast(userEvents).past.map(ev => (
+                            <Link key={ev.id} href={`/events/${ev.id}`} className={styles.forumPostCard}>
+                              <span className={styles.forumPostCategory}>{ev.eventCategory || 'Event'}</span>
+                              <h4>{ev.title}</h4>
+                              {ev.eventDate && <p>{new Date(ev.eventDate).toLocaleDateString()}{ev.location ? ` · ${ev.location}` : ''}</p>}
+                              <span className={styles.forumPostMeta}>👥 {ev._count?.eventJoiners ?? 0} attendees</span>
+                            </Link>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </>
+                )}
+                {joinedEvents.length > 0 && (
+                  <>
+                    <h4 className={styles.eventSubhead}>Joined ({joinedEvents.length})</h4>
+                    <div className={styles.postsList}>
+                      {splitUpcomingPast(joinedEvents).upcoming.map(ev => (
+                        <Link key={ev.id} href={`/events/${ev.id}`} className={styles.forumPostCard}>
+                          <span className={styles.forumPostCategory}>{ev.eventCategory || 'Event'}</span>
+                          <h4>{ev.title}</h4>
+                          {ev.eventDate && <p>{new Date(ev.eventDate).toLocaleDateString()}{ev.location ? ` · ${ev.location}` : ''}</p>}
+                          <span className={styles.forumPostMeta}>👥 {ev._count?.eventJoiners ?? 0} attendees</span>
+                        </Link>
+                      ))}
+                    </div>
+                    {splitUpcomingPast(joinedEvents).past.length > 0 && (
+                      <>
+                        <h4 className={styles.eventSubheadMuted}>Past attended ({splitUpcomingPast(joinedEvents).past.length})</h4>
+                        <div className={styles.postsList}>
+                          {splitUpcomingPast(joinedEvents).past.map(ev => (
+                            <Link key={ev.id} href={`/events/${ev.id}`} className={styles.forumPostCard}>
+                              <span className={styles.forumPostCategory}>{ev.eventCategory || 'Event'}</span>
+                              <h4>{ev.title}</h4>
+                              {ev.eventDate && <p>{new Date(ev.eventDate).toLocaleDateString()}{ev.location ? ` · ${ev.location}` : ''}</p>}
+                              <span className={styles.forumPostMeta}>👥 {ev._count?.eventJoiners ?? 0} attendees</span>
+                            </Link>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </>
+                )}
+              </>
             ) : (
-              <EmptyState icon="📅" title="No events yet" description={`${user.name || 'This user'} hasn't created any events yet.`} />
+              <EmptyState icon="📅" title="No events yet" description={`${user.name || 'This user'} hasn't hosted or joined any events yet.`} />
             )}
           </div>
         )}

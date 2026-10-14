@@ -12,6 +12,9 @@ export async function GET(request: Request) {
     const type = searchParams.get('type') || 'public'
     const projectId = searchParams.get('projectId')
     const organizerId = searchParams.get('organizerId')
+    // Events a user joined (attendee/volunteer) — powers the "Joined"
+    // section on profiles so participation counts match a visible list.
+    const participantId = searchParams.get('participantId')
 
     if (type === 'personal') {
       const session = await getServerSession(authOptions)
@@ -37,6 +40,10 @@ export async function GET(request: Request) {
 
     if (organizerId) {
       where.organizerId = organizerId
+    }
+
+    if (participantId) {
+      where.eventJoiners = { some: { userId: participantId } }
     }
 
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'))

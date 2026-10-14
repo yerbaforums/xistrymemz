@@ -597,6 +597,20 @@
   min-height: 200px;
 }
 
+.eventSubhead {
+  margin: 16px 0 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.eventSubheadMuted {
+  margin: 16px 0 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
 .forumPostCard {
   display: block;
   background: var(--bg-secondary);
