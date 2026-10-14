@@ -20,6 +20,11 @@ const PROTECTED_PREFIXES = [
   '/courier',
   '/products/new',
   '/groups/new',
+  '/events/new',
+  '/projects/new',
+  '/requests/new',
+  '/shop/setup',
+  '/school/setup',
   '/notifications',
   '/admin',
 ]
