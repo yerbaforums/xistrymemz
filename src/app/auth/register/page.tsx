@@ -38,6 +38,8 @@ function RegisterForm() {
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle')
+  const [cooldown, setCooldown] = useState(0)
   const [oauthLoading, setOauthLoading] = useState<string | null>(null)
   const [oauthProviders, setOauthProviders] = useState<string[]>([])
   const [providersLoading, setProvidersLoading] = useState(true)
@@ -51,6 +53,34 @@ function RegisterForm() {
       .catch(() => {})
       .finally(() => setProvidersLoading(false))
   }, [])
+
+  // Live username availability — a debounced read-only check so a taken
+  // username never burns a register attempt (or an auth rate-limit slot).
+  useEffect(() => {
+    const normalized = username.trim()
+    if (!normalized || normalized.length < 3) {
+      setUsernameStatus('idle')
+      return
+    }
+    setUsernameStatus('checking')
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/auth/check-username?username=${encodeURIComponent(normalized)}`)
+        const data = await res.json()
+        setUsernameStatus(data.available ? 'available' : 'taken')
+      } catch {
+        setUsernameStatus('idle')
+      }
+    }, 350)
+    return () => clearTimeout(timer)
+  }, [username])
+
+  // Rate-limit cooldown — counts down the seconds until the form unlocks.
+  useEffect(() => {
+    if (cooldown <= 0) return
+    const timer = setInterval(() => setCooldown(c => Math.max(0, c - 1)), 1000)
+    return () => clearInterval(timer)
+  }, [cooldown])
 
   const handleOAuthSignUp = async (provider: string) => {
     setOauthLoading(provider)
@@ -103,6 +133,11 @@ function RegisterForm() {
       setError('Please accept the Terms and Privacy Policy to create an account.')
       return
     }
+    if (username.trim() && usernameStatus === 'taken') {
+      setError('That username is already taken — please choose another.')
+      return
+    }
+    if (cooldown > 0) return
     setPasswordError('')
     setLoading(true)
 
@@ -116,7 +151,13 @@ function RegisterForm() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || 'Registration failed')
+        if (res.status === 429) {
+          const retryAfter = parseInt(res.headers.get('Retry-After') || '60', 10)
+          setCooldown(retryAfter)
+          setError(`Too many attempts — please wait ${retryAfter}s and try again.`)
+        } else {
+          setError(data.error || 'Registration failed')
+        }
         setLoading(false)
         return
       }
@@ -129,12 +170,9 @@ function RegisterForm() {
           }).catch(() => {})
         }
 
-        // Send verification email
-        fetch('/api/auth/resend-verification', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email })
-        }).catch(() => {})
+      // Note: no resend-verification call here — the register route already
+      // sends the verification email. The old duplicate call doubled the
+      // email and burned an extra auth rate-limit slot per signup.
 
       const result = await signIn('credentials', {
         email,
@@ -218,7 +256,12 @@ function RegisterForm() {
               maxLength={50}
               pattern="[a-zA-Z0-9]+"
             />
-            <span className={styles.fieldHint}>Letters and numbers only. This will be your profile URL.</span>
+            <span className={styles.fieldHint} role="status">
+              {usernameStatus === 'checking' && 'Checking availability…'}
+              {usernameStatus === 'available' && '✓ Username is available'}
+              {usernameStatus === 'taken' && '✗ Username is already taken — pick another'}
+              {(usernameStatus === 'idle' || !username) && 'Letters and numbers only. This will be your profile URL.'}
+            </span>
           </div>
 
           <div className={styles.formGroup}>
@@ -303,13 +346,13 @@ function RegisterForm() {
             </label>
           </div>
 
-          <button type="submit" className={styles.submitBtn} disabled={loading}>
+          <button type="submit" className={styles.submitBtn} disabled={loading || cooldown > 0 || usernameStatus === 'taken'}>
             {loading ? (
               <span className={styles.loadingContent}>
                 <span className={styles.spinner} aria-hidden="true"></span>
                 Creating account...
               </span>
-            ) : 'Create Account'}
+            ) : cooldown > 0 ? `Try again in ${cooldown}s` : 'Create Account'}
           </button>
         </form>
 

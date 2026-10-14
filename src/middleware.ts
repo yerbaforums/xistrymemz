@@ -123,7 +123,7 @@ function getClientIP(request: NextRequest): string {
 }
 
 const RATE_LIMIT_CONFIGS = {
-  auth: { interval: 60 * 1000, maxRequests: 5 },
+  auth: { interval: 60 * 1000, maxRequests: 10 },
   search: { interval: 60 * 1000, maxRequests: 30 },
   write: { interval: 60 * 1000, maxRequests: 60 },
   read: { interval: 60 * 1000, maxRequests: 120 },
@@ -132,9 +132,15 @@ const RATE_LIMIT_CONFIGS = {
 type RouteType = keyof typeof RATE_LIMIT_CONFIGS
 
 function getRouteType(path: string, method: string): RouteType | null {
+  // Credential-sensitive endpoints share the tight per-IP auth budget.
+  // NextAuth's routine GET endpoints (csrf/session/providers) are
+  // deliberately excluded — they fire on every page load and must never
+  // count against auth. (The old check matched the literal route filename
+  // '/api/auth/[...nextauth]', which never appears in a request path, so
+  // sign-in callbacks silently fell into the loose write bucket instead.)
   if (path.includes('/api/auth/login') || path.includes('/api/auth/register') ||
       path.includes('/api/auth/forgot-password') || path.includes('/api/auth/reset-password') ||
-      path.includes('/api/auth/[...nextauth]')) return 'auth'
+      path.includes('/api/auth/signin') || path.includes('/api/auth/callback')) return 'auth'
   if (path.startsWith('/api/search')) return 'search'
   if (path.startsWith('/api/')) {
     return (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) ? 'write' : 'read'
@@ -223,6 +229,7 @@ export default async function middleware(request: NextRequest) {
 
   if (!result.success) {
     const retryAfter = Math.ceil((result.reset - Date.now()) / 1000)
+    console.warn(`[rate-limit] 429 ${method} ${path} ip=${clientIP} retryAfter=${retryAfter}s`)
     return NextResponse.json(
       { error: 'Too Many Requests', message: 'Rate limit exceeded. Please try again later.' },
       {

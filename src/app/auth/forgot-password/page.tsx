@@ -27,7 +27,12 @@ export default function ForgotPasswordPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || 'An error occurred')
+        if (res.status === 429) {
+          const retryAfter = parseInt(res.headers.get('Retry-After') || '60', 10)
+          setError(`Too many attempts — please wait ${retryAfter}s and try again.`)
+        } else {
+          setError(data.error || 'An error occurred')
+        }
         setLoading(false)
         return
       }
