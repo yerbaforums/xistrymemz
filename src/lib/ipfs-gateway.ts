@@ -40,6 +40,31 @@ export function isIpfsGatewayUrl(src: string): boolean {
   return ipfsPath(src) !== null
 }
 
+export const IMAGE_CANDIDATE_TIMEOUT_MS = 12000
+
+/**
+ * Load an image URL, resolving false if it errors OR stalls past the
+ * timeout. Stalled gateway connections (accepted, then silence) fire
+ * neither onload nor onerror — without this the UI waits forever.
+ */
+export function loadWithTimeout(url: string, timeoutMs = IMAGE_CANDIDATE_TIMEOUT_MS): Promise<boolean> {
+  return new Promise((resolve) => {
+    let done = false
+    const finish = (ok: boolean) => {
+      if (done) return
+      done = true
+      clearTimeout(timer)
+      resolve(ok)
+    }
+    const timer = setTimeout(() => finish(false), timeoutMs)
+    // setTimeout throttling in background tabs can delay this; acceptable.
+    const img = new Image()
+    img.onload = () => finish(true)
+    img.onerror = () => finish(false)
+    img.src = url
+  })
+}
+
 /**
  * Ordered candidate URLs for an image: primary first, pinned fallback
  * second. Non-IPFS URLs pass through untouched (single candidate).
@@ -70,14 +95,27 @@ function assertThumbWidth(w: number): void {
 }
 
 /**
+ * Snap an arbitrary pixel width up to the nearest optimizer-legal width
+ * (e.g. retina avatar math like 28px × 2 = 56 → 64). Prevents /_next/image
+ * 400s from computed widths.
+ */
+export function snapThumbWidth(w: number): number {
+  for (const allowed of ALLOWED_THUMB_WIDTHS) {
+    if (allowed >= w) return allowed
+  }
+  return ALLOWED_THUMB_WIDTHS[ALLOWED_THUMB_WIDTHS.length - 1]
+}
+
+/**
  * Full load chain for an image: optimizer thumbs first (small, cached),
  * raw gateways last (full-size last resort). Pass thumbWidth for
  * below-the-fold thumbs; omit it for full-size heroes.
  */
 export function imageCandidates(src: string, thumbWidth?: number): string[] {
   if (!thumbWidth || !isIpfsGatewayUrl(src)) return ipfsCandidates(src)
-  assertThumbWidth(thumbWidth)
+  const w = snapThumbWidth(Math.round(thumbWidth))
+  assertThumbWidth(w)
   const opt = (u: string) =>
-    `/_next/image?url=${encodeURIComponent(u)}&w=${thumbWidth}&q=75`
+    `/_next/image?url=${encodeURIComponent(u)}&w=${w}&q=75`
   return [opt(primaryIpfsUrl(src)), opt(fallbackIpfsUrl(src)), ...ipfsCandidates(src)]
 }

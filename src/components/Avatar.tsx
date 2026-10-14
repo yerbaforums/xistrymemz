@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import IpfsImage from './IpfsImage'
+import { snapThumbWidth } from '@/lib/ipfs-gateway'
 
 interface AvatarProps {
   src?: string | null
@@ -36,7 +37,7 @@ export default function Avatar({ src, name, size = 32, className, rounded = true
           alt=""
           width={size}
           height={size}
-          thumbWidth={Math.max(size * 2, 64)}
+          thumbWidth={snapThumbWidth(Math.max(size * 2, 64))}
           onExhausted={() => setFailed(true)}
         />
       </span>

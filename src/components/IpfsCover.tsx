@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { imageCandidates } from '@/lib/ipfs-gateway'
+import { imageCandidates, loadWithTimeout } from '@/lib/ipfs-gateway'
 
 interface IpfsCoverProps {
   /** Cover image URL (IPFS gateway or any URL). omit/undefined = no background. */
@@ -15,12 +15,7 @@ interface IpfsCoverProps {
 }
 
 function preload(url: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    const img = new Image()
-    img.onload = () => resolve(true)
-    img.onerror = () => resolve(false)
-    img.src = url
-  })
+  return loadWithTimeout(url)
 }
 
 /**

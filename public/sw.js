@@ -1,5 +1,5 @@
 /* XistrYmemZ Service Worker — network-first data, cache-first static, offline shell. */
-const CACHE_VERSION = 'xistry-v1';
+const CACHE_VERSION = 'xistry-v2';
 const STATIC_CACHE = CACHE_VERSION + '-static';
 const PAGE_CACHE = CACHE_VERSION + '-pages';
 const IMAGE_CACHE = CACHE_VERSION + '-images';

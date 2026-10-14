@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { imageCandidates } from '@/lib/ipfs-gateway'
+import { useEffect, useRef, useState } from 'react'
+import { imageCandidates, IMAGE_CANDIDATE_TIMEOUT_MS } from '@/lib/ipfs-gateway'
 import styles from './IpfsImage.module.css'
 
 interface IpfsImageProps {
@@ -50,6 +50,8 @@ export default function IpfsImage({
   const [index, setIndex] = useState(0)
   const [loaded, setLoaded] = useState(false)
   const [failed, setFailed] = useState(false)
+  const exhaustedRef = useRef(onExhausted)
+  exhaustedRef.current = onExhausted
 
   // New src prop restarts the chain (e.g. list re-query).
   useEffect(() => {
@@ -59,15 +61,36 @@ export default function IpfsImage({
     setFailed(false)
   }, [src, thumbWidth])
 
-  if (failed) return <>{fallback ?? null}</>
+  const failAll = () => {
+    setFailed(true)
+    exhaustedRef.current?.()
+  }
 
   const advance = () => {
     if (index + 1 < candidates.length) setIndex(index + 1)
-    else {
-      setFailed(true)
-      onExhausted?.()
-    }
+    else failAll()
   }
+
+  // Stall guard: gateways sometimes accept a connection and then go
+  // silent (neither onload nor onerror fire). If the current candidate is
+  // still pending after the grace period, force-advance instead of spinning
+  // forever. The <img> onError below handles fast failures; this handles
+  // hangs. (A plain timer — no second preload — so cold origins aren't hit
+  // twice.)
+  useEffect(() => {
+    if (loaded || failed) return
+    if (!candidates[index]) {
+      failAll()
+      return
+    }
+    const t = setTimeout(() => {
+      if (index + 1 < candidates.length) setIndex(index + 1)
+      else failAll()
+    }, IMAGE_CANDIDATE_TIMEOUT_MS)
+    return () => clearTimeout(t)
+  }, [candidates, index, loaded, failed])
+
+  if (failed) return <>{fallback ?? null}</>
 
   return (
     <span
