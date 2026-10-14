@@ -8,8 +8,9 @@
 // - ipfs.io / dweb.link:  instant HTTP 429 — removed
 //
 // Strategy: try Filebase first (fast when warm), fall back to Pinata
-// (content is pinned there, so it always resolves). Components race with a
-// timeout so a hanging primary never blocks the fallback.
+// (content is pinned there, so it always resolves). A per-candidate stall
+// timer force-advances hangs, since stalled connections fire neither
+// onload nor onerror.
 
 export const IPFS_PRIMARY_GATEWAY = 'https://ipfs.filebase.io'
 export const IPFS_FALLBACK_GATEWAY = 'https://gateway.pinata.cloud'
@@ -86,14 +87,6 @@ export const ALLOWED_THUMB_WIDTHS = [
   640, 768, 1024, 1280, 1536,
 ]
 
-function assertThumbWidth(w: number): void {
-  if (process.env.NODE_ENV !== 'production' && !ALLOWED_THUMB_WIDTHS.includes(w)) {
-    console.warn(
-      `[images] thumbWidth ${w} is not in next.config.js imageSizes/deviceSizes — /_next/image will 400. Use one of: ${ALLOWED_THUMB_WIDTHS.join(', ')}`
-    )
-  }
-}
-
 /**
  * Snap an arbitrary pixel width up to the nearest optimizer-legal width
  * (e.g. retina avatar math like 28px × 2 = 56 → 64). Prevents /_next/image
@@ -109,12 +102,13 @@ export function snapThumbWidth(w: number): number {
 /**
  * Full load chain for an image: optimizer thumbs first (small, cached),
  * raw gateways last (full-size last resort). Pass thumbWidth for
- * below-the-fold thumbs; omit it for full-size heroes.
+ * below-the-fold thumbs; omit it for full-size heroes. Widths snap to the
+ * nearest optimizer-legal size, so computed widths (e.g. retina avatars)
+ * can never 400.
  */
 export function imageCandidates(src: string, thumbWidth?: number): string[] {
   if (!thumbWidth || !isIpfsGatewayUrl(src)) return ipfsCandidates(src)
   const w = snapThumbWidth(Math.round(thumbWidth))
-  assertThumbWidth(w)
   const opt = (u: string) =>
     `/_next/image?url=${encodeURIComponent(u)}&w=${w}&q=75`
   return [opt(primaryIpfsUrl(src)), opt(fallbackIpfsUrl(src)), ...ipfsCandidates(src)]

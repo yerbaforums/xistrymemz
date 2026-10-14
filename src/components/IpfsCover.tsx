@@ -14,10 +14,6 @@ interface IpfsCoverProps {
   children?: React.ReactNode
 }
 
-function preload(url: string): Promise<boolean> {
-  return loadWithTimeout(url)
-}
-
 /**
  * Drop-in for divs that paint covers via CSS backgroundImage. Preloads
  * through the shared IPFS gateway chain (fast Filebase first, pinned
@@ -44,7 +40,7 @@ export default function IpfsCover({
     ;(async () => {
       for (const url of candidates) {
         if (cancelled) return
-        if (await preload(url)) {
+        if (await loadWithTimeout(url)) {
           if (!cancelled) setBg(url)
           return
         }
