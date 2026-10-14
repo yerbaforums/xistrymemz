@@ -29,6 +29,7 @@ import PinToBoardButton from '@/components/PinToBoardButton'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import ApprovalBadge from '@/components/ApprovalBadge'
 import IpfsImage from '@/components/IpfsImage'
+import IpfsCover from '@/components/IpfsCover'
 
 
 interface UserLink {
@@ -326,12 +327,13 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
       <ShareBar entityType="SHOP" title={shop.shopName || 'Shop'} description={shop.shopAbout} image={shop.shopImage} variant="compact" />
 
       <div className={styles.shopHeader}>
-        <div
+        <IpfsCover
+          src={shop.shopCoverImage}
           className={styles.coverImage}
-          style={{ backgroundImage: shop.shopCoverImage ? `url(${shop.shopCoverImage})` : undefined, backgroundSize: shop.shopCoverStyle === 'contain' ? 'contain' : shop.shopCoverStyle === 'fill' ? '100% 100%' : shop.shopCoverStyle === 'repeat' ? 'auto' : 'cover', backgroundRepeat: shop.shopCoverStyle === 'repeat' ? 'repeat' : 'no-repeat', backgroundPosition: 'center' }}
+          style={{ backgroundSize: shop.shopCoverStyle === 'contain' ? 'contain' : shop.shopCoverStyle === 'fill' ? '100% 100%' : shop.shopCoverStyle === 'repeat' ? 'auto' : 'cover', backgroundRepeat: shop.shopCoverStyle === 'repeat' ? 'repeat' : 'no-repeat', backgroundPosition: 'center' }}
         >
           {!shop.shopCoverImage && <div className={styles.coverGradient} />}
-        </div>
+        </IpfsCover>
         <div className={styles.headerContent}>
           <div className={styles.avatarSection}>
             <div className={styles.avatar}>

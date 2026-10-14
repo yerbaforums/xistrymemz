@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import IpfsImage from '@/components/IpfsImage'
+import IpfsCover from '@/components/IpfsCover'
 import styles from './profile.module.css'
 import Rating from '@/components/Rating'
 import { getUserProfileUrl } from '@/lib/utils'
@@ -735,10 +736,10 @@ export default function ProfilePage() {
       ]} />
       <ShareBar entityType="PROFILE" title={(user.name || user.username || 'Profile')} description={user.bio} image={user.image} variant="compact" />
       <div className={styles.profileHeader}>
-        <div 
+        <IpfsCover
+          src={user.coverImage}
           className={styles.coverImage}
           style={{
-            backgroundImage: user.coverImage ? `url(${user.coverImage})` : undefined,
             backgroundSize: user.coverStyle === 'contain' ? 'contain' : user.coverStyle === 'fill' ? '100% 100%' : user.coverStyle === 'repeat' ? 'auto' : 'cover',
             backgroundRepeat: user.coverStyle === 'repeat' ? 'repeat' : 'no-repeat'
           }}
@@ -755,7 +756,7 @@ export default function ProfilePage() {
             </Button>
           )}
           <input ref={coverInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleCoverUpload} style={{ display: 'none' }} />
-        </div>
+        </IpfsCover>
         
            <div className={styles.profileContent}>
               <div className={styles.avatarSection}>

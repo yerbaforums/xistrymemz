@@ -227,7 +227,7 @@ export default function ServiceDetailPage() {
         <div className={styles.layout}>
           <div className={styles.mainContent}>
             {imageUrl ? (
-              <IpfsImage src={imageUrl} alt={title} className={styles.heroImage} />
+              <IpfsImage src={imageUrl} alt={title} className={styles.heroImage} eager />
             ) : (
               <div className={styles.heroPlaceholder}>
                 {SERVICE_CATEGORY_ICONS[cat] || '📋'}

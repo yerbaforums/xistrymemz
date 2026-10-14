@@ -50,3 +50,15 @@ export function ipfsCandidates(src: string): string[] {
   const fallback = fallbackIpfsUrl(src)
   return primary === fallback ? [primary] : [primary, fallback]
 }
+
+/**
+ * Full load chain for an image: optimizer thumbs first (small, cached),
+ * raw gateways last (full-size last resort). Pass thumbWidth for
+ * below-the-fold thumbs; omit it for full-size heroes.
+ */
+export function imageCandidates(src: string, thumbWidth?: number): string[] {
+  if (!thumbWidth || !isIpfsGatewayUrl(src)) return ipfsCandidates(src)
+  const opt = (u: string) =>
+    `/_next/image?url=${encodeURIComponent(u)}&w=${thumbWidth}&q=75`
+  return [opt(primaryIpfsUrl(src)), opt(fallbackIpfsUrl(src)), ...ipfsCandidates(src)]
+}

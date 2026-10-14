@@ -860,7 +860,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
 
             {request.imageUrl && (
               <div className={styles.detailImageWrapper}>
-                <IpfsImage src={request.imageUrl} alt={request.title} className={styles.detailImage} />
+                <IpfsImage src={request.imageUrl} alt={request.title} className={styles.detailImage} eager />
               </div>
             )}
 

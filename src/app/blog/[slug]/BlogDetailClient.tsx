@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import IpfsImage from '@/components/IpfsImage'
+import IpfsCover from '@/components/IpfsCover'
 import styles from './page.module.css'
 import Skeleton from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
@@ -365,18 +366,18 @@ export default function BlogDetailClient({ params }: { params: Promise<{ slug: s
     )
   }
 
-  const coverStyle = blog.blogCoverStyle === 'fill'
-    ? { backgroundImage: `url(${blog.blogCoverImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : {
-        backgroundImage: `linear-gradient(135deg, color-mix(in srgb, var(--accent-secondary) 13%, transparent), color-mix(in srgb, var(--accent-primary) 13%, transparent)), url(${blog.blogCoverImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }
-
   return (
     <div className={styles.page}>
       <div className={styles.blogHeader}>
-        {blog.blogCoverImage && <div className={styles.coverImage} style={coverStyle} />}
+        {blog.blogCoverImage && (
+          <IpfsCover
+            src={blog.blogCoverImage}
+            className={styles.coverImage}
+            style={{ backgroundSize: 'cover', backgroundPosition: 'center' }}
+          >
+            {blog.blogCoverStyle !== 'fill' && <div className={styles.coverTint} />}
+          </IpfsCover>
+        )}
         {!blog.blogCoverImage && <div className={`${styles.coverImage} ${styles.coverGradient}`} />}
         <div className={styles.headerContent}>
           <div className={styles.avatarSection}>

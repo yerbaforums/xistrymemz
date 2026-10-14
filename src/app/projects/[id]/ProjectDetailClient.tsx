@@ -809,7 +809,7 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
                       </div>
                       {project.imageUrl && (
                         <div className={styles.projectImageWrap}>
-                          <IpfsImage src={project.imageUrl} alt={project.title} className={styles.projectImage} />
+                          <IpfsImage src={project.imageUrl} alt={project.title} className={styles.projectImage} eager />
                         </div>
                       )}
                       {project.category && <span className={styles.categoryBadge}>{project.category}</span>}

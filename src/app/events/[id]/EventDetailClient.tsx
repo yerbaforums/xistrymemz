@@ -704,7 +704,7 @@ function EventDetailContent() {
                 
                 {event.imageUrl && (
                   <div className={styles.detailImageWrapper}>
-                    <IpfsImage src={event.imageUrl} alt={event.title} width={800} height={400} className={styles.detailImage} style={{ width: '100%', height: 'auto' }} />
+                    <IpfsImage src={event.imageUrl} alt={event.title} width={800} height={400} className={styles.detailImage} style={{ width: '100%', height: 'auto' }} eager />
                   </div>
                 )}
 

@@ -29,6 +29,7 @@ import type { DonationAddr } from '@/types/product'
 import PinToBoardButton from '@/components/PinToBoardButton'
 import NextStepsSheet from '@/components/NextStepsSheet'
 import IpfsImage from '@/components/IpfsImage'
+import IpfsCover from '@/components/IpfsCover'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 interface Member {
@@ -667,15 +668,15 @@ function GroupDetailContent() {
       ]} />
 
       <div className={styles.groupHeader}>
-        <div
+        <IpfsCover
+          src={group.coverImage}
           className={styles.coverImage}
           style={{
-            backgroundImage: group.coverImage ? `url(${group.coverImage})` : undefined,
             background: group.coverImage ? undefined : (group.bannerColor || 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)')
           }}
         >
           {!group.coverImage && <div className={styles.coverOverlay} />}
-        </div>
+        </IpfsCover>
         <div className={styles.headerContent}>
           <div className={styles.avatarSection}>
             <div className={styles.avatar}>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { ipfsCandidates, primaryIpfsUrl, fallbackIpfsUrl, isIpfsGatewayUrl } from '@/lib/ipfs-gateway'
+import { imageCandidates } from '@/lib/ipfs-gateway'
 import styles from './IpfsImage.module.css'
 
 interface IpfsImageProps {
@@ -29,17 +29,6 @@ interface IpfsImageProps {
   thumbWidth?: number
 }
 
-/**
- * Build the candidate chain: optimized variants first (small, cached),
- * raw gateways last (full-size last resort).
- */
-function buildCandidates(src: string, thumbWidth?: number): string[] {
-  if (!thumbWidth || !isIpfsGatewayUrl(src)) return ipfsCandidates(src)
-  const opt = (u: string) =>
-    `/_next/image?url=${encodeURIComponent(u)}&w=${thumbWidth}&q=75`
-  return [opt(primaryIpfsUrl(src)), opt(fallbackIpfsUrl(src)), ...ipfsCandidates(src)]
-}
-
 // Central image component. Walks the gateway chain (fast Filebase first,
 // pinned Pinata fallback) so a slow or blocked gateway never leaves a
 // broken frame. Renders a shimmer placeholder until first paint to avoid
@@ -57,14 +46,14 @@ export default function IpfsImage({
   onClick,
   style,
 }: IpfsImageProps) {
-  const [candidates, setCandidates] = useState(() => buildCandidates(src, thumbWidth))
+  const [candidates, setCandidates] = useState(() => imageCandidates(src, thumbWidth))
   const [index, setIndex] = useState(0)
   const [loaded, setLoaded] = useState(false)
   const [failed, setFailed] = useState(false)
 
   // New src prop restarts the chain (e.g. list re-query).
   useEffect(() => {
-    setCandidates(buildCandidates(src, thumbWidth))
+    setCandidates(imageCandidates(src, thumbWidth))
     setIndex(0)
     setLoaded(false)
     setFailed(false)

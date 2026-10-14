@@ -29,6 +29,7 @@ import HashtagText from '@/components/HashtagText'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import LinkPreview from '@/components/LinkPreview'
 import IpfsImage from '@/components/IpfsImage'
+import IpfsCover from '@/components/IpfsCover'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { EmptyState } from '@/components/EmptyState'
 import Button from '@/components/ui/Button'
@@ -413,12 +414,13 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
       <ShareBar entityType="SCHOOL" title={school.schoolName || 'School'} description={school.schoolAbout} image={school.schoolImage} variant="compact" />
 
       <div className={styles.schoolHeader}>
-        <div
+        <IpfsCover
+          src={school.schoolCoverImage}
           className={styles.coverImage}
-          style={{ backgroundImage: school.schoolCoverImage ? `url(${school.schoolCoverImage})` : undefined, backgroundSize: school.schoolCoverStyle === 'contain' ? 'contain' : school.schoolCoverStyle === 'fill' ? '100% 100%' : school.schoolCoverStyle === 'repeat' ? 'auto' : 'cover', backgroundRepeat: school.schoolCoverStyle === 'repeat' ? 'repeat' : 'no-repeat', backgroundPosition: 'center' }}
+          style={{ backgroundSize: school.schoolCoverStyle === 'contain' ? 'contain' : school.schoolCoverStyle === 'fill' ? '100% 100%' : school.schoolCoverStyle === 'repeat' ? 'auto' : 'cover', backgroundRepeat: school.schoolCoverStyle === 'repeat' ? 'repeat' : 'no-repeat', backgroundPosition: 'center' }}
         >
           {!school.schoolCoverImage && <div className={styles.coverGradient} />}
-        </div>
+        </IpfsCover>
         <div className={styles.headerContent}>
           <div className={styles.avatarSection}>
             <div className={styles.avatar}>

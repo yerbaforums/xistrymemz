@@ -23,6 +23,13 @@
   background: linear-gradient(135deg, color-mix(in srgb, var(--accent-secondary) 20%, transparent), color-mix(in srgb, var(--accent-primary) 20%, transparent));
 }
 
+.coverTint {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent-secondary) 13%, transparent), color-mix(in srgb, var(--accent-primary) 13%, transparent));
+  pointer-events: none;
+}
+
 .headerContent {
   position: relative;
   display: flex;
