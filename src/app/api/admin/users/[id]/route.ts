@@ -2,6 +2,7 @@ import { apiSuccess, apiError, NextResponse } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { deleteUserCompletely } from '@/services/userDeletion'
 
 export async function DELETE(
   request: Request,
@@ -29,9 +30,9 @@ export async function DELETE(
       return apiError("Cannot delete your own account", 400)
     }
 
-    await prisma.user.delete({ where: { id } })
+    const cleanup = await deleteUserCompletely(id)
 
-    return NextResponse.json({ success: true, message: 'User deleted' })
+    return NextResponse.json({ success: true, message: 'User deleted', cleanup })
   } catch (error) {
     console.error('Error deleting user:', error)
     return apiError("Failed to delete user", 500)

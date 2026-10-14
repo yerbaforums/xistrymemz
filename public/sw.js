@@ -27,9 +27,30 @@ async function cachePut(req, res, cacheName) {
     if (res && res.ok) {
       const cache = await caches.open(cacheName);
       await cache.put(req, res.clone());
+      await trimCache(cacheName);
     }
   } catch {}
   return res;
+}
+
+// Bound cache growth (devices with small storage); oldest entries go first.
+const MAX_ENTRIES = {
+  [STATIC_CACHE]: 120,
+  [PAGE_CACHE]: 30,
+  [IMAGE_CACHE]: 150,
+};
+
+async function trimCache(cacheName) {
+  try {
+    const max = MAX_ENTRIES[cacheName] || 100;
+    const cache = await caches.open(cacheName);
+    const keys = await cache.keys();
+    if (keys.length > max) {
+      await Promise.all(
+        keys.slice(0, keys.length - max).map((k) => cache.delete(k))
+      );
+    }
+  } catch {}
 }
 
 // Network first: fresh when online, cached fallback when offline.

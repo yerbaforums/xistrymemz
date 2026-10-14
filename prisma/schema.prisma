@@ -2135,7 +2135,10 @@ model Follow {
   followerId     String
   follower       User     @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
   followedId     String
-  followed       User?    @relation("Followed", fields: [followedId], references: [id], onDelete: SetNull)
+  // Cascade (not SetNull): a follow is meaningless once either endpoint is
+  // gone. SetNull is impossible here anyway — followedId is NOT NULL, so it
+  // made every followed user undeletable (FK violation on user.delete).
+  followed       User?    @relation("Followed", fields: [followedId], references: [id], onDelete: Cascade)
   remoteActorUrl String?
   remoteInboxUrl String?
   status         String   @default("PENDING")

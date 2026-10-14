@@ -1,0 +1,1325 @@
+'use client'
+
+import { useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import Modal from '@/components/ui/Modal'
+import ImageUploader from '@/components/ImageUploader'
+import MediaLinkInput from '@/components/MediaLinkInput'
+import HashtagInput from '@/components/HashtagInput'
+import MentionInput, { type MentionInputHandle } from '@/components/MentionInput'
+import LinkItemModal from '@/components/LinkItemModal'
+import EventFormFields, { getDefaultEventFormData } from '@/components/EventFormFields'
+import LocationPicker from '@/components/LocationPicker'
+import DonationAddressPicker from '@/components/DonationAddressPicker'
+import AssetPicker from '@/components/AssetPicker'
+import { useToast } from '@/context/ToastContext'
+import { CONTENT_TEMPLATES, CONTENT_TYPE_MAP } from '@/lib/content-templates'
+import { PRODUCT_CATEGORIES, PRODUCT_CONDITIONS, PRODUCT_TYPES } from '@/lib/product-categories'
+import { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS } from '@/types/service'
+import { PROJECT_CATEGORIES } from '@/lib/project-categories'
+import { useDonationAddresses } from '@/hooks/useDonationAddresses'
+import styles from './QuickCreateModal.module.css'
+import type { EventFormData } from '@/components/EventFormFields'
+import type { UserAsset } from '@/components/AssetPicker'
+import type { DonationAddr } from '@/types/product'
+import { REQUEST_CATEGORIES } from '@/lib/request-categories'
+import type { QuickCreatePrefill } from './QuickCreateModal'
+
+const TABS = [
+  { id: 'post', label: 'Post', icon: '✏️' },
+  { id: 'content', label: 'Content', icon: '📖' },
+  { id: 'product', label: 'Product', icon: '🛒' },
+  { id: 'event', label: 'Event', icon: '📅' },
+  { id: 'project', label: 'Project', icon: '🚀' },
+  { id: 'group', label: 'Group', icon: '👥' },
+  { id: 'request', label: 'Request', icon: '📝' },
+  { id: 'service', label: 'Service', icon: '🔧' },
+]
+
+function extractCreatedId(body: unknown): string | null {
+  if (!body || typeof body !== 'object') return null
+  const b = body as Record<string, unknown>
+  const d1 = b.data as Record<string, unknown> | undefined
+  if (d1 && typeof d1.id === 'string') return d1.id
+  const d2 = d1?.data as Record<string, unknown> | undefined
+  if (d2 && typeof d2.id === 'string') return d2.id
+  if (typeof b.id === 'string') return b.id
+  // Wrapped shapes, e.g. { service: {...}, needsEmailVerification }.
+  for (const v of Object.values(b)) {
+    if (v && typeof v === 'object' && typeof (v as Record<string, unknown>).id === 'string') {
+      return (v as Record<string, unknown>).id as string
+    }
+  }
+  return null
+}
+
+// Creation endpoints echo needsEmailVerification (top-level or data-wrapped)
+// when the item was forced to draft for lack of a verified email.
+function needsVerification(body: unknown): boolean {
+  if (!body || typeof body !== 'object') return false
+  const b = body as Record<string, unknown>
+  if (b.needsEmailVerification === true) return true
+  const d = b.data as Record<string, unknown> | undefined
+  return d?.needsEmailVerification === true
+}
+
+export default function QuickCreateModalContent({
+  open, onClose, initialTab, onTabChange, prefill,
+}: {
+  open: boolean
+  onClose: () => void
+  initialTab: string
+  onTabChange: (tab: string) => void
+  prefill: QuickCreatePrefill | null
+}) {
+  return (
+    <Modal open={open} onClose={onClose} title="✨ Quick Create" size="lg">
+      <div className={styles.tabs}>
+        {TABS.map(t => (
+          <button
+            key={t.id}
+            className={`${styles.tab} ${initialTab === t.id ? styles.activeTab : ''}`}
+            onClick={() => onTabChange(t.id)}
+          >
+            <span>{t.icon}</span> {t.label}
+          </button>
+        ))}
+      </div>
+      <div className={styles.tabContent}>
+        {initialTab === 'post' && <PostForm onDone={onClose} />}
+        {initialTab === 'content' && <ContentForm onDone={onClose} />}
+        {initialTab === 'product' && <ProductForm onDone={onClose} prefill={prefill} />}
+        {initialTab === 'event' && <EventForm onDone={onClose} />}
+        {initialTab === 'project' && <ProjectForm onDone={onClose} prefill={prefill} />}
+        {initialTab === 'group' && <GroupForm onDone={onClose} prefill={prefill} />}
+        {initialTab === 'request' && <RequestForm onDone={onClose} prefill={prefill} />}
+        {initialTab === 'service' && <ServiceForm onDone={onClose} prefill={prefill} />}
+      </div>
+    </Modal>
+  )
+}
+
+function PostForm({ onDone }: { onDone: () => void }) {
+  const router = useRouter()
+  const { success, error } = useToast()
+  const [content, setContent] = useState('')
+  const [images, setImages] = useState<string[]>([])
+  const [videoUrl, setVideoUrl] = useState<string | null>(null)
+  const [hashtags, setHashtags] = useState<string[]>([])
+  const [posting, setPosting] = useState(false)
+  const [showLinkModal, setShowLinkModal] = useState(false)
+  const [pendingLink, setPendingLink] = useState<{ type: string; id: string; title: string } | null>(null)
+  const mentionRef = useRef<MentionInputHandle>(null)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!content.trim()) return
+    setPosting(true)
+    try {
+      const res = await fetch('/api/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: content.trim(),
+          images: images.length > 0 ? JSON.stringify(images) : null,
+          videoUrl: videoUrl || null,
+          context: 'PROFILE',
+          hashtags: hashtags.length > 0 ? hashtags : undefined,
+        }),
+      })
+      if (res.ok) {
+        const body = await res.json().catch(() => null)
+        const id = extractCreatedId(body)
+        // Persist the linked listing backlink now that the post exists.
+        if (id && pendingLink) {
+          fetch('/api/reference', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sourceType: 'POST',
+              sourceId: id,
+              targetType: pendingLink.type,
+              targetId: pendingLink.id,
+              relationType: 'REFERENCES',
+            }),
+          }).catch(() => {})
+        }
+        success('Post published!')
+        onDone()
+        if (id) router.push(`/posts/${id}`)
+        else router.refresh()
+      } else {
+        const err = await res.json()
+        error(err.error || 'Failed to post')
+      }
+    } catch {
+      error('Failed to post')
+    } finally {
+      setPosting(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className={styles.form}>
+      <div className={styles.formGroup}>
+        <MentionInput
+          ref={mentionRef}
+          value={content}
+          onChange={setContent}
+          placeholder="What's on your mind?"
+          rows={4}
+          className={styles.textarea}
+        />
+        <span className={styles.charCount}>{content.length}/2000</span>
+      </div>
+      <div className={styles.formGroup}>
+        <ImageUploader images={images} onChange={setImages} maxImages={6} videoUrl={videoUrl} onVideoUrlChange={setVideoUrl} />
+      </div>
+      <div className={styles.formGroup}>
+        <HashtagInput value={hashtags} onChange={setHashtags} placeholder="Add hashtags..." />
+      </div>
+      <div className={styles.formGroup}>
+        <div className={styles.formActions} style={{ justifyContent: 'flex-start' }}>
+          <button type="button" onClick={() => mentionRef.current?.insertAtCursor('@')} className="btn-ghost" title="Mention someone">
+            @
+          </button>
+          <button type="button" onClick={() => setShowLinkModal(true)} className="btn-ghost" title="Link a listing">
+            🔗 Link
+          </button>
+        </div>
+        {pendingLink && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', fontSize: '0.85rem' }}>
+            <span>🔗 {pendingLink.title}</span>
+            <button type="button" onClick={() => setPendingLink(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }} aria-label="Remove linked item">✕</button>
+          </div>
+        )}
+      </div>
+      <div className={styles.formActions}>
+        <button type="button" onClick={onDone} className="btn-ghost">Cancel</button>
+        <button type="submit" disabled={posting || !content.trim()} className="btn-primary">
+          {posting ? 'Posting...' : '✏️ Post'}
+        </button>
+      </div>
+
+      <LinkItemModal
+        isOpen={showLinkModal}
+        onClose={() => setShowLinkModal(false)}
+        sourceType="POST"
+        sourceId=""
+        onLinked={() => setShowLinkModal(false)}
+        deferCommit
+        onSelect={(target) => {
+          setPendingLink({ type: target.type, id: target.id, title: target.title })
+          setShowLinkModal(false)
+        }}
+      />
+    </form>
+  )
+}
+
+function ContentForm({ onDone }: { onDone: () => void }) {
+  const { success, error } = useToast()
+  const router = useRouter()
+  const [title, setTitle] = useState('')
+  const [contentType, setContentType] = useState('article')
+  const [content, setContent] = useState('')
+  const [price, setPrice] = useState('')
+  const [isPaid, setIsPaid] = useState(false)
+  const [videoUrl, setVideoUrl] = useState('')
+  const [isSubscription, setIsSubscription] = useState(false)
+  const [subscriptionPrice, setSubscriptionPrice] = useState('')
+  const [images, setImages] = useState<string[]>([])
+  const [hashtags, setHashtags] = useState<string[]>([])
+  const [creating, setCreating] = useState(false)
+
+  const filteredTemplates = CONTENT_TEMPLATES.filter(t => t.contentType === contentType)
+
+  const applyTemplate = (template: typeof CONTENT_TEMPLATES[0]) => {
+    setContent(template.starterContent)
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!title.trim() || !content.trim()) return
+    setCreating(true)
+    try {
+      const schoolRes = await fetch('/api/school')
+      const schoolData = await schoolRes.json()
+      const slug = schoolData?.schoolSlug
+      if (!slug) {
+        error('Set up a school first')
+        setCreating(false)
+        return
+      }
+      const res = await fetch(`/api/school/${slug}/content`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: title.trim(),
+          content,
+          contentType,
+          price: price ? parseFloat(price) : 0,
+          isPaid,
+          videoUrl: videoUrl || undefined,
+          isSubscription,
+          subscriptionPrice: subscriptionPrice ? parseFloat(subscriptionPrice) : 0,
+          images: images.length > 0 ? JSON.stringify(images) : null,
+          hashtags: hashtags.length > 0 ? hashtags : undefined,
+        }),
+      })
+      if (res.ok) {
+        success('Content created!')
+        onDone()
+        router.refresh()
+      } else {
+        const err = await res.json()
+        error(err.error || 'Failed to create')
+      }
+    } catch {
+      error('Failed to create content')
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className={styles.form}>
+      <div className={styles.formGroup}>
+        <label className={styles.label} htmlFor="title">Title</label>
+        <input type="text" value={title} onChange={e => setTitle(e.target.value)} className={styles.input} placeholder="Content title" required autoFocus  id="title"/>
+      </div>
+      <div className={styles.formRow}>
+        <div className={styles.formGroup}>
+          <label className={styles.label} htmlFor="type">Type</label>
+          <select value={contentType} onChange={e => { setContentType(e.target.value); setContent('') }} className={styles.select} id="type">
+            {Object.entries(CONTENT_TYPE_MAP).map(([val, label]) => (
+              <option key={val} value={val}>{label}</option>
+            ))}
+          </select>
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label} htmlFor="price">Price</label>
+          <input type="number" value={price} onChange={e => setPrice(e.target.value)} className={styles.input} placeholder="0.00" step="0.01"  id="price"/>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={isPaid} onChange={e => setIsPaid(e.target.checked)} />
+            Paid
+          </label>
+        </div>
+      </div>
+      <div className={styles.formRow}>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Video URL</label>
+          <MediaLinkInput value={videoUrl} onChange={setVideoUrl} />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.checkLabel} style={{ marginTop: 22 }}>
+            <input type="checkbox" checked={isSubscription} onChange={e => setIsSubscription(e.target.checked)} />
+            Subscription
+          </label>
+          {isSubscription && (
+            <input type="number" value={subscriptionPrice} onChange={e => setSubscriptionPrice(e.target.value)} className={styles.input} placeholder="Monthly price" step="0.01" />
+          )}
+        </div>
+      </div>
+      {filteredTemplates.length > 0 && !content && (
+        <div className={styles.templateGrid}>
+          <label className={styles.label}>Starter Template</label>
+          {filteredTemplates.map(t => (
+            <button key={t.id} type="button" className={styles.templateCard} onClick={() => applyTemplate(t)}>
+              <span className={styles.templateIcon}>{t.icon}</span>
+              <span className={styles.templateName}>{t.name}</span>
+              <span className={styles.templateDesc}>{t.description}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      <div className={styles.formGroup}>
+        <label className={styles.label} htmlFor="content">Content</label>
+        <textarea value={content} onChange={e => setContent(e.target.value)} rows={8} className={styles.textareaMono} placeholder="Write your content here..."  id="content"/>
+      </div>
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Images</label>
+        <ImageUploader images={images} onChange={setImages} maxImages={5} />
+      </div>
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Hashtags</label>
+        <HashtagInput value={hashtags} onChange={setHashtags} placeholder="Add hashtags..." />
+      </div>
+      <div className={styles.formActions}>
+        <button type="button" onClick={onDone} className="btn-ghost">Cancel</button>
+        <button type="submit" disabled={creating || !title.trim() || !content.trim()} className="btn-primary">
+          {creating ? 'Creating...' : '📖 Create Content'}
+        </button>
+      </div>
+    </form>
+  )
+}
+
+function ProductForm({ onDone, prefill }: { onDone: () => void; prefill?: QuickCreatePrefill | null }) {
+  const { success, error } = useToast()
+  const router = useRouter()
+  const userDonationAddrs = useDonationAddresses()
+
+  const [title, setTitle] = useState(() => prefill?.title || '')
+  const [description, setDescription] = useState(() => prefill?.description || '')
+  const [price, setPrice] = useState(() => prefill?.price || '')
+  const [type, setType] = useState('PRODUCT')
+  const [category, setCategory] = useState<string>(() =>
+    prefill?.category && PRODUCT_CATEGORIES.some(c => c.value === prefill.category)
+      ? prefill.category as string
+      : 'OTHER'
+  )
+  const [condition, setCondition] = useState<string>(PRODUCT_CONDITIONS[0])
+  const [isRemote, setIsRemote] = useState(false)
+  const [images, setImages] = useState<string[]>([])
+  const [acceptsDonations, setAcceptsDonations] = useState(false)
+  const [selectedDonationAddrs, setSelectedDonationAddrs] = useState<DonationAddr[]>([])
+  const [acceptsOffers, setAcceptsOffers] = useState(true)
+  const [acceptsRequests, setAcceptsRequests] = useState(true)
+  const [creating, setCreating] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!title.trim()) return
+    setCreating(true)
+    try {
+      const res = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: title.trim(),
+          description,
+          price: price ? parseFloat(price) : 0,
+          type,
+          category,
+          condition,
+          images: images.length > 0 ? JSON.stringify(images) : null,
+          isRemote,
+          published: false,
+          acceptsOffers,
+          acceptsRequests,
+          acceptsDonations,
+          selectedDonationAddrs: acceptsDonations ? selectedDonationAddrs : [],
+        }),
+      })
+      if (res.ok) {
+        const body = await res.json().catch(() => null)
+        const id = extractCreatedId(body)
+        if (needsVerification(body)) success('Product saved as draft. Verify your email to publish it.')
+        else success('Product created!')
+        onDone()
+        if (id) router.push(`/products/${id}`)
+        else router.refresh()
+      } else {
+        const err = await res.json()
+        error(err.error || 'Failed to create')
+      }
+    } catch {
+      error('Failed to create product')
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className={styles.form}>
+      <div className={styles.formGroup}>
+        <label className={styles.label} htmlFor="title-2">Title</label>
+        <input type="text" value={title} onChange={e => setTitle(e.target.value)} className={styles.input} placeholder="Product name" required autoFocus  id="title-2"/>
+      </div>
+      <div className={styles.formRow}>
+        <div className={styles.formGroup}>
+          <label className={styles.label} htmlFor="price-2">Price ($)</label>
+          <input type="number" value={price} onChange={e => setPrice(e.target.value)} className={styles.input} placeholder="0.00" step="0.01"  id="price-2"/>
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label} htmlFor="type-2">Type</label>
+          <select value={type} onChange={e => setType(e.target.value)} className={styles.select} id="type-2">
+            {PRODUCT_TYPES.map(t => (<option key={t} value={t}>{t.charAt(0) + t.slice(1).toLowerCase()}</option>))}
+          </select>
+        </div>
+      </div>
+      <div className={styles.formRow}>
+        <div className={styles.formGroup}>
+          <label className={styles.label} htmlFor="category">Category</label>
+          <select value={category} onChange={e => setCategory(e.target.value)} className={styles.select} id="category">
+            {PRODUCT_CATEGORIES.map(c => (<option key={c.value} value={c.value}>{c.label}</option>))}
+          </select>
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label} htmlFor="condition">Condition</label>
+          <select value={condition} onChange={e => setCondition(e.target.value)} className={styles.select} id="condition">
+            {PRODUCT_CONDITIONS.map(c => (<option key={c} value={c}>{c}</option>))}
+          </select>
+        </div>
+      </div>
+      <div className={styles.formGroup}>
+        <label className={styles.label} htmlFor="description">Description</label>
+        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="Describe your product..."  id="description"/>
+      </div>
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Images</label>
+        <ImageUploader images={images} onChange={setImages} maxImages={5} />
+      </div>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>🚚 Delivery & Offers</summary>
+        <div className={styles.sectionContent}>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={isRemote} onChange={e => setIsRemote(e.target.checked)} />
+            Remote / Ships (no specific location)
+          </label>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={acceptsOffers} onChange={e => setAcceptsOffers(e.target.checked)} />
+            Accept offers
+          </label>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={acceptsRequests} onChange={e => setAcceptsRequests(e.target.checked)} />
+            Accept requests / barters
+          </label>
+        </div>
+      </details>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>💰 Donations</summary>
+        <div className={styles.sectionContent}>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={acceptsDonations} onChange={e => setAcceptsDonations(e.target.checked)} />
+            Accept private-money donations
+          </label>
+          {acceptsDonations && (
+            <DonationAddressPicker
+              savedAddresses={userDonationAddrs}
+              selectedAddresses={selectedDonationAddrs}
+              onAddressesChange={setSelectedDonationAddrs}
+            />
+          )}
+        </div>
+      </details>
+
+      <div className={styles.formActions}>
+        <button type="button" onClick={onDone} className="btn-ghost">Cancel</button>
+        <button type="submit" disabled={creating || !title.trim()} className="btn-primary">
+          {creating ? 'Creating...' : '🛒 Create Product'}
+        </button>
+      </div>
+    </form>
+  )
+}
+
+function EventForm({ onDone }: { onDone: () => void }) {
+  const { success, error } = useToast()
+  const router = useRouter()
+  const [formData, setFormData] = useState<EventFormData>(() => getDefaultEventFormData())
+  const [creating, setCreating] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setCreating(true)
+    try {
+      const res = await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: formData.title.trim(),
+          description: formData.description,
+          eventDate: formData.eventDate || undefined,
+          endDate: formData.endDate || undefined,
+          location: formData.location,
+          locationDetails: formData.locationDetails,
+          gateLocation: formData.gateLocation,
+          exactAddress: formData.exactAddress || undefined,
+          maxJoiners: formData.maxJoiners,
+          isTicketed: formData.isTicketed,
+          ticketPrice: formData.ticketPrice,
+          currency: formData.currency,
+          eventCategory: formData.eventCategory,
+          published: formData.visibility === 'PUBLIC',
+          recurrenceRule: formData.recurrenceRule,
+          recurrenceEnd: formData.recurrenceEnd || null,
+        }),
+      })
+      if (res.ok) {
+        const body = await res.json().catch(() => null)
+        const id = extractCreatedId(body)
+        success('Event created!')
+        onDone()
+        if (id) router.push(`/events/${id}?fresh=1`)
+        else router.refresh()
+      } else {
+        const err = await res.json()
+        error(err.error || 'Failed to create')
+      }
+    } catch {
+      error('Failed to create event')
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  return (
+    <EventFormFields
+      formData={formData}
+      onChange={(patch) => setFormData(prev => ({ ...prev, ...patch }))}
+      onSubmit={handleSubmit}
+      mode="create"
+      saving={creating}
+      onCancel={onDone}
+      submitLabel="Create Event"
+      compact
+    />
+  )
+}
+
+function GroupForm({ onDone, prefill }: { onDone: () => void; prefill?: QuickCreatePrefill | null }) {
+  const { success, error } = useToast()
+  const router = useRouter()
+  const userDonationAddrs = useDonationAddresses()
+  const [name, setName] = useState(() => prefill?.name || '')
+  const [description, setDescription] = useState(() => prefill?.description || '')
+  const [isPrivate, setIsPrivate] = useState(false)
+  const [category, setCategory] = useState('GENERAL')
+  const [image, setImage] = useState<string[]>([])
+  const [location, setLocation] = useState<{ text: string; latitude: number | null; longitude: number | null }>({ text: '', latitude: null, longitude: null })
+  const [acceptsDonations, setAcceptsDonations] = useState(false)
+  const [selectedDonationAddrs, setSelectedDonationAddrs] = useState<DonationAddr[]>([])
+  const [hashtags, setHashtags] = useState<string[]>([])
+  const [creating, setCreating] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!name.trim()) return
+    setCreating(true)
+    try {
+      const res = await fetch('/api/groups', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          description: description.trim() || undefined,
+          privacy: isPrivate ? 'PRIVATE' : 'PUBLIC',
+          category: category === 'GENERAL' ? undefined : category,
+          imageUrl: image[0] || null,
+          location: location.text || undefined,
+          latitude: location.latitude ?? undefined,
+          longitude: location.longitude ?? undefined,
+          acceptsDonations,
+          selectedDonationAddrs: acceptsDonations ? selectedDonationAddrs : [],
+          hashtags: hashtags.length > 0 ? hashtags : undefined,
+        }),
+      })
+      if (res.ok) {
+        const body = await res.json().catch(() => null)
+        const id = extractCreatedId(body)
+        success('Group created!')
+        onDone()
+        if (id) router.push(`/groups/${id}?fresh=1`)
+        else router.refresh()
+      } else {
+        const err = await res.json()
+        error(err.error || 'Failed to create')
+      }
+    } catch {
+      error('Failed to create group')
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className={styles.form}>
+      <div className={styles.formGroup}>
+        <label className={styles.label} htmlFor="group-name">Group Name</label>
+        <input type="text" value={name} onChange={e => setName(e.target.value)} className={styles.input} placeholder="Group name" required autoFocus  id="group-name"/>
+      </div>
+      <div className={styles.formGroup}>
+        <label className={styles.label} htmlFor="description-2">Description</label>
+        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="What is this group about?"  id="description-2"/>
+      </div>
+      <div className={styles.formRow}>
+        <div className={styles.formGroup}>
+          <label className={styles.label} htmlFor="category-2">Category</label>
+          <select value={category} onChange={e => setCategory(e.target.value)} className={styles.select} id="category-2">
+            <option value="GENERAL">General</option>
+            <option value="TECHNOLOGY">💻 Technology</option>
+            <option value="ARTS">🎨 Arts</option>
+            <option value="MUSIC">🎵 Music</option>
+            <option value="SPORTS">⚽ Sports</option>
+            <option value="EDUCATION">📚 Education</option>
+            <option value="SOCIAL">🤝 Social</option>
+            <option value="BUSINESS">💼 Business</option>
+            <option value="HEALTH">❤️ Health</option>
+            <option value="TRAVEL">✈️ Travel</option>
+            <option value="GAMING">🎮 Gaming</option>
+            <option value="NATURE">🌲 Nature</option>
+            <option value="LOCAL">🏘️ Local</option>
+            <option value="OTHER">📌 Other</option>
+          </select>
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.checkLabel} style={{ marginTop: 22 }}>
+            <input type="checkbox" checked={isPrivate} onChange={e => setIsPrivate(e.target.checked)} />
+            Private group
+          </label>
+        </div>
+      </div>
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Cover Image</label>
+        <ImageUploader images={image} onChange={setImage} maxImages={1} />
+      </div>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>📍 Location</summary>
+        <div className={styles.sectionContent}>
+          <LocationPicker value={location} onChange={setLocation} />
+        </div>
+      </details>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>💰 Donations</summary>
+        <div className={styles.sectionContent}>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={acceptsDonations} onChange={e => setAcceptsDonations(e.target.checked)} />
+            Accept private-money donations
+          </label>
+          {acceptsDonations && (
+            <DonationAddressPicker
+              savedAddresses={userDonationAddrs}
+              selectedAddresses={selectedDonationAddrs}
+              onAddressesChange={setSelectedDonationAddrs}
+            />
+          )}
+        </div>
+      </details>
+
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Hashtags</label>
+        <HashtagInput value={hashtags} onChange={setHashtags} placeholder="Add hashtags..." />
+      </div>
+      <div className={styles.formActions}>
+        <button type="button" onClick={onDone} className="btn-ghost">Cancel</button>
+        <button type="submit" disabled={creating || !name.trim()} className="btn-primary">
+          {creating ? 'Creating...' : '👥 Create Group'}
+        </button>
+      </div>
+    </form>
+  )
+}
+
+function RequestForm({ onDone, prefill }: { onDone: () => void; prefill?: QuickCreatePrefill | null }) {
+  const { success, error } = useToast()
+  const router = useRouter()
+  const userDonationAddrs = useDonationAddresses()
+  const [title, setTitle] = useState(() => prefill?.title || '')
+  const [description, setDescription] = useState(() => prefill?.description || '')
+  const [category, setCategory] = useState(() =>
+    prefill?.category && REQUEST_CATEGORIES.some(c => c.value === prefill.category)
+      ? prefill.category as string
+      : 'GENERAL'
+  )
+  const [priority, setPriority] = useState('MEDIUM')
+  const [budget, setBudget] = useState(() => prefill?.budget || '')
+  const [goalAmount, setGoalAmount] = useState(() => prefill?.goalAmount || '')
+  const [deadline, setDeadline] = useState(() => prefill?.deadline || '')
+  const [image, setImage] = useState<string[]>([])
+  const [location, setLocation] = useState<{ text: string; latitude: number | null; longitude: number | null }>({ text: '', latitude: null, longitude: null })
+  const [isPublic, setIsPublic] = useState(true)
+  const [allowFulfillments, setAllowFulfillments] = useState(true)
+  const [showDonationAddress, setShowDonationAddress] = useState(true)
+  const [acceptsDonations, setAcceptsDonations] = useState(false)
+  const [selectedDonationAddrs, setSelectedDonationAddrs] = useState<DonationAddr[]>([])
+  const [hashtags, setHashtags] = useState<string[]>([])
+  const [creating, setCreating] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!title.trim()) return
+    setCreating(true)
+    try {
+      const res = await fetch('/api/requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: title.trim(),
+          description,
+          category,
+          priority,
+          budget: budget ? parseFloat(budget) : null,
+          goalAmount: goalAmount ? parseFloat(goalAmount) : null,
+          deadline: deadline || null,
+          imageUrl: image[0] || null,
+          location: location.text || undefined,
+          latitude: location.latitude ?? undefined,
+          longitude: location.longitude ?? undefined,
+          isPublic,
+          allowFulfillments,
+          showDonationAddress,
+          acceptsDonations,
+          selectedDonationAddrs: acceptsDonations ? selectedDonationAddrs : [],
+          hashtags: hashtags.length > 0 ? hashtags : undefined,
+        }),
+      })
+      if (res.ok) {
+        const body = await res.json().catch(() => null)
+        const id = extractCreatedId(body)
+        success('Request created!')
+        onDone()
+        if (id) router.push(`/requests/${id}?fresh=1`)
+        else router.refresh()
+      } else {
+        const err = await res.json()
+        error(err.error || 'Failed to create')
+      }
+    } catch {
+      error('Failed to create request')
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className={styles.form}>
+      <div className={styles.formGroup}>
+        <label className={styles.label} htmlFor="title-3">Title</label>
+        <input type="text" value={title} onChange={e => setTitle(e.target.value)} className={styles.input} placeholder="What do you need?" required autoFocus  id="title-3"/>
+      </div>
+      <div className={styles.formRow}>
+        <div className={styles.formGroup}>
+          <label className={styles.label} htmlFor="category-3">Category</label>
+          <select value={category} onChange={e => setCategory(e.target.value)} className={styles.select} id="category-3">
+            <option value="">Select category...</option>
+            {REQUEST_CATEGORIES.map(c => (
+              <option key={c.value} value={c.value}>{c.icon} {c.label}</option>
+            ))}
+          </select>
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label} htmlFor="priority">Priority</label>
+          <select value={priority} onChange={e => setPriority(e.target.value)} className={styles.select} id="priority">
+            <option value="LOW">🟢 Low</option>
+            <option value="MEDIUM">🟡 Medium</option>
+            <option value="HIGH">🔴 High</option>
+            <option value="URGENT">🔥 Urgent</option>
+          </select>
+        </div>
+      </div>
+      <div className={styles.formGroup}>
+        <label className={styles.label} htmlFor="description-3">Description</label>
+        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="Describe what you need..."  id="description-3"/>
+      </div>
+      <div className={styles.formRow}>
+        <div className={styles.formGroup}>
+          <label className={styles.label} htmlFor="budget">Budget ($)</label>
+          <input type="number" value={budget} onChange={e => setBudget(e.target.value)} className={styles.input} placeholder="0.00" step="0.01"  id="budget"/>
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label} htmlFor="goal-amount">Goal Amount ($)</label>
+          <input type="number" value={goalAmount} onChange={e => setGoalAmount(e.target.value)} className={styles.input} placeholder="0.00" step="0.01"  id="goal-amount"/>
+        </div>
+      </div>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>📸 Image & Location</summary>
+        <div className={styles.sectionContent}>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Image</label>
+            <ImageUploader images={image} onChange={setImage} maxImages={1} />
+          </div>
+          <LocationPicker value={location} onChange={setLocation} label="Location" />
+        </div>
+      </details>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>📅 Deadline & Visibility</summary>
+        <div className={styles.sectionContent}>
+          <div className={styles.formGroup}>
+            <label className={styles.label} htmlFor="deadline">Deadline</label>
+            <input type="date" value={deadline} onChange={e => setDeadline(e.target.value)} className={styles.input}  id="deadline"/>
+          </div>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={isPublic} onChange={e => setIsPublic(e.target.checked)} />
+            Make public (visible to everyone)
+          </label>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={allowFulfillments} onChange={e => setAllowFulfillments(e.target.checked)} />
+            Allow others to offer to fulfill this request
+          </label>
+        </div>
+      </details>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>💰 Donations</summary>
+        <div className={styles.sectionContent}>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={acceptsDonations} onChange={e => setAcceptsDonations(e.target.checked)} />
+            Accept private-money donations
+          </label>
+          {acceptsDonations && (
+            <DonationAddressPicker
+              savedAddresses={userDonationAddrs}
+              selectedAddresses={selectedDonationAddrs}
+              onAddressesChange={setSelectedDonationAddrs}
+            />
+          )}
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={showDonationAddress} onChange={e => setShowDonationAddress(e.target.checked)} />
+            Show my profile donation addresses on this request
+          </label>
+        </div>
+      </details>
+
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Hashtags</label>
+        <HashtagInput value={hashtags} onChange={setHashtags} placeholder="Add hashtags..." />
+      </div>
+      <div className={styles.formActions}>
+        <button type="button" onClick={onDone} className="btn-ghost">Cancel</button>
+        <button type="submit" disabled={creating || !title.trim()} className="btn-primary">
+          {creating ? 'Creating...' : '📝 Create Request'}
+        </button>
+      </div>
+    </form>
+  )
+}
+
+function ServiceForm({ onDone, prefill }: { onDone: () => void; prefill?: QuickCreatePrefill | null }) {
+  const { success, error } = useToast()
+  const router = useRouter()
+  const userDonationAddrs = useDonationAddresses()
+
+  const [title, setTitle] = useState(() => prefill?.title || '')
+  const [category, setCategory] = useState<string>(() =>
+    prefill?.category && (SERVICE_CATEGORIES as readonly string[]).includes(prefill.category)
+      ? prefill.category as string
+      : 'OTHER'
+  )
+  const [duration, setDuration] = useState(() => prefill?.duration || '60')
+  const [price, setPrice] = useState(() => prefill?.price || '')
+  const [description, setDescription] = useState(() => prefill?.description || '')
+  const [coverImage, setCoverImage] = useState<string[]>([])
+  const [location, setLocation] = useState<{ text: string; latitude: number | null; longitude: number | null }>({ text: '', latitude: null, longitude: null })
+
+  const [acceptsDonations, setAcceptsDonations] = useState(false)
+  const [selectedDonationAddrs, setSelectedDonationAddrs] = useState<DonationAddr[]>([])
+
+  const [acceptsBooking, setAcceptsBooking] = useState(false)
+  const [bookingDuration, setBookingDuration] = useState('60')
+  const [bookingLeadTime, setBookingLeadTime] = useState('24')
+  const [bookingLocation, setBookingLocation] = useState('')
+  const [meetingLink, setMeetingLink] = useState('')
+  const [meetingLinkType, setMeetingLinkType] = useState<'platform' | 'custom' | 'none'>('none')
+  const [creatingRoom, setCreatingRoom] = useState(false)
+
+  const handleCreatePlatformRoom = async () => {
+    setCreatingRoom(true)
+    try {
+      const res = await fetch('/api/video/rooms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: `${title || 'Service'} Video Room` }),
+      })
+      if (!res.ok) throw new Error()
+      const data = await res.json()
+      const room = data?.data?.room || data?.room
+      if (room) {
+        const link = `${window.location.origin}/dashboard/video?invite=${room.inviteCode}`
+        setMeetingLink(link)
+        setMeetingLinkType('platform')
+      }
+    } catch {}
+    setCreatingRoom(false)
+  }
+
+  const [hashtags, setHashtags] = useState<string[]>([])
+  const [creating, setCreating] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!title.trim()) return
+    setCreating(true)
+    try {
+      const res = await fetch('/api/services', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: title.trim(),
+          description: description.trim() || undefined,
+          category,
+          duration: parseInt(duration) || 60,
+          price: price ? parseFloat(price) : null,
+          location: location.text || undefined,
+          latitude: location.latitude ?? undefined,
+          longitude: location.longitude ?? undefined,
+          meetingLink: meetingLink || undefined,
+          imageUrl: coverImage[0] || null,
+          acceptsDonations,
+          selectedDonationAddrs: acceptsDonations ? selectedDonationAddrs : [],
+          acceptsAppointments: acceptsBooking,
+          appointmentDuration: acceptsBooking ? (parseInt(bookingDuration) || 60) : undefined,
+          appointmentLeadTime: acceptsBooking ? (parseInt(bookingLeadTime) || 24) : undefined,
+          appointmentLocation: acceptsBooking ? (bookingLocation || undefined) : undefined,
+          appointmentMeetingLink: meetingLink || undefined,
+          hashtags,
+        }),
+      })
+      if (res.ok) {
+        const body = await res.json().catch(() => null)
+        const id = extractCreatedId(body)
+        if (needsVerification(body)) success('Service saved as draft. Verify your email to publish it.')
+        else success('Service created!')
+        onDone()
+        if (id) router.push(`/services/${id}`)
+        else router.refresh()
+      } else {
+        const err = await res.json()
+        error(err.error || 'Failed to create')
+      }
+    } catch {
+      error('Failed to create service')
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className={styles.form}>
+      <div className={styles.formGroup}>
+        <label className={styles.label} htmlFor="title-4">Title</label>
+        <input type="text" value={title} onChange={e => setTitle(e.target.value)} className={styles.input} placeholder="Service title" required autoFocus  id="title-4"/>
+      </div>
+      <div className={styles.formGroup}>
+        <label className={styles.label} htmlFor="description-4">Description</label>
+        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="Describe your service..."  id="description-4"/>
+      </div>
+      <div className={styles.formRow}>
+        <div className={styles.formGroup}>
+          <label className={styles.label} htmlFor="category-4">Category</label>
+          <select value={category} onChange={e => setCategory(e.target.value)} className={styles.select} id="category-4">
+            {SERVICE_CATEGORIES.map(cat => (
+              <option key={cat} value={cat}>{SERVICE_CATEGORY_LABELS[cat]}</option>
+            ))}
+          </select>
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label} htmlFor="duration-min">Duration (min)</label>
+          <input type="number" value={duration} onChange={e => setDuration(e.target.value)} className={styles.input} placeholder="60" min="5"  id="duration-min"/>
+        </div>
+      </div>
+      <div className={styles.formRow}>
+        <div className={styles.formGroup}>
+          <label className={styles.label} htmlFor="price-3">Price ($)</label>
+          <input type="number" value={price} onChange={e => setPrice(e.target.value)} className={styles.input} placeholder="0.00" step="0.01"  id="price-3"/>
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Cover Image</label>
+          <ImageUploader images={coverImage} onChange={setCoverImage} maxImages={1} />
+        </div>
+      </div>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>📍 Location</summary>
+        <div className={styles.sectionContent}>
+          <LocationPicker value={location} onChange={setLocation} label="Service Location" />
+        </div>
+      </details>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>📅 Booking</summary>
+        <div className={styles.sectionContent}>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={acceptsBooking} onChange={e => setAcceptsBooking(e.target.checked)} />
+            Accept bookings for this service
+          </label>
+          {acceptsBooking && (
+            <div className={styles.nestedFields}>
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label} htmlFor="duration-min-2">Duration (min)</label>
+                  <input type="number" value={bookingDuration} onChange={e => setBookingDuration(e.target.value)} className={styles.input} placeholder="60" min="5"  id="duration-min-2"/>
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label} htmlFor="lead-time-hours">Lead Time (hours)</label>
+                  <input type="number" value={bookingLeadTime} onChange={e => setBookingLeadTime(e.target.value)} className={styles.input} placeholder="24" min="0"  id="lead-time-hours"/>
+                </div>
+              </div>
+              <input type="text" value={bookingLocation} onChange={e => setBookingLocation(e.target.value)} className={styles.input} placeholder="Booking location (optional)" />
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Meeting Link</label>
+                <div className={styles.meetingOptions}>
+                  <label className={`${styles.meetingOption} ${meetingLinkType === 'platform' ? styles.selected : ''}`}>
+                    <input type="radio" name="srv-meeting" checked={meetingLinkType === 'platform'} onChange={() => {
+                      if (!meetingLink) handleCreatePlatformRoom()
+                      else setMeetingLinkType('platform')
+                    }} />
+                    <span className={styles.meetingOptionLabel}>Platform Video Room</span>
+                    {meetingLinkType === 'platform' && meetingLink && (
+                      <code className={styles.meetingLinkPreview}>{meetingLink}</code>
+                    )}
+                    {meetingLinkType === 'platform' && !meetingLink && (
+                      <button type="button" onClick={handleCreatePlatformRoom} disabled={creatingRoom} className={styles.createRoomBtn}>
+                        {creatingRoom ? 'Creating...' : 'Create Video Room'}
+                      </button>
+                    )}
+                  </label>
+                  <label className={`${styles.meetingOption} ${meetingLinkType === 'custom' ? styles.selected : ''}`}>
+                    <input type="radio" name="srv-meeting" checked={meetingLinkType === 'custom'} onChange={() => setMeetingLinkType('custom')} />
+                    <span className={styles.meetingOptionLabel}>Custom Link</span>
+                    {meetingLinkType === 'custom' && (
+                      <input type="url" value={meetingLink} onChange={e => setMeetingLink(e.target.value)} placeholder="https://zoom.us/j/..." className={styles.meetingLinkInput} />
+                    )}
+                  </label>
+                  <label className={`${styles.meetingOption} ${meetingLinkType === 'none' ? styles.selected : ''}`}>
+                    <input type="radio" name="srv-meeting" checked={meetingLinkType === 'none'} onChange={() => { setMeetingLinkType('none'); setMeetingLink('') }} />
+                    <span className={styles.meetingOptionLabel}>No meeting link</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </details>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>💰 Donations</summary>
+        <div className={styles.sectionContent}>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={acceptsDonations} onChange={e => setAcceptsDonations(e.target.checked)} />
+            Accept private-money donations
+          </label>
+          {acceptsDonations && (
+            <DonationAddressPicker
+              savedAddresses={userDonationAddrs}
+              selectedAddresses={selectedDonationAddrs}
+              onAddressesChange={setSelectedDonationAddrs}
+            />
+          )}
+        </div>
+      </details>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>🏷️ Hashtags</summary>
+        <div className={styles.sectionContent}>
+          <HashtagInput value={hashtags} onChange={setHashtags} placeholder="Add hashtags..." />
+        </div>
+      </details>
+
+      <div className={styles.formActions}>
+        <button type="button" onClick={onDone} className="btn-ghost">Cancel</button>
+        <button type="submit" disabled={creating || !title.trim()} className="btn-primary">
+          {creating ? 'Creating...' : '🔧 Create Service'}
+        </button>
+      </div>
+    </form>
+  )
+}
+
+function ProjectForm({ onDone, prefill }: { onDone: () => void; prefill?: QuickCreatePrefill | null }) {
+  const { success, error } = useToast()
+  const router = useRouter()
+  const userDonationAddrs = useDonationAddresses()
+
+  const [title, setTitle] = useState(() => prefill?.title || '')
+  const [description, setDescription] = useState(() => prefill?.description || '')
+  const [status, setStatus] = useState('IDEA')
+  const [category, setCategory] = useState<string>(() =>
+    prefill?.category && PROJECT_CATEGORIES.some(c => c.value === prefill.category)
+      ? prefill.category as string
+      : ''
+  )
+  const [coverImage, setCoverImage] = useState<string[]>([])
+  const [lookingForCollaborators, setLookingForCollaborators] = useState(() => prefill?.lookingForCollaborators || false)
+  const [needsVolunteers, setNeedsVolunteers] = useState(() => prefill?.needsVolunteers || false)
+  const [volunteerRoles, setVolunteerRoles] = useState(() => prefill?.volunteerRoles || '')
+  const [volunteerDescription, setVolunteerDescription] = useState('')
+  const [goalAmount, setGoalAmount] = useState(() => prefill?.goalAmount || '')
+  const [acceptsDonations, setAcceptsDonations] = useState(false)
+  const [selectedDonationAddrs, setSelectedDonationAddrs] = useState<DonationAddr[]>([])
+  const [location, setLocation] = useState<{ text: string; latitude: number | null; longitude: number | null }>({ text: '', latitude: null, longitude: null })
+  const [goals, setGoals] = useState('')
+  const [mileposts, setMileposts] = useState('')
+  const [hashtags, setHashtags] = useState<string[]>([])
+  const [phases, setPhases] = useState<string[]>([])
+  const [linkedAsset, setLinkedAsset] = useState<UserAsset | null>(null)
+  const [creating, setCreating] = useState(false)
+
+  const addPhase = () => setPhases([...phases, ''])
+  const removePhase = (i: number) => setPhases(phases.filter((_, idx) => idx !== i))
+  const updatePhase = (i: number, val: string) => {
+    const next = [...phases]; next[i] = val; setPhases(next)
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!title.trim()) return
+    setCreating(true)
+    try {
+      const res = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: title.trim(),
+          description,
+          status,
+          category: category || undefined,
+          imageUrl: coverImage[0] || null,
+          lookingForCollaborators,
+          needsVolunteers,
+          volunteerRoles: volunteerRoles || null,
+          volunteerDescription: volunteerDescription || null,
+          goalAmount: goalAmount ? parseFloat(goalAmount) : null,
+          acceptsDonations,
+          donationAddress: selectedDonationAddrs[0]?.address || null,
+          donationCurrency: selectedDonationAddrs[0]?.currency || 'XMR',
+          donationAddresses: selectedDonationAddrs.length > 0 ? JSON.stringify(selectedDonationAddrs) : null,
+          location: location.text || undefined,
+          latitude: location.latitude ?? undefined,
+          longitude: location.longitude ?? undefined,
+          goals,
+          mileposts,
+          phases: phases.length > 0 ? JSON.stringify(phases) : null,
+          published: false,
+          hashtags: hashtags.length > 0 ? hashtags : undefined,
+        }),
+      })
+      if (res.ok) {
+        const body = await res.json().catch(() => null)
+        const id = extractCreatedId(body)
+        success('Project created!')
+        onDone()
+        if (id) router.push(`/projects/${id}?fresh=1`)
+        else router.refresh()
+      } else {
+        const err = await res.json()
+        error(err.error || 'Failed to create')
+      }
+    } catch {
+      error('Failed to create project')
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className={styles.form}>
+      <div className={styles.formGroup}>
+        <label className={styles.label} htmlFor="title-5">Title</label>
+        <input type="text" value={title} onChange={e => setTitle(e.target.value)} className={styles.input} placeholder="Project name" required autoFocus  id="title-5"/>
+      </div>
+      <div className={styles.formRow}>
+        <div className={styles.formGroup}>
+          <label className={styles.label} htmlFor="status">Status</label>
+          <select value={status} onChange={e => setStatus(e.target.value)} className={styles.select} id="status">
+            <option value="IDEA">💡 Idea</option>
+            <option value="IN_PROGRESS">🔨 In Progress</option>
+            <option value="COMPLETED">✅ Completed</option>
+          </select>
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label} htmlFor="category-5">Category</label>
+          <select value={category} onChange={e => setCategory(e.target.value)} className={styles.select} id="category-5">
+            <option value="">Select...</option>
+            {PROJECT_CATEGORIES.map(c => (
+              <option key={c.value} value={c.value}>{c.icon} {c.label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <div className={styles.formGroup}>
+        <label className={styles.label} htmlFor="description-5">Description</label>
+        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className={styles.textarea} placeholder="Describe your project..."  id="description-5"/>
+      </div>
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Cover Image</label>
+        <ImageUploader images={coverImage} onChange={setCoverImage} maxImages={1} />
+      </div>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>🤝 Collaborate</summary>
+        <div className={styles.sectionContent}>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={lookingForCollaborators} onChange={e => setLookingForCollaborators(e.target.checked)} />
+            Looking for collaborators
+          </label>
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={needsVolunteers} onChange={e => setNeedsVolunteers(e.target.checked)} />
+            Needs volunteers
+          </label>
+          {needsVolunteers && (
+            <div className={styles.nestedFields}>
+              <input type="text" value={volunteerRoles} onChange={e => setVolunteerRoles(e.target.value)} className={styles.input} placeholder="Volunteer roles (comma separated)" />
+              <textarea value={volunteerDescription} onChange={e => setVolunteerDescription(e.target.value)} rows={2} className={styles.textarea} placeholder="Describe what volunteers will do..." />
+            </div>
+          )}
+        </div>
+      </details>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>💰 Funding</summary>
+        <div className={styles.sectionContent}>
+          <input type="number" value={goalAmount} onChange={e => setGoalAmount(e.target.value)} className={styles.input} placeholder="Funding goal ($)" step="0.01" />
+          <label className={styles.checkLabel}>
+            <input type="checkbox" checked={acceptsDonations} onChange={e => setAcceptsDonations(e.target.checked)} />
+            Accept private-money donations
+          </label>
+          {acceptsDonations && (
+            <DonationAddressPicker
+              savedAddresses={userDonationAddrs}
+              selectedAddresses={selectedDonationAddrs}
+              onAddressesChange={setSelectedDonationAddrs}
+            />
+          )}
+        </div>
+      </details>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>📍 Location</summary>
+        <div className={styles.sectionContent}>
+          <LocationPicker value={location} onChange={setLocation} />
+        </div>
+      </details>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>📋 Planning Stages</summary>
+        <div className={styles.sectionContent}>
+          <p className={styles.sectionHint}>Define the phases of your project. Each phase: name — description</p>
+          {phases.map((p, i) => (
+            <div key={i} className={styles.phaseRow}>
+              <input type="text" value={p} onChange={e => updatePhase(i, e.target.value)}
+                placeholder={`Phase ${i + 1}: Name — Description`} className={styles.input} />
+              <button type="button" onClick={() => removePhase(i)} className={styles.removeBtn}>✕</button>
+            </div>
+          ))}
+          <button type="button" onClick={addPhase} className={styles.addBtn}>+ Add Phase</button>
+        </div>
+      </details>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>🎯 Goals & Milestones</summary>
+        <div className={styles.sectionContent}>
+          <textarea value={goals} onChange={e => setGoals(e.target.value)} rows={3} className={styles.textarea} placeholder="Goals (one per line)" />
+          <textarea value={mileposts} onChange={e => setMileposts(e.target.value)} rows={3} className={styles.textarea} placeholder="Milestones (one per line)" />
+        </div>
+      </details>
+
+      <details className={styles.sectionDetails}>
+        <summary className={styles.sectionSummary}>🔗 Tags & Links</summary>
+        <div className={styles.sectionContent}>
+          <HashtagInput value={hashtags} onChange={setHashtags} placeholder="Add hashtags..." />
+          <AssetPicker
+            filterTypes={['SCHOOL', 'SHOP']}
+            selectedAsset={linkedAsset}
+            onSelect={setLinkedAsset}
+            label="Link to a school or shop"
+          />
+        </div>
+      </details>
+
+      <div className={styles.formActions}>
+        <button type="button" onClick={onDone} className="btn-ghost">Cancel</button>
+        <button type="submit" disabled={creating || !title.trim()} className="btn-primary">
+          {creating ? 'Creating...' : '🚀 Create Project'}
+        </button>
+      </div>
+    </form>
+  )
+}
