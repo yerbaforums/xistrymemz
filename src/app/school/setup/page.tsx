@@ -10,6 +10,7 @@ import { businessTemplates, getTemplateById, type BusinessTemplate } from '@/lib
 import Button from '@/components/ui/Button'
 import Skeleton from '@/components/Skeleton'
 import Loading from '@/components/Loading'
+import IpfsImage from '@/components/IpfsImage'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
 const steps: WizardStep[] = [
@@ -231,7 +232,7 @@ function SchoolSetupContent() {
                  id="cover-image-url"/>
                 {schoolImage && (
                   <div className={styles.imagePreview}>
-                    <img src={schoolImage} alt="Preview" />
+                    <IpfsImage src={schoolImage} alt="Preview" thumbWidth={256} />
                   </div>
                 )}
               </div>
@@ -281,7 +282,7 @@ function SchoolSetupContent() {
               <h3>School Profile</h3>
               <p><strong>Name:</strong> {schoolName}</p>
               <p><strong>About:</strong> {schoolAbout}</p>
-              {schoolImage && <img src={schoolImage} alt="School" className={styles.reviewImage} />}
+              {schoolImage && <IpfsImage src={schoolImage} alt="School" className={styles.reviewImage} thumbWidth={256} />}
             </div>
             
             {selectedTemplate?.sampleContent && (

@@ -14,6 +14,7 @@ import MediaPlayer from '@/components/MediaPlayer'
 import WorkTogether from '@/components/WorkTogether'
 import { sanitizeHtml } from '@/lib/sanitize'
 import { parseImageList } from '@/lib/utils'
+import IpfsImage from '@/components/IpfsImage'
 
 interface ContentData {
   id: string
@@ -288,7 +289,7 @@ export default function SchoolContentDetailPage() {
         <div className={styles.imageGrid}>
           {images.map((url, i) => (
             <div key={i} className={styles.imageWrap}>
-              <img loading="lazy" src={url} alt="" />
+              <IpfsImage src={url} alt="" />
             </div>
           ))}
         </div>

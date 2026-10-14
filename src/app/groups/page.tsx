@@ -14,6 +14,7 @@ import Breadcrumbs from '@/components/Breadcrumbs'
 import LocationOption from '@/components/LocationOption'
 import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
 import EntityMarker from '@/components/EntityMarker'
+import IpfsImage from '@/components/IpfsImage'
 
 interface Group {
   id: string
@@ -155,7 +156,7 @@ export default function GroupsPage() {
       <Link href={`/groups/${group.id}`} key={group.id} className={styles.card}>
         <div className={styles.cardImage}>
           {group.imageUrl ? (
-            <img src={group.imageUrl} alt={group.name} />
+            <IpfsImage src={group.imageUrl} alt={group.name} thumbWidth={512} />
           ) : (
             <div className={styles.placeholderIcon}>👥</div>
           )}

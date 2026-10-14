@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import { getUserProfileUrl } from '@/lib/utils'
 
 import { EmptyState } from '@/components/EmptyState'
@@ -256,7 +256,7 @@ export default function CommunityManagement() {
                   <div key={c.id} className={styles.card}>
                     <div className={styles.avatar}>
                       {user.image ? (
-                        <Image src={user.image} alt="" width={40} height={40} />
+                        <IpfsImage src={user.image} alt="" width={40} height={40} thumbWidth={256} />
                       ) : (
                         <span>{user.name?.[0] || '?'}</span>
                       )}
@@ -298,7 +298,7 @@ export default function CommunityManagement() {
                   <div key={c.id} className={styles.card}>
                     <div className={styles.avatar}>
                       {user.image ? (
-                        <Image src={user.image} alt="" width={40} height={40} />
+                        <IpfsImage src={user.image} alt="" width={40} height={40} thumbWidth={256} />
                       ) : (
                         <span>{user.name?.[0] || '?'}</span>
                       )}
@@ -336,7 +336,7 @@ export default function CommunityManagement() {
                   <Link key={c.id} href={getUserProfileUrl(user)} className={styles.card}>
                     <div className={styles.avatar}>
                       {user.image ? (
-                        <Image src={user.image} alt="" width={40} height={40} />
+                        <IpfsImage src={user.image} alt="" width={40} height={40} thumbWidth={256} />
                       ) : (
                         <span>{user.name?.[0] || '?'}</span>
                       )}

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { getUserProfileUrl } from '@/lib/utils'
 import { getCryptoIcon, getCryptoColor } from '@/lib/crypto-icons'
@@ -662,7 +662,7 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
                   <Link href={getUserProfileUrl(req.user)} className={styles.authorInfo}>
                     <div className={styles.authorAvatar}>
                       {req.user.image ? (
-                        <Image src={req.user.image} alt={req.user.name || 'User'} fill sizes="28px" />
+                        <IpfsImage src={req.user.image} alt={req.user.name || 'User'} thumbWidth={256} style={{ width: '100%', height: '100%' }} />
                       ) : (
                         <span>{(req.user.name?.[0] || '?').toUpperCase()}</span>
                       )}

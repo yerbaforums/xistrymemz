@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useState, Suspense } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import { useToast } from '@/context/ToastContext'
 import { SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
@@ -159,7 +159,7 @@ function SponsorshipsContent() {
             <div key={s.id} style={{ border: '1px solid var(--border-color)', borderRadius: 10, padding: 14 }}>
               <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
                 {view === 'incoming' && s.sponsor?.image && (
-                  <Image src={s.sponsor.image} alt="" width={32} height={32} style={{ borderRadius: '50%' }} />
+                  <IpfsImage src={s.sponsor.image} alt="" width={32} height={32} style={{ borderRadius: '50%' }} thumbWidth={256} />
                 )}
                 <div style={{ flex: 1, minWidth: 200 }}>
                   <Link href={entityUrl(s)} style={{ fontWeight: 700 }}>{s.entityTitle || (s.entityType === 'REQUEST' ? 'Request' : 'Project')}</Link>

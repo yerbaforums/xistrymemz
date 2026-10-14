@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import styles from './groups.module.css'
 import Button from '@/components/ui/Button'
 import { EmptyState } from '@/components/EmptyState'
@@ -118,7 +118,7 @@ export default function GroupsPage() {
             <Link key={group.id} href={`/groups/${group.id}`} className={styles.groupCard}>
               <div className={styles.groupImage}>
                 {group.imageUrl ? (
-                  <Image src={group.imageUrl} alt={group.name} fill style={{objectFit: 'cover'}} />
+                  <IpfsImage src={group.imageUrl} alt={group.name} thumbWidth={512} />
                 ) : (
                   <span className={styles.groupIcon}>👥</span>
                 )}

@@ -28,6 +28,7 @@ import Loading from '@/components/Loading'
 import HashtagText from '@/components/HashtagText'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import LinkPreview from '@/components/LinkPreview'
+import IpfsImage from '@/components/IpfsImage'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { EmptyState } from '@/components/EmptyState'
 import Button from '@/components/ui/Button'
@@ -422,7 +423,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
           <div className={styles.avatarSection}>
             <div className={styles.avatar}>
               {school.schoolImage ? (
-                <img src={school.schoolImage} alt={school.schoolName || 'School'} />
+                <IpfsImage src={school.schoolImage} alt={school.schoolName || 'School'} thumbWidth={256} />
               ) : (
                 <span>🎓</span>
               )}
@@ -713,7 +714,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                       </div>
                       {itemImages.length > 0 && (
                         <div className={styles.cardThumb} onClick={() => router.push(`/school/${resolvedSlug}/content/${item.id}`)} style={{cursor: 'pointer'}}>
-                          <img src={itemImages[0]} alt="" />
+                          <IpfsImage src={itemImages[0]} alt="" thumbWidth={512} />
                         </div>
                       )}
                       <h3 onClick={() => router.push(`/school/${resolvedSlug}/content/${item.id}`)} style={{cursor: 'pointer'}}>{item.title}</h3>
@@ -775,7 +776,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                     <div className={styles.postHeader}>
                       <div className={styles.postAuthor}>
                         <div className={styles.postAvatarSmall}>
-                          {post.user.image ? <img src={post.user.image} alt="" /> : <span>{post.user.name?.[0] || 'U'}</span>}
+                          {post.user.image ? <IpfsImage src={post.user.image} alt="" thumbWidth={256} /> : <span>{post.user.name?.[0] || 'U'}</span>}
                         </div>
                         <div>
                           <span className={styles.postAuthorName}>{post.user.name || 'School'}</span>
@@ -798,7 +799,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                     <LinkPreview text={post.content} />
                     {post.imageUrl && (
                       <div className={styles.postImage}>
-                        <img src={post.imageUrl} alt="" style={{maxWidth:'100%', borderRadius:'8px', marginTop:'8px'}} />
+                        <IpfsImage src={post.imageUrl} alt="" style={{maxWidth:'100%', borderRadius:'8px', marginTop:'8px'}} thumbWidth={512} />
                       </div>
                     )}
                     <div className={styles.postFooter}>

@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/EmptyState'
 import { useTheme } from '@/context/ThemeContext'
 import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
 import EntityMarker from '@/components/EntityMarker'
+import IpfsImage from '@/components/IpfsImage'
 
 const DARK_TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
 const LIGHT_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -120,7 +121,7 @@ export default function ProductMapView({ products, userLocation, mapRef: externa
             <div className={styles.globalList}>
               {globalProducts.map(p => (
                 <Link key={p.id} href={`/products/${p.id}`} className={styles.globalItem}>
-                  {p.imageUrl && <img src={p.imageUrl} alt="" className={styles.globalItemImg} />}
+                  {p.imageUrl && <IpfsImage src={p.imageUrl} alt="" className={styles.globalItemImg} thumbWidth={256} />}
                   <div className={styles.globalItemInfo}>
                     <strong>{p.title}</strong>
                     {p.price != null && <span className={styles.globalItemPrice}>${p.price}</span>}
@@ -150,7 +151,7 @@ export default function ProductMapView({ products, userLocation, mapRef: externa
           >
             <Popup>
               <div className={styles.popup}>
-                {product.imageUrl && <img src={product.imageUrl} alt="" className={styles.popupImg} />}
+                {product.imageUrl && <IpfsImage src={product.imageUrl} alt="" className={styles.popupImg} thumbWidth={256} />}
                 <h4 className={styles.popupTitle}>{product.title}</h4>
                 {product.price != null && <p className={styles.popupPrice}>${product.price}</p>}
                 <p className={styles.popupMeta}>

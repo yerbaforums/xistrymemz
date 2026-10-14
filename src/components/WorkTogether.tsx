@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import IpfsImage from '@/components/IpfsImage'
 import { useSession } from 'next-auth/react'
 import FollowButton from '@/components/FollowButton'
 import CollaborateButton from '@/components/CollaborateButton'
@@ -35,7 +36,7 @@ export default function WorkTogether({
     <div className={styles.row} aria-label={`Work with ${user.name || 'this member'}`}>
       <Link href={getUserProfileUrl(user)} className={styles.profile}>
         {user.image ? (
-          <img src={user.image} alt="" className={styles.avatar} />
+          <IpfsImage src={user.image} alt="" className={styles.avatar} thumbWidth={256} />
         ) : (
           <span className={styles.avatarFallback}>{(user.name || 'U')[0]}</span>
         )}

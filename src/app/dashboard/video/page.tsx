@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import VideoChatModal from '@/components/VideoChatModal'
+import IpfsImage from '@/components/IpfsImage'
 import styles from './video.module.css'
 import { EmptyState } from '@/components/EmptyState'
 
@@ -157,7 +158,7 @@ export default function VideoChatPage() {
                     {r.participants.map(p => (
                       <div key={p.userId} className={styles.avatar} title={p.user.name || ''}>
                         {p.user.image ? (
-                          <img src={p.user.image} alt="" className={styles.avatarImg} />
+                          <IpfsImage src={p.user.image} alt="" className={styles.avatarImg} thumbWidth={256} />
                         ) : (
                           <span className={styles.avatarPlaceholder}>{(p.user.name || '?')[0]}</span>
                         )}

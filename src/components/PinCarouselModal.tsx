@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import LinkedEntityDetail from '@/components/LinkedEntityDetail'
 import { parseImageList } from '@/lib/utils'
 import styles from './PinCarouselModal.module.css'
@@ -128,7 +128,7 @@ export default function PinCarouselModal({ pins, initialIndex, onClose, boardSlu
             {currentImage ? (
               <Link href={`/boards/${boardSlug}/pins/${pin.id}`} className={styles.imageLink}>
                 <div className={styles.mainImageWrap}>
-                  <Image src={currentImage} alt="" fill style={{ objectFit: 'contain' }} />
+                  <IpfsImage src={currentImage} alt="" style={{ objectFit: 'contain' }} />
                 </div>
               </Link>
             ) : (
@@ -144,7 +144,7 @@ export default function PinCarouselModal({ pins, initialIndex, onClose, boardSlu
                     className={`${styles.thumb} ${i === imageIndex ? styles.thumbActive : ''}`}
                     onClick={() => setImageIndex(i)}
                   >
-                    <Image src={img} alt="" width={48} height={48} style={{ objectFit: 'cover' }} />
+                    <IpfsImage src={img} alt="" width={48} height={48} style={{ objectFit: 'cover' }} thumbWidth={256} />
                   </button>
                 ))}
               </div>
@@ -156,7 +156,7 @@ export default function PinCarouselModal({ pins, initialIndex, onClose, boardSlu
               <div className={styles.userRow}>
                 <div className={styles.avatar}>
                   {pin.user.image ? (
-                    <Image src={pin.user.image} alt={pin.user.name || ''} width={32} height={32} />
+                    <IpfsImage src={pin.user.image} alt={pin.user.name || ''} width={32} height={32} thumbWidth={256} />
                   ) : (
                     <span className={styles.avatarInitial}>{(pin.user.name || 'U')[0]}</span>
                   )}

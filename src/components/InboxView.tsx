@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import Link from 'next/link'
 import styles from './InboxView.module.css'
 import { EmptyState } from '@/components/EmptyState'
@@ -143,7 +143,7 @@ export default function InboxView({ onChatUser }: { onChatUser?: (userId: string
             <div key={`${item.type}-${item.id}`} className={styles.item}>
               <div className={styles.itemLeft}>
                 {item.fromUser.image ? (
-                  <Image src={item.fromUser.image} alt="" width={40} height={40} className={styles.avatar} />
+                  <IpfsImage src={item.fromUser.image} alt="" width={40} height={40} className={styles.avatar} thumbWidth={256} />
                 ) : (
                   <div className={styles.avatarPlaceholder}>
                     {(item.fromUser.name || '?')[0]}

@@ -1,5 +1,7 @@
 'use client'
 
+import IpfsImage from '@/components/IpfsImage'
+
 const TIER_COLORS: Record<string, string> = {
   BRONZE: '#CD7F32',
   SILVER: '#C0C0C0',
@@ -41,12 +43,13 @@ export default function QualityBadge({ badge, size = 'md' }: QualityBadgeProps) 
       }}
     >
       {badge.imageUrl ? (
-        <img
+        <IpfsImage
           src={badge.imageUrl}
           alt=""
           width={imgSize}
           height={imgSize}
           style={{ borderRadius: '50%' }}
+          thumbWidth={256}
         />
       ) : (
         <span style={{ fontSize: isSmall ? 10 : 12 }}>

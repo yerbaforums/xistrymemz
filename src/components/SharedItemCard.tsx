@@ -2,7 +2,8 @@
 
 import { memo, useState, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
+import Avatar from '@/components/Avatar'
 import Skeleton from '@/components/Skeleton'
 import HashtagText from '@/components/HashtagText'
 import { getEntityIcon } from '@/lib/entity-icons'
@@ -78,7 +79,7 @@ const SharedItemCard = memo(function SharedItemCard({ referenceType, referenceId
               <div className={styles.postHeader}>
                 <div className={styles.postAvatar}>
                   {item.user?.image ? (
-                    <Image src={item.user.image} alt="" width={24} height={24} style={{ objectFit: 'cover' }} />
+                    <Avatar src={item.user.image} name={item.user?.name} size={24} />
                   ) : (
                     <span>{item.user?.name?.[0] || 'U'}</span>
                   )}
@@ -97,7 +98,7 @@ const SharedItemCard = memo(function SharedItemCard({ referenceType, referenceId
                 <div style={{ display: 'grid', gridTemplateColumns: imageList.length === 1 ? '1fr' : '1fr 1fr', gap: 6 }}>
                   {imageList.map((url, i) => (
                     <div key={i} style={{ borderRadius: 6, overflow: 'hidden', aspectRatio: imageList.length === 1 ? '16/9' : '1' }}>
-                      <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
+                      <IpfsImage src={url} alt="" style={{ width: '100%', height: '100%' }} thumbWidth={512} />
                     </div>
                   ))}
                 </div>
@@ -121,7 +122,7 @@ const SharedItemCard = memo(function SharedItemCard({ referenceType, referenceId
       <div className={styles.card}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 10 }}>
           {item?.image ? (
-            <img src={item.image} alt="" style={{ width: 40, height: 40, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
+            <IpfsImage src={item.image} alt="" style={{ width: 40, height: 40, borderRadius: 6 }} thumbWidth={256} />
           ) : (
             <div className={styles.cardIcon}>
               {getEntityIcon(referenceType) || '📎'}

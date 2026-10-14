@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/EmptyState'
 import Skeleton from '@/components/Skeleton'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
+import IpfsImage from '@/components/IpfsImage'
 
 interface School {
   id: string
@@ -213,7 +214,7 @@ export default function SchoolsPage() {
               <Link key={school.id} href={`/school/${school.schoolSlug}`} className={styles.schoolCard}>
                 {school.schoolImage && (
                   <div className={styles.schoolImage}>
-                    <img src={school.schoolImage} alt={school.schoolName} />
+                    <IpfsImage src={school.schoolImage} alt={school.schoolName} thumbWidth={512} />
                   </div>
                 )}
                 <div className={styles.schoolInfo}>

@@ -19,6 +19,7 @@ import { useQuickCreate } from '@/components/QuickCreateModal'
 import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
 import EntityMarker from '@/components/EntityMarker'
 import LocationCard from '@/components/LocationCard'
+import IpfsImage from '@/components/IpfsImage'
 import { usePassportLocation } from '@/hooks/usePassportLocation'
 import { calculateDistance } from '@/lib/geocoding'
 
@@ -417,8 +418,9 @@ export default function ServicesPage() {
             </div>
 
             {selImage && (
-              <img src={selImage} alt={selTitle}
+              <IpfsImage src={selImage} alt={selTitle}
                 style={{ width: '100%', maxHeight: 240, objectFit: 'cover', borderRadius: 8, marginBottom: 16 }}
+                thumbWidth={512}
               />
             )}
 
@@ -450,7 +452,7 @@ export default function ServicesPage() {
               fontSize: '0.85rem'
             }}>
               {selUserImage ? (
-                <img src={selUserImage} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
+                <IpfsImage src={selUserImage} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} thumbWidth={256} />
               ) : (
                 <span style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--accent-primary)', color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 600 }}>
                   {(selUserName || 'U')[0]}

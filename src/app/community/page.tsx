@@ -17,6 +17,7 @@ import ConstellationExplorer from '@/components/ConstellationExplorer'
 import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
 import EntityMarker from '@/components/EntityMarker'
 import Button from '@/components/ui/Button'
+import IpfsImage from '@/components/IpfsImage'
 
 interface Member {
   id: string
@@ -433,7 +434,7 @@ export default function CommunityPage() {
                 <div key={member.id} className={styles.memberCard}>
                   <div className={styles.memberAvatar}>
                     {member.image ? (
-                      <img loading="lazy" src={member.image} alt={member.name || 'Member'} />
+                      <IpfsImage src={member.image} alt={member.name || 'Member'} thumbWidth={256} />
                     ) : (
                       <span>{member.name?.[0] || member.email[0].toUpperCase()}</span>
                     )}
@@ -515,7 +516,7 @@ export default function CommunityPage() {
                   <div key={connection.id} className={styles.memberCard}>
                     <div className={styles.memberAvatar}>
                       {connectedMember.image ? (
-                        <img loading="lazy" src={connectedMember.image} alt={connectedMember.name || 'Member'} />
+                        <IpfsImage src={connectedMember.image} alt={connectedMember.name || 'Member'} thumbWidth={256} />
                       ) : (
                         <span>{connectedMember.name?.[0] || connectedMember.email[0].toUpperCase()}</span>
                       )}
@@ -558,7 +559,7 @@ export default function CommunityPage() {
                 <div key={request.id} className={styles.requestCard}>
                   <div className={styles.memberAvatar}>
                     {request.requester?.image ? (
-                      <img loading="lazy" src={request.requester.image} alt={request.requester.name || 'User'} />
+                      <IpfsImage src={request.requester.image} alt={request.requester.name || 'User'} thumbWidth={256} />
                     ) : (
                       <span>{request.requester?.name?.[0] || '?'}</span>
                     )}
@@ -602,7 +603,7 @@ export default function CommunityPage() {
               <Link key={group.id} href={`/groups/${group.id}`} className={styles.groupCard}>
                 <div className={styles.groupIcon}>
                   {group.imageUrl ? (
-                    <img loading="lazy" src={group.imageUrl} alt={group.name} />
+                    <IpfsImage src={group.imageUrl} alt={group.name} thumbWidth={512} />
                   ) : (
                     <span>👥</span>
                   )}

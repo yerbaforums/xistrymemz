@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import { useToast } from '@/context/ToastContext'
 import { probeMediaDuration, formatDuration, compressVideo, shrinkImage, MAX_VIDEO_DURATION_SEC, MAX_VIDEO_SIZE_MB, shouldCompressVideo } from '@/lib/media'
 import { normalizeVideoUrl, POST_VIDEO_KINDS, MEDIA_LINK_HINT } from '@/lib/media-links'
@@ -152,7 +152,7 @@ export default function ImageUploader({
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
         {images.map((url, i) => (
           <div key={i} style={{ position: 'relative', width: 56, height: 56, borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', background: 'var(--bg-tertiary)' }}>
-            <Image src={url} alt="" width={56} height={56} style={{ objectFit: 'cover' }} />
+            <IpfsImage src={url} alt="" style={{ width: 56, height: 56 }} thumbWidth={256} />
             <button
               type="button"
               onClick={() => onChange(images.filter((_, idx) => idx !== i))}

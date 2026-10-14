@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import MentionInput, { type MentionInputHandle } from '@/components/MentionInput'
 import HashtagText from '@/components/HashtagText'
 import StarButton from '@/components/StarButton'
@@ -529,7 +529,7 @@ export default function ForumThreadPage() {
         <div className={styles.threadAuthor}>
           <div className={styles.authorAvatar}>
             {post.author.image ? (
-              <Image src={post.author.image} alt={post.author.name || 'User'} width={40} height={40} />
+              <IpfsImage src={post.author.image} alt={post.author.name || 'User'} width={40} height={40} thumbWidth={256} />
             ) : (
               <span>{post.author.name?.[0] || 'A'}</span>
             )}
@@ -738,7 +738,7 @@ export default function ForumThreadPage() {
                   <div className={styles.replyAuthor}>
                     <div className={styles.authorAvatar}>
                       {reply.author.image ? (
-                        <img src={reply.author.image} alt={reply.author.name || 'User'} />
+                        <IpfsImage src={reply.author.image} alt={reply.author.name || 'User'} thumbWidth={256} />
                       ) : (
                         <span>{reply.author.name?.[0] || reply.author.email[0].toUpperCase()}</span>
                       )}
@@ -783,7 +783,7 @@ export default function ForumThreadPage() {
                             <div style={{ display: 'grid', gridTemplateColumns: arr.length === 1 ? '1fr' : '1fr 1fr', gap: 6, marginTop: 8 }}>
                               {arr.filter((u): u is string => typeof u === 'string').map((url, i) => (
                                 <div key={i} style={{ borderRadius: 8, overflow: 'hidden', aspectRatio: arr.length === 1 ? '16/9' : '1' }}>
-                                  <img src={url} alt="" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                  <IpfsImage src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} thumbWidth={512} />
                                 </div>
                               ))}
                             </div>

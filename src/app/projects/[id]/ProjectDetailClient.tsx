@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import styles from './page.module.css'
 import ProjectGoals from './ProjectGoals'
 import ProjectMilestones from './ProjectMilestones'
@@ -629,7 +629,7 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
         <div className={styles.creatorInfo}>
           <Link href={getUserProfileUrl(project.user)} className={styles.creatorLink}>
             {project.user.image ? (
-              <Image src={project.user.image} alt="" width={32} height={32} className={styles.creatorAvatar} />
+              <IpfsImage src={project.user.image} alt="" width={32} height={32} className={styles.creatorAvatar} thumbWidth={256} />
             ) : (
               <span className={styles.creatorAvatarPlaceholder}>{project.user.name?.[0] || 'U'}</span>
             )}
@@ -809,7 +809,7 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
                       </div>
                       {project.imageUrl && (
                         <div className={styles.projectImageWrap}>
-                          <img src={project.imageUrl} alt={project.title} className={styles.projectImage} />
+                          <IpfsImage src={project.imageUrl} alt={project.title} className={styles.projectImage} />
                         </div>
                       )}
                       {project.category && <span className={styles.categoryBadge}>{project.category}</span>}

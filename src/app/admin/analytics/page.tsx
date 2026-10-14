@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import StatsCard from '@/components/admin/StatsCard'
+import IpfsImage from '@/components/IpfsImage'
 import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
@@ -391,7 +392,7 @@ export default function AdminAnalyticsPage() {
                     <tr key={u.id}>
                       <td>
                         <div className={styles.userRow}>
-                          {u.image ? <img src={u.image} alt="" className={styles.userAvatar} /> : <div className={styles.userAvatarPlaceholder}>{(u.name || 'U')[0]}</div>}
+                          {u.image ? <IpfsImage src={u.image} alt="" className={styles.userAvatar} thumbWidth={256} /> : <div className={styles.userAvatarPlaceholder}>{(u.name || 'U')[0]}</div>}
                           <span>{u.name || 'Unknown'}</span>
                         </div>
                       </td>

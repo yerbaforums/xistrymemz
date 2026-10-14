@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
 import { EmptyState } from '@/components/EmptyState'
+import IpfsImage from '@/components/IpfsImage'
 import type { PhotoPost } from './page'
 
 function firstImage(p: PhotoPost): string | null {
@@ -48,11 +49,11 @@ export function PhotosClient({ initialPosts }: { initialPosts: PhotoPost[] }) {
     <div className={styles.grid}>
       {photos.map(({ post, url, count }) => (
         <Link key={post.id} href={`/posts/${post.id}`} className={styles.tile}>
-          <img src={url!} alt="" loading="lazy" />
+          <IpfsImage src={url!} alt="" thumbWidth={512} />
           <span className={styles.overlay}>
             <span className={styles.author}>
               {post.user.image ? (
-                <img src={post.user.image} alt="" className={styles.avatar} />
+                <IpfsImage src={post.user.image} alt="" className={styles.avatar} thumbWidth={256} />
               ) : (
                 <span className={styles.avatarFallback}>{(post.user.name || 'U')[0]}</span>
               )}

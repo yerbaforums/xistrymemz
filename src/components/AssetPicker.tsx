@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import { fetchApi } from '@/lib/fetch-api'
 import { getEntityIcon } from '@/lib/entity-icons'
 import styles from './AssetPicker.module.css'
@@ -118,7 +118,7 @@ export default function AssetPicker({ filterTypes, selectedAsset, onSelect, labe
                       >
                         {asset.image ? (
                           <div className={styles.assetCardImage}>
-                            <Image src={asset.image} alt={asset.title} width={48} height={48} style={{ objectFit: 'cover' }} />
+                            <IpfsImage src={asset.image} alt={asset.title} width={48} height={48} style={{ objectFit: 'cover' }} thumbWidth={256} />
                           </div>
                         ) : (
                           <div className={styles.assetCardIcon}>{getEntityIcon(asset.type)}</div>

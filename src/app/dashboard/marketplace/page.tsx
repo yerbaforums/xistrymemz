@@ -19,6 +19,7 @@ import { PRODUCT_CONDITIONS, PRODUCT_TYPES } from '@/lib/product-categories'
 import { EmptyState } from '@/components/EmptyState'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import BulkBar from '@/components/BulkBar'
+import IpfsImage from '@/components/IpfsImage'
 import { AppointmentSettings } from '@/components/listings/AppointmentSettings'
 import { FieldListEditor } from '@/components/listings/FieldListEditor'
 import type { FormField } from '@/types/service'
@@ -585,7 +586,7 @@ function MarketplaceContent() {
                 />
               </label>
               <div className={styles.itemImage}>
-                {product.imageUrl ? <img src={product.imageUrl} alt={product.title} /> : <div className={styles.imagePlaceholder}>📦</div>}
+                {product.imageUrl ? <IpfsImage src={product.imageUrl} alt={product.title} thumbWidth={256} /> : <div className={styles.imagePlaceholder}>📦</div>}
               </div>
               <div className={styles.itemMain}>
                 <div className={styles.itemHeader}>

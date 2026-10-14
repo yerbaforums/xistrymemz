@@ -2,6 +2,7 @@
 
 import { useMemo, useCallback, useState } from 'react'
 import Link from 'next/link'
+import IpfsImage from '@/components/IpfsImage'
 import styles from './page.module.css'
 import AlphabeticalIndex, { type IndexItem } from '@/components/AlphabeticalIndex'
 import { EmptyState } from '@/components/EmptyState'
@@ -58,7 +59,7 @@ export function BlogsClient({ initialBlogs }: BlogsClientProps) {
         <Link key={b.id} href={`/blog/${b.blogSlug}`} className={styles.blogCard}>
           {b.blogCoverImage ? (
             <div className={styles.cardCover}>
-              <img src={b.blogCoverImage} alt="" />
+              <IpfsImage src={b.blogCoverImage} alt="" thumbWidth={512} />
             </div>
           ) : (
             <div className={`${styles.cardCover} ${styles.coverGradient}`}>
@@ -68,7 +69,7 @@ export function BlogsClient({ initialBlogs }: BlogsClientProps) {
           <div className={styles.cardBody}>
             <div className={styles.cardTop}>
               {b.blogImage ? (
-                <img src={b.blogImage} alt="" className={styles.cardAvatar} />
+                <IpfsImage src={b.blogImage} alt="" className={styles.cardAvatar} thumbWidth={256} />
               ) : (
                 <span className={styles.cardAvatarPlaceholder}>{(b.blogName || b.name || 'B')[0].toUpperCase()}</span>
               )}

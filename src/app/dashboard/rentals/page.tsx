@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
 import ImageUploader from '@/components/ImageUploader'
+import IpfsImage from '@/components/IpfsImage'
 import LocationPicker from '@/components/LocationPicker'
 import styles from './rentals.module.css'
 import Skeleton from '@/components/Skeleton'
@@ -389,7 +390,7 @@ export default function RentalsPage() {
                 />
               </label>
               <div className={styles.itemImage}>
-                {r.imageUrl ? <img src={r.imageUrl} alt={r.title} /> : <div className={styles.imagePlaceholder}>🏠</div>}
+                {r.imageUrl ? <IpfsImage src={r.imageUrl} alt={r.title} thumbWidth={256} /> : <div className={styles.imagePlaceholder}>🏠</div>}
               </div>
               <div className={styles.itemMain}>
                 <div className={styles.itemHeader}>

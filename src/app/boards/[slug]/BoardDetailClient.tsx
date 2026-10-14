@@ -20,6 +20,7 @@ import { getBoardMarkerIcon } from '@/lib/map-markers'
 import { getEntityIcon } from '@/lib/entity-icons'
 import { PIN_CATEGORIES } from '@/lib/pin-categories'
 import ImageUploader from '@/components/ImageUploader'
+import IpfsImage from '@/components/IpfsImage'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
 const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false })
@@ -476,7 +477,7 @@ export default function BoardDetailPage() {
                     {pin.entityType && pin.entityId && (
                       <div className={styles.popupEntity}>
                         {pin.entityImage ? (
-                          <img src={pin.entityImage} alt="" className={styles.popupEntityImg} />
+                          <IpfsImage src={pin.entityImage} alt="" className={styles.popupEntityImg} thumbWidth={256} />
                         ) : (
                           <span className={styles.popupEntityIcon}>{getEntityIcon(pin.entityType)}</span>
                         )}

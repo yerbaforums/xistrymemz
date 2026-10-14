@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import { useToast } from '@/context/ToastContext'
 import { SOCIAL_PLATFORMS, buildShareUrl } from '@/lib/share-links'
 import styles from './ShareBar.module.css'
@@ -111,7 +112,7 @@ export default function ShareBar({ entityType, title, description, image, varian
 
       {image && (
         <div className={styles.preview}>
-          <Image src={image} alt="" width={48} height={48} className={styles.previewImg} />
+          <IpfsImage src={image} alt="" width={48} height={48} className={styles.previewImg} thumbWidth={256} />
           <div className={styles.previewInfo}>
             <span className={styles.previewType}>{entityType}</span>
             <span className={styles.previewTitle}>{title}</span>

@@ -28,6 +28,7 @@ import { hydrateDonationAddresses, serializeDonationAddresses, donationAddresses
 import type { DonationAddr } from '@/types/product'
 import PinToBoardButton from '@/components/PinToBoardButton'
 import NextStepsSheet from '@/components/NextStepsSheet'
+import IpfsImage from '@/components/IpfsImage'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 interface Member {
@@ -678,7 +679,7 @@ function GroupDetailContent() {
         <div className={styles.headerContent}>
           <div className={styles.avatarSection}>
             <div className={styles.avatar}>
-              {group.imageUrl ? <img src={group.imageUrl} alt={group.name} /> : <span>👥</span>}
+              {group.imageUrl ? <IpfsImage src={group.imageUrl} alt={group.name} thumbWidth={256} /> : <span>👥</span>}
             </div>
           </div>
           <div className={styles.groupInfo}>
@@ -830,7 +831,7 @@ function GroupDetailContent() {
                           <div className={styles.postHeader}>
                             <div className={styles.postAuthor}>
                               <Link href={getUserProfileUrl(post.user)} className={styles.authorAvatar}>
-                                {post.user.image ? <img src={post.user.image} alt="" /> : <span>{(post.user.name?.[0] || 'U').toUpperCase()}</span>}
+                                {post.user.image ? <IpfsImage src={post.user.image} alt="" thumbWidth={256} /> : <span>{(post.user.name?.[0] || 'U').toUpperCase()}</span>}
                               </Link>
                               <div>
                                 <Link href={getUserProfileUrl(post.user)} className={styles.authorName}>{post.user.name || 'Unknown'}</Link>
@@ -856,7 +857,7 @@ function GroupDetailContent() {
                           <TranslateButton text={post.content} />
                           {post.imageUrl && (
                             <div className={styles.postImage}>
-                              <img src={post.imageUrl} alt="Post attachment" />
+                              <IpfsImage src={post.imageUrl} alt="Post attachment" thumbWidth={512} />
                             </div>
                           )}
                           <div className={styles.postFooter}>
@@ -894,7 +895,7 @@ function GroupDetailContent() {
                           {selectedBuySupporters.map(s => (
                             <div key={s.id} className={styles.supporterItem}>
                               <Link href={getUserProfileUrl(s.user)} className={styles.supporterAvatar}>
-                                {s.user.image ? <img src={s.user.image} alt="" /> : <span>{(s.user.name?.[0] || 'U').toUpperCase()}</span>}
+                                {s.user.image ? <IpfsImage src={s.user.image} alt="" thumbWidth={256} /> : <span>{(s.user.name?.[0] || 'U').toUpperCase()}</span>}
                               </Link>
                               <div className={styles.supporterInfo}>
                                 <span>{s.user.name || 'Unknown'}</span>
@@ -913,7 +914,7 @@ function GroupDetailContent() {
                       <h2>{selectedBuy.title}</h2>
                       {selectedBuy.description && <p className={styles.buyDescription}>{selectedBuy.description}</p>}
                       {selectedBuy.productImage && (
-                        <div className={styles.buyProductImage}><img src={selectedBuy.productImage} alt="" /></div>
+                        <div className={styles.buyProductImage}><IpfsImage src={selectedBuy.productImage} alt="" /></div>
                       )}
                       <div className={styles.buyStats}>
                         <div className={styles.buyStatItem}>
@@ -984,7 +985,7 @@ function GroupDetailContent() {
                             </div>
                             {buy.description && <p className={styles.buyCardDesc}>{buy.description.slice(0, 100)}...</p>}
                             {buy.productImage && (
-                              <div className={styles.buyCardImage}><img src={buy.productImage} alt="" /></div>
+                              <div className={styles.buyCardImage}><IpfsImage src={buy.productImage} alt="" thumbWidth={512} /></div>
                             )}
                             <div className={styles.buyCardStats}>
                               <span>${buy.currentPrice} / ${buy.targetPrice}</span>
@@ -1066,7 +1067,7 @@ function GroupDetailContent() {
                         <Link key={product.id} href={`/products/${product.id}`} className={styles.marketplaceCard}>
                           <div className={styles.marketplaceImage}>
                             {product.imageUrl ? (
-                              <img src={product.imageUrl} alt={product.title} />
+                              <IpfsImage src={product.imageUrl} alt={product.title} thumbWidth={512} />
                             ) : (
                               <div className={styles.marketplacePlaceholder}>📦</div>
                             )}
@@ -1133,7 +1134,7 @@ function GroupDetailContent() {
                           <div className={styles.activityGrid}>
                             {activity.products.map(p => (
                               <Link key={p.id} href={`/products/${p.id}`} className={styles.activityCard}>
-                                {p.imageUrl && <img src={p.imageUrl} alt="" className={styles.activityImage} />}
+                                {p.imageUrl && <IpfsImage src={p.imageUrl} alt="" className={styles.activityImage} thumbWidth={256} />}
                                 <span className={styles.activityTitle}>{p.title}</span>
                                 <span className={styles.activityMeta}>${p.price} · {p.type}</span>
                                 <span className={styles.activityAuthor}>by {p.user.name}</span>
@@ -1172,7 +1173,7 @@ function GroupDetailContent() {
                   {group.members.map(member => (
                     <Link href={getUserProfileUrl(member.user)} key={member.id} className={styles.memberItem}>
                       {member.user.image ? (
-                        <img src={member.user.image} alt="" />
+                        <IpfsImage src={member.user.image} alt="" thumbWidth={256} />
                       ) : (
                         <div className={styles.memberPlaceholder}>{(member.user.name?.[0] || 'U').toUpperCase()}</div>
                       )}

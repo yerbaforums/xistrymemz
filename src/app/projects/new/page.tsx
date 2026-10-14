@@ -15,6 +15,7 @@ import AssetPicker from '@/components/AssetPicker'
 import EntityLinkPicker, { commitPendingLinks } from '@/components/EntityLinkPicker'
 import type { PendingLink } from '@/components/EntityLinkPicker'
 import NextStepsSheet from '@/components/NextStepsSheet'
+import IpfsImage from '@/components/IpfsImage'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import { PROJECT_CATEGORIES } from '@/lib/project-categories'
 import { SUPPORTED_CRYPTOS } from '@/lib/constants'
@@ -564,7 +565,7 @@ export default function NewProjectPage() {
                   <span className={styles.reviewTag}>{status === 'IDEA' ? '💡 Idea' : status === 'IN_PROGRESS' ? '🔨 In Progress' : '✅ Completed'}</span>
                 </div>
                 {coverImage[0] && (
-                  <img src={coverImage[0]} alt="" className={styles.reviewImage} />
+                  <IpfsImage src={coverImage[0]} alt="" className={styles.reviewImage} thumbWidth={512} />
                 )}
                 <p>{description || 'No description'}</p>
 

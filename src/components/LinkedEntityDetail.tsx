@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import IpfsImage from '@/components/IpfsImage'
 import Skeleton from '@/components/Skeleton'
 import styles from './LinkedEntityDetail.module.css'
 
@@ -77,7 +78,7 @@ export default function LinkedEntityDetail({ entityType, entityId, initialTitle,
   if (loading && initialTitle) {
     return (
       <div className={styles.card} style={{ pointerEvents: 'none', opacity: 0.7 }}>
-        {initialImage && <img src={initialImage} alt="" className={styles.image} />}
+        {initialImage && <IpfsImage src={initialImage} alt="" className={styles.image} thumbWidth={512} />}
         <div className={styles.info}>
           <div className={styles.title}>{initialTitle || `${entityType.replace('_', ' ')}`}</div>
           <div className={styles.meta}>
@@ -93,7 +94,7 @@ export default function LinkedEntityDetail({ entityType, entityId, initialTitle,
     if (initialTitle) {
       return (
         <Link href={entityType === 'USER' ? `/profile/${entityId}` : `${ENTITY_LIST_ROUTES[entityType] || ''}/${entityId}`} className={styles.card} target="_blank" rel="noopener noreferrer">
-          {initialImage && <img src={initialImage} alt="" className={styles.image} />}
+          {initialImage && <IpfsImage src={initialImage} alt="" className={styles.image} thumbWidth={512} />}
           <div className={styles.info}>
             <div className={styles.title}>{initialTitle}</div>
             <div className={styles.meta}>
@@ -117,7 +118,7 @@ export default function LinkedEntityDetail({ entityType, entityId, initialTitle,
   return (
     <Link href={href} className={styles.card} target="_blank" rel="noopener noreferrer">
       {detail.imageUrl && (
-        <img src={detail.imageUrl} alt="" className={styles.image} />
+        <IpfsImage src={detail.imageUrl} alt="" className={styles.image} thumbWidth={512} />
       )}
       <div className={styles.info}>
         <div className={styles.title}>{detail.title || `${entityType.replace('_', ' ')}`}</div>

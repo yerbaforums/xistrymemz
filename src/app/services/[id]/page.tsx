@@ -20,6 +20,7 @@ import CollaborateButton from '@/components/CollaborateButton'
 import styles from './page.module.css'
 import Skeleton, { SkeletonCard } from '@/components/Skeleton'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
+import IpfsImage from '@/components/IpfsImage'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
 function formatDuration(mins: number) {
@@ -226,7 +227,7 @@ export default function ServiceDetailPage() {
         <div className={styles.layout}>
           <div className={styles.mainContent}>
             {imageUrl ? (
-              <img src={imageUrl} alt={title} className={styles.heroImage} />
+              <IpfsImage src={imageUrl} alt={title} className={styles.heroImage} />
             ) : (
               <div className={styles.heroPlaceholder}>
                 {SERVICE_CATEGORY_ICONS[cat] || '📋'}
@@ -373,7 +374,7 @@ export default function ServiceDetailPage() {
             <div className={styles.sellerCard}>
               <div className={styles.sellerInfo}>
                 {userImage ? (
-                  <img src={userImage} alt="" className={styles.sellerAvatar} />
+                  <IpfsImage src={userImage} alt="" className={styles.sellerAvatar} thumbWidth={256} />
                 ) : (
                   <div className={styles.sellerAvatarPlaceholder}>
                     {(userName || 'U')[0]}
@@ -476,7 +477,7 @@ export default function ServiceDetailPage() {
                 <Link key={rs.id} href={`/services/${rs.id}`} className={styles.relatedCard}>
                   {rs.imageUrl ? (
                     <div className={styles.relatedCardImage}>
-                      <img src={rs.imageUrl} alt={rs.title} />
+                      <IpfsImage src={rs.imageUrl} alt={rs.title} thumbWidth={512} />
                     </div>
                   ) : (
                     <div className={styles.relatedCardImagePlaceholder}>

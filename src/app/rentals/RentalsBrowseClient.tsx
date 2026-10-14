@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import { useRouter, useSearchParams } from 'next/navigation'
 import styles from './rentals-browse.module.css'
 import { useSession } from 'next-auth/react'
@@ -237,7 +237,7 @@ export default function RentalsBrowseClient({ initialRentals, categories, locati
             <Link key={item.id} href={`/products/${item.id}`} className={styles.card}>
               <div className={styles.cardImage}>
                 {item.imageUrl ? (
-                  <Image src={item.imageUrl} alt={item.title} width={300} height={200} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+                  <IpfsImage src={item.imageUrl} alt={item.title} width={300} height={200} style={{ objectFit: 'cover', width: '100%', height: '100%' }} thumbWidth={512} />
                 ) : (
                   <div className={styles.cardImagePlaceholder}>🏠</div>
                 )}

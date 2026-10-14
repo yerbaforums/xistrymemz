@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import IpfsImage from './IpfsImage'
 
 interface PreviewData {
   title: string | null
@@ -14,6 +15,7 @@ export const URL_REGEX = /https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-
 export default function LinkPreview({ text }: { text: string }) {
   const [previews, setPreviews] = useState<Map<string, PreviewData>>(new Map())
   const [loading, setLoading] = useState(false)
+  const [deadImages, setDeadImages] = useState<Set<string>>(new Set())
 
   const urls = [...new Set(text.match(URL_REGEX) || [])]
 
@@ -78,16 +80,17 @@ export default function LinkPreview({ text }: { text: string }) {
             onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent-primary)')}
             onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border-color)')}
           >
-            {data.image && (
+            {data.image && !deadImages.has(url) && (
               <div style={{
                 width: 80, height: 80, borderRadius: 6, overflow: 'hidden',
                 flexShrink: 0, background: 'var(--bg-secondary)',
               }}>
-                <img
+                <IpfsImage
                   src={data.image}
                   alt=""
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  onError={e => { (e.target as HTMLElement).style.display = 'none' }}
+                  style={{ width: '100%', height: '100%' }}
+                  thumbWidth={256}
+                  onExhausted={() => setDeadImages(prev => new Set(prev).add(url))}
                 />
               </div>
             )}

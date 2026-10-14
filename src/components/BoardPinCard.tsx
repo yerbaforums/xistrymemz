@@ -2,7 +2,7 @@
 
 import { memo, useState, useCallback, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import { getUserProfileUrl, parseImageList } from '@/lib/utils'
 import LinkedEntityDetail from '@/components/LinkedEntityDetail'
 import LinkPreview from '@/components/LinkPreview'
@@ -102,7 +102,7 @@ function ImageCarousel({ images }: { images: string[] }) {
     <div className={styles.carousel}>
       <div className={styles.carouselInner}>
         <div className={styles.carouselImageWrap}>
-          <Image src={images[current]} alt="" fill sizes="(max-width: 768px) 100vw, 320px" style={{ objectFit: 'cover' }} />
+          <IpfsImage src={images[current]} alt="" style={{ objectFit: 'cover' }} thumbWidth={512} />
         </div>
         {len > 1 && (
           <>
@@ -181,7 +181,7 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
         <Link href={getUserProfileUrl({ id: pin.user.id, username: '' })} className={styles.userLink}>
           <div className={styles.avatar}>
             {pin.user.image ? (
-              <Image src={pin.user.image} alt={pin.user.name || ''} width={28} height={28} />
+              <IpfsImage src={pin.user.image} alt={pin.user.name || ''} width={28} height={28} thumbWidth={256} />
             ) : (
               <span className={styles.avatarInitial}>{(pin.user.name || 'U')[0]}</span>
             )}

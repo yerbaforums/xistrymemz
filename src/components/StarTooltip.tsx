@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import IpfsImage from '@/components/IpfsImage'
 import type { ConstellationStar } from '@/lib/constellation'
 import { CLASS_ICONS } from '@/lib/user-classes'
 import RoleBadge from '@/components/RoleBadge'
@@ -37,7 +38,7 @@ export default function StarTooltip({ star, x, y }: StarTooltipProps) {
     >
       <div className={styles.header}>
         {star.image ? (
-          <img src={star.image} alt="" className={styles.avatar} />
+          <IpfsImage src={star.image} alt="" className={styles.avatar} thumbWidth={256} />
         ) : (
           <span className={styles.avatarPlaceholder}>{star.title[0]?.toUpperCase() || '?'}</span>
         )}

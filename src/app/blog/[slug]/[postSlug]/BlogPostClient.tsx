@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import { useSession } from 'next-auth/react'
 import styles from './page.module.css'
 import Skeleton from '@/components/Skeleton'
@@ -243,7 +243,7 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
       <article className={styles.article}>
         {post.coverImage && (
           <div className={styles.coverImage}>
-            <img loading="lazy" src={post.coverImage} alt="" />
+            <IpfsImage src={post.coverImage} alt="" />
           </div>
         )}
 
@@ -258,7 +258,7 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
           <div className={styles.byline}>
             <Link href={`/blog/${post.blog.blogSlug}`} className={styles.author}>
               {post.blog.blogImage ? (
-                <Image src={post.blog.blogImage} alt="" width={36} height={36} className={styles.authorAvatar} />
+                <IpfsImage src={post.blog.blogImage} alt="" width={36} height={36} className={styles.authorAvatar} thumbWidth={256} />
               ) : (
                 <span className={styles.authorAvatarPlaceholder}>{(post.blog.blogName || 'B')[0].toUpperCase()}</span>
               )}
@@ -325,7 +325,7 @@ export default function BlogPostClient({ params }: { params: Promise<{ slug: str
         <div className={styles.authorBox}>
           <Link href={`/blog/${post.blog.blogSlug}`} className={styles.authorBoxLink}>
             {post.blog.blogImage ? (
-              <Image src={post.blog.blogImage} alt="" width={48} height={48} className={styles.authorAvatar} />
+              <IpfsImage src={post.blog.blogImage} alt="" width={48} height={48} className={styles.authorAvatar} thumbWidth={256} />
             ) : (
               <span className={styles.authorAvatarPlaceholderLg}>{(post.blog.blogName || 'B')[0].toUpperCase()}</span>
             )}

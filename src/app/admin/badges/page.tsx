@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import styles from './page.module.css'
 import Button from '@/components/ui/Button'
 import { EmptyState } from '@/components/EmptyState'
@@ -268,7 +268,7 @@ export default function AdminBadgesPage() {
                     <div className={styles.userInfo}>
                       <div className={styles.avatar}>
                         {badge.user.image ? (
-                          <Image src={badge.user.image} alt={badge.user.name || 'User'} fill sizes="32px" />
+                          <IpfsImage src={badge.user.image} alt={badge.user.name || 'User'} thumbWidth={256} />
                         ) : (
                           <span>{(badge.user.name?.[0] || 'U').toUpperCase()}</span>
                         )}
@@ -282,7 +282,7 @@ export default function AdminBadgesPage() {
                   <td>
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 600 }}>
                       {badge.imageUrl && (
-                        <img src={badge.imageUrl} alt="" width={18} height={18} style={{ borderRadius: '50%' }} />
+                        <IpfsImage src={badge.imageUrl} alt="" width={18} height={18} style={{ borderRadius: '50%' }} thumbWidth={256} />
                       )}
                       {badge.name}
                     </span>

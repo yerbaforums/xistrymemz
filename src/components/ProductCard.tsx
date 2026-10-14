@@ -2,7 +2,7 @@
 
 import { memo } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import { useSession } from 'next-auth/react'
 import { useCart } from '@/context/CartContext'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
@@ -60,7 +60,7 @@ const ProductCard = memo(function ProductCard({
     >
       {product.imageUrl ? (
         <div className={styles.imageWrap}>
-          <Image src={product.imageUrl} alt={product.title} width={400} height={280} className={styles.image} style={{ width: '100%', height: 'auto' }} />
+          <IpfsImage src={product.imageUrl} alt={product.title} className={styles.image} style={{ width: '100%', height: 'auto' }} thumbWidth={512} />
           <div className={styles.imageOverlay}>
             <button
               className={styles.qvBtn}

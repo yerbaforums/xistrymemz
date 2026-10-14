@@ -2,7 +2,7 @@
 
 import { signOut } from 'next-auth/react'
 import Link from 'next/link'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import { useRouter } from 'next/navigation'
 import type { Session } from 'next-auth'
 import { NAV } from '@/lib/navigation'
@@ -30,7 +30,7 @@ export default function UserDropdown({ session, open, onClose }: UserDropdownPro
       <div className={styles.userInfo}>
         {session?.user?.image ? (
           <div style={{ width: 36, height: 36, position: 'relative', borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
-            <Image src={session.user.image} alt={session?.user?.name || ''} fill className={styles.userAvatar} />
+            <IpfsImage src={session.user.image} alt={session?.user?.name || ''} className={styles.userAvatar} thumbWidth={256} />
           </div>
         ) : (
           <span className={styles.userInitial}>{(session?.user?.name || 'U')[0].toUpperCase()}</span>

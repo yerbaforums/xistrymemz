@@ -9,6 +9,7 @@ import { CartItem } from '@/context/CartContext'
 import { useToast } from '@/context/ToastContext'
 import Skeleton from '@/components/Skeleton'
 import Loading from '@/components/Loading'
+import IpfsImage from '@/components/IpfsImage'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface Product {
@@ -288,7 +289,7 @@ function CheckoutContent() {
             {directProduct && (
               <div className={styles.orderItem}>
                 {directProduct.imageUrl && (
-                  <img src={directProduct.imageUrl} alt={directProduct.title} />
+                  <IpfsImage src={directProduct.imageUrl} alt={directProduct.title} thumbWidth={256} />
                 )}
                 <div className={styles.itemDetails}>
                   <h4>{directProduct.title}</h4>
@@ -303,7 +304,7 @@ function CheckoutContent() {
 
             {cartItems.map(item => (
               <div key={item.id} className={styles.orderItem}>
-                {item.imageUrl && <img src={item.imageUrl} alt={item.title} />}
+                {item.imageUrl && <IpfsImage src={item.imageUrl} alt={item.title} thumbWidth={256} />}
                 <div className={styles.itemDetails}>
                   <h4>{item.title}</h4>
                   <p className={styles.itemPrice}>${item.price} x {item.quantity || 1}</p>

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import HashtagText from '@/components/HashtagText'
 import LinkPreview, { URL_REGEX } from '@/components/LinkPreview'
 import EntityActions from '@/components/EntityActions'
@@ -113,7 +113,7 @@ export default function FeedItem({ post }: { post: FeedPost }) {
         <Link href={getUserProfileUrl(post.user)} className={styles.userLink}>
           <div className={styles.avatar}>
             {post.user.image ? (
-              <Image src={post.user.image} alt="" fill style={{ objectFit: 'cover' }} />
+              <IpfsImage src={post.user.image} alt="" style={{ objectFit: 'cover' }} thumbWidth={256} />
             ) : (
               <span className={styles.avatarFallback}>
                 {post.user.name?.[0] || 'U'}
@@ -183,11 +183,11 @@ export default function FeedItem({ post }: { post: FeedPost }) {
         <div className={`${styles.imageGrid} ${imageList.length === 1 ? styles.singleImage : ''}`}>
           {imageList.map((url, i) => (
             <div key={i} className={styles.imageWrapper}>
-              <img
+              <IpfsImage
                 src={url}
                 alt=""
                 className={styles.image}
-                loading="lazy"
+                thumbWidth={512}
               />
             </div>
           ))}

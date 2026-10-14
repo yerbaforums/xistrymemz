@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import styles from './page.module.css'
 import Skeleton from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
@@ -381,7 +381,7 @@ export default function BlogDetailClient({ params }: { params: Promise<{ slug: s
         <div className={styles.headerContent}>
           <div className={styles.avatarSection}>
             {blog.blogImage ? (
-              <Image src={blog.blogImage} alt={blog.blogName || 'blog'} width={96} height={96} className={styles.avatar} />
+              <IpfsImage src={blog.blogImage} alt={blog.blogName || 'blog'} width={96} height={96} className={styles.avatar} thumbWidth={256} />
             ) : (
               <div className={styles.avatarPlaceholder}>{(blog.blogName || blog.name || 'B')[0].toUpperCase()}</div>
             )}
@@ -459,7 +459,7 @@ export default function BlogDetailClient({ params }: { params: Promise<{ slug: s
             <Link key={p.id} href={`/blog/${resolvedSlug}/${p.slug}`} className={styles.postCard}>
               {p.coverImage && (
                 <div className={styles.cardThumb}>
-                  <img loading="lazy" src={p.coverImage} alt="" />
+                  <IpfsImage src={p.coverImage} alt="" thumbWidth={512} />
                 </div>
               )}
               <div className={styles.cardBody}>

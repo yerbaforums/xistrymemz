@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import IpfsImage from '@/components/IpfsImage'
 import Skeleton from '@/components/Skeleton'
 import { useScrollReveal } from '@/hooks/useScrollReveal'
 import { getUserProfileUrl } from '@/lib/utils'
@@ -38,7 +39,7 @@ export default function MemberSpotlightSection({ members, loading, stats }: Prop
             <Link key={m.id} href={getUserProfileUrl(m)} className={styles.card}>
               <div className={styles.avatarWrap}>
                 {m.image ? (
-                  <img src={m.image} alt={m.name || 'Member'} className={styles.avatar} />
+                  <IpfsImage src={m.image} alt={m.name || 'Member'} className={styles.avatar} thumbWidth={256} />
                 ) : (
                   <span className={styles.avatarFallback}>
                     {(m.name || m.username || '?')[0]?.toUpperCase()}

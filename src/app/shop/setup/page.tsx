@@ -8,6 +8,7 @@ import { useToast } from '@/context/ToastContext'
 import FormWizard, { useWizard, type WizardStep } from '@/components/FormWizard'
 import { businessTemplates, getTemplateById, type BusinessTemplate } from '@/lib/templates'
 import { EmptyState } from '@/components/EmptyState'
+import IpfsImage from '@/components/IpfsImage'
 import Button from '@/components/ui/Button'
 import Skeleton from '@/components/Skeleton'
 import Breadcrumbs from '@/components/Breadcrumbs'
@@ -503,7 +504,7 @@ export default function SetupShopPage() {
                   </Button>
                   <input type="text" value={shopData.shopImage || ''} onChange={e => setShopData({...shopData, shopImage: e.target.value})} placeholder="Or paste image URL" className={styles.urlInput} />
                 </div>
-                {shopData.shopImage && <img src={shopData.shopImage} alt="Shop preview" className={styles.imagePreview} />}
+                {shopData.shopImage && <IpfsImage src={shopData.shopImage} alt="Shop preview" className={styles.imagePreview} thumbWidth={256} />}
               </div>
               <div className="form-group">
                 <label htmlFor="about-your-shop">About Your Shop</label>
@@ -535,7 +536,7 @@ export default function SetupShopPage() {
               <div className={styles.productGrid}>
                 {products.map(product => (
                   <div key={product.id} className={styles.productCard}>
-                    {product.imageUrl && <img src={product.imageUrl} alt={product.title} className={styles.productImage} />}
+                    {product.imageUrl && <IpfsImage src={product.imageUrl} alt={product.title} className={styles.productImage} thumbWidth={512} />}
                     <div className={styles.productInfo}>
                       <h3>{product.title}</h3>
                       <p className={styles.productMeta}>
@@ -579,7 +580,7 @@ export default function SetupShopPage() {
               <h3>Shop Profile</h3>
               <p><strong>Name:</strong> {shopData.shopName}</p>
               <p><strong>About:</strong> {shopData.shopAbout}</p>
-              {shopData.shopImage && <img src={shopData.shopImage} alt="Shop" className={styles.reviewImage} />}
+              {shopData.shopImage && <IpfsImage src={shopData.shopImage} alt="Shop" className={styles.reviewImage} thumbWidth={256} />}
             </div>
             
             <div className={styles.reviewSection}>
@@ -649,7 +650,7 @@ export default function SetupShopPage() {
                   </Button>
                   <input type="text" value={newProduct.imageUrl} onChange={e => setNewProduct({...newProduct, imageUrl: e.target.value})} placeholder="Or paste image URL" className={styles.urlInput} />
                 </div>
-                {newProduct.imageUrl && <img src={newProduct.imageUrl} alt="Preview" className={styles.imagePreview} />}
+                {newProduct.imageUrl && <IpfsImage src={newProduct.imageUrl} alt="Preview" className={styles.imagePreview} thumbWidth={256} />}
               </div>
               <div className="form-group">
                 <label htmlFor="hashtags">Hashtags</label>
@@ -762,7 +763,7 @@ export default function SetupShopPage() {
                   </Button>
                   <input type="text" value={editProduct.imageUrl} onChange={e => setEditProduct({...editProduct, imageUrl: e.target.value})} placeholder="Or paste image URL" className={styles.urlInput} />
                 </div>
-                {editProduct.imageUrl && <img src={editProduct.imageUrl} alt="Preview" className={styles.imagePreview} />}
+                {editProduct.imageUrl && <IpfsImage src={editProduct.imageUrl} alt="Preview" className={styles.imagePreview} thumbWidth={256} />}
               </div>
               <div className="form-group">
                 <label htmlFor="hashtags-2">Hashtags</label>

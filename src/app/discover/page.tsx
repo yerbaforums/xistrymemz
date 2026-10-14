@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import type { RefObject } from 'react'
 import type { Map as LeafletMap } from 'leaflet'
 import Link from 'next/link'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import { useSession } from 'next-auth/react'
 import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
@@ -78,7 +78,7 @@ function EntityCard({ item, mapRef, setMapVisible, onHover, onLeave }: { item: D
     <Link href={href} className={styles.card} onMouseEnter={() => onHover?.(item.id)} onMouseLeave={() => onLeave?.()}>
       <div className={styles.cardImage}>
         {item.image ? (
-          <Image src={item.image} alt={item.title} width={160} height={120} style={{ objectFit: 'cover' }} />
+          <IpfsImage src={item.image} alt={item.title} width={160} height={120} style={{ objectFit: 'cover' }} thumbWidth={512} />
         ) : (
           <span className={styles.cardIcon}>{getEntityIcon(item.type)}</span>
         )}

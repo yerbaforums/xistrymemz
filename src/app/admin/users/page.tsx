@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import styles from './page.module.css'
 import Button from '@/components/ui/Button'
 import { EmptyState } from '@/components/EmptyState'
@@ -222,7 +222,7 @@ export default function AdminUsersPage() {
                       <div className={styles.userInfo}>
                         <div className={styles.avatar}>
                           {user.image ? (
-                            <Image src={user.image} alt={user.name || 'User'} fill sizes="32px" />
+                            <IpfsImage src={user.image} alt={user.name || 'User'} thumbWidth={256} />
                           ) : (
                             <span>{(user.name?.[0] || user.email[0]).toUpperCase()}</span>
                           )}

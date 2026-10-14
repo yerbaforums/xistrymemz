@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useToast } from '@/context/ToastContext'
 import EntityActions from '@/components/EntityActions'
+import IpfsImage from '@/components/IpfsImage'
 import styles from './ReplySection.module.css'
 
 interface Reply {
@@ -98,7 +99,7 @@ export default function ReplySection({ postId, postAuthorId: _postAuthorId, expa
             <div key={reply.id} className={styles.reply}>
               <div className={styles.replyAvatar}>
                 {reply.user.image ? (
-                  <img src={reply.user.image} alt="" className={styles.replyAvatarImg} />
+                  <IpfsImage src={reply.user.image} alt="" className={styles.replyAvatarImg} thumbWidth={256} />
                 ) : (
                   <div className={styles.replyAvatarPlaceholder}>
                     {reply.user.name?.[0] || 'U'}

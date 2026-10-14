@@ -9,6 +9,7 @@ import { geocodeLocation, reverseGeocodeLocation } from '@/lib/geocoding'
 import { useToast } from '@/context/ToastContext'
 
 import { EmptyState } from '@/components/EmptyState'
+import IpfsImage from '@/components/IpfsImage'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
@@ -1122,7 +1123,7 @@ function TripDetail({ trip: initialTrip, savedLocations, categories: _categories
             {trip.collaborators?.filter(c => c.status === 'ACCEPTED').map(c => (
               <div key={c.id} className={styles.collabRow}>
                 {c.user.image ? (
-                  <img src={c.user.image} alt="" className={styles.collabAvatar} />
+                  <IpfsImage src={c.user.image} alt="" className={styles.collabAvatar} thumbWidth={256} />
                 ) : (
                   <div className={styles.collabAvatar}>{(c.user.name || '?')[0]}</div>
                 )}
@@ -1136,7 +1137,7 @@ function TripDetail({ trip: initialTrip, savedLocations, categories: _categories
             {trip.collaborators?.filter(c => c.status === 'PENDING').map(c => (
               <div key={c.id} className={styles.collabRow}>
                 {c.user.image ? (
-                  <img src={c.user.image} alt="" className={styles.collabAvatar} />
+                  <IpfsImage src={c.user.image} alt="" className={styles.collabAvatar} thumbWidth={256} />
                 ) : (
                   <div className={styles.collabAvatar}>{(c.user.name || '?')[0]}</div>
                 )}
@@ -1170,7 +1171,7 @@ function TripDetail({ trip: initialTrip, savedLocations, categories: _categories
                   {inviteResults.map((u) => (
                     <div key={u.id} className={`${styles.flexCenter} ${styles.gap8} ${styles.cursorPointer} ${styles.bBottom} ${styles.px075}`}
                       onClick={() => handleInviteUser(u.id)}>
-                      {u.image ? <img src={u.image} alt="" className={`${styles.w24} ${styles.h24} ${styles.rounded50} ${styles.objectCover}`} />
+                      {u.image ? <IpfsImage src={u.image} alt="" className={`${styles.w24} ${styles.h24} ${styles.rounded50} ${styles.objectCover}`} thumbWidth={256} />
                         : <div className={`${styles.w24} ${styles.h24} ${styles.rounded50} ${styles.bgAccent} ${styles.white} ${styles.flexCenter} ${styles.justifyCenter} ${styles.fs07}`}>{(u.name || u.username || '?')[0]}</div>}
                       <span className={`${styles.fs085} ${styles.flex1}`}>{u.name || u.username || 'Unknown'}</span>
                       <span className={`${styles.fs075} ${styles.accentPrimary}`}>+ Invite</span>

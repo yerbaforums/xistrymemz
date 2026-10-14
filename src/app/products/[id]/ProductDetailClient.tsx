@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import styles from './page.module.css'
 import CollaborateButton from '@/components/CollaborateButton'
+import IpfsImage from '@/components/IpfsImage'
 import GoalCurrencySelect from '@/components/GoalCurrencySelect'
 import PinToBoardButton from '@/components/PinToBoardButton'
 import Button from '@/components/ui/Button'
@@ -652,7 +653,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         <div className={styles.main}>
           {product.imageUrl && (
             <div className={styles.imageContainer}>
-              <img src={product.imageUrl} alt={product.title} className={styles.image} />
+              <IpfsImage src={product.imageUrl} alt={product.title} className={styles.image} eager />
             </div>
           )}
 
@@ -1591,7 +1592,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               <Link key={rp.id} href={`/products/${rp.id}`} className={styles.relatedCard}>
                 {rp.imageUrl && (
                   <div className={styles.relatedCardImage}>
-                    <img src={rp.imageUrl} alt={rp.title} />
+                    <IpfsImage src={rp.imageUrl} alt={rp.title} thumbWidth={512} />
                   </div>
                 )}
                 <div className={styles.relatedCardBody}>

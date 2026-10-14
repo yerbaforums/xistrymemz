@@ -14,6 +14,8 @@ const nextConfig = {
   images: {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 768, 1024, 1280, 1536],
+    // Must cover the IpfsImage thumbWidth steps (256 cards/avatars, 512 cards).
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384, 512],
     remotePatterns: [
       {
         protocol: 'https',
@@ -34,6 +36,10 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'gateway.pinata.cloud',
+      },
+      {
+        protocol: 'https',
+        hostname: 'ipfs.filebase.io',
       },
       {
         protocol: 'https',

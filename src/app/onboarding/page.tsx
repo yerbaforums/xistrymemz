@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import ImageUploader from '@/components/ImageUploader'
 import { getClassGuides, getAllSetupStepIds } from '@/lib/classOnboarding'
 import { USER_CLASSES, CLASS_ICONS } from '@/lib/user-classes'
@@ -463,7 +464,7 @@ export default function OnboardingPage() {
                 aria-label="User menu"
               >
                 {userImage ? (
-                  <Image src={userImage} alt={name || 'User'} width={32} height={32} className={styles.userAvatarImg} />
+                  <IpfsImage src={userImage} alt={name || 'User'} width={32} height={32} className={styles.userAvatarImg} thumbWidth={256} />
                 ) : (
                   <span className={styles.userInitial}>{userInitial}</span>
                 )}
@@ -932,7 +933,7 @@ export default function OnboardingPage() {
                         <div key={m.id} className={styles.memberChip}>
                           <Link href={`/profile/${m.id}`}>
                             {m.image ? (
-                              <Image src={m.image} alt={m.name || 'Member'} width={28} height={28} className={styles.memberAvatar} />
+                              <IpfsImage src={m.image} alt={m.name || 'Member'} width={28} height={28} className={styles.memberAvatar} thumbWidth={256} />
                             ) : (
                               <span className={styles.memberInitial}>{(m.name || '?')[0]}</span>
                             )}

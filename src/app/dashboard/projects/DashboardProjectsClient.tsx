@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/context/ToastContext'
@@ -488,7 +488,7 @@ export default function DashboardProjectsClient({ initialProjects }: DashboardPr
                   <div className={styles.authorInfo}>
                     <div className={styles.authorAvatar}>
                       {project.user.image ? (
-                        <Image src={project.user.image} alt={project.user.name || 'User'} fill sizes="28px" />
+                        <IpfsImage src={project.user.image} alt={project.user.name || 'User'} thumbWidth={256} style={{ width: '100%', height: '100%' }} />
                       ) : (
                         <span>{(project.user.name?.[0] || 'U').toUpperCase()}</span>
                     )}

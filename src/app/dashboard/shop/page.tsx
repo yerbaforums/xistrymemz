@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useToast } from '@/context/ToastContext'
 import ImageUploader from '@/components/ImageUploader'
+import IpfsImage from '@/components/IpfsImage'
 import { SHOP_CATEGORIES } from '@/lib/shop-categories'
 
 import styles from './shop.module.css'
@@ -220,7 +221,7 @@ export default function ShopDashboard() {
             <div className={styles.shopCard}>
               <div className={styles.shopPreview}>
                 {shop.shopImage && (
-                  <img src={shop.shopImage} alt="" className={styles.shopImage} />
+                  <IpfsImage src={shop.shopImage} alt="" className={styles.shopImage} thumbWidth={512} />
                 )}
                 <div className={styles.shopInfo}>
                   <h2>{shop.shopName || 'Unnamed Shop'}</h2>

@@ -4,6 +4,7 @@ import { useMemo, useCallback, useState } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
 import AlphabeticalIndex, { type IndexItem } from '@/components/AlphabeticalIndex'
+import IpfsImage from '@/components/IpfsImage'
 import { EmptyState } from '@/components/EmptyState'
 import { formatDuration } from '@/lib/media'
 
@@ -59,7 +60,7 @@ export function PodcastsClient({ initialPodcasts }: PodcastsClientProps) {
         <Link key={p.id} href={`/podcast/${p.podcastSlug}`} className={styles.podcastCard}>
           {p.podcastCoverImage ? (
             <div className={styles.cardCover}>
-              <img src={p.podcastCoverImage} alt="" />
+              <IpfsImage src={p.podcastCoverImage} alt="" thumbWidth={512} />
             </div>
           ) : (
             <div className={`${styles.cardCover} ${styles.coverGradient}`}>
@@ -69,7 +70,7 @@ export function PodcastsClient({ initialPodcasts }: PodcastsClientProps) {
           <div className={styles.cardBody}>
             <div className={styles.cardTop}>
               {p.podcastImage ? (
-                <img src={p.podcastImage} alt="" className={styles.cardAvatar} />
+                <IpfsImage src={p.podcastImage} alt="" className={styles.cardAvatar} thumbWidth={256} />
               ) : (
                 <span className={styles.cardAvatarPlaceholder}>{(p.podcastName || p.name || 'P')[0].toUpperCase()}</span>
               )}

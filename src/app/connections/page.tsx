@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import { getUserProfileUrl } from '@/lib/utils'
 import { useToast } from '@/context/ToastContext'
 import { SkeletonList } from '@/components/Skeleton'
@@ -181,7 +181,7 @@ export default function ConnectionsPage() {
                 <Link href={getUserProfileUrl(conn.requester)}>
                   <div className={styles.avatarWrap}>
                     {conn.requester.image ? (
-                      <Image src={conn.requester.image} alt={conn.requester.name || 'Member'} fill style={{ objectFit: 'cover' }} sizes="48px" />
+                      <IpfsImage src={conn.requester.image} alt={conn.requester.name || 'Member'} thumbWidth={256} />
                     ) : (
                       <div className={styles.avatarInitial}>
                         {conn.requester.name?.[0] || '?'}
@@ -239,7 +239,7 @@ export default function ConnectionsPage() {
                 <Link href={getUserProfileUrl(conn.receiver)}>
                   <div className={styles.avatarWrapSmall}>
                     {conn.receiver.image ? (
-                      <Image src={conn.receiver.image} alt={conn.receiver.name || 'Member'} fill style={{ objectFit: 'cover' }} sizes="40px" />
+                      <IpfsImage src={conn.receiver.image} alt={conn.receiver.name || 'Member'} thumbWidth={256} />
                     ) : (
                       <div className={styles.avatarInitialSmall}>
                         {conn.receiver.name?.[0] || '?'}
@@ -281,7 +281,7 @@ export default function ConnectionsPage() {
                   <Link href={getUserProfileUrl(other)}>
                     <div className={styles.avatarWrapSmall}>
                       {other.image ? (
-                        <Image src={other.image} alt={other.name || 'Member'} fill style={{ objectFit: 'cover' }} sizes="40px" />
+                        <IpfsImage src={other.image} alt={other.name || 'Member'} thumbWidth={256} />
                       ) : (
                         <div className={styles.avatarInitialSmall}>{other.name?.[0] || '?'}</div>
                       )}

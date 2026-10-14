@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import dynamic from 'next/dynamic'
 import { getEntityIcon } from '@/lib/entity-icons'
 import { parseImageList } from '@/lib/utils'
@@ -105,7 +105,7 @@ export default function PinDetailPage() {
     <div className="landing" style={{ maxWidth: 800, margin: '0 auto', padding: '24px 16px 60px' }}>
       {fullImg && (
         <div onClick={() => setFullImg(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-          <img loading="lazy" src={fullImg} alt="" style={{ maxWidth: '95vw', maxHeight: '95vh', objectFit: 'contain', borderRadius: 8 }} />
+          <IpfsImage src={fullImg} alt="" style={{ maxWidth: '95vw', maxHeight: '95vh', objectFit: 'contain', borderRadius: 8 }} />
         </div>
       )}
 
@@ -121,7 +121,7 @@ export default function PinDetailPage() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           {pin.user.image ? (
-            <Image src={pin.user.image} alt="" width={32} height={32} style={{ borderRadius: '50%' }} />
+            <IpfsImage src={pin.user.image} alt="" width={32} height={32} style={{ borderRadius: '50%' }} thumbWidth={256} />
           ) : (
             <span style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem' }}>{pin.user.name?.[0] || 'U'}</span>
           )}
@@ -136,7 +136,7 @@ export default function PinDetailPage() {
 
         {images.length > 0 && (
           <div style={{ borderRadius: 12, overflow: 'hidden', background: 'var(--bg-secondary)', cursor: 'pointer' }}>
-            <img
+<IpfsImage
               src={images[imgIdx]}
               alt=""
               onClick={() => setFullImg(images[imgIdx])}
@@ -145,7 +145,7 @@ export default function PinDetailPage() {
             {images.length > 1 && (
               <div style={{ display: 'flex', gap: 6, padding: 8, overflowX: 'auto', background: 'var(--bg-primary)' }}>
                 {images.map((img, i) => (
-                  <img loading="lazy" key={i} src={img} alt="" onClick={(e) => { e.stopPropagation(); setImgIdx(i) }} style={{ width: 60, height: 40, objectFit: 'cover', borderRadius: 4, cursor: 'pointer', opacity: i === imgIdx ? 1 : 0.5, border: i === imgIdx ? '2px solid var(--accent-primary)' : 'none' }} />
+                  <IpfsImage key={i} src={img} alt="" onClick={(e) => { e.stopPropagation(); setImgIdx(i) }} style={{ width: 60, height: 40, objectFit: 'cover', borderRadius: 4, cursor: 'pointer', opacity: i === imgIdx ? 1 : 0.5, border: i === imgIdx ? '2px solid var(--accent-primary)' : 'none' }} thumbWidth={256} />
                 ))}
               </div>
             )}
@@ -154,7 +154,7 @@ export default function PinDetailPage() {
 
         {pin.entityType && pin.entityId && (
           <Link href={getEntityHref(pin.entityType, pin.entityId)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 12, background: 'var(--bg-tertiary)', borderRadius: 8, textDecoration: 'none', color: 'var(--text-primary)' }}>
-            {pin.entityImage ? <img loading="lazy" src={pin.entityImage} alt="" style={{ width: 40, height: 40, borderRadius: 4, objectFit: 'cover' }} /> : <span style={{ fontSize: '1.3rem' }}>{getEntityIcon(pin.entityType)}</span>}
+            {pin.entityImage ? <IpfsImage src={pin.entityImage} alt="" style={{ width: 40, height: 40, borderRadius: 4, objectFit: 'cover' }} thumbWidth={256} /> : <span style={{ fontSize: '1.3rem' }}>{getEntityIcon(pin.entityType)}</span>}
             <div style={{ minWidth: 0 }}>
               <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'capitalize' }}>{pin.entityType.replace('_', ' ')}</div>
               <div style={{ fontSize: '0.85rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pin.entityTitle || 'View →'}</div>

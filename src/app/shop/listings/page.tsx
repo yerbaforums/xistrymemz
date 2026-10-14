@@ -5,6 +5,7 @@ import Link from 'next/link'
 
 import styles from './listings.module.css'
 import Loading from '@/components/Loading'
+import IpfsImage from '@/components/IpfsImage'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface ShopInfo {
@@ -121,7 +122,7 @@ export default function ShopListingsPage() {
         <div className={styles.cardMain}>
           <div className={styles.cardThumb}>
             {item.imageUrl ? (
-              <img loading="lazy" src={item.imageUrl} alt="" />
+              <IpfsImage src={item.imageUrl} alt="" thumbWidth={256} />
             ) : (
               <span className={styles.cardIcon}>{isService ? '🔧' : (item as ProductRow).type === 'RENTAL' ? '🏠' : '📦'}</span>
             )}

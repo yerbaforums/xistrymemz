@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { EmptyState } from '@/components/EmptyState'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
+import IpfsImage from '@/components/IpfsImage'
 import styles from './project-updates.module.css'
 
 interface UpdateUser { id: string; name: string | null; image: string | null }
@@ -144,7 +145,7 @@ export default function ProjectUpdates({ projectId, isOwner, isEditor }: Props) 
             <div key={update.id} className={styles.updateCard}>
               <div className={styles.updateHeader}>
                 <div className={styles.flexRow}>
-                  {update.user.image ? <img loading="lazy" src={update.user.image} alt="" className={styles.userAvatar} />
+                  {update.user.image ? <IpfsImage src={update.user.image} alt="" className={styles.userAvatar} thumbWidth={256} />
                     : <div className={styles.avatarFallback}>{(update.user.name || 'U')[0]}</div>}
                   <strong className={styles.userName}>{update.user.name || 'User'}</strong>
                   <span className={styles.timeAgo}>{formatTime(update.createdAt)}</span>
@@ -156,11 +157,11 @@ export default function ProjectUpdates({ projectId, isOwner, isEditor }: Props) 
 
               {images.length > 0 && (
                 <div className={styles.imageGrid} style={{ gridTemplateColumns: `repeat(${Math.min(images.length, 3)}, 1fr)` }}>
-                  {images.map((url, i) => <img loading="lazy" key={i} src={url} alt="" className={styles.imageGridImg} />)}
+                  {images.map((url, i) => <IpfsImage key={i} src={url} alt="" className={styles.imageGridImg} thumbWidth={512} />)}
                 </div>
               )}
               {update.imageUrl && !update.images && (
-                <img loading="lazy" src={update.imageUrl} alt="" className={styles.legacyImage} />
+                <IpfsImage src={update.imageUrl} alt="" className={styles.legacyImage} thumbWidth={512} />
               )}
 
               <div className={styles.actionBar}>

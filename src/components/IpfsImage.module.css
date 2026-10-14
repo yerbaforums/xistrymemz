@@ -1,0 +1,57 @@
+.frame {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  background: var(--bg-tertiary);
+  border-radius: inherit;
+  vertical-align: middle;
+}
+
+.shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--text-muted) 8%, transparent) 40%,
+    color-mix(in srgb, var(--text-muted) 18%, transparent) 50%,
+    color-mix(in srgb, var(--text-muted) 8%, transparent) 60%
+  );
+  background-size: 200% 100%;
+  animation: ipfs-shimmer 1.4s ease-in-out infinite;
+}
+
+.isLoaded .shimmer {
+  display: none;
+}
+
+.img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.isLoaded .img {
+  opacity: 1;
+}
+
+@keyframes ipfs-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer {
+    animation: none;
+  }
+
+  .img {
+    transition: none;
+  }
+}

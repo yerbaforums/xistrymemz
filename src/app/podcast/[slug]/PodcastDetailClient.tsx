@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
+import IpfsImage from '@/components/IpfsImage'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import ShareBar from '@/components/ShareBar'
@@ -92,14 +92,14 @@ export default function PodcastDetailClient({ params }: { params: Promise<{ slug
       <div className={styles.header}>
         {cover && (
           <div className={styles.coverWrap}>
-            <Image src={cover} alt="" fill priority sizes="(max-width: 768px) 100vw, 1200px" style={{ objectFit: 'cover' }} />
+            <IpfsImage src={cover} alt="" style={{ width: '100%', height: '100%' }} eager />
             <div className={styles.coverShade} />
           </div>
         )}
         <div className={styles.headerInner}>
           <div className={`${styles.avatarWrap} ${!cover ? styles.avatarNoCover : ''}`}>
             {p.podcastImage ? (
-              <Image src={p.podcastImage} alt="" width={88} height={88} className={styles.avatar} />
+              <IpfsImage src={p.podcastImage} alt="" className={styles.avatar} style={{ width: 88, height: 88 }} thumbWidth={256} />
             ) : (
               <span className={styles.avatarPlaceholder}>{(p.podcastName || '🎙')[0]}</span>
             )}

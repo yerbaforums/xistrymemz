@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import { useSession } from 'next-auth/react'
 import { useEntityActions, type ActionEntityType } from '@/hooks/useEntityActions'
 import { useToast } from '@/context/ToastContext'
@@ -294,7 +295,7 @@ export default function EntityActions({
               <button onClick={() => setShowShareModal(false)} className={styles.xBtn}>×</button>
             </div>
             <div className={styles.preview}>
-              {image && <Image src={image} alt="" width={48} height={48} className={styles.previewImg} />}
+              {image && <IpfsImage src={image} alt="" width={48} height={48} className={styles.previewImg} thumbWidth={256} />}
               <div>
                 <div className={styles.previewType}>{entityType}</div>
                 <div className={styles.previewTitle}>{title}</div>
@@ -438,7 +439,7 @@ export default function EntityActions({
           {replies.map(reply => (
             <div key={reply.id} className={styles.reply}>
               <div className={styles.replyAvatar}>
-                {reply.user?.image ? <Image src={reply.user.image} alt="" width={24} height={24} /> : <span>{reply.user?.name?.[0] || 'U'}</span>}
+                {reply.user?.image ? <IpfsImage src={reply.user.image} alt="" width={24} height={24} thumbWidth={256} /> : <span>{reply.user?.name?.[0] || 'U'}</span>}
               </div>
               <div>
                 <div className={styles.replyAuthor}>{reply.user?.name || 'Unknown'}</div>

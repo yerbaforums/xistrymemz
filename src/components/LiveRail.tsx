@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import LiveBadge, { type LiveUser } from '@/components/LiveBadge'
 import styles from './LiveRail.module.css'
 
@@ -48,7 +48,7 @@ export default function LiveRail({ compact = false }: { compact?: boolean }) {
             className={styles.card}
           >
             {entry.user.image ? (
-              <Image src={entry.user.image} alt="" width={40} height={40} className={styles.avatar} />
+              <IpfsImage src={entry.user.image} alt="" width={40} height={40} className={styles.avatar} thumbWidth={256} />
             ) : (
               <span className={styles.avatarFallback}>{(entry.user.name || 'U')[0]}</span>
             )}

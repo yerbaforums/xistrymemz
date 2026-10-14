@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter, useParams } from 'next/navigation'
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import styles from './profile.module.css'
 import Rating from '@/components/Rating'
 import { getUserProfileUrl } from '@/lib/utils'
@@ -761,7 +761,7 @@ export default function ProfilePage() {
               <div className={styles.avatarSection}>
                 <div className={styles.avatar} style={{ cursor: isOwnProfile && !editMode ? 'pointer' : undefined }} onClick={() => { if (isOwnProfile && !editMode) avatarInputRef.current?.click() }}>
                   {user.image ? (
-                    <Image src={user.image} alt={user.name || 'User'} fill />
+                    <IpfsImage src={user.image} alt={user.name || 'User'} thumbWidth={256} />
                   ) : (
                     <span>{user.name?.[0] || 'U'}</span>
                   )}
@@ -1203,7 +1203,7 @@ export default function ProfilePage() {
                 <div className={styles.classEntityGrid}>
                   {posts.filter(p => matchesClass(p.content || '', activeClass)).slice(0, 6).map(p => (
                     <div key={p.id} className={styles.classEntityCard}>
-                      {p.images && <div className={styles.classEntityImage}><Image src={getPostImages(p.images)[0] || ''} alt="" fill style={{objectFit:'cover'}} /></div>}
+                      {p.images && <div className={styles.classEntityImage}><IpfsImage src={getPostImages(p.images)[0] || ''} alt="" thumbWidth={512} /></div>}
                       <div className={styles.classEntityBody}>
                         <Link href={`/posts/${p.id}`} className={styles.classEntityLink}>{p.content?.slice(0, 80)}</Link>
                         <span className={styles.classEntityDate}>{new Date(p.createdAt).toLocaleDateString()}</span>
@@ -1234,7 +1234,7 @@ export default function ProfilePage() {
                 <div className={styles.classEntityGrid}>
                   {products.filter(p => matchesClass(p.title || '', activeClass)).slice(0, 6).map(p => (
                     <div key={p.id} className={styles.classEntityCard}>
-                      {p.imageUrl && <div className={styles.classEntityImage}><Image src={p.imageUrl} alt="" fill style={{objectFit:'cover'}} /></div>}
+                      {p.imageUrl && <div className={styles.classEntityImage}><IpfsImage src={p.imageUrl} alt="" thumbWidth={512} /></div>}
                       <div className={styles.classEntityBody}>
                         <Link href={`/products/${p.id}`} className={styles.classEntityLink}>{p.title}</Link>
                         {p.price && <span className={styles.classEntityPrice}>${p.price}</span>}
@@ -1280,7 +1280,7 @@ export default function ProfilePage() {
                 <div className={styles.classEntityGrid}>
                   {groups.filter(g => matchesClass(g.name || '', activeClass) || matchesClass(g.description || '', activeClass)).slice(0, 6).map(g => (
                     <div key={g.id} className={styles.classEntityCard}>
-                      {g.image && <div className={styles.classEntityImage}><Image src={g.image} alt="" fill style={{objectFit:'cover'}} /></div>}
+                      {g.image && <div className={styles.classEntityImage}><IpfsImage src={g.image} alt="" thumbWidth={512} /></div>}
                       <div className={styles.classEntityBody}>
                         <Link href={`/groups/${g.id}`} className={styles.classEntityLink}>{g.name}</Link>
                       </div>
@@ -1306,7 +1306,7 @@ export default function ProfilePage() {
                 <div className={styles.postInputWrapper}>
                   <div className={styles.postAvatar}>
                     {session?.user?.image ? (
-                      <Image src={session.user.image} alt="" fill />
+                      <IpfsImage src={session.user.image} alt="" thumbWidth={256} />
                     ) : (
                       <span>{session?.user?.name?.[0] || 'U'}</span>
                     )}
@@ -1346,7 +1346,7 @@ export default function ProfilePage() {
                 <div className={styles.photoStrip}>
                   {photos.map((ph) => (
                     <Link key={ph.id} href={`/posts/${ph.id}`} className={styles.photoThumb}>
-                      <img src={ph.url} alt="" loading="lazy" />
+                      <IpfsImage src={ph.url} alt="" thumbWidth={256} />
                     </Link>
                   ))}
                 </div>
@@ -1364,7 +1364,7 @@ export default function ProfilePage() {
                           <div className={styles.postAuthor}>
                             <div className={styles.postAvatarSmall}>
                               {post.user.image ? (
-                                <Image src={post.user.image} alt="" fill />
+                                <IpfsImage src={post.user.image} alt="" thumbWidth={256} />
                               ) : (
                                 <span>{post.user.name?.[0] || 'U'}</span>
                               )}
@@ -1405,7 +1405,7 @@ export default function ProfilePage() {
                               {imgs.length > 0 && (
                                 <div className={`${styles.postImageGrid} ${imgs.length === 1 ? styles.postImageSingle : ''}`}>
                                   {imgs.map((url, i) => (
-                                    <img key={i} src={url} alt="" loading="lazy" className={styles.postImage} />
+                                    <IpfsImage key={i} src={url} alt="" className={styles.postImage} thumbWidth={512} />
                                   ))}
                                 </div>
                               )}
@@ -1495,7 +1495,7 @@ export default function ProfilePage() {
                   <Link key={conn.id} href={getUserProfileUrl(conn)} className={styles.connectionCard}>
                     <div className={styles.connectionAvatar}>
                       {conn.image ? (
-                        <Image src={conn.image} alt={conn.name || 'User'} fill />
+                        <IpfsImage src={conn.image} alt={conn.name || 'User'} thumbWidth={256} />
                       ) : (
                         <span>{conn.name?.[0] || 'U'}</span>
                       )}
@@ -1521,7 +1521,7 @@ export default function ProfilePage() {
                   <Link key={group.id} href={`/groups/${group.id}`} className={styles.groupCard}>
                     <div className={styles.groupIcon}>
                       {group.imageUrl ? (
-                        <Image src={group.imageUrl} alt={group.name} fill style={{objectFit: 'cover'}} />
+                        <IpfsImage src={group.imageUrl} alt={group.name} thumbWidth={512} />
                       ) : (
                         <span>👥</span>
                       )}
@@ -1640,7 +1640,7 @@ export default function ProfilePage() {
                     <Link href={`/products/${product.id}`} className={styles.productCardLink}>
                       {product.imageUrl && (
                         <div className={styles.productImage}>
-                          <Image src={product.imageUrl} alt={product.title} fill style={{objectFit: 'cover'}} />
+                          <IpfsImage src={product.imageUrl} alt={product.title} thumbWidth={512} />
                         </div>
                       )}
                       <div className={styles.productInfo}>
@@ -1672,7 +1672,7 @@ export default function ProfilePage() {
                     <Link href={`/services/${service.id}`} className={styles.productCardLink}>
                       {service.imageUrl && (
                         <div className={styles.productImage}>
-                          <Image src={service.imageUrl} alt={service.title} fill style={{objectFit: 'cover'}} />
+                          <IpfsImage src={service.imageUrl} alt={service.title} thumbWidth={512} />
                         </div>
                       )}
                       <div className={styles.productInfo}>
@@ -1938,7 +1938,7 @@ export default function ProfilePage() {
                       {user.badges.map(b => (
                         <div key={b.id} className={`${styles.badgeCard} ${styles[`tier${b.tier}`] || ''}`}>
                           {b.imageUrl ? (
-                            <img src={b.imageUrl} alt={b.name} className={styles.badgeIcon} />
+                            <IpfsImage src={b.imageUrl} alt={b.name} className={styles.badgeIcon} thumbWidth={256} />
                           ) : (
                             <span className={styles.badgeIcon}>🏅</span>
                           )}

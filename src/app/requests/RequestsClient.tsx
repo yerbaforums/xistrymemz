@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import { useSearchParams } from 'next/navigation'
 import ImageUploader from '@/components/ImageUploader'
 import { QRCodeModal } from '@/components/QRCodeModal'
@@ -570,7 +570,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
                     <div key={req.id} className={styles.card}>
                       {req.imageUrl && (
                         <div className={styles.cardImageWrapper}>
-                          <img src={req.imageUrl} alt={req.title} className={styles.cardImage} />
+                          <IpfsImage src={req.imageUrl} alt={req.title} className={styles.cardImage} thumbWidth={512} />
                         </div>
                       )}
                       <Link href={`/requests/${req.id}`} className={styles.cardTitle}>{req.title}</Link>
@@ -643,7 +643,7 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
                       <div className={styles.cardFooter}>
                         <Link href={getUserProfileUrl(req.user)} className={styles.authorInfo}>
                           {req.user.image ? (
-                            <Image src={req.user.image} alt="" className={styles.authorAvatar} width={28} height={28} />
+                            <IpfsImage src={req.user.image} alt="" className={styles.authorAvatar} width={28} height={28} thumbWidth={256} />
                           ) : (
                             <span className={styles.authorAvatar}>{(req.user.name?.[0] || '?').toUpperCase()}</span>
                           )}

@@ -3,6 +3,7 @@
 import { useEffect, useCallback } from 'react'
 import Modal from '@/components/ui/Modal'
 import Link from 'next/link'
+import IpfsImage from '@/components/IpfsImage'
 import { useSession } from 'next-auth/react'
 import { useCart } from '@/context/CartContext'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
@@ -66,7 +67,7 @@ export default function ProductQuickViewModal({ product, onClose, onFund }: Quic
         <div className={styles.layout}>
           <div className={styles.imageCol}>
             {product.imageUrl ? (
-              <img src={product.imageUrl} alt={product.title} className={styles.image} />
+              <IpfsImage src={product.imageUrl} alt={product.title} className={styles.image} thumbWidth={512} />
             ) : (
               <div className={styles.imagePlaceholder}>
                 {product.type === 'SERVICE' ? '🔧' : product.type === 'RENTAL' ? '📆' : '📦'}

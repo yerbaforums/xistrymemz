@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import styles from './page.module.css'
 import { calculateDistance, geocodeLocation } from '@/lib/geocoding'
 import { useToast } from '@/context/ToastContext'
@@ -550,7 +550,7 @@ export default function EventsPage() {
                     <div key={event.id} className={`${styles.eventCard} ${selectedEvent?.id === event.id ? styles.selected : ''}`} onClick={() => { setSelectedEvent(event); if (event.latitude && event.longitude && mapRef.current) { mapRef.current.setView([event.latitude, event.longitude], 15, { animate: true }) } }}>
                       {event.imageUrl && (
                         <div className={styles.eventImageWrapper}>
-                          <Image src={event.imageUrl} alt={event.title} width={400} height={200} className={styles.eventCardImage} style={{ width: '100%', height: 'auto' }} />
+                          <IpfsImage src={event.imageUrl} alt={event.title} width={400} height={200} className={styles.eventCardImage} style={{ width: '100%', height: 'auto' }} thumbWidth={512} />
                         </div>
                       )}
                       <div className={styles.eventHeader}>

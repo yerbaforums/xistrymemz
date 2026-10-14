@@ -1,7 +1,8 @@
 'use client'
 
 import { memo } from 'react'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
+import Avatar from '@/components/Avatar'
 import StarButton from '@/components/StarButton'
 import type { ServiceOffering, ServiceCategory } from '@/types/service'
 import { SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service'
@@ -48,7 +49,7 @@ const ServiceCard = memo(function ServiceCard({ service, onClick, style }: Servi
         style={{ display: 'block', color: 'inherit', textDecoration: 'none' }}
       >
         {imageUrl ? (
-          <Image src={imageUrl} alt={title} width={400} height={220} className={styles.image} style={{ width: '100%', height: 'auto' }} />
+          <IpfsImage src={imageUrl} alt={title} className={styles.image} style={{ width: '100%', height: 'auto' }} thumbWidth={512} />
         ) : (
           <div className={styles.imagePlaceholder}>{icon}</div>
         )}
@@ -92,7 +93,7 @@ const ServiceCard = memo(function ServiceCard({ service, onClick, style }: Servi
         </div>
         <div className={styles.author}>
           {userImage ? (
-            <Image src={userImage} alt="" width={24} height={24} className={styles.authorAvatar} />
+            <Avatar src={userImage} name={userName} size={24} className={styles.authorAvatar} />
           ) : (
             <span className={styles.authorInitials}>{(userName || 'U')[0]}</span>
           )}

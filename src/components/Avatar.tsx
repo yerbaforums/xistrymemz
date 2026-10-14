@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import IpfsImage from './IpfsImage'
 
 interface AvatarProps {
   src?: string | null
@@ -14,9 +15,9 @@ interface AvatarProps {
 
 /**
  * Shared avatar with a safe fallback: renders the image when a valid src is
- * provided, otherwise (or on error / broken URL) shows the first letter of the
- * name on an accent chip. Uses a plain <img> so avatars from third-party CDNs
- * never silently fail inside next/image's remotePatterns allowlist.
+ * provided, otherwise (or when every gateway fails) shows the first letter
+ * of the name on an accent chip. Images load through the shared IPFS gateway
+ * chain at retina-scaled thumbnail size.
  */
 export default function Avatar({ src, name, size = 32, className, rounded = true }: AvatarProps) {
   const [failed, setFailed] = useState(false)
@@ -30,14 +31,13 @@ export default function Avatar({ src, name, size = 32, className, rounded = true
         style={{ width: size, height: size, borderRadius: radius, display: 'inline-flex', overflow: 'hidden', flexShrink: 0, background: 'var(--bg-tertiary)' }}
         aria-hidden="true"
       >
-        <img
+        <IpfsImage
           src={src}
           alt=""
           width={size}
           height={size}
-          loading="lazy"
-          onError={() => setFailed(true)}
-          style={{ objectFit: 'cover', width: '100%', height: '100%', display: 'block' }}
+          thumbWidth={Math.max(size * 2, 64)}
+          onExhausted={() => setFailed(true)}
         />
       </span>
     )

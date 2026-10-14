@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import { useRouter } from 'next/navigation'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
@@ -619,7 +619,7 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
                       <div className={styles.publicAuthor}>
                         <div className={styles.authorAvatar}>
                           {project.user.image ? (
-                            <Image src={project.user.image} alt={project.user.name || 'User'} fill sizes="32px" />
+                            <IpfsImage src={project.user.image} alt={project.user.name || 'User'} thumbWidth={256} />
                           ) : (
                             <span>{(project.user.name?.[0] || 'U').toUpperCase()}</span>
                           )}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import { useSession } from 'next-auth/react'
 import { SkeletonCard } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
@@ -337,7 +337,7 @@ export default function DirectoryPage() {
       <div key={`${item.type}-${item.id}`} className={styles.card} style={accent ? { borderTop: `3px solid ${accent}` } : undefined}>
         <Link href={item.url} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
           <div className={styles.cardImage}>
-            {item.image ? <Image src={item.image} alt={item.title} width={400} height={96} style={{ objectFit: 'cover' }} loading="lazy" /> : <span>{TYPE_ICONS[item.type] || '📌'}</span>}
+            {item.image ? <IpfsImage src={item.image} alt={item.title} width={400} height={96} style={{ objectFit: 'cover' }} thumbWidth={512} /> : <span>{TYPE_ICONS[item.type] || '📌'}</span>}
           </div>
           <div className={styles.cardInfo}>
             <h3>

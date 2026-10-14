@@ -9,6 +9,7 @@ import { SHOP_CATEGORIES } from '@/lib/shop-categories'
 import { EmptyState } from '@/components/EmptyState'
 import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
 import EntityMarker from '@/components/EntityMarker'
+import IpfsImage from '@/components/IpfsImage'
 import type { Map as LeafletMap } from 'leaflet'
 
 
@@ -96,7 +97,7 @@ export function ShopsClient({ initialShops }: ShopsClientProps) {
       >
         {shop.shopImage && (
           <div className={styles.shopImage}>
-            <img src={shop.shopImage} alt={shop.shopName} />
+            <IpfsImage src={shop.shopImage} alt={shop.shopName} thumbWidth={512} />
           </div>
         )}
         <div className={styles.shopInfo}>

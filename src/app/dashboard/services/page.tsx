@@ -9,6 +9,7 @@ import DonationAddressPicker from '@/components/DonationAddressPicker'
 import { hydrateDonationAddresses } from '@/lib/donations'
 import type { DonationAddr } from '@/types/product'
 import ImageUploader from '@/components/ImageUploader'
+import IpfsImage from '@/components/IpfsImage'
 import Skeleton from '@/components/Skeleton'
 import type { ServiceOffering, ServiceCategory } from '@/types/service'
 import { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ICONS } from '@/types/service'
@@ -456,7 +457,7 @@ export default function DashboardServices() {
                 </label>
                 <div className={styles.itemImage}>
                   {s.imageUrl ? (
-                    <img src={s.imageUrl} alt={s.title} />
+                    <IpfsImage src={s.imageUrl} alt={s.title} thumbWidth={256} />
                   ) : (
                     <div className={styles.imagePlaceholder}>{SERVICE_CATEGORY_ICONS[cat] || '📋'}</div>
                   )}

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
+import IpfsImage from '@/components/IpfsImage'
 import HashtagText from '@/components/HashtagText'
 import ShareBar from '@/components/ShareBar'
 import EntityActions from '@/components/EntityActions'
@@ -121,7 +121,7 @@ export default function PostPage() {
             <Link href={getUserProfileUrl({ id: post.user.id, username: post.user.username })} className={styles.userLink}>
               <div className={styles.avatarWrap}>
                 {post.user.image ? (
-                  <Image src={post.user.image} alt="" fill style={{ objectFit: 'cover' }} />
+                  <IpfsImage src={post.user.image} alt="" thumbWidth={256} />
                 ) : (
                   <div className={styles.avatarInitial}>{post.user.name?.[0] || 'U'}</div>
                 )}
@@ -140,7 +140,7 @@ export default function PostPage() {
           {imageList.length > 0 && (
             <div className={styles.imageGrid}>
               {imageList.map((url, i) => (
-                <img key={i} src={url} alt="" loading="lazy" />
+                <IpfsImage key={i} src={url} alt="" thumbWidth={512} />
               ))}
             </div>
           )}

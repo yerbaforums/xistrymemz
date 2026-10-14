@@ -10,6 +10,7 @@ import Button from '@/components/ui/Button'
 import ReviewPrompt from '@/components/ReviewPrompt'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import IpfsImage from '@/components/IpfsImage'
 
 interface Order {
   id: string
@@ -260,7 +261,7 @@ export default function OrderDetailPage() {
               <h2>Item</h2>
               <div className={styles.productCard}>
                 {order.product.imageUrl && (
-                  <img src={order.product.imageUrl} alt={order.product.title} className={styles.productImage} />
+                  <IpfsImage src={order.product.imageUrl} alt={order.product.title} className={styles.productImage} thumbWidth={256} />
                 )}
                 <div className={styles.productInfo}>
                   <h3>{order.product.title}</h3>

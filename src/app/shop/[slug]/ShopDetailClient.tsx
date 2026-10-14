@@ -28,6 +28,7 @@ import Button from '@/components/ui/Button'
 import PinToBoardButton from '@/components/PinToBoardButton'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import ApprovalBadge from '@/components/ApprovalBadge'
+import IpfsImage from '@/components/IpfsImage'
 
 
 interface UserLink {
@@ -335,7 +336,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
           <div className={styles.avatarSection}>
             <div className={styles.avatar}>
               {shop.shopImage ? (
-                <img src={shop.shopImage} alt={shop.shopName || 'Shop'} />
+                <IpfsImage src={shop.shopImage} alt={shop.shopName || 'Shop'} thumbWidth={256} />
               ) : (
                 <span>🏪</span>
               )}
@@ -471,7 +472,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                     {product.pinned && <span className={styles.pinnedBadge}>📌</span>}
                     {product.imageUrl ? (
                       <div className={styles.productImage}>
-                        <img src={product.imageUrl} alt={product.title} />
+                        <IpfsImage src={product.imageUrl} alt={product.title} thumbWidth={512} />
                       </div>
                     ) : (
                       <div className={styles.productImagePlaceholder}>📦</div>
@@ -509,7 +510,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                 <Link key={service.id} href={`/services/${service.id}`} className={styles.productCard}>
                   {service.imageUrl ? (
                     <div className={styles.productImage}>
-                      <img src={service.imageUrl} alt={service.title} />
+                      <IpfsImage src={service.imageUrl} alt={service.title} thumbWidth={512} />
                     </div>
                   ) : (
                     <div className={styles.productImagePlaceholder}>🔧</div>
@@ -538,7 +539,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                 <Link key={rental.id} href={`/products/${rental.id}`} className={styles.productCard}>
                   {rental.imageUrl ? (
                     <div className={styles.productImage}>
-                      <img src={rental.imageUrl} alt={rental.title} />
+                      <IpfsImage src={rental.imageUrl} alt={rental.title} thumbWidth={512} />
                     </div>
                   ) : (
                     <div className={styles.productImagePlaceholder}>🏠</div>
@@ -585,7 +586,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                     <div className={styles.postHeader}>
                       <div className={styles.postAuthor}>
                         <div className={styles.postAvatarSmall}>
-                          {post.user.image ? <img src={post.user.image} alt="" /> : <span>{post.user.name?.[0] || 'U'}</span>}
+                          {post.user.image ? <IpfsImage src={post.user.image} alt="" thumbWidth={256} /> : <span>{post.user.name?.[0] || 'U'}</span>}
                         </div>
                         <div>
                           <span className={styles.postAuthorName}>{post.user.name || 'Shop'}</span>
@@ -610,7 +611,7 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                     <TranslateButton text={post.content} />
                     {post.imageUrl && (
                       <div className={styles.postImage}>
-                        <img src={post.imageUrl} alt="" style={{maxWidth:'100%', borderRadius:'8px', marginTop:'8px'}} />
+                        <IpfsImage src={post.imageUrl} alt="" style={{maxWidth:'100%', borderRadius:'8px', marginTop:'8px'}} thumbWidth={512} />
                       </div>
                     )}
                     <div className={styles.postFooter}>

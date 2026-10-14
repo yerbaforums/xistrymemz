@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import styles from './Rating.module.css'
 import { useToast } from '@/context/ToastContext'
+import IpfsImage from '@/components/IpfsImage'
 import Button from '@/components/ui/Button'
 
 interface VoteData {
@@ -331,7 +332,7 @@ export default function RatingDisplay({ userId, productId, type = 'SELLER' }: Ra
                 <div className={styles.imageGrid}>
                   {images.map((url, i) => (
                     <a key={i} href={url} target="_blank" rel="noopener noreferrer" className={styles.imageThumb}>
-                      <img src={url} alt={`Review image ${i + 1}`} />
+                      <IpfsImage src={url} alt={`Review image ${i + 1}`} thumbWidth={256} />
                     </a>
                   ))}
                 </div>

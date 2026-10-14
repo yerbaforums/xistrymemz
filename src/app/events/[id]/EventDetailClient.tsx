@@ -23,6 +23,7 @@ import type { Event } from '@/types/event'
 import type { DonationAddr } from '@/types/product'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import TranslateButton from '@/components/TranslateButton'
+import IpfsImage from '@/components/IpfsImage'
 import CollaborateButton from '@/components/CollaborateButton'
 import TicketPaymentModal from '@/components/TicketPaymentModal'
 import TicketQRModal from '@/components/TicketQRModal'
@@ -703,7 +704,7 @@ function EventDetailContent() {
                 
                 {event.imageUrl && (
                   <div className={styles.detailImageWrapper}>
-                    <Image src={event.imageUrl} alt={event.title} width={800} height={400} className={styles.detailImage} style={{ width: '100%', height: 'auto' }} priority={false} />
+                    <IpfsImage src={event.imageUrl} alt={event.title} width={800} height={400} className={styles.detailImage} style={{ width: '100%', height: 'auto' }} />
                   </div>
                 )}
 
@@ -1348,7 +1349,7 @@ function EventDetailContent() {
               <Link key={re.id} href={`/events/${re.id}`} className={styles.relatedCard}>
                 {re.imageUrl && (
                   <div className={styles.relatedCardImage}>
-                    <Image src={re.imageUrl} alt={re.title} width={300} height={120} style={{ objectFit: 'cover', width: '100%' }} />
+                    <IpfsImage src={re.imageUrl} alt={re.title} width={300} height={120} style={{ objectFit: 'cover', width: '100%' }} thumbWidth={512} />
                   </div>
                 )}
                 <div className={styles.relatedCardBody}>

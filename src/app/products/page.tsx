@@ -19,6 +19,7 @@ import ProductMapView from '@/components/ProductMapView'
 import LocationCard from '@/components/LocationCard'
 import type { Product } from '@/types/product'
 import ImageUploader from '@/components/ImageUploader'
+import IpfsImage from '@/components/IpfsImage'
 import { SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import Button from '@/components/ui/Button'
@@ -782,7 +783,7 @@ export default function ProductsPage() {
                 <div key={product.id} className={styles.myListingCard}>
                   <div className={styles.myListingImage}>
                     {product.imageUrl ? (
-                      <img src={product.imageUrl} alt={product.title} />
+                      <IpfsImage src={product.imageUrl} alt={product.title} thumbWidth={512} />
                     ) : (
                       <div className={styles.myListingImagePlaceholder}>📦</div>
                     )}

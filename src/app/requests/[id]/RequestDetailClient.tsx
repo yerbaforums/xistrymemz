@@ -27,6 +27,7 @@ import FormFieldInput, { fieldDefaultValue, isFieldAnswered } from '@/components
 import { FieldListEditor } from '@/components/listings/FieldListEditor'
 import type { FormField } from '@/types/service'
 import WorkTogether from '@/components/WorkTogether'
+import IpfsImage from '@/components/IpfsImage'
 
 const PRIORITIES = [
   { value: 'LOW', label: 'Low', color: '#888' },
@@ -859,7 +860,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
 
             {request.imageUrl && (
               <div className={styles.detailImageWrapper}>
-                <img src={request.imageUrl} alt={request.title} className={styles.detailImage} />
+                <IpfsImage src={request.imageUrl} alt={request.title} className={styles.detailImage} />
               </div>
             )}
 
@@ -1033,7 +1034,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                       background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)',
                     }}>
                       {m.imageUrl ? (
-                        <img src={m.imageUrl} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover' }} />
+                        <IpfsImage src={m.imageUrl} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover' }} thumbWidth={256} />
                       ) : (
                         <span style={{ width: 40, height: 40, borderRadius: 8, background: 'var(--bg-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>
                           {m.type === 'SERVICE' ? '🔧' : '🛒'}
