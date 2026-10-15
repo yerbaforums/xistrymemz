@@ -205,10 +205,12 @@ export default function SchoolsPage() {
           <div className={viewMode === 'list' ? styles.list : styles.schoolsGrid}>
             {schools.map(school => (
               <Link key={school.id} href={`/school/${school.schoolSlug}`} className={styles.schoolCard}>
-                {school.schoolImage && (
+                {school.schoolImage ? (
                   <div className={styles.schoolImage}>
-                    <IpfsImage src={school.schoolImage} alt={school.schoolName} thumbWidth={512} />
+                    <IpfsImage src={school.schoolImage} alt={school.schoolName} thumbWidth={512} style={{ width: '100%', height: '100%', display: 'block' }} />
                   </div>
+                ) : (
+                  <div className={styles.schoolImagePlaceholder} aria-hidden="true">🎓</div>
                 )}
                 <div className={styles.schoolInfo}>
                   <h2>{school.schoolName}</h2>

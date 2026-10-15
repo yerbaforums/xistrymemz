@@ -739,7 +739,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                       </div>
                       {itemImages.length > 0 && (
                         <div className={styles.cardThumb} onClick={() => router.push(`/school/${resolvedSlug}/content/${item.id}`)} style={{cursor: 'pointer'}}>
-                          <IpfsImage src={itemImages[0]} alt="" thumbWidth={512} />
+                          <IpfsImage src={itemImages[0]} alt="" thumbWidth={512} style={{ width: '100%', height: '100%', display: 'block' }} />
                         </div>
                       )}
                       <h3 onClick={() => router.push(`/school/${resolvedSlug}/content/${item.id}`)} style={{cursor: 'pointer'}}>{item.title}</h3>
