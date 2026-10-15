@@ -13,7 +13,8 @@ import Breadcrumbs from '@/components/Breadcrumbs'
 import MediaPlayer from '@/components/MediaPlayer'
 import WorkTogether from '@/components/WorkTogether'
 import { sanitizeHtml } from '@/lib/sanitize'
-import { parseImageList } from '@/lib/utils'
+import { parseImageList, humanizeEnum } from '@/lib/utils'
+import { SCHOOL_CATEGORY_MAP } from '@/lib/school-categories'
 import IpfsImage from '@/components/IpfsImage'
 
 interface ContentData {
@@ -21,6 +22,7 @@ interface ContentData {
   title: string
   content: string
   contentType: string
+  category: string | null
   images: string | null
   videoUrl: string | null
   price: number | null
@@ -224,7 +226,8 @@ export default function SchoolContentDetailPage() {
 
       <div className={styles.header}>
         <div className={styles.badges}>
-          <span className={styles.typeBadge}>{CONTENT_TYPE_ICONS[content.contentType] || '📄'} {content.contentType}</span>
+          <span className={styles.typeBadge}>{CONTENT_TYPE_ICONS[content.contentType] || '📄'} {humanizeEnum(content.contentType)}</span>
+          {content.category && <span className={styles.typeBadge}>{SCHOOL_CATEGORY_MAP.get(content.category)?.icon || '📚'} {SCHOOL_CATEGORY_MAP.get(content.category)?.label || humanizeEnum(content.category)}</span>}
           <span className={`badge ${content.isPaid ? 'badge-active' : 'badge-draft'}`}>
             {content.isPaid ? `$${content.price || 0}` : 'Free'}
           </span>
@@ -244,7 +247,7 @@ export default function SchoolContentDetailPage() {
             <div style={{ fontSize: '2rem' }}>🔒</div>
             <h3>Premium content</h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>
-              This {content.contentType} costs <strong>${content.price || 0}</strong>. {purchase?.status === 'PENDING' ? 'Your request is pending approval — the full content unlocks once confirmed.' : 'Request access and the instructor will unlock it once your payment is confirmed.'}
+              This {humanizeEnum(content.contentType).toLowerCase()} costs <strong>${content.price || 0}</strong>. {purchase?.status === 'PENDING' ? 'Your request is pending approval — the full content unlocks once confirmed.' : 'Request access and the instructor will unlock it once your payment is confirmed.'}
             </p>
             {purchase?.status !== 'PENDING' && (
               <>
@@ -341,7 +344,7 @@ export default function SchoolContentDetailPage() {
           <div className={styles.relatedGrid}>
             {related.map(item => (
               <Link key={item.id} href={`/school/${slug}/content/${item.id}`} className={styles.relatedCard}>
-                <div className={styles.relatedBadge}>{CONTENT_TYPE_ICONS[item.contentType] || '📄'} {item.contentType}</div>
+                <div className={styles.relatedBadge}>{CONTENT_TYPE_ICONS[item.contentType] || '📄'} {humanizeEnum(item.contentType)}</div>
                 <h3 className={styles.relatedName}>{item.title}</h3>
                 <p className={styles.relatedPreview}>{stripHtml(item.content).slice(0, 80)}...</p>
               </Link>

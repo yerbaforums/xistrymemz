@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
-import { getUserProfileUrl } from '@/lib/utils'
+import { getUserProfileUrl, humanizeEnum } from '@/lib/utils'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import SponsorButton from '@/components/SponsorButton'
 import { DonationActions } from '@/components/DonationActions'
@@ -553,7 +553,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                     {course.contents.map(cc => (
                       <div key={cc.id} className={styles.courseContentItem}>
                         <span>{cc.content.title}</span>
-                        <span className={styles.contentType}>{cc.content.contentType}</span>
+                        <span className={styles.contentType}>{humanizeEnum(cc.content.contentType)}</span>
                       </div>
                     ))}
                     {isOwner && (
@@ -687,7 +687,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                     className={`${styles.filterBtn} ${contentFilter === type ? styles.filterActive : ''}`}
                     onClick={() => setContentFilter(type)}
                   >
-                    {type === 'all' ? 'All' : `${CONTENT_TYPE_ICONS[type] || '📄'} ${type}`}
+                    {type === 'all' ? 'All' : `${CONTENT_TYPE_ICONS[type] || '📄'} ${humanizeEnum(type)}`}
                   </button>
                 ))}
               </div>
