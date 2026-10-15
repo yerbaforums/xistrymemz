@@ -8,7 +8,7 @@ import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import ReviewPrompt from '@/components/ReviewPrompt'
 import { MakeOfferModal } from '@/components/MakeOfferModal'
-import { getUserProfileUrl } from '@/lib/utils'
+import { getUserProfileUrl, humanizeEnum } from '@/lib/utils'
 import { getCryptoIcon, getCryptoName } from '@/lib/crypto-icons'
 import ShareBar from '@/components/ShareBar'
 import EntityActions from '@/components/EntityActions'
@@ -871,7 +871,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
               <div className={styles.metaItem} style={{ border: '1px solid var(--border-color)', borderRadius: 8, padding: '8px 12px', marginTop: 8 }}>
                 <span className={styles.metaLabel}>🛒 Pooled group buy</span>
                 <span className={styles.metaValue}>
-                  ${pooledBuy.currentPrice} by {pooledBuy.currentSupporters}/{pooledBuy.minSupporters} supporters toward ${pooledBuy.targetPrice} ({pooledBuy.status})
+                  ${pooledBuy.currentPrice} by {pooledBuy.currentSupporters}/{pooledBuy.minSupporters} supporters toward ${pooledBuy.targetPrice} ({humanizeEnum(pooledBuy.status)})
                   {' '}— <Link href={`/groups/${pooledBuy.group.id}`}>{pooledBuy.group.name}</Link>
                 </span>
               </div>
@@ -1406,7 +1406,7 @@ export default function RequestDetailClient({ request: initialRequest, userId, u
                       </span>
                     </div>
                     <span className={`${styles.fulfillmentStatus} ${styles[`status${f.status.toLowerCase()}`]}`}>
-                      {f.status}
+                      {humanizeEnum(f.status)}
                     </span>
                   </div>
                   <h4 className={styles.fulfillmentTitle}>{f.title}</h4>

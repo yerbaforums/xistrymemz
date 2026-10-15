@@ -5,6 +5,7 @@ import IpfsImage from '@/components/IpfsImage'
 import Link from 'next/link'
 import styles from './InboxView.module.css'
 import { EmptyState } from '@/components/EmptyState'
+import { humanizeEnum } from '@/lib/utils'
 
 interface InboxItem {
   id: string
@@ -159,7 +160,7 @@ export default function InboxView({ onChatUser }: { onChatUser?: (userId: string
                 {item.message && <p className={styles.itemMessage}>{item.message}</p>}
                 {item.entity && (
                   <Link href={entityHref(item.entity.type, item.entity.id)} className={styles.entityRef}>
-                    📎 {item.entity.title || item.entity.type}
+                    📎 {item.entity.title || humanizeEnum(item.entity.type)}
                   </Link>
                 )}
                 <div className={styles.itemActions}>

@@ -52,3 +52,5 @@ export const GROUP_CATEGORIES: { value: string; label: string; icon: string }[] 
   { value: 'SPIRITUALITY', label: 'Spirituality & Philosophy', icon: '🕯️' },
   { value: 'LOCAL', label: 'Local & Neighborhood', icon: '📍' },
 ]
+
+export const GROUP_CATEGORY_MAP = new Map(GROUP_CATEGORIES.map(c => [c.value, c]))

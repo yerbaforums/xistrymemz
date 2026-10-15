@@ -6,6 +6,7 @@ import IpfsImage from '@/components/IpfsImage'
 import LinkedEntityDetail from '@/components/LinkedEntityDetail'
 import { parseImageList } from '@/lib/utils'
 import { primaryIpfsUrl, isIpfsGatewayUrl } from '@/lib/ipfs-gateway'
+import { getPinCategoryColor, getPinCategoryIcon, getPinCategoryLabel } from '@/lib/pin-categories'
 import styles from './PinCarouselModal.module.css'
 
 interface PinUser {
@@ -40,32 +41,6 @@ interface PinCarouselModalProps {
   onClose: () => void
   boardSlug: string
   initialAutoPlay?: boolean
-}
-
-function getCategoryLabel(category: string | null): string {
-  switch (category) {
-    case 'LOST_FOUND': return 'Lost & Found'
-    case 'PROMOTION': return 'Promotion'
-    case 'EVENT': return 'Event'
-    case 'SERVICE': return 'Service'
-    case 'HOUSING': return 'Housing'
-    case 'JOBS': return 'Jobs'
-    case 'FREE': return 'Free'
-    default: return 'General'
-  }
-}
-
-function getCategoryColor(category: string | null): string {
-  switch (category) {
-    case 'LOST_FOUND': return '#f59e0b'
-    case 'PROMOTION': return '#3b82f6'
-    case 'EVENT': return '#8b5cf6'
-    case 'SERVICE': return '#10b981'
-    case 'HOUSING': return '#ec4899'
-    case 'JOBS': return '#14b8a6'
-    case 'FREE': return '#22c55e'
-    default: return '#6b7280'
-  }
 }
 
 export default function PinCarouselModal({ pins, initialIndex, onClose, boardSlug, initialAutoPlay }: PinCarouselModalProps) {
@@ -202,8 +177,8 @@ export default function PinCarouselModal({ pins, initialIndex, onClose, boardSlu
 
             <Link href={`/boards/${boardSlug}/pins/${pin.id}`} className={styles.infoLink}>
               <div className={styles.infoHeader}>
-                <span className={styles.categoryBadge} style={{ background: getCategoryColor(pin.category) }}>
-                  {getCategoryLabel(pin.category)}
+                <span className={styles.categoryBadge} style={{ background: getPinCategoryColor(pin.category) }}>
+                  {getPinCategoryIcon(pin.category)} {getPinCategoryLabel(pin.category)}
                 </span>
                 <span className={styles.date}>{new Date(pin.createdAt).toLocaleDateString()}</span>
               </div>

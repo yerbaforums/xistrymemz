@@ -12,6 +12,7 @@ import ProjectSupport from './ProjectSupport'
 import ProjectUpdates from './ProjectUpdates'
 import { parseGoals, parseMilestones, parseResources, stringifyGoals, stringifyMilestones, stringifyResources } from '@/lib/project-utils'
 import { getUserProfileUrl } from '@/lib/utils'
+import { getProjectStatusIcon, getProjectStatusLabel } from '@/lib/project-status'
 import ShareBar from '@/components/ShareBar'
 import GoalCurrencySelect from '@/components/GoalCurrencySelect'
 import EntityActions from '@/components/EntityActions'
@@ -32,7 +33,7 @@ import ImageUploader from '@/components/ImageUploader'
 import MediaLinkInput from '@/components/MediaLinkInput'
 import HashtagInput from '@/components/HashtagInput'
 import LocationPicker from '@/components/LocationPicker'
-import { PROJECT_CATEGORIES } from '@/lib/project-categories'
+import { PROJECT_CATEGORIES, getCategoryIcon, getCategoryLabel } from '@/lib/project-categories'
 import { EmptyState } from '@/components/EmptyState'
 import { MapContainer as ProjectMapContainer, TileLayer as ProjectTileLayer, Marker as ProjectMarker, Popup as ProjectPopup } from '@/components/LeafletComponents'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
@@ -672,7 +673,7 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
               {editingOverview ? (
                 <div className={styles.overviewEdit}>
                   <div className={styles.statusRow}>
-                    <span className={`badge badge-${project.status.toLowerCase()}`}>{project.status}</span>
+                    <span className={`badge badge-${project.status.toLowerCase()}`}>{getProjectStatusIcon(project.status)} {getProjectStatusLabel(project.status)}</span>
                     <div className={styles.editActions}>
                       <button onClick={() => setEditingOverview(false)} className="btn-ghost" disabled={loading}>Cancel</button>
                       <button onClick={handleSaveOverview} className="btn-primary" disabled={loading}>{loading ? 'Saving...' : 'Save'}</button>
@@ -803,7 +804,7 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
                         <button onClick={() => navigator.clipboard.writeText(window.location.href)} className={styles.iconBtn} title="Copy link">🔗</button>
                         <button onClick={handleShareToFeed} disabled={sharingToFeed} className={styles.iconBtn} title="Share to Feed">{sharingToFeed ? '⏳' : '📣'}</button>
                         <div className={styles.badges}>
-                          {project.published ? <span className="badge badge-published">Published</span> : <span className={`badge badge-${project.status.toLowerCase()}`}>{project.status}</span>}
+                          {project.published ? <span className="badge badge-published">Published</span> : <span className={`badge badge-${project.status.toLowerCase()}`}>{getProjectStatusIcon(project.status)} {getProjectStatusLabel(project.status)}</span>}
                           {project.lookingForCollaborators && <span className={`badge ${styles.lookingForBadge}`}>🤝 Looking for collaborators</span>}
                         </div>
                       </div>
@@ -812,7 +813,7 @@ export default function ProjectDetailClient({ project: initialProject, userId, i
                           <IpfsImage src={project.imageUrl} alt={project.title} className={styles.projectImage} eager />
                         </div>
                       )}
-                      {project.category && <span className={styles.categoryBadge}>{project.category}</span>}
+                      {project.category && <span className={styles.categoryBadge}>{getCategoryIcon(project.category)} {getCategoryLabel(project.category)}</span>}
                       {project.description && <p className={styles.description}>{project.description}</p>}
                       {project.description && <TranslateButton text={project.description} />}
                       {project.hashtags && project.hashtags.length > 0 && (
@@ -1280,15 +1281,15 @@ donationDescription={project.donationDescription}
               ) : (
                 <div className={styles.statusList}>
                   <div className={styles.statusCurrent}>
-                    <span className={`badge badge-${project.status.toLowerCase()}`}>{project.status}</span>
+                    <span className={`badge badge-${project.status.toLowerCase()}`}>{getProjectStatusIcon(project.status)} {getProjectStatusLabel(project.status)}</span>
                     <span className={styles.statusCurrentLabel}>Current Status</span>
                   </div>
                   {statusHistory.map(entry => (
                     <div key={entry.id} className={styles.historyEntry}>
                       <div className={styles.historyEntryHeader}>
                         <div className={styles.historyBadges}>
-                          {entry.fromStatus && <span className={styles.mutedSmall}>{entry.fromStatus} →</span>}
-                          <span className={`badge badge-${entry.toStatus.toLowerCase()}`}>{entry.toStatus}</span>
+                          {entry.fromStatus && <span className={styles.mutedSmall}>{getProjectStatusLabel(entry.fromStatus)} →</span>}
+                          <span className={`badge badge-${entry.toStatus.toLowerCase()}`}>{getProjectStatusIcon(entry.toStatus)} {getProjectStatusLabel(entry.toStatus)}</span>
                         </div>
                         <span className={styles.historyTimestamp}>{new Date(entry.createdAt).toLocaleString()}</span>
                       </div>
@@ -1311,7 +1312,7 @@ donationDescription={project.donationDescription}
           <div className="modal" onClick={e => e.stopPropagation()}>
             <h2>Confirm Rollback</h2>
             <p className={styles.confirmText}>
-              Change status from <strong>{project.status}</strong> to <strong>{rollbackStatus}</strong>?
+              Change status from <strong>{getProjectStatusLabel(project.status)}</strong> to <strong>{getProjectStatusLabel(rollbackStatus)}</strong>?
             </p>
             <div className="form-group">
               <label htmlFor="reason-optional">Reason (optional)</label>

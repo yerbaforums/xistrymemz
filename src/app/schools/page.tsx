@@ -6,6 +6,7 @@ import styles from './page.module.css'
 import { EmptyState } from '@/components/EmptyState'
 import Skeleton from '@/components/Skeleton'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { humanizeEnum } from '@/lib/utils'
 import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
 import IpfsImage from '@/components/IpfsImage'
 
@@ -237,9 +238,9 @@ export default function SchoolsPage() {
               <Link key={item.id} href={`/school/${item.school.slug}/${item.id}`} className={styles.contentCard}>
                 <div className={styles.contentHeader}>
                   <span className={`${styles.contentType} ${styles[item.contentType]}`}>
-                    {item.contentType}
+                    {humanizeEnum(item.contentType)}
                   </span>
-                  <span className={styles.contentCategory}>{item.category}</span>
+                  {item.category && <span className={styles.contentCategory}>{item.category}</span>}
                 </div>
                 <h3>{item.title}</h3>
                 <p className={styles.contentMeta}>

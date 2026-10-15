@@ -7,6 +7,7 @@ import IpfsImage from '@/components/IpfsImage'
 import dynamic from 'next/dynamic'
 import { getEntityIcon } from '@/lib/entity-icons'
 import { parseImageList } from '@/lib/utils'
+import { getPinCategoryColor, getPinCategoryIcon, getPinCategoryLabel } from '@/lib/pin-categories'
 import EntityActions from '@/components/EntityActions'
 import type { ActionEntityType } from '@/hooks/useEntityActions'
 import Breadcrumbs from '@/components/Breadcrumbs'
@@ -95,10 +96,7 @@ export default function PinDetailPage() {
   if (!pin) return <div className="landing" style={{ padding: 32, textAlign: 'center' }}><h2>Pin not found</h2><Link href={`/boards/${slug}`}>← Back to Board</Link></div>
 
   const images = parseImageList(pin.images)
-  const catColors: Record<string, string> = {
-    LOST_FOUND: '#ef4444', PROMOTION: '#3b82f6', EVENT: '#8b5cf6',
-    SERVICE: '#22c55e', HOUSING: '#ec4899', JOBS: '#14b8a6', FREE: '#22c55e', GENERAL: '#6b7280',
-  }
+  const catColor = getPinCategoryColor(pin.category)
   const isEvent = pin.entityType === 'EVENT' && pin.entityId && eventData
 
   return (
@@ -126,8 +124,8 @@ export default function PinDetailPage() {
             <span style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem' }}>{pin.user.name?.[0] || 'U'}</span>
           )}
           <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{pin.user.name || 'Unknown'}</span>
-          <span style={{ fontSize: '0.75rem', padding: '3px 10px', borderRadius: 10, background: `${catColors[pin.category || 'GENERAL']}20`, color: catColors[pin.category || 'GENERAL'], fontWeight: 600 }}>
-            {(pin.category || 'GENERAL').replace('_', ' ')}
+          <span style={{ fontSize: '0.75rem', padding: '3px 10px', borderRadius: 10, background: `${catColor}20`, color: catColor, fontWeight: 600 }}>
+            {getPinCategoryIcon(pin.category)} {getPinCategoryLabel(pin.category)}
           </span>
         </div>
 

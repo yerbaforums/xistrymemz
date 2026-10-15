@@ -8,7 +8,8 @@ import IpfsImage from '@/components/IpfsImage'
 import IpfsCover from '@/components/IpfsCover'
 import styles from './profile.module.css'
 import Rating from '@/components/Rating'
-import { getUserProfileUrl } from '@/lib/utils'
+import { getUserProfileUrl, humanizeEnum } from '@/lib/utils'
+import { getProjectStatusIcon, getProjectStatusLabel } from '@/lib/project-status'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { DonationActions } from '@/components/DonationActions'
 import { CRYPTO_LOGOS } from '@/lib/constants'
@@ -1337,7 +1338,7 @@ export default function ProfilePage() {
                         {project.title}
                       </h3>
                       <span className={`${styles.projectStatus} ${styles[(project.status || '').toLowerCase()]}`}>
-                        {project.status}
+                        {getProjectStatusIcon(project.status)} {getProjectStatusLabel(project.status)}
                       </span>
                       <p>Created {new Date(project.createdAt).toLocaleDateString()}</p>
                     </Link>
@@ -1365,7 +1366,15 @@ export default function ProfilePage() {
                     </div>
                     <div className={styles.connectionInfo}>
                       <h4>{conn.name || 'Anonymous User'}</h4>
-                      {conn.userClass && <p className={styles.connectionClass}>{conn.userClass}</p>}
+                      {conn.userClass && (
+                        <div className={styles.connectionClasses}>
+                          {conn.userClass.split(',').map(c => c.trim()).filter(Boolean).map(cls => (
+                            <span key={cls} className={styles.connectionClassBadge}>
+                              {CLASS_ICONS[cls] || '👤'} {cls}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </Link>
                 ))}
@@ -1584,7 +1593,7 @@ export default function ProfilePage() {
                       )}
                       <div className={styles.productInfo}>
                         <span className={`badge badge-${(product.type || 'product').toLowerCase()}`}>
-                          {product.pinned && '📌 '}{product.type}
+                          {product.pinned && '📌 '}{humanizeEnum(product.type)}
                         </span>
                         <h3>{product.title}</h3>
                         {product.price && <p className={styles.productPrice}>${product.price}</p>}

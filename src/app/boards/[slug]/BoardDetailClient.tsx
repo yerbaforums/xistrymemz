@@ -18,7 +18,8 @@ import Breadcrumbs from '@/components/Breadcrumbs'
 import Loading from '@/components/Loading'
 import { getBoardMarkerIcon } from '@/lib/map-markers'
 import { getEntityIcon } from '@/lib/entity-icons'
-import { PIN_CATEGORIES } from '@/lib/pin-categories'
+import { PIN_CATEGORIES, getPinCategoryColor, getPinCategoryIcon, getPinCategoryLabel } from '@/lib/pin-categories'
+import { humanizeEnum } from '@/lib/utils'
 import ImageUploader from '@/components/ImageUploader'
 import IpfsImage from '@/components/IpfsImage'
 
@@ -339,12 +340,7 @@ export default function BoardDetailPage() {
 
   const getPinIcon = (category: string | null) => {
     if (!L) return undefined
-    const colors: Record<string, string> = {
-      GENERAL: '#00d9ff', LOST_FOUND: '#ef4444', PROMOTION: '#f59e0b',
-      EVENT: '#8b5cf6', SERVICE: '#22c55e', HOUSING: '#3b82f6',
-      JOBS: '#f97316', FREE: '#10b981',
-    }
-    const color = colors[category || 'GENERAL'] || '#00d9ff'
+    const color = getPinCategoryColor(category)
     return L.divIcon({
       className: '',
       html: `<div style="width:24px;height:24px;background:${color};border:2px solid white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;box-shadow:0 1px 4px rgba(0,0,0,0.3);">📍</div>`,
@@ -469,7 +465,7 @@ export default function BoardDetailPage() {
                     <div className={styles.popupHeader}>
                       <span className={styles.popupUserName}>{pin.user.name || 'Unknown'}</span>
                       {pin.category && (
-                        <span className={styles.popupCategory}>{pin.category}</span>
+                        <span className={styles.popupCategory}>{getPinCategoryIcon(pin.category)} {getPinCategoryLabel(pin.category)}</span>
                       )}
                     </div>
                     <div className={styles.popupTitle}>{pin.title || pin.content?.slice(0, 60)}</div>
@@ -482,7 +478,7 @@ export default function BoardDetailPage() {
                           <span className={styles.popupEntityIcon}>{getEntityIcon(pin.entityType)}</span>
                         )}
                         <div className={styles.popupEntityInfo}>
-                          <span className={styles.popupEntityType}>{pin.entityType.replace('_', ' ')}</span>
+                          <span className={styles.popupEntityType}>{humanizeEnum(pin.entityType)}</span>
                           <span className={styles.popupEntityTitle}>{pin.entityTitle || 'View →'}</span>
                         </div>
                       </div>

@@ -5,6 +5,7 @@ import Skeleton from '@/components/Skeleton'
 import SafeImage from '@/components/SafeImage'
 import { useScrollReveal } from '@/hooks/useScrollReveal'
 import type { FeaturedShop, FeaturedProduct, PublicRequest, FeaturedEvent, PublicProject, FeaturedBoard, FeaturedBlog, FeaturedPodcast, FeaturedService } from './types'
+import { SERVICE_CATEGORY_ICONS, SERVICE_CATEGORY_LABELS, type ServiceCategory } from '@/types/service'
 import { useTranslations } from 'next-intl'
 import styles from './PulseSection.module.css'
 
@@ -248,10 +249,14 @@ export default function PulseSection({ shops, products, requests, events, projec
             <div className={styles.list}>
               {services.slice(0, 4).map(service => (
                 <Link key={service.id} href={`/services/${service.id}`} className={styles.item}>
-                  <span className={styles.itemIcon}>🔧</span>
+                  <span className={styles.itemIcon}>{SERVICE_CATEGORY_ICONS[service.category as ServiceCategory] || '🔧'}</span>
                   <div className={styles.itemCol}>
                     <span className={styles.itemTitle}>{service.title}</span>
-                    <span className={styles.itemMeta}>{service.category || `${t('byLabel')} ${service.user?.name || 'Unknown'}`}</span>
+                    <span className={styles.itemMeta}>
+                      {service.category
+                        ? SERVICE_CATEGORY_LABELS[service.category as ServiceCategory] || service.category
+                        : `${t('byLabel')} ${service.user?.name || 'Unknown'}`}
+                    </span>
                     {service.ownerTraveling && (
                       <span className={styles.travelChip} title={service.effectiveLocation ? `Traveling — currently near ${service.effectiveLocation}` : 'Traveling with owner'}>
                         ✈️ Traveling{service.effectiveLocation ? ` · ${service.effectiveLocation}` : ''}

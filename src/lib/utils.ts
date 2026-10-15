@@ -1,3 +1,20 @@
+/**
+ * Turn a raw DB enum/token into a display label.
+ *   'LIKE_NEW' → 'Like New', 'PENDING' → 'Pending', 'forumPost' → 'Forum Post'
+ * Already-human text ('Bug Report', 'Lost & Found') passes through unchanged.
+ * Never use this for currency codes or acronyms that must stay uppercase.
+ */
+export function humanizeEnum(value: string | null | undefined): string {
+  if (!value) return ''
+  return value
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .toLowerCase()
+    .split(/[_\s]+/)
+    .filter(Boolean)
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ')
+}
+
 export function slugify(text: string | null | undefined): string {
   if (!text) return ''
   return text

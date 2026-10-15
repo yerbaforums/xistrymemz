@@ -9,6 +9,7 @@ import styles from './community.module.css'
 import { EmptyState } from '@/components/EmptyState'
 import { SkeletonList } from '@/components/Skeleton'
 import { getUserProfileUrl } from '@/lib/utils'
+import { CLASS_ICONS } from '@/lib/user-classes'
 import RoleBadge from '@/components/RoleBadge'
 import ActiveStatus from '@/components/ActiveStatus'
 import LookingForCollaboratorsBadge from '@/components/LookingForCollaboratorsBadge'
@@ -40,13 +41,6 @@ interface Member {
   productCount?: number
   connectionCount?: number
   postCount?: number
-}
-
-const CLASS_ICONS: Record<string, string> = {
-  Healer: '💚', Revealer: '👁️', Seer: '🔮', Teacher: '📚',
-  Guide: '🧭', Warrior: '⚔️', Guardian: '🛡️', Sage: '🦉',
-  Mystic: '✨', Architect: '🏗️', Artist: '🎨', Builder: '🔨',
-  Explorer: '🌍', Mentor: '🌟'
 }
 
 interface Connection {

@@ -7,14 +7,14 @@ import { useSearchParams } from 'next/navigation'
 import ImageUploader from '@/components/ImageUploader'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import styles from './page.module.css'
-import { getUserProfileUrl } from '@/lib/utils'
+import { getUserProfileUrl, humanizeEnum } from '@/lib/utils'
 import { getCryptoIcon, getCryptoColor } from '@/lib/crypto-icons'
 import { useToast } from '@/context/ToastContext'
 import { calculateDistance, geocodeLocation } from '@/lib/geocoding'
 import { usePassportLocation } from '@/hooks/usePassportLocation'
 import HashtagInput from '@/components/HashtagInput'
 import GoalCurrencySelect from '@/components/GoalCurrencySelect'
-import { REQUEST_CATEGORIES, PRIORITY_COLORS } from '@/lib/request-categories'
+import { REQUEST_CATEGORIES, REQUEST_CATEGORY_MAP, PRIORITY_COLORS } from '@/lib/request-categories'
 import { EmptyState } from '@/components/EmptyState'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
@@ -575,8 +575,10 @@ export default function RequestsClient({ initialRequests, userId, userRole, isAu
                       )}
                       <Link href={`/requests/${req.id}`} className={styles.cardTitle}>{req.title}</Link>
                       <div className={styles.cardTags}>
-                        <span className={styles.priorityDot} style={{ backgroundColor: PRIORITY_COLORS[req.priority] }} title={req.priority} />
-                        <span className={styles.categoryTag}>{req.category}</span>
+                        <span className={styles.priorityDot} style={{ backgroundColor: PRIORITY_COLORS[req.priority] }} title={humanizeEnum(req.priority)} />
+                        <span className={styles.categoryTag}>
+                          {REQUEST_CATEGORY_MAP.get(req.category)?.icon || '📋'} {REQUEST_CATEGORY_MAP.get(req.category)?.label || humanizeEnum(req.category)}
+                        </span>
                         {link && (
                           <Link href={link.href} className={styles.linkTag} style={{ backgroundColor: link.color + '18', color: link.color }}>{link.label}</Link>
                         )}

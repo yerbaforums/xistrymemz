@@ -12,6 +12,10 @@ import type { Product } from '@/types/product'
 import type { ServiceOffering } from '@/types/service'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { humanizeEnum } from '@/lib/utils'
+import { REQUEST_CATEGORY_MAP } from '@/lib/request-categories'
+import { GROUP_CATEGORY_MAP } from '@/lib/shop-categories'
+import { getProjectStatusIcon, getProjectStatusLabel } from '@/lib/project-status'
 import styles from './page.module.css'
 
 type TabType = 'all' | 'posts' | 'products' | 'events' | 'services' | 'schoolContents' | 'projects' | 'requests' | 'groups' | 'blogPosts' | 'forumPosts' | 'groupPosts'
@@ -520,7 +524,7 @@ function HashtagPage() {
                     )}
                     <div className={styles.projectCardMeta}>
                       <span className={`badge badge-${project.status === 'COMPLETED' ? 'completed' : project.status === 'ACTIVE' ? 'active' : 'draft'}`}>
-                        {project.status}
+                        {getProjectStatusIcon(project.status)} {getProjectStatusLabel(project.status)}
                       </span>
                       <span>{project._count?.requests || 0} requests</span>
                       <span>{project._count?.joiners || 0} joiners</span>
@@ -547,9 +551,9 @@ function HashtagPage() {
                   <Link key={req.id} href={`/requests/${req.id}`} className={styles.requestCard}>
                     <div className={styles.requestCardHeader}>
                       <span className={`badge ${req.status === 'APPROVED' ? 'badge-completed' : req.status === 'REJECTED' ? 'badge-archived' : 'badge-active'}`}>
-                        {req.status}
+                        {humanizeEnum(req.status)}
                       </span>
-                      <span className={styles.requestCategory}>{req.category}</span>
+                      <span className={styles.requestCategory}>{REQUEST_CATEGORY_MAP.get(req.category || '')?.icon || '📋'} {REQUEST_CATEGORY_MAP.get(req.category || '')?.label || humanizeEnum(req.category)}</span>
                     </div>
                     <h3 className={styles.requestCardTitle}>{req.title}</h3>
                     {req.description && (
@@ -584,7 +588,7 @@ function HashtagPage() {
                       )}
                       <div>
                         <h3 className={styles.groupCardName}>{group.name}</h3>
-                        <span className={styles.groupCardCategory}>{group.category}</span>
+                        <span className={styles.groupCardCategory}>{GROUP_CATEGORY_MAP.get(group.category || '')?.icon || '👥'} {GROUP_CATEGORY_MAP.get(group.category || '')?.label || humanizeEnum(group.category)}</span>
                       </div>
                     </div>
                     {group.description && (

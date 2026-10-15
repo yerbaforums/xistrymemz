@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import styles from './page.module.css'
 import { calculateDistance, reverseGeocodeLocation, shortenLocation } from '@/lib/geocoding'
+import { humanizeEnum } from '@/lib/utils'
 import { useToast } from '@/context/ToastContext'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
@@ -796,7 +797,7 @@ export default function ProductsPage() {
                       </span>
                     </div>
                     <div className={styles.myListingMeta}>
-                      <span className={`badge badge-${product.type.toLowerCase()}`}>{product.type}</span>
+                      <span className={`badge badge-${product.type.toLowerCase()}`}>{humanizeEnum(product.type)}</span>
                       {product.category && <span className="badge badge-category">{product.category}</span>}
                       <span>{product.price ? `$${product.price}` : 'Free'}</span>
                     </div>

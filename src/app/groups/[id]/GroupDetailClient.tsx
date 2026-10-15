@@ -11,7 +11,8 @@ import styles from './page.module.css'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import { useToast } from '@/context/ToastContext'
 import { EmptyState } from '@/components/EmptyState'
-import { getUserProfileUrl } from '@/lib/utils'
+import { getUserProfileUrl, humanizeEnum } from '@/lib/utils'
+import { REQUEST_CATEGORY_MAP } from '@/lib/request-categories'
 import ImageUploader from '@/components/ImageUploader'
 import HashtagInput from '@/components/HashtagInput'
 import Button from '@/components/ui/Button'
@@ -1040,7 +1041,7 @@ function GroupDetailContent() {
                           </div>
                           {req.description && <p className={styles.requestCardDesc}>{req.description.slice(0, 150)}...</p>}
                           <div className={styles.requestCardMeta}>
-                            <span>{req.category}</span>
+                            <span>{REQUEST_CATEGORY_MAP.get(req.category)?.icon || '📋'} {REQUEST_CATEGORY_MAP.get(req.category)?.label || humanizeEnum(req.category)}</span>
                             {req.goalAmount && <span>Goal: ${req.goalAmount}</span>}
                             {req.currentFunding > 0 && <span>Funded: ${req.currentFunding}</span>}
                             <span>💬 {req._count.comments}</span>
@@ -1077,8 +1078,8 @@ function GroupDetailContent() {
                             <h3>{product.title}</h3>
                             {product.price && <span className={styles.marketplacePrice}>${product.price}</span>}
                             <div className={styles.marketplaceTags}>
-                              <span className={`badge badge-${product.type.toLowerCase()}`}>{product.type}</span>
-                              {product.condition && <span className={styles.marketplaceCondition}>{product.condition.replace('_', ' ')}</span>}
+                              <span className={`badge badge-${product.type.toLowerCase()}`}>{humanizeEnum(product.type)}</span>
+                              {product.condition && <span className={styles.marketplaceCondition}>{humanizeEnum(product.condition)}</span>}
                             </div>
                           </div>
                           <div className={styles.marketplaceActions}>

@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { useQuickCreate } from '@/components/QuickCreateModal'
 import { CONTENT_TYPE_MAP } from '@/lib/content-templates'
+import { humanizeEnum } from '@/lib/utils'
 
 import styles from './studio.module.css'
 
@@ -329,7 +330,7 @@ export default function StudioPage() {
               <div className={styles.contentActions}>
                 {item.status && (
                   <span className={`${styles.statusBadge} ${styles[`status${item.status}`] || ''}`}>
-                    {item.status}
+                    {humanizeEnum(item.status)}
                   </span>
                 )}
                 <span className={styles.arrow}>→</span>

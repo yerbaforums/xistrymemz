@@ -15,6 +15,7 @@ import DirectoryCardActions from '@/components/DirectoryCardActions'
 import { displayCategory } from '@/lib/category-taxonomy'
 import liveStyles from '@/components/LiveBadge.module.css'
 import { haversineKm, formatDistance } from '@/lib/geo'
+import { humanizeEnum } from '@/lib/utils'
 import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
 import EntityMarker from '@/components/EntityMarker'
 import type { IndexItem } from '@/components/AlphabeticalIndex'
@@ -347,7 +348,7 @@ export default function DirectoryPage() {
               )}
             </h3>
             <div className={styles.cardTags}>
-              <span className={styles.cardType}>{TYPE_ICONS[item.type]} {item.type}</span>
+              <span className={styles.cardType}>{TYPE_ICONS[item.type]} {humanizeEnum(item.type)}</span>
               {item.category && (() => { const d = displayCategory(item.category); return <span className={styles.cardCategory}>{d.icon} {d.label}</span> })()}
               {dist != null && (sortBy === 'nearest' || nearMe) && (
                 <span className={styles.cardCategory}>📍 {formatDistance(dist)}</span>
@@ -514,7 +515,7 @@ export default function DirectoryPage() {
                     <Popup>
                       <Link href={item.url} style={{ fontWeight: 600 }}>{item.title}</Link>
                       <br />
-                      <span style={{ fontSize: '0.75rem' }}>{TYPE_ICONS[item.type]} {item.type}{item.location ? ` · ${item.location}` : ''}</span>
+                      <span style={{ fontSize: '0.75rem' }}>{TYPE_ICONS[item.type]} {humanizeEnum(item.type)}{item.location ? ` · ${item.location}` : ''}</span>
                     </Popup>
                   </EntityMarker>
                 ))}

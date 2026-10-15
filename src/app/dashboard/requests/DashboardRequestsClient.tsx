@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import IpfsImage from '@/components/IpfsImage'
 import { QRCodeModal } from '@/components/QRCodeModal'
-import { getUserProfileUrl } from '@/lib/utils'
+import { getUserProfileUrl, humanizeEnum } from '@/lib/utils'
 import { getCryptoIcon, getCryptoColor } from '@/lib/crypto-icons'
 import { useToast } from '@/context/ToastContext'
 import styles from './requests.module.css'
@@ -557,13 +557,13 @@ export default function DashboardRequestsClient({ initialRequests, userId, userR
                   </label>
                   <div className={styles.badgeRow}>
                     <span className={`badge badge-${req.status.toLowerCase()}`}>
-                      {STATUS_ICONS[req.status] || ''} {req.status}
+                      {STATUS_ICONS[req.status] || ''} {humanizeEnum(req.status)}
                     </span>
                     <span
                       className={styles.priorityBadge}
                       style={{ backgroundColor: PRIORITY_COLORS[req.priority] + '20', color: PRIORITY_COLORS[req.priority], borderColor: PRIORITY_COLORS[req.priority] + '40' }}
                     >
-                      {req.priority}
+                      {humanizeEnum(req.priority)}
                     </span>
                   </div>
                   <div className={styles.cardActions}>

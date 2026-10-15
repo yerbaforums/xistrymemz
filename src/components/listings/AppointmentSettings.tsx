@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { FormFieldType } from '@/types/service'
+import { humanizeEnum } from '@/lib/utils'
 import styles from './AppointmentSettings.module.css'
 
 export interface AppointmentField {
@@ -140,7 +141,7 @@ export function AppointmentSettings({
                 {value.appointmentFormFields.map((f, i) => (
                   <li key={`${f.label}-${i}`} className={styles.fieldRow}>
                     <span className={styles.fieldLabel}>{f.label}</span>
-                    <span className={styles.fieldType}>{f.type}{f.options ? ` (${f.options.length} opts)` : ''}{f.required ? ' *' : ''}</span>
+                    <span className={styles.fieldType}>{humanizeEnum(f.type)}{f.options ? ` (${f.options.length} opts)` : ''}{f.required ? ' *' : ''}</span>
                     <button type="button" className={styles.removeBtn} onClick={() => removeField(i)} aria-label="Remove question">
                       ✕
                     </button>

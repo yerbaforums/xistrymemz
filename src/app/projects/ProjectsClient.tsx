@@ -15,6 +15,7 @@ import {
   getCategoryIcon,
   getCategoryLabel,
 } from '@/lib/project-categories'
+import { getProjectStatusIcon, getProjectStatusLabel } from '@/lib/project-status'
 
 
 interface ProjectEvent {
@@ -68,20 +69,6 @@ interface ProjectData {
 
 interface PublicProjectsClientProps {
   initialProjects: ProjectData[]
-}
-
-const STATUS_LABELS: Record<string, string> = {
-  DRAFT: 'Draft',
-  ACTIVE: 'Active',
-  COMPLETED: 'Completed',
-  ARCHIVED: 'Archived'
-}
-
-const STATUS_ICONS: Record<string, string> = {
-  DRAFT: '📝',
-  ACTIVE: '🚀',
-  COMPLETED: '✅',
-  ARCHIVED: '📦'
 }
 
 const CATEGORIES = PROJECT_CATEGORIES.map(c => c.value)
@@ -274,7 +261,7 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
               className={`${styles.filterRadio} ${filter === s ? styles.filterRadioActive : ''}`}
               onClick={() => setFilter(s)}
             >
-              {s === 'ALL' ? '🌟 All' : `${STATUS_ICONS[s]} ${STATUS_LABELS[s]}`}
+              {s === 'ALL' ? '🌟 All' : `${getProjectStatusIcon(s)} ${getProjectStatusLabel(s)}`}
             </button>
           ))}
         </div>
@@ -535,7 +522,7 @@ export default function PublicProjectsClient({ initialProjects }: PublicProjects
                     <div className={styles.publicCardHeader}>
                       <div className={styles.headerLeft}>
                         <span className={`${styles.statusBadge} ${styles[project.status.toLowerCase()]}`}>
-                          {STATUS_ICONS[project.status]} {STATUS_LABELS[project.status]}
+                          {getProjectStatusIcon(project.status)} {getProjectStatusLabel(project.status)}
                         </span>
                         {project.category && (
                           <span className={styles.cardCategory} style={{ color: catColor }}>

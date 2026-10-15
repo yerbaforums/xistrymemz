@@ -8,6 +8,7 @@ import LinkedEntityDetail from '@/components/LinkedEntityDetail'
 import LinkPreview from '@/components/LinkPreview'
 import EntityActions from '@/components/EntityActions'
 import type { ActionEntityType } from '@/hooks/useEntityActions'
+import { getPinCategoryColor, getPinCategoryIcon, getPinCategoryLabel } from '@/lib/pin-categories'
 import styles from './BoardPinCard.module.css'
 
 interface PinUser {
@@ -51,32 +52,6 @@ interface BoardPinCardProps {
   onFlyTo?: (pin: Pin) => void
   onEdit?: (pinId: string) => void
   onView?: (pinId: string) => void
-}
-
-function getCategoryLabel(category: string | null): string {
-  switch (category) {
-    case 'LOST_FOUND': return 'Lost & Found'
-    case 'PROMOTION': return 'Promotion'
-    case 'EVENT': return 'Event'
-    case 'SERVICE': return 'Service'
-    case 'HOUSING': return 'Housing'
-    case 'JOBS': return 'Jobs'
-    case 'FREE': return 'Free'
-    default: return 'General'
-  }
-}
-
-function getCategoryColor(category: string | null): string {
-  switch (category) {
-    case 'LOST_FOUND': return '#f59e0b'
-    case 'PROMOTION': return '#3b82f6'
-    case 'EVENT': return '#8b5cf6'
-    case 'SERVICE': return '#10b981'
-    case 'HOUSING': return '#ec4899'
-    case 'JOBS': return '#14b8a6'
-    case 'FREE': return '#22c55e'
-    default: return '#6b7280'
-  }
 }
 
 function timeUntilExpires(expiresAt: string | null): string | null {
@@ -188,8 +163,8 @@ const BoardPinCard = memo(function BoardPinCard({ pin, isOwner, isBoardOwner, bo
           </div>
           <span className={styles.userName}>{pin.user.name || 'Unknown'}</span>
         </Link>
-        <span className={styles.categoryBadge} style={{ background: getCategoryColor(pin.category) }}>
-          {getCategoryLabel(pin.category)}
+        <span className={styles.categoryBadge} style={{ background: getPinCategoryColor(pin.category) }}>
+          {getPinCategoryIcon(pin.category)} {getPinCategoryLabel(pin.category)}
         </span>
       </div>
 

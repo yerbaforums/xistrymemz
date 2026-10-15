@@ -7,6 +7,7 @@ import { SkeletonCard } from '@/components/Skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import Loading from '@/components/Loading'
+import { humanizeEnum } from '@/lib/utils'
 import styles from './page.module.css'
 
 interface SearchResult {
@@ -232,7 +233,7 @@ export default function SearchResultsClient() {
                 )}
                 <Link href={item.url} className={styles.resultCard}>
                   <span className={styles.resultTitle}>{item.title}</span>
-                  <span className={styles.resultType}>{item.type}</span>
+                  <span className={styles.resultType}>{humanizeEnum(item.type)}</span>
                 </Link>
               </div>
             )

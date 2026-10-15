@@ -7,6 +7,7 @@ import IpfsImage from '@/components/IpfsImage'
 import { useSession } from 'next-auth/react'
 import { useCart } from '@/context/CartContext'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
+import { humanizeEnum } from '@/lib/utils'
 import type { Product } from '@/types/product'
 import styles from './ProductQuickViewModal.module.css'
 
@@ -80,9 +81,9 @@ export default function ProductQuickViewModal({ product, onClose, onFund }: Quic
               {product.pinned && <span className={styles.pinBadge}>Featured</span>}
               <span className={`${styles.typeBadge} ${
                 product.type === 'PRODUCT' ? styles.typeProd : product.type === 'RENTAL' ? styles.typeRent : styles.typeSvc
-              }`}>{product.type}</span>
+              }`}>{humanizeEnum(product.type)}</span>
               {product.condition && (
-                <span className={styles.condBadge}>{product.condition.replace('_', ' ')}</span>
+                <span className={styles.condBadge}>{humanizeEnum(product.condition)}</span>
               )}
             </div>
 

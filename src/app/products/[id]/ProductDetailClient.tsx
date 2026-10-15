@@ -13,7 +13,7 @@ import Button from '@/components/ui/Button'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { useToast } from '@/context/ToastContext'
 import Rating from '@/components/Rating'
-import { getUserProfileUrl } from '@/lib/utils'
+import { getUserProfileUrl, humanizeEnum } from '@/lib/utils'
 import { MakeOfferModal } from '@/components/MakeOfferModal'
 import { ComingSoonModal } from '@/components/ComingSoonModal'
 import EntityActions from '@/components/EntityActions'
@@ -876,7 +876,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               <div className={styles.header}>
                 <div>
                   <span className={`badge badge-${product.type.toLowerCase()}`}>
-                    {product.type}
+                    {humanizeEnum(product.type)}
                   </span>
                   {product.category && (
                     <span className={styles.category}>{product.category}</span>
@@ -927,7 +927,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               {product.condition && (
                 <div className={styles.details}>
                   <h3>Condition</h3>
-                  <p>{product.condition.replace('_', ' ')}</p>
+                  <p>{humanizeEnum(product.condition)}</p>
                 </div>
               )}
 

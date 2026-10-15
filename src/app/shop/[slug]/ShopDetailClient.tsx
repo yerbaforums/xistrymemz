@@ -7,7 +7,7 @@ import LinkedItemsSection from '@/components/LinkedItemsSection'
 import styles from './page.module.css'
 import { SHOP_CATEGORY_MAP } from '@/lib/shop-categories'
 import { useToast } from '@/context/ToastContext'
-import { getUserProfileUrl } from '@/lib/utils'
+import { getUserProfileUrl, humanizeEnum } from '@/lib/utils'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { DonationActions } from '@/components/DonationActions'
 import ImageUploader from '@/components/ImageUploader'
@@ -480,11 +480,11 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                       <div className={styles.productImagePlaceholder}>📦</div>
                     )}
                     <div className={styles.productInfo}>
-                      <span className={`badge badge-${product.type.toLowerCase()}`}>{product.type}</span>
+                      <span className={`badge badge-${product.type.toLowerCase()}`}>{humanizeEnum(product.type)}</span>
                       {product.category && <span className={styles.productCategory}>{product.category}</span>}
                       <h3>{product.title}</h3>
                       {product.price && <p className={styles.price}>${product.price}</p>}
-                      {product.condition && <p className={styles.condition}>{product.condition.replace('_', ' ')}</p>}
+                      {product.condition && <p className={styles.condition}>{humanizeEnum(product.condition)}</p>}
                     </div>
                   </Link>
                   {isOwner && (

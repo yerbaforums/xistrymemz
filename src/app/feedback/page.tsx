@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { humanizeEnum } from '@/lib/utils'
 
 interface FeedbackEntry {
   id: string
@@ -143,7 +144,7 @@ export default function FeedbackPage() {
                   <div className={styles.entryHeader}>
                     <span className={styles.category}>{entry.category}</span>
                     <span className={`${styles.status} ${entry.status === 'REVIEWED' ? styles.reviewed : ''}`}>
-                      {entry.status}
+                      {humanizeEnum(entry.status)}
                     </span>
                   </div>
                   <p className={styles.entryMessage}>{entry.message}</p>
