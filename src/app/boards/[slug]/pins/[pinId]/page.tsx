@@ -6,7 +6,7 @@ import Link from 'next/link'
 import IpfsImage from '@/components/IpfsImage'
 import dynamic from 'next/dynamic'
 import { getEntityIcon } from '@/lib/entity-icons'
-import { parseImageList } from '@/lib/utils'
+import { parseImageList, humanizeEnum } from '@/lib/utils'
 import { getPinCategoryColor, getPinCategoryIcon, getPinCategoryLabel } from '@/lib/pin-categories'
 import EntityActions from '@/components/EntityActions'
 import type { ActionEntityType } from '@/hooks/useEntityActions'
@@ -154,7 +154,7 @@ export default function PinDetailPage() {
           <Link href={getEntityHref(pin.entityType, pin.entityId)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 12, background: 'var(--bg-tertiary)', borderRadius: 8, textDecoration: 'none', color: 'var(--text-primary)' }}>
             {pin.entityImage ? <IpfsImage src={pin.entityImage} alt="" style={{ width: 40, height: 40, borderRadius: 4, objectFit: 'cover' }} thumbWidth={256} /> : <span style={{ fontSize: '1.3rem' }}>{getEntityIcon(pin.entityType)}</span>}
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'capitalize' }}>{pin.entityType.replace('_', ' ')}</div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'capitalize' }}>{humanizeEnum(pin.entityType)}</div>
               <div style={{ fontSize: '0.85rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pin.entityTitle || 'View →'}</div>
             </div>
           </Link>

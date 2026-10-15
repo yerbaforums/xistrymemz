@@ -12,6 +12,7 @@ import ImageUploader from '@/components/ImageUploader'
 import { useDonationAddresses } from '@/hooks/useDonationAddresses'
 import DonationAddressPicker from '@/components/DonationAddressPicker'
 import { serializeDonationAddresses, donationAddressesToLegacy } from '@/lib/donations'
+import { humanizeEnum } from '@/lib/utils'
 import { PRODUCT_CONDITIONS, PRODUCT_TYPES } from '@/lib/product-categories'
 import LocationPicker from '@/components/LocationPicker'
 import EntityLinkPicker, { commitPendingLinks } from '@/components/EntityLinkPicker'
@@ -331,7 +332,7 @@ export default function NewProductPage() {
               <label htmlFor="condition">Condition</label>
               <select value={form.condition} onChange={e => update('condition', e.target.value)} id="condition">
                 {conditions.map(c => (
-                  <option key={c} value={c}>{c ? c.replace('_', ' ') : 'Select...'}</option>
+                  <option key={c} value={c}>{c ? humanizeEnum(c) : 'Select...'}</option>
                 ))}
               </select>
             </div>
@@ -569,7 +570,7 @@ export default function NewProductPage() {
                 {form.condition && (
                   <div className={styles.reviewItem}>
                     <span className={styles.reviewLabel}>Condition</span>
-                    <span>{form.condition.replace('_', ' ')}</span>
+                    <span>{humanizeEnum(form.condition)}</span>
                   </div>
                 )}
                 <div className={styles.reviewItem}>

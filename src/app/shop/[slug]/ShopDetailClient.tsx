@@ -547,11 +547,11 @@ export default function ShopDetailPage({ params }: { params: Promise<{ slug: str
                     <div className={styles.productImagePlaceholder}>🏠</div>
                   )}
                   <div className={styles.productInfo}>
-                    <span className="badge badge-rental">RENTAL</span>
+                    <span className="badge badge-rental">Rental</span>
                     {rental.category && <span className={styles.productCategory}>{rental.category}</span>}
                     <h3>{rental.title}</h3>
                     {rental.rentalDaily && <p className={styles.price}>${rental.rentalDaily}/day</p>}
-                    {rental.condition && <p className={styles.condition}>{rental.condition.replace('_', ' ')}</p>}
+                    {rental.condition && <p className={styles.condition}>{humanizeEnum(rental.condition)}</p>}
                   </div>
                 </Link>
               ))

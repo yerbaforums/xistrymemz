@@ -11,7 +11,7 @@ import StarButton from '@/components/StarButton'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
 import styles from '../../community.module.css'
 import { useToast } from '@/context/ToastContext'
-import { getUserProfileUrl } from '@/lib/utils'
+import { getUserProfileUrl, humanizeEnum } from '@/lib/utils'
 import TranslateButton from '@/components/TranslateButton'
 import MediaPlayer from '@/components/MediaPlayer'
 import LinkPreview, { URL_REGEX } from '@/components/LinkPreview'
@@ -496,7 +496,7 @@ export default function ForumThreadPage() {
           <span className={styles.threadCategory}>{post.category.name}</span>
           {post.postType === 'IDEA' && <span className={styles.ideaBadge}>💡 Idea</span>}
           {post.postType === 'DEBATE' && <span className={styles.debateBadge}>⚖️ Debate</span>}
-          {post.status && post.status !== 'NONE' && <span className={styles[`status_${post.status}`]}>{post.status.replace('_', ' ')}</span>}
+          {post.status && post.status !== 'NONE' && <span className={styles[`status_${post.status}`]}>{humanizeEnum(post.status)}</span>}
           {post.pinned && <span className={styles.pinnedBadge}>📌 Pinned</span>}
           {post.locked && <span className={styles.lockedBadge}>🔒 Locked</span>}
           <h1>{post.title}</h1>

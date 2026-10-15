@@ -8,6 +8,7 @@ import ReviewPrompt from '@/components/ReviewPrompt'
 import AddToCalendar from '@/components/AddToCalendar'
 import BookAppointmentModal from '@/components/BookAppointmentModal'
 import { CRYPTO_LOGOS, CRYPTO_NAMES } from '@/lib/constants'
+import { humanizeEnum } from '@/lib/utils'
 import styles from '../events/events.module.css'
 
 interface AppointmentItem {
@@ -505,7 +506,7 @@ export default function DashboardAppointments() {
                           </span>
                           {appt.category && (
                             <span className={styles.categoryBadge} style={{ backgroundColor: '#10b98120', color: '#10b981', borderColor: '#10b98140' }}>
-                              🔧 {appt.category.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase())}
+                              🔧 {humanizeEnum(appt.category)}
                             </span>
                           )}
                         </div>
@@ -697,7 +698,7 @@ export default function DashboardAppointments() {
                     </div>
                     <div className={styles.eventModalContent}>
                       <div className={styles.eventDetailRow}><span className={styles.eventLabel}>Status</span><span style={{ color: sc.color }}>{sc.icon} {sc.label}</span></div>
-                      {a.category && <div className={styles.eventDetailRow}><span className={styles.eventLabel}>Category</span><span>🔧 {a.category.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase())}</span></div>}
+                      {a.category && <div className={styles.eventDetailRow}><span className={styles.eventLabel}>Category</span><span>🔧 {humanizeEnum(a.category)}</span></div>}
                       {a.paymentStatus && (
                         <div className={styles.eventDetailRow}>
                           <span className={styles.eventLabel}>Payment</span>

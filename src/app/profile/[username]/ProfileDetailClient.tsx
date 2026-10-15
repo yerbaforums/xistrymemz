@@ -10,6 +10,7 @@ import styles from './profile.module.css'
 import Rating from '@/components/Rating'
 import { getUserProfileUrl, humanizeEnum } from '@/lib/utils'
 import { getProjectStatusIcon, getProjectStatusLabel } from '@/lib/project-status'
+import { SERVICE_CATEGORY_ICONS, SERVICE_CATEGORY_LABELS, type ServiceCategory } from '@/types/service'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { DonationActions } from '@/components/DonationActions'
 import { CRYPTO_LOGOS } from '@/lib/constants'
@@ -1625,7 +1626,7 @@ export default function ProfilePage() {
                       )}
                       <div className={styles.productInfo}>
                         <span className="badge badge-category">
-                          {service.category.replace(/_/g, ' ')}
+                          {SERVICE_CATEGORY_ICONS[service.category as ServiceCategory] || '🔧'} {SERVICE_CATEGORY_LABELS[service.category as ServiceCategory] || service.category}
                         </span>
                         <h3>{service.title}</h3>
                         {service.price != null

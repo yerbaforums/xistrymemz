@@ -8,6 +8,7 @@ import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
 import Button from '@/components/ui/Button'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { getOrderStatusLabel, getOrderStatusColor, getCourierStatusLabel, getCourierStatusColor } from '@/lib/order-status'
 
 interface Order {
   id: string
@@ -128,27 +129,6 @@ export default function OrdersPage() {
     setShowMessageModal(true)
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'PAID': return '#3b82f6'
-      case 'SHIPPED': return '#f59e0b'
-      case 'DELIVERED': return '#10b981'
-      case 'CANCELLED': return '#6b7280'
-      default: return '#6b7280'
-    }
-  }
-
-  const getCourierColor = (status: string) => {
-    switch (status) {
-      case 'REQUESTED': return '#f59e0b'
-      case 'BOOKED': return '#3b82f6'
-      case 'IN_TRANSIT': return '#8b5cf6'
-      case 'DELIVERED': return '#10b981'
-      case 'DECLINED': return '#ef4444'
-      default: return '#6b7280'
-    }
-  }
-
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -222,9 +202,9 @@ export default function OrdersPage() {
                   </div>
                   <span
                     className={styles.statusBadge}
-                    style={{ background: getStatusColor(order.status) }}
+                    style={{ background: getOrderStatusColor(order.status) }}
                   >
-                    {order.status}
+                    {getOrderStatusLabel(order.status)}
                   </span>
                 </div>
 
@@ -253,8 +233,8 @@ export default function OrdersPage() {
                 <div className={styles.orderMeta}>
                   <span className={styles.roleBadge}>{getUserRole(order)}</span>
                   {order.courierStatus && (
-                    <span className={styles.paymentBadge} style={{ color: getCourierColor(order.courierStatus) }}>
-                      📦 {order.courierStatus}
+                    <span className={styles.paymentBadge} style={{ color: getCourierStatusColor(order.courierStatus) }}>
+                      📦 {getCourierStatusLabel(order.courierStatus)}
                     </span>
                   )}
                 </div>
@@ -284,7 +264,7 @@ export default function OrdersPage() {
               <div className={styles.detailGrid}>
                 <div className={styles.detailItem}>
                   <span className={styles.detailLabel}>Status</span>
-                  <span className={styles.detailValue} style={{ color: getStatusColor(selectedOrder.status) }}>{selectedOrder.status}</span>
+                  <span className={styles.detailValue} style={{ color: getOrderStatusColor(selectedOrder.status) }}>{getOrderStatusLabel(selectedOrder.status)}</span>
                 </div>
                 {selectedOrder.description && (
                   <div className={styles.detailItem}>
@@ -348,7 +328,7 @@ export default function OrdersPage() {
                   </div>
                   <div className={styles.detailItem}>
                     <span className={styles.detailLabel}>Status</span>
-                    <span className={styles.detailValue} style={{ color: getCourierColor(selectedOrder.courierStatus || '') }}>{selectedOrder.courierStatus || '—'}</span>
+                    <span className={styles.detailValue} style={{ color: getCourierStatusColor(selectedOrder.courierStatus || '') }}>{getCourierStatusLabel(selectedOrder.courierStatus) || '—'}</span>
                   </div>
                   {selectedOrder.courierFee != null && (
                     <div className={styles.detailItem}>

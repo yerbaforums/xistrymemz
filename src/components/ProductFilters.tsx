@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { PRODUCT_CONDITIONS } from '@/lib/product-categories'
+import { humanizeEnum } from '@/lib/utils'
 import styles from './ProductFilters.module.css'
 
 interface ProductFiltersProps {
@@ -112,7 +113,7 @@ export default function ProductFilters({
           <select value={condition} onChange={e => onConditionChange(e.target.value)} className={styles.select} id="condition">
             <option value="ALL">✨ Any Condition</option>
             {conditions.map(cond => (
-              <option key={cond} value={cond}>{cond.replace('_', ' ')}</option>
+              <option key={cond} value={cond}>{humanizeEnum(cond)}</option>
             ))}
           </select>
         </div>

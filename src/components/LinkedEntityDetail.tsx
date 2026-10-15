@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import IpfsImage from '@/components/IpfsImage'
 import Skeleton from '@/components/Skeleton'
+import { humanizeEnum } from '@/lib/utils'
 import styles from './LinkedEntityDetail.module.css'
 
 interface EntityDetail {
@@ -80,9 +81,9 @@ export default function LinkedEntityDetail({ entityType, entityId, initialTitle,
       <div className={styles.card} style={{ pointerEvents: 'none', opacity: 0.7 }}>
         {initialImage && <IpfsImage src={initialImage} alt="" className={styles.image} thumbWidth={512} />}
         <div className={styles.info}>
-          <div className={styles.title}>{initialTitle || `${entityType.replace('_', ' ')}`}</div>
+          <div className={styles.title}>{initialTitle || humanizeEnum(entityType)}</div>
           <div className={styles.meta}>
-            <span className={styles.tag}>{entityType.replace('_', ' ')}</span>
+            <span className={styles.tag}>{humanizeEnum(entityType)}</span>
           </div>
         </div>
         <span className={styles.arrow}>→</span>
@@ -98,7 +99,7 @@ export default function LinkedEntityDetail({ entityType, entityId, initialTitle,
           <div className={styles.info}>
             <div className={styles.title}>{initialTitle}</div>
             <div className={styles.meta}>
-              <span className={styles.tag}>{entityType.replace('_', ' ')}</span>
+              <span className={styles.tag}>{humanizeEnum(entityType)}</span>
             </div>
           </div>
           <span className={styles.arrow}>→</span>
@@ -121,7 +122,7 @@ export default function LinkedEntityDetail({ entityType, entityId, initialTitle,
         <IpfsImage src={detail.imageUrl} alt="" className={styles.image} thumbWidth={512} />
       )}
       <div className={styles.info}>
-        <div className={styles.title}>{detail.title || `${entityType.replace('_', ' ')}`}</div>
+        <div className={styles.title}>{detail.title || humanizeEnum(entityType)}</div>
         <div className={styles.meta}>
           {detail.price != null && <span className={styles.price}>${Number(detail.price).toFixed(2)}</span>}
           {detail.eventDate && <span>📅 {new Date(detail.eventDate).toLocaleDateString()}</span>}

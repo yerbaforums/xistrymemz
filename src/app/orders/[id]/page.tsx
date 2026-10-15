@@ -11,6 +11,7 @@ import ReviewPrompt from '@/components/ReviewPrompt'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import IpfsImage from '@/components/IpfsImage'
+import { getOrderStatusLabel, getOrderStatusColor, getCourierStatusLabel, getCourierStatusColor } from '@/lib/order-status'
 
 interface Order {
   id: string
@@ -187,27 +188,6 @@ export default function OrderDetailPage() {
     success('Review submitted!')
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'PAID': return '#3b82f6'
-      case 'SHIPPED': return '#f59e0b'
-      case 'DELIVERED': return '#10b981'
-      case 'CANCELLED': return '#6b7280'
-      default: return '#6b7280'
-    }
-  }
-
-  const getCourierColor = (status: string) => {
-    switch (status) {
-      case 'REQUESTED': return '#f59e0b'
-      case 'BOOKED': return '#3b82f6'
-      case 'IN_TRANSIT': return '#8b5cf6'
-      case 'DELIVERED': return '#10b981'
-      case 'DECLINED': return '#ef4444'
-      default: return '#6b7280'
-    }
-  }
-
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -249,10 +229,10 @@ export default function OrderDetailPage() {
       <div className={styles.orderDetailGrid}>
         <div className={styles.orderMain}>
           <div className={styles.orderHeader}>
-            <span className={styles.statusBadge} style={{ background: getStatusColor(order.status) }}>{order.status}</span>
+            <span className={styles.statusBadge} style={{ background: getOrderStatusColor(order.status) }}>{getOrderStatusLabel(order.status)}</span>
             <span className={styles.roleBadge}>{getUserRole(order)}</span>
             {order.courierStatus && (
-              <span className={styles.paymentBadge} style={{ color: getCourierColor(order.courierStatus) }}>📦 {order.courierStatus}</span>
+              <span className={styles.paymentBadge} style={{ color: getCourierStatusColor(order.courierStatus) }}>📦 {getCourierStatusLabel(order.courierStatus)}</span>
             )}
           </div>
 
@@ -348,8 +328,8 @@ export default function OrderDetailPage() {
               <h2>Delivery</h2>
               <div className={styles.deliveryCard}>
                 <div className={styles.deliveryStatus}>
-                  <span className={styles.statusBadge} style={{ background: getCourierColor(order.courierStatus || '') }}>
-                    {order.courierStatus || 'REQUESTED'}
+                  <span className={styles.statusBadge} style={{ background: getCourierStatusColor(order.courierStatus || '') }}>
+                    {getCourierStatusLabel(order.courierStatus) || 'Requested'}
                   </span>
                   {order.completedAt && (
                     <span className={styles.expectedDate}>Completed: {formatDate(order.completedAt)}</span>

@@ -6,6 +6,7 @@ import IpfsImage from '@/components/IpfsImage'
 import { useSession } from 'next-auth/react'
 import { useCart } from '@/context/CartContext'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
+import { humanizeEnum } from '@/lib/utils'
 import type { Product } from '@/types/product'
 import ViewCount from '@/components/ViewCount'
 import StarButton from '@/components/StarButton'
@@ -51,7 +52,7 @@ const ProductCard = memo(function ProductCard({
     return 'Free'
   }
 
-  const typeLabel = product.type === 'PRODUCT' ? 'PROD' : product.type === 'RENTAL' ? 'RENT' : 'SVC'
+  const typeLabel = humanizeEnum(product.type) || 'Product'
 
   return (
     <div
@@ -151,7 +152,7 @@ const ProductCard = memo(function ProductCard({
             product.type === 'PRODUCT' ? styles.typeProd : product.type === 'RENTAL' ? styles.typeRent : styles.typeSvc
           }`}>{typeLabel}</span>
           {product.condition && (
-            <span className={styles.condBadge}>{product.condition.replace('_', ' ')}</span>
+            <span className={styles.condBadge}>{humanizeEnum(product.condition)}</span>
           )}
         </div>
 
