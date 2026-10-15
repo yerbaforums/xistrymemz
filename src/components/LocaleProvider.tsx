@@ -29,7 +29,7 @@ export default function LocaleProvider({ children, initialLocale, initialMessage
   }, [pathname])
 
   return (
-    <NextIntlClientProvider key={locale} locale={locale} messages={messages}>
+    <NextIntlClientProvider key={locale} locale={locale} messages={messages} timeZone="UTC">
       {children}
     </NextIntlClientProvider>
   )

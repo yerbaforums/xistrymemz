@@ -9,6 +9,7 @@ import { prisma } from './prisma'
 import bcrypt from 'bcryptjs'
 import { randomBytes } from 'crypto'
 import { sendVerificationEmail } from './email'
+import { findFounderUser } from './founder'
 
 if (!process.env.NEXTAUTH_SECRET) {
   throw new Error('NEXTAUTH_SECRET environment variable is not set')
@@ -187,14 +188,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         // Auto-connect with founder
-        const founder = await prisma.user.findFirst({
-          where: {
-            OR: [
-              { email: 'xb4zy@xistrymemz.xyz' },
-              { name: 'xb4zy' }
-            ]
-          }
-        })
+        const founder = await findFounderUser()
         if (founder && founder.id !== newUser.id) {
           await prisma.connection.create({
             data: {

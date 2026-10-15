@@ -129,6 +129,7 @@ function getClientIP(request: NextRequest): string {
 
 const RATE_LIMIT_CONFIGS = {
   auth: { interval: 60 * 1000, maxRequests: 10 },
+  register: { interval: 60 * 1000, maxRequests: 30 },
   search: { interval: 60 * 1000, maxRequests: 30 },
   write: { interval: 60 * 1000, maxRequests: 60 },
   read: { interval: 60 * 1000, maxRequests: 120 },
@@ -143,6 +144,10 @@ function getRouteType(path: string, method: string): RouteType | null {
   // count against auth. (The old check matched the literal route filename
   // '/api/auth/[...nextauth]', which never appears in a request path, so
   // sign-in callbacks silently fell into the loose write bucket instead.)
+  // Registration gets its own generous budget: one clean signup costs ~2 auth
+  // hits (register + callback), so the shared 10/min IP bucket locked out
+  // double-submitters and shared-IP users. Login/callback stay tight.
+  if (path === '/api/auth/register' && method === 'POST') return 'register'
   if (path.includes('/api/auth/login') || path.includes('/api/auth/register') ||
       path.includes('/api/auth/forgot-password') || path.includes('/api/auth/reset-password') ||
       path.includes('/api/auth/signin') || path.includes('/api/auth/callback')) return 'auth'

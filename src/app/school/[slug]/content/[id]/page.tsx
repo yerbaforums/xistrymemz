@@ -123,8 +123,10 @@ export default function SchoolContentDetailPage() {
       fetch(`/api/school/${slug}/content/${id}`).then(r => r.ok ? r.json() : Promise.reject()),
       fetch(`/api/school/${slug}/content`).then(r => r.ok ? r.json() : [])
     ]).then(([data, all]) => {
-      setContent(data)
-      setRelated(all.filter((c: ContentData) => c.id !== data.id).slice(0, 4))
+      const item = data?.data || data
+      const list = Array.isArray(all) ? all : (all?.data || [])
+      setContent(item)
+      setRelated(list.filter((c: ContentData) => c.id !== item?.id).slice(0, 4))
     }).catch(() => setFetchError(true))
       .finally(() => setLoading(false))
   }, [slug, id])

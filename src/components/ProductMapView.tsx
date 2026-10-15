@@ -11,8 +11,10 @@ import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
 import EntityMarker from '@/components/EntityMarker'
 import IpfsImage from '@/components/IpfsImage'
 
-const DARK_TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-const LIGHT_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+import { cartoDarkTileUrl, OSM_TILE_URL } from '@/lib/map-tiles'
+
+const DARK_TILE_URL = cartoDarkTileUrl()
+const LIGHT_TILE_URL = OSM_TILE_URL
 const DARK_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>'
 const LIGHT_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 

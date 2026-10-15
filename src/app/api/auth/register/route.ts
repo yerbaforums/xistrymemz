@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs'
 import { randomBytes } from 'crypto'
 import { registerSchema, validateInput } from '@/lib/validation'
 import { generateActorKeys, getBaseUrl } from '@/lib/federation'
+import { findFounderUser } from '@/lib/founder'
 import { sendWelcomeEmail, sendVerificationEmail } from '@/lib/email'
 
 export const dynamic = 'force-dynamic'
@@ -132,14 +133,7 @@ export async function POST(request: Request) {
       })
     }
 
-    const founder = await prisma.user.findFirst({
-      where: { 
-        OR: [
-          { email: 'xb4zy@xistrymemz.xyz' },
-          { name: 'xb4zy' }
-        ]
-      }
-    })
+    const founder = await findFounderUser()
 
     if (founder && founder.id !== user.id) {
       await prisma.connection.create({
