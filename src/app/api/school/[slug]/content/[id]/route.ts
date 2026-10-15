@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { extractAndLinkHashtags, linkHashtags } from '@/services/hashtagService'
 import { isAllowedMediaUrl, POST_VIDEO_KINDS } from '@/lib/media-links'
+import { normalizeSchoolCategory } from '@/lib/school-categories'
 
 export async function GET(request: Request, { params }: { params: Promise<{ slug: string; id: string }> }) {
   const { id } = await params
@@ -75,6 +76,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
   }
   if (body.section !== undefined) data.contentSection = body.section
   if (body.sortOrder !== undefined) data.sortOrder = body.sortOrder
+  if (body.category !== undefined) data.category = normalizeSchoolCategory(body.category) ?? null
 
   const updated = await prisma.schoolContent.update({ where: { id }, data })
 

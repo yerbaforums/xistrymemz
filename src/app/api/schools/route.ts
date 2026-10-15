@@ -1,10 +1,11 @@
 import { NextResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { normalizeSchoolCategory } from '@/lib/school-categories'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const query = searchParams.get('q') || ''
-  const category = searchParams.get('category') || ''
+  const category = normalizeSchoolCategory(searchParams.get('category'))
   const contentType = searchParams.get('type') || ''
   const sort = searchParams.get('sort') || 'recent'
   const page = parseInt(searchParams.get("page") || "1")
@@ -22,7 +23,7 @@ export async function GET(request: Request) {
     ]
   }
 
-  if (category && category !== 'all') {
+  if (category) {
     contentWhere.category = category
   }
 
@@ -74,6 +75,7 @@ export async function GET(request: Request) {
       id: c.id,
       title: c.title,
       contentType: c.contentType,
+      category: c.category,
       price: c.price,
       isPaid: c.isPaid,
       isSubscription: c.isSubscription,

@@ -21,6 +21,7 @@ import EntityActions from '@/components/EntityActions'
 import HashtagInput from '@/components/HashtagInput'
 import RichEditor from '@/components/RichEditor'
 import { CONTENT_TEMPLATES } from '@/lib/content-templates'
+import { SCHOOL_CATEGORIES } from '@/lib/school-categories'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
 import Rating from '@/components/Rating'
@@ -183,7 +184,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
   const [showCourseForm, setShowCourseForm] = useState(false)
   const [courseForm, setCourseForm] = useState({title: '', description: '', difficulty: 'beginner'})
   const [editingCourseId, setEditingCourseId] = useState<string | null>(null)
-  const [contentForm, setContentForm] = useState({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: [] as string[], videoUrl: '', section: '', sortOrder: 0 })
+  const [contentForm, setContentForm] = useState({ title: '', content: '', contentType: 'article', category: 'general', price: '', isPaid: false, images: [] as string[], videoUrl: '', section: '', sortOrder: 0 })
   const [contentHashtags, setContentHashtags] = useState<string[]>([])
   const [creatingContent, setCreatingContent] = useState(false)
   const [shareLessonToFeed, setShareLessonToFeed] = useState(true)
@@ -301,7 +302,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
         }
         setShowContentForm(false)
         setEditingContentId(null)
-        setContentForm({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: [], videoUrl: '', section: '', sortOrder: 0 })
+        setContentForm({ title: '', content: '', contentType: 'article', category: 'general', price: '', isPaid: false, images: [], videoUrl: '', section: '', sortOrder: 0 })
         setContentHashtags([])
         if (resolvedSlug) fetch(`/api/school/${resolvedSlug}`).then(r => r.json()).then(data => setSchool(data))
       } else {
@@ -320,6 +321,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
       title: item.title,
       content: item.content,
       contentType: item.contentType,
+      category: (item as { category?: string }).category || 'general',
       price: item.price?.toString() || '',
       isPaid: item.isPaid,
       images: item.images ? JSON.parse(item.images) : [],
@@ -591,6 +593,14 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                     <option value="resource">Resource</option>
                   </select>
                 </div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="category">Category</label>
+                  <select value={contentForm.category} onChange={e => setContentForm({ ...contentForm, category: e.target.value })} id="category">
+                    {SCHOOL_CATEGORIES.map(c => (
+                      <option key={c.value} value={c.value}>{c.icon} {c.label}</option>
+                    ))}
+                  </select>
+                </div>
                 {!contentForm.content && (() => {
                   const templates = CONTENT_TEMPLATES.filter(t => t.contentType === contentForm.contentType)
                   if (templates.length === 0) return null
@@ -665,7 +675,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                     </label>
                   )}
                   <Button type="submit" variant="primary" disabled={creatingContent}>{creatingContent ? 'Saving...' : (editingContentId ? 'Update' : 'Publish')}</Button>
-                  <Button type="button" variant="ghost" onClick={() => { setShowContentForm(false); setEditingContentId(null); setContentForm({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: [], videoUrl: '', section: '', sortOrder: 0 }); setContentHashtags([]) }}>Cancel</Button>
+                  <Button type="button" variant="ghost" onClick={() => { setShowContentForm(false); setEditingContentId(null); setContentForm({ title: '', content: '', contentType: 'article', category: 'general', price: '', isPaid: false, images: [], videoUrl: '', section: '', sortOrder: 0 }); setContentHashtags([]) }}>Cancel</Button>
                 </div>
               </form>
             )}

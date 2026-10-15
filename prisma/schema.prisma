@@ -1021,6 +1021,7 @@ model SchoolContent {
   title             String
   content           String
   contentType       String                 @default("article")
+  category          String?
   images            String? // JSON array of image URLs
   videoUrl          String?
   price             Float                  @default(0)

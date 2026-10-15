@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/EmptyState'
 import Skeleton from '@/components/Skeleton'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import { humanizeEnum } from '@/lib/utils'
+import { SCHOOL_CATEGORIES, SCHOOL_CATEGORY_MAP } from '@/lib/school-categories'
 import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
 import IpfsImage from '@/components/IpfsImage'
 
@@ -24,7 +25,7 @@ interface Content {
   id: string
   title: string
   contentType: string
-  category: string
+  category: string | null
   topic: string | null
   price: number
   isPaid: boolean
@@ -49,18 +50,9 @@ const CONTENT_TYPES = [
   { value: 'guide', label: 'Guides', icon: '🧭' },
 ]
 
-const CATEGORIES = [
+const CATEGORY_OPTIONS = [
   { value: 'all', label: 'All Categories', icon: '🗂️' },
-  { value: 'technology', label: 'Technology', icon: '💻' },
-  { value: 'business', label: 'Business', icon: '💼' },
-  { value: 'design', label: 'Design', icon: '🎨' },
-  { value: 'marketing', label: 'Marketing', icon: '📣' },
-  { value: 'programming', label: 'Programming', icon: '👩‍💻' },
-  { value: 'music', label: 'Music', icon: '🎵' },
-  { value: 'art', label: 'Art', icon: '🖼️' },
-  { value: 'science', label: 'Science', icon: '🔬' },
-  { value: 'health', label: 'Health', icon: '🏥' },
-  { value: 'general', label: 'General', icon: '📚' },
+  ...SCHOOL_CATEGORIES,
 ]
 
 export default function SchoolsPage() {
@@ -150,7 +142,7 @@ export default function SchoolsPage() {
           onChange={e => setCategory(e.target.value)}
           className={styles.filterSelect}
         >
-          {CATEGORIES.map(cat => (
+          {CATEGORY_OPTIONS.map(cat => (
             <option key={cat.value} value={cat.value}>{cat.icon} {cat.label}</option>
           ))}
         </select>
@@ -240,7 +232,7 @@ export default function SchoolsPage() {
                   <span className={`${styles.contentType} ${styles[item.contentType]}`}>
                     {humanizeEnum(item.contentType)}
                   </span>
-                  {item.category && <span className={styles.contentCategory}>{item.category}</span>}
+                  <span className={styles.contentCategory}>{SCHOOL_CATEGORY_MAP.get(item.category || '')?.icon || '📚'} {SCHOOL_CATEGORY_MAP.get(item.category || '')?.label || humanizeEnum(item.category) || 'General'}</span>
                 </div>
                 <h3>{item.title}</h3>
                 <p className={styles.contentMeta}>

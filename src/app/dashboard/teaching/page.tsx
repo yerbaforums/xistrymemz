@@ -10,6 +10,8 @@ import Button from '@/components/ui/Button'
 import { EmptyState } from '@/components/EmptyState'
 import Loading from '@/components/Loading'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
+import { humanizeEnum } from '@/lib/utils'
+import { SCHOOL_CATEGORIES, SCHOOL_CATEGORY_MAP } from '@/lib/school-categories'
 
 interface SchoolInfo {
   schoolName: string | null
@@ -23,6 +25,7 @@ interface ContentItem {
   title: string
   content: string
   contentType: string
+  category: string | null
   images: string | null
   videoUrl: string | null
   price: number
@@ -49,7 +52,7 @@ export default function TeachingPage() {
   const [editingContent, setEditingContent] = useState<ContentItem | null>(null)
   const [saving, setSaving] = useState(false)
   const [schoolForm, setSchoolForm] = useState({ schoolName: '', schoolAbout: '', schoolImage: '', schoolImages: [] as string[], schoolSlug: '' })
-  const [contentForm, setContentForm] = useState({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: '', videoUrl: '' })
+  const [contentForm, setContentForm] = useState({ title: '', content: '', contentType: 'article', category: 'general', price: '', isPaid: false, images: '', videoUrl: '' })
 
   useEffect(() => { fetchAll() }, [])
 
@@ -111,6 +114,7 @@ export default function TeachingPage() {
         title: contentForm.title,
         content: contentForm.content || ' ',
         contentType: contentForm.contentType,
+        category: contentForm.category,
         price: contentForm.price ? parseFloat(contentForm.price) : 0,
         isPaid: contentForm.isPaid,
       }
@@ -147,7 +151,7 @@ export default function TeachingPage() {
         </div>
         <div className={styles.headerActions}>
           <Button onClick={() => setShowSchoolForm(true)} variant="secondary">⚙️ School Settings</Button>
-          <Button onClick={() => { setEditingContent(null); setContentForm({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: '', videoUrl: '' }); setShowContentForm(true) }} variant="primary">➕ New Lesson</Button>
+          <Button onClick={() => { setEditingContent(null); setContentForm({ title: '', content: '', contentType: 'article', category: 'general', price: '', isPaid: false, images: '', videoUrl: '' }); setShowContentForm(true) }} variant="primary">➕ New Lesson</Button>
         </div>
       </div>
 
@@ -196,22 +200,25 @@ export default function TeachingPage() {
           <h3>📚 Your Content ({content.length})</h3>
         </div>
         {content.length === 0 ? (
-          <EmptyState icon="📚" title="No content yet" description="Create your first lesson to start teaching." action={{ label: 'Create Content', onClick: () => { setEditingContent(null); setContentForm({ title: '', content: '', contentType: 'article', price: '', isPaid: false, images: '', videoUrl: '' }); setShowContentForm(true) }}} />
+          <EmptyState icon="📚" title="No content yet" description="Create your first lesson to start teaching." action={{ label: 'Create Content', onClick: () => { setEditingContent(null); setContentForm({ title: '', content: '', contentType: 'article', category: 'general', price: '', isPaid: false, images: '', videoUrl: '' }); setShowContentForm(true) }}} />
         ) : (
           <div className={styles.contentList}>
             {content.map(c => (
               <div key={c.id} className={styles.contentItem}>
                 <div className={styles.contentInfo}>
                   <span className={`${styles.contentType} ${styles[c.contentType as keyof typeof styles] || ''}`}>
-                    {c.contentType}
+                    {humanizeEnum(c.contentType)}
                   </span>
+                  {(c.category || '') !== '' && c.category !== 'general' && (
+                    <span className={styles.contentType}>{SCHOOL_CATEGORY_MAP.get(c.category || '')?.icon || '📚'} {SCHOOL_CATEGORY_MAP.get(c.category || '')?.label || humanizeEnum(c.category)}</span>
+                  )}
                   <strong>{c.title}</strong>
                   {c.isPaid && <span className={styles.price}>${c.price}</span>}
                 </div>
                 <div className={styles.contentActions}>
                   <button onClick={() => {
                     setEditingContent(c)
-                    setContentForm({ title: c.title, content: c.content || '', contentType: c.contentType, price: c.price.toString(), isPaid: c.isPaid, images: c.images || '', videoUrl: c.videoUrl || '' })
+                    setContentForm({ title: c.title, content: c.content || '', contentType: c.contentType, category: c.category || 'general', price: c.price.toString(), isPaid: c.isPaid, images: c.images || '', videoUrl: c.videoUrl || '' })
                     setShowContentForm(true)
                   }} className={styles.smallBtn}>✏️</button>
                   <button onClick={() => setDeleteTarget({ id: c.id, title: c.title })} className={styles.smallBtnDanger}>🗑️</button>
@@ -292,6 +299,14 @@ export default function TeachingPage() {
                   <option value="course">Course</option>
                   <option value="tutorial">Tutorial</option>
                   <option value="guide">Guide</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label htmlFor="category">Category</label>
+                <select value={contentForm.category} onChange={e => setContentForm({...contentForm, category: e.target.value})} id="category">
+                  {SCHOOL_CATEGORIES.map(cat => (
+                    <option key={cat.value} value={cat.value}>{cat.icon} {cat.label}</option>
+                  ))}
                 </select>
               </div>
               <div className="form-group">

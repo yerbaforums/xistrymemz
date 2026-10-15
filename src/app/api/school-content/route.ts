@@ -2,6 +2,7 @@ import { apiSuccess, apiError } from '@/lib/api-helpers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { normalizeSchoolCategory } from '@/lib/school-categories'
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions)
@@ -10,7 +11,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json()
-  const { title, content, contentType } = body
+  const { title, content, contentType, category } = body
 
   if (!title || !content) {
     return apiError("Title and content required", 400)
@@ -26,6 +27,7 @@ export async function POST(request: Request) {
       title,
       content,
       contentType: contentType || 'article',
+      category: normalizeSchoolCategory(category) ?? null,
       userId: session.user.id,
       authorId: session.user.id
     }

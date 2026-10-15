@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { extractAndLinkHashtags, linkHashtags } from '@/services/hashtagService'
 import { createNotification } from '@/services/notificationService'
 import { isAllowedMediaUrl, POST_VIDEO_KINDS } from '@/lib/media-links'
+import { normalizeSchoolCategory } from '@/lib/school-categories'
 
 export async function GET(request: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -67,7 +68,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
   }
 
   const body = await request.json()
-  const { title, content, contentType, images, videoUrl, price, isPaid, section, sortOrder, hashtags: explicitHashtags } = body
+  const { title, content, contentType, images, videoUrl, price, isPaid, section, sortOrder, category, hashtags: explicitHashtags } = body
 
   if (!title || !content) {
     return apiError("Title and content required", 400)
@@ -82,6 +83,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
       title,
       content,
       contentType: contentType || 'article',
+      category: normalizeSchoolCategory(category) ?? null,
       images: images || null,
       videoUrl: videoUrl || null,
       price: isPaid ? (parseFloat(price) || 0) : 0,
