@@ -64,7 +64,12 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
   if (body.title !== undefined) data.title = body.title.trim()
   if (body.content !== undefined) data.content = body.content
   if (body.contentType !== undefined) data.contentType = body.contentType
-  if (body.price !== undefined) data.price = body.price
+  // Price arrives as a string from the edit form ('' when untouched) but the
+  // column is Float — passing the raw string makes Prisma reject the update.
+  if (body.price !== undefined) {
+    const n = typeof body.price === 'number' ? body.price : parseFloat(body.price)
+    data.price = Number.isFinite(n) ? n : 0
+  }
   if (body.isPaid !== undefined) data.isPaid = body.isPaid
   if (body.pinned !== undefined) data.pinned = body.pinned
   if (body.images !== undefined) data.images = body.images

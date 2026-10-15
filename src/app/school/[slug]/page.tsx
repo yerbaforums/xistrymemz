@@ -21,7 +21,8 @@ import EntityActions from '@/components/EntityActions'
 import HashtagInput from '@/components/HashtagInput'
 import RichEditor from '@/components/RichEditor'
 import { CONTENT_TEMPLATES } from '@/lib/content-templates'
-import { SCHOOL_CATEGORIES } from '@/lib/school-categories'
+import { SCHOOL_CATEGORIES, SCHOOL_CATEGORY_MAP } from '@/lib/school-categories'
+import { CLASS_ICONS } from '@/lib/user-classes'
 import { CRYPTO_LOGOS } from '@/lib/constants'
 import RoleBadge from '@/components/RoleBadge'
 import Rating from '@/components/Rating'
@@ -59,6 +60,7 @@ interface SchoolContent {
   title: string
   content: string
   contentType: string
+  category: string | null
   images: string | null
   videoUrl: string | null
   price: number | null
@@ -111,12 +113,6 @@ interface SchoolData {
   ratingCount: number
   schoolContents: SchoolContent[]
   posts: SchoolPost[]
-}
-
-const CLASS_ICONS: Record<string, string> = {
-  Healer: '💚', Revealer: '👁️', Seer: '🔮', Teacher: '📚', Guide: '🧭',
-  Warrior: '⚔️', Guardian: '🛡️', Sage: '🦉', Mystic: '✨', Architect: '🏗️',
-  Artist: '🎨', Builder: '🔨', Explorer: '🌍', Mentor: '🌟'
 }
 
 const CONTENT_TYPE_ICONS: Record<string, string> = {
@@ -190,6 +186,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
   const [shareLessonToFeed, setShareLessonToFeed] = useState(true)
   const [editingContentId, setEditingContentId] = useState<string | null>(null)
   const [contentFilter, setContentFilter] = useState<string>('all')
+  const [contentCategoryFilter, setContentCategoryFilter] = useState<string>('all')
   const [deletingContent, setDeletingContent] = useState<string | null>(null)
   const [enrolled, setEnrolled] = useState(false)
   const [enrolling, setEnrolling] = useState(false)
@@ -321,7 +318,7 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
       title: item.title,
       content: item.content,
       contentType: item.contentType,
-      category: (item as { category?: string }).category || 'general',
+      category: item.category || 'general',
       price: item.price?.toString() || '',
       isPaid: item.isPaid,
       images: item.images ? JSON.parse(item.images) : [],
@@ -690,12 +687,26 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                     {type === 'all' ? 'All' : `${CONTENT_TYPE_ICONS[type] || '📄'} ${humanizeEnum(type)}`}
                   </button>
                 ))}
+                <select
+                  value={contentCategoryFilter}
+                  onChange={e => setContentCategoryFilter(e.target.value)}
+                  className={styles.filterSelect}
+                  aria-label="Filter by category"
+                >
+                  <option value="all">🗂️ All Categories</option>
+                  {SCHOOL_CATEGORIES.map(c => (
+                    <option key={c.value} value={c.value}>{c.icon} {c.label}</option>
+                  ))}
+                </select>
               </div>
             )}
             {school.schoolContents.length > 0 ? (
               <div className={styles.contentList}>
                 {(() => {
-                  const filtered = school.schoolContents.filter(item => contentFilter === 'all' || item.contentType === contentFilter)
+                  const filtered = school.schoolContents.filter(item =>
+                    (contentFilter === 'all' || item.contentType === contentFilter) &&
+                    (contentCategoryFilter === 'all' || (item.category || 'general') === contentCategoryFilter)
+                  )
                   const sections = new Map<string, typeof filtered>()
                   const uncategorized: typeof filtered = []
                   for (const item of filtered) {
@@ -714,6 +725,8 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ slug: s
                     <div key={item.id} className={`${styles.contentCard} ${item.pinned ? styles.pinnedCard : ''}`}>
                       <div className={styles.contentCardTop}>
                         <span className={styles.contentTypeIcon}>{CONTENT_TYPE_ICONS[item.contentType] || '📄'}</span>
+                        <span className={styles.contentTypeLabel}>{humanizeEnum(item.contentType)}</span>
+                        <span className={styles.categoryBadge}>{SCHOOL_CATEGORY_MAP.get(item.category || '')?.icon || '📚'} {SCHOOL_CATEGORY_MAP.get(item.category || '')?.label || humanizeEnum(item.category) || 'General'}</span>
                         <span className={`badge badge-${item.isPaid ? 'active' : 'draft'}`}>
                           {item.isPaid ? `$${item.price || 0}` : 'Free'}
                         </span>

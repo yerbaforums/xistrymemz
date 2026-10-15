@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import EntityActions from '@/components/EntityActions'
 import LinkedItemsSection from '@/components/LinkedItemsSection'
+import ShareBar from '@/components/ShareBar'
 import styles from './page.module.css'
 import Skeleton from '@/components/Skeleton'
 import PinToBoardButton from '@/components/PinToBoardButton'
@@ -316,6 +317,7 @@ export default function SchoolContentDetailPage() {
 
       <div className={styles.actions}>
         <EntityActions entityType="SCHOOLCONTENT" entityId={content.id} title={content.title} authorId={content.author.id} variant="bar" />
+        <ShareBar entityType="SCHOOLCONTENT" title={content.title} variant="compact" />
         <WorkTogether
           user={{ id: content.author.id, name: content.author.name, username: null, image: content.author.image }}
           entityType="SCHOOLCONTENT"
