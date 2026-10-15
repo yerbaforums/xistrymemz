@@ -163,8 +163,8 @@ async function resolveEntity(
       return r?.title ? { title: r.title, url: `/requests/${id}` } : null
     }
     case 'SCHOOLCONTENT': {
-      const s = await prisma.schoolContent.findUnique({ where: { id }, select: { title: true } })
-      return s?.title ? { title: s.title, url: `/school/content/${id}` } : null
+      const s = await prisma.schoolContent.findUnique({ where: { id }, select: { title: true, user: { select: { schoolSlug: true } } } })
+      return s?.title ? { title: s.title, url: s.user.schoolSlug ? `/school/${s.user.schoolSlug}/content/${id}` : '/schools' } : null
     }
     case 'SERVICE': {
       const s = await prisma.serviceOffering.findUnique({ where: { id }, select: { title: true } })

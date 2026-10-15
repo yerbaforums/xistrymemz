@@ -41,7 +41,7 @@ const PHONEBOOK_SECTIONS = [
   { key: 'yellow', label: 'Yellow Pages', icon: '🟨', types: ['shop', 'product', 'service', 'rental'], blurb: 'Businesses — shops, products, services, rentals.', accent: '#f59e0b' },
   { key: 'blue', label: 'Blue Pages', icon: '🟦', types: ['event'], blurb: 'Events — go out.', accent: '#3b82f6' },
   { key: 'green', label: 'Green Pages', icon: '🟩', types: ['request'], blurb: 'Requests — ask, fund, fulfill.', accent: '#22c55e' },
-  { key: 'violet', label: 'Violet Pages', icon: '🟪', types: ['project', 'group', 'board'], blurb: 'Projects, groups & boards — build together.', accent: '#8b5cf6' },
+  { key: 'violet', label: 'Violet Pages', icon: '🟪', types: ['project', 'group', 'board', 'school'], blurb: 'Projects, groups, boards & schools — build and learn together.', accent: '#8b5cf6' },
 ] as const
 
 type SectionKey = typeof PHONEBOOK_SECTIONS[number]['key']
@@ -53,6 +53,7 @@ const TYPE_TABS = [
   { key: 'product', label: 'Products', icon: '📦' },
   { key: 'service', label: 'Services', icon: '🔧' },
   { key: 'rental', label: 'Rentals', icon: '🏠' },
+  { key: 'school', label: 'Schools', icon: '🏫' },
   { key: 'event', label: 'Events', icon: '📅' },
   { key: 'project', label: 'Projects', icon: '🚀' },
   { key: 'request', label: 'Requests', icon: '📝' },
@@ -62,7 +63,7 @@ const TYPE_TABS = [
 
 const TYPE_ICONS: Record<string, string> = {
   member: '👤', shop: '🛍️', product: '📦', service: '🔧', rental: '🏠',
-  event: '📅', project: '🚀', request: '📝', group: '👥', board: '📌'
+  school: '🏫', event: '📅', project: '🚀', request: '📝', group: '👥', board: '📌'
 }
 
 const SORT_OPTIONS = [
@@ -82,6 +83,7 @@ export default function DirectoryPage() {
   const [search, setSearch] = useState('')
   const [query, setQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState('')
+  const [eventTime, setEventTime] = useState('all')
   const [sortBy, setSortBy] = useState('title')
   const [total, setTotal] = useState(0)
   // Passport locale (opt-in, privacy-safe: hidden passport disables it).
@@ -191,6 +193,7 @@ export default function DirectoryPage() {
     if (fetchType !== 'all') params.set('type', fetchType)
     if (query) params.set('q', query)
     if (activeCategory) params.set('category', activeCategory)
+    if (eventTime !== 'all') params.set('eventTime', eventTime)
     fetch(`/api/directory?${params}`, { signal: controller.signal })
       .then(r => r.json())
       .then(data => {
@@ -206,7 +209,7 @@ export default function DirectoryPage() {
       .catch(err => { if (err?.name !== 'AbortError') setItems([]) })
       .finally(() => { if (!controller.signal.aborted) setLoading(false) })
     return () => controller.abort()
-  }, [fetchType, query, activeCategory, sectionTypes, activeType])
+  }, [fetchType, query, activeCategory, sectionTypes, activeType, eventTime])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -475,6 +478,18 @@ export default function DirectoryPage() {
             {t.icon} {t.label}
           </button>
         ))}
+        {(activeType === 'all' || activeType === 'event') && (sectionTypes.length === 0 || sectionTypes.includes('event')) && (
+          <select
+            value={eventTime}
+            onChange={e => setEventTime(e.target.value)}
+            className={styles.filterSelect}
+            aria-label="Event dates"
+          >
+            <option value="all">🗓️ All dates</option>
+            <option value="upcoming">📅 Upcoming events</option>
+            <option value="past">📜 Past events</option>
+          </select>
+        )}
       </div>
 
       <div className={styles.metaRow}>

@@ -50,8 +50,8 @@ export async function GET(
         break
       }
       case 'SCHOOLCONTENT': {
-        const sc = await prisma.schoolContent.findUnique({ where: { id }, include: { author: { select: { image: true } } } })
-        if (sc) item = { id: sc.id, title: sc.title, image: sc.author.image }
+        const sc = await prisma.schoolContent.findUnique({ where: { id }, include: { author: { select: { image: true } }, user: { select: { schoolSlug: true } } } })
+        if (sc) item = { id: sc.id, title: sc.title, image: sc.author.image, schoolSlug: sc.user.schoolSlug }
         break
       }
       case 'FORUMPOST': {

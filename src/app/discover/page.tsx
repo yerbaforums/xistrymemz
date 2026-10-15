@@ -19,6 +19,7 @@ import { usePassportLocation } from '@/hooks/usePassportLocation'
 import LocationCard from '@/components/LocationCard'
 import HashtagChips from '@/components/HashtagChips'
 import Avatar from '@/components/Avatar'
+import { humanizeEnum } from '@/lib/utils'
 
 const ENTITY_TYPES = [
   { key: '', label: 'All', icon: '🌐' },
@@ -30,6 +31,7 @@ const ENTITY_TYPES = [
   { key: 'BOARD', label: 'Boards', icon: '🪵' },
   { key: 'REQUEST', label: 'Requests', icon: '📝' },
   { key: 'SHOP', label: 'Shops', icon: '🏪' },
+  { key: 'SCHOOL', label: 'Schools', icon: '🏫' },
   { key: 'RENTAL', label: 'Rentals', icon: '🏠' },
   { key: 'MEMBER', label: 'Members', icon: '👤' },
 ]
@@ -72,6 +74,7 @@ function EntityCard({ item, mapRef, setMapVisible, onHover, onLeave }: { item: D
     item.type === 'RENTAL' ? `/products/${item.id}` :
     item.type === 'REQUEST' ? `/requests/${item.id}` :
     item.type === 'SHOP' ? `/shop/${item.id}` :
+    item.type === 'SCHOOL' ? `/school/${item.id}` :
     item.type === 'MEMBER' ? `/profile/${item.username || item.userId}` : '#'
 
   return (
@@ -83,7 +86,7 @@ function EntityCard({ item, mapRef, setMapVisible, onHover, onLeave }: { item: D
           <span className={styles.cardIcon}>{getEntityIcon(item.type)}</span>
         )}
         <span className={styles.typeBadge} style={{ background: getEntityColor(item.type) }}>
-          {getEntityIcon(item.type)} {item.type}
+          {getEntityIcon(item.type)} {humanizeEnum(item.type)}
         </span>
       </div>
       <div className={styles.cardBody}>
@@ -117,6 +120,7 @@ export default function DiscoverPage() {
   const { location: passportLoc } = usePassportLocation()
   const [query, setQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
+  const [eventTime, setEventTime] = useState('upcoming')
   const [intentFilter, setIntentFilter] = useState('')
   const [hashtagFilter, setHashtagFilter] = useState('')
   const [sortBy, setSortBy] = useState('newest')
@@ -140,6 +144,7 @@ export default function DiscoverPage() {
     const params = new URLSearchParams()
     if (query) params.set('q', query)
     if (typeFilter) params.set('type', typeFilter)
+    if (typeFilter === '' || typeFilter === 'EVENT') params.set('eventTime', eventTime)
     if (intentFilter) params.set('intent', intentFilter)
     if (hashtagFilter) params.set('hashtag', hashtagFilter)
     params.set('page', String(p))
@@ -170,7 +175,7 @@ export default function DiscoverPage() {
       }
     } catch { /* ignore */ }
     setLoading(false)
-  }, [query, typeFilter, intentFilter, hashtagFilter, passportLoc])
+  }, [query, typeFilter, intentFilter, hashtagFilter, passportLoc, eventTime])
 
   useEffect(() => {
     fetchResults(1, false)
@@ -262,6 +267,7 @@ export default function DiscoverPage() {
                 item.type === 'RENTAL' ? `/products/${item.id}` :
                 item.type === 'REQUEST' ? `/requests/${item.id}` :
                 item.type === 'SHOP' ? `/shop/${item.id}` :
+                item.type === 'SCHOOL' ? `/school/${item.id}` :
                 item.type === 'MEMBER' ? `/profile/${item.username || item.userId}` : '#'
               return (
                 <Link key={`${item.type}-${item.id}`} href={href} className={styles.calendarEventItem}>
@@ -317,6 +323,13 @@ export default function DiscoverPage() {
           <option value="popular">🔥 Most Popular</option>
           <option value="nearest">📍 Nearest</option>
         </select>
+        {(typeFilter === '' || typeFilter === 'EVENT') && (
+          <select className={styles.sortSelect} value={eventTime} onChange={e => setEventTime(e.target.value)} aria-label="Event dates">
+            <option value="upcoming">📅 Upcoming events</option>
+            <option value="past">📜 Past events</option>
+            <option value="all">🗓️ All dates</option>
+          </select>
+        )}
         <div className={styles.viewToggle}>
           <Button variant="ghost" className={`${styles.viewBtn} ${mapVisible ? styles.viewBtnActive : ''}`} onClick={() => { setMapVisible(v => !v); setConstellationVisible(false) }}>
             {mapVisible ? '🙈' : '🗺️'} {mapVisible ? 'Hide Map' : 'Map'}
@@ -395,7 +408,7 @@ export default function DiscoverPage() {
                   <div className={styles.popup}>
                     <strong>{r.title}</strong>
                     <span style={{ color: getEntityColor(r.type), fontSize: '0.8rem' }}>
-                      {getEntityIcon(r.type)} {r.type}
+                      {getEntityIcon(r.type)} {humanizeEnum(r.type)}
                     </span>
                     {r.distance != null && <span>📍 {r.distance} mi</span>}
                     <Link href={
@@ -408,6 +421,7 @@ export default function DiscoverPage() {
                       r.type === 'RENTAL' ? `/products/${r.id}` :
                       r.type === 'REQUEST' ? `/requests/${r.id}` :
                       r.type === 'SHOP' ? `/shop/${r.id}` :
+                      r.type === 'SCHOOL' ? `/school/${r.id}` :
                       r.type === 'MEMBER' ? `/profile/${r.userId}` : '#'
                     } className={styles.popupLink}>View Details →</Link>
                   </div>

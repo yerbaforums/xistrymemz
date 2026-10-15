@@ -67,9 +67,11 @@ export default function FeedItem({ post }: { post: FeedPost }) {
   const [showReplies] = useState(false)
   const [editing, setEditing] = useState(false)
   const [editContent, setEditContent] = useState(post.content)
-  useSession()
+  const [content, setContent] = useState(post.content)
+  const { data: session } = useSession()
   const imageList = getImages(post.images)
-  const displayContent = post.content ? post.content.replace(URL_REGEX, '').trim() : ''
+  const displayContent = content ? content.replace(URL_REGEX, '').trim() : ''
+  const isOwner = !!session?.user?.id && session.user.id === post.userId
   const contextKey = post.context || post.sourceType || 'PROFILE'
   const ctxConfig = CONTEXT_CONFIG[contextKey] || CONTEXT_CONFIG.PROFILE
   const borderStyle = contextKey === 'GROUPPOST' || contextKey === 'FORUMPOST'
@@ -142,6 +144,11 @@ export default function FeedItem({ post }: { post: FeedPost }) {
               {ctxConfig.icon} {ctxConfig.label}
             </span>
           )}
+          {isOwner && !editing && (
+            <button onClick={() => { setEditContent(content); setEditing(true) }} className={styles.badge} style={{ cursor: 'pointer', background: 'transparent', border: '1px solid var(--border-color)' }} title="Edit post">
+              ✏️ Edit
+            </button>
+          )}
         </div>
       </div>
 
@@ -158,13 +165,14 @@ export default function FeedItem({ post }: { post: FeedPost }) {
             <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
               <button onClick={async () => {
                 try {
-                  await fetch(`/api/posts/${post.id}`, {
+                  const res = await fetch(`/api/posts/${post.id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ content: editContent }),
                   })
+                  if (res.ok) setContent(editContent)
                   setEditing(false)
-                } catch {}
+                } catch { setEditing(false) }
               }} style={{ padding: '4px 14px', borderRadius: 6, border: 'none', background: 'var(--accent-primary)', color: '#fff', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>Save</button>
               <button onClick={() => { setEditing(false); setEditContent(post.content) }} style={{ padding: '4px 14px', borderRadius: 6, border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.8rem' }}>Cancel</button>
             </div>
@@ -212,7 +220,7 @@ export default function FeedItem({ post }: { post: FeedPost }) {
           <EntityActions
             entityType="POST"
             entityId={post.id}
-            title={post.content?.slice(0, 100) || 'Post'}
+            title={content?.slice(0, 100) || 'Post'}
             authorId={post.user?.id || post.userId}
             initialLikes={post.likes || 0}
             liked={post.liked || false}

@@ -10,6 +10,7 @@ export async function GET(request: Request) {
     const type = searchParams.get('type')
     const q = searchParams.get('q')
     const cat = searchParams.get('category')
+    const eventTime = searchParams.get('eventTime') || 'all'
 
     const take = 100
     const whereName = q ? { contains: q, mode: 'insensitive' as const } : undefined
@@ -23,6 +24,17 @@ export async function GET(request: Request) {
             take, orderBy: { createdAt: 'desc' }
           })
           return rows.map(s => ({ id: s.id, title: s.shopName || 'Shop', image: s.shopImage, url: `/shop/${s.shopSlug}`, meta: `📍 ${s.location || 'Location unknown'}`, type: 'shop', itemType: 'SHOP', userId: s.id, category: canonicalKey('shop', s.shopCategory), extra: `${s._count.products} products`, owner: s.name || undefined, ownerImage: s.image, latitude: s.latitude ?? null, longitude: s.longitude ?? null, createdAt: s.createdAt.toISOString() }))
+        }
+        case 'school': {
+          const rows = await prisma.user.findMany({
+            where: { schoolSlug: { not: null }, schoolName: { not: '' }, ...(q ? { schoolName: whereName } : {}) },
+            select: { id: true, schoolName: true, schoolAbout: true, schoolImage: true, schoolSlug: true, location: true, latitude: true, longitude: true, createdAt: true, name: true, image: true, _count: { select: { schoolContentsOwned: true } } },
+            take, orderBy: { createdAt: 'desc' }
+          })
+          return rows.map(s => {
+            const n = s._count.schoolContentsOwned
+            return { id: s.id, title: s.schoolName || 'School', image: s.schoolImage, url: `/school/${s.schoolSlug}`, meta: `📍 ${s.location || 'Location unknown'}`, type: 'school', itemType: 'SCHOOL', userId: s.id, category: undefined, extra: `${n} ${n === 1 ? 'lesson' : 'lessons'}`, owner: s.name || undefined, ownerImage: s.image, latitude: s.latitude ?? null, longitude: s.longitude ?? null, createdAt: s.createdAt.toISOString() }
+          })
         }
         case 'product': {
           const rows = await prisma.product.findMany({
@@ -49,8 +61,9 @@ export async function GET(request: Request) {
           return rows.map(r => ({ id: r.id, title: r.title, image: r.imageUrl, url: `/products/${r.id}`, meta: r.rentalDaily ? `$${r.rentalDaily}/day` : undefined, type: 'rental', itemType: 'PRODUCT', userId: r.userId, category: r.category ? canonicalKey('product', r.category) : undefined, extra: r.rentalWeekly ? `$${r.rentalWeekly}/wk` : r.rentalMonthly ? `$${r.rentalMonthly}/mo` : undefined, location: r.location || undefined, latitude: r.latitude ?? null, longitude: r.longitude ?? null, hashtags: r.hashtags.map(h => h.hashtag.tag), createdAt: r.createdAt.toISOString() }))
         }
         case 'event': {
+          const dateFilter = eventTime === 'past' ? { lt: new Date() } : eventTime === 'upcoming' ? { gte: new Date() } : undefined
           const rows = await prisma.event.findMany({
-            where: { ...(q ? { title: whereName } : {}), ...(cat ? { eventCategory: { in: rawValuesFor('event', cat) } } : {}) },
+            where: { ...(q ? { title: whereName } : {}), ...(cat ? { eventCategory: { in: rawValuesFor('event', cat) } } : {}), ...(dateFilter ? { eventDate: dateFilter } : {}) },
             select: { id: true, title: true, eventDate: true, eventCategory: true, location: true, latitude: true, longitude: true, organizerId: true, organizer: { select: { name: true, image: true } }, eventHashtags: { select: { hashtag: { select: { tag: true } } } } },
             take, orderBy: { eventDate: 'desc' }
           })
@@ -117,13 +130,13 @@ export async function GET(request: Request) {
       return NextResponse.json({ items, total: items.length, categories, counts: { [type + 's']: items.length } })
     }
 
-    const [shops, products, services, rentals, events, projects, requests, members, groups, boards] = await Promise.all([
-      fetchByType('shop'), fetchByType('product'), fetchByType('service'),
+    const [shops, schools, products, services, rentals, events, projects, requests, members, groups, boards] = await Promise.all([
+      fetchByType('shop'), fetchByType('school'), fetchByType('product'), fetchByType('service'),
       fetchByType('rental'), fetchByType('event'), fetchByType('project'), fetchByType('request'), fetchByType('member'),
       fetchByType('group'), fetchByType('board')
     ])
 
-    const allItems = [...shops, ...products, ...services, ...rentals, ...events, ...projects, ...requests, ...members, ...groups, ...boards]
+    const allItems = [...shops, ...schools, ...products, ...services, ...rentals, ...events, ...projects, ...requests, ...members, ...groups, ...boards]
 
     const categories: Record<string, string[]> = {}
     for (const item of allItems) {
@@ -136,7 +149,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       items: allItems,
       categories,
-      counts: { shops: shops.length, products: products.length, services: services.length, rentals: rentals.length, events: events.length, projects: projects.length, requests: requests.length, members: members.length, groups: groups.length, boards: boards.length }
+      counts: { shops: shops.length, schools: schools.length, products: products.length, services: services.length, rentals: rentals.length, events: events.length, projects: projects.length, requests: requests.length, members: members.length, groups: groups.length, boards: boards.length }
     })
   } catch (error) {
     console.error('Directory error:', error)

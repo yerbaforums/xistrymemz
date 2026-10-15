@@ -11,6 +11,7 @@ export async function GET(request: Request) {
     const type = searchParams.get('type') || undefined
     const intent = searchParams.get('intent') || undefined
     const hashtag = searchParams.get('hashtag') || undefined
+    const eventTime = searchParams.get('eventTime') || undefined
     const page = parseInt(searchParams.get('page') || '1')
     const limit = Math.min(100, parseInt(searchParams.get('limit') || '20'))
 
@@ -41,7 +42,7 @@ export async function GET(request: Request) {
       }
     }
 
-    const result = await discover({ q, type, lat, lng, radius, intent, hashtag, page, limit })
+    const result = await discover({ q, type, lat, lng, radius, intent, hashtag, page, limit, eventTime })
 
     return apiSuccess(result)
   } catch (error) {

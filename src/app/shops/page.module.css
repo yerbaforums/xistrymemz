@@ -71,6 +71,16 @@
   object-fit: cover;
 }
 
+.shopImagePlaceholder {
+  width: 100%;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  background: var(--bg-tertiary);
+}
+
 .shopInfo {
   padding: 1rem;
 }

@@ -11,11 +11,12 @@ export interface DiscoverParams {
   hashtag?: string
   page?: number
   limit?: number
+  eventTime?: string
 }
 
 export interface DiscoverResult {
   id: string
-  type: 'PRODUCT' | 'SERVICE' | 'GROUP' | 'EVENT' | 'PROJECT' | 'MEMBER' | 'BOARD' | 'RENTAL' | 'REQUEST' | 'SHOP'
+  type: 'PRODUCT' | 'SERVICE' | 'GROUP' | 'EVENT' | 'PROJECT' | 'MEMBER' | 'BOARD' | 'RENTAL' | 'REQUEST' | 'SHOP' | 'SCHOOL'
   title: string
   description: string | null
   image: string | null
@@ -58,11 +59,12 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
   const radius = params.radius || 250
   const intent = params.intent || ''
   const hashtag = params.hashtag?.trim() || ''
+  const eventTime = params.eventTime || 'upcoming'
   const page = Math.max(1, params.page || 1)
   const limit = Math.min(50, Math.max(1, params.limit || 20))
   const offset = (page - 1) * limit
 
-  const types = type ? [type] : ['PRODUCT', 'SERVICE', 'GROUP', 'EVENT', 'PROJECT', 'MEMBER', 'BOARD', 'RENTAL', 'REQUEST', 'SHOP']
+  const types = type ? [type] : ['PRODUCT', 'SERVICE', 'GROUP', 'EVENT', 'PROJECT', 'MEMBER', 'BOARD', 'RENTAL', 'REQUEST', 'SHOP', 'SCHOOL']
   const perTypeLimit = types.length === 1 ? limit : Math.max(2, Math.floor(limit / types.length))
 
   const queries: Promise<DiscoverResult[]>[] = []
@@ -231,7 +233,12 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
   if (types.includes('EVENT')) {
     queries.push(
       (async () => {
-        const where: Prisma.EventWhereInput = { eventDate: { gte: new Date() } }
+        const now = new Date()
+        const where: Prisma.EventWhereInput = eventTime === 'all'
+          ? {}
+          : eventTime === 'past'
+            ? { eventDate: { lt: now } }
+            : { eventDate: { gte: now } }
         if (q) {
           where.OR = [
             { title: { contains: q, mode: 'insensitive' } },
@@ -571,6 +578,52 @@ export async function discover(params: DiscoverParams): Promise<{ results: Disco
           distance: null,
           price: null,
           category: 'Shop',
+          lookingForCollaborators: false,
+          userId: r.id,
+          userName: r.name,
+          userImage: r.image,
+          username: r.username,
+          hashtags: [],
+          eventDate: null,
+          createdAt: r.createdAt,
+        }))
+      })()
+    )
+  }
+
+  if (types.includes('SCHOOL')) {
+    queries.push(
+      (async () => {
+        const where: Prisma.UserWhereInput = { schoolSlug: { not: null }, schoolName: { not: '' } }
+        if (q) {
+          where.OR = [
+            { schoolName: { contains: q, mode: 'insensitive' } },
+            { schoolAbout: { contains: q, mode: 'insensitive' } },
+            { location: { contains: q, mode: 'insensitive' } },
+          ]
+        }
+        const rows = await prisma.user.findMany({
+          where: where,
+          select: {
+            id: true, schoolName: true, schoolAbout: true, schoolSlug: true, schoolImage: true,
+            location: true, latitude: true, longitude: true,
+            createdAt: true, name: true, image: true, username: true,
+          },
+          take: perTypeLimit,
+          orderBy: { createdAt: 'desc' },
+        })
+        return rows.map(r => ({
+          id: r.schoolSlug!,
+          type: 'SCHOOL' as const,
+          title: r.schoolName || 'School',
+          description: r.schoolAbout,
+          image: r.schoolImage,
+          location: r.location,
+          latitude: r.latitude,
+          longitude: r.longitude,
+          distance: null,
+          price: null,
+          category: 'School',
           lookingForCollaborators: false,
           userId: r.id,
           userName: r.name,

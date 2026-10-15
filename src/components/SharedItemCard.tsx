@@ -7,6 +7,7 @@ import Avatar from '@/components/Avatar'
 import Skeleton from '@/components/Skeleton'
 import HashtagText from '@/components/HashtagText'
 import { getEntityIcon } from '@/lib/entity-icons'
+import { buildReferenceHref, referenceTypeLabel } from '@/lib/reference-links'
 import styles from './SharedItemCard.module.css'
 
 interface SharedItemCardProps {
@@ -22,6 +23,7 @@ interface RefItem {
   type?: string
   content?: string
   images?: string | null
+  schoolSlug?: string | null
   user?: { id: string; name: string | null; image: string | null; username?: string | null }
   createdAt?: string
 }
@@ -41,7 +43,7 @@ const SharedItemCard = memo(function SharedItemCard({ referenceType, referenceId
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (cachedTitle && referenceType !== 'POST') {
+    if (cachedTitle && referenceType !== 'POST' && referenceType !== 'SCHOOLCONTENT') {
       setItem({ title: cachedTitle, image: null })
       setLoading(false)
       return
@@ -51,20 +53,15 @@ const SharedItemCard = memo(function SharedItemCard({ referenceType, referenceId
       .then(data => {
         const result = data?.data?.item || data?.item
         if (result) setItem(result)
+        else if (cachedTitle) setItem({ title: cachedTitle, image: null })
       })
-      .catch(() => {})
+      .catch(() => {
+        if (cachedTitle) setItem({ title: cachedTitle, image: null })
+      })
       .finally(() => setLoading(false))
   }, [referenceType, referenceId, cachedTitle])
 
-  const typeToRoute: Record<string, string> = {
-    PRODUCT: 'products', SERVICE: 'services', EVENT: 'events',
-    REQUEST: 'requests', PROJECT: 'projects', SCHOOLCONTENT: 'school',
-    FORUMPOST: 'community/forum', GROUP: 'groups',
-    BLOG: 'blog', PODCAST: 'podcast',
-  }
-
-  const route = typeToRoute[referenceType]
-  const href = route ? `/${route}/${referenceId}` : '#'
+  const href = buildReferenceHref(referenceType, referenceId, item?.schoolSlug)
 
   if (referenceType === 'POST') {
     const imageList = getImages(item?.images || null)
@@ -129,7 +126,7 @@ const SharedItemCard = memo(function SharedItemCard({ referenceType, referenceId
             </div>
           )}
           <div className={styles.cardInfo}>
-            <div className={styles.cardType}>{getEntityIcon(referenceType)} {referenceType}</div>
+            <div className={styles.cardType}>{getEntityIcon(referenceType)} {referenceTypeLabel(referenceType)}</div>
             <div className={styles.cardTitle}>
               {loading ? <Skeleton width="60%" height="1rem" /> : (item?.title || referenceType)}
             </div>

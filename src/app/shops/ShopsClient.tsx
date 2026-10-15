@@ -95,10 +95,12 @@ export function ShopsClient({ initialShops }: ShopsClientProps) {
         className={`${styles.shopCard} ${selectedShop === shop.id ? styles.selected : ''}`}
         onClick={() => setSelectedShop(shop.id)}
       >
-        {shop.shopImage && (
+        {shop.shopImage ? (
           <div className={styles.shopImage}>
-            <IpfsImage src={shop.shopImage} alt={shop.shopName} thumbWidth={512} />
+            <IpfsImage src={shop.shopImage} alt={shop.shopName} thumbWidth={512} style={{ width: '100%', height: '100%', display: 'block' }} />
           </div>
+        ) : (
+          <div className={styles.shopImagePlaceholder} aria-hidden="true">🏪</div>
         )}
         <div className={styles.shopInfo}>
           <div className={styles.shopHeader}>

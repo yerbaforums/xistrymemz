@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import LinkItemModal from './LinkItemModal'
 import { getEntityIcon, getEntityLabel } from '@/lib/entity-icons'
+import { buildReferenceHref } from '@/lib/reference-links'
 import styles from './LinkedItemsSection.module.css'
 
 interface LinkedItem {
@@ -29,25 +30,6 @@ const RELATION_LABELS: Record<string, string> = {
   CONTAINS: 'Contains',
   RELATES_TO: 'Relates To',
   PROMOTES: 'Promotes',
-}
-
-const TYPE_URL_PREFIX: Record<string, string> = {
-  PLAN: '/projects/',
-  PROJECT: '/projects/',
-  PRODUCT: '/products/',
-  EVENT: '/events/',
-  REQUEST: '/requests/',
-  SERVICE: '/services/',
-  GROUP: '/groups/',
-  POST: '/posts/',
-  FORUMPOST: '/community/forum/',
-  SCHOOLCONTENT: '/school/content/',
-  BOARD: '/boards/',
-  USER: '/profile/',
-  SHOP: '/shop/',
-  SCHOOL: '/school/',
-  BLOG: '/blog/',
-  PODCAST: '/podcast/',
 }
 
 interface LinkedItemsSectionProps {
@@ -128,10 +110,10 @@ export default function LinkedItemsSection({
   const incoming = backlinks.filter(b => b.targetType === entityType && b.targetId === entityId)
 
   // Prefer the URL resolved by the API (already slug-aware); fall back to the
-  // type prefix map so incoming/outgoing cards still link somewhere useful.
+  // shared builder so cards still link somewhere useful.
   const resolveHref = (type: string, id: string) =>
     items.find(i => i.type === type && i.id === id)?.url ||
-    (TYPE_URL_PREFIX[type] ? TYPE_URL_PREFIX[type] + id : '/')
+    buildReferenceHref(type, id)
 
   if (loading) return null
   if (items.length === 0 && outgoing.length === 0 && incoming.length === 0) return null
