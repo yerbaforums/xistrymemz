@@ -13,6 +13,8 @@ import { useToast } from '@/context/ToastContext'
 import { EmptyState } from '@/components/EmptyState'
 import { getUserProfileUrl, humanizeEnum } from '@/lib/utils'
 import { REQUEST_CATEGORY_MAP } from '@/lib/request-categories'
+import { getCategoryIcon, getCategoryLabel } from '@/lib/project-categories'
+import { getProjectStatusIcon, getProjectStatusLabel } from '@/lib/project-status'
 import ImageUploader from '@/components/ImageUploader'
 import HashtagInput from '@/components/HashtagInput'
 import Button from '@/components/ui/Button'
@@ -1109,7 +1111,7 @@ function GroupDetailContent() {
                             {activity.projects.map(p => (
                               <Link key={p.id} href={`/projects/${p.id}`} className={styles.activityCard}>
                                 <span className={styles.activityTitle}>{p.title}</span>
-                                <span className={styles.activityMeta}>{p.category} · {p.status}</span>
+                                <span className={styles.activityMeta}>{getCategoryIcon(p.category || '')} {getCategoryLabel(p.category || '')} · {getProjectStatusIcon(p.status)} {getProjectStatusLabel(p.status)}</span>
                                 <span className={styles.activityAuthor}>by {p.user.name}</span>
                               </Link>
                             ))}

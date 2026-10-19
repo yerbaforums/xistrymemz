@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import styles from './page.module.css'
 import { useToast } from '@/context/ToastContext'
+import { humanizeEnum } from '@/lib/utils'
 import Skeleton from '@/components/Skeleton'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
@@ -120,7 +121,7 @@ export default function AdminFeedbackPage() {
                 <td>{entry.email || entry.userId || '-'}</td>
                 <td>
                   <span className={entry.status === 'REVIEWED' ? styles.reviewed : styles.newStatus}>
-                    {entry.status}
+                    {humanizeEnum(entry.status)}
                   </span>
                 </td>
                 <td>{new Date(entry.createdAt).toLocaleDateString()}</td>

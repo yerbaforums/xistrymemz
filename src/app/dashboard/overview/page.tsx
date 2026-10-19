@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import { getProjectStatusIcon, getProjectStatusLabel } from '@/lib/project-status'
 import FeedItem from '@/components/FeedItem'
 import DashboardTodo from '@/components/DashboardTodo'
 import styles from '../page.module.css'
@@ -456,9 +457,9 @@ export default async function DashboardOverview({
                       <div className={styles.activityIcon}>🚀</div>
                       <div className={styles.activityInfo}>
                         <span className={styles.activityTitle}>{project.title}</span>
-                        <span className={styles.activityMeta}>{project.status} · {new Date(project.createdAt).toLocaleDateString()}</span>
+                        <span className={styles.activityMeta}>{getProjectStatusIcon(project.status)} {getProjectStatusLabel(project.status)} · {new Date(project.createdAt).toLocaleDateString()}</span>
                       </div>
-                      <span className={`badge badge-${project.status.toLowerCase()} ${overviewStyles.projectStatusBadge}`}>{project.status}</span>
+                      <span className={`badge badge-${project.status.toLowerCase()} ${overviewStyles.projectStatusBadge}`}>{getProjectStatusIcon(project.status)} {getProjectStatusLabel(project.status)}</span>
                     </Link>
                   ))}
                 </div>
