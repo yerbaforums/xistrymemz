@@ -1125,7 +1125,7 @@ function GroupDetailContent() {
                             {activity.requests.map(r => (
                               <Link key={r.id} href={`/requests/${r.id}`} className={styles.activityCard}>
                                 <span className={styles.activityTitle}>{r.title}</span>
-                                <span className={styles.activityMeta}>{r.category} · {r.status}</span>
+                                <span className={styles.activityMeta}>{REQUEST_CATEGORY_MAP.get(r.category || '')?.icon || '📋'} {REQUEST_CATEGORY_MAP.get(r.category || '')?.label || humanizeEnum(r.category)} · {humanizeEnum(r.status)}</span>
                                 <span className={styles.activityAuthor}>by {r.user.name}</span>
                               </Link>
                             ))}

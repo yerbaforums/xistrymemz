@@ -153,7 +153,7 @@ export default function StudioPage() {
               id: `school-${c.id}`,
               type: 'schoolContent',
               icon: ctIcon,
-              typeLabel: c.contentType ? (CONTENT_TYPE_MAP[c.contentType] || c.contentType) : 'Content',
+              typeLabel: c.contentType ? (CONTENT_TYPE_MAP[c.contentType] || humanizeEnum(c.contentType)) : 'Content',
               title: c.title || 'Untitled',
               createdAt: c.createdAt,
               views: c.viewCount || 0,

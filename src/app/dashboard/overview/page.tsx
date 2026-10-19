@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import { humanizeEnum } from '@/lib/utils'
 import { getProjectStatusIcon, getProjectStatusLabel } from '@/lib/project-status'
 import FeedItem from '@/components/FeedItem'
 import DashboardTodo from '@/components/DashboardTodo'
@@ -493,7 +494,7 @@ export default async function DashboardOverview({
               const studioItems = [
                 ..._projects.map(p => ({ type: '🚀', label: 'Project', title: p.title, date: p.createdAt, href: `/projects/${p.id}` })),
                 ...products.map(p => ({ type: '🛒', label: 'Product', title: p.title, date: p.createdAt, href: `/products/${p.id}` })),
-                ...recentSchoolContent.map(c => ({ type: c.contentType === 'course' ? '🎓' : '📖', label: c.contentType || 'Content', title: c.title, date: c.createdAt, href: '#' })),
+                ...recentSchoolContent.map(c => ({ type: c.contentType === 'course' ? '🎓' : '📖', label: humanizeEnum(c.contentType) || 'Content', title: c.title, date: c.createdAt, href: '#' })),
               ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5)
               if (studioItems.length === 0) {
                 return (
