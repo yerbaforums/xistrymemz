@@ -7,6 +7,8 @@ import AssetPicker from '@/components/AssetPicker'
 import { PIN_CATEGORIES } from '@/lib/pin-categories'
 import type { UserAsset } from '@/components/AssetPicker'
 import { geocodeLocation, reverseGeocodeLocation } from '@/lib/geocoding'
+import { useTheme } from '@/context/ThemeContext'
+import { cartoDarkTileUrl, OSM_TILE_URL } from '@/lib/map-tiles'
 import styles from './CreatePinModal.module.css'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
@@ -41,6 +43,7 @@ export default function CreatePinModal({ boardSlug, boardName, onClose, onCreate
   const [geoSearch, setGeoSearch] = useState('')
   const [geoLoading, setGeoLoading] = useState(false)
   const [settingLocation, setSettingLocation] = useState(false)
+  const { mode } = useTheme()
 
   const expiryPresets = useMemo(() => {
     const now = new Date(); const day = 86400000
@@ -162,7 +165,10 @@ export default function CreatePinModal({ boardSlug, boardName, onClose, onCreate
               <div style={{ marginTop: 6, borderRadius: 8, overflow: 'hidden', height: 200, position: 'relative' }}>
                 <div style={{ position: 'absolute', top: 4, left: '50%', transform: 'translateX(-50%)', zIndex: 1000, background: 'rgba(0,0,0,0.7)', color: '#fff', padding: '4px 12px', borderRadius: 6, fontSize: '0.75rem', pointerEvents: 'none' }}>Click the map to set location</div>
                 <MapContainer center={mapCenter} zoom={hasCoords ? 14 : 2} style={{ height: 200, width: '100%' }} scrollWheelZoom={false}>
-                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                  <TileLayer
+                    attribution={mode === 'dark' ? '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>' : '&copy; <a href="https://openstreetmap.org">OSM</a>'}
+                    url={mode === 'dark' ? cartoDarkTileUrl() : OSM_TILE_URL}
+                  />
                   <MapClickHandler onClick={handleMapClick} />
                   {hasCoords && <Marker position={[parseFloat(pinLat), parseFloat(pinLng)]} />}
                 </MapContainer>

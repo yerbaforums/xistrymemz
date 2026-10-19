@@ -20,6 +20,8 @@ import { getBoardMarkerIcon } from '@/lib/map-markers'
 import { getEntityIcon } from '@/lib/entity-icons'
 import { PIN_CATEGORIES, getPinCategoryColor, getPinCategoryIcon, getPinCategoryLabel } from '@/lib/pin-categories'
 import { humanizeEnum } from '@/lib/utils'
+import { useTheme } from '@/context/ThemeContext'
+import { cartoDarkTileUrl, OSM_TILE_URL } from '@/lib/map-tiles'
 import ImageUploader from '@/components/ImageUploader'
 import IpfsImage from '@/components/IpfsImage'
 
@@ -93,6 +95,7 @@ export default function BoardDetailPage() {
   const params = useParams()
   const router = useRouter()
   const slug = params.slug as string
+  const { mode } = useTheme()
 
   const [board, setBoard] = useState<Board | null>(null)
   const [pins, setPins] = useState<Pin[]>([])
@@ -439,8 +442,8 @@ export default function BoardDetailPage() {
           )}
           <MapContainer ref={mapRef} center={mapCenter} zoom={12} className={styles.map} scrollWheelZoom={true}>
             <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution={mode === 'dark' ? '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>' : '&copy; <a href="https://openstreetmap.org">OSM</a>'}
+              url={mode === 'dark' ? cartoDarkTileUrl() : OSM_TILE_URL}
             />
             {board.latitude != null && board.longitude != null && (
               <Marker position={[board.latitude, board.longitude]} icon={getBoardIcon()}>

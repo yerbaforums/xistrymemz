@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import dynamic from 'next/dynamic'
 import { geocodeLocation, reverseGeocodeLocation } from '@/lib/geocoding'
+import { useTheme } from '@/context/ThemeContext'
+import { cartoDarkTileUrl, OSM_TILE_URL } from '@/lib/map-tiles'
 import styles from './LocationPicker.module.css'
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false })
@@ -43,6 +45,7 @@ export default function LocationPicker({ value, onChange, label = 'Location' }: 
   )
   const [detecting, setDetecting] = useState(false)
   const [settingLocation, setSettingLocation] = useState(false)
+  const { mode } = useTheme()
 
   useEffect(() => {
     if (!session?.user?.id) return
@@ -177,7 +180,10 @@ export default function LocationPicker({ value, onChange, label = 'Location' }: 
             )}
             <div className={styles.mapWrap}>
               <MapContainer center={mapCenter} zoom={mapMarker ? 12 : 2} className={styles.map} scrollWheelZoom={false}>
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                <TileLayer
+                  attribution={mode === 'dark' ? '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>' : '&copy; <a href="https://openstreetmap.org">OSM</a>'}
+                  url={mode === 'dark' ? cartoDarkTileUrl() : OSM_TILE_URL}
+                />
                 <ClickHandler onClick={handleMapClick} />
                 {mapMarker && <Marker position={mapMarker} />}
               </MapContainer>

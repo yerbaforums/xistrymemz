@@ -8,6 +8,8 @@ import dynamic from 'next/dynamic'
 import { getEntityIcon } from '@/lib/entity-icons'
 import { parseImageList, humanizeEnum } from '@/lib/utils'
 import { getPinCategoryColor, getPinCategoryIcon, getPinCategoryLabel } from '@/lib/pin-categories'
+import { useTheme } from '@/context/ThemeContext'
+import { cartoDarkTileUrl, OSM_TILE_URL } from '@/lib/map-tiles'
 import EntityActions from '@/components/EntityActions'
 import type { ActionEntityType } from '@/hooks/useEntityActions'
 import Breadcrumbs from '@/components/Breadcrumbs'
@@ -71,6 +73,7 @@ export default function PinDetailPage() {
   const [fullImg, setFullImg] = useState<string | null>(null)
   const [eventData, setEventData] = useState<PinEventData | null>(null)
   const [L, setL] = useState<typeof import('leaflet') | null>(null)
+  const { mode } = useTheme()
 
   useEffect(() => {
     if (typeof window !== 'undefined') import('leaflet').then(mod => setL(mod))
@@ -183,7 +186,10 @@ export default function PinDetailPage() {
         {(pin.latitude && pin.longitude && L) && (
           <div style={{ borderRadius: 12, overflow: 'hidden', height: 250 }}>
             <MapContainer center={[pin.latitude, pin.longitude]} zoom={14} style={{ height: 250, width: '100%' }} scrollWheelZoom={false}>
-              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              <TileLayer
+                attribution={mode === 'dark' ? '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>' : '&copy; <a href="https://openstreetmap.org">OSM</a>'}
+                url={mode === 'dark' ? cartoDarkTileUrl() : OSM_TILE_URL}
+              />
               <Marker position={[pin.latitude, pin.longitude]}>
                 <Popup>{pin.title || 'Pin location'}</Popup>
               </Marker>

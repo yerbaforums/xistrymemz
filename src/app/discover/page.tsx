@@ -20,6 +20,8 @@ import LocationCard from '@/components/LocationCard'
 import HashtagChips from '@/components/HashtagChips'
 import Avatar from '@/components/Avatar'
 import { humanizeEnum } from '@/lib/utils'
+import { useTheme } from '@/context/ThemeContext'
+import { cartoDarkTileUrl, OSM_TILE_URL } from '@/lib/map-tiles'
 
 const ENTITY_TYPES = [
   { key: '', label: 'All', icon: '🌐' },
@@ -118,6 +120,7 @@ function EntityCard({ item, mapRef, setMapVisible, onHover, onLeave }: { item: D
 export default function DiscoverPage() {
   const { data: session } = useSession()
   const { location: passportLoc } = usePassportLocation()
+  const { mode } = useTheme()
   const [query, setQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
   const [eventTime, setEventTime] = useState('upcoming')
@@ -175,7 +178,7 @@ export default function DiscoverPage() {
       }
     } catch { /* ignore */ }
     setLoading(false)
-  }, [query, typeFilter, intentFilter, hashtagFilter, passportLoc, eventTime])
+  }, [query, typeFilter, intentFilter, hashtagFilter, passportLoc, eventTime, mode])
 
   useEffect(() => {
     fetchResults(1, false)
@@ -388,8 +391,8 @@ export default function DiscoverPage() {
         <div className={styles.mapContainer}>
           <MapContainer ref={mapRef} center={mapCenter} zoom={4} className={styles.map} scrollWheelZoom={true}>
             <TileLayer
-              attribution='&copy; <a href="https://openstreetmap.org">OSM</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution={mode === 'dark' ? '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>' : '&copy; <a href="https://openstreetmap.org">OSM</a>'}
+              url={mode === 'dark' ? cartoDarkTileUrl() : OSM_TILE_URL}
             />
             {homeCoords && (
               <Marker position={homeCoords}>

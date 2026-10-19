@@ -40,6 +40,8 @@ import Skeleton from '@/components/Skeleton'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import { MapContainer, TileLayer, Popup } from '@/components/LeafletComponents'
 import EntityMarker from '@/components/EntityMarker'
+import { useTheme } from '@/context/ThemeContext'
+import { cartoDarkTileUrl, OSM_TILE_URL } from '@/lib/map-tiles'
 
 
 interface UserLink {
@@ -358,6 +360,7 @@ export default function ProfilePage() {
   const { data: session, status, update } = useSession()
   const router = useRouter()
   const params = useParams()
+  const { mode } = useTheme()
   const [user, setUser] = useState<ProfileUser | null>(null)
   const [posts, setPosts] = useState<Post[]>([])
   const [projects, setProjects] = useState<ProjectData[]>([])
@@ -1773,8 +1776,8 @@ export default function ProfilePage() {
                       <div className={styles.passportMap}>
                         <MapContainer center={[user.latitude, user.longitude]} zoom={10} style={{ height: '100%', width: '100%', position: 'relative', zIndex: 1 }}>
                           <TileLayer
-                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            attribution={mode === 'dark' ? '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>' : '&copy; <a href="https://openstreetmap.org">OSM</a>'}
+                            url={mode === 'dark' ? cartoDarkTileUrl() : OSM_TILE_URL}
                           />
                           <EntityMarker type="MEMBER" position={[user.latitude, user.longitude]}>
                             <Popup>
